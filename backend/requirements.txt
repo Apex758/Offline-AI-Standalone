@@ -1,0 +1,7 @@
+jina
+transformers
+torch
+torchvision
+pillow
+fastapi
+uvicorn[standard]
