@@ -9,6 +9,8 @@ interface ChatProps {
     messages?: Message[];
   };
   onDataChange: (data: any) => void;
+  onTitleChange?: (title: string) => void;
+  onPanelClick?: () => void;
 }
 
 interface ChatHistory {
@@ -18,7 +20,7 @@ interface ChatHistory {
   messages: Message[];
 }
 
-const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
+const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [titleSet, setTitleSet] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -39,12 +42,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
     onDataChange({ messages });
   }, [messages]);
 
-  // Load chat histories on mount
   useEffect(() => {
     loadChatHistories();
   }, []);
 
-  // Auto-save current chat when messages change
   useEffect(() => {
     if (messages.length > 0) {
       autoSaveCurrentChat();
@@ -86,6 +87,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
     setMessages(history.messages);
     setCurrentChatId(history.id);
     setHistoryOpen(false);
+    
+    if (onTitleChange) {
+      const title = history.title.length > 30 ? history.title.substring(0, 30) + '...' : history.title;
+      onTitleChange(title);
+      setTitleSet(true);
+    }
   };
 
   const deleteHistory = async (historyId: string, e: React.MouseEvent) => {
@@ -107,9 +114,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
     setCurrentChatId(null);
     setStreamingMessage('');
     setHistoryOpen(false);
+    setTitleSet(false);
+    
+    if (onTitleChange) {
+      onTitleChange('Chat with AI');
+    }
   };
 
-  // Initialize WebSocket connection
   useEffect(() => {
     shouldReconnectRef.current = true;
 
@@ -208,6 +219,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    
+    if (!titleSet && onTitleChange) {
+      const title = input.length > 30 ? input.substring(0, 30) + '...' : input;
+      onTitleChange(title);
+      setTitleSet(true);
+    }
+    
     setInput('');
     setLoading(true);
     setStreamingMessage('');
@@ -236,13 +254,23 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
       .replace(/sampler_.*/gi, '')
       .trim();
 
+    const renderInlineFormatting = (text: string) => {
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} className="font-bold">{part.replace(/\*\*/g, '')}</strong>;
+        }
+        return <span key={i}>{part}</span>;
+      });
+    };
+
     return cleaned.split('\n\n').map((paragraph, idx) => {
       const lines = paragraph.split('\n');
       
       return (
         <div key={idx} className="mb-3 last:mb-0">
           {lines.map((line, lineIdx) => {
-            if (line.match(/^\*\*.*\*\*$/)) {
+            if (line.match(/^\*\*.*\*\*$/) && !line.includes(':')) {
               return (
                 <h4 key={lineIdx} className="font-bold text-base mt-4 mb-2 first:mt-0">
                   {line.replace(/\*\*/g, '')}
@@ -252,22 +280,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
             
             const numberedMatch = line.match(/^(\d+)\.\s+(.+)/);
             if (numberedMatch) {
-              const content = numberedMatch[2];
-              const boldMatch = content.match(/^\*\*([^*]+)\*\*:?\s*(.*)/);
-              
               return (
                 <div key={lineIdx} className="flex gap-2 mb-1">
                   <span className="font-semibold min-w-[1.5rem]">{numberedMatch[1]}.</span>
-                  <span>
-                    {boldMatch ? (
-                      <>
-                        <strong className="font-bold">{boldMatch[1]}</strong>
-                        {boldMatch[2] && `: ${boldMatch[2]}`}
-                      </>
-                    ) : (
-                      content
-                    )}
-                  </span>
+                  <span>{renderInlineFormatting(numberedMatch[2])}</span>
                 </div>
               );
             }
@@ -277,20 +293,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
               return (
                 <div key={lineIdx} className="flex gap-2 mb-1 ml-4">
                   <span className="text-blue-600">•</span>
-                  <span>{bulletMatch[1]}</span>
+                  <span>{renderInlineFormatting(bulletMatch[1])}</span>
                 </div>
               );
             }
-            
-            const renderInlineFormatting = (text: string) => {
-              const parts = text.split(/(\*\*.*?\*\*)/g);
-              return parts.map((part, i) => {
-                if (part.startsWith('**') && part.endsWith('**')) {
-                  return <strong key={i} className="font-semibold">{part.replace(/\*\*/g, '')}</strong>;
-                }
-                return <span key={i}>{part}</span>;
-              });
-            };
             
             if (line.trim()) {
               return (
@@ -309,9 +315,10 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
 
   return (
     <div className="flex h-full bg-white relative">
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
+      <div className="flex-1 flex flex-col" onClick={(e) => {
+        e.stopPropagation();
+        onPanelClick?.();
+      }}>
         <div className="border-b border-gray-200 p-4 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">Chat with AI Teaching Assistant</h2>
@@ -326,14 +333,20 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={startNewChat}
+              onClick={(e) => {
+                e.stopPropagation();
+                startNewChat();
+              }}
               className="p-2 rounded-lg hover:bg-gray-100 transition"
               title="New Chat"
             >
               <Plus className="w-5 h-5 text-gray-600" />
             </button>
             <button
-              onClick={() => setHistoryOpen(!historyOpen)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setHistoryOpen(!historyOpen);
+              }}
               className="p-2 rounded-lg hover:bg-gray-100 transition"
               title="Chat History"
             >
@@ -342,7 +355,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
           </div>
         </div>
 
-        {/* Messages Container */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 && !streamingMessage ? (
             <div className="h-full flex items-center justify-center">
@@ -407,7 +419,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
           )}
         </div>
 
-        {/* Input Area */}
         <div className="border-t border-gray-200 p-4">
           <div className="flex space-x-2">
             <textarea
@@ -436,11 +447,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
         </div>
       </div>
 
-      {/* History Sidebar */}
       <div
         className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">

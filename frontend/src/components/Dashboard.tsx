@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Menu, X, MessageSquare, ClipboardCheck, BookOpen, FileText, LogOut, Plus, Columns } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, MessageSquare, ClipboardCheck, BookOpen, FileText, LogOut, Plus, Columns, ChevronDown, ChevronRight } from 'lucide-react';
 import { User, Tab, Tool } from '../types';
 import Chat from './Chat';
+import LessonPlanner from './LessonPlanner';
 
 interface DashboardProps {
   user: User;
@@ -46,27 +47,48 @@ const iconMap: { [key: string]: any } = {
   FileText
 };
 
-const MAX_TABS_PER_TYPE = 4;
+const MAX_TABS_PER_TYPE = 3;
+
+const tabColors: { [key: string]: { border: string; bg: string; activeBg: string } } = {
+  'chat': { 
+    border: 'border-blue-500', 
+    bg: 'bg-blue-50', 
+    activeBg: 'bg-blue-600' 
+  },
+  'lesson-planner': { 
+    border: 'border-green-500', 
+    bg: 'bg-green-50', 
+    activeBg: 'bg-green-600' 
+  },
+  'grader': { 
+    border: 'border-purple-500', 
+    bg: 'bg-purple-50', 
+    activeBg: 'bg-purple-600' 
+  },
+  'rubric-generator': { 
+    border: 'border-orange-500', 
+    bg: 'bg-orange-50', 
+    activeBg: 'bg-orange-600' 
+  },
+  'split': { 
+    border: 'border-gray-400', 
+    bg: 'bg-gray-50', 
+    activeBg: 'bg-gray-600' 
+  }
+};
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ tabId: string; x: number; y: number } | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const getTabCountByType = (type: string) => {
-    return tabs.filter(tab => {
-      if (tab.type === 'split' && tab.splitTabs) {
-        // Count split tabs based on their child tabs
-        const childTabs = tabs.filter(t => tab.splitTabs?.includes(t.id));
-        return childTabs.some(t => t.type === type);
-      }
-      return tab.type === type;
-    }).length;
+    return tabs.filter(tab => tab.type === type && tab.type !== 'split').length;
   };
 
   const openTool = (tool: Tool) => {
-    // Check if we already have 4 tabs of this type
     const currentCount = getTabCountByType(tool.type);
     if (currentCount >= MAX_TABS_PER_TYPE) {
       alert(`Maximum of ${MAX_TABS_PER_TYPE} ${tool.name} tabs allowed at once.`);
@@ -88,12 +110,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const tabToClose = tabs.find(tab => tab.id === tabId);
     
     if (tabToClose?.type === 'split' && tabToClose.splitTabs) {
-      // Unsplit: restore the two tabs separately
       const [leftTabId, rightTabId] = tabToClose.splitTabs;
       const updatedTabs = tabs.filter(tab => tab.id !== tabId);
       setTabs(updatedTabs);
       
-      // Set the first child tab as active
       if (leftTabId) {
         setActiveTabId(leftTabId);
       }
@@ -146,6 +166,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     ));
   };
 
+  const updateTabTitle = (tabId: string, title: string) => {
+    setTabs(tabs.map(tab => 
+      tab.id === tabId ? { ...tab, title } : tab
+    ));
+  };
+
+  const toggleGroupCollapse = (type: string) => {
+    const newCollapsed = new Set(collapsedGroups);
+    if (newCollapsed.has(type)) {
+      newCollapsed.delete(type);
+    } else {
+      newCollapsed.add(type);
+    }
+    setCollapsedGroups(newCollapsed);
+  };
+
   const renderTabContent = (tab: Tab) => {
     if (tab.type === 'split' && tab.splitTabs) {
       const [leftTabId, rightTabId] = tab.splitTabs;
@@ -170,7 +206,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const renderSingleTabContent = (tab: Tab) => {
     switch (tab.type) {
       case 'chat':
-        return <Chat tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return (
+          <Chat 
+            tabId={tab.id} 
+            savedData={tab.data} 
+            onDataChange={(data) => updateTabData(tab.id, data)} 
+            onTitleChange={(title) => updateTabTitle(tab.id, title)}
+            onPanelClick={() => setSidebarOpen(false)}
+          />
+        );
       case 'grader':
         return (
           <div className="p-8">
@@ -179,12 +223,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
         );
       case 'lesson-planner':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Lesson Planner</h2>
-            <p className="text-gray-600">Coming soon...</p>
-          </div>
-        );
+        return <LessonPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'rubric-generator':
         return (
           <div className="p-8">
@@ -197,7 +236,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  // Get non-split tabs for the context menu
+  // Group tabs by type
+  const groupedTabs = tabs.reduce((acc, tab) => {
+    if (tab.type === 'split') {
+      if (!acc['split']) acc['split'] = [];
+      acc['split'].push(tab);
+    } else {
+      if (!acc[tab.type]) acc[tab.type] = [];
+      acc[tab.type].push(tab);
+    }
+    return acc;
+  }, {} as { [key: string]: Tab[] });
+
   const availableTabsForSplit = tabs.filter(t => 
     t.type !== 'split' && t.id !== contextMenu?.tabId
   );
@@ -229,7 +279,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
       )}
 
-{/* Sidebar */}
+      {/* Sidebar */}
       <div className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden relative flex flex-col`}>
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between">
@@ -284,7 +334,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
         )}
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
@@ -296,38 +346,104 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          {/* Tabs */}
+          {/* Grouped Tabs */}
           <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto">
-            {tabs.map((tab) => (
-              <div
-                key={tab.id}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition ${
-                  activeTabId === tab.id
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                onClick={() => setActiveTabId(tab.id)}
-                onContextMenu={(e) => tab.type !== 'split' && handleTabContextMenu(e, tab.id)}
-                title="Right-click to split"
-              >
-                {tab.type === 'split' && <Columns className="w-3 h-3" />}
-                <span className="text-sm font-medium whitespace-nowrap">{tab.title}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    closeTab(tab.id);
-                  }}
-                  className="hover:bg-white/50 rounded p-1"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+            {Object.entries(groupedTabs).map(([type, groupTabs]) => {
+              const isCollapsed = collapsedGroups.has(type);
+              const activeInGroup = groupTabs.find(t => t.id === activeTabId);
+              const colors = tabColors[type] || tabColors['split'];
+              
+              if (groupTabs.length === 1) {
+                // Single tab - show normally
+                const tab = groupTabs[0];
+                return (
+                  <div
+                    key={tab.id}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition border-l-4 ${colors.border} ${
+                      activeTabId === tab.id
+                        ? `${colors.activeBg} text-white`
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => setActiveTabId(tab.id)}
+                    onContextMenu={(e) => tab.type !== 'split' && handleTabContextMenu(e, tab.id)}
+                    title="Right-click to split"
+                  >
+                    {tab.type === 'split' && <Columns className="w-3 h-3" />}
+                    <span className="text-sm font-medium whitespace-nowrap">{tab.title}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeTab(tab.id);
+                      }}
+                      className="hover:bg-white/50 rounded p-1"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              }
+
+              // Multiple tabs - group them
+              return (
+                <div key={type} className="flex items-center gap-1">
+                  <button
+                    onClick={() => toggleGroupCollapse(type)}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition border-l-4 ${colors.border} ${
+                      activeInGroup ? `${colors.activeBg} text-white` : `${colors.bg} text-gray-700 hover:bg-gray-200`
+                    }`}
+                  >
+                    {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    <span className="text-sm font-medium">
+                      {tools.find(t => t.type === type)?.name} ({groupTabs.length})
+                    </span>
+                  </button>
+
+                  {!isCollapsed && groupTabs.map(tab => (
+                    <div
+                      key={tab.id}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg cursor-pointer transition relative ${
+                        activeTabId === tab.id
+                          ? `${colors.activeBg} text-white`
+                          : `${colors.bg} text-gray-700 hover:bg-gray-200`
+                      }`}
+                      onClick={() => setActiveTabId(tab.id)}
+                      onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
+                      style={{ maxWidth: '200px' }}
+                    >
+                      <span 
+                        className="text-sm whitespace-nowrap overflow-hidden relative"
+                        style={{
+                          maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                          WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                        }}
+                      >
+                        {tab.title}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          closeTab(tab.id);
+                        }}
+                        className="hover:bg-white/20 rounded p-1 flex-shrink-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-hidden">
+        <div 
+          className="flex-1 overflow-hidden"
+          onClick={() => {
+            setSidebarOpen(false);
+            // Close history panel if it exists in the active chat
+          }}
+        >
           {activeTabId ? (
             <div className="h-full">
               {tabs.find(tab => tab.id === activeTabId) && 
