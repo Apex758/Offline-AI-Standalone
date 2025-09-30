@@ -229,8 +229,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
       )}
 
-      {/* Sidebar */}
-      <div className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden`}>
+{/* Sidebar */}
+      <div className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden relative flex flex-col`}>
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between">
             {sidebarOpen && (
@@ -242,7 +242,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
         </div>
 
-        <div className="p-4 space-y-2">
+        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Tools
           </h3>
@@ -272,17 +272,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm font-medium">Logout</span>
-          </button>
-        </div>
+        {sidebarOpen && (
+          <div className="p-4 border-t border-gray-700">
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
+          </div>
+        )}
       </div>
-
+      
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}

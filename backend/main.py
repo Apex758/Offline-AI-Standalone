@@ -21,6 +21,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Path for chat history storage
+CHAT_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "chat_history.json")
+
 @app.on_event("startup")
 async def check_files():
     print("Checking for required files...")
@@ -33,6 +36,15 @@ async def check_files():
         print(f"⚠️  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
     else:
         print(f"✓ llama-cli.exe found: {LLAMA_CLI_PATH}")
+    
+    # Initialize chat history file if it doesn't exist
+    if not os.path.exists(CHAT_HISTORY_FILE):
+        with open(CHAT_HISTORY_FILE, 'w') as f:
+            json.dump([], f)
+        print(f"✓ Created chat history file: {CHAT_HISTORY_FILE}")
+    else:
+        print(f"✓ Chat history file found: {CHAT_HISTORY_FILE}")
+    
     print("Server ready!")
 
 class LoginRequest(BaseModel):
@@ -43,9 +55,17 @@ class ChatMessage(BaseModel):
     message: str
     conversation_history: Optional[List[dict]] = []
 
-class ChatResponse(BaseModel):
-    response: str
+class Message(BaseModel):
+    id: str
+    role: str
+    content: str
     timestamp: str
+
+class ChatHistory(BaseModel):
+    id: str
+    title: str
+    timestamp: str
+    messages: List[Message]
 
 @app.post("/api/login")
 async def login(request: LoginRequest):
@@ -60,6 +80,79 @@ async def login(request: LoginRequest):
             "token": "demo_token_123"
         }
     raise HTTPException(status_code=401, detail="Invalid credentials")
+
+@app.get("/api/chat-history")
+async def get_chat_history():
+    """Get all chat histories"""
+    try:
+        if os.path.exists(CHAT_HISTORY_FILE):
+            with open(CHAT_HISTORY_FILE, 'r') as f:
+                histories = json.load(f)
+            # Sort by timestamp, newest first
+            histories.sort(key=lambda x: x['timestamp'], reverse=True)
+            return histories
+        return []
+    except Exception as e:
+        print(f"Error loading chat history: {e}")
+        return []
+
+@app.post("/api/chat-history")
+async def save_chat_history(chat: ChatHistory):
+    """Save or update a chat history"""
+    try:
+        # Load existing histories
+        histories = []
+        if os.path.exists(CHAT_HISTORY_FILE):
+            with open(CHAT_HISTORY_FILE, 'r') as f:
+                histories = json.load(f)
+        
+        # Check if chat with this ID already exists
+        existing_index = None
+        for i, h in enumerate(histories):
+            if h['id'] == chat.id:
+                existing_index = i
+                break
+        
+        # Convert to dict
+        chat_dict = chat.dict()
+        
+        if existing_index is not None:
+            # Update existing chat
+            histories[existing_index] = chat_dict
+        else:
+            # Add new chat
+            histories.append(chat_dict)
+        
+        # Save back to file
+        with open(CHAT_HISTORY_FILE, 'w') as f:
+            json.dump(histories, f, indent=2)
+        
+        return {"success": True, "id": chat.id}
+    except Exception as e:
+        print(f"Error saving chat history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/chat-history/{chat_id}")
+async def delete_chat_history(chat_id: str):
+    """Delete a chat history"""
+    try:
+        if os.path.exists(CHAT_HISTORY_FILE):
+            with open(CHAT_HISTORY_FILE, 'r') as f:
+                histories = json.load(f)
+            
+            # Filter out the chat to delete
+            histories = [h for h in histories if h['id'] != chat_id]
+            
+            # Save back to file
+            with open(CHAT_HISTORY_FILE, 'w') as f:
+                json.dump(histories, f, indent=2)
+            
+            return {"success": True}
+        
+        raise HTTPException(status_code=404, detail="Chat history not found")
+    except Exception as e:
+        print(f"Error deleting chat history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
@@ -109,7 +202,18 @@ async def websocket_chat(websocket: WebSocket):
             
             all_output = []
             generation_started = {'value': False}
-            response_started = {'value': False}
+            
+            # Patterns that indicate end of useful content
+            garbage_patterns = [
+                'llama_perf',
+                '> EOF',
+                'Interrupted by user',
+                'llama_sampler',
+                'llama_print',
+                '> llama',
+                'sampler_',
+                'l>a m',
+            ]
             
             def read_stream(stream, output_list):
                 """Read from stream character by character"""
@@ -119,13 +223,11 @@ async def websocket_chat(websocket: WebSocket):
                         break
                     output_list.append(char)
                     
-                    # Check if we've hit the generation phase
                     current_text = ''.join(output_list)
                     if not generation_started['value'] and "Not using system message" in current_text:
                         generation_started['value'] = True
                         print(f"\n{'='*60}\n🤖 AI RESPONSE:\n{'='*60}\n")
                     
-                    # Only print to terminal after generation starts
                     if generation_started['value']:
                         sys.stdout.write(char)
                         sys.stdout.flush()
@@ -144,6 +246,7 @@ async def websocket_chat(websocket: WebSocket):
             last_streamed_index = 0
             found_assistant_start = False
             skip_initial_garbage = False
+            should_stop_streaming = False
             
             while time.time() - start_time < timeout_seconds:
                 if process.poll() is not None:
@@ -151,19 +254,23 @@ async def websocket_chat(websocket: WebSocket):
                 
                 current_output = ''.join(all_output)
                 
-                # Check for completion
-                if "llama_perf_sampler_print:" in current_output:
-                    time.sleep(1)
+                # Check for garbage patterns
+                if not should_stop_streaming:
+                    for pattern in garbage_patterns:
+                        if pattern in current_output[last_streamed_index:]:
+                            should_stop_streaming = True
+                            print("\n[Detected end pattern, stopping stream]")
+                            break
+                
+                if should_stop_streaming:
                     break
                 
                 # Find where assistant response actually starts
                 if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
                     found_assistant_start = True
-                    # Find the index right after the assistant header
                     assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
                     if assistant_index != -1:
                         last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        # Skip any newlines and the garbage prompt message
                         while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
                             last_streamed_index += 1
                 
@@ -174,19 +281,22 @@ async def websocket_chat(websocket: WebSocket):
                         skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
                         if skip_index != -1:
                             last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            # Skip newlines after
                             while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
                                 last_streamed_index += 1
                             skip_initial_garbage = True
                 
                 # Stream new content
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    # Get new characters to stream
                     new_content = current_output[last_streamed_index:]
                     
-                    # Don't stream if we hit special tokens or end markers
-                    if "<|" in new_content or "llama_perf" in new_content or "> EOF" in new_content:
-                        break
+                    # Check for end tokens or garbage in the new content
+                    should_break = False
+                    for pattern in ["<|", *garbage_patterns]:
+                        if pattern in new_content:
+                            pattern_index = new_content.find(pattern)
+                            new_content = new_content[:pattern_index]
+                            should_break = True
+                            break
                     
                     # Stream character by character
                     for char in new_content:
@@ -198,9 +308,12 @@ async def websocket_chat(websocket: WebSocket):
                         except:
                             break
                     
-                    last_streamed_index = len(current_output)
+                    last_streamed_index += len(new_content)
+                    
+                    if should_break:
+                        break
                 
-                await asyncio.sleep(0.05)  # Check more frequently for smoother streaming
+                await asyncio.sleep(0.05)
             
             # Kill the process
             process.terminate()
@@ -224,13 +337,9 @@ async def websocket_chat(websocket: WebSocket):
             if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
                 response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
             
-            for marker in ["llama_perf_", "> EOF by user", "Interrupted by user"]:
+            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
-            
-            response_text = response_text.replace("<|eot_id|>", "")
-            response_text = response_text.replace("<|end_of_text|>", "")
-            response_text = response_text.replace("<|begin_of_text|>", "")
             
             if "To change it, set a different value via -sys PROMPT" in response_text:
                 response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
@@ -256,5 +365,6 @@ async def health():
     return {
         "status": "healthy",
         "model_found": os.path.exists(MODEL_PATH),
-        "llama_cli_found": os.path.exists(LLAMA_CLI_PATH)
+        "llama_cli_found": os.path.exists(LLAMA_CLI_PATH),
+        "chat_history_file": os.path.exists(CHAT_HISTORY_FILE)
     }
