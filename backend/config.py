@@ -22,7 +22,7 @@ if not os.path.exists(LLAMA_CLI_PATH):
 
 # Llama CLI parameters
 LLAMA_PARAMS = {
-    "max_tokens": 256,        # Maximum tokens to generate (-n) - Reduced for faster responses
+    "max_tokens": 2000,        # Maximum tokens to generate (-n) - Reduced for faster responses
     "threads": 4,             # Number of threads (-t) - Adjust based on your CPU
     "temperature": 0.7,       # Sampling temperature (--temp)
     "top_p": 0.9,            # Top-p sampling (--top-p)

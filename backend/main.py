@@ -68,65 +68,131 @@ async def chat(message: ChatMessage):
         raise HTTPException(status_code=503, detail="Model file not found")
     
     try:
-        # Build the prompt using Llama 3.2 Instruct format
-        # Format: <|begin_of_text|><|start_header_id|>system<|end_header_id|>...<|start_header_id|>user<|end_header_id|>...
+        # ============================================================
+        # SIMPLE PROMPTING METHOD (Currently Active)
+        # ============================================================
+        # This is the straightforward method - just pass the user's message directly
+        prompt = message.message
         
-        prompt = "<|begin_of_text|>"
         
-        # Add system message
-        prompt += "<|start_header_id|>system<|end_header_id|>\n\nYou are a helpful AI assistant for education.<|eot_id|>"
+        # ============================================================
+        # ADVANCED PROMPTING METHOD (Commented Out)
+        # ============================================================
+        # Uncomment this section if you want to use system messages and constraints
+        # This uses the Llama 3.2 Instruct format with special tokens
+        # 
+        # prompt = "<|begin_of_text|>"
+        # 
+        # # Add system message to set behavior and constraints
+        # system_message = "You are a helpful AI assistant for education. Keep responses concise and age-appropriate."
+        # prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_message}<|eot_id|>"
+        # 
+        # # Add conversation history (last N messages for context)
+        # history_length = min(3, LLAMA_PARAMS["conversation_history_length"])
+        # for msg in message.conversation_history[-history_length:]:
+        #     role = msg.get("role", "user")
+        #     content = msg.get("content", "")
+        #     prompt += f"<|start_header_id|>{role}<|end_header_id|>\n\n{content}<|eot_id|>"
+        # 
+        # # Add current user message
+        # prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{message.message}<|eot_id|>"
+        # 
+        # # Add assistant header to prompt response
+        # prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
         
-        # Add conversation history (last 3 messages for context)
-        history_length = min(3, LLAMA_PARAMS["conversation_history_length"])
-        for msg in message.conversation_history[-history_length:]:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            prompt += f"<|start_header_id|>{role}<|end_header_id|>\n\n{content}<|eot_id|>"
         
-        # Add current user message
-        prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{message.message}<|eot_id|>"
-        
-        # Add assistant header to prompt response
-        prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-        
-        # Prepare the command for llama-cli with optimized parameters
+        # Prepare the command - EXACTLY as manual execution
         cmd = [
             LLAMA_CLI_PATH,
             "-m", MODEL_PATH,
             "-p", prompt,
-            "-n", str(LLAMA_PARAMS["max_tokens"]),
-            "-t", str(LLAMA_PARAMS["threads"]),
-            "--temp", str(LLAMA_PARAMS["temperature"]),
-            "--top-p", str(LLAMA_PARAMS["top_p"]),
-            "-c", str(LLAMA_PARAMS["context_size"]),
-            "--no-display-prompt"  # Don't echo the prompt back
+            "-n", str(LLAMA_PARAMS["max_tokens"])
         ]
         
         # Execute llama-cli
         print(f"Executing llama-cli with prompt length: {len(prompt)} characters")
         print(f"User message: {message.message[:100]}...")
         
-        result = subprocess.run(
+        # Run the process
+        process = subprocess.Popen(
             cmd,
-            capture_output=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=LLAMA_PARAMS["timeout"],
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0  # Hide console window on Windows
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
         )
         
-        if result.returncode != 0:
-            print(f"Error from llama-cli (return code {result.returncode}): {result.stderr}")
-            raise HTTPException(status_code=500, detail=f"llama-cli error: {result.stderr}")
+        # Close stdin immediately
+        process.stdin.close()
         
-        # Parse the output
-        output = result.stdout.strip()
+        # Wait for a reasonable time for generation to complete
+        # Based on your logs, generation takes about 30-35 seconds
+        import time
+        generation_time = 45  # Give it 45 seconds to generate
         
-        # The output should just be the assistant's response now
-        response_text = output
+        time.sleep(generation_time)
         
-        # Clean up any remaining special tokens
+        # Kill the process after generation time
+        process.terminate()
+        time.sleep(1)
+        
+        # Force kill if still running
+        if process.poll() is None:
+            process.kill()
+        
+        # Get all output
+        stdout, stderr = process.communicate()
+        
+        # Combine both - llama-cli outputs to stderr!
+        output = stdout + stderr
+        
+        print(f"Raw output length: {len(output)}")
+        print(f"First 500 chars: {output[:500]}")
+        
+        # Parse the output - extract only the generated text
+        response_text = ""
+        
+        # Find the assistant response
+        if "assistant" in output:
+            # Split on "assistant" and get everything after
+            parts = output.split("assistant", 1)
+            if len(parts) > 1:
+                response_text = parts[1]
+                
+                # Remove performance stats and everything after them
+                for marker in ["llama_perf_", "llama_print_timings", "system_info:", "== Running"]:
+                    if marker in response_text:
+                        response_text = response_text.split(marker)[0]
+                
+                response_text = response_text.strip()
+        
+        # If we still have no response, try finding it between "user" markers
+        if not response_text and "user" in output:
+            # Sometimes the output is: user\n\n<prompt>assistant\n\n<response>\n\nuser (waiting for next input)
+            parts = output.split("user")
+            if len(parts) > 1:
+                # Get the part after the first "user"
+                middle = parts[1]
+                if "assistant" in middle:
+                    response_text = middle.split("assistant", 1)[1]
+                    # Clean it up
+                    for marker in ["llama_perf_", "system_info:", "=="]:
+                        if marker in response_text:
+                            response_text = response_text.split(marker)[0]
+                    response_text = response_text.strip()
+        
+        # If we STILL have no response, something went wrong
+        if not response_text:
+            print(f"ERROR: Could not parse response")
+            print(f"Output contains 'assistant': {'assistant' in output}")
+            print(f"Output contains 'user': {'user' in output}")
+            raise HTTPException(status_code=500, detail="Could not parse model response")
+        
+        # Clean up any special tokens (in case the model generates them)
         response_text = response_text.replace("<|eot_id|>", "").strip()
         response_text = response_text.replace("<|end_of_text|>", "").strip()
+        response_text = response_text.replace("<|begin_of_text|>", "").strip()
         
         # Remove any trailing special headers
         if "<|start_header_id|>" in response_text:
