@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { Send, Loader2 } from 'lucide-react';
 import { Message } from '../types';
 
@@ -15,18 +14,71 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, streamingMessage]);
 
   useEffect(() => {
     onDataChange({ messages });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const connectWebSocket = () => {
+      const ws = new WebSocket('ws://localhost:8000/ws/chat');
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'token') {
+          // Append character to streaming message
+          setStreamingMessage(prev => prev + data.content);
+        } else if (data.type === 'done') {
+          // Finalize the message
+          const finalMessage: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: streamingMessage,
+            timestamp: new Date().toISOString()
+          };
+          setMessages(prev => [...prev, finalMessage]);
+          setStreamingMessage('');
+          setLoading(false);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setLoading(false);
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket closed, reconnecting...');
+        setTimeout(connectWebSocket, 1000);
+      };
+      
+      wsRef.current = ws;
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  const handleSend = () => {
+    if (!input.trim() || loading || !wsRef.current) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -38,38 +90,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
+    setStreamingMessage('');
 
-    try {
-      const conversationHistory = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      const response = await axios.post('http://localhost:8000/api/chat', {
-        message: input,
-        conversation_history: conversationHistory
-      });
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response.data.response,
-        timestamp: response.data.timestamp
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: error.response?.data?.detail || 'Sorry, I encountered an error. Please try again.',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setLoading(false);
-    }
+    // Send message via WebSocket
+    wsRef.current.send(JSON.stringify({
+      message: input
+    }));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -79,25 +105,46 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
     }
   };
 
+  const formatMessage = (content: string) => {
+    return content.split('\n\n').map((paragraph, idx) => (
+      <p key={idx} className="mb-2 last:mb-0">
+        {paragraph.split('\n').map((line, lineIdx) => (
+          <React.Fragment key={lineIdx}>
+            {line.startsWith('**') && line.endsWith('**') ? (
+              <strong className="font-bold block mt-3 mb-1">
+                {line.replace(/\*\*/g, '')}
+              </strong>
+            ) : line.startsWith('*') && line.length > 1 ? (
+              <span className="block ml-4">• {line.substring(1)}</span>
+            ) : (
+              line
+            )}
+            {lineIdx < paragraph.split('\n').length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </p>
+    ));
+  };
+
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Chat Header */}
       <div className="border-b border-gray-200 p-4">
-        <h2 className="text-xl font-semibold text-gray-800">Chat with AI</h2>
-        <p className="text-sm text-gray-500">Powered by Llama 3.2 1B</p>
+        <h2 className="text-xl font-semibold text-gray-800">Chat with AI Teaching Assistant</h2>
+        <p className="text-sm text-gray-500">Real-time streaming powered by Llama 3.2 1B</p>
       </div>
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {messages.length === 0 && !streamingMessage ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center max-w-md">
               <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Send className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Start a Conversation</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Start Learning!</h3>
               <p className="text-gray-600">
-                Ask me anything! I'm here to help with your questions and provide educational support.
+                Ask me anything! I'm your AI teaching assistant, here to help explain concepts and answer your questions.
               </p>
             </div>
           </div>
@@ -115,9 +162,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <div className="text-sm prose prose-sm max-w-none">
+                    {formatMessage(msg.content)}
+                  </div>
                   <p
-                    className={`text-xs mt-1 ${
+                    className={`text-xs mt-2 ${
                       msg.role === 'user' ? 'text-blue-200' : 'text-gray-500'
                     }`}
                   >
@@ -126,7 +175,20 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
                 </div>
               </div>
             ))}
-            {loading && (
+            
+            {/* Streaming message */}
+            {streamingMessage && (
+              <div className="flex justify-start">
+                <div className="max-w-3xl px-4 py-3 rounded-2xl bg-gray-100 text-gray-800">
+                  <div className="text-sm prose prose-sm max-w-none">
+                    {formatMessage(streamingMessage)}
+                    <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {loading && !streamingMessage && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 px-4 py-3 rounded-2xl">
                   <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
@@ -145,7 +207,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message here..."
+            placeholder="Ask me anything..."
             className="flex-1 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             rows={1}
             style={{ minHeight: '48px', maxHeight: '120px' }}
