@@ -25,3 +25,4 @@ dist-ssr
 
 backend/bin/
 backend/llama-3.2-1b-instruct-Q5_K_M.gguf
+.venv/
