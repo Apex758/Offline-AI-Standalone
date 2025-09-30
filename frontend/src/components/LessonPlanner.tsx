@@ -118,15 +118,35 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     useEffect(() => {
     let reconnectTimeout: NodeJS.Timeout;
     let shouldConnect = true;
+    let connectionAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
 
     const connectWebSocket = () => {
-        if (!shouldConnect) return;
+        if (!shouldConnect || connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        if (connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            console.error('Max reconnection attempts reached');
+        }
+        return;
+        }
+
+        connectionAttempts++;
+        console.log(`WebSocket connection attempt ${connectionAttempts}`);
 
         try {
         const ws = new WebSocket('ws://localhost:8000/ws/lesson-plan');
         
+        // Set a connection timeout
+        const connectionTimeout = setTimeout(() => {
+            if (ws.readyState !== WebSocket.OPEN) {
+            console.log('Connection timeout, closing...');
+            ws.close();
+            }
+        }, 5000);
+        
         ws.onopen = () => {
+            clearTimeout(connectionTimeout);
             console.log('Lesson Plan WebSocket connected');
+            connectionAttempts = 0; // Reset on successful connection
         };
         
         ws.onmessage = (event) => {
@@ -144,39 +164,46 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         };
         
         ws.onerror = (error) => {
+            clearTimeout(connectionTimeout);
             console.error('WebSocket error:', error);
         };
         
-        ws.onclose = () => {
-            console.log('Lesson Plan WebSocket closed');
+        ws.onclose = (event) => {
+            clearTimeout(connectionTimeout);
+            console.log(`Lesson Plan WebSocket closed (code: ${event.code}, reason: ${event.reason})`);
             wsRef.current = null;
             
-            if (shouldConnect) {
-            console.log('Reconnecting in 2 seconds...');
+            if (shouldConnect && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
+            const delay = Math.min(1000 * Math.pow(2, connectionAttempts - 1), 10000);
+            console.log(`Reconnecting in ${delay}ms...`);
             reconnectTimeout = setTimeout(() => {
                 connectWebSocket();
-            }, 2000);
+            }, delay);
             }
         };
         
         wsRef.current = ws;
         } catch (error) {
         console.error('Failed to create WebSocket:', error);
-        if (shouldConnect) {
+        if (shouldConnect && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
             reconnectTimeout = setTimeout(connectWebSocket, 2000);
         }
         }
     };
     
-    connectWebSocket();
+    // Delay initial connection slightly to ensure component is fully mounted
+    const initialTimeout = setTimeout(() => {
+        connectWebSocket();
+    }, 100);
     
     return () => {
         shouldConnect = false;
+        clearTimeout(initialTimeout);
         clearTimeout(reconnectTimeout);
-        if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close(1000, 'Component unmounting');
         }
+        wsRef.current = null;
     };
     }, [tabId]);
 

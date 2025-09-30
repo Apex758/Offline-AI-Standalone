@@ -28,3 +28,13 @@ backend/llama-3.2-1b-instruct-Q5_K_M.gguf
 venv/
 
 __pycache__
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+
+# Package lock
+package-lock.json
