@@ -29,6 +29,131 @@ interface FormData {
   referenceUrl: string;
 }
 
+const formatLessonText = (text: string) => {
+  if (!text) return null;
+
+  // Clean the text first
+  let cleanText = text;
+  if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
+    cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
+  }
+
+  const lines = cleanText.split('\n');
+  const elements: JSX.Element[] = [];
+  let currentIndex = 0;
+  let detailsCollected: string[] = [];
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    
+    if (!trimmed) {
+      elements.push(<div key={`space-${currentIndex++}`} className="h-3"></div>);
+      return;
+    }
+
+    // Collect the basic details for grid layout
+    if (trimmed.match(/^\*\*(Grade Level|Subject|Strand|Topic|Duration|Date):/)) {
+      detailsCollected.push(trimmed);
+      
+      // When we have all 6 details, render them in a grid
+      if (detailsCollected.length === 6) {
+        elements.push(
+          <div key={`details-grid-${currentIndex++}`} className="grid grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+            {detailsCollected.map((detail, i) => {
+              const [label, value] = detail.replace(/\*\*/g, '').split(': ');
+              return (
+                <div key={i} className="text-sm">
+                  <span className="font-semibold text-gray-600">{label}:</span>
+                  <span className="ml-2 text-gray-800">{value}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+        detailsCollected = []; // Reset
+      }
+      return;
+    }
+
+    // Skip main lesson title
+    if (trimmed.match(/^\*\*Lesson Plan:/)) {
+      return;
+    }
+
+    // Section headings (surrounded by **)
+    if (trimmed.match(/^\*\*(.+)\*\*$/)) {
+      const title = trimmed.replace(/\*\*/g, '');
+      elements.push(
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b border-gray-200">
+          {title}
+        </h2>
+      );
+      return;
+    }
+
+    // Field labels (start with ** but don't end with **)
+    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
+      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
+      elements.push(
+        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold text-blue-700 mt-6 mb-2">
+          {title}:
+        </h3>
+      );
+      return;
+    }
+
+    // Bullet points with + (nested)
+    if (trimmed.match(/^\s*\+\s+/)) {
+      const content = trimmed.replace(/^\s*\+\s+/, '');
+      elements.push(
+        <div key={`nested-${currentIndex++}`} className="ml-8 mb-2 flex items-start">
+          <span className="text-blue-400 mr-2 mt-1.5 text-xs">▸</span>
+          <span className="text-gray-600 leading-relaxed text-sm">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Regular bullet points
+    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
+      const content = trimmed.replace(/^\s*\*\s+/, '');
+      elements.push(
+        <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start">
+          <span className="text-blue-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="text-gray-700 leading-relaxed">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Numbered items
+    if (trimmed.match(/^\d+\./)) {
+      const number = trimmed.match(/^\d+\./)?.[0] || '';
+      const content = trimmed.replace(/^\d+\.\s*/, '');
+      elements.push(
+        <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start">
+          <span className="text-blue-600 mr-3 font-semibold min-w-[2rem] bg-blue-50 rounded px-2 py-1 text-sm">
+            {number}
+          </span>
+          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Regular paragraphs
+    if (trimmed.length > 0) {
+      elements.push(
+        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+          {trimmed}
+        </p>
+      );
+    }
+  });
+
+  return elements;
+};
+
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -299,15 +424,116 @@ Please generate a detailed lesson plan with clear sections and practical details
             </button>
           )}
         </div>
-        
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto">
-            {/* Same simple approach as chat - just show the text */}
-            <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {streamingPlan || generatedPlan}
-              {loading && <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>}
+
+        <div className="bg-white">
+          {/* Modern Header Card */}
+          {(streamingPlan || generatedPlan) && (
+            <div className="mb-8">
+              <div className="relative overflow-hidden">
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/90 to-purple-600/90"></div>
+                
+                {/* Content */}
+                <div className="relative px-8 py-8">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      {/* Subject badge */}
+                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
+                        <span className="text-white text-sm font-medium">{formData.subject}</span>
+                      </div>
+                      
+                      {/* Main title */}
+                      <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
+                        {formData.topic ? `Exploring ${formData.topic}` : 'Lesson Plan'}
+                      </h1>
+                      
+                      {/* Subtitle details */}
+                      <div className="flex flex-wrap items-center gap-4 text-blue-100">
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                          <span className="text-sm">Grade {formData.gradeLevel}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                          <span className="text-sm">{formData.strand}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                          <span className="text-sm">{formData.duration} minutes</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                          <span className="text-sm">{formData.studentCount} students</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Loading indicator */}
+                    {loading && (
+                      <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                        <div className="flex items-center text-white">
+                          <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                          <div>
+                            <div className="text-sm font-medium">Generating...</div>
+                            <div className="text-xs text-blue-100">AI-powered lesson plan</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Bottom info bar */}
+                  <div className="mt-6 pt-4 border-t border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div className="text-blue-100 text-sm">
+                        <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
+                      </div>
+                      {!loading && (
+                        <div className="flex items-center text-green-200 text-sm">
+                          <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
+                          <span>Generation Complete</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+              </div>
+            </div>
+          )}
+
+          {/* Formatted content */}
+          <div className="prose prose-lg max-w-none">
+            <div className="space-y-1">
+              {formatLessonText(streamingPlan || generatedPlan)}
+              {loading && streamingPlan && (
+                <span className="inline-flex items-center ml-1">
+                  <span className="w-0.5 h-5 bg-blue-500 animate-pulse rounded-full"></span>
+                </span>
+              )}
             </div>
           </div>
+
+          {/* Loading progress at bottom */}
+          {loading && (
+            <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-blue-900 font-medium">Creating your lesson plan</div>
+                  <div className="text-blue-600 text-sm mt-1">Tailored for your specific requirements</div>
+                </div>
+                <div className="flex space-x-1">
+                  <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -345,8 +571,8 @@ Please generate a detailed lesson plan with clear sections and practical details
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl mx-auto">
+      <div className="flex-1 overflow-y-auto p-6" style={{ height: 'calc(100vh - 200px)' }}>
+        <div className="max-w-4xl mx-auto">
           {/* Step 1: Basic Information */}
           {step === 1 && (
             <div className="space-y-6">
