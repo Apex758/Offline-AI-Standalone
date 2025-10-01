@@ -32,6 +32,8 @@ interface FormData {
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const shouldReconnectRef = useRef(true);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [generatedPlan, setGeneratedPlan] = useState<string>('');
   const [streamingPlan, setStreamingPlan] = useState<string>('');
   const wsRef = useRef<WebSocket | null>(null);
@@ -115,97 +117,83 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     return true;
   };
 
-    useEffect(() => {
-    let reconnectTimeout: NodeJS.Timeout;
-    let shouldConnect = true;
-    let connectionAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 5;
+  useEffect(() => {
+    shouldReconnectRef.current = true;
 
     const connectWebSocket = () => {
-        if (!shouldConnect || connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
-        if (connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            console.error('Max reconnection attempts reached');
-        }
+      if (!shouldReconnectRef.current) {
         return;
-        }
+      }
 
-        connectionAttempts++;
-        console.log(`WebSocket connection attempt ${connectionAttempts}`);
-
-        try {
+      try {
         const ws = new WebSocket('ws://localhost:8000/ws/lesson-plan');
         
-        // Set a connection timeout
-        const connectionTimeout = setTimeout(() => {
-            if (ws.readyState !== WebSocket.OPEN) {
-            console.log('Connection timeout, closing...');
-            ws.close();
-            }
-        }, 5000);
-        
         ws.onopen = () => {
-            clearTimeout(connectionTimeout);
-            console.log('Lesson Plan WebSocket connected');
-            connectionAttempts = 0; // Reset on successful connection
+          console.log('Lesson Plan WebSocket connected');
         };
         
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            
-            if (data.type === 'token') {
+          const data = JSON.parse(event.data);
+          
+          // Same message handling as chat
+          if (data.type === 'token') {
             setStreamingPlan(prev => prev + data.content);
-            } else if (data.type === 'done') {
+          } else if (data.type === 'done') {
             setStreamingPlan(current => {
-                setGeneratedPlan(current || data.full_response);
-                setLoading(false);
-                return '';
+              const finalMessage = current || data.full_response;
+              setGeneratedPlan(finalMessage);
+              setLoading(false);
+              return '';
             });
-            }
+          }
         };
         
         ws.onerror = (error) => {
-            clearTimeout(connectionTimeout);
-            console.error('WebSocket error:', error);
+          console.error('WebSocket error:', error);
+          setLoading(false);
         };
         
-        ws.onclose = (event) => {
-            clearTimeout(connectionTimeout);
-            console.log(`Lesson Plan WebSocket closed (code: ${event.code}, reason: ${event.reason})`);
-            wsRef.current = null;
-            
-            if (shouldConnect && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
-            const delay = Math.min(1000 * Math.pow(2, connectionAttempts - 1), 10000);
-            console.log(`Reconnecting in ${delay}ms...`);
-            reconnectTimeout = setTimeout(() => {
-                connectWebSocket();
-            }, delay);
-            }
+        ws.onclose = () => {
+          console.log('WebSocket closed');
+          wsRef.current = null;
+          
+          if (shouldReconnectRef.current) {
+            console.log('Reconnecting in 2 seconds...');
+            reconnectTimeoutRef.current = setTimeout(() => {
+              connectWebSocket();
+            }, 2000);
+          }
         };
         
         wsRef.current = ws;
-        } catch (error) {
+      } catch (error) {
         console.error('Failed to create WebSocket:', error);
-        if (shouldConnect && connectionAttempts < MAX_RECONNECT_ATTEMPTS) {
-            reconnectTimeout = setTimeout(connectWebSocket, 2000);
+        
+        if (shouldReconnectRef.current) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWebSocket();
+          }, 2000);
         }
-        }
+      }
     };
     
-    // Delay initial connection slightly to ensure component is fully mounted
-    const initialTimeout = setTimeout(() => {
-        connectWebSocket();
-    }, 100);
+    connectWebSocket();
     
     return () => {
-        shouldConnect = false;
-        clearTimeout(initialTimeout);
-        clearTimeout(reconnectTimeout);
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close(1000, 'Component unmounting');
-        }
-        wsRef.current = null;
+      console.log('Cleaning up WebSocket connection');
+      shouldReconnectRef.current = false;
+      
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+      wsRef.current = null;
     };
-    }, [tabId]);
+  }, [tabId]);
 
   const generateLessonPlan = () => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -216,7 +204,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setLoading(true);
     setStreamingPlan('');
 
-    const prompt = `Generate a comprehensive D-OHPC format lesson plan with the following specifications:
+    // Simple prompt - no complex formatting
+    const prompt = `Generate a comprehensive lesson plan with the following specifications:
 
 LESSON INFORMATION:
 - Subject: ${formData.subject}
@@ -231,11 +220,6 @@ CURRICULUM ALIGNMENT:
 Essential Learning Outcome: ${formData.essentialOutcomes}
 
 Specific Curriculum Outcomes: ${formData.specificOutcomes}
-
-Lesson Objectives (create a table with Knowledge, Skills, and Values):
-- Knowledge: (what students will know)
-- Skills: (what students will be able to do)
-- Values: (attitudes and values to develop)
 
 TEACHING APPROACH:
 - Pedagogical Strategies: ${formData.pedagogicalStrategies.join(', ')}
@@ -253,65 +237,7 @@ ${formData.specialNeeds ? `SPECIAL NEEDS ACCOMMODATIONS:\n${formData.specialNeed
 
 ${formData.additionalInstructions ? `ADDITIONAL INSTRUCTIONS:\n${formData.additionalInstructions}` : ''}
 
-Please generate a detailed lesson plan following this structure:
-
-📋 LESSON INFORMATION
-- Teacher, Grade, Subject, Strand, Topic, Date, Duration, Context
-
-🎯 CURRICULUM ALIGNMENT
-- Essential Learning Outcome
-- Specific Curriculum Outcomes
-- Lesson Objectives table (Knowledge | Skills | Values)
-- Summary of Content
-- Curriculum Standards Integration (list specific standards)
-
-⏰ LESSON COMPONENTS
-
-1. Prompter/Hook (1-3 minutes)
-   - Activity description
-   - Teacher Actions
-   - Expected Student Responses
-
-2. Introduction (2-3 minutes)
-   - Activity description
-   - Learning Objectives Communication
-   - Prerequisite Skills Connection
-
-3. Concept Development and Practice (15-20 minutes)
-   - Main learning activities
-   - Curriculum Standards Implementation
-   - Verification Activities
-
-4. Time to Reflect and Share (3-5 minutes)
-   - Reflection Prompts
-   - Sharing activities
-
-📊 ASSESSMENT AND RESOURCES
-
-Assessment Activities:
-- Formative Assessment strategies
-- Summative Assessment methods
-
-Assessment Tools:
-- Observation checklists
-- Rubrics
-- Quizzes/tests
-
-Inclusive Learning Strategies:
-- Differentiation approaches
-- Accommodations
-
-Resources:
-- Materials list
-- Technology requirements
-- Human resources
-
-🌍 INTEGRATION AND CONTEXT
-- Cross-Curricular Connections
-- Student Context Considerations
-- Real-world applications
-
-Format the output with clear sections, bullet points, and practical details that a teacher can immediately implement.`;
+Please generate a detailed lesson plan with clear sections and practical details that a teacher can immediately implement.`;
 
     try {
       wsRef.current.send(JSON.stringify({
@@ -322,6 +248,7 @@ Format the output with clear sections, bullet points, and practical details that
       setLoading(false);
     }
   };
+
 
   const clearForm = () => {
     setFormData({
@@ -372,8 +299,10 @@ Format the output with clear sections, bullet points, and practical details that
             </button>
           )}
         </div>
+        
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto">
+            {/* Same simple approach as chat - just show the text */}
             <div className="whitespace-pre-wrap text-sm leading-relaxed">
               {streamingPlan || generatedPlan}
               {loading && <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>}

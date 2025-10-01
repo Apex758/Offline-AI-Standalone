@@ -427,236 +427,211 @@ async def generate_lesson_plan(request: LessonPlanRequest):
         print(f"Error generating lesson plan: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Replace the /ws/lesson-plan endpoint in backend/main.py with this improved version
-
 @app.websocket("/ws/lesson-plan")
 async def websocket_lesson_plan(websocket: WebSocket):
+    await websocket.accept()
+    
     try:
-        await websocket.accept()
-        print(f"Lesson Plan WebSocket accepted from {websocket.client}")
-        
-        # Send a confirmation message
-        await websocket.send_json({"type": "connected", "message": "Connection established"})
-        
         while True:
-            try:
-                # Receive lesson plan request from frontend with timeout
-                data = await asyncio.wait_for(
-                    websocket.receive_text(), 
-                    timeout=300.0  # 5 minute timeout
-                )
-                message_data = json.loads(data)
-                prompt = message_data.get("prompt", "")
-                
-                if not prompt:
-                    await websocket.send_json({
-                        "type": "error", 
-                        "message": "No prompt provided"
-                    })
-                    continue
-                
-                # Build system prompt for lesson planning
-                system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound D-OHPC format lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
-                
-                full_prompt = "<|begin_of_text|>"
-                full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-                full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
-                full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-                
-                cmd = [
-                    LLAMA_CLI_PATH,
-                    "-m", MODEL_PATH,
-                    "-p", full_prompt,
-                    "-n", "3000",
-                    "-t", "4"
-                ]
-                
-                print(f"\n{'='*60}")
-                print(f"Lesson Plan Generation Request")
-                print(f"{'='*60}\n")
-                
-                process = subprocess.Popen(
-                    cmd,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    bufsize=0,
-                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-                )
-                
-                process.stdin.close()
-                
-                all_output = []
-                generation_started = {'value': False}
-                
-                garbage_patterns = [
-                    'llama_perf',
-                    '> EOF',
-                    'Interrupted by user',
-                    'llama_sampler',
-                    'llama_print',
-                    '> llama',
-                    'sampler_',
-                    'l>a m',
-                ]
-                
-                def read_stream(stream, output_list):
-                    while True:
-                        char = stream.read(1)
-                        if not char:
-                            break
-                        output_list.append(char)
-                        
-                        current_text = ''.join(output_list)
-                        if not generation_started['value'] and "Not using system message" in current_text:
-                            generation_started['value'] = True
-                            print(f"\n{'='*60}\n📝 GENERATING LESSON PLAN:\n{'='*60}\n")
-                        
-                        if generation_started['value']:
-                            sys.stdout.write(char)
-                            sys.stdout.flush()
-                
-                stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-                stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-                stderr_thread.daemon = True
-                stdout_thread.daemon = True
-                stderr_thread.start()
-                stdout_thread.start()
-                
-                start_time = time.time()
-                timeout_seconds = 240
-                last_streamed_index = 0
-                found_assistant_start = False
-                skip_initial_garbage = False
-                should_stop_streaming = False
-                
-                while time.time() - start_time < timeout_seconds:
-                    # Check if WebSocket is still connected
-                    try:
-                        await asyncio.wait_for(websocket.receive_text(), timeout=0.001)
-                    except asyncio.TimeoutError:
-                        pass
-                    except:
-                        print("WebSocket disconnected during generation")
-                        process.terminate()
-                        break
-                    
-                    if process.poll() is not None:
-                        break
-                    
-                    current_output = ''.join(all_output)
-                    
-                    if not should_stop_streaming:
-                        for pattern in garbage_patterns:
-                            if pattern in current_output[last_streamed_index:]:
-                                should_stop_streaming = True
-                                print("\n[Detected end pattern, stopping stream]")
-                                break
-                    
-                    if should_stop_streaming:
-                        break
-                    
-                    if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                        found_assistant_start = True
-                        assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                        if assistant_index != -1:
-                            last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                                last_streamed_index += 1
-                    
-                    if found_assistant_start and not skip_initial_garbage:
-                        remaining = current_output[last_streamed_index:]
-                        if "To change it, set a different value via -sys PROMPT" in remaining:
-                            skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                            if skip_index != -1:
-                                last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                    last_streamed_index += 1
-                                skip_initial_garbage = True
-                    
-                    if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                        new_content = current_output[last_streamed_index:]
-                        
-                        should_break = False
-                        for pattern in ["<|", *garbage_patterns]:
-                            if pattern in new_content:
-                                pattern_index = new_content.find(pattern)
-                                new_content = new_content[:pattern_index]
-                                should_break = True
-                                break
-                        
-                        for char in new_content:
-                            try:
-                                await websocket.send_json({
-                                    "type": "token",
-                                    "content": char
-                                })
-                            except Exception as e:
-                                print(f"Error sending token: {e}")
-                                break
-                        
-                        last_streamed_index += len(new_content)
-                        
-                        if should_break:
-                            break
-                    
-                    await asyncio.sleep(0.05)
-                
-                process.terminate()
-                await asyncio.sleep(0.5)
-                if process.poll() is None:
-                    process.kill()
-                
-                stderr_thread.join(timeout=2)
-                stdout_thread.join(timeout=2)
-                
-                full_output = ''.join(all_output)
-                
-                print(f"\n\n{'='*60}")
-                print(f"Lesson plan generation complete")
-                print(f"{'='*60}\n")
-                
-                response_text = full_output
-                
-                if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                    response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-                
-                for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                    if marker in response_text:
-                        response_text = response_text.split(marker)[0]
-                
-                if "To change it, set a different value via -sys PROMPT" in response_text:
-                    response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
-                
-                response_text = response_text.strip()
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
-                
-            except asyncio.TimeoutError:
-                print("No message received in timeout period, keeping connection alive")
+            # Receive message from frontend
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            prompt = message_data.get("prompt", "")
+            
+            if not prompt:
                 continue
-            except Exception as e:
-                print(f"Error processing request: {str(e)}")
-                import traceback
-                traceback.print_exc()
-                try:
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": f"Error: {str(e)}"
-                    })
-                except:
+            
+            # Build lesson plan prompt - keep it simple like chat
+            system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
+            
+            full_prompt = "<|begin_of_text|>"
+            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+            
+            cmd = [
+                LLAMA_CLI_PATH,
+                "-m", MODEL_PATH,
+                "-p", full_prompt,
+                "-n", str(LLAMA_PARAMS["max_tokens"])
+            ]
+            
+            print(f"\n{'='*60}")
+            print(f"Lesson Plan Generation Request")
+            print(f"{'='*60}\n")
+            
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=0,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+            )
+            
+            process.stdin.close()
+            
+            all_output = []
+            generation_started = {'value': False}
+            
+            # Same garbage patterns as chat
+            garbage_patterns = [
+                'llama_perf',
+                '> EOF',
+                'Interrupted by user',
+                'llama_sampler',
+                'llama_print',
+                '> llama',
+                'sampler_',
+                'l>a m',
+            ]
+            
+            def read_stream(stream, output_list):
+                """Read from stream character by character - same as chat"""
+                while True:
+                    char = stream.read(1)
+                    if not char:
+                        break
+                    output_list.append(char)
+                    
+                    current_text = ''.join(output_list)
+                    if not generation_started['value'] and "Not using system message" in current_text:
+                        generation_started['value'] = True
+                        print(f"\n{'='*60}\n📝 GENERATING LESSON PLAN:\n{'='*60}\n")
+                    
+                    if generation_started['value']:
+                        sys.stdout.write(char)
+                        sys.stdout.flush()
+            
+            # Start threads to read both streams - same as chat
+            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
+            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
+            stderr_thread.daemon = True
+            stdout_thread.daemon = True
+            stderr_thread.start()
+            stdout_thread.start()
+            
+            # Wait for generation and stream to websocket - same logic as chat
+            start_time = time.time()
+            timeout_seconds = LLAMA_PARAMS["timeout"]
+            last_streamed_index = 0
+            found_assistant_start = False
+            skip_initial_garbage = False
+            should_stop_streaming = False
+            
+            while time.time() - start_time < timeout_seconds:
+                if process.poll() is not None:
                     break
                 
+                current_output = ''.join(all_output)
+                
+                # Check for garbage patterns - same as chat
+                if not should_stop_streaming:
+                    for pattern in garbage_patterns:
+                        if pattern in current_output[last_streamed_index:]:
+                            should_stop_streaming = True
+                            print("\n[Detected end pattern, stopping stream]")
+                            break
+                
+                if should_stop_streaming:
+                    break
+                
+                # Find where assistant response actually starts - same as chat
+                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
+                    found_assistant_start = True
+                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
+                    if assistant_index != -1:
+                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
+                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
+                            last_streamed_index += 1
+                
+                # Check if we need to skip the "To change it" message - same as chat
+                if found_assistant_start and not skip_initial_garbage:
+                    remaining = current_output[last_streamed_index:]
+                    if "To change it, set a different value via -sys PROMPT" in remaining:
+                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
+                        if skip_index != -1:
+                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
+                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                last_streamed_index += 1
+                            skip_initial_garbage = True
+                
+                # Stream new content - same as chat
+                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
+                    new_content = current_output[last_streamed_index:]
+                    
+                    # Check for end tokens or garbage in the new content
+                    should_break = False
+                    for pattern in ["<|", *garbage_patterns]:
+                        if pattern in new_content:
+                            pattern_index = new_content.find(pattern)
+                            new_content = new_content[:pattern_index]
+                            should_break = True
+                            break
+                    
+                    # Stream character by character - same as chat
+                    for char in new_content:
+                        try:
+                            await websocket.send_json({
+                                "type": "token",
+                                "content": char
+                            })
+                        except:
+                            break
+                    
+                    last_streamed_index += len(new_content)
+                    
+                    if should_break:
+                        break
+                
+                await asyncio.sleep(0.05)
+            
+            # Kill the process - same as chat
+            process.terminate()
+            time.sleep(0.5)
+            if process.poll() is None:
+                process.kill()
+            
+            # Wait for threads - same as chat
+            stderr_thread.join(timeout=2)
+            stdout_thread.join(timeout=2)
+            
+            full_output = ''.join(all_output)
+            
+            print(f"\n\n{'='*60}")
+            print(f"Lesson plan generation complete")
+            print(f"{'='*60}\n")
+            
+            # Clean the response - same as chat
+            response_text = full_output
+            
+            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
+                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
+            
+            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
+                if marker in response_text:
+                    response_text = response_text.split(marker)[0]
+            
+            if "To change it, set a different value via -sys PROMPT" in response_text:
+                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            
+            response_text = response_text.strip()
+            
+            # Send completion - same as chat
+            await websocket.send_json({"type": "done", "full_response": response_text})
+            
+            print(f"\n{'='*60}")
+            print(f"Response complete - {len(response_text)} chars")
+            print(f"{'='*60}\n")
+            
     except WebSocketDisconnect:
         print("Lesson Plan WebSocket disconnected")
     except Exception as e:
         print(f"Lesson Plan WebSocket error: {str(e)}")
         import traceback
         traceback.print_exc()
-    finally:
-        print("Lesson Plan WebSocket connection closed")
-
+        
 @app.get("/api/health")
 async def health():
     return {
