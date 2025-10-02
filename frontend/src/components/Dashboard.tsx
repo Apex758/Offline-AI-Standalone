@@ -337,19 +337,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       )}
 
       {/* Sidebar */}
-      <div className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden relative flex flex-col`}>
+      <div 
+        className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-1'} overflow-hidden relative flex flex-col`}
+        onMouseEnter={() => setSidebarOpen(true)}
+        onMouseLeave={() => setSidebarOpen(false)}
+      >
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between">
-            {sidebarOpen && (
-              <div>
-                <h2 className="text-xl font-bold">AI Education</h2>
-                <p className="text-sm text-gray-400">{user.name}</p>
-              </div>
-            )}
+            <div>
+              <h2 className="text-xl font-bold whitespace-nowrap">AI Education</h2>
+              <p className="text-sm text-gray-400 whitespace-nowrap">{user.name}</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <div className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Tools
           </h3>
@@ -368,9 +370,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }`}
               >
                 <Icon className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">{tool.name}</p>
-                  <p className="text-xs text-gray-400">
+                <div className="flex-1 text-left overflow-hidden">
+                  <p 
+                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                    style={{
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    }}
+                  >
+                    {tool.name}
+                  </p>
+                  <p className="text-xs text-gray-400 whitespace-nowrap">
                     {count}/{MAX_TABS_PER_TYPE} open
                   </p>
                 </div>
@@ -396,12 +406,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition"
-          >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
 
           {/* Grouped Tabs */}
           <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto scrollbar-hide">
