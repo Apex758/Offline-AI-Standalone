@@ -37,3 +37,8 @@ __pycache__/
 *.njsproj
 *.sln
 *.sw?
+ 
+dist-electron/
+*.exe
+dist/
+build/
