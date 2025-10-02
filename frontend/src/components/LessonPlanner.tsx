@@ -155,34 +155,38 @@ const formatLessonText = (text: string) => {
 };
 
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange }) => {
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [generatedPlan, setGeneratedPlan] = useState<string>('');
-  const [streamingPlan, setStreamingPlan] = useState<string>('');
   const wsRef = useRef<WebSocket | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    subject: '',
-    gradeLevel: '',
-    topic: '',
-    strand: '',
-    essentialOutcomes: '',
-    specificOutcomes: '',
-    studentCount: '',
-    duration: '',
-    pedagogicalStrategies: [],
-    learningStyles: [],
-    learningPreferences: [],
-    multipleIntelligences: [],
-    customLearningStyles: '',
-    materials: '',
-    prerequisiteSkills: '',
-    specialNeeds: false,
-    specialNeedsDetails: '',
-    additionalInstructions: '',
-    referenceUrl: ''
+  const [formData, setFormData] = useState<FormData>(() => {
+    // Load saved data if available
+    return savedData?.formData || {
+      subject: '',
+      gradeLevel: '',
+      topic: '',
+      strand: '',
+      essentialOutcomes: '',
+      specificOutcomes: '',
+      studentCount: '',
+      duration: '',
+      pedagogicalStrategies: [],
+      learningStyles: [],
+      learningPreferences: [],
+      multipleIntelligences: [],
+      customLearningStyles: '',
+      materials: '',
+      prerequisiteSkills: '',
+      specialNeeds: false,
+      specialNeedsDetails: '',
+      additionalInstructions: '',
+      referenceUrl: ''
+    };
   });
+
+  const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
+  const [streamingPlan, setStreamingPlan] = useState<string>('');
+  const [step, setStep] = useState(savedData?.step || 1);
 
   const subjects = [
     'Mathematics',
@@ -241,6 +245,15 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
     return true;
   };
+
+  // Save data whenever it changes
+  useEffect(() => {
+    onDataChange({
+      formData,
+      generatedPlan,
+      step
+    });
+  }, [formData, generatedPlan, step]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
@@ -404,8 +417,8 @@ Please generate a detailed lesson plan with clear sections and practical details
 
   if (generatedPlan || streamingPlan) {
     return (
-      <div className="h-full flex flex-col bg-white">
-        <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+      <div className="h-full flex flex-col bg-white overflow-hidden">
+        <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">
               {loading ? 'Generating Lesson Plan...' : 'Generated Lesson Plan'}
@@ -424,8 +437,8 @@ Please generate a detailed lesson plan with clear sections and practical details
             </button>
           )}
         </div>
-
-        <div className="bg-white">
+        
+        <div className="flex-1 overflow-y-auto bg-white p-6">
           {/* Modern Header Card */}
           {(streamingPlan || generatedPlan) && (
             <div className="mb-8">
