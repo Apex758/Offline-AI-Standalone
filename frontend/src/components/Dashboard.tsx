@@ -129,6 +129,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
+  // Load tabs from localStorage on mount
+  useEffect(() => {
+    const savedTabs = localStorage.getItem('dashboard-tabs');
+    const savedActiveTabId = localStorage.getItem('dashboard-active-tab');
+    
+    if (savedTabs) {
+      try {
+        const parsedTabs = JSON.parse(savedTabs);
+        setTabs(parsedTabs);
+        if (savedActiveTabId) {
+          setActiveTabId(savedActiveTabId);
+        }
+      } catch (error) {
+        console.error('Error loading saved tabs:', error);
+      }
+    }
+  }, []);
+
+  // Save tabs to localStorage whenever they change
+  useEffect(() => {
+    if (tabs.length > 0) {
+      localStorage.setItem('dashboard-tabs', JSON.stringify(tabs));
+    }
+    if (activeTabId) {
+      localStorage.setItem('dashboard-active-tab', activeTabId);
+    }
+  }, [tabs, activeTabId]);
+
   const createSplitTab = (leftTabId: string, rightTabId: string) => {
     const leftTab = tabs.find(t => t.id === leftTabId);
     const rightTab = tabs.find(t => t.id === rightTabId);

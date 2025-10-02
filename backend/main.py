@@ -345,14 +345,17 @@ async def websocket_chat(websocket: WebSocket):
                 response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
             
             response_text = response_text.strip()
-            
+   
             # Send completion
-            await websocket.send_json({"type": "done", "full_response": response_text})
-            
+            try:
+                await websocket.send_json({"type": "done", "full_response": response_text})
+            except Exception as e:
+                print(f"Could not send done message (connection may have closed): {e}")
+
             print(f"\n{'='*60}")
             print(f"Response complete - {len(response_text)} chars")
             print(f"{'='*60}\n")
-            
+                        
     except WebSocketDisconnect:
         print("WebSocket disconnected")
     except Exception as e:
@@ -618,13 +621,16 @@ async def websocket_lesson_plan(websocket: WebSocket):
             
             response_text = response_text.strip()
             
-            # Send completion - same as chat
-            await websocket.send_json({"type": "done", "full_response": response_text})
-            
+            # Send completion
+            try:
+                await websocket.send_json({"type": "done", "full_response": response_text})
+            except Exception as e:
+                print(f"Could not send done message (connection may have closed): {e}")
+
             print(f"\n{'='*60}")
             print(f"Response complete - {len(response_text)} chars")
             print(f"{'='*60}\n")
-            
+                        
     except WebSocketDisconnect:
         print("Lesson Plan WebSocket disconnected")
     except Exception as e:

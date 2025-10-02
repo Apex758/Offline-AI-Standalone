@@ -159,9 +159,16 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Initialize with proper isolation - check if savedData has actual content
   const [formData, setFormData] = useState<FormData>(() => {
-    // Load saved data if available
-    return savedData?.formData || {
+    const saved = savedData?.formData;
+    // Only use saved data if it exists AND has actual content (not empty object)
+    if (saved && Object.keys(saved).length > 0 && saved.subject) {
+      return saved;
+    }
+    // Otherwise return fresh state
+    return {
       subject: '',
       gradeLevel: '',
       topic: '',
@@ -184,9 +191,45 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     };
   });
 
-  const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
+  const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
   const [streamingPlan, setStreamingPlan] = useState<string>('');
-  const [step, setStep] = useState(savedData?.step || 1);
+  const [step, setStep] = useState(() => savedData?.step || 1);
+
+  // CRITICAL: Reset state when switching to a different tab (different tabId)
+  useEffect(() => {
+    const saved = savedData?.formData;
+    // If no saved data or it's empty, reset to fresh state
+    if (!saved || Object.keys(saved).length === 0 || !saved.subject) {
+      setFormData({
+        subject: '',
+        gradeLevel: '',
+        topic: '',
+        strand: '',
+        essentialOutcomes: '',
+        specificOutcomes: '',
+        studentCount: '',
+        duration: '',
+        pedagogicalStrategies: [],
+        learningStyles: [],
+        learningPreferences: [],
+        multipleIntelligences: [],
+        customLearningStyles: '',
+        materials: '',
+        prerequisiteSkills: '',
+        specialNeeds: false,
+        specialNeedsDetails: '',
+        additionalInstructions: '',
+        referenceUrl: ''
+      });
+      setGeneratedPlan('');
+      setStep(1);
+    } else {
+      // Load the saved data for this specific tab
+      setFormData(saved);
+      setGeneratedPlan(savedData?.generatedPlan || '');
+      setStep(savedData?.step || 1);
+    }
+  }, [tabId]); // Trigger whenever the tab ID changes
 
   const subjects = [
     'Mathematics',
@@ -332,6 +375,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       wsRef.current = null;
     };
   }, [tabId]);
+
 
   const generateLessonPlan = () => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
