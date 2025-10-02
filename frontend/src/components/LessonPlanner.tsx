@@ -242,7 +242,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       setGeneratedPlan(savedData?.generatedPlan || '');
       setStep(savedData?.step || 1);
     }
-  }, [tabId]); // Trigger whenever the tab ID changes
+  }, []); 
 
   const subjects = [
     'Mathematics',
@@ -351,6 +351,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
           console.log('WebSocket closed');
           wsRef.current = null;
           
+          // Reconnect after a delay if still mounted
           if (shouldReconnectRef.current) {
             console.log('Reconnecting in 2 seconds...');
             reconnectTimeoutRef.current = setTimeout(() => {
@@ -387,8 +388,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       }
       wsRef.current = null;
     };
-  }, [tabId]);
-
+  }, []);  
 
   const generateLessonPlan = () => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {

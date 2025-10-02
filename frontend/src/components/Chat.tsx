@@ -35,6 +35,39 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const shouldReconnectRef = useRef(true);
 
   useEffect(() => {
+    const saved = savedData?.messages;
+    // If no saved data or it's empty, reset to fresh state
+    if (!saved || saved.length === 0) {
+      setMessages([]);
+      setStreamingMessage('');
+      setCurrentChatId(null);
+      setTitleSet(false);
+      setInput('');
+      
+      // Reset title if handler exists
+      if (onTitleChange) {
+        onTitleChange('Chat with AI');
+      }
+    } else {
+      // Load the saved data for this specific tab
+      setMessages(saved);
+      setStreamingMessage('');
+      
+      // Optionally set the title from first message if available
+      if (saved.length > 0 && onTitleChange && !titleSet) {
+        const firstUserMessage = saved.find(m => m.role === 'user');
+        if (firstUserMessage) {
+          const title = firstUserMessage.content.length > 30 
+            ? firstUserMessage.content.substring(0, 30) + '...' 
+            : firstUserMessage.content;
+          onTitleChange(title);
+          setTitleSet(true);
+        }
+      }
+    }
+  }, [tabId]); 
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingMessage]);
 
@@ -165,7 +198,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           console.log('WebSocket closed');
           wsRef.current = null;
           
-          if (shouldReconnectRef.current) {
+          if (shouldReconnectRef.current && !loading) {
             console.log('Reconnecting in 2 seconds...');
             reconnectTimeoutRef.current = setTimeout(() => {
               connectWebSocket();
@@ -201,7 +234,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }
       wsRef.current = null;
     };
-  }, [tabId]);
+  }, []);
 
   const handleSend = () => {
     if (!input.trim() || loading || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {

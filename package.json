@@ -13,7 +13,7 @@
     "dev": "cd frontend && npm run dev",
     "backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
     "electron:dev": "concurrently \"npm run backend\" \"wait-on http://localhost:8000 && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "build:frontend": "cd frontend && npm run build",
+    "build:frontend": "cd frontend && npm run build && xcopy /E /I /Y dist ..\\dist",
     "build:backend": "echo Backend packaging skipped - already done manually",
     "build": "npm run build:frontend && npm run build:backend",
     "electron:build": "npm run build && electron-builder",
@@ -24,8 +24,7 @@
   },
   "dependencies": {
     "electron-log": "^5.0.1",
-    "electron-updater": "^6.1.7",
-    "electron-is-dev": "^2.0.0"
+    "electron-updater": "^6.1.7"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

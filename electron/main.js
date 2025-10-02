@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const log = require('electron-log');
-const isDev = require('electron-is-dev');
+const isDev = !app.isPackaged;
 
 // Configure logging
 log.transports.file.level = 'info';
@@ -14,31 +14,31 @@ const BACKEND_PORT = 8000;
 const FRONTEND_PORT = 5173;
 
 // Function to find Python executable
+// Function to find Python executable
 function getPythonPath() {
+  const { execSync } = require('child_process');
+  
   if (process.platform === 'win32') {
-    // Try multiple Python paths
-    const pythonPaths = [
-      'python',
-      'python3',
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python39', 'python.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python310', 'python.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python311', 'python.exe'),
-      'C:\\Python39\\python.exe',
-      'C:\\Python310\\python.exe',
-      'C:\\Python311\\python.exe',
-    ];
+    // Try common Python commands on Windows
+    const pythonCommands = ['python', 'py', 'python3'];
     
-    for (const pythonPath of pythonPaths) {
+    for (const cmd of pythonCommands) {
       try {
-        const { execSync } = require('child_process');
-        execSync(`${pythonPath} --version`, { stdio: 'ignore' });
-        return pythonPath;
+        execSync(`${cmd} --version`, { stdio: 'ignore' });
+        log.info(`Found Python using command: ${cmd}`);
+        return cmd;
       } catch (e) {
         continue;
       }
     }
+    
+    // If none found, default to 'python' and let it fail with a helpful error
+    log.warn('No Python found in PATH, trying default "python"');
+    return 'python';
   }
-  return 'python3'; // Default for Linux/Mac
+  
+  // For Linux/Mac
+  return 'python3';
 }
 
 // Function to start the backend server
@@ -102,11 +102,19 @@ function startBackend() {
     
     backendProcess.on('error', (error) => {
       log.error('Failed to start backend:', error);
+      
+      if (error.code === 'ENOENT' || error.code === 'EACCES') {
+        const { dialog } = require('electron');
+        dialog.showErrorBox(
+          'Python Not Found',
+          'Python is required to run this application.\n\n' +
+          'Please install Python 3.9 or higher from:\n' +
+          'https://www.python.org/downloads/\n\n' +
+          'Make sure to check "Add Python to PATH" during installation.'
+        );
+      }
+      
       reject(error);
-    });
-    
-    backendProcess.on('close', (code) => {
-      log.info(`Backend process exited with code ${code}`);
     });
     
     // Timeout after 30 seconds
@@ -153,7 +161,7 @@ function createWindow() {
     log.info('Development mode - Loading from Vite dev server');
   } else {
     // Production mode - load from built files
-    const indexPath = path.join(__dirname, '../frontend/dist/index.html');
+    const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
     mainWindow.loadFile(indexPath);
     log.info(`Production mode - Loading from ${indexPath}`);
   }

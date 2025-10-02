@@ -5,6 +5,8 @@ from typing import List, Optional
 import subprocess
 import os
 import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 import threading
 import time
 import json
@@ -28,22 +30,22 @@ CHAT_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "chat_history.json")
 async def check_files():
     print("Checking for required files...")
     if not os.path.exists(MODEL_PATH):
-        print(f"⚠️  Warning: Model file not found at {MODEL_PATH}")
+        print(f"[Warning]  Warning: Model file not found at {MODEL_PATH}")
     else:
-        print(f"✓ Model file found: {MODEL_PATH}")
+        print(f"[OK]Model file found: {MODEL_PATH}")
     
     if not os.path.exists(LLAMA_CLI_PATH):
-        print(f"⚠️  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
+        print(f"[Warning]  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
     else:
-        print(f"✓ llama-cli.exe found: {LLAMA_CLI_PATH}")
+        print(f"[OK]llama-cli.exe found: {LLAMA_CLI_PATH}")
     
     # Initialize chat history file if it doesn't exist
     if not os.path.exists(CHAT_HISTORY_FILE):
         with open(CHAT_HISTORY_FILE, 'w') as f:
             json.dump([], f)
-        print(f"✓ Created chat history file: {CHAT_HISTORY_FILE}")
+        print(f"[OK]Created chat history file: {CHAT_HISTORY_FILE}")
     else:
-        print(f"✓ Chat history file found: {CHAT_HISTORY_FILE}")
+        print(f"[OK]Chat history file found: {CHAT_HISTORY_FILE}")
     
     print("Server ready!")
 
@@ -373,30 +375,30 @@ LESSON_PLAN_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "lesson_plan_
 async def check_files():
     print("Checking for required files...")
     if not os.path.exists(MODEL_PATH):
-        print(f"⚠️  Warning: Model file not found at {MODEL_PATH}")
+        print(f"[Warning]  Warning: Model file not found at {MODEL_PATH}")
     else:
-        print(f"✓ Model file found: {MODEL_PATH}")
+        print(f"[OK]Model file found: {MODEL_PATH}")
     
     if not os.path.exists(LLAMA_CLI_PATH):
-        print(f"⚠️  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
+        print(f"[Warning]  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
     else:
-        print(f"✓ llama-cli.exe found: {LLAMA_CLI_PATH}")
+        print(f"[OK]llama-cli.exe found: {LLAMA_CLI_PATH}")
     
     # Initialize chat history file if it doesn't exist
     if not os.path.exists(CHAT_HISTORY_FILE):
         with open(CHAT_HISTORY_FILE, 'w') as f:
             json.dump([], f)
-        print(f"✓ Created chat history file: {CHAT_HISTORY_FILE}")
+        print(f"[OK]Created chat history file: {CHAT_HISTORY_FILE}")
     else:
-        print(f"✓ Chat history file found: {CHAT_HISTORY_FILE}")
+        print(f"[OK]Chat history file found: {CHAT_HISTORY_FILE}")
     
     # Initialize lesson plan history file if it doesn't exist
     if not os.path.exists(LESSON_PLAN_HISTORY_FILE):
         with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
             json.dump([], f)
-        print(f"✓ Created lesson plan history file: {LESSON_PLAN_HISTORY_FILE}")
+        print(f"[OK]Created lesson plan history file: {LESSON_PLAN_HISTORY_FILE}")
     else:
-        print(f"✓ Lesson plan history file found: {LESSON_PLAN_HISTORY_FILE}")
+        print(f"[OK]Lesson plan history file found: {LESSON_PLAN_HISTORY_FILE}")
     
     print("Server ready!")
 
