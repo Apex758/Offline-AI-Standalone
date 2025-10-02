@@ -489,7 +489,6 @@ Please generate a detailed lesson plan with clear sections and practical details
     setGeneratedPlan(history.generatedPlan);
     setCurrentPlanId(history.id);
     setHistoryOpen(false);
-    setStep(4); // Show the generated plan
   };
 
   const deleteLessonPlanHistory = async (planId: string, e: React.MouseEvent) => {
@@ -560,48 +559,190 @@ Please generate a detailed lesson plan with clear sections and practical details
     setStep(1);
   };
 
-  if (generatedPlan || streamingPlan) {
-    return (
-      <div className="flex h-full bg-white relative">
-        <div className="flex-1 flex flex-col bg-white overflow-hidden">
-        <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800">
-              {loading ? 'Generating Lesson Plan...' : 'Generated Lesson Plan'}
-            </h2>
-            <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
-          </div>
-          {!loading && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={saveLessonPlan}
-                disabled={saveStatus === 'saving'}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-              >
-                {saveStatus === 'saving' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : saveStatus === 'saved' ? (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Saved!
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Plan
-                  </>
-                )}
-              </button>
-              <button
-                onClick={exportLessonPlan}
-                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </button>
+ 
+  return (
+    <div className="flex h-full bg-white relative">
+      <div className="flex-1 flex flex-col bg-white">
+        {(generatedPlan || streamingPlan) ? (
+          // Generated plan view
+          <>
+            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {loading ? 'Generating Lesson Plan...' : 'Generated Lesson Plan'}
+                </h2>
+                <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
+              </div>
+              {!loading && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={saveLessonPlan}
+                    disabled={saveStatus === 'saving'}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                  >
+                    {saveStatus === 'saving' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveStatus === 'saved' ? (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Saved!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Plan
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={exportLessonPlan}
+                    className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </button>
+                  <button
+                    onClick={() => setHistoryOpen(!historyOpen)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition"
+                    title="Lesson Plan History"
+                  >
+                    <History className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setGeneratedPlan('');
+                      setStreamingPlan('');
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Create New Plan
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 overflow-y-auto bg-white p-6">
+              {/* Modern Header Card */}
+              {(streamingPlan || generatedPlan) && (
+                <div className="mb-8">
+                  <div className="relative overflow-hidden">
+                    {/* Background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/90 to-purple-600/90"></div>
+                    
+                    {/* Content */}
+                    <div className="relative px-8 py-8">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          {/* Subject badge */}
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
+                            <span className="text-white text-sm font-medium">{formData.subject}</span>
+                          </div>
+                          
+                          {/* Main title */}
+                          <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
+                            {formData.topic ? `Exploring ${formData.topic}` : 'Lesson Plan'}
+                          </h1>
+                          
+                          {/* Subtitle details */}
+                          <div className="flex flex-wrap items-center gap-4 text-blue-100">
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                              <span className="text-sm">Grade {formData.gradeLevel}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.strand}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.duration} minutes</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.studentCount} students</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Loading indicator */}
+                        {loading && (
+                          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                            <div className="flex items-center text-white">
+                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              <div>
+                                <div className="text-sm font-medium">Generating...</div>
+                                <div className="text-xs text-blue-100">AI-powered lesson plan</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Bottom info bar */}
+                      <div className="mt-6 pt-4 border-t border-white/20">
+                        <div className="flex items-center justify-between">
+                          <div className="text-blue-100 text-sm">
+                            <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
+                          </div>
+                          {!loading && (
+                            <div className="flex items-center text-green-200 text-sm">
+                              <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
+                              <span>Generation Complete</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Decorative elements */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Formatted content */}
+              <div className="prose prose-lg max-w-none">
+                <div className="space-y-1">
+                  {formatLessonText(streamingPlan || generatedPlan)}
+                  {loading && streamingPlan && (
+                    <span className="inline-flex items-center ml-1">
+                      <span className="w-0.5 h-5 bg-blue-500 animate-pulse rounded-full"></span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Loading progress at bottom */}
+              {loading && (
+                <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-blue-900 font-medium">Creating your lesson plan</div>
+                      <div className="text-blue-600 text-sm mt-1">Tailored for your specific requirements</div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          // Form view
+          <>
+            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">AI Lesson Plan Generator</h2>
+                <p className="text-sm text-gray-500">Fill in the details to generate a personalized D-OHPC lesson plan</p>
+              </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -609,130 +750,417 @@ Please generate a detailed lesson plan with clear sections and practical details
               >
                 <History className="w-5 h-5 text-gray-600" />
               </button>
-              <button
-                onClick={() => {
-                  setGeneratedPlan('');
-                  setStreamingPlan('');
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Create New Plan
-              </button>
             </div>
-          )}
-        </div>
-        
-        <div className="flex-1 overflow-y-auto bg-white p-6">
-          {/* Modern Header Card */}
-          {(streamingPlan || generatedPlan) && (
-            <div className="mb-8">
-              <div className="relative overflow-hidden">
-                {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/90 to-purple-600/90"></div>
-                
-                {/* Content */}
-                <div className="relative px-8 py-8">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      {/* Subject badge */}
-                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
-                        <span className="text-white text-sm font-medium">{formData.subject}</span>
-                      </div>
-                      
-                      {/* Main title */}
-                      <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                        {formData.topic ? `Exploring ${formData.topic}` : 'Lesson Plan'}
-                      </h1>
-                      
-                      {/* Subtitle details */}
-                      <div className="flex flex-wrap items-center gap-4 text-blue-100">
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                          <span className="text-sm">Grade {formData.gradeLevel}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                          <span className="text-sm">{formData.strand}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                          <span className="text-sm">{formData.duration} minutes</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 bg-blue-200 rounded-full mr-2"></div>
-                          <span className="text-sm">{formData.studentCount} students</span>
-                        </div>
-                      </div>
+
+            {/* Progress Steps */}
+            <div className="border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center justify-between max-w-2xl">
+                {['Basic Info', 'Teaching Strategy', 'Additional Details'].map((label, idx) => (
+                  <div key={idx} className="flex items-center">
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-blue-600' : 'bg-gray-300'
+                    } text-white font-semibold text-sm`}>
+                      {idx + 1}
                     </div>
-                    
-                    {/* Loading indicator */}
-                    {loading && (
-                      <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-                        <div className="flex items-center text-white">
-                          <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                          <div>
-                            <div className="text-sm font-medium">Generating...</div>
-                            <div className="text-xs text-blue-100">AI-powered lesson plan</div>
-                          </div>
-                        </div>
-                      </div>
+                    <span className={`ml-2 text-sm font-medium ${
+                      step === idx + 1 ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      {label}
+                    </span>
+                    {idx < 2 && (
+                      <ChevronRight className="w-5 h-5 text-gray-400 mx-4" />
                     )}
                   </div>
-                  
-                  {/* Bottom info bar */}
-                  <div className="mt-6 pt-4 border-t border-white/20">
-                    <div className="flex items-center justify-between">
-                      <div className="text-blue-100 text-sm">
-                        <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
+                ))}
+              </div>
+            </div>
+
+            {/* Form Content */}
+            <div className="flex-1 overflow-y-auto p-6" style={{ height: 'calc(100vh - 200px)' }}>
+              <div className="max-w-4xl mx-auto">
+                {/* Step 1: Basic Information */}
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Subject <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.subject}
+                        onChange={(e) => {
+                          handleInputChange('subject', e.target.value);
+                          handleInputChange('strand', '');
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select a subject</option>
+                        {subjects.map(subject => (
+                          <option key={subject} value={subject}>{subject}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {formData.subject && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Strand <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={formData.strand}
+                          onChange={(e) => handleInputChange('strand', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Select a strand</option>
+                          {strandsBySubject[formData.subject]?.map(strand => (
+                            <option key={strand} value={strand}>{strand}</option>
+                          ))}
+                        </select>
                       </div>
-                      {!loading && (
-                        <div className="flex items-center text-green-200 text-sm">
-                          <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
-                          <span>Generation Complete</span>
-                        </div>
-                      )}
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Grade Level <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.gradeLevel}
+                        onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select a grade</option>
+                        {grades.map(grade => (
+                          <option key={grade} value={grade}>Grade {grade}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Topic <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.topic}
+                        onChange={(e) => handleInputChange('topic', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Water Cycle"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Essential Learning Outcome <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={formData.essentialOutcomes}
+                        onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="The broad, overarching curriculum outcomes from curriculum standards"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Specific Curriculum Outcomes <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={formData.specificOutcomes}
+                        onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="What students should know or be able to do by the end of the lesson"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Student Count <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.studentCount}
+                          onChange={(e) => handleInputChange('studentCount', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., 20"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Duration (minutes) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.duration}
+                          onChange={(e) => handleInputChange('duration', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., 50"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                )}
+
+                {/* Step 2: Teaching Strategy */}
+                {step === 2 && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-gray-800">Teaching Strategy</h3>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Pedagogical Strategies <span className="text-red-500">*</span>
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Select all teaching strategies that will guide the structure and activities of your lesson plan
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {pedagogicalStrategiesOptions.map(strategy => (
+                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.pedagogicalStrategies.includes(strategy)}
+                              onChange={() => handleCheckboxChange('pedagogicalStrategies', strategy)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{strategy}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Learning Styles <span className="text-red-500">*</span>
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Select learning styles that best describe how your students prefer to learn
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {learningStylesOptions.map(style => (
+                          <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.learningStyles.includes(style)}
+                              onChange={() => handleCheckboxChange('learningStyles', style)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{style}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Learning Preferences
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Select how your students prefer to work and learn
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {learningPreferencesOptions.map(pref => (
+                          <label key={pref} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.learningPreferences.includes(pref)}
+                              onChange={() => handleCheckboxChange('learningPreferences', pref)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{pref}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Multiple Intelligences
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Select the types of intelligence your students demonstrate
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {multipleIntelligencesOptions.map(intel => (
+                          <label key={intel} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.multipleIntelligences.includes(intel)}
+                              onChange={() => handleCheckboxChange('multipleIntelligences', intel)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{intel}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Custom Learning Styles (Optional)
+                      </label>
+                      <textarea
+                        value={formData.customLearningStyles}
+                        onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
+                        rows={2}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Add any specific learning styles or preferences not covered above"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Materials <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={formData.materials}
+                        onChange={(e) => handleInputChange('materials', e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Resources needed for the lesson (e.g., chart paper, colored markers, projector)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Prerequisite Skills <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={formData.prerequisiteSkills}
+                        onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Skills students should already have before this lesson"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Additional Details */}
+                {step === 3 && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-gray-800">Additional Details</h3>
+
+                    <div>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.specialNeeds}
+                          onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Students with Special Needs</span>
+                      </label>
+                    </div>
+
+                    {formData.specialNeeds && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Special Needs Details
+                        </label>
+                        <textarea
+                          value={formData.specialNeedsDetails}
+                          onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Describe specific accommodations or modifications needed"
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Instructions
+                      </label>
+                      <textarea
+                        value={formData.additionalInstructions}
+                        onChange={(e) => handleInputChange('additionalInstructions', e.target.value)}
+                        rows={4}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Any additional context or specific requirements for the lesson plan"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Reference URL
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.referenceUrl}
+                        onChange={(e) => handleInputChange('referenceUrl', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="https://example.com/resource"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Formatted content */}
-          <div className="prose prose-lg max-w-none">
-            <div className="space-y-1">
-              {formatLessonText(streamingPlan || generatedPlan)}
-              {loading && streamingPlan && (
-                <span className="inline-flex items-center ml-1">
-                  <span className="w-0.5 h-5 bg-blue-500 animate-pulse rounded-full"></span>
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Loading progress at bottom */}
-          {loading && (
-            <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-              <div className="flex items-center justify-between">
+            {/* Footer Navigation */}
+            <div className="border-t border-gray-200 p-4 bg-gray-50">
+              <div className="max-w-3xl mx-auto flex items-center justify-between">
                 <div>
-                  <div className="text-blue-900 font-medium">Creating your lesson plan</div>
-                  <div className="text-blue-600 text-sm mt-1">Tailored for your specific requirements</div>
+                  {step > 1 && (
+                    <button
+                      onClick={() => setStep(step - 1)}
+                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                    >
+                      <ChevronLeft className="w-5 h-5 mr-1" />
+                      Previous
+                    </button>
+                  )}
                 </div>
-                <div className="flex space-x-1">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={clearForm}
+                    className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                  >
+                    <Trash2 className="w-5 h-5 mr-2" />
+                    Clear Form
+                  </button>
+
+                  {step < 3 ? (
+                    <button
+                      onClick={() => setStep(step + 1)}
+                      disabled={!validateStep()}
+                      className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRight className="w-5 h-5 ml-1" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={generateLessonPlan}
+                      disabled={loading}
+                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-5 h-5 mr-2" />
+                          Generate Lesson Plan
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
+
+      {/* History Panel - Always available */}
       <div
         className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
@@ -784,422 +1212,6 @@ Please generate a detailed lesson plan with clear sections and practical details
                   </div>
                 </div>
               ))
-            )}
-          </div>
-        </div>
-      </div>
-      </div> 
-    );
-  }
-
-  return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="border-b border-gray-200 p-4">
-        <h2 className="text-xl font-semibold text-gray-800">AI Lesson Plan Generator</h2>
-        <p className="text-sm text-gray-500">Fill in the details to generate a personalized D-OHPC lesson plan</p>
-      </div>
-
-      {/* Progress Steps */}
-      <div className="border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between max-w-2xl">
-          {['Basic Info', 'Teaching Strategy', 'Additional Details'].map((label, idx) => (
-            <div key={idx} className="flex items-center">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-blue-600' : 'bg-gray-300'
-              } text-white font-semibold text-sm`}>
-                {idx + 1}
-              </div>
-              <span className={`ml-2 text-sm font-medium ${
-                step === idx + 1 ? 'text-blue-600' : 'text-gray-500'
-              }`}>
-                {label}
-              </span>
-              {idx < 2 && (
-                <ChevronRight className="w-5 h-5 text-gray-400 mx-4" />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Form Content */}
-      <div className="flex-1 overflow-y-auto p-6" style={{ height: 'calc(100vh - 200px)' }}>
-        <div className="max-w-4xl mx-auto">
-          {/* Step 1: Basic Information */}
-          {step === 1 && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.subject}
-                  onChange={(e) => {
-                    handleInputChange('subject', e.target.value);
-                    handleInputChange('strand', ''); // Reset strand when subject changes
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a subject</option>
-                  {subjects.map(subject => (
-                    <option key={subject} value={subject}>{subject}</option>
-                  ))}
-                </select>
-              </div>
-
-              {formData.subject && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Strand <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.strand}
-                    onChange={(e) => handleInputChange('strand', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select a strand</option>
-                    {strandsBySubject[formData.subject]?.map(strand => (
-                      <option key={strand} value={strand}>{strand}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Grade Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.gradeLevel}
-                  onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a grade</option>
-                  {grades.map(grade => (
-                    <option key={grade} value={grade}>Grade {grade}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Topic <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.topic}
-                  onChange={(e) => handleInputChange('topic', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Water Cycle"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Essential Learning Outcome <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.essentialOutcomes}
-                  onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="The broad, overarching curriculum outcomes from curriculum standards"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Specific Curriculum Outcomes <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.specificOutcomes}
-                  onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="What students should know or be able to do by the end of the lesson"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Student Count <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.studentCount}
-                    onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., 20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Duration (minutes) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.duration}
-                    onChange={(e) => handleInputChange('duration', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., 50"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Teaching Strategy */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-800">Teaching Strategy</h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pedagogical Strategies <span className="text-red-500">*</span>
-                </label>
-                <p className="text-xs text-gray-500 mb-3">
-                  Select all teaching strategies that will guide the structure and activities of your lesson plan
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {pedagogicalStrategiesOptions.map(strategy => (
-                    <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.pedagogicalStrategies.includes(strategy)}
-                        onChange={() => handleCheckboxChange('pedagogicalStrategies', strategy)}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{strategy}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Learning Styles <span className="text-red-500">*</span>
-                </label>
-                <p className="text-xs text-gray-500 mb-3">
-                  Select learning styles that best describe how your students prefer to learn
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {learningStylesOptions.map(style => (
-                    <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.learningStyles.includes(style)}
-                        onChange={() => handleCheckboxChange('learningStyles', style)}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{style}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Learning Preferences
-                </label>
-                <p className="text-xs text-gray-500 mb-3">
-                  Select how your students prefer to work and learn
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {learningPreferencesOptions.map(pref => (
-                    <label key={pref} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.learningPreferences.includes(pref)}
-                        onChange={() => handleCheckboxChange('learningPreferences', pref)}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{pref}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Multiple Intelligences
-                </label>
-                <p className="text-xs text-gray-500 mb-3">
-                  Select the types of intelligence your students demonstrate
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {multipleIntelligencesOptions.map(intel => (
-                    <label key={intel} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.multipleIntelligences.includes(intel)}
-                        onChange={() => handleCheckboxChange('multipleIntelligences', intel)}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{intel}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Custom Learning Styles (Optional)
-                </label>
-                <textarea
-                  value={formData.customLearningStyles}
-                  onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
-                  rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Add any specific learning styles or preferences not covered above"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Materials <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.materials}
-                  onChange={(e) => handleInputChange('materials', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Resources needed for the lesson (e.g., chart paper, colored markers, projector)"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Prerequisite Skills <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.prerequisiteSkills}
-                  onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Skills students should already have before this lesson"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Additional Details */}
-          {step === 3 && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-800">Additional Details</h3>
-
-              <div>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.specialNeeds}
-                    onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Students with Special Needs</span>
-                </label>
-              </div>
-
-              {formData.specialNeeds && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Special Needs Details
-                  </label>
-                  <textarea
-                    value={formData.specialNeedsDetails}
-                    onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Describe specific accommodations or modifications needed"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Instructions
-                </label>
-                <textarea
-                  value={formData.additionalInstructions}
-                  onChange={(e) => handleInputChange('additionalInstructions', e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Any additional context or specific requirements for the lesson plan"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reference URL
-                </label>
-                <input
-                  type="url"
-                  value={formData.referenceUrl}
-                  onChange={(e) => handleInputChange('referenceUrl', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://example.com/resource"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Footer Navigation */}
-      <div className="border-t border-gray-200 p-4 bg-gray-50">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
-            {step > 1 && (
-              <button
-                onClick={() => setStep(step - 1)}
-                className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition"
-              >
-                <ChevronLeft className="w-5 h-5 mr-1" />
-                Previous
-              </button>
-            )}
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={clearForm}
-              className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-            >
-              <Trash2 className="w-5 h-5 mr-2" />
-              Clear Form
-            </button>
-
-            {step < 3 ? (
-              <button
-                onClick={() => setStep(step + 1)}
-                disabled={!validateStep()}
-                className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                Next
-                <ChevronRight className="w-5 h-5 ml-1" />
-              </button>
-            ) : (
-              <button
-                onClick={generateLessonPlan}
-                disabled={loading}
-                className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="w-5 h-5 mr-2" />
-                    Generate Lesson Plan
-                  </>
-                )}
-              </button>
             )}
           </div>
         </div>

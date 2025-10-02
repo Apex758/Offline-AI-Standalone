@@ -345,7 +345,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold whitespace-nowrap">AI Education</h2>
+              <h2 className="text-xl font-bold whitespace-nowrap">OLH Innovative Tools</h2>
               <p className="text-sm text-gray-400 whitespace-nowrap">{user.name}</p>
             </div>
           </div>
