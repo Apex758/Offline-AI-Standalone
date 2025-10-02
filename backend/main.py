@@ -366,6 +366,121 @@ async def websocket_chat(websocket: WebSocket):
 class LessonPlanRequest(BaseModel):
     prompt: str
 
+
+LESSON_PLAN_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "lesson_plan_history.json")
+
+@app.on_event("startup")
+async def check_files():
+    print("Checking for required files...")
+    if not os.path.exists(MODEL_PATH):
+        print(f"⚠️  Warning: Model file not found at {MODEL_PATH}")
+    else:
+        print(f"✓ Model file found: {MODEL_PATH}")
+    
+    if not os.path.exists(LLAMA_CLI_PATH):
+        print(f"⚠️  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
+    else:
+        print(f"✓ llama-cli.exe found: {LLAMA_CLI_PATH}")
+    
+    # Initialize chat history file if it doesn't exist
+    if not os.path.exists(CHAT_HISTORY_FILE):
+        with open(CHAT_HISTORY_FILE, 'w') as f:
+            json.dump([], f)
+        print(f"✓ Created chat history file: {CHAT_HISTORY_FILE}")
+    else:
+        print(f"✓ Chat history file found: {CHAT_HISTORY_FILE}")
+    
+    # Initialize lesson plan history file if it doesn't exist
+    if not os.path.exists(LESSON_PLAN_HISTORY_FILE):
+        with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
+            json.dump([], f)
+        print(f"✓ Created lesson plan history file: {LESSON_PLAN_HISTORY_FILE}")
+    else:
+        print(f"✓ Lesson plan history file found: {LESSON_PLAN_HISTORY_FILE}")
+    
+    print("Server ready!")
+
+class LessonPlanHistory(BaseModel):
+    id: str
+    title: str
+    timestamp: str
+    formData: dict
+    generatedPlan: str
+
+@app.get("/api/lesson-plan-history")
+async def get_lesson_plan_history():
+    """Get all lesson plan histories"""
+    try:
+        if os.path.exists(LESSON_PLAN_HISTORY_FILE):
+            with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
+                histories = json.load(f)
+            # Sort by timestamp, newest first
+            histories.sort(key=lambda x: x['timestamp'], reverse=True)
+            return histories
+        return []
+    except Exception as e:
+        print(f"Error loading lesson plan history: {e}")
+        return []
+
+@app.post("/api/lesson-plan-history")
+async def save_lesson_plan_history(plan: LessonPlanHistory):
+    """Save or update a lesson plan history"""
+    try:
+        # Load existing histories
+        histories = []
+        if os.path.exists(LESSON_PLAN_HISTORY_FILE):
+            with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
+                histories = json.load(f)
+        
+        # Check if plan with this ID already exists
+        existing_index = None
+        for i, h in enumerate(histories):
+            if h['id'] == plan.id:
+                existing_index = i
+                break
+        
+        # Convert to dict
+        plan_dict = plan.dict()
+        
+        if existing_index is not None:
+            # Update existing plan
+            histories[existing_index] = plan_dict
+        else:
+            # Add new plan
+            histories.append(plan_dict)
+        
+        # Save back to file
+        with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
+            json.dump(histories, f, indent=2)
+        
+        return {"success": True, "id": plan.id}
+    except Exception as e:
+        print(f"Error saving lesson plan history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/lesson-plan-history/{plan_id}")
+async def delete_lesson_plan_history(plan_id: str):
+    """Delete a lesson plan history"""
+    try:
+        if os.path.exists(LESSON_PLAN_HISTORY_FILE):
+            with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
+                histories = json.load(f)
+            
+            # Filter out the plan to delete
+            histories = [h for h in histories if h['id'] != plan_id]
+            
+            # Save back to file
+            with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
+                json.dump(histories, f, indent=2)
+            
+            return {"success": True}
+        
+        raise HTTPException(status_code=404, detail="Lesson plan history not found")
+    except Exception as e:
+        print(f"Error deleting lesson plan history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
 @app.post("/api/generate-lesson-plan")
 async def generate_lesson_plan(request: LessonPlanRequest):
     """Generate a lesson plan using the LLM"""

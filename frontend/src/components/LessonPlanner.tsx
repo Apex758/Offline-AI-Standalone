@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X } from 'lucide-react';
+import axios from 'axios';
 
 interface LessonPlannerProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+}
+
+interface LessonPlanHistory {
+  id: string;
+  title: string;
+  timestamp: string;
+  formData: FormData;
+  generatedPlan: string;
 }
 
 interface FormData {
@@ -159,6 +168,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [lessonPlanHistories, setLessonPlanHistories] = useState<LessonPlanHistory[]>([]);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   // Initialize with proper isolation - check if savedData has actual content
   const [formData, setFormData] = useState<FormData>(() => {
@@ -431,6 +444,94 @@ Please generate a detailed lesson plan with clear sections and practical details
     }
   };
 
+  const loadLessonPlanHistories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-plan-history');
+      setLessonPlanHistories(response.data);
+    } catch (error) {
+      console.error('Failed to load lesson plan histories:', error);
+    }
+  };
+
+  const saveLessonPlan = async () => {
+    if (!generatedPlan) {
+      alert('No lesson plan to save');
+      return;
+    }
+
+    setSaveStatus('saving');
+    try {
+      const planData = {
+        id: currentPlanId || `plan_${Date.now()}`,
+        title: `${formData.subject} - ${formData.topic} (Grade ${formData.gradeLevel})`,
+        timestamp: new Date().toISOString(),
+        formData: formData,
+        generatedPlan: generatedPlan
+      };
+
+      if (!currentPlanId) {
+        setCurrentPlanId(planData.id);
+      }
+
+      await axios.post('http://localhost:8000/api/lesson-plan-history', planData);
+      await loadLessonPlanHistories();
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      console.error('Failed to save lesson plan:', error);
+      alert('Failed to save lesson plan');
+      setSaveStatus('idle');
+    }
+  };
+
+  const loadLessonPlanHistory = (history: LessonPlanHistory) => {
+    setFormData(history.formData);
+    setGeneratedPlan(history.generatedPlan);
+    setCurrentPlanId(history.id);
+    setHistoryOpen(false);
+    setStep(4); // Show the generated plan
+  };
+
+  const deleteLessonPlanHistory = async (planId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this lesson plan?')) return;
+    
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-plan-history/${planId}`);
+      await loadLessonPlanHistories();
+      
+      if (currentPlanId === planId) {
+        clearForm();
+      }
+    } catch (error) {
+      console.error('Failed to delete lesson plan:', error);
+    }
+  };
+
+  const exportLessonPlan = () => {
+    if (!generatedPlan) return;
+
+    const content = `LESSON PLAN
+  ${formData.subject} - Grade ${formData.gradeLevel}
+  ${formData.topic}
+  Generated: ${new Date().toLocaleDateString()}
+
+  ${generatedPlan}`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lesson-plan-${formData.topic.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    loadLessonPlanHistories();
+  }, []);
 
   const clearForm = () => {
     setFormData({
@@ -461,7 +562,8 @@ Please generate a detailed lesson plan with clear sections and practical details
 
   if (generatedPlan || streamingPlan) {
     return (
-      <div className="h-full flex flex-col bg-white overflow-hidden">
+      <div className="flex h-full bg-white relative">
+        <div className="flex-1 flex flex-col bg-white overflow-hidden">
         <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">
@@ -470,15 +572,53 @@ Please generate a detailed lesson plan with clear sections and practical details
             <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
           </div>
           {!loading && (
-            <button
-              onClick={() => {
-                setGeneratedPlan('');
-                setStreamingPlan('');
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Create New Plan
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={saveLessonPlan}
+                disabled={saveStatus === 'saving'}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+              >
+                {saveStatus === 'saving' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : saveStatus === 'saved' ? (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Saved!
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Plan
+                  </>
+                )}
+              </button>
+              <button
+                onClick={exportLessonPlan}
+                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </button>
+              <button
+                onClick={() => setHistoryOpen(!historyOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                title="Lesson Plan History"
+              >
+                <History className="w-5 h-5 text-gray-600" />
+              </button>
+              <button
+                onClick={() => {
+                  setGeneratedPlan('');
+                  setStreamingPlan('');
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Create New Plan
+              </button>
+            </div>
           )}
         </div>
         
@@ -593,6 +733,62 @@ Please generate a detailed lesson plan with clear sections and practical details
           )}
         </div>
       </div>
+      <div
+        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+          historyOpen ? 'w-80' : 'w-0'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-full flex flex-col p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Saved Plans</h3>
+            <button
+              onClick={() => setHistoryOpen(false)}
+              className="p-1 rounded hover:bg-gray-200 transition"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
+            {lessonPlanHistories.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">No saved plans yet</p>
+              </div>
+            ) : (
+              lessonPlanHistories.map((history) => (
+                <div
+                  key={history.id}
+                  onClick={() => loadLessonPlanHistory(history)}
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
+                    currentPlanId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                        {history.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => deleteLessonPlanHistory(history.id, e)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                      title="Delete plan"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+      </div> 
     );
   }
 
