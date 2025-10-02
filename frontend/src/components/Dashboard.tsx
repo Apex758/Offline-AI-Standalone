@@ -81,7 +81,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ tabId: string; x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ tabId?: string; groupType?: string; x: number; y: number } | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const getTabCountByType = (type: string) => {
@@ -210,6 +210,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setCollapsedGroups(newCollapsed);
   };
 
+  const closeGroupTabs = (type: string) => {
+    const updatedTabs = tabs.filter(tab => tab.type !== type);
+    setTabs(updatedTabs);
+    setContextMenu(null);
+    
+    if (updatedTabs.length > 0) {
+      setActiveTabId(updatedTabs[updatedTabs.length - 1].id);
+    } else {
+      setActiveTabId(null);
+    }
+  };
+
   const renderTabContent = (tab: Tab) => {
     if (tab.type === 'split' && tab.splitTabs) {
       const [leftTabId, rightTabId] = tab.splitTabs;
@@ -289,20 +301,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Split with...</div>
-          {availableTabsForSplit.length === 0 ? (
-            <div className="px-4 py-2 text-sm text-gray-400">No other tabs available</div>
-          ) : (
-            availableTabsForSplit.map(tab => (
+          {contextMenu.groupType ? (
+            // Group menu
+            <>
+              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Group Actions</div>
               <button
-                key={tab.id}
-                onClick={() => handleSplitWithTab(tab.id)}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center space-x-2"
+                onClick={() => closeGroupTabs(contextMenu.groupType!)}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 flex items-center space-x-2"
               >
-                <Columns className="w-4 h-4" />
-                <span>{tab.title}</span>
+                <X className="w-4 h-4" />
+                <span>Close all {tools.find(t => t.type === contextMenu.groupType)?.name} tabs</span>
               </button>
-            ))
+            </>
+          ) : (
+            // Split menu
+            <>
+              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Split with...</div>
+              {availableTabsForSplit.length === 0 ? (
+                <div className="px-4 py-2 text-sm text-gray-400">No other tabs available</div>
+              ) : (
+                availableTabsForSplit.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleSplitWithTab(tab.id)}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <Columns className="w-4 h-4" />
+                    <span>{tab.title}</span>
+                  </button>
+                ))
+              )}
+            </>
           )}
         </div>
       )}
@@ -375,7 +404,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </button>
 
           {/* Grouped Tabs */}
-          <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto">
+          <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto scrollbar-hide">
             {Object.entries(groupedTabs).map(([type, groupTabs]) => {
               const isCollapsed = collapsedGroups.has(type);
               const activeInGroup = groupTabs.find(t => t.id === activeTabId);
@@ -416,13 +445,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <div key={type} className="flex items-center gap-1">
                   <button
                     onClick={() => toggleGroupCollapse(type)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setContextMenu({ groupType: type, x: e.clientX, y: e.clientY });
+                    }}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition border-l-4 ${colors.border} ${
                       activeInGroup ? `${colors.activeBg} text-white` : `${colors.bg} text-gray-700 hover:bg-gray-200`
                     }`}
+                    title="Right-click for options"
                   >
                     {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    <span className="text-sm font-medium">
-                      {tools.find(t => t.type === type)?.name} ({groupTabs.length})
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      {tools.find(t => t.type === type)?.name}
                     </span>
                   </button>
 
