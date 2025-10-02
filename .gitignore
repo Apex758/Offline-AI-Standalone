@@ -7,34 +7,32 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies
+node_modules/
+backend/venv/
+backend-bundle/
+
+# Build artifacts
+dist/
+dist-ssr/
+backend/bin/
+build/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local environment
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-backend/bin/
-backend/llama-3.2-1b-instruct-Q5_K_M.gguf
-venv/
-
-__pycache__
-
-# Images
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.svg
-
-# Package lock
-package-lock.json
