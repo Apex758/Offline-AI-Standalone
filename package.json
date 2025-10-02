@@ -13,7 +13,7 @@
     "dev": "cd frontend && npm run dev",
     "backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
     "electron:dev": "concurrently \"npm run backend\" \"wait-on http://localhost:8000 && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "build:frontend": "cd frontend && npm run build && xcopy /E /I /Y dist ..\\dist",
+    "build:frontend": "cd frontend && npm run build",
     "build:backend": "echo Backend packaging skipped - already done manually",
     "build": "npm run build:frontend && npm run build:backend",
     "electron:build": "npm run build && electron-builder",
@@ -38,7 +38,7 @@
     "productName": "OLH AI Education Suite",
     "copyright": "Copyright © 2024 OLH Education",
     "directories": {
-      "output": "dist"
+      "output": "dist-electron"
     },
     "files": [
       "electron/**/*",
@@ -66,15 +66,14 @@
           ]
         }
       ],
-
       "artifactName": "${productName} Setup ${version}.${ext}"
     },
     "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "createDesktopShortcut": true,
-    "createStartMenuShortcut": true,
-    "shortcutName": "OLH AI Education Suite"
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OLH AI Education Suite"
     },
     "extraResources": [
       {

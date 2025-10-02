@@ -14,12 +14,10 @@ const BACKEND_PORT = 8000;
 const FRONTEND_PORT = 5173;
 
 // Function to find Python executable
-// Function to find Python executable
 function getPythonPath() {
   const { execSync } = require('child_process');
   
   if (process.platform === 'win32') {
-    // Try common Python commands on Windows
     const pythonCommands = ['python', 'py', 'python3'];
     
     for (const cmd of pythonCommands) {
@@ -32,12 +30,10 @@ function getPythonPath() {
       }
     }
     
-    // If none found, default to 'python' and let it fail with a helpful error
     log.warn('No Python found in PATH, trying default "python"');
     return 'python';
   }
   
-  // For Linux/Mac
   return 'python3';
 }
 
@@ -50,24 +46,20 @@ function startBackend() {
     let pythonCmd;
     
     if (isDev) {
-      // Development mode
       backendPath = path.join(__dirname, '..', 'backend');
       pythonCmd = getPythonPath();
       log.info(`Development mode - Backend path: ${backendPath}`);
     } else {
-      // Production mode
       backendPath = path.join(process.resourcesPath, 'backend-bundle');
       pythonCmd = getPythonPath();
       log.info(`Production mode - Backend path: ${backendPath}`);
     }
     
-    // Set environment variable for Python to find modules
     const env = { ...process.env };
     if (!isDev) {
       env.PYTHONPATH = path.join(backendPath, 'python_libs');
     }
     
-    // Start the backend process
     backendProcess = spawn(
       pythonCmd,
       ['-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', BACKEND_PORT.toString()],
@@ -82,7 +74,6 @@ function startBackend() {
       const message = data.toString();
       log.info(`Backend: ${message}`);
       
-      // Check if server is ready
       if (message.includes('Uvicorn running') || message.includes('Application startup complete')) {
         log.info('Backend server is ready!');
         resolve();
@@ -93,7 +84,6 @@ function startBackend() {
       const message = data.toString();
       log.error(`Backend Error: ${message}`);
       
-      // Some startup messages come through stderr
       if (message.includes('Uvicorn running') || message.includes('Application startup complete')) {
         log.info('Backend server is ready!');
         resolve();
@@ -117,7 +107,6 @@ function startBackend() {
       reject(error);
     });
     
-    // Timeout after 30 seconds
     setTimeout(() => {
       if (backendProcess && !backendProcess.killed) {
         log.info('Backend started (timeout reached, assuming success)');
@@ -143,46 +132,56 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: true
     },
-    show: false, // Don't show until ready
+    show: false,
     backgroundColor: '#f3f4f6'
   });
   
-  // Show window when ready
   mainWindow.once('ready-to-show', () => {
     log.info('Window ready to show');
     mainWindow.show();
   });
   
-  // Load the app
   if (isDev) {
-    // Development mode - load from Vite dev server
     mainWindow.loadURL(`http://localhost:${FRONTEND_PORT}`);
     mainWindow.webContents.openDevTools();
     log.info('Development mode - Loading from Vite dev server');
   } else {
-    // Production mode - load from built files
-    const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
-    mainWindow.loadFile(indexPath);
+    // FIXED: Look for frontend files in the correct location
+    const indexPath = path.join(__dirname, '..', 'frontend', 'dist', 'index.html');
     log.info(`Production mode - Loading from ${indexPath}`);
+    
+    mainWindow.loadFile(indexPath).catch(err => {
+      log.error('Failed to load index.html:', err);
+      
+      // Show error to user
+      const errorHtml = `
+        <html>
+          <body style="font-family: Arial; padding: 40px; background: #f3f4f6;">
+            <h1 style="color: #dc2626;">Failed to Load Application</h1>
+            <p>The application files could not be loaded.</p>
+            <p><strong>Error:</strong> ${err.message}</p>
+            <p><strong>Looking for:</strong> ${indexPath}</p>
+            <hr/>
+            <p><small>Check the logs for more details.</small></p>
+          </body>
+        </html>
+      `;
+      mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml)}`);
+    });
   }
   
-  // Handle window close
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
   
-  // Handle navigation
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    // Prevent navigation to external URLs
     if (!url.startsWith('http://localhost') && !url.startsWith('file://')) {
       event.preventDefault();
       log.warn(`Prevented navigation to: ${url}`);
     }
   });
   
-  // Handle new window requests
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    // Prevent opening new windows
     log.warn(`Prevented opening new window: ${url}`);
     return { action: 'deny' };
   });
@@ -193,14 +192,11 @@ app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');
   
   try {
-    // Start backend server
     await startBackend();
     log.info('Backend started successfully');
     
-    // Wait a bit for backend to fully initialize
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Create the window
     createWindow();
     
     app.on('activate', () => {
@@ -214,7 +210,6 @@ app.whenReady().then(async () => {
   }
 });
 
-// Quit when all windows are closed
 app.on('window-all-closed', () => {
   log.info('All windows closed');
   if (process.platform !== 'darwin') {
@@ -222,7 +217,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Cleanup before quit
 app.on('before-quit', (event) => {
   log.info('Application quitting...');
   
@@ -232,7 +226,6 @@ app.on('before-quit', (event) => {
   }
 });
 
-// Handle IPC messages from renderer
 ipcMain.on('app-info', (event) => {
   event.reply('app-info-response', {
     version: app.getVersion(),
@@ -241,7 +234,6 @@ ipcMain.on('app-info', (event) => {
   });
 });
 
-// Error handling
 process.on('uncaughtException', (error) => {
   log.error('Uncaught exception:', error);
 });
