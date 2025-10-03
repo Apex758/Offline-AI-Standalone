@@ -141,6 +141,18 @@ def install_python_dependencies(bundle_dir):
             "--upgrade"
         ], check=True, capture_output=True, text=True)
         
+        # Also install for embedded Python if it exists
+        embedded_python = os.path.join("python-embed", "python.exe")
+        if os.path.exists(embedded_python):
+            print_step("Installing dependencies for embedded Python...")
+            subprocess.run([
+                embedded_python, "-m", "pip", "install",
+                "-r", requirements_file,
+                "--target", python_libs_dir,
+                "--upgrade"
+            ], check=True, capture_output=True, text=True)
+            print_success("Embedded Python dependencies installed")
+        
         print_success("Python dependencies installed successfully")
         return True
     except subprocess.CalledProcessError as e:

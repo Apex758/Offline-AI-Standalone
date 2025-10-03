@@ -15,6 +15,19 @@ const FRONTEND_PORT = 5173;
 
 // Function to find Python executable
 function getPythonPath() {
+  // In production, use bundled Python
+  if (!isDev) {
+    const bundledPythonPath = path.join(process.resourcesPath, 'python-embed', 'python.exe');
+    
+    if (require('fs').existsSync(bundledPythonPath)) {
+      log.info(`Using bundled Python: ${bundledPythonPath}`);
+      return bundledPythonPath;
+    } else {
+      log.error(`Bundled Python not found at: ${bundledPythonPath}`);
+    }
+  }
+  
+  // In development, use system Python
   const { execSync } = require('child_process');
   
   if (process.platform === 'win32') {
@@ -42,23 +55,26 @@ function startBackend() {
   return new Promise((resolve, reject) => {
     log.info('Starting backend server...');
     
-    let backendPath;
-    let pythonCmd;
-    
-    if (isDev) {
-      backendPath = path.join(__dirname, '..', 'backend');
-      pythonCmd = getPythonPath();
-      log.info(`Development mode - Backend path: ${backendPath}`);
-    } else {
-      backendPath = path.join(process.resourcesPath, 'backend-bundle');
-      pythonCmd = getPythonPath();
-      log.info(`Production mode - Backend path: ${backendPath}`);
-    }
-    
-    const env = { ...process.env };
-    if (!isDev) {
-      env.PYTHONPATH = path.join(backendPath, 'python_libs');
-    }
+  let backendPath;
+  let pythonCmd;
+
+  if (isDev) {
+    backendPath = path.join(__dirname, '..', 'backend');
+    pythonCmd = getPythonPath();
+    log.info(`Development mode - Backend path: ${backendPath}`);
+  } else {
+    backendPath = path.join(process.resourcesPath, 'backend-bundle');
+    pythonCmd = getPythonPath();
+    log.info(`Production mode - Backend path: ${backendPath}`);
+  }
+
+  const env = { ...process.env };
+  if (!isDev) {
+    // Set Python environment for bundled distribution
+    env.PYTHONPATH = path.join(backendPath, 'python_libs');
+    env.PYTHONHOME = path.join(process.resourcesPath, 'python-embed');
+   
+  }
     
     backendProcess = spawn(
       pythonCmd,
