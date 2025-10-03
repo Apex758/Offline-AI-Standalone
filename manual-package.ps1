@@ -43,18 +43,18 @@ if (Test-Path "backend\bin\Release") {
     Copy-Item "backend\bin\Release\*" -Destination "$bundleDir\bin\Release" -Recurse
 }
 
+Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
+# Install dependencies using SYSTEM Python (not embedded Python yet)
+py -m pip install --no-user fastapi uvicorn pydantic python-multipart --target "$bundleDir\python_libs" --upgrade --no-warn-script-location
+
 Write-Host "Copying embedded Python..." -ForegroundColor Yellow
-# Copy python-embed
+# Copy python-embed AFTER installing dependencies
 if (Test-Path "backend\python-embed") {
     Copy-Item "backend\python-embed" -Destination "$bundleDir\python-embed" -Recurse
 } else {
     Write-Host "ERROR: python-embed not found in backend folder!" -ForegroundColor Red
     exit 1
 }
-
-Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
-# Install dependencies using embedded Python
-& "$bundleDir\python-embed\python.exe" -m pip install fastapi uvicorn pydantic python-multipart --target "$bundleDir\python_libs" --upgrade --no-warn-script-location
 
 # Create a simple startup script
 Write-Host "Creating startup script..." -ForegroundColor Yellow
@@ -86,14 +86,25 @@ except Exception as e:
 # Create a test script
 @"
 import sys
+import os
+
 print("Python test successful!")
 print(f"Version: {sys.version}")
 print(f"Executable: {sys.executable}")
+
+# Test if dependencies are available
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'python_libs'))
 try:
     import fastapi
-    print("FastAPI found!")
-except:
-    print("FastAPI not found!")
+    print("✓ FastAPI found!")
+except Exception as e:
+    print(f"✗ FastAPI not found: {e}")
+
+try:
+    import uvicorn
+    print("✓ Uvicorn found!")
+except Exception as e:
+    print(f"✗ Uvicorn not found: {e}")
 "@ | Out-File -FilePath "$bundleDir\test.py" -Encoding UTF8
 
 Write-Host "Testing Python installation..." -ForegroundColor Yellow

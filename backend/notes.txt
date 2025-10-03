@@ -2,7 +2,10 @@ py -m uvicorn main:app --reload --port 8000
 
 
 
-setup-embedded-python.bat
+
+.\setup-embedded-python.bat
+
+
 
 .\python-embed\python.exe build-scripts/package-backend.py
 
