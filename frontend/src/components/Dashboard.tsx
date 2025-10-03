@@ -522,17 +522,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
         {/* Content Area */}
         <div 
-          className="flex-1 overflow-hidden"
+          className="flex-1 overflow-hidden relative"
           onClick={() => {
             setSidebarOpen(false);
-            // Close history panel if it exists in the active chat
           }}
         >
-          {activeTabId ? (
-            <div className="h-full">
-              {tabs.find(tab => tab.id === activeTabId) && 
-                renderTabContent(tabs.find(tab => tab.id === activeTabId)!)}
-            </div>
+          {tabs.length > 0 ? (
+            <>
+              {tabs.map(tab => (
+                <div 
+                  key={tab.id}
+                  className="absolute inset-0"
+                  style={{
+                    zIndex: activeTabId === tab.id ? 10 : 0,
+                    visibility: activeTabId === tab.id ? 'visible' : 'hidden',
+                    pointerEvents: activeTabId === tab.id ? 'auto' : 'none'
+                  }}
+                >
+                  {renderTabContent(tab)}
+                </div>
+              ))}
+            </>
           ) : (
             <div className="h-full flex items-center justify-center bg-gray-50">
               <div className="text-center">
