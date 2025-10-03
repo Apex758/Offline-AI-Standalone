@@ -79,16 +79,7 @@
       {
         "from": "backend-bundle",
         "to": "backend-bundle",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "python-embed",
-        "to": "python-embed",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*"]
       }
     ],
     "compression": "normal",

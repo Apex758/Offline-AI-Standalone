@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const log = require('electron-log');
+const fs = require('fs');
 const isDev = !app.isPackaged;
 
 // Configure logging
@@ -15,120 +16,173 @@ const FRONTEND_PORT = 5173;
 
 // Function to find Python executable
 function getPythonPath() {
-  // In production, use bundled Python
   if (!isDev) {
-    const bundledPythonPath = path.join(process.resourcesPath, 'python-embed', 'python.exe');
+    const bundledPythonPath = path.join(process.resourcesPath, 'backend-bundle', 'python-embed', 'python.exe');
     
-    if (require('fs').existsSync(bundledPythonPath)) {
-      log.info(`Using bundled Python: ${bundledPythonPath}`);
+    log.info(`Checking for bundled Python at: ${bundledPythonPath}`);
+    
+    if (fs.existsSync(bundledPythonPath)) {
+      log.info(`Found bundled Python: ${bundledPythonPath}`);
       return bundledPythonPath;
     } else {
       log.error(`Bundled Python not found at: ${bundledPythonPath}`);
+      
+      // Show error dialog
+      const { dialog } = require('electron');
+      dialog.showErrorBox(
+        'Python Not Found',
+        `Expected Python at:\n${bundledPythonPath}\n\nPlease reinstall the application.`
+      );
+      app.quit();
     }
   }
   
-  // In development, use system Python
-  const { execSync } = require('child_process');
-  
-  if (process.platform === 'win32') {
-    const pythonCommands = ['python', 'py', 'python3'];
-    
-    for (const cmd of pythonCommands) {
-      try {
-        execSync(`${cmd} --version`, { stdio: 'ignore' });
-        log.info(`Found Python using command: ${cmd}`);
-        return cmd;
-      } catch (e) {
-        continue;
-      }
-    }
-    
-    log.warn('No Python found in PATH, trying default "python"');
-    return 'python';
+  // In development
+  const devPythonPath = path.join(__dirname, '..', 'backend', 'python-embed', 'python.exe');
+  if (fs.existsSync(devPythonPath)) {
+    log.info(`Using development Python: ${devPythonPath}`);
+    return devPythonPath;
   }
   
-  return 'python3';
+  return 'python';
+}
+
+// Function to check if port is in use
+function checkPort(port) {
+  return new Promise((resolve) => {
+    const net = require('net');
+    const tester = net.createServer()
+      .once('error', () => resolve(false))
+      .once('listening', () => {
+        tester.once('close', () => resolve(true)).close();
+      })
+      .listen(port, '127.0.0.1');
+  });
 }
 
 // Function to start the backend server
-function startBackend() {
-  return new Promise((resolve, reject) => {
-    log.info('Starting backend server...');
-    
+async function startBackend() {
+  log.info('Starting backend server...');
+  
+  // Check if port is available
+  const portAvailable = await checkPort(BACKEND_PORT);
+  if (!portAvailable) {
+    log.warn(`Port ${BACKEND_PORT} is already in use, assuming backend is running`);
+    return;
+  }
+  
   let backendPath;
   let pythonCmd;
+  let startScript;
 
   if (isDev) {
     backendPath = path.join(__dirname, '..', 'backend');
     pythonCmd = getPythonPath();
+    startScript = 'main.py';
     log.info(`Development mode - Backend path: ${backendPath}`);
   } else {
     backendPath = path.join(process.resourcesPath, 'backend-bundle');
     pythonCmd = getPythonPath();
+    startScript = 'start_backend.py';
     log.info(`Production mode - Backend path: ${backendPath}`);
+    
+    // Verify files exist
+    const requiredFiles = ['main.py', 'config.py', 'start_backend.py'];
+    for (const file of requiredFiles) {
+      const filePath = path.join(backendPath, file);
+      if (!fs.existsSync(filePath)) {
+        log.error(`Required file missing: ${filePath}`);
+        const { dialog } = require('electron');
+        dialog.showErrorBox('Installation Error', `Required file missing: ${file}\n\nPlease reinstall the application.`);
+        app.quit();
+        return;
+      }
+    }
   }
 
-  const env = { ...process.env };
-  if (!isDev) {
-    // Set Python environment for bundled distribution
-    env.PYTHONPATH = path.join(backendPath, 'python_libs');
-    env.PYTHONHOME = path.join(process.resourcesPath, 'python-embed');
-   
-  }
+  return new Promise((resolve, reject) => {
+    const env = { ...process.env };
     
-    backendProcess = spawn(
-      pythonCmd,
-      ['-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', BACKEND_PORT.toString()],
-      {
-        cwd: backendPath,
-        env: env,
-        stdio: ['ignore', 'pipe', 'pipe']
-      }
-    );
+    // Use the startup script in production
+    const args = isDev ? 
+      ['-u', '-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', BACKEND_PORT.toString()] :
+      ['-u', startScript];
     
-    backendProcess.stdout.on('data', (data) => {
+    log.info(`Command: ${pythonCmd} ${args.join(' ')}`);
+    log.info(`Working directory: ${backendPath}`);
+    
+    backendProcess = spawn(pythonCmd, args, {
+      cwd: backendPath,
+      env: env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true
+    });
+    
+    let output = '';
+    let errorOutput = '';
+    let serverStarted = false;
+    
+    const checkStarted = (data) => {
       const message = data.toString();
-      log.info(`Backend: ${message}`);
-      
-      if (message.includes('Uvicorn running') || message.includes('Application startup complete')) {
+      if (!serverStarted && (
+        message.includes('Uvicorn running') || 
+        message.includes('Application startup complete') ||
+        message.includes('Started server process') ||
+        message.includes('Starting Uvicorn server')
+      )) {
         log.info('Backend server is ready!');
+        serverStarted = true;
         resolve();
       }
+    };
+    
+    backendProcess.stdout.on('data', (data) => {
+      output += data.toString();
+      log.info(`Backend: ${data.toString().trim()}`);
+      checkStarted(data);
     });
     
     backendProcess.stderr.on('data', (data) => {
-      const message = data.toString();
-      log.error(`Backend Error: ${message}`);
-      
-      if (message.includes('Uvicorn running') || message.includes('Application startup complete')) {
-        log.info('Backend server is ready!');
-        resolve();
-      }
+      errorOutput += data.toString();
+      log.info(`Backend: ${data.toString().trim()}`); // Uvicorn logs to stderr
+      checkStarted(data);
     });
     
     backendProcess.on('error', (error) => {
       log.error('Failed to start backend:', error);
+      log.error('Output:', output);
+      log.error('Error output:', errorOutput);
       
-      if (error.code === 'ENOENT' || error.code === 'EACCES') {
-        const { dialog } = require('electron');
-        dialog.showErrorBox(
-          'Python Not Found',
-          'Python is required to run this application.\n\n' +
-          'Please install Python 3.9 or higher from:\n' +
-          'https://www.python.org/downloads/\n\n' +
-          'Make sure to check "Add Python to PATH" during installation.'
-        );
-      }
-      
+      const { dialog } = require('electron');
+      dialog.showErrorBox(
+        'Backend Failed to Start',
+        `Error: ${error.message}\n\nPlease check the logs for more details.`
+      );
       reject(error);
     });
     
-    setTimeout(() => {
-      if (backendProcess && !backendProcess.killed) {
-        log.info('Backend started (timeout reached, assuming success)');
-        resolve();
+    backendProcess.on('exit', (code, signal) => {
+      if (code !== 0 && !serverStarted) {
+        log.error(`Backend process exited with code ${code}`);
+        log.error('Output:', output);
+        log.error('Error output:', errorOutput);
       }
-    }, 30000);
+    });
+    
+    // Timeout with health check
+    setTimeout(async () => {
+      if (!serverStarted) {
+        // Try health check
+        const http = require('http');
+        http.get(`http://127.0.0.1:${BACKEND_PORT}/api/health`, (res) => {
+          log.info('Backend health check successful!');
+          resolve();
+        }).on('error', () => {
+          log.error('Backend failed to start within timeout');
+          reject(new Error('Backend startup timeout'));
+        });
+      }
+    }, 15000);
   });
 }
 
@@ -146,7 +200,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: true
+      webSecurity: false // Allow local file access
     },
     show: false,
     backgroundColor: '#f3f4f6'
@@ -160,50 +214,27 @@ function createWindow() {
   if (isDev) {
     mainWindow.loadURL(`http://localhost:${FRONTEND_PORT}`);
     mainWindow.webContents.openDevTools();
-    log.info('Development mode - Loading from Vite dev server');
   } else {
-    // FIXED: Look for frontend files in the correct location
     const indexPath = path.join(__dirname, '..', 'frontend', 'dist', 'index.html');
-    log.info(`Production mode - Loading from ${indexPath}`);
+    log.info(`Loading: ${indexPath}`);
     
-    mainWindow.loadFile(indexPath).catch(err => {
-      log.error('Failed to load index.html:', err);
-      
-      // Show error to user
-      const errorHtml = `
-        <html>
-          <body style="font-family: Arial; padding: 40px; background: #f3f4f6;">
-            <h1 style="color: #dc2626;">Failed to Load Application</h1>
-            <p>The application files could not be loaded.</p>
-            <p><strong>Error:</strong> ${err.message}</p>
-            <p><strong>Looking for:</strong> ${indexPath}</p>
-            <hr/>
-            <p><small>Check the logs for more details.</small></p>
-          </body>
-        </html>
-      `;
-      mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml)}`);
-    });
+    if (!fs.existsSync(indexPath)) {
+      log.error('Frontend files not found!');
+      const { dialog } = require('electron');
+      dialog.showErrorBox('Installation Error', 'Frontend files not found. Please reinstall the application.');
+      app.quit();
+      return;
+    }
+    
+    mainWindow.loadFile(indexPath);
   }
   
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-  
-  mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith('http://localhost') && !url.startsWith('file://')) {
-      event.preventDefault();
-      log.warn(`Prevented navigation to: ${url}`);
-    }
-  });
-  
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    log.warn(`Prevented opening new window: ${url}`);
-    return { action: 'deny' };
-  });
 }
 
-// App lifecycle handlers
+// App lifecycle
 app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');
   
@@ -211,7 +242,8 @@ app.whenReady().then(async () => {
     await startBackend();
     log.info('Backend started successfully');
     
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Give backend time to fully initialize
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     createWindow();
     
@@ -221,41 +253,23 @@ app.whenReady().then(async () => {
       }
     });
   } catch (error) {
-    log.error('Failed to initialize application:', error);
+    log.error('Failed to initialize:', error);
+    const { dialog } = require('electron');
+    dialog.showErrorBox('Startup Error', `Failed to start application:\n${error.message}`);
     app.quit();
   }
 });
 
 app.on('window-all-closed', () => {
-  log.info('All windows closed');
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-app.on('before-quit', (event) => {
-  log.info('Application quitting...');
-  
+app.on('before-quit', () => {
   if (backendProcess && !backendProcess.killed) {
-    log.info('Terminating backend process...');
     backendProcess.kill();
   }
 });
 
-ipcMain.on('app-info', (event) => {
-  event.reply('app-info-response', {
-    version: app.getVersion(),
-    isDev: isDev,
-    backendPort: BACKEND_PORT
-  });
-});
-
-process.on('uncaughtException', (error) => {
-  log.error('Uncaught exception:', error);
-});
-
-process.on('unhandledRejection', (error) => {
-  log.error('Unhandled rejection:', error);
-});
-
-log.info('Main process script loaded');
+log.info('Main process loaded');

@@ -213,6 +213,21 @@ def calculate_bundle_size(bundle_dir):
     
     return total_size / (1024 * 1024)  # Size in MB
 
+def copy_python_embed(bundle_dir):
+    """Copy embedded Python to bundle."""
+    print_step("Copying embedded Python...")
+    
+    # Check if python-embed exists in backend folder
+    python_embed_src = os.path.join("backend", "python-embed")
+    
+    if os.path.exists(python_embed_src):
+        python_embed_dest = os.path.join(bundle_dir, "python-embed")
+        shutil.copytree(python_embed_src, python_embed_dest)
+        print_success("Embedded Python copied successfully")
+    else:
+        print_warning("python-embed not found in backend folder")
+        print_warning("Please ensure python-embed is in the backend folder")
+
 def main():
     """Main packaging function."""
     print_header("OLH AI Education Suite - Backend Packaging")
@@ -231,6 +246,9 @@ def main():
         
         # Step 4: Copy llama-cli
         copy_llama_cli(bundle_dir)
+        
+        # Step 4.5: Copy embedded Python
+        copy_python_embed(bundle_dir)
         
         # Step 5: Install Python dependencies
         if not install_python_dependencies(bundle_dir):
