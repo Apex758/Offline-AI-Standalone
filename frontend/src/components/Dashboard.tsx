@@ -338,16 +338,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       {/* Sidebar */}
       <div 
-        className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-1'} overflow-hidden relative flex flex-col`}
+        className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
         onMouseEnter={() => setSidebarOpen(true)}
         onMouseLeave={() => setSidebarOpen(false)}
       >
         <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold whitespace-nowrap">OLH Innovative Tools</h2>
-              <p className="text-sm text-gray-400 whitespace-nowrap">{user.name}</p>
-            </div>
+          <div className="flex items-center justify-center">
+            {sidebarOpen ? (
+              <div>
+                <h2 className="text-xl font-bold whitespace-nowrap">OLH Innovative Tools</h2>
+                <p className="text-sm text-gray-400 whitespace-nowrap">{user.name}</p>
+              </div>
+            ) : (
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                {user.name.charAt(0)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -363,27 +369,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 key={tool.id}
                 onClick={() => openTool(tool)}
                 disabled={count >= MAX_TABS_PER_TYPE}
-                className={`w-full flex items-center space-x-3 p-3 rounded-lg transition group ${
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
                   count >= MAX_TABS_PER_TYPE 
                     ? 'opacity-50 cursor-not-allowed' 
                     : 'hover:bg-gray-800'
                 }`}
+                title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
               >
-                <Icon className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                <div className="flex-1 text-left overflow-hidden">
-                  <p 
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    style={{
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                    }}
-                  >
-                    {tool.name}
-                  </p>
-                  <p className="text-xs text-gray-400 whitespace-nowrap">
-                    {count}/{MAX_TABS_PER_TYPE} open
-                  </p>
-                </div>
+                <Icon className="w-5 h-5 text-gray-400 group-hover:text-white flex-shrink-0" />
+                {sidebarOpen && (
+                  <div className="flex-1 text-left overflow-hidden">
+                    <p 
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                      style={{
+                        maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                      }}
+                    >
+                      {tool.name}
+                    </p>
+                    <p className="text-xs text-gray-400 whitespace-nowrap">
+                      {count}/{MAX_TABS_PER_TYPE} open
+                    </p>
+                  </div>
+                )}
               </button>
             );
           })}
@@ -391,13 +400,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
         {sidebarOpen && (
           <div className="p-4 border-t border-gray-700">
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="text-sm font-medium">Logout</span>
-            </button>
+          <button
+            onClick={onLogout}
+            className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300`}
+            title={!sidebarOpen ? 'Logout' : ''}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
+          </button>
           </div>
         )}
       </div>
