@@ -205,7 +205,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
-  const [streamingPlan, setStreamingPlan] = useState<string>('');
+  const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [step, setStep] = useState(() => savedData?.step || 1);
 
   // CRITICAL: Reset state when switching to a different tab (different tabId)
@@ -307,9 +307,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     onDataChange({
       formData,
       generatedPlan,
+      streamingPlan,
       step
     });
-  }, [formData, generatedPlan, step]);
+  }, [formData, generatedPlan, streamingPlan, step]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;

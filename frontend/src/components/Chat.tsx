@@ -24,7 +24,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
+  const [streamingMessage, setStreamingMessage] = useState(savedData?.streamingMessage || '');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -39,7 +39,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     // If no saved data or it's empty, reset to fresh state
     if (!saved || saved.length === 0) {
       setMessages([]);
-      setStreamingMessage('');
+      setStreamingMessage(savedData?.streamingMessage || '');
       setCurrentChatId(null);
       setTitleSet(false);
       setInput('');
@@ -51,7 +51,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     } else {
       // Load the saved data for this specific tab
       setMessages(saved);
-      setStreamingMessage('');
+      setStreamingMessage(savedData?.streamingMessage || '');
       
       // Optionally set the title from first message if available
       if (saved.length > 0 && onTitleChange && !titleSet) {
@@ -72,8 +72,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   }, [messages, streamingMessage]);
 
   useEffect(() => {
-    onDataChange({ messages });
-  }, [messages]);
+    onDataChange({ messages, streamingMessage });
+  }, [messages, streamingMessage]);
 
   useEffect(() => {
     loadChatHistories();
