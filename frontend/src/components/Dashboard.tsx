@@ -364,6 +364,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           {tools.map((tool) => {
             const Icon = iconMap[tool.icon];
             const count = getTabCountByType(tool.type);
+            const activeTab = tabs.find(t => t.id === activeTabId);
+            const isActiveToolType = activeTab?.type === tool.type;
+            
             return (
               <button
                 key={tool.id}
@@ -376,7 +379,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
               >
-                <Icon className="w-5 h-5 text-gray-400 group-hover:text-white flex-shrink-0" />
+                <Icon className={`w-5 h-5 flex-shrink-0 ${
+                  isActiveToolType 
+                    ? 'text-blue-400 icon-glow' 
+                    : 'text-gray-400 group-hover:text-white'
+                }`} />
                 {sidebarOpen && (
                   <div className="flex-1 text-left overflow-hidden">
                     <p 

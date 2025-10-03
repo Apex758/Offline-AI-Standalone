@@ -11,3 +11,18 @@
     scrollbar-width: none;
   }
 }
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Active icon glow effect */
+  .icon-glow {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+}
