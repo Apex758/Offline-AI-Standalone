@@ -164,16 +164,63 @@ def create_startup_script(bundle_dir):
     """Create a startup script for the backend."""
     print_step("Creating startup script...")
     
-    startup_script = os.path.join(bundle_dir, "start_backend.bat")
+    # Create Python startup script (for production)
+    startup_script_py = os.path.join(bundle_dir, "start_backend.py")
     
-    with open(startup_script, 'w') as f:
+    with open(startup_script_py, 'w', encoding='utf-8') as f:  # Add encoding='utf-8'
+        f.write('import sys\n')
+        f.write('import os\n')
+        f.write('\n')
+        f.write('# Get the directory where this script is located\n')
+        f.write('script_dir = os.path.dirname(os.path.abspath(__file__))\n')
+        f.write('\n')
+        f.write('# Add both the script directory and python_libs to path\n')
+        f.write('sys.path.insert(0, script_dir)  # For main.py and config.py\n')
+        f.write('sys.path.insert(0, os.path.join(script_dir, "python_libs"))  # For dependencies\n')
+        f.write('os.environ["PYTHONPATH"] = script_dir\n')
+        f.write('\n')
+        f.write('print("Starting backend server...")\n')
+        f.write('print(f"Python: {sys.executable}")\n')
+        f.write('print(f"Script dir: {script_dir}")\n')
+        f.write('print(f"Working dir: {os.getcwd()}")\n')
+        f.write('print(f"sys.path: {sys.path[:3]}")  # Show first 3 paths\n')
+        f.write('\n')
+        f.write('# Verify main.py exists\n')
+        f.write('main_path = os.path.join(script_dir, "main.py")\n')
+        f.write('if os.path.exists(main_path):\n')
+        f.write('    print(f"[OK] Found main.py at: {main_path}")\n')  # Changed ✓ to [OK]
+        f.write('else:\n')
+        f.write('    print(f"[ERROR] main.py NOT FOUND at: {main_path}")\n')  # Changed ✗ to [ERROR]
+        f.write('    print(f"Files in directory: {os.listdir(script_dir)}")\n')
+        f.write('    sys.exit(1)\n')
+        f.write('\n')
+        f.write('try:\n')
+        f.write('    import uvicorn\n')
+        f.write('    print("[OK] Uvicorn imported successfully")\n')  # Changed ✓ to [OK]
+        f.write('    from main import app\n')
+        f.write('    print("[OK] Main app imported successfully")\n')  # Changed ✓ to [OK]
+        f.write('    \n')
+        f.write('    print("Starting Uvicorn server on http://127.0.0.1:8000")\n')
+        f.write('    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")\n')
+        f.write('except Exception as e:\n')
+        f.write('    print(f"Error starting server: {e}")\n')
+        f.write('    import traceback\n')
+        f.write('    traceback.print_exc()\n')
+        f.write('    sys.exit(1)\n')
+    
+    print_success("Python startup script created")
+    
+    # Also create BAT file for manual testing
+    startup_script_bat = os.path.join(bundle_dir, "start_backend.bat")
+    
+    with open(startup_script_bat, 'w', encoding='utf-8') as f:  # Add encoding='utf-8'
         f.write('@echo off\n')
         f.write('echo Starting OLH AI Education Suite Backend...\n')
-        f.write('set PYTHONPATH=%~dp0python_libs\n')
+        f.write('set PYTHONPATH=%~dp0\n')
         f.write('python -m uvicorn main:app --host 127.0.0.1 --port 8000\n')
         f.write('pause\n')
     
-    print_success("Startup script created")
+    print_success("BAT startup script created")
 
 def verify_bundle(bundle_dir):
     """Verify that the bundle is complete."""
