@@ -351,5 +351,43 @@
         "timestamp": "2025-10-03T15:02:08.046Z"
       }
     ]
+  },
+  {
+    "id": "chat_1760045340850",
+    "title": "hey",
+    "timestamp": "2025-10-09T21:29:00.850Z",
+    "messages": [
+      {
+        "id": "1759503727408",
+        "role": "user",
+        "content": "hey",
+        "timestamp": "2025-10-03T15:02:07.408Z"
+      },
+      {
+        "id": "1759503728046",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\nllama_model_loader: loaded meta data with 33 key-value pairs and 147 tensors from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\llama-3.2-1b-instruct-Q5_K_M.gguf (version GGUF V3 (latest))\nllama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.\nllama_model_loader: - kv   0:                       general.architec",
+        "timestamp": "2025-10-03T15:02:08.046Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760045340860",
+    "title": "hey",
+    "timestamp": "2025-10-09T21:29:00.860Z",
+    "messages": [
+      {
+        "id": "1759503727408",
+        "role": "user",
+        "content": "hey",
+        "timestamp": "2025-10-03T15:02:07.408Z"
+      },
+      {
+        "id": "1759503728046",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\nllama_model_loader: loaded meta data with 33 key-value pairs and 147 tensors from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\llama-3.2-1b-instruct-Q5_K_M.gguf (version GGUF V3 (latest))\nllama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.\nllama_model_loader: - kv   0:                       general.architec",
+        "timestamp": "2025-10-03T15:02:08.046Z"
+      }
+    ]
   }
 ]
