@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
 import axios from 'axios';
 
 interface MultigradePlannerProps {
@@ -142,6 +142,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [step, setStep] = useState(savedData?.step || 1);
 
+  // Add new states for editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && Object.keys(saved).length > 0 && saved.subject) {
@@ -200,6 +205,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     'Mixed-Grade Collaborative Groups', 'Learning Centers', 'Tiered Assignments',
     'Flexible Grouping'
   ];
+
+  // Initialize edited content when plan is generated
+  useEffect(() => {
+    if (generatedPlan && !editedContent) {
+      setEditedContent(generatedPlan);
+    }
+  }, [generatedPlan]);
 
   useEffect(() => {
     const saved = savedData?.formData;
@@ -303,6 +315,35 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     };
   }, []);
 
+  // Enable editing mode
+  const enableEditing = () => {
+    setEditedContent(generatedPlan);
+    setIsEditing(true);
+  };
+
+  // Save edited content
+  const saveEditedContent = () => {
+    setGeneratedPlan(editedContent);
+    setIsEditing(false);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditedContent(generatedPlan);
+    setIsEditing(false);
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(editedContent || generatedPlan);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
   const loadMultigradeHistories = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/multigrade-history');
@@ -312,8 +353,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   };
 
+  // Update savePlan to use edited content
   const savePlan = async () => {
-    if (!generatedPlan) {
+    const contentToSave = isEditing ? editedContent : generatedPlan;
+    if (!contentToSave) {
       alert('No plan to save');
       return;
     }
@@ -325,7 +368,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         title: `${formData.subject} - ${formData.topic} (${formData.gradeRange})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: generatedPlan
+        generatedPlan: contentToSave
       };
 
       if (!currentPlanId) {
@@ -336,6 +379,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       await loadMultigradeHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
+      
+      // If we were editing, exit editing mode after save
+      if (isEditing) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Failed to save multigrade plan:', error);
       alert('Failed to save multigrade plan');
@@ -365,15 +413,17 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   };
 
+  // Update exportPlan to use edited content
   const exportPlan = () => {
-    if (!generatedPlan) return;
+    const contentToExport = isEditing ? editedContent : generatedPlan;
+    if (!contentToExport) return;
 
     const content = `MULTIGRADE LESSON PLAN
 ${formData.subject} - ${formData.gradeRange}
 ${formData.topic}
 Generated: ${new Date().toLocaleDateString()}
 
-${generatedPlan}`;
+${contentToExport}`;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -492,51 +542,98 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
     setStreamingPlan('');
     setCurrentPlanId(null);
     setStep(1);
+    setIsEditing(false);
+    setEditedContent('');
   };
 
   return (
     <div className="flex h-full bg-white relative">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan) ? (
+        {(generatedPlan || streamingPlan || isEditing) ? (
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Multigrade Plan...' : 'Generated Multigrade Plan'}
+                  {loading ? 'Generating Multigrade Plan...' : 
+                   isEditing ? 'Editing Multigrade Plan' : 'Generated Multigrade Plan'}
                 </h2>
                 <p className="text-sm text-gray-500">{formData.subject} - {formData.gradeRange}</p>
               </div>
               {!loading && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={savePlan}
-                    disabled={saveStatus === 'saving'}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-                  >
-                    {saveStatus === 'saving' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === 'saved' ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Saved!
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Plan
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={exportPlan}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={cancelEditing}
+                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveEditedContent}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Save Edits
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={enableEditing}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={copyToClipboard}
+                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                      >
+                        {copyStatus === 'copied' ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={savePlan}
+                        disabled={saveStatus === 'saving'}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                      >
+                        {saveStatus === 'saving' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : saveStatus === 'saved' ? (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Plan
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={exportPlan}
+                        className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -548,6 +645,7 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                     onClick={() => {
                       setGeneratedPlan('');
                       setStreamingPlan('');
+                      setIsEditing(false);
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >
@@ -558,7 +656,7 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
             </div>
             
             <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingPlan || generatedPlan) && (
+              {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-700"></div>
@@ -630,14 +728,37 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
               )}
 
               <div className="prose prose-lg max-w-none">
-                <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  {formatMultigradeText(streamingPlan || generatedPlan)}
-                  {loading && streamingPlan && (
-                    <span className="inline-flex items-center ml-1">
-                      <span className="w-0.5 h-5 bg-indigo-500 animate-pulse rounded-full"></span>
-                    </span>
-                  )}
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Edit your multigrade plan:
+                      </label>
+                      <div className="text-sm text-gray-500">
+                        {editedContent.length} characters
+                      </div>
+                    </div>
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-vertical"
+                      placeholder="Edit your multigrade plan content here..."
+                    />
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>You can format using markdown-style **bold** and *italic*</span>
+                      <span>Lines will be preserved in the final output</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    {formatMultigradeText(streamingPlan || generatedPlan)}
+                    {loading && streamingPlan && (
+                      <span className="inline-flex items-center ml-1">
+                        <span className="w-0.5 h-5 bg-indigo-500 animate-pulse rounded-full"></span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {loading && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
 import axios from 'axios';
 
 interface LessonPlannerProps {
@@ -173,6 +173,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  // Add new states for editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+
   // Initialize with proper isolation - check if savedData has actual content
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
@@ -207,6 +212,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
   const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [step, setStep] = useState(() => savedData?.step || 1);
+
+  // Initialize edited content when plan is generated
+  useEffect(() => {
+    if (generatedPlan && !editedContent) {
+      setEditedContent(generatedPlan);
+    }
+  }, [generatedPlan]);
 
   // CRITICAL: Reset state when switching to a different tab (different tabId)
   useEffect(() => {
@@ -275,6 +287,35 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     'Linguistic', 'Logical-Mathematical', 'Spatial', 'Musical',
     'Bodily-Kinesthetic', 'Interpersonal', 'Intrapersonal', 'Naturalistic'
   ];
+
+  // Enable editing mode
+  const enableEditing = () => {
+    setEditedContent(generatedPlan);
+    setIsEditing(true);
+  };
+
+  // Save edited content
+  const saveEditedContent = () => {
+    setGeneratedPlan(editedContent);
+    setIsEditing(false);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditedContent(generatedPlan);
+    setIsEditing(false);
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(editedContent || generatedPlan);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -454,8 +495,10 @@ Please generate a detailed lesson plan with clear sections and practical details
     }
   };
 
+  // Update saveLessonPlan to use edited content
   const saveLessonPlan = async () => {
-    if (!generatedPlan) {
+    const contentToSave = isEditing ? editedContent : generatedPlan;
+    if (!contentToSave) {
       alert('No lesson plan to save');
       return;
     }
@@ -467,7 +510,7 @@ Please generate a detailed lesson plan with clear sections and practical details
         title: `${formData.subject} - ${formData.topic} (Grade ${formData.gradeLevel})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: generatedPlan
+        generatedPlan: contentToSave
       };
 
       if (!currentPlanId) {
@@ -478,6 +521,11 @@ Please generate a detailed lesson plan with clear sections and practical details
       await loadLessonPlanHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
+      
+      // If we were editing, exit editing mode after save
+      if (isEditing) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Failed to save lesson plan:', error);
       alert('Failed to save lesson plan');
@@ -508,15 +556,17 @@ Please generate a detailed lesson plan with clear sections and practical details
     }
   };
 
+  // Update exportLessonPlan to use edited content
   const exportLessonPlan = () => {
-    if (!generatedPlan) return;
+    const contentToExport = isEditing ? editedContent : generatedPlan;
+    if (!contentToExport) return;
 
     const content = `LESSON PLAN
-  ${formData.subject} - Grade ${formData.gradeLevel}
-  ${formData.topic}
-  Generated: ${new Date().toLocaleDateString()}
+${formData.subject} - Grade ${formData.gradeLevel}
+${formData.topic}
+Generated: ${new Date().toLocaleDateString()}
 
-  ${generatedPlan}`;
+${contentToExport}`;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -558,53 +608,100 @@ Please generate a detailed lesson plan with clear sections and practical details
     setGeneratedPlan('');
     setStreamingPlan('');
     setStep(1);
+    setIsEditing(false);
+    setEditedContent('');
   };
 
  
   return (
     <div className="flex h-full bg-white relative">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan) ? (
+        {(generatedPlan || streamingPlan || isEditing) ? (
           // Generated plan view
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Lesson Plan...' : 'Generated Lesson Plan'}
+                  {loading ? 'Generating Lesson Plan...' : 
+                   isEditing ? 'Editing Lesson Plan' : 'Generated Lesson Plan'}
                 </h2>
                 <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
               </div>
               {!loading && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={saveLessonPlan}
-                    disabled={saveStatus === 'saving'}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-                  >
-                    {saveStatus === 'saving' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === 'saved' ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Saved!
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Plan
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={exportLessonPlan}
-                    className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={cancelEditing}
+                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveEditedContent}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Save Edits
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={enableEditing}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={copyToClipboard}
+                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                      >
+                        {copyStatus === 'copied' ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={saveLessonPlan}
+                        disabled={saveStatus === 'saving'}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                      >
+                        {saveStatus === 'saving' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : saveStatus === 'saved' ? (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Plan
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={exportLessonPlan}
+                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -616,6 +713,7 @@ Please generate a detailed lesson plan with clear sections and practical details
                     onClick={() => {
                       setGeneratedPlan('');
                       setStreamingPlan('');
+                      setIsEditing(false);
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >
@@ -627,7 +725,7 @@ Please generate a detailed lesson plan with clear sections and practical details
             
             <div className="flex-1 overflow-y-auto bg-white p-6">
               {/* Modern Header Card */}
-              {(streamingPlan || generatedPlan) && (
+              {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden">
                     {/* Background gradient */}
@@ -708,14 +806,37 @@ Please generate a detailed lesson plan with clear sections and practical details
 
               {/* Formatted content */}
               <div className="prose prose-lg max-w-none">
-                <div className="space-y-1">
-                  {formatLessonText(streamingPlan || generatedPlan)}
-                  {loading && streamingPlan && (
-                    <span className="inline-flex items-center ml-1">
-                      <span className="w-0.5 h-5 bg-blue-500 animate-pulse rounded-full"></span>
-                    </span>
-                  )}
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Edit your lesson plan:
+                      </label>
+                      <div className="text-sm text-gray-500">
+                        {editedContent.length} characters
+                      </div>
+                    </div>
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+                      placeholder="Edit your lesson plan content here..."
+                    />
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>You can format using markdown-style **bold** and *italic*</span>
+                      <span>Lines will be preserved in the final output</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {formatLessonText(streamingPlan || generatedPlan)}
+                    {loading && streamingPlan && (
+                      <span className="inline-flex items-center ml-1">
+                        <span className="w-0.5 h-5 bg-blue-500 animate-pulse rounded-full"></span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Loading progress at bottom */}

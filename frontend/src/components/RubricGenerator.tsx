@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, FileText, Trash2, Save, Download, History, X } from 'lucide-react';
+import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
 import axios from 'axios';
 
 interface RubricGeneratorProps {
@@ -218,6 +218,11 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [currentRubricId, setCurrentRubricId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  // Add new states for editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && Object.keys(saved).length > 0 && saved.assignmentTitle) {
@@ -259,6 +264,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     'Creativity', 'Organization', 'Research Skills', 'Problem Solving',
     'Technical Skills', 'Presentation Skills'
   ];
+
+  // Initialize edited content when rubric is generated
+  useEffect(() => {
+    if (generatedRubric && !editedContent) {
+      setEditedContent(generatedRubric);
+    }
+  }, [generatedRubric]);
 
   useEffect(() => {
     const saved = savedData?.formData;
@@ -351,6 +363,35 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     };
   }, []);
 
+  // Enable editing mode
+  const enableEditing = () => {
+    setEditedContent(generatedRubric);
+    setIsEditing(true);
+  };
+
+  // Save edited content
+  const saveEditedContent = () => {
+    setGeneratedRubric(editedContent);
+    setIsEditing(false);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditedContent(generatedRubric);
+    setIsEditing(false);
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(editedContent || generatedRubric);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
   const loadRubricHistories = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/rubric-history');
@@ -360,8 +401,10 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   };
 
+  // Update saveRubric to use edited content
   const saveRubric = async () => {
-    if (!generatedRubric) {
+    const contentToSave = isEditing ? editedContent : generatedRubric;
+    if (!contentToSave) {
       alert('No rubric to save');
       return;
     }
@@ -373,7 +416,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         title: `${formData.assignmentTitle} - ${formData.subject} (${formData.gradeLevel})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedRubric: generatedRubric
+        generatedRubric: contentToSave
       };
 
       if (!currentRubricId) {
@@ -384,6 +427,11 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       await loadRubricHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
+      
+      // If we were editing, exit editing mode after save
+      if (isEditing) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Failed to save rubric:', error);
       alert('Failed to save rubric');
@@ -413,8 +461,10 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   };
 
+  // Update exportRubric to use edited content
   const exportRubric = () => {
-    if (!generatedRubric) return;
+    const contentToExport = isEditing ? editedContent : generatedRubric;
+    if (!contentToExport) return;
 
     const content = `GRADING RUBRIC
 ${formData.assignmentTitle}
@@ -422,7 +472,7 @@ ${formData.subject} - ${formData.gradeLevel}
 ${formData.assignmentType}
 Generated: ${new Date().toLocaleDateString()}
 
-${generatedRubric}`;
+${contentToExport}`;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -505,6 +555,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
     setGeneratedRubric('');
     setStreamingRubric('');
     setCurrentRubricId(null);
+    setIsEditing(false);
+    setEditedContent('');
   };
 
   const validateForm = () => {
@@ -515,46 +567,91 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
   return (
     <div className="flex h-full bg-white relative">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedRubric || streamingRubric) ? (
+        {(generatedRubric || streamingRubric || isEditing) ? (
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Rubric...' : 'Generated Rubric'}
+                  {loading ? 'Generating Rubric...' : 
+                   isEditing ? 'Editing Rubric' : 'Generated Rubric'}
                 </h2>
                 <p className="text-sm text-gray-500">{formData.assignmentTitle} - {formData.subject}</p>
               </div>
               {!loading && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={saveRubric}
-                    disabled={saveStatus === 'saving'}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-                  >
-                    {saveStatus === 'saving' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === 'saved' ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Saved!
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Rubric
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={exportRubric}
-                    className="flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={cancelEditing}
+                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveEditedContent}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Save Edits
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={enableEditing}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={copyToClipboard}
+                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                      >
+                        {copyStatus === 'copied' ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={saveRubric}
+                        disabled={saveStatus === 'saving'}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                      >
+                        {saveStatus === 'saving' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : saveStatus === 'saved' ? (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Rubric
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={exportRubric}
+                        className="flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -566,6 +663,7 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                     onClick={() => {
                       setGeneratedRubric('');
                       setStreamingRubric('');
+                      setIsEditing(false);
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >
@@ -576,7 +674,7 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
             </div>
             
             <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingRubric || generatedRubric) && (
+              {(streamingRubric || generatedRubric) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-700"></div>
@@ -644,14 +742,37 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
               )}
 
               <div className="prose prose-lg max-w-none">
-                <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  {formatRubricText(streamingRubric || generatedRubric)}
-                  {loading && streamingRubric && (
-                    <span className="inline-flex items-center ml-1">
-                      <span className="w-0.5 h-5 bg-amber-500 animate-pulse rounded-full"></span>
-                    </span>
-                  )}
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Edit your rubric:
+                      </label>
+                      <div className="text-sm text-gray-500">
+                        {editedContent.length} characters
+                      </div>
+                    </div>
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-vertical"
+                      placeholder="Edit your rubric content here..."
+                    />
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>You can format using markdown-style **bold** and *italic*</span>
+                      <span>Lines will be preserved in the final output</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    {formatRubricText(streamingRubric || generatedRubric)}
+                    {loading && streamingRubric && (
+                      <span className="inline-flex items-center ml-1">
+                        <span className="w-0.5 h-5 bg-amber-500 animate-pulse rounded-full"></span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {loading && (
