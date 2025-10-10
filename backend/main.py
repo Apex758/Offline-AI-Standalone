@@ -13,6 +13,31 @@ import json
 import asyncio
 from config import MODEL_PATH, LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS
 
+
+def load_json_data(filename: str):
+    """Load data from a JSON file, create if doesn't exist"""
+    filepath = os.path.join("data", filename)
+    os.makedirs("data", exist_ok=True)
+    
+    if not os.path.exists(filepath):
+        with open(filepath, 'w') as f:
+            json.dump([], f)
+        return []
+    
+    try:
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return []
+
+def save_json_data(filename: str, data):
+    """Save data to a JSON file"""
+    filepath = os.path.join("data", filename)
+    os.makedirs("data", exist_ok=True)
+    
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
+        
 app = FastAPI()
 
 app.add_middleware(
@@ -754,7 +779,313 @@ async def websocket_lesson_plan(websocket: WebSocket):
         print(f"Lesson Plan WebSocket error: {str(e)}")
         import traceback
         traceback.print_exc()
-        
+ 
+ 
+@app.websocket("/ws/quiz")
+async def quiz_websocket(websocket: WebSocket):
+    await websocket.accept()
+    print("Quiz WebSocket connection accepted")
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            prompt = data.get("prompt", "")
+            print(f"Received quiz prompt: {prompt[:100]}...")
+            
+            full_response = ""
+            for chunk in llm.create_completion(
+                prompt,
+                max_tokens=2000,
+                temperature=0.7,
+                stream=True
+            ):
+                if 'choices' in chunk and len(chunk['choices']) > 0:
+                    text = chunk['choices'][0].get('text', '')
+                    if text:
+                        full_response += text
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": text
+                        })
+            
+            await websocket.send_json({
+                "type": "done",
+                "full_response": full_response
+            })
+            print("Quiz generation complete")
+            
+    except WebSocketDisconnect:
+        print("Quiz WebSocket disconnected")
+    except Exception as e:
+        print(f"Quiz WebSocket error: {e}")
+
+
+@app.websocket("/ws/rubric")
+async def rubric_websocket(websocket: WebSocket):
+    await websocket.accept()
+    print("Rubric WebSocket connection accepted")
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            prompt = data.get("prompt", "")
+            print(f"Received rubric prompt: {prompt[:100]}...")
+            
+            full_response = ""
+            for chunk in llm.create_completion(
+                prompt,
+                max_tokens=2000,
+                temperature=0.7,
+                stream=True
+            ):
+                if 'choices' in chunk and len(chunk['choices']) > 0:
+                    text = chunk['choices'][0].get('text', '')
+                    if text:
+                        full_response += text
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": text
+                        })
+            
+            await websocket.send_json({
+                "type": "done",
+                "full_response": full_response
+            })
+            print("Rubric generation complete")
+            
+    except WebSocketDisconnect:
+        print("Rubric WebSocket disconnected")
+    except Exception as e:
+        print(f"Rubric WebSocket error: {e}")
+
+
+@app.websocket("/ws/kindergarten")
+async def kindergarten_websocket(websocket: WebSocket):
+    await websocket.accept()
+    print("Kindergarten WebSocket connection accepted")
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            prompt = data.get("prompt", "")
+            print(f"Received kindergarten prompt: {prompt[:100]}...")
+            
+            full_response = ""
+            for chunk in llm.create_completion(
+                prompt,
+                max_tokens=2500,
+                temperature=0.8,
+                stream=True
+            ):
+                if 'choices' in chunk and len(chunk['choices']) > 0:
+                    text = chunk['choices'][0].get('text', '')
+                    if text:
+                        full_response += text
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": text
+                        })
+            
+            await websocket.send_json({
+                "type": "done",
+                "full_response": full_response
+            })
+            print("Kindergarten plan generation complete")
+            
+    except WebSocketDisconnect:
+        print("Kindergarten WebSocket disconnected")
+    except Exception as e:
+        print(f"Kindergarten WebSocket error: {e}")
+
+
+@app.websocket("/ws/multigrade")
+async def multigrade_websocket(websocket: WebSocket):
+    await websocket.accept()
+    print("Multigrade WebSocket connection accepted")
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            prompt = data.get("prompt", "")
+            print(f"Received multigrade prompt: {prompt[:100]}...")
+            
+            full_response = ""
+            for chunk in llm.create_completion(
+                prompt,
+                max_tokens=2500,
+                temperature=0.7,
+                stream=True
+            ):
+                if 'choices' in chunk and len(chunk['choices']) > 0:
+                    text = chunk['choices'][0].get('text', '')
+                    if text:
+                        full_response += text
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": text
+                        })
+            
+            await websocket.send_json({
+                "type": "done",
+                "full_response": full_response
+            })
+            print("Multigrade plan generation complete")
+            
+    except WebSocketDisconnect:
+        print("Multigrade WebSocket disconnected")
+    except Exception as e:
+        print(f"Multigrade WebSocket error: {e}")
+
+
+@app.websocket("/ws/cross-curricular")
+async def cross_curricular_websocket(websocket: WebSocket):
+    await websocket.accept()
+    print("Cross-curricular WebSocket connection accepted")
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            prompt = data.get("prompt", "")
+            print(f"Received cross-curricular prompt: {prompt[:100]}...")
+            
+            full_response = ""
+            for chunk in llm.create_completion(
+                prompt,
+                max_tokens=2500,
+                temperature=0.7,
+                stream=True
+            ):
+                if 'choices' in chunk and len(chunk['choices']) > 0:
+                    text = chunk['choices'][0].get('text', '')
+                    if text:
+                        full_response += text
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": text
+                        })
+            
+            await websocket.send_json({
+                "type": "done",
+                "full_response": full_response
+            })
+            print("Cross-curricular plan generation complete")
+            
+    except WebSocketDisconnect:
+        print("Cross-curricular WebSocket disconnected")
+    except Exception as e:
+        print(f"Cross-curricular WebSocket error: {e}")
+
+
+@app.get("/api/quiz-history")
+async def get_quiz_history():
+    return load_json_data("quiz_history.json")
+
+@app.post("/api/quiz-history")
+async def save_quiz_history(data: dict):
+    histories = load_json_data("quiz_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("quiz_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/quiz-history/{quiz_id}")
+async def delete_quiz_history(quiz_id: str):
+    histories = load_json_data("quiz_history.json")
+    histories = [h for h in histories if h.get("id") != quiz_id]
+    save_json_data("quiz_history.json", histories)
+    return {"success": True}
+
+
+@app.get("/api/rubric-history")
+async def get_rubric_history():
+    return load_json_data("rubric_history.json")
+
+@app.post("/api/rubric-history")
+async def save_rubric_history(data: dict):
+    histories = load_json_data("rubric_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("rubric_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/rubric-history/{rubric_id}")
+async def delete_rubric_history(rubric_id: str):
+    histories = load_json_data("rubric_history.json")
+    histories = [h for h in histories if h.get("id") != rubric_id]
+    save_json_data("rubric_history.json", histories)
+    return {"success": True}
+
+
+@app.get("/api/kindergarten-history")
+async def get_kindergarten_history():
+    return load_json_data("kindergarten_history.json")
+
+@app.post("/api/kindergarten-history")
+async def save_kindergarten_history(data: dict):
+    histories = load_json_data("kindergarten_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("kindergarten_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/kindergarten-history/{plan_id}")
+async def delete_kindergarten_history(plan_id: str):
+    histories = load_json_data("kindergarten_history.json")
+    histories = [h for h in histories if h.get("id") != plan_id]
+    save_json_data("kindergarten_history.json", histories)
+    return {"success": True}
+
+
+@app.get("/api/multigrade-history")
+async def get_multigrade_history():
+    return load_json_data("multigrade_history.json")
+
+@app.post("/api/multigrade-history")
+async def save_multigrade_history(data: dict):
+    histories = load_json_data("multigrade_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("multigrade_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/multigrade-history/{plan_id}")
+async def delete_multigrade_history(plan_id: str):
+    histories = load_json_data("multigrade_history.json")
+    histories = [h for h in histories if h.get("id") != plan_id]
+    save_json_data("multigrade_history.json", histories)
+    return {"success": True}
+
+
+@app.get("/api/cross-curricular-history")
+async def get_cross_curricular_history():
+    return load_json_data("cross_curricular_history.json")
+
+@app.post("/api/cross-curricular-history")
+async def save_cross_curricular_history(data: dict):
+    histories = load_json_data("cross_curricular_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("cross_curricular_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/cross-curricular-history/{plan_id}")
+async def delete_cross_curricular_history(plan_id: str):
+    histories = load_json_data("cross_curricular_history.json")
+    histories = [h for h in histories if h.get("id") != plan_id]
+    save_json_data("cross_curricular_history.json", histories)
+    return {"success": True}
+
+
 @app.get("/api/health")
 async def health():
     return {

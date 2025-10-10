@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2, FileText, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Loader2, FileText, Trash2, Save, Download, History, X } from 'lucide-react';
+import axios from 'axios';
 
 interface RubricGeneratorProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+}
+
+interface RubricHistory {
+  id: string;
+  title: string;
+  timestamp: string;
+  formData: FormData;
+  generatedRubric: string;
 }
 
 interface FormData {
@@ -19,8 +28,140 @@ interface FormData {
   focusAreas: string[];
 }
 
+const formatRubricText = (text: string) => {
+  if (!text) return null;
+
+  let cleanText = text;
+  if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
+    cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
+  }
+
+  const lines = cleanText.split('\n');
+  const elements: JSX.Element[] = [];
+  let currentIndex = 0;
+  let inTable = false;
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    
+    if (!trimmed) {
+      elements.push(<div key={`space-${currentIndex++}`} className="h-3"></div>);
+      return;
+    }
+
+    // Main section headings (bold, standalone)
+    if (trimmed.match(/^\*\*(.+)\*\*$/) && !trimmed.includes(':')) {
+      const title = trimmed.replace(/\*\*/g, '');
+      elements.push(
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-amber-900 mt-8 mb-4 pb-2 border-b-2 border-amber-300">
+          {title}
+        </h2>
+      );
+      return;
+    }
+
+    // Subsection headings (with colon)
+    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
+      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
+      elements.push(
+        <h3 key={`subsection-${currentIndex++}`} className="text-lg font-semibold text-amber-700 mt-6 mb-3">
+          {title}:
+        </h3>
+      );
+      return;
+    }
+
+    // Criteria levels (e.g., "Excellent (4 points):")
+    if (trimmed.match(/^(Excellent|Proficient|Developing|Beginning|Outstanding|Good|Fair|Needs Improvement).*:/i)) {
+      elements.push(
+        <div key={`criteria-${currentIndex++}`} className="mt-4 mb-2">
+          <div className="bg-amber-100 border-l-4 border-amber-500 p-3 rounded-r-lg">
+            <h4 className="font-bold text-amber-900">{trimmed}</h4>
+          </div>
+        </div>
+      );
+      return;
+    }
+
+    // Table detection (contains | characters)
+    if (trimmed.includes('|')) {
+      if (!inTable) {
+        inTable = true;
+      }
+      
+      const cells = trimmed.split('|').map(cell => cell.trim()).filter(cell => cell.length > 0);
+      
+      // Check if it's a separator row (contains dashes)
+      if (trimmed.includes('---')) {
+        return; // Skip separator rows
+      }
+      
+      if (cells.length > 0) {
+        elements.push(
+          <div key={`table-row-${currentIndex++}`} className="grid grid-cols-${cells.length} gap-2 border-b border-amber-200 py-2">
+            {cells.map((cell, idx) => (
+              <div key={idx} className={`px-2 ${idx === 0 ? 'font-semibold text-amber-900' : 'text-gray-700'}`}>
+                {cell}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return;
+    } else {
+      inTable = false;
+    }
+
+    // Bullet points
+    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
+      const content = trimmed.replace(/^\s*\*\s+/, '');
+      elements.push(
+        <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
+          <span className="text-amber-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="text-gray-700 leading-relaxed">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Numbered items
+    if (trimmed.match(/^\d+\./)) {
+      const number = trimmed.match(/^\d+\./)?.[0] || '';
+      const content = trimmed.replace(/^\d+\.\s*/, '');
+      elements.push(
+        <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
+          <span className="text-amber-600 mr-3 font-semibold min-w-[2rem] bg-amber-50 rounded px-2 py-1 text-sm">
+            {number}
+          </span>
+          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Regular paragraphs
+    if (trimmed.length > 0) {
+      elements.push(
+        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+          {trimmed}
+        </p>
+      );
+    }
+  });
+
+  return elements;
+};
+
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   const [loading, setLoading] = useState(false);
+  const shouldReconnectRef = useRef(true);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [rubricHistories, setRubricHistories] = useState<RubricHistory[]>([]);
+  const [currentRubricId, setCurrentRubricId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && Object.keys(saved).length > 0 && saved.assignmentTitle) {
@@ -40,6 +181,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   });
 
   const [generatedRubric, setGeneratedRubric] = useState<string>(savedData?.generatedRubric || '');
+  const [streamingRubric, setStreamingRubric] = useState<string>(savedData?.streamingRubric || '');
 
   const assignmentTypes = [
     'Essay', 'Presentation', 'Project', 'Lab Report', 'Creative Writing', 
@@ -77,15 +219,167 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         focusAreas: []
       });
       setGeneratedRubric('');
+      setStreamingRubric('');
     } else {
       setFormData(saved);
       setGeneratedRubric(savedData?.generatedRubric || '');
+      setStreamingRubric(savedData?.streamingRubric || '');
     }
   }, [tabId]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedRubric });
-  }, [formData, generatedRubric]);
+    onDataChange({ formData, generatedRubric, streamingRubric });
+  }, [formData, generatedRubric, streamingRubric]);
+
+  useEffect(() => {
+    shouldReconnectRef.current = true;
+
+    const connectWebSocket = () => {
+      if (!shouldReconnectRef.current) return;
+
+      try {
+        const ws = new WebSocket('ws://localhost:8000/ws/rubric');
+        
+        ws.onopen = () => console.log('Rubric WebSocket connected');
+        
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'token') {
+            setStreamingRubric(prev => prev + data.content);
+          } else if (data.type === 'done') {
+            setStreamingRubric(current => {
+              const finalMessage = current || data.full_response;
+              setGeneratedRubric(finalMessage);
+              setLoading(false);
+              return '';
+            });
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setLoading(false);
+        };
+        
+        ws.onclose = () => {
+          console.log('WebSocket closed');
+          wsRef.current = null;
+          if (shouldReconnectRef.current) {
+            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
+          }
+        };
+        
+        wsRef.current = ws;
+      } catch (error) {
+        console.error('Failed to create WebSocket:', error);
+        if (shouldReconnectRef.current) {
+          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
+        }
+      }
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      shouldReconnectRef.current = false;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+      wsRef.current = null;
+    };
+  }, []);
+
+  const loadRubricHistories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/rubric-history');
+      setRubricHistories(response.data);
+    } catch (error) {
+      console.error('Failed to load rubric histories:', error);
+    }
+  };
+
+  const saveRubric = async () => {
+    if (!generatedRubric) {
+      alert('No rubric to save');
+      return;
+    }
+
+    setSaveStatus('saving');
+    try {
+      const rubricData = {
+        id: currentRubricId || `rubric_${Date.now()}`,
+        title: `${formData.assignmentTitle} - ${formData.subject} (${formData.gradeLevel})`,
+        timestamp: new Date().toISOString(),
+        formData: formData,
+        generatedRubric: generatedRubric
+      };
+
+      if (!currentRubricId) {
+        setCurrentRubricId(rubricData.id);
+      }
+
+      await axios.post('http://localhost:8000/api/rubric-history', rubricData);
+      await loadRubricHistories();
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      console.error('Failed to save rubric:', error);
+      alert('Failed to save rubric');
+      setSaveStatus('idle');
+    }
+  };
+
+  const loadRubricHistory = (history: RubricHistory) => {
+    setFormData(history.formData);
+    setGeneratedRubric(history.generatedRubric);
+    setCurrentRubricId(history.id);
+    setHistoryOpen(false);
+  };
+
+  const deleteRubricHistory = async (rubricId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this rubric?')) return;
+    
+    try {
+      await axios.delete(`http://localhost:8000/api/rubric-history/${rubricId}`);
+      await loadRubricHistories();
+      if (currentRubricId === rubricId) {
+        clearForm();
+      }
+    } catch (error) {
+      console.error('Failed to delete rubric:', error);
+    }
+  };
+
+  const exportRubric = () => {
+    if (!generatedRubric) return;
+
+    const content = `GRADING RUBRIC
+${formData.assignmentTitle}
+${formData.subject} - ${formData.gradeLevel}
+${formData.assignmentType}
+Generated: ${new Date().toLocaleDateString()}
+
+${generatedRubric}`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rubric-${formData.assignmentTitle.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    loadRubricHistories();
+  }, []);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -101,12 +395,41 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   const generateRubric = () => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      alert('Connection not established. Please wait and try again.');
+      return;
+    }
+
     setLoading(true);
-    // TODO: Implement WebSocket connection for streaming
-    setTimeout(() => {
-      setGeneratedRubric('Rubric generation will be implemented with backend');
+    setStreamingRubric('');
+
+    const prompt = `Generate a comprehensive grading rubric with the following specifications:
+
+ASSIGNMENT INFORMATION:
+- Title: ${formData.assignmentTitle}
+- Type: ${formData.assignmentType}
+- Subject: ${formData.subject}
+- Grade Level: ${formData.gradeLevel}
+- Date: ${new Date().toLocaleDateString()}
+
+LEARNING OBJECTIVES:
+${formData.learningObjectives}
+
+${formData.specificRequirements ? `SPECIFIC REQUIREMENTS:\n${formData.specificRequirements}\n` : ''}
+
+RUBRIC SPECIFICATIONS:
+- Performance Levels: ${formData.performanceLevels}
+${formData.includePointValues ? '- Include point values for each level' : ''}
+${formData.focusAreas.length > 0 ? `- Focus Areas: ${formData.focusAreas.join(', ')}` : ''}
+
+Please create a detailed, well-structured rubric with clear criteria for each performance level. Format it as a table or structured list that's easy to read and use for grading.`;
+
+    try {
+      wsRef.current.send(JSON.stringify({ prompt }));
+    } catch (error) {
+      console.error('Failed to send rubric request:', error);
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const clearForm = () => {
@@ -122,6 +445,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       focusAreas: []
     });
     setGeneratedRubric('');
+    setStreamingRubric('');
+    setCurrentRubricId(null);
   };
 
   const validateForm = () => {
@@ -130,33 +455,178 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   return (
-    <div className="flex h-full bg-white">
-      <div className="flex-1 flex flex-col">
-        {generatedRubric ? (
+    <div className="flex h-full bg-white relative">
+      <div className="flex-1 flex flex-col bg-white">
+        {(generatedRubric || streamingRubric) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Generated Rubric</h2>
-                <p className="text-sm text-gray-500">{formData.assignmentTitle}</p>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {loading ? 'Generating Rubric...' : 'Generated Rubric'}
+                </h2>
+                <p className="text-sm text-gray-500">{formData.assignmentTitle} - {formData.subject}</p>
               </div>
-              <button
-                onClick={() => setGeneratedRubric('')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Create New Rubric
-              </button>
+              {!loading && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={saveRubric}
+                    disabled={saveStatus === 'saving'}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                  >
+                    {saveStatus === 'saving' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveStatus === 'saved' ? (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Saved!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Rubric
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={exportRubric}
+                    className="flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </button>
+                  <button
+                    onClick={() => setHistoryOpen(!historyOpen)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition"
+                    title="Rubric History"
+                  >
+                    <History className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setGeneratedRubric('');
+                      setStreamingRubric('');
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Create New Rubric
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex-1 overflow-y-auto p-8">
-              <div className="prose max-w-none">
-                {generatedRubric}
+            
+            <div className="flex-1 overflow-y-auto bg-white p-6">
+              {(streamingRubric || generatedRubric) && (
+                <div className="mb-8">
+                  <div className="relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-700"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/90 to-orange-600/90"></div>
+                    
+                    <div className="relative px-8 py-8">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
+                            <span className="text-white text-sm font-medium">{formData.subject}</span>
+                          </div>
+                          
+                          <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
+                            {formData.assignmentTitle}
+                          </h1>
+                          
+                          <div className="flex flex-wrap items-center gap-4 text-amber-100">
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-amber-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.gradeLevel}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-amber-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.assignmentType}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-amber-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.performanceLevels} Performance Levels</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {loading && (
+                          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                            <div className="flex items-center text-white">
+                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              <div>
+                                <div className="text-sm font-medium">Generating...</div>
+                                <div className="text-xs text-amber-100">AI-powered rubric</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="mt-6 pt-4 border-t border-white/20">
+                        <div className="flex items-center justify-between">
+                          <div className="text-amber-100 text-sm">
+                            <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
+                          </div>
+                          {!loading && (
+                            <div className="flex items-center text-green-200 text-sm">
+                              <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
+                              <span>Generation Complete</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                  </div>
+                </div>
+              )}
+
+              <div className="prose prose-lg max-w-none">
+                <div className="space-y-1">
+                  {formatRubricText(streamingRubric || generatedRubric)}
+                  {loading && streamingRubric && (
+                    <span className="inline-flex items-center ml-1">
+                      <span className="w-0.5 h-5 bg-amber-500 animate-pulse rounded-full"></span>
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {loading && (
+                <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-amber-900 font-medium">Creating your rubric</div>
+                      <div className="text-amber-600 text-sm mt-1">Detailed grading criteria and performance levels</div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce"></div>
+                      <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-3 h-3 bg-amber-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
           <>
-            <div className="border-b border-gray-200 p-4">
-              <h2 className="text-xl font-semibold text-gray-800">Rubric Details</h2>
-              <p className="text-sm text-gray-500">Provide information about your assignment to generate a customized rubric</p>
+            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Rubric Details</h2>
+                <p className="text-sm text-gray-500">Provide information about your assignment to generate a customized rubric</p>
+              </div>
+              <button
+                onClick={() => setHistoryOpen(!historyOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                title="Rubric History"
+              >
+                <History className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
@@ -169,7 +639,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     type="text"
                     value={formData.assignmentTitle}
                     onChange={(e) => handleInputChange('assignmentTitle', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                     placeholder="e.g., Persuasive Essay on Climate Change"
                   />
                 </div>
@@ -181,7 +651,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <select
                     value={formData.assignmentType}
                     onChange={(e) => handleInputChange('assignmentType', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                   >
                     <option value="">Select type</option>
                     {assignmentTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -195,7 +665,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <select
                     value={formData.subject}
                     onChange={(e) => handleInputChange('subject', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                   >
                     <option value="">Select subject</option>
                     {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -209,7 +679,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <select
                     value={formData.gradeLevel}
                     onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                   >
                     <option value="">Select grade</option>
                     {grades.map(g => <option key={g} value={g}>{g}</option>)}
@@ -224,7 +694,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     value={formData.learningObjectives}
                     onChange={(e) => handleInputChange('learningObjectives', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                     placeholder="What should students demonstrate or achieve?"
                   />
                 </div>
@@ -237,7 +707,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     value={formData.specificRequirements}
                     onChange={(e) => handleInputChange('specificRequirements', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                     placeholder="Any specific requirements or criteria for the assignment"
                   />
                 </div>
@@ -255,7 +725,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                           value={level}
                           checked={formData.performanceLevels === level}
                           onChange={(e) => handleInputChange('performanceLevels', e.target.value)}
-                          className="w-4 h-4 text-blue-600"
+                          className="w-4 h-4 text-amber-600"
                         />
                         <span className="text-sm">{level} Levels</span>
                       </label>
@@ -270,7 +740,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       type="checkbox"
                       checked={formData.includePointValues}
                       onChange={(e) => handleInputChange('includePointValues', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded"
+                      className="w-4 h-4 text-amber-600 rounded"
                     />
                     <span className="text-sm">Include point values</span>
                   </label>
@@ -287,7 +757,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                           type="checkbox"
                           checked={formData.focusAreas.includes(area)}
                           onChange={() => handleCheckboxChange('focusAreas', area)}
-                          className="w-4 h-4 text-blue-600 rounded"
+                          className="w-4 h-4 text-amber-600 rounded"
                         />
                         <span className="text-sm">{area}</span>
                       </label>
@@ -327,6 +797,63 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
             </div>
           </>
         )}
+      </div>
+
+      {/* History Panel */}
+      <div
+        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+          historyOpen ? 'w-80' : 'w-0'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-full flex flex-col p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Saved Rubrics</h3>
+            <button
+              onClick={() => setHistoryOpen(false)}
+              className="p-1 rounded hover:bg-gray-200 transition"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
+            {rubricHistories.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">No saved rubrics yet</p>
+              </div>
+            ) : (
+              rubricHistories.map((history) => (
+                <div
+                  key={history.id}
+                  onClick={() => loadRubricHistory(history)}
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
+                    currentRubricId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                        {history.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => deleteRubricHistory(history.id, e)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                      title="Delete rubric"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
