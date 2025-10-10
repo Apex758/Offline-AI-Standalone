@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, MessageSquare, ClipboardCheck, BookOpen, FileText, LogOut, Plus, Columns, ChevronDown, ChevronRight } from 'lucide-react';
+import { Menu, X, MessageSquare, ClipboardCheck, BookOpen, FileText, LogOut, Plus, Columns, ChevronDown, ChevronRight, GraduationCap, ListChecks, BookMarked, School, Users } from 'lucide-react';
 import { User, Tab, Tool } from '../types';
 import Chat from './Chat';
 import LessonPlanner from './LessonPlanner';
 import CurriculumViewer from './CurriculumViewer';
+import QuizGenerator from './QuizGenerator';
+import RubricGenerator from './RubricGenerator';
+import MultigradePlanner from './MultigradePlanner';
+import KindergartenPlanner from './KindergartenPlanner';
+import CrossCurricularPlanner from './CrossCurricularPlanner';
 
 interface DashboardProps {
   user: User;
@@ -33,18 +38,53 @@ const tools: Tool[] = [
     description: 'Automated grading assistant'
   },
   {
-    id: 'lesson-planner',
-    name: 'Lesson Planner',
-    icon: 'BookOpen',
-    type: 'lesson-planner',
-    description: 'Create comprehensive lesson plans'
+    id: 'quiz-generator',
+    name: 'Quiz Generator',
+    icon: 'ListChecks',
+    type: 'quiz-generator',
+    description: 'Generate customized quizzes',
+    group: 'tools'
   },
   {
     id: 'rubric-generator',
     name: 'Rubric Generator',
     icon: 'FileText',
     type: 'rubric-generator',
-    description: 'Generate grading rubrics'
+    description: 'Generate grading rubrics',
+    group: 'tools'
+  },
+  // Lesson Planner Group
+  {
+    id: 'lesson-planner',
+    name: 'Standard Lesson',
+    icon: 'BookMarked',
+    type: 'lesson-planner',
+    description: 'Create comprehensive lesson plans',
+    group: 'lesson-planners'
+  },
+  {
+    id: 'kindergarten-planner',
+    name: 'Kindergarten',
+    icon: 'GraduationCap',
+    type: 'kindergarten-planner',
+    description: 'Kindergarten-specific lesson plans',
+    group: 'lesson-planners'
+  },
+  {
+    id: 'multigrade-planner',
+    name: 'Multigrade',
+    icon: 'Users',
+    type: 'multigrade-planner',
+    description: 'Plans for multiple grade levels',
+    group: 'lesson-planners'
+  },
+  {
+    id: 'cross-curricular-planner',
+    name: 'Cross-Curricular',
+    icon: 'School',
+    type: 'cross-curricular-planner',
+    description: 'Integrated subject lesson plans',
+    group: 'lesson-planners'
   }
 ];
 
@@ -52,7 +92,12 @@ const iconMap: { [key: string]: any } = {
   MessageSquare,
   ClipboardCheck,
   BookOpen,
-  FileText
+  FileText,
+  GraduationCap,
+  ListChecks,
+  BookMarked,
+  School,
+  Users
 };
 
 const MAX_TABS_PER_TYPE = 3;
@@ -69,19 +114,39 @@ const tabColors: { [key: string]: { border: string; bg: string; activeBg: string
     activeBg: 'bg-green-600' 
   },
   'lesson-planner': { 
-    border: 'border-green-500', 
-    bg: 'bg-green-50', 
-    activeBg: 'bg-green-600' 
-  },
-  'grader': { 
     border: 'border-purple-500', 
     bg: 'bg-purple-50', 
     activeBg: 'bg-purple-600' 
   },
-  'rubric-generator': { 
+  'kindergarten-planner': { 
+    border: 'border-pink-500', 
+    bg: 'bg-pink-50', 
+    activeBg: 'bg-pink-600' 
+  },
+  'multigrade-planner': { 
+    border: 'border-indigo-500', 
+    bg: 'bg-indigo-50', 
+    activeBg: 'bg-indigo-600' 
+  },
+  'cross-curricular-planner': { 
+    border: 'border-teal-500', 
+    bg: 'bg-teal-50', 
+    activeBg: 'bg-teal-600' 
+  },
+  'grader': { 
     border: 'border-orange-500', 
     bg: 'bg-orange-50', 
     activeBg: 'bg-orange-600' 
+  },
+  'quiz-generator': { 
+    border: 'border-cyan-500', 
+    bg: 'bg-cyan-50', 
+    activeBg: 'bg-cyan-600' 
+  },
+  'rubric-generator': { 
+    border: 'border-amber-500', 
+    bg: 'bg-amber-50', 
+    activeBg: 'bg-amber-600' 
   },
   'split': { 
     border: 'border-gray-400', 
@@ -96,6 +161,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ tabId?: string; groupType?: string; x: number; y: number } | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
 
   const getTabCountByType = (type: string) => {
     return tabs.filter(tab => tab.type === type && tab.type !== 'split').length;
@@ -263,11 +329,39 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         );
       case 'lesson-planner':
         return <LessonPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'kindergarten-planner':
+        return (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Kindergarten Lesson Planner</h2>
+            <p className="text-gray-600">Coming soon - AI-powered kindergarten lesson planning...</p>
+          </div>
+        );
+      case 'multigrade-planner':
+        return (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Multigrade Lesson Planner</h2>
+            <p className="text-gray-600">Coming soon - Design lessons for multiple grade levels...</p>
+          </div>
+        );
+      case 'cross-curricular-planner':
+        return (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Cross-Curricular Planner</h2>
+            <p className="text-gray-600">Coming soon - Create integrated subject lesson plans...</p>
+          </div>
+        );
+      case 'quiz-generator':
+        return (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Quiz Generator</h2>
+            <p className="text-gray-600">Coming soon - Generate customized quizzes...</p>
+          </div>
+        );
       case 'rubric-generator':
         return (
           <div className="p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Rubric Generator</h2>
-            <p className="text-gray-600">Coming soon...</p>
+            <p className="text-gray-600">Coming soon - Create detailed grading rubrics...</p>
           </div>
         );
       default:
@@ -310,6 +404,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const availableTabsForSplit = tabs.filter(t => 
     t.type !== 'split' && t.id !== contextMenu?.tabId
   );
+
+  // Group tools by category
+  const regularTools = tools.filter(t => !t.group);
+  const lessonPlannerTools = tools.filter(t => t.group === 'lesson-planners');
+  const otherGroupedTools = tools.filter(t => t.group === 'tools');
 
   return (
     <div className="flex h-screen bg-gray-50" onClick={() => setContextMenu(null)}>
@@ -378,7 +477,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Tools
           </h3>
-          {tools.map((tool) => {
+          
+          {/* Regular Tools */}
+          {regularTools.map((tool) => {
             const Icon = iconMap[tool.icon];
             const count = getTabCountByType(tool.type);
             const activeTab = tabs.find(t => t.id === activeTabId);
@@ -420,18 +521,124 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </button>
             );
           })}
+
+          {/* Other Grouped Tools */}
+          {otherGroupedTools.map((tool) => {
+            const Icon = iconMap[tool.icon];
+            const count = getTabCountByType(tool.type);
+            const activeTab = tabs.find(t => t.id === activeTabId);
+            const isActiveToolType = activeTab?.type === tool.type;
+            
+            return (
+              <button
+                key={tool.id}
+                onClick={() => openTool(tool)}
+                disabled={count >= MAX_TABS_PER_TYPE}
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
+                  count >= MAX_TABS_PER_TYPE 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:bg-gray-800'
+                }`}
+                title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
+              >
+                <Icon className={`w-5 h-5 flex-shrink-0 ${
+                  isActiveToolType 
+                    ? 'text-blue-400 icon-glow' 
+                    : 'text-gray-400 group-hover:text-white'
+                }`} />
+                {sidebarOpen && (
+                  <div className="flex-1 text-left overflow-hidden">
+                    <p 
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                      style={{
+                        maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                      }}
+                    >
+                      {tool.name}
+                    </p>
+                    <p className="text-xs text-gray-400 whitespace-nowrap">
+                      {count}/{MAX_TABS_PER_TYPE} open
+                    </p>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Lesson Planners Dropdown */}
+          <div className="mt-4">
+            <button
+              onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
+              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition hover:bg-gray-800`}
+            >
+              <BookOpen className="w-5 h-5 flex-shrink-0 text-gray-400" />
+              {sidebarOpen && (
+                <>
+                  <span className="flex-1 text-left text-sm font-medium">Lesson Planners</span>
+                  {lessonPlannerExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  )}
+                </>
+              )}
+            </button>
+
+            {lessonPlannerExpanded && sidebarOpen && (
+              <div className="ml-4 mt-2 space-y-1 border-l-2 border-gray-700 pl-2">
+                {lessonPlannerTools.map((tool) => {
+                  const Icon = iconMap[tool.icon];
+                  const count = getTabCountByType(tool.type);
+                  const activeTab = tabs.find(t => t.id === activeTabId);
+                  const isActiveToolType = activeTab?.type === tool.type;
+                  
+                  return (
+                    <button
+                      key={tool.id}
+                      onClick={() => openTool(tool)}
+                      disabled={count >= MAX_TABS_PER_TYPE}
+                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm ${
+                        count >= MAX_TABS_PER_TYPE 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-gray-800'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 flex-shrink-0 ${
+                        isActiveToolType 
+                          ? 'text-blue-400 icon-glow' 
+                          : 'text-gray-400 group-hover:text-white'
+                      }`} />
+                      <div className="flex-1 text-left overflow-hidden">
+                        <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
+                           style={{
+                             maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                             WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                           }}>
+                          {tool.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {count}/{MAX_TABS_PER_TYPE}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {sidebarOpen && (
           <div className="p-4 border-t border-gray-700">
-          <button
-            onClick={onLogout}
-            className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300`}
-            title={!sidebarOpen ? 'Logout' : ''}
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
-          </button>
+            <button
+              onClick={onLogout}
+              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300`}
+              title={!sidebarOpen ? 'Logout' : ''}
+            >
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
+            </button>
           </div>
         )}
       </div>
