@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -211,8 +211,7 @@ export default function CelebrationsActivitiesPage() {
                   </div>
                   <div className="mt-auto pt-4">
                     <Button asChild className="w-full bg-cyan-600 hover:bg-cyan-700">
-                      <Link
-                        href={`/curriculum/kindergarten/activities/celebrations-unit/${activity.week}/${activity.id}`}
+                      <Link to={`/curriculum/kindergarten/activities/celebrations-unit/${activity.week}/${activity.id}`}
                       >
                         View Full Instructions
                       </Link>
@@ -261,8 +260,7 @@ export default function CelebrationsActivitiesPage() {
                       </div>
                       <div className="mt-auto pt-4">
                         <Button asChild className="w-full bg-cyan-600 hover:bg-cyan-700">
-                          <Link
-                            href={`/curriculum/kindergarten/activities/celebrations-unit/${activity.week}/${activity.id}`}
+                          <Link to={`/curriculum/kindergarten/activities/celebrations-unit/${activity.week}/${activity.id}`}
                           >
                             View Full Instructions
                           </Link>
@@ -278,7 +276,7 @@ export default function CelebrationsActivitiesPage() {
 
       <div className="text-center">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Curriculum</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Curriculum</Link>
         </Button>
       </div>
     </div>

@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, FlaskRoundIcon as Flask, Globe, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,7 +7,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function EngineeringDesignPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade2-subjects/science">
+            <Link to="/curriculum/grade2-subjects/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 2 Science
         </Button>
@@ -41,7 +39,7 @@ export default function EngineeringDesignPage() {
               In this activity, students will ask questions, make observations, and gather information about a situation
               people want to change to define a simple problem that can be solved through engineering.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/engineering-design/defining-problem">
+            <Link to="/curriculum/grade2-subjects/activities/science/engineering-design/defining-problem">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">Explore Defining Problems</Button>
             </Link>
           </CardContent>
@@ -60,7 +58,7 @@ export default function EngineeringDesignPage() {
               Students will develop a simple sketch, drawing, or physical model to illustrate how the shape of an object
               helps it function as needed to solve a given problem.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/engineering-design/shape-function">
+            <Link to="/curriculum/grade2-subjects/activities/science/engineering-design/shape-function">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">Explore Shape and Function</Button>
             </Link>
           </CardContent>
@@ -81,7 +79,7 @@ export default function EngineeringDesignPage() {
               Students will analyze data from tests of at least two objects designed to solve the same problem to
               compare the strengths and weaknesses of how each performs.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/engineering-design/testing-designs">
+            <Link to="/curriculum/grade2-subjects/activities/science/engineering-design/testing-designs">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">Explore Testing Object Designs</Button>
             </Link>
           </CardContent>

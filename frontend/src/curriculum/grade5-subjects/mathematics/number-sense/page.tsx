@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -17,7 +17,7 @@ export default function Grade5MathematicsNumberSensePage() {
           { label: "Number Sense", href: "/curriculum/grade5-subjects/mathematics/number-sense" },
         ]}
       />
-      <Link href="/curriculum/grade5-subjects/mathematics">
+      <Link to="/curriculum/grade5-subjects/mathematics">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 5 Mathematics
         </Button>
@@ -307,13 +307,12 @@ export default function Grade5MathematicsNumberSensePage() {
             <h3 className="text-lg font-semibold mb-2 text-indigo-600">Websites</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <Link href="https://www.youtube.com/watch?v=oVa_cAllL-w" target="_blank" rel="noopener noreferrer">
+                <Link to="https://www.youtube.com/watch?v=oVa_cAllL-w" target="_blank" rel="noopener noreferrer">
                   https://www.youtube.com/watch?v=oVa_cAllL-w
                 </Link>
               </li>
               <li>
-                <Link
-                  href="https://elementaryedu.com/2022/08/games-for-comparing-numbers.html"
+                <Link to="https://elementaryedu.com/2022/08/games-for-comparing-numbers.html"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

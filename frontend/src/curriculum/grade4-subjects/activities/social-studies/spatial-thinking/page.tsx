@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Search, Map, Compass, Cloud, Waves, Mountain, Shield } from "lucide-react"
@@ -8,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 const activities = [
   {
@@ -163,7 +161,7 @@ export default function SpatialThinkingPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Link href="/curriculum/grade4-subjects/activities/social-studies">
+      <Link to="/curriculum/grade4-subjects/activities/social-studies">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Social Studies Activities
         </Button>
@@ -223,7 +221,7 @@ export default function SpatialThinkingPage() {
               className={`h-full transition-all duration-300 hover:shadow-lg ${activity.color} border-2 ${activity.borderColor} overflow-hidden`}
             >
               <div className="relative h-48 w-full">
-                <Image src={activity.image || "/placeholder.svg"} alt={activity.title} fill className="object-cover" />
+                <img src="" alt="" className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex items-center justify-between">

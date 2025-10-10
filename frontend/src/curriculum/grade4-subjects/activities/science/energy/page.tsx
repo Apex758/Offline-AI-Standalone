@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function EnergyActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade4-subjects/activities/science">
+      <Link to="/curriculum/grade4-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Science Activities
         </Button>
@@ -74,12 +72,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/toy-car-ramp-energy.png"
-                        alt="Kinetic and Potential Energy"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/toy-car-ramp-energy.png" alt="Kinetic and Potential Energy" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -135,12 +128,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/pendulum-energy-conversion.png"
-                        alt="Pendulum Energy Investigation"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/pendulum-energy-conversion.png" alt="Pendulum Energy Investigation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -190,12 +178,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/heat-transfer-methods.png"
-                        alt="Heat Transfer"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/heat-transfer-methods.png" alt="Heat Transfer" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -263,12 +246,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/simple-electrical-circuit.png"
-                        alt="Simple Circuit Construction"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/simple-electrical-circuit.png" alt="Simple Circuit Construction" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -315,12 +293,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/renewable-non-renewable-energy.png"
-                        alt="Renewable vs. Non-Renewable"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/renewable-non-renewable-energy.png" alt="Renewable vs. Non-Renewable" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -354,12 +327,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/solar-oven-pizza-box.png"
-                        alt="Solar Oven Construction"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/solar-oven-pizza-box.png" alt="Solar Oven Construction" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

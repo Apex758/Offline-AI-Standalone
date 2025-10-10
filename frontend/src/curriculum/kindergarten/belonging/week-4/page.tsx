@@ -1,6 +1,6 @@
 import React from "react"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,7 +12,7 @@ export default function BelongingUnitWeek4() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/belonging">
+        <Link to="/curriculum/kindergarten/belonging">
           <Button variant="outline" className="mb-2 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Belonging Unit
           </Button>
@@ -51,7 +51,7 @@ export default function BelongingUnitWeek4() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-teal-300 text-teal-700 hover:bg-teal-50 flex items-center gap-2 bg-transparent"
@@ -59,7 +59,7 @@ export default function BelongingUnitWeek4() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/belonging/week-3">
+            <Link to="/curriculum/kindergarten/belonging/week-3">
               <Button
                 variant="outline"
                 className="border-teal-300 text-teal-700 hover:bg-teal-50 flex items-center gap-2 bg-transparent"
@@ -67,7 +67,7 @@ export default function BelongingUnitWeek4() {
                 <ChevronLeft className="h-4 w-4" /> Previous Week
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/belonging/week-5">
+            <Link to="/curriculum/kindergarten/belonging/week-5">
               <Button
                 variant="outline"
                 className="border-teal-300 text-teal-700 hover:bg-teal-50 flex items-center gap-2 bg-transparent"
@@ -81,12 +81,7 @@ export default function BelongingUnitWeek4() {
           <Card className="border-teal-200 shadow-md overflow-hidden">
           <div className="h-48 bg-gradient-to-r from-teal-400 to-cyan-400 relative">
             <div className="absolute inset-0 flex items-center justify-center p-2">
-              <Image
-                src="/kindergarten-community.png"
-                alt="Children’s crayon drawings with the word “COMMUNITY,” showing police, doctor, firefighter, store, houses, and kids holding hands, highlighting helpers, places, and working together."
-                fill
-                className="object-cover rounded-lg"
-              />
+              <img src="/kindergarten-community.png" alt="Children’s crayon drawings with the word “COMMUNITY,” showing police, doctor, firefighter, store, houses, and kids holding hands, highlighting helpers, places, and working together." className="w-full h-full object-cover" />
             </div>
           </div>
             <CardHeader className="bg-white">

@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -20,7 +20,7 @@ export default function StateChangersActivity() {
       />
 
       <div className="flex justify-between items-center mb-6">
-        <Link href="/curriculum/grade2-subjects/activities/science">
+        <Link to="/curriculum/grade2-subjects/activities/science">
           <Button variant="outline">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Science Activities
           </Button>
@@ -400,12 +400,12 @@ export default function StateChangersActivity() {
       </div>
 
       <div className="flex justify-between">
-        <Link href="/curriculum/grade2-subjects/activities/science/material-explorers">
+        <Link to="/curriculum/grade2-subjects/activities/science/material-explorers">
           <Button variant="outline">
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous Activity
           </Button>
         </Link>
-        <Link href="/curriculum/grade2-subjects/activities/science/building-blocks">
+        <Link to="/curriculum/grade2-subjects/activities/science/building-blocks">
           <Button variant="outline">
             Next Activity <ChevronRight className="ml-2 h-4 w-4" />
           </Button>

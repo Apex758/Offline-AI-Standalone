@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -8,9 +8,7 @@ export default function Grade1Science() {
     <div className="container mx-auto py-6 px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold">Grade 1 Science Curriculum</h1>
-        <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
-          <Link href="/curriculum/grade1-subjects">Back to Grade 1 Curriculum</Link>
-        </Button>
+        <Link to="/curriculum/grade1-subjects"><Button>Back to Grade 1 Curriculum</Button></Link>
       </div>
 
       <div className="grid gap-6 space-y-2">
@@ -42,9 +40,7 @@ export default function Grade1Science() {
                     They learn how vibrating materials make sound, how we see objects when illuminated, and how light
                     and sound can be used to communicate over distances.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/science/waves-lights-sounds">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/science/waves-lights-sounds"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
 
@@ -56,9 +52,7 @@ export default function Grade1Science() {
                     needs. They learn about parent-offspring relationships and discover how humans can mimic nature to
                     solve problems.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/science/structure-function-processing">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/science/structure-function-processing"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
 
@@ -70,9 +64,7 @@ export default function Grade1Science() {
                     night cycles, track the moon's changing shapes, and discover how celestial objects follow
                     predictable patterns.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/science/space-systems">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/science/space-systems"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
 
@@ -83,9 +75,7 @@ export default function Grade1Science() {
                     Students develop the skills and processes of scientific investigation. They learn to ask questions,
                     make predictions, conduct simple experiments, make observations, and communicate their findings.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/science/scientific-inquiry">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/science/scientific-inquiry"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
             </div>
@@ -135,9 +125,7 @@ export default function Grade1Science() {
         </Tabs>
       </div>
       <div className="mt-8 flex justify-center px-4 sm:px-0">
-        <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">
-          <Link href="/curriculum/grade1-subjects/activities/science">View Science Activities</Link>
-        </Button>
+        <Link to="/curriculum/grade1-subjects/activities/science"><Button>View Science Activities</Button></Link>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Gamepad2, Users, MapPin, Briefcase, Heart, Clock, BookOpen, Target } from "lucide-react"
 
 export default function GamesUnitActivities() {
@@ -142,7 +142,7 @@ export default function GamesUnitActivities() {
                       size="sm"
                       className={`w-full ${week.color.split(" ")[1].replace("text-", "bg-").replace("-700", "-600")} hover:${week.color.split(" ")[1].replace("text-", "bg-").replace("-700", "-700")}`}
                     >
-                      <Link href={`/curriculum/kindergarten/activities/games-unit/week${week.week}/${activity.slug}`}>
+                      <Link to={`/curriculum/kindergarten/activities/games-unit/week${week.week}/${activity.slug}`}>
                         <BookOpen className="h-4 w-4 mr-2" />
                         View Full Instructions
                       </Link>
@@ -184,10 +184,10 @@ export default function GamesUnitActivities() {
 
       <div className="flex justify-between mt-8">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
         </Button>
         <Button className="bg-purple-600 hover:bg-purple-700" asChild>
-          <Link href="/curriculum/kindergarten/activities/games-unit/week1/favourite-game-show-tell">
+          <Link to="/curriculum/kindergarten/activities/games-unit/week1/favourite-game-show-tell">
             Start with Week 1 Activities
           </Link>
         </Button>

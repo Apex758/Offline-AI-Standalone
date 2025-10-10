@@ -1,8 +1,8 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Rabbit, ListChecks, Users, RotateCcw, CalendarDays } from "lucide-react"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function AnimalAdaptationsPage() {
   return (
@@ -38,12 +38,7 @@ export default function AnimalAdaptationsPage() {
               </p>
 
               <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden">
-                <Image
-                  src="/children-examining-animal-pictures-and-samples-of-.png"
-                  alt="Animal Adaptations Activity"
-                  fill
-                  className="object-cover"
-                />
+                <img src="/children-examining-animal-pictures-and-samples-of-.png" alt="Animal Adaptations Activity" className="w-full h-full object-cover" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2">Learning Outcomes</h3>
@@ -362,12 +357,12 @@ export default function AnimalAdaptationsPage() {
       </div>
 
       <div className="flex justify-center">
-        <Link href="/curriculum/grade1-subjects/activities/science/shadow-investigators">
+        <Link to="/curriculum/grade1-subjects/activities/science/shadow-investigators">
           <Button variant="outline" className="mr-4 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous: Shadow Investigators
           </Button>
         </Link>
-        <Link href="/curriculum/grade1-subjects/activities/science/push-pull-playground">
+        <Link to="/curriculum/grade1-subjects/activities/science/push-pull-playground">
           <Button className="bg-emerald-600 hover:bg-emerald-700">Next Activity: Push and Pull Playground</Button>
         </Link>
       </div>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { notFound } from "next/navigation"
 import { ArrowLeft, Clock, Users, Target, CheckCircle, Lightbulb, Plus } from "lucide-react"
 
@@ -839,8 +839,7 @@ export default async function ActivityInstructionsPage({
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Link
-            href={`/curriculum/kindergarten/activities/${unitId}`}
+          <Link to={`/curriculum/kindergarten/activities/${unitId}`}
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -1008,14 +1007,14 @@ export default async function ActivityInstructionsPage({
         {/* Navigation */}
         <div className="flex justify-between">
           <Button variant="outline" asChild>
-            <Link href={`/curriculum/kindergarten/activities/${unitId}`}>
+            <Link to={`/curriculum/kindergarten/activities/${unitId}`}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Activities
             </Link>
           </Button>
 
           <Button asChild>
-            <Link href={`/curriculum/kindergarten/activities/${unitId}`}>View All Activities</Link>
+            <Link to={`/curriculum/kindergarten/activities/${unitId}`}>View All Activities</Link>
           </Button>
         </div>
       </div>

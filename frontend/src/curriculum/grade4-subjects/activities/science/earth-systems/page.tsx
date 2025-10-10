@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function EarthSystemsActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade4-subjects/activities/science">
+      <Link to="/curriculum/grade4-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Science Activities
         </Button>
@@ -67,12 +65,7 @@ export default function EarthSystemsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=rock+cycle+model+diagram"
-                        alt="Rock Cycle Model"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=rock+cycle+model+diagram" alt="Rock Cycle Model" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -106,12 +99,7 @@ export default function EarthSystemsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=rock+classification+collection+samples"
-                        alt="Rock Classification"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=rock+classification+collection+samples" alt="Rock Classification" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -179,12 +167,7 @@ export default function EarthSystemsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=erosion+simulation+stream+table"
-                        alt="Erosion Simulation"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=erosion+simulation+stream+table" alt="Erosion Simulation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -226,12 +209,7 @@ export default function EarthSystemsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=weathering+types+mechanical+chemical+biological"
-                        alt="Types of Weathering"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=weathering+types+mechanical+chemical+biological" alt="Types of Weathering" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -317,12 +295,7 @@ export default function EarthSystemsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=natural+resources+map+local+area"
-                        alt="Resource Mapping"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=natural+resources+map+local+area" alt="Resource Mapping" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -354,12 +327,7 @@ export default function EarthSystemsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=natural+disaster+resistant+building+models"
-                        alt="Natural Disaster Preparedness"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=natural+disaster+resistant+building+models" alt="Natural Disaster Preparedness" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

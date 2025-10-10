@@ -14,7 +14,7 @@ import {
   Calculator,
   Trophy,
 } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade6OperationsActivitiesPage() {
@@ -377,7 +377,7 @@ export default function Grade6OperationsActivitiesPage() {
           ]}
         />
 
-        <Link href="/curriculum/grade6-subjects/activities/mathematics">
+        <Link to="/curriculum/grade6-subjects/activities/mathematics">
           <Button variant="outline" className="mb-6">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Mathematics Activities
           </Button>
@@ -633,16 +633,12 @@ export default function Grade6OperationsActivitiesPage() {
 
         {/* Navigation */}
         <div className="flex justify-between">
-          <Button asChild variant="outline">
-            <Link href="/curriculum/grade6-subjects/activities/mathematics/number-sense">
+          <Link to="/curriculum/grade6-subjects/activities/mathematics/number-sense"><Button>
               Previous: Number Sense Activities
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/curriculum/grade6-subjects/activities/mathematics/patterns-relationships">
+            </Button></Link>
+          <Link to="/curriculum/grade6-subjects/activities/mathematics/patterns-relationships"><Button>
               Next: Patterns & Relationships Activities
-            </Link>
-          </Button>
+            </Button></Link>
         </div>
       </div>
     </div>

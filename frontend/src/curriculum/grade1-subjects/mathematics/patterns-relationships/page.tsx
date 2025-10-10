@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft } from "lucide-react"
@@ -9,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export default function PatternsRelationshipsPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade1-subjects/mathematics">
+      <Link to="/curriculum/grade1-subjects/mathematics">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Mathematics Curriculum
         </Button>

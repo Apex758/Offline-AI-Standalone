@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
@@ -556,7 +556,7 @@ export default function KindergartenResourcesPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/kindergarten">
+      <Link to="/curriculum/kindergarten">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Kindergarten Curriculum
         </Button>
@@ -600,12 +600,10 @@ export default function KindergartenResourcesPage() {
         
         {/* Lesson Plan Creation Button */}
         <div className="mt-8 text-center">
-          <Button asChild size="lg" className="bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-            <Link href="/kindergarten-planner">
+          <Link to="/kindergarten-planner"><Button>
               <BookOpen className="mr-2 h-5 w-5" />
               Create Lesson Plan
-            </Link>
-          </Button>
+            </Button></Link>
         </div>
       </div>
 

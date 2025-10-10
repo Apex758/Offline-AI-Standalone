@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Ruler, Scale, CuboidIcon as Cube, Target, Triangle, BarChart } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -139,7 +139,7 @@ export default function Grade5MathematicsMeasurementActivitiesPage() {
         ]}
       />
 
-      <Link href="/curriculum/grade5-subjects/mathematics/measurement">
+      <Link to="/curriculum/grade5-subjects/mathematics/measurement">
         <Button variant="outline" className="mb-6 hover:bg-gray-50 transition-colors">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Measurement
         </Button>

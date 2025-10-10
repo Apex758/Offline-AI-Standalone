@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FlaskRoundIcon as Flask, Globe, ChevronLeft, Wrench, Leaf } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,7 +7,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function Grade2SciencePage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade2-subjects">
+            <Link to="/curriculum/grade2-subjects">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 2 Subjects
         </Button>
@@ -49,7 +47,7 @@ export default function Grade2SciencePage() {
                 States of Matter
               </span>
             </div>
-            <Link href="/curriculum/grade2-subjects/science/structure-properties-matter">
+            <Link to="/curriculum/grade2-subjects/science/structure-properties-matter">
               <Button className="w-full bg-green-600 hover:bg-green-700">
                 Explore Structure and Properties of Matter
               </Button>
@@ -77,7 +75,7 @@ export default function Grade2SciencePage() {
               </span>
               <span className="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded">Habitats</span>
             </div>
-            <Link href="/curriculum/grade2-subjects/science/interdependent-relationships">
+            <Link to="/curriculum/grade2-subjects/science/interdependent-relationships">
               <Button className="w-full bg-amber-600 hover:bg-amber-700">Explore Interdependent Relationships</Button>
             </Link>
           </CardContent>
@@ -101,7 +99,7 @@ export default function Grade2SciencePage() {
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Weathering</span>
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Erosion</span>
             </div>
-            <Link href="/curriculum/grade2-subjects/science/earth-systems-processes">
+            <Link to="/curriculum/grade2-subjects/science/earth-systems-processes">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">Explore Earth Systems</Button>
             </Link>
           </CardContent>
@@ -130,7 +128,7 @@ export default function Grade2SciencePage() {
               </span>
               <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">Invention</span>
             </div>
-            <Link href="/curriculum/grade2-subjects/science/engineering-design">
+            <Link to="/curriculum/grade2-subjects/science/engineering-design">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">Explore Engineering Design</Button>
             </Link>
           </CardContent>
@@ -152,7 +150,7 @@ export default function Grade2SciencePage() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link href="/curriculum/grade2-subjects/activities/science">
+        <Link to="/curriculum/grade2-subjects/activities/science">
           <Button size="lg" className="bg-green-600 hover:bg-green-700">
             Explore Grade 2 Science Activities
           </Button>

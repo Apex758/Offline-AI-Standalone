@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { History, MapPin, Users, DollarSign, ChevronLeft, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -87,7 +87,7 @@ export default function Grade6SocialStudiesActivitiesPage() {
                 </span>
               </div>
 
-              <Link href="/curriculum/grade6-subjects/social-studies/historical-cultural-thinking/activities">
+              <Link to="/curriculum/grade6-subjects/social-studies/historical-cultural-thinking/activities">
                 <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3">
                   <BookOpen className="mr-2 h-4 w-4" />
                   Explore Historical Activities
@@ -148,7 +148,7 @@ export default function Grade6SocialStudiesActivitiesPage() {
                 </span>
               </div>
 
-              <Link href="/curriculum/grade6-subjects/social-studies/spatial-thinking/activities">
+              <Link to="/curriculum/grade6-subjects/social-studies/spatial-thinking/activities">
                 <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3">
                   <BookOpen className="mr-2 h-4 w-4" />
                   Explore Spatial Activities
@@ -210,7 +210,7 @@ export default function Grade6SocialStudiesActivitiesPage() {
                 </span>
               </div>
 
-              <Link href="/curriculum/grade6-subjects/social-studies/civic-participation/activities">
+              <Link to="/curriculum/grade6-subjects/social-studies/civic-participation/activities">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3">
                   <BookOpen className="mr-2 h-4 w-4" />
                   Explore Civic Activities
@@ -271,7 +271,7 @@ export default function Grade6SocialStudiesActivitiesPage() {
                 </span>
               </div>
 
-              <Link href="/curriculum/grade6-subjects/social-studies/economic-decision-making/activities">
+              <Link to="/curriculum/grade6-subjects/social-studies/economic-decision-making/activities">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3">
                   <BookOpen className="mr-2 h-4 w-4" />
                   Explore Economic Activities
@@ -344,7 +344,7 @@ export default function Grade6SocialStudiesActivitiesPage() {
         </div>
 
         <div className="text-center">
-          <Link href="/curriculum/grade6-subjects/social-studies">
+          <Link to="/curriculum/grade6-subjects/social-studies">
             <Button variant="outline" size="lg" className="px-8 py-3">
               <ChevronLeft className="mr-2 h-5 w-5" />
               Back to Grade 6 Social Studies Overview

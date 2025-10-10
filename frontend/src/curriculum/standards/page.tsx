@@ -1,4 +1,3 @@
-"use client"
 import { useState, useMemo, useEffect } from "react"
 import { BookOpen, Calculator, Atom, Globe, XCircle, ChevronDown, ChevronRight } from "lucide-react"
 import { getAllCurriculumStandards } from "@/app/actions/curriculum-standards"

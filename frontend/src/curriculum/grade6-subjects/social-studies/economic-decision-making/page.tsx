@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function EconomicDecisionMakingPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade6-subjects/social-studies">
+            <Link to="/curriculum/grade6-subjects/social-studies">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 6 Social Studies
         </Button>
@@ -107,11 +107,9 @@ export default function EconomicDecisionMakingPage() {
             <p className="text-sm mb-4">
               Students explore consumer rights, budgeting skills, and responsible financial decision-making.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade6-subjects/social-studies/economic-decision-making/consumer-rights">
+            <Link to="/curriculum/grade6-subjects/social-studies/economic-decision-making/consumer-rights"><Button>
                 Explore Activities
-              </Link>
-            </Button>
+              </Button></Link>
           </CardContent>
         </Card>
 
@@ -124,11 +122,9 @@ export default function EconomicDecisionMakingPage() {
             <p className="text-sm mb-4">
               Students analyze tourism benefits, challenges, and its role in economic development.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade6-subjects/social-studies/economic-decision-making/tourism">
+            <Link to="/curriculum/grade6-subjects/social-studies/economic-decision-making/tourism"><Button>
                 Explore Activities
-              </Link>
-            </Button>
+              </Button></Link>
           </CardContent>
         </Card>
 
@@ -141,11 +137,9 @@ export default function EconomicDecisionMakingPage() {
             <p className="text-sm mb-4">
               Students explore global cooperation, cultural exchange, and peace-building efforts.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade6-subjects/social-studies/economic-decision-making/sustainable-development">
+            <Link to="/curriculum/grade6-subjects/social-studies/economic-decision-making/sustainable-development"><Button>
                 Explore Activities
-              </Link>
-            </Button>
+              </Button></Link>
           </CardContent>
         </Card>
 
@@ -159,11 +153,9 @@ export default function EconomicDecisionMakingPage() {
               Students examine resource distribution, economic sectors, and Caribbean contributions to the world
               economy.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade6-subjects/social-studies/economic-decision-making/resources-economic-sectors">
+            <Link to="/curriculum/grade6-subjects/social-studies/economic-decision-making/resources-economic-sectors"><Button>
                 Explore Activities
-              </Link>
-            </Button>
+              </Button></Link>
           </CardContent>
         </Card>
       </div>

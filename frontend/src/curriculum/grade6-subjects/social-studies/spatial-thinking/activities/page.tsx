@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, MapPin, Globe, Thermometer, Home, CloudRain } from "lucide-react"
@@ -116,7 +116,7 @@ export default function SpatialThinkingActivitiesPage() {
 
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade6-subjects/social-studies/spatial-thinking">
+            <Link to="/curriculum/grade6-subjects/social-studies/spatial-thinking">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Spatial Thinking
         </Button>
@@ -157,7 +157,7 @@ export default function SpatialThinkingActivitiesPage() {
                   </CardHeader>
                   <CardContent className="p-4">
                     <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
-                    <Link href={activity.href}>
+                    <Link to={activity.href}>
                       <Button className={`w-full bg-${section.color}-600 hover:bg-${section.color}-700`}>
                         View Activity Details
                       </Button>

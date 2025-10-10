@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Ear, Pencil } from "lucide-react"
@@ -32,7 +32,7 @@ export default function Grade1CurriculumPage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade1/listening-speaking">
+            <Link to="/curriculum/grade1/listening-speaking">
               <Button className="w-full">View Strand</Button>
             </Link>
           </div>
@@ -54,7 +54,7 @@ export default function Grade1CurriculumPage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade1/reading-viewing">
+            <Link to="/curriculum/grade1/reading-viewing">
               <Button className="w-full">View Strand</Button>
             </Link>
           </div>
@@ -76,7 +76,7 @@ export default function Grade1CurriculumPage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade1/writing-representing">
+            <Link to="/curriculum/grade1/writing-representing">
               <Button className="w-full">View Strand</Button>
             </Link>
           </div>

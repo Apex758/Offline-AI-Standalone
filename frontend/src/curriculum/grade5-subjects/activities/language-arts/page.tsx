@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -200,7 +198,7 @@ export default function Grade5LanguageArtsActivitiesPage() {
                         </Badge>
                       ))}
                     </div>
-                    <Link href={activity.link}>
+                    <Link to={activity.link}>
                       <Button className="w-full" size="sm">
                         Start Activity <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
@@ -246,7 +244,7 @@ export default function Grade5LanguageArtsActivitiesPage() {
           Ready to explore individual language arts activities? Choose an activity above to begin your sophisticated
           language learning journey!
         </p>
-        <Link href="/curriculum/grade5-subjects">
+        <Link to="/curriculum/grade5-subjects">
           <Button variant="outline" size="lg">
             <BookOpen className="mr-2 h-5 w-5" />
             Explore All Grade 5 Subjects

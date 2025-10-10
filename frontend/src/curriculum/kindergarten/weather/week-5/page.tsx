@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +11,7 @@ export default function WeatherUnitWeek5() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/weather">
+        <Link to="/curriculum/kindergarten/weather">
           <Button variant="outline" className="mb-2 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Weather Unit
           </Button>
@@ -49,7 +49,7 @@ export default function WeatherUnitWeek5() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2 bg-transparent"
@@ -57,7 +57,7 @@ export default function WeatherUnitWeek5() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/activities/weather-unit">
+            <Link to="/curriculum/kindergarten/activities/weather-unit">
               <Button
                 variant="outline"
                 className="border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2 bg-transparent"
@@ -65,7 +65,7 @@ export default function WeatherUnitWeek5() {
                 <BookOpen className="h-4 w-4" /> View Activities
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/weather/week-4">
+            <Link to="/curriculum/kindergarten/weather/week-4">
               <Button
                 variant="outline"
                 className="border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2 bg-transparent"
@@ -85,12 +85,7 @@ export default function WeatherUnitWeek5() {
           <Card className="border-purple-200 shadow-md overflow-hidden">
             <div className="h-48 bg-gradient-to-r from-purple-400 to-purple-500 relative">
               <div className="absolute inset-0 flex items-center justify-center p-2">
-                <Image
-                  src="/caribbean-weather-safety-preparation.png"
-                  alt="Caribbean children learning about weather safety"
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                <img src="/caribbean-weather-safety-preparation.png" alt="Caribbean children learning about weather safety" className="w-full h-full object-cover" />
               </div>
             </div>
             <CardHeader className="bg-white">
@@ -349,20 +344,8 @@ export default function WeatherUnitWeek5() {
                       Talk about appropriate clothing, staying in safe places, and listening to weather warnings.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/caribbean-weather-protection-clothing.png"
-                        alt="Weather protection clothing"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/caribbean-weather-safety-discussion.png"
-                        alt="Weather safety discussion"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/caribbean-weather-protection-clothing.png" alt="Weather protection clothing" className="w-auto h-auto" />
+                      <img src="/caribbean-weather-safety-discussion.png" alt="Weather safety discussion" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -512,20 +495,8 @@ export default function WeatherUnitWeek5() {
                       how people can prepare for dangerous weather conditions.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/caribbean-fisherman-weather-safety.png"
-                        alt="Fisherman discussing weather safety"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/caribbean-severe-weather-preparation.png"
-                        alt="Severe weather preparation"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/caribbean-fisherman-weather-safety.png" alt="Fisherman discussing weather safety" className="w-auto h-auto" />
+                      <img src="/caribbean-severe-weather-preparation.png" alt="Severe weather preparation" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -674,20 +645,8 @@ export default function WeatherUnitWeek5() {
                       and play siren sound. Practice simple safety responses like "stop, drop, and cover."
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/caribbean-emergency-kit-activity.png"
-                        alt="Emergency kit drawing activity"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/caribbean-safety-drill-practice.png"
-                        alt="Safety drill practice"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/caribbean-emergency-kit-activity.png" alt="Emergency kit drawing activity" className="w-auto h-auto" />
+                      <img src="/caribbean-safety-drill-practice.png" alt="Safety drill practice" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -834,20 +793,8 @@ export default function WeatherUnitWeek5() {
                       explaining their shelter design and what weather it protects against.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/caribbean-shelter-building-activity.png"
-                        alt="Shelter building activity"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/caribbean-shelter-gallery-display.png"
-                        alt="Shelter gallery display"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/caribbean-shelter-building-activity.png" alt="Shelter building activity" className="w-auto h-auto" />
+                      <img src="/caribbean-shelter-gallery-display.png" alt="Shelter gallery display" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -994,20 +941,8 @@ export default function WeatherUnitWeek5() {
                       scared." Take photos of children with their weather learning displays.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/caribbean-weather-unit-celebration.png"
-                        alt="Weather unit celebration"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/caribbean-weather-learning-gallery.png"
-                        alt="Weather learning gallery walk"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/caribbean-weather-unit-celebration.png" alt="Weather unit celebration" className="w-auto h-auto" />
+                      <img src="/caribbean-weather-learning-gallery.png" alt="Weather learning gallery walk" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -1218,15 +1153,15 @@ export default function WeatherUnitWeek5() {
       {/* Footer Navigation */}
       <div className="flex flex-col md:flex-row gap-4 justify-center mt-8 pt-8 border-t border-gray-200">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/weather/week-4">Previous Week: How Do We Know About Weather?</Link>
+          <Link to="/curriculum/kindergarten/weather/week-4">Previous Week: How Do We Know About Weather?</Link>
         </Button>
-        <Link href="/curriculum/kindergarten/activities/weather-unit">
+        <Link to="/curriculum/kindergarten/activities/weather-unit">
           <Button className="bg-purple-600 hover:bg-purple-700">
             <BookOpen className="mr-2 h-4 w-4" /> View All Activities
           </Button>
         </Link>
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/weather">Weather Unit Complete</Link>
+          <Link to="/curriculum/kindergarten/weather">Weather Unit Complete</Link>
         </Button>
       </div>
     </div>

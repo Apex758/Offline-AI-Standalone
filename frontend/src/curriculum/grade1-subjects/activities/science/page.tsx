@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { FlaskConical, Leaf, Package, Cloud, Sun, PawPrint, Zap, Sparkles } from "lucide-react"
@@ -195,7 +195,7 @@ export default function ScienceActivitiesPage() {
                     asChild 
                     className={`w-full bg-gradient-to-r ${activity.color} hover:shadow-lg transform hover:scale-105 transition-all duration-300 border-0 text-white font-semibold py-3`}
                   >
-                    <Link href={activity.href} className="flex items-center justify-center gap-2">
+                    <Link to={activity.href} className="flex items-center justify-center gap-2">
                       Explore Activity
                       <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                     </Link>

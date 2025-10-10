@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Calculator, FlaskRoundIcon as Flask, Globe, Users, Target, Clock, Award } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 
 // Mock Breadcrumb component since it's not in the standard shadcn/ui
 function Breadcrumb({ items }: { items: { label: string; href: string }[] }) {
@@ -20,7 +20,7 @@ function Breadcrumb({ items }: { items: { label: string; href: string }[] }) {
                 />
               </svg>
             )}
-            <Link href={item.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
+            <Link to={item.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
               {item.label}
             </Link>
           </li>
@@ -316,13 +316,13 @@ export default function Grade5SubjectsPage() {
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-2 pt-4">
                     <Button asChild className="w-full sm:flex-1">
-                      <Link href={`/curriculum/grade5-subjects/${subject.id}`}>View Curriculum</Link>
+                      <Link to={`/curriculum/grade5-subjects/${subject.id}`}>View Curriculum</Link>
                     </Button>
                     <Button asChild variant="outline" className="w-full sm:flex-1 bg-transparent">
-                      <Link href={`/curriculum/grade5-subjects/activities/${subject.id}`}>View Activities</Link>
+                      <Link to={`/curriculum/grade5-subjects/activities/${subject.id}`}>View Activities</Link>
                     </Button>
                     <Button asChild variant="secondary" className="w-full sm:flex-1">
-                      <Link href={`/docs/grade5-${subject.id}-curriculum.pdf`} target="_blank">
+                      <Link to={`/docs/grade5-${subject.id}-curriculum.pdf`} target="_blank">
                         Download PDF
                       </Link>
                     </Button>
@@ -383,9 +383,7 @@ export default function Grade5SubjectsPage() {
             </div>
 
             <div className="flex justify-center mt-8">
-              <Button asChild variant="outline">
-                <Link href="/resources">Access All Resources</Link>
-              </Button>
+              <Link to="/resources"><Button>Access All Resources</Button></Link>
             </div>
           </CardContent>
         </Card>

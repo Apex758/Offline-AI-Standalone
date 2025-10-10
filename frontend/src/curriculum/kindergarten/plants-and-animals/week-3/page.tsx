@@ -2,8 +2,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Clock, Calendar, Lightbulb, Download, CheckCircle2, Printer, ChevronLeft } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { TeacherTip } from "@/components/teacher-tip"
 import { ActivityCard } from "@/components/activity-card"
 import { WeeklyOverview } from "@/components/weekly-overview"
@@ -13,7 +13,7 @@ export default function PlantsAndAnimalsWeek3() {
   return (
     <div className="container mx-auto px-4 py-8">
             <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/plants-and-animals">
+        <Link to="/curriculum/kindergarten/plants-and-animals">
           <Button variant="outline" className="mb-2">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Plants and Animals Unit
           </Button>
@@ -34,27 +34,27 @@ export default function PlantsAndAnimalsWeek3() {
           {/* Navigation Buttons */}
           <div className="flex flex-col md:flex-row gap-3 justify-start">
             <Button variant="outline" size="sm" asChild>
-              <Link href="/curriculum/kindergarten/plants-and-animals/week-3/week-plan.pdf">
+              <Link to="/curriculum/kindergarten/plants-and-animals/week-3/week-plan.pdf">
                 <Download className="mr-2 h-4 w-4" /> Week Plan PDF
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/curriculum/kindergarten/plants-and-animals/week-3/materials">
+              <Link to="/curriculum/kindergarten/plants-and-animals/week-3/materials">
                 <Printer className="mr-2 h-4 w-4" /> All Materials
               </Link>
             </Button>
             <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/kindergarten-planner">
+              <Link to="/kindergarten-planner">
                 <BookOpen className="mr-2 h-4 w-4" /> Plan Your Lesson
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/curriculum/kindergarten/plants-and-animals/week-2">
+              <Link to="/curriculum/kindergarten/plants-and-animals/week-2">
                 <ChevronLeft className="mr-2 h-4 w-4" /> Previous Week
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/curriculum/kindergarten/plants-and-animals/week-4">
+              <Link to="/curriculum/kindergarten/plants-and-animals/week-4">
                 Next Week <ChevronLeft className="mr-2 h-4 w-4 rotate-180" />
               </Link>
             </Button>
@@ -95,13 +95,7 @@ export default function PlantsAndAnimalsWeek3() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <Image
-            src="/kindergarten-habitats.png"
-            alt="Children’s crayon drawing with the word “HABITATS,” showing Arctic with a polar bear, Ocean with dolphins and fish, Desert with cactus and camel, and Forest with trees, fox, and a child, illustrating how plants and animals live in different environments."
-            width={800}
-            height={500}
-            className="rounded-lg shadow-md object-cover h-[300px]"
-          />
+          <img src="/kindergarten-habitats.png" alt="Children’s crayon drawing with the word “HABITATS,” showing Arctic with a polar bear, Ocean with dolphins and fish, Desert with cactus and camel, and Forest with trees, fox, and a child, illustrating how plants and animals live in different environments." className="w-auto h-auto" />
         </div>
         <div>
           <WeeklyOverview
@@ -354,11 +348,9 @@ export default function PlantsAndAnimalsWeek3() {
 
       <div className="flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-2">Previous Week: Survival Needs</Link>
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-2">Previous Week: Survival Needs</Link>
         </Button>
-        <Button asChild>
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-4">Next Week: Changing Environments</Link>
-        </Button>
+        <Link to="/curriculum/kindergarten/plants-and-animals/week-4"><Button>Next Week: Changing Environments</Button></Link>
       </div>
     </div>
   )

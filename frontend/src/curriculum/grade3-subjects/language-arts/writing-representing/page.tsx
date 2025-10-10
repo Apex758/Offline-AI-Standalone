@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -10,7 +10,7 @@ export default function WritingRepresentingPage() {
   return (
     <div className="container mx-auto py-8">
       
-      <Link href="/curriculum/grade3-subjects/language-arts">
+      <Link to="/curriculum/grade3-subjects/language-arts">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 3 Language Arts
         </Button>
@@ -530,7 +530,7 @@ export default function WritingRepresentingPage() {
                   Students work through the complete writing process to create their own books on topics of their
                   choice.
                 </p>
-                <Link href="/curriculum/grade3-subjects/activities/language-arts/authors-workshop">
+                <Link to="/curriculum/grade3-subjects/activities/language-arts/authors-workshop">
                   <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
                     View Activity
                   </Button>
@@ -542,7 +542,7 @@ export default function WritingRepresentingPage() {
                 <p className="text-sm text-gray-600 mb-2">
                   Students explore and create poems that celebrate their cultural heritage and local traditions.
                 </p>
-                <Link href="/curriculum/grade3-subjects/activities/language-arts/cultural-poetry">
+                <Link to="/curriculum/grade3-subjects/activities/language-arts/cultural-poetry">
                   <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
                     View Activity
                   </Button>
@@ -554,7 +554,7 @@ export default function WritingRepresentingPage() {
                 <p className="text-sm text-gray-600 mb-2">
                   Students maintain journals where they respond to their reading through writing and drawing.
                 </p>
-                <Link href="/curriculum/grade3-subjects/activities/language-arts/reading-response-journals">
+                <Link to="/curriculum/grade3-subjects/activities/language-arts/reading-response-journals">
                   <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
                     View Activity
                   </Button>
@@ -576,12 +576,12 @@ export default function WritingRepresentingPage() {
       </div>
 
       <div className="mt-8 flex justify-between">
-        <Link href="/curriculum/grade3-subjects/language-arts/reading-viewing">
+        <Link to="/curriculum/grade3-subjects/language-arts/reading-viewing">
           <Button variant="outline" className="flex items-center">
             <ChevronLeft className="mr-2 h-4 w-4" /> Reading & Viewing
           </Button>
         </Link>
-        <Link href="/curriculum/grade3-subjects/activities/language-arts">
+        <Link to="/curriculum/grade3-subjects/activities/language-arts">
           <Button className="bg-green-600 hover:bg-green-700">Explore Language Arts Activities</Button>
         </Link>
       </div>

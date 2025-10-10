@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -345,8 +345,7 @@ export default function GeometricalThinkingActivitiesPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="https://www.splashlearn.com/math-skills/third-grade/geometry"
+                  <Link to="https://www.splashlearn.com/math-skills/third-grade/geometry"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -354,8 +353,7 @@ export default function GeometricalThinkingActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.mathplayground.com/grade_3_games.html"
+                  <Link to="https://www.mathplayground.com/grade_3_games.html"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -363,8 +361,7 @@ export default function GeometricalThinkingActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.abcya.com/grades/3/skill/geometry"
+                  <Link to="https://www.abcya.com/grades/3/skill/geometry"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -382,8 +379,7 @@ export default function GeometricalThinkingActivitiesPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="https://www.k5learning.com/free-math-worksheets/third-grade-3/geometry"
+                  <Link to="https://www.k5learning.com/free-math-worksheets/third-grade-3/geometry"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -391,8 +387,7 @@ export default function GeometricalThinkingActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.mathworksheets4kids.com/geometry.php"
+                  <Link to="https://www.mathworksheets4kids.com/geometry.php"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -400,8 +395,7 @@ export default function GeometricalThinkingActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.math-salamanders.com/3rd-grade-geometry.html"
+                  <Link to="https://www.math-salamanders.com/3rd-grade-geometry.html"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -419,8 +413,7 @@ export default function GeometricalThinkingActivitiesPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="https://www.khanacademy.org/math/cc-third-grade-math/3rd-basic-geometry"
+                  <Link to="https://www.khanacademy.org/math/cc-third-grade-math/3rd-basic-geometry"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -428,8 +421,7 @@ export default function GeometricalThinkingActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.youtube.com/playlist?list=PLQlHzK9o1Hd8MtT7UT8f6EHsFZF4RQfzL"
+                  <Link to="https://www.youtube.com/playlist?list=PLQlHzK9o1Hd8MtT7UT8f6EHsFZF4RQfzL"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -437,8 +429,7 @@ export default function GeometricalThinkingActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.brainpop.com/math/geometryandmeasurement/"
+                  <Link to="https://www.brainpop.com/math/geometryandmeasurement/"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />

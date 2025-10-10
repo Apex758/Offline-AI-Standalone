@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Calculator, BarChart3, Shapes, Ruler, TrendingUp, Hash } from "lucide-react"
@@ -139,7 +139,7 @@ export default function Grade5MathematicsActivitiesPage() {
                   </div>
                 </div>
 
-                <Link href={activity.href}>
+                <Link to={activity.href}>
                   <Button
                     className={`w-full bg-gradient-to-r ${activity.color} hover:shadow-lg hover:scale-105 transition-all duration-300 text-white font-semibold py-3`}
                   >

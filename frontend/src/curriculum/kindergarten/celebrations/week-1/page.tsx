@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { BookOpen, Clock, Calendar, Lightbulb, Download, CheckCircle2, Printer, ChevronLeft, Users } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { TeacherTip } from "@/components/teacher-tip"
 import { ActivityCard } from "@/components/activity-card"
 import { WeeklyOverview } from "@/components/weekly-overview"
@@ -52,7 +52,7 @@ export default function CelebrationsUnitWeek1() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 flex items-center gap-2 bg-transparent"
@@ -67,7 +67,7 @@ export default function CelebrationsUnitWeek1() {
             >
               <ChevronLeft className="h-4 w-4" /> Previous Week
             </Button>
-            <Link href="/curriculum/kindergarten/celebrations/week-2">
+            <Link to="/curriculum/kindergarten/celebrations/week-2">
               <Button
                 variant="outline"
                 className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 flex items-center gap-2 bg-transparent"
@@ -212,13 +212,7 @@ export default function CelebrationsUnitWeek1() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <Image
-            src="/families-attending-kindergarten-celebration-showca.png"
-            alt="Family celebrations and traditions"
-            width={800}
-            height={500}
-            className="rounded-lg shadow-md object-cover h-[300px]"
-          />
+          <img src="/families-attending-kindergarten-celebration-showca.png" alt="Family celebrations and traditions" className="w-auto h-auto" />
         </div>
         <div>
           <WeeklyOverview
@@ -486,10 +480,10 @@ export default function CelebrationsUnitWeek1() {
 
       <div className="flex justify-between items-center">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/celebrations">Back to Celebrations Unit</Link>
+          <Link to="/curriculum/kindergarten/celebrations">Back to Celebrations Unit</Link>
         </Button>
         <div className="flex gap-2">
-          <Link href="/kindergarten-planner">
+          <Link to="/kindergarten-planner">
             <Button
               variant="outline"
               className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 bg-transparent"
@@ -497,9 +491,7 @@ export default function CelebrationsUnitWeek1() {
               <Calendar className="h-4 w-4 mr-2" /> Plan your Lesson
             </Button>
           </Link>
-          <Button asChild className="bg-cyan-600 hover:bg-cyan-700">
-            <Link href="/curriculum/kindergarten/celebrations/week-2">Next Week: Cultural Celebrations</Link>
-          </Button>
+          <Link to="/curriculum/kindergarten/celebrations/week-2"><Button>Next Week: Cultural Celebrations</Button></Link>
         </div>
       </div>
     </div>

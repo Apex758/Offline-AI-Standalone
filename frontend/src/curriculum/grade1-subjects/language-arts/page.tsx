@@ -1,8 +1,6 @@
-"use client"
-
 import type React from "react"
 
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Ear, Pencil, ChevronLeft, ChevronRight, Star, Heart, Sparkles } from "lucide-react"
@@ -140,7 +138,7 @@ export default function Grade1LanguageArtsPage() {
       </div>
 
       <div className="container mx-auto px-4 lg:px-6 xl:px-8 py-4 sm:py-8 lg:py-10 xl:py-12 relative z-10 max-w-7xl">
-        <Link href="/curriculum/grade1-subjects">
+        <Link to="/curriculum/grade1-subjects">
           <Button
             variant="outline"
             className="mb-4 sm:mb-6 hover:scale-105 transition-transform bg-transparent text-sm sm:text-base"
@@ -229,7 +227,7 @@ export default function Grade1LanguageArtsPage() {
                     </p>
                   </div>
 
-                  <Link href={strand.link}>
+                  <Link to={strand.link}>
                     <Button
                       className={`w-full bg-gradient-to-r ${strand.color} hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-sm sm:text-lg lg:text-base py-2 sm:py-3 lg:py-3`}
                     >
@@ -316,8 +314,7 @@ export default function Grade1LanguageArtsPage() {
             className="bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 hover:from-purple-600 hover:via-pink-600 hover:to-yellow-600 text-white px-6 sm:px-12 lg:px-14 xl:px-16 py-4 sm:py-6 lg:py-6 xl:py-7 rounded-xl sm:rounded-2xl lg:rounded-2xl shadow-xl sm:shadow-2xl hover:shadow-2xl sm:hover:shadow-3xl transform hover:scale-105 sm:hover:scale-110 transition-all duration-300 text-base sm:text-xl lg:text-xl xl:text-2xl font-bold"
             onClick={() => setShowConfetti(true)}
           >
-            <Link
-              href="/curriculum/grade1-subjects/activities/language-arts"
+            <Link to="/curriculum/grade1-subjects/activities/language-arts"
               className="flex items-center gap-2 sm:gap-3 lg:gap-4"
             >
               <span>🎮 Start Your Language Adventure!</span>

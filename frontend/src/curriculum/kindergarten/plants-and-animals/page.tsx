@@ -3,8 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 import {
   BookOpen,
   Clock,
@@ -46,23 +46,14 @@ export default function PlantsAndAnimalsUnit() {
           {/* Lesson Plan Creation and Activities Buttons */}
           <div className="mt-6 text-center">
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                <Link href="/kindergarten-planner">
+              <Link to="/kindergarten-planner"><Button>
                   <BookOpen className="mr-2 h-5 w-5" />
                   Create Plants & Animals Lesson Plan
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-emerald-500 text-emerald-700 hover:bg-emerald-50"
-              >
-                <Link href="/curriculum/kindergarten/activities/plants-animals-unit">
+                </Button></Link>
+              <Link to="/curriculum/kindergarten/activities/plants-animals-unit"><Button>
                   <Leaf className="mr-2 h-5 w-5" />
                   View Activities
-                </Link>
-              </Button>
+                </Button></Link>
             </div>
           </div>
         </div>
@@ -70,13 +61,7 @@ export default function PlantsAndAnimalsUnit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <Image
-            src="/plants_animals.png"
-            alt="Kindergarten students exploring plants and animals"
-            width={800}
-            height={500}
-            className="rounded-lg shadow-md object-cover h-[400px]"
-          />
+          <img src="/plants_animals.png" alt="Kindergarten students exploring plants and animals" className="w-auto h-auto" />
         </div>
         <div>
           <Card className="border-emerald-200 h-full shadow-md">
@@ -378,7 +363,7 @@ export default function PlantsAndAnimalsUnit() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-1" className="block group">
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-1" className="block group">
             <Card className="border-pink-200 hover:border-pink-300 hover:shadow-md transition-all">
               <CardHeader className="bg-pink-50 border-b border-pink-100 group-hover:bg-pink-100 transition-all">
                 <CardTitle className="text-pink-700 flex items-center">
@@ -399,7 +384,7 @@ export default function PlantsAndAnimalsUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-2" className="block group">
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-2" className="block group">
             <Card className="border-amber-200 hover:border-amber-300 hover:shadow-md transition-all">
               <CardHeader className="bg-amber-50 border-b border-amber-100 group-hover:bg-amber-100 transition-all">
                 <CardTitle className="text-amber-700 flex items-center">
@@ -419,7 +404,7 @@ export default function PlantsAndAnimalsUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-3" className="block group">
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-3" className="block group">
             <Card className="border-blue-200 hover:border-blue-300 hover:shadow-md transition-all">
               <CardHeader className="bg-blue-50 border-b border-blue-100 group-hover:bg-blue-100 transition-all">
                 <CardTitle className="text-blue-700 flex items-center">
@@ -439,7 +424,7 @@ export default function PlantsAndAnimalsUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-4" className="block group">
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-4" className="block group">
             <Card className="border-emerald-200 hover:border-emerald-300 hover:shadow-md transition-all">
               <CardHeader className="bg-emerald-50 border-b border-emerald-100 group-hover:bg-emerald-100 transition-all">
                 <CardTitle className="text-emerald-700 flex items-center">
@@ -459,7 +444,7 @@ export default function PlantsAndAnimalsUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-5" className="block group">
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-5" className="block group">
             <Card className="border-purple-200 hover:border-purple-300 hover:shadow-md transition-all">
               <CardHeader className="bg-purple-50 border-b border-purple-100 group-hover:bg-purple-100 transition-all">
                 <CardTitle className="text-purple-700 flex items-center">
@@ -588,18 +573,18 @@ export default function PlantsAndAnimalsUnit() {
 
       <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
         <Button className="bg-emerald-600 hover:bg-emerald-700" asChild>
-          <Link href="/curriculum/kindergarten/plants-and-animals/week-1">
+          <Link to="/curriculum/kindergarten/plants-and-animals/week-1">
             Begin Week 1: Plants and Animals in Our Lives
           </Link>
         </Button>
         <Button variant="outline" className="border-emerald-500 text-emerald-700 hover:bg-emerald-50" asChild>
-          <Link href="/curriculum/kindergarten/plants-and-animals/resources">View All Unit Resources</Link>
+          <Link to="/curriculum/kindergarten/plants-and-animals/resources">View All Unit Resources</Link>
         </Button>
       </div>
 
       <div className="flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
         </Button>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { notFound } from "next/navigation"
 import {
   Clock,
@@ -1072,7 +1072,7 @@ export default async function GamesActivityPage({ params }: { params: Promise<{ 
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <Button variant="outline" asChild className="mb-4 bg-transparent">
-          <Link href="/curriculum/kindergarten/activities/games-unit">
+          <Link to="/curriculum/kindergarten/activities/games-unit">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Games Unit Activities
           </Link>
@@ -1277,13 +1277,13 @@ export default async function GamesActivityPage({ params }: { params: Promise<{ 
 
       <div className="flex justify-between mt-8">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/activities/games-unit">
+          <Link to="/curriculum/kindergarten/activities/games-unit">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to All Activities
           </Link>
         </Button>
         <Button className={`bg-${color}-600 hover:bg-${color}-700`} asChild>
-          <Link href="/curriculum/kindergarten/activities/games-unit">
+          <Link to="/curriculum/kindergarten/activities/games-unit">
             <ArrowRight className="h-4 w-4 ml-2" />
             Next Activity
           </Link>

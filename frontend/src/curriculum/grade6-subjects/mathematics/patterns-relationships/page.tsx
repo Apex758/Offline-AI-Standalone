@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -17,7 +17,7 @@ export default function Grade6MathematicsPatternsRelationshipsPage() {
           { label: "Patterns & Relationships", href: "/curriculum/grade6-subjects/mathematics/patterns-relationships" },
         ]}
       />
-      <Link href="/curriculum/grade6-subjects/mathematics">
+      <Link to="/curriculum/grade6-subjects/mathematics">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 6 Mathematics
         </Button>
@@ -264,16 +264,10 @@ export default function Grade6MathematicsPatternsRelationshipsPage() {
       </div>
 
       <div className="mt-8 flex justify-center">
-        <Button
-          asChild
-          size="lg"
-          className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <Link href="/curriculum/grade6-subjects/activities/mathematics" className="flex items-center">
+        <Link to="/curriculum/grade6-subjects/activities/mathematics"><Button>
             <span className="mr-2">View Mathematics Activities</span>
             <ChevronRight className="h-5 w-5" />
-          </Link>
-        </Button>
+          </Button></Link>
       </div>
     </div>
   )

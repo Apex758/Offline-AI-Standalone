@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -17,7 +17,7 @@ export default function Grade5MathematicsGeometryPage() {
           { label: "Geometrical Thinking", href: "/curriculum/grade5-subjects/mathematics/geometrical-thinking" },
         ]}
       />
-      <Link href="/curriculum/grade5-subjects/mathematics">
+      <Link to="/curriculum/grade5-subjects/mathematics">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 5 Mathematics
         </Button>

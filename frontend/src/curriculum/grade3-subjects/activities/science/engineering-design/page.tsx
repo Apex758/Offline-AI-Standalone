@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function EngineeringDesignActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade3-subjects/activities/science">
+      <Link to="/curriculum/grade3-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 3 Science Activities
         </Button>
@@ -71,12 +69,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=engineering+design+process+for+kids"
-                        alt="Engineering Design Process"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=engineering+design+process+for+kids" alt="Engineering Design Process" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -157,12 +150,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=retaining+wall+design+challenge+classroom+activity"
-                        alt="Retaining Wall Design Challenge"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=retaining+wall+design+challenge+classroom+activity" alt="Retaining Wall Design Challenge" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -207,12 +195,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=roof+design+hurricane+resistance+classroom+activity"
-                        alt="Roof Design for Hurricane Protection"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=roof+design+hurricane+resistance+classroom+activity" alt="Roof Design for Hurricane Protection" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -260,12 +243,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=flood+protection+system+model+classroom+activity"
-                        alt="Flood Protection System"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=flood+protection+system+model+classroom+activity" alt="Flood Protection System" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -302,12 +280,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=lightning+rod+design+classroom+activity"
-                        alt="Lightning Rod Design"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=lightning+rod+design+classroom+activity" alt="Lightning Rod Design" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

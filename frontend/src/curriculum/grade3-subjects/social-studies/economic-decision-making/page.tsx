@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -10,7 +10,7 @@ export default function EconomicDecisionMakingPage() {
   return (
     <div className="container mx-auto py-8">
       
-      <Link href="/curriculum/grade3-subjects/social-studies">
+      <Link to="/curriculum/grade3-subjects/social-studies">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 3 Social Studies
         </Button>

@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +11,7 @@ export default function WeatherUnitWeek2() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/weather">
+        <Link to="/curriculum/kindergarten/weather">
           <Button variant="outline" className="mb-2 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Weather Unit
           </Button>
@@ -48,7 +48,7 @@ export default function WeatherUnitWeek2() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-50 flex items-center gap-2 bg-transparent"
@@ -56,7 +56,7 @@ export default function WeatherUnitWeek2() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/activities/weather-unit">
+            <Link to="/curriculum/kindergarten/activities/weather-unit">
               <Button
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-50 flex items-center gap-2 bg-transparent"
@@ -64,7 +64,7 @@ export default function WeatherUnitWeek2() {
                 <BookOpen className="h-4 w-4" /> View Activities
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/weather/week-1">
+            <Link to="/curriculum/kindergarten/weather/week-1">
               <Button
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-50 flex items-center gap-2 bg-transparent"
@@ -72,7 +72,7 @@ export default function WeatherUnitWeek2() {
                 <ChevronLeft className="h-4 w-4" /> Previous Week
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/weather/week-3">
+            <Link to="/curriculum/kindergarten/weather/week-3">
               <Button
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-50 flex items-center gap-2 bg-transparent"
@@ -86,12 +86,7 @@ export default function WeatherUnitWeek2() {
           <Card className="border-blue-200 shadow-md overflow-hidden">
             <div className="h-48 bg-gradient-to-r from-blue-400 to-blue-500 relative">
               <div className="absolute inset-0 flex items-center justify-center p-2">
-                <Image
-                  src="/kindergarten-children-observing-different-types-of.png"
-                  alt="Children exploring different types of weather"
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                <img src="/kindergarten-children-observing-different-types-of.png" alt="Children exploring different types of weather" className="w-full h-full object-cover" />
               </div>
             </div>
             <CardHeader className="bg-white">
@@ -353,13 +348,7 @@ export default function WeatherUnitWeek2() {
                       weather.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-weather-types.png"
-                        alt="Different weather types illustration"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-weather-types.png" alt="Different weather types illustration" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -1211,14 +1200,14 @@ export default function WeatherUnitWeek2() {
       {/* Footer Navigation */}
       <div className="flex flex-col md:flex-row gap-4 justify-center mt-8 pt-8 border-t border-gray-200">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/weather">Back to Weather Unit</Link>
+          <Link to="/curriculum/kindergarten/weather">Back to Weather Unit</Link>
         </Button>
-        <Link href="/curriculum/kindergarten/activities/weather-unit">
+        <Link to="/curriculum/kindergarten/activities/weather-unit">
           <Button className="bg-blue-600 hover:bg-blue-700">
             <BookOpen className="mr-2 h-4 w-4" /> View All Activities
           </Button>
         </Link>
-        <Link href="/curriculum/kindergarten/weather/week-3">
+        <Link to="/curriculum/kindergarten/weather/week-3">
           <Button variant="outline">
             Next Week <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
           </Button>

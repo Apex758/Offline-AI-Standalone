@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -25,7 +25,7 @@ export default function BelongingUnitResources() {
   return (
     <div className="container mx-auto px-4 py-8">
             <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/belonging">
+        <Link to="/curriculum/kindergarten/belonging">
           <Button variant="outline" className="mb-2">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Belonging Unit
           </Button>
@@ -60,13 +60,7 @@ export default function BelongingUnitResources() {
           <Card className="border-purple-200 shadow-md overflow-hidden">
             <div className="h-48 bg-gradient-to-r from-purple-400 to-pink-400 relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <Image
-                  src="/placeholder.svg?height=200&width=400&query=kindergarten teaching resources books"
-                  alt="Teaching resources"
-                  width={400}
-                  height={200}
-                  className="object-cover"
-                />
+                <img src="/placeholder.svg?height=200&width=400&query=kindergarten teaching resources books" alt="Teaching resources" className="w-auto h-auto" />
               </div>
             </div>
             <CardHeader className="bg-white">
@@ -137,13 +131,7 @@ export default function BelongingUnitResources() {
             <Card className="border-pink-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-pink-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten books about identity"
-                    alt="Books about identity"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten books about identity" alt="Books about identity" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-pink-500 flex items-center gap-1">
@@ -187,13 +175,7 @@ export default function BelongingUnitResources() {
             <Card className="border-orange-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-orange-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten books about family"
-                    alt="Books about family"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten books about family" alt="Books about family" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-orange-500 flex items-center gap-1">
@@ -237,13 +219,7 @@ export default function BelongingUnitResources() {
             <Card className="border-green-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-green-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten books about school"
-                    alt="Books about school"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten books about school" alt="Books about school" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-green-500 flex items-center gap-1">
@@ -288,13 +264,7 @@ export default function BelongingUnitResources() {
             <Card className="border-blue-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-blue-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten books about community"
-                    alt="Books about community"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten books about community" alt="Books about community" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-blue-500 flex items-center gap-1">
@@ -339,13 +309,7 @@ export default function BelongingUnitResources() {
             <Card className="border-purple-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-purple-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten books about belonging"
-                    alt="Books about belonging"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten books about belonging" alt="Books about belonging" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-purple-500 flex items-center gap-1">
@@ -391,13 +355,7 @@ export default function BelongingUnitResources() {
             <Card className="border-pink-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-pink-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten all about me printables"
-                    alt="All About Me printables"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten all about me printables" alt="All About Me printables" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-pink-500 flex items-center gap-1">
@@ -429,13 +387,7 @@ export default function BelongingUnitResources() {
             <Card className="border-orange-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-orange-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten family printables"
-                    alt="Family printables"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten family printables" alt="Family printables" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-orange-500 flex items-center gap-1">
@@ -466,13 +418,7 @@ export default function BelongingUnitResources() {
             <Card className="border-green-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-green-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten school printables"
-                    alt="School printables"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten school printables" alt="School printables" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-green-500 flex items-center gap-1">
@@ -503,13 +449,7 @@ export default function BelongingUnitResources() {
             <Card className="border-blue-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-blue-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten community printables"
-                    alt="Community printables"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten community printables" alt="Community printables" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-blue-500 flex items-center gap-1">
@@ -540,13 +480,7 @@ export default function BelongingUnitResources() {
             <Card className="border-purple-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-purple-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten belonging printables"
-                    alt="Belonging printables"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten belonging printables" alt="Belonging printables" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-purple-500 flex items-center gap-1">
@@ -577,13 +511,7 @@ export default function BelongingUnitResources() {
             <Card className="border-gray-200 hover:shadow-md transition-shadow">
               <div className="h-40 bg-gray-100 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg?height=160&width=320&query=kindergarten assessment printables"
-                    alt="Assessment printables"
-                    width={320}
-                    height={160}
-                    className="object-cover"
-                  />
+                  <img src="/placeholder.svg?height=160&width=320&query=kindergarten assessment printables" alt="Assessment printables" className="w-auto h-auto" />
                 </div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-gray-500">Assessment</Badge>
@@ -1399,7 +1327,7 @@ export default function BelongingUnitResources() {
 
       <div className="flex justify-between mt-8">
         <Button variant="outline" asChild className="border-purple-300 text-purple-700 hover:bg-purple-50">
-          <Link href="/curriculum/kindergarten/belonging">
+          <Link to="/curriculum/kindergarten/belonging">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Unit Overview
           </Link>
         </Button>

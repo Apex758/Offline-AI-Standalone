@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +11,7 @@ export default function WeatherUnitWeek1() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/weather">
+        <Link to="/curriculum/kindergarten/weather">
           <Button variant="outline" className="mb-2 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Weather Unit
           </Button>
@@ -48,7 +48,7 @@ export default function WeatherUnitWeek1() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 flex items-center gap-2 bg-transparent"
@@ -56,7 +56,7 @@ export default function WeatherUnitWeek1() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/activities/weather-unit">
+            <Link to="/curriculum/kindergarten/activities/weather-unit">
               <Button
                 variant="outline"
                 className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 flex items-center gap-2 bg-transparent"
@@ -71,7 +71,7 @@ export default function WeatherUnitWeek1() {
             >
               <ChevronLeft className="h-4 w-4" /> Previous Week
             </Button>
-            <Link href="/curriculum/kindergarten/weather/week-2">
+            <Link to="/curriculum/kindergarten/weather/week-2">
               <Button
                 variant="outline"
                 className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 flex items-center gap-2 bg-transparent"
@@ -85,12 +85,7 @@ export default function WeatherUnitWeek1() {
           <Card className="border-cyan-200 shadow-md overflow-hidden">
             <div className="h-48 bg-gradient-to-r from-cyan-400 to-blue-400 relative">
               <div className="absolute inset-0 flex items-center justify-center p-2">
-                <Image
-                  src="/kindergarten-weather-observation.png"
-                  alt="Children’s crayon drawing with the word “WEATHER,” showing a sun, clouds, rain, wind, plants, and a smiling child, labeled with simple weather words like “SUNNY,” “CLOUDY,” “RAIN,” and “WINDY.”"
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                <img src="/kindergarten-weather-observation.png" alt="Children’s crayon drawing with the word “WEATHER,” showing a sun, clouds, rain, wind, plants, and a smiling child, labeled with simple weather words like “SUNNY,” “CLOUDY,” “RAIN,” and “WINDY.”" className="w-full h-full object-cover" />
               </div>
             </div>
             <CardHeader className="bg-white">
@@ -349,20 +344,8 @@ export default function WeatherUnitWeek1() {
                       a simple sentence about their picture. Encourage sharing with partners.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-weather-drawing.png"
-                        alt="Weather importance drawing example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-weather-stations.png"
-                        alt="Weather stations setup"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-weather-drawing.png" alt="Weather importance drawing example" className="w-auto h-auto" />
+                      <img src="/kindergarten-weather-stations.png" alt="Weather stations setup" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -511,13 +494,7 @@ export default function WeatherUnitWeek1() {
                       and descriptive language to write about today's weather experience.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-weather-walk.png"
-                        alt="Weather walk observation"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-weather-walk.png" alt="Weather walk observation" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -665,20 +642,8 @@ export default function WeatherUnitWeek1() {
                       and actions. Dance like raindrops, shine like the sun, blow like the wind.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-weather-shapes.png"
-                        alt="Weather shape craft example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-weather-dance.png"
-                        alt="Weather movement activity"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-weather-shapes.png" alt="Weather shape craft example" className="w-auto h-auto" />
+                      <img src="/kindergarten-weather-dance.png" alt="Weather movement activity" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -826,20 +791,8 @@ export default function WeatherUnitWeek1() {
                       symbol. Discuss patterns and compare with previous days' weather.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-weather-chart.png"
-                        alt="Daily weather tracking chart"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-weather-crafts.png"
-                        alt="Weather craft examples"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-weather-chart.png" alt="Daily weather tracking chart" className="w-auto h-auto" />
+                      <img src="/kindergarten-weather-crafts.png" alt="Weather craft examples" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -987,20 +940,8 @@ export default function WeatherUnitWeek1() {
                       explain how weather is important to their families.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-weather-gallery.png"
-                        alt="Weather art gallery display"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-weather-scenes.png"
-                        alt="Weather scene drawings"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-weather-gallery.png" alt="Weather art gallery display" className="w-auto h-auto" />
+                      <img src="/kindergarten-weather-scenes.png" alt="Weather scene drawings" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -1262,14 +1203,14 @@ export default function WeatherUnitWeek1() {
       {/* Footer Navigation */}
       <div className="flex flex-col md:flex-row gap-4 justify-center mt-8 pt-8 border-t border-gray-200">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/weather">Back to Weather Unit</Link>
+          <Link to="/curriculum/kindergarten/weather">Back to Weather Unit</Link>
         </Button>
-        <Link href="/curriculum/kindergarten/activities/weather-unit">
+        <Link to="/curriculum/kindergarten/activities/weather-unit">
           <Button className="bg-cyan-600 hover:bg-cyan-700">
             <BookOpen className="mr-2 h-4 w-4" /> View All Activities
           </Button>
         </Link>
-        <Link href="/curriculum/kindergarten/weather/week-2">
+        <Link to="/curriculum/kindergarten/weather/week-2">
           <Button variant="outline">
             Next Week <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
           </Button>

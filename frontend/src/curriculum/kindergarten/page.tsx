@@ -16,8 +16,8 @@ import {
   FileText,
   Download,
 } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 // Mock Breadcrumb component since it's not in the standard shadcn/ui
 function Breadcrumb({ items }: { items: { label: string; href: string }[] }) {
@@ -35,7 +35,7 @@ function Breadcrumb({ items }: { items: { label: string; href: string }[] }) {
                 />
               </svg>
             )}
-            <Link href={item.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
+            <Link to={item.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
               {item.label}
             </Link>
           </li>
@@ -244,16 +244,10 @@ export default function KindergartenSubjectsPage() {
               Use our AI-powered kindergarten lesson planner to create engaging, standards-aligned lesson plans tailored
               to your students' needs and learning objectives.
             </p>
-            <Button
-              asChild
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner"><Button>
                 <BookOpen className="mr-2 h-5 w-5" />
                 Create Lesson Plan
-              </Link>
-            </Button>
+              </Button></Link>
           </div>
         </div>
 
@@ -668,7 +662,7 @@ export default function KindergartenSubjectsPage() {
               return (
                 <Card key={unit.id} className="hover:shadow-lg transition-shadow duration-300 overflow-hidden">
                   <div className="relative w-full h-48">
-                    <Image src={unit.image || "/placeholder.svg"} alt={unit.title} fill className="object-cover" />
+                    <img src="" alt="" className="w-full h-full object-cover" />
                   </div>
 
                   <CardHeader className="pb-2">
@@ -702,11 +696,10 @@ export default function KindergartenSubjectsPage() {
 
                     <div className="flex gap-2 pt-2">
                       <Button asChild className="flex-1 text-sm">
-                        <Link href={`/curriculum/kindergarten/${unit.id}`}>Explore Unit</Link>
+                        <Link to={`/curriculum/kindergarten/${unit.id}`}>Explore Unit</Link>
                       </Button>
                       <Button asChild variant="outline" className="flex-1 text-sm bg-transparent">
-                        <Link
-                          href={`/curriculum/kindergarten/activities/${unitToActivitiesMap[unit.id] || `${unit.id}-unit`}`}
+                        <Link to={`/curriculum/kindergarten/activities/${unitToActivitiesMap[unit.id] || `${unit.id}-unit`}`}
                         >
                           View Activities
                         </Link>
@@ -714,7 +707,7 @@ export default function KindergartenSubjectsPage() {
                     </div>
                     <div className="mt-2">
                       <Button asChild variant="secondary" className="w-full text-sm">
-                        <Link href={`/docs/kindergarten-${unit.id}-unit.pdf`} target="_blank" rel="noopener noreferrer">
+                        <Link to={`/docs/kindergarten-${unit.id}-unit.pdf`} target="_blank" rel="noopener noreferrer">
                           <BookOpen className="mr-2 h-4 w-4" />
                           Download Unit PDF
                         </Link>
@@ -867,12 +860,10 @@ export default function KindergartenSubjectsPage() {
             </div>
 
             <div className="flex justify-center mt-8">
-              <Button asChild variant="outline">
-                <Link href="/curriculum/kindergarten/resources">
+              <Link to="/curriculum/kindergarten/resources"><Button>
                   <BookOpen className="mr-2 h-5 w-5" />
                   Access Kindergarten Resources
-                </Link>
-              </Button>
+                </Button></Link>
             </div>
           </CardContent>
         </Card>

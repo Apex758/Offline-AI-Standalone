@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft, Calculator, BookOpen, Beaker, Globe } from "lucide-react"
@@ -6,7 +6,7 @@ import { ChevronLeft, Calculator, BookOpen, Beaker, Globe } from "lucide-react"
 export default function Grade1ActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade1-subjects">
+      <Link to="/curriculum/grade1-subjects">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 1 Subjects
         </Button>
@@ -35,9 +35,7 @@ export default function Grade1ActivitiesPage() {
               discovery. These activities support the development of number sense, pattern recognition, measurement
               concepts, and problem-solving skills.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade1-subjects/activities/mathematics">View Activities</Link>
-            </Button>
+            <Link to="/curriculum/grade1-subjects/activities/mathematics"><Button>View Activities</Button></Link>
           </CardContent>
         </Card>
 
@@ -55,9 +53,7 @@ export default function Grade1ActivitiesPage() {
               and discovery. These activities help students explore concepts related to light and sound, animal
               adaptations, and day and night cycles.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade1-subjects/activities/science">View Activities</Link>
-            </Button>
+            <Link to="/curriculum/grade1-subjects/activities/science"><Button>View Activities</Button></Link>
           </CardContent>
         </Card>
 
@@ -75,9 +71,7 @@ export default function Grade1ActivitiesPage() {
               writing practice. These activities support the development of phonological awareness, comprehension, and
               communication skills.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade1-subjects/activities/language-arts">View Activities</Link>
-            </Button>
+            <Link to="/curriculum/grade1-subjects/activities/language-arts"><Button>View Activities</Button></Link>
           </CardContent>
         </Card>
 
@@ -95,9 +89,7 @@ export default function Grade1ActivitiesPage() {
               explore cultural celebrations, community helpers, and basic economic concepts through hands-on,
               collaborative learning.
             </p>
-            <Button asChild className="w-full">
-              <Link href="/curriculum/grade1-subjects/activities/social-studies">View Activities</Link>
-            </Button>
+            <Link to="/curriculum/grade1-subjects/activities/social-studies"><Button>View Activities</Button></Link>
           </CardContent>
         </Card>
       </div>
@@ -113,9 +105,7 @@ export default function Grade1ActivitiesPage() {
             across the curriculum. The weather station activity, for example, incorporates mathematics, science,
             language arts, and social studies concepts.
           </p>
-          <Button asChild className="w-full md:w-auto">
-            <Link href="/curriculum/grade1-subjects/activities/cross-curricular">View Cross-Curricular Activities</Link>
-          </Button>
+          <Link to="/curriculum/grade1-subjects/activities/cross-curricular"><Button>View Cross-Curricular Activities</Button></Link>
         </CardContent>
       </Card>
 

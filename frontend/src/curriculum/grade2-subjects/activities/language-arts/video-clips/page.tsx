@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronLeft, Clock, Users, BookOpen, CheckCircle } from "lucide-react"
@@ -9,7 +9,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function VideoClipsPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade2-subjects/activities/language-arts">
+            <Link to="/curriculum/grade2-subjects/activities/language-arts">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Language Arts Activities
         </Button>
@@ -188,12 +188,7 @@ export default function VideoClipsPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <div className="relative h-48 w-full mb-4">
-                  <Image
-                    src="/video-clips.png"
-                    alt="Students watching educational video"
-                    fill
-                    className="object-cover rounded-lg"
-                  />
+                  <img src="/video-clips.png" alt="Students watching educational video" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-blue-700">Curriculum Connections</h3>
                 <ul className="space-y-3">
@@ -250,12 +245,12 @@ export default function VideoClipsPage() {
       </div>
 
       <div className="mt-8 flex justify-between">
-        <Link href="/curriculum/grade2-subjects/activities/language-arts/picture-books">
+        <Link to="/curriculum/grade2-subjects/activities/language-arts/picture-books">
           <Button variant="outline">
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous Activity
           </Button>
         </Link>
-        <Link href="/curriculum/grade2-subjects/activities/language-arts/drawing-stories">
+        <Link to="/curriculum/grade2-subjects/activities/language-arts/drawing-stories">
           <Button>
             Next Activity <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
           </Button>

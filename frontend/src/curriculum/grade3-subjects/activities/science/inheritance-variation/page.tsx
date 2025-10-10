@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function InheritanceVariationActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade3-subjects/activities/science">
+      <Link to="/curriculum/grade3-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 3 Science Activities
         </Button>
@@ -71,12 +69,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=bean+plant+life+cycle+in+plastic+bag"
-                        alt="Bean Plant Life Cycle"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=bean+plant+life+cycle+in+plastic+bag" alt="Bean Plant Life Cycle" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -111,12 +104,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=butterfly+life+cycle+puppets"
-                        alt="Butterfly Life Cycle Puppets"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=butterfly+life+cycle+puppets" alt="Butterfly Life Cycle Puppets" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -166,12 +154,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=different+bird+beak+shapes+and+functions"
-                        alt="Bird Bill Adaptations"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=different+bird+beak+shapes+and+functions" alt="Bird Bill Adaptations" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -216,12 +199,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=animal+parents+and+their+offspring"
-                        alt="Animal Parents and Offspring"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=animal+parents+and+their+offspring" alt="Animal Parents and Offspring" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -271,12 +249,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=plant+growth+experiment+different+conditions"
-                        alt="Plant Growth Experiment"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=plant+growth+experiment+different+conditions" alt="Plant Growth Experiment" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -313,12 +286,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=children+designing+animals+for+different+environments"
-                        alt="Design an Animal Activity"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=children+designing+animals+for+different+environments" alt="Design an Animal Activity" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

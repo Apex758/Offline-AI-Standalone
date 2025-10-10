@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Shapes, Grid3X3, Navigation, Square, Puzzle, Compass } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -141,7 +141,7 @@ export default function Grade5MathematicsGeometricalThinkingActivitiesPage() {
         ]}
       />
 
-      <Link href="/curriculum/grade5-subjects/mathematics/geometrical-thinking">
+      <Link to="/curriculum/grade5-subjects/mathematics/geometrical-thinking">
         <Button variant="outline" className="mb-6 hover:bg-gray-50 transition-colors">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Geometrical Thinking
         </Button>

@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +11,7 @@ export default function WeatherUnitWeek3() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/weather">
+        <Link to="/curriculum/kindergarten/weather">
           <Button variant="outline" className="mb-2 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Weather Unit
           </Button>
@@ -48,7 +48,7 @@ export default function WeatherUnitWeek3() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-green-300 text-green-700 hover:bg-green-50 flex items-center gap-2 bg-transparent"
@@ -56,7 +56,7 @@ export default function WeatherUnitWeek3() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/activities/weather-unit">
+            <Link to="/curriculum/kindergarten/activities/weather-unit">
               <Button
                 variant="outline"
                 className="border-green-300 text-green-700 hover:bg-green-50 flex items-center gap-2 bg-transparent"
@@ -64,7 +64,7 @@ export default function WeatherUnitWeek3() {
                 <BookOpen className="h-4 w-4" /> View Activities
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/weather/week-2">
+            <Link to="/curriculum/kindergarten/weather/week-2">
               <Button
                 variant="outline"
                 className="border-green-300 text-green-700 hover:bg-green-50 flex items-center gap-2 bg-transparent"
@@ -72,7 +72,7 @@ export default function WeatherUnitWeek3() {
                 <ChevronLeft className="h-4 w-4" /> Previous Week
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/weather/week-4">
+            <Link to="/curriculum/kindergarten/weather/week-4">
               <Button
                 variant="outline"
                 className="border-green-300 text-green-700 hover:bg-green-50 flex items-center gap-2 bg-transparent"
@@ -86,12 +86,7 @@ export default function WeatherUnitWeek3() {
           <Card className="border-green-200 shadow-md overflow-hidden">
           <div className="h-48 bg-gradient-to-r from-pink-400 to-purple-400 relative">
             <div className="absolute inset-0 flex items-center justify-center p-2">
-              <Image
-                src="/caribbean-weather-shapes.png"
-                alt="Weather shapes and weather patterns"
-                fill
-                className="object-cover rounded-lg"
-              />
+              <img src="/caribbean-weather-shapes.png" alt="Weather shapes and weather patterns" className="w-full h-full object-cover" />
             </div>
           </div>
             <CardHeader className="bg-white">
@@ -336,20 +331,8 @@ export default function WeatherUnitWeek3() {
                       Set up four seasonal stations with props and materials. Children rotate through stations to explore each season through hands-on activities and sorting games.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-seasons-spring.png"
-                        alt="Spring season activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-seasons-sorting.png"
-                        alt="Seasonal sorting game"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-seasons-spring.png" alt="Spring season activities" className="w-auto h-auto" />
+                      <img src="/kindergarten-seasons-sorting.png" alt="Seasonal sorting game" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -486,20 +469,8 @@ export default function WeatherUnitWeek3() {
                       Take children outdoors to look for signs of spring. Use observation tools to examine new growth, listen for spring sounds, and collect spring items for classroom display.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-spring-nature-walk.png"
-                        alt="Spring nature walk activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-spring-flowers.png"
-                        alt="Spring flowers and growth"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-spring-nature-walk.png" alt="Spring nature walk activities" className="w-auto h-auto" />
+                      <img src="/kindergarten-spring-flowers.png" alt="Spring flowers and growth" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -636,20 +607,8 @@ export default function WeatherUnitWeek3() {
                       Create summer-themed artwork using various art supplies. Encourage children to use bright summer colors and discuss what makes summer special.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-summer-crafts.png"
-                        alt="Summer craft activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-summer-activities.png"
-                        alt="Summer fun activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-summer-crafts.png" alt="Summer craft activities" className="w-auto h-auto" />
+                      <img src="/kindergarten-summer-activities.png" alt="Summer fun activities" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -786,20 +745,8 @@ export default function WeatherUnitWeek3() {
                       Create artwork using real leaves and art supplies. Encourage children to explore different leaf textures and colors while creating fall-themed artwork.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-fall-leaves.png"
-                        alt="Fall leaves and colors"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-leaf-art.png"
-                        alt="Leaf art projects"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-fall-leaves.png" alt="Fall leaves and colors" className="w-auto h-auto" />
+                      <img src="/kindergarten-leaf-art.png" alt="Leaf art projects" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -936,20 +883,8 @@ export default function WeatherUnitWeek3() {
                       Create winter-themed artwork using various art supplies. Encourage children to use winter colors and discuss what makes winter special and beautiful.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-winter-crafts.png"
-                        alt="Winter craft activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-winter-activities.png"
-                        alt="Winter fun activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-winter-crafts.png" alt="Winter craft activities" className="w-auto h-auto" />
+                      <img src="/kindergarten-winter-activities.png" alt="Winter fun activities" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -993,7 +928,7 @@ export default function WeatherUnitWeek3() {
               <h3 className="font-semibold text-green-800 mb-2">Seasonal Songs</h3>
               <p className="text-sm text-gray-600 mb-3">Music and movement activities for each season</p>
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href="/curriculum/kindergarten/activities/weather-unit">View Resources</Link>
+                <Link to="/curriculum/kindergarten/activities/weather-unit">View Resources</Link>
               </Button>
             </CardContent>
           </Card>
@@ -1003,7 +938,7 @@ export default function WeatherUnitWeek3() {
               <h3 className="font-semibold text-green-800 mb-2">Seasonal Crafts</h3>
               <p className="text-sm text-gray-600 mb-3">Art projects that represent each season</p>
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href="/curriculum/kindergarten/activities/weather-unit">Explore Activities</Link>
+                <Link to="/curriculum/kindergarten/activities/weather-unit">Explore Activities</Link>
               </Button>
             </CardContent>
           </Card>
@@ -1013,7 +948,7 @@ export default function WeatherUnitWeek3() {
               <h3 className="font-semibold text-green-800 mb-2">Nature Connections</h3>
               <p className="text-sm text-gray-600 mb-3">Outdoor activities for seasonal learning</p>
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href="/curriculum/kindergarten/activities/weather-unit">Learn More</Link>
+                <Link to="/curriculum/kindergarten/activities/weather-unit">Learn More</Link>
               </Button>
             </CardContent>
           </Card>
@@ -1046,14 +981,14 @@ export default function WeatherUnitWeek3() {
       {/* Footer Navigation */}
       <div className="flex flex-col md:flex-row gap-4 justify-center mt-8 pt-8 border-t border-gray-200">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/weather">Back to Weather Unit</Link>
+          <Link to="/curriculum/kindergarten/weather">Back to Weather Unit</Link>
         </Button>
-        <Link href="/curriculum/kindergarten/activities/weather-unit">
+        <Link to="/curriculum/kindergarten/activities/weather-unit">
           <Button className="bg-green-600 hover:bg-green-700">
             <BookOpen className="mr-2 h-4 w-4" /> View All Activities
           </Button>
         </Link>
-        <Link href="/curriculum/kindergarten/weather/week-4">
+        <Link to="/curriculum/kindergarten/weather/week-4">
           <Button variant="outline">
             Next Week <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
           </Button>

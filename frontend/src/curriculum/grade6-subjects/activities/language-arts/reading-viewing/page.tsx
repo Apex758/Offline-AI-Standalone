@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye, Search, BookOpen, Monitor, Users, Clock, Target, Lightbulb } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function ReadingViewingActivitiesPage() {
@@ -484,8 +484,7 @@ export default function ReadingViewingActivitiesPage() {
 
                   <div className="pt-4 border-t">
                     <Button asChild>
-                      <Link
-                        href={`/curriculum/grade6-subjects/activities/language-arts/reading-viewing/${activity.id}`}
+                      <Link to={`/curriculum/grade6-subjects/activities/language-arts/reading-viewing/${activity.id}`}
                       >
                         View Detailed Lesson Plan
                       </Link>

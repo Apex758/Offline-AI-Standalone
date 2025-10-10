@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Clock, Users, Target, CheckSquare, Lightbulb } from "lucide-react"
@@ -8,7 +8,7 @@ import { FallbackImage } from "@/components/fallback-image"
 export default function PodcastProductionPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade4-subjects/activities/language-arts">
+            <Link to="/curriculum/grade4-subjects/activities/language-arts">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Language Arts Activities
         </Button>

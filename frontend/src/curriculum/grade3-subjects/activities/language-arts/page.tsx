@@ -1,8 +1,8 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Headphones, Eye, PenTool, MessageSquare, BookOpen } from "lucide-react"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function Grade3LanguageArtsActivitiesPage() {
   return (
@@ -31,7 +31,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <Image src="/storytelling-circle.png" alt="Storytelling Circle" fill className="object-cover" />
+              <img src="/storytelling-circle.png" alt="Storytelling Circle" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students take turns sharing stories based on personal experiences, cultural tales, or creative prompts.
@@ -45,7 +45,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
                 Cultural Appreciation
               </span>
             </div>
-            <Link href="/curriculum/grade3-subjects/activities/language-arts/storytelling-circle">
+            <Link to="/curriculum/grade3-subjects/activities/language-arts/storytelling-circle">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">View Activity</Button>
             </Link>
           </CardContent>
@@ -61,7 +61,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <Image src="/reading-response-journals.png" alt="Reading Response Journals" fill className="object-cover" />
+              <img src="/reading-response-journals.png" alt="Reading Response Journals" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students maintain journals to record their thoughts, questions, and connections to texts they read. This
@@ -72,7 +72,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Writing</span>
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Comprehension</span>
             </div>
-            <Link href="/curriculum/grade3-subjects/activities/language-arts/reading-response-journals">
+            <Link to="/curriculum/grade3-subjects/activities/language-arts/reading-response-journals">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">View Activity</Button>
             </Link>
           </CardContent>
@@ -88,7 +88,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <Image src="/authors-workshop.png" alt="Authors' Workshop" fill className="object-cover" />
+              <img src="/authors-workshop.png" alt="Authors" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students engage in the complete writing process: brainstorming, drafting, revising, editing, and
@@ -99,7 +99,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
               <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Editing</span>
               <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Creativity</span>
             </div>
-            <Link href="/curriculum/grade3-subjects/activities/language-arts/authors-workshop">
+            <Link to="/curriculum/grade3-subjects/activities/language-arts/authors-workshop">
               <Button className="w-full bg-green-600 hover:bg-green-700">View Activity</Button>
             </Link>
           </CardContent>
@@ -115,7 +115,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <Image src="/readers-theater-children.png" alt="Reader's Theater" fill className="object-cover" />
+              <img src="/readers-theater-children.png" alt="Reader" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students perform dramatic readings of scripts, focusing on expression, fluency, and character voices. This
@@ -128,7 +128,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
                 Collaboration
               </span>
             </div>
-            <Link href="/curriculum/grade3-subjects/activities/language-arts/readers-theater">
+            <Link to="/curriculum/grade3-subjects/activities/language-arts/readers-theater">
               <Button className="w-full bg-amber-600 hover:bg-amber-700">View Activity</Button>
             </Link>
           </CardContent>
@@ -144,7 +144,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <Image src="/vocab-detective.png" alt="Vocabulary Detective" fill className="object-cover" />
+              <img src="/vocab-detective.png" alt="Vocabulary Detective" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students become "word detectives," investigating new vocabulary through context clues, word parts, and
@@ -155,7 +155,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
               <span className="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">Word Study</span>
               <span className="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">Research</span>
             </div>
-            <Link href="/curriculum/grade3-subjects/activities/language-arts/vocabulary-detective">
+            <Link to="/curriculum/grade3-subjects/activities/language-arts/vocabulary-detective">
               <Button className="w-full bg-pink-600 hover:bg-pink-700">View Activity</Button>
             </Link>
           </CardContent>
@@ -171,7 +171,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <Image src="/diverse-children-poetry.png" alt="Cultural Poetry Exploration" fill className="object-cover" />
+              <img src="/diverse-children-poetry.png" alt="Cultural Poetry Exploration" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students explore poetry from diverse cultures, analyzing structures, themes, and language. They create
@@ -186,7 +186,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
                 Creative Writing
               </span>
             </div>
-            <Link href="/curriculum/grade3-subjects/activities/language-arts/cultural-poetry">
+            <Link to="/curriculum/grade3-subjects/activities/language-arts/cultural-poetry">
               <Button className="w-full bg-teal-600 hover:bg-teal-700">View Activity</Button>
             </Link>
           </CardContent>

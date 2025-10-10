@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Mic, Eye, PenTool, Users, Clock, Target, Star } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade6LanguageArtsActivitiesPage() {
@@ -224,7 +224,7 @@ export default function Grade6LanguageArtsActivitiesPage() {
                   {/* Action Button */}
                   <div className="pt-4">
                     <Button asChild className="w-full">
-                      <Link href={`/curriculum/grade6-subjects/activities/language-arts/${strand.id}`}>
+                      <Link to={`/curriculum/grade6-subjects/activities/language-arts/${strand.id}`}>
                         Explore Activities
                       </Link>
                     </Button>

@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,9 +9,7 @@ export default function StructureFunctionProcessing() {
     <div className="container mx-auto py-6 px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold">Structure, Function, and Information Processing</h1>
-        <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
-          <Link href="/curriculum/grade1-subjects/science">Back to Science</Link>
-        </Button>
+        <Link to="/curriculum/grade1-subjects/science"><Button>Back to Science</Button></Link>
       </div>
 
       <div className="grid gap-6 space-y-2">

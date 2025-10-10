@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, FlaskRoundIcon as Flask, Globe, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,7 +7,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function EarthSystemsProcessesPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade2-subjects/science">
+            <Link to="/curriculum/grade2-subjects/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 2 Science
         </Button>
@@ -41,7 +39,7 @@ export default function EarthSystemsProcessesPage() {
               In this activity, students will use information from several sources to provide evidence that Earth events
               can occur quickly or slowly, such as volcanic explosions, earthquakes, and erosion of rocks.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/earth-systems-processes/fast-slow-events">
+            <Link to="/curriculum/grade2-subjects/activities/science/earth-systems-processes/fast-slow-events">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">Explore Earth Events</Button>
             </Link>
           </CardContent>
@@ -60,7 +58,7 @@ export default function EarthSystemsProcessesPage() {
               Students will compare multiple solutions designed to slow or prevent wind or water from changing the shape
               of the land, such as different designs of dikes, windbreaks, and vegetation.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/earth-systems-processes/preventing-erosion">
+            <Link to="/curriculum/grade2-subjects/activities/science/earth-systems-processes/preventing-erosion">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">Explore Preventing Erosion</Button>
             </Link>
           </CardContent>
@@ -81,7 +79,7 @@ export default function EarthSystemsProcessesPage() {
               Students will develop a model to represent the shapes and kinds of land and bodies of water in an area,
               focusing on understanding the different features and their characteristics.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/earth-systems-processes/land-water-models">
+            <Link to="/curriculum/grade2-subjects/activities/science/earth-systems-processes/land-water-models">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">Explore Land and Water Models</Button>
             </Link>
           </CardContent>
@@ -102,7 +100,7 @@ export default function EarthSystemsProcessesPage() {
               Students will obtain information to identify where water is found on Earth and that it can be solid or
               liquid, exploring the different forms and locations of water on our planet.
             </p>
-            <Link href="/curriculum/grade2-subjects/activities/science/earth-systems-processes/water-on-earth">
+            <Link to="/curriculum/grade2-subjects/activities/science/earth-systems-processes/water-on-earth">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">Explore Water on Earth</Button>
             </Link>
           </CardContent>

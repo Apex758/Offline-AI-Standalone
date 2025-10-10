@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -10,7 +10,7 @@ export default function WritingRepresentingPage() {
   return (
     <div className="container mx-auto py-8">
       
-      <Link href="/curriculum/grade4-subjects/language-arts">
+      <Link to="/curriculum/grade4-subjects/language-arts">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Language Arts
         </Button>
@@ -580,7 +580,7 @@ export default function WritingRepresentingPage() {
                   Students research and write about aspects of their cultural heritage, combining personal narratives
                   with historical information.
                 </p>
-                <Link href="/curriculum/grade4-subjects/activities/language-arts/heritage-journal">
+                <Link to="/curriculum/grade4-subjects/activities/language-arts/heritage-journal">
                   <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
                     View Activity
                   </Button>
@@ -593,7 +593,7 @@ export default function WritingRepresentingPage() {
                   Students create news reports on local or school events, integrating written articles with photos,
                   graphics, and video interviews.
                 </p>
-                <Link href="/curriculum/grade4-subjects/activities/language-arts/multimedia-news">
+                <Link to="/curriculum/grade4-subjects/activities/language-arts/multimedia-news">
                   <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
                     View Activity
                   </Button>
@@ -606,7 +606,7 @@ export default function WritingRepresentingPage() {
                   Students research local environmental issues and create persuasive writing pieces to advocate for
                   positive changes in their community.
                 </p>
-                <Link href="/curriculum/grade4-subjects/activities/language-arts/environmental-advocacy">
+                <Link to="/curriculum/grade4-subjects/activities/language-arts/environmental-advocacy">
                   <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
                     View Activity
                   </Button>
@@ -629,12 +629,12 @@ export default function WritingRepresentingPage() {
       </div>
 
       <div className="mt-8 flex justify-between">
-        <Link href="/curriculum/grade4-subjects/language-arts/reading-viewing">
+        <Link to="/curriculum/grade4-subjects/language-arts/reading-viewing">
           <Button variant="outline" className="flex items-center">
             <ChevronLeft className="mr-2 h-4 w-4" /> Reading & Viewing
           </Button>
         </Link>
-        <Link href="/curriculum/grade4-subjects/activities/language-arts">
+        <Link to="/curriculum/grade4-subjects/activities/language-arts">
           <Button className="bg-green-600 hover:bg-green-700">Explore Language Arts Activities</Button>
         </Link>
       </div>

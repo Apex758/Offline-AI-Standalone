@@ -1,8 +1,8 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { BookOpen, Map, Users, DollarSign, ArrowRight, ChevronRight } from "lucide-react"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 
 export default function SocialStudiesPage() {
@@ -24,7 +24,7 @@ export default function SocialStudiesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
-        <Link href="/curriculum/grade3-subjects/social-studies/historical-cultural-thinking">
+        <Link to="/curriculum/grade3-subjects/social-studies/historical-cultural-thinking">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-blue-500 hover:-translate-y-1">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -42,7 +42,7 @@ export default function SocialStudiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade3-subjects/social-studies/spatial-thinking">
+        <Link to="/curriculum/grade3-subjects/social-studies/spatial-thinking">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-teal-500 hover:-translate-y-1">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -60,7 +60,7 @@ export default function SocialStudiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade3-subjects/social-studies/civic-participation">
+        <Link to="/curriculum/grade3-subjects/social-studies/civic-participation">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-purple-500 hover:-translate-y-1">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -78,7 +78,7 @@ export default function SocialStudiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade3-subjects/social-studies/economic-decision-making">
+        <Link to="/curriculum/grade3-subjects/social-studies/economic-decision-making">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-amber-500 hover:-translate-y-1">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -125,28 +125,16 @@ export default function SocialStudiesPage() {
               <li>Technology: Using digital tools for research and presentations about Caribbean culture</li>
             </ul>
             <div className="mt-4">
-              <Image
-                src="/placeholder-4x4ma.png"
-                alt="Social Studies Learning"
-                width={300}
-                height={200}
-                className="rounded-md"
-              />
+              <img src="/placeholder-4x4ma.png" alt="Social Studies Learning" className="w-auto h-auto" />
             </div>
           </div>
         </div>
       </div>
       <div className="mt-8 flex justify-center">
-        <Button
-          asChild
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <Link href="/curriculum/grade3-subjects/activities/social-studies" className="flex items-center">
+        <Link to="/curriculum/grade3-subjects/activities/social-studies"><Button>
             <span className="mr-2">View Social Studies Activities</span>
             <ChevronRight className="h-5 w-5" />
-          </Link>
-        </Button>
+          </Button></Link>
       </div>
     </div>
   )

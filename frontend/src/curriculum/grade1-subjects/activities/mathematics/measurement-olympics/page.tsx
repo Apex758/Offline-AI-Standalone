@@ -1,8 +1,8 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Ruler, ListChecks, Users, RotateCcw, CalendarDays } from "lucide-react"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function MeasurementOlympicsPage() {
   return (
@@ -39,12 +39,7 @@ export default function MeasurementOlympicsPage() {
               </p>
 
               <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden">
-                <Image
-                  src="/g1math-measurement-olympics.png"
-                  alt="Measurement Olympics Activity"
-                  fill
-                  className="object-cover"
-                />
+                <img src="/g1math-measurement-olympics.png" alt="Measurement Olympics Activity" className="w-full h-full object-cover" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2">Learning Outcomes</h3>
@@ -332,12 +327,12 @@ export default function MeasurementOlympicsPage() {
       </div>
 
       <div className="flex justify-center">
-        <Link href="/curriculum/grade1-subjects/activities/mathematics">
+        <Link to="/curriculum/grade1-subjects/activities/mathematics">
           <Button variant="outline" className="mr-4 bg-transparent">
             ← Back to Mathematics Activities
           </Button>
         </Link>
-        <Link href="/curriculum/grade1-subjects/activities/mathematics/favorite-things-graph">
+        <Link to="/curriculum/grade1-subjects/activities/mathematics/favorite-things-graph">
           <Button className="bg-orange-600 hover:bg-orange-700">Next Activity: Our Favorite Things Graph</Button>
         </Link>
       </div>

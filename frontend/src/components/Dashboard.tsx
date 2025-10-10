@@ -3,6 +3,7 @@ import { Menu, X, MessageSquare, ClipboardCheck, BookOpen, FileText, LogOut, Plu
 import { User, Tab, Tool } from '../types';
 import Chat from './Chat';
 import LessonPlanner from './LessonPlanner';
+import CurriculumViewer from './CurriculumViewer';
 
 interface DashboardProps {
   user: User;
@@ -16,6 +17,13 @@ const tools: Tool[] = [
     icon: 'MessageSquare',
     type: 'chat',
     description: 'Have a conversation with the AI assistant'
+  },
+  {
+    id: 'curriculum',
+    name: 'Curriculum',
+    icon: 'BookOpen',
+    type: 'curriculum',
+    description: 'Browse OECS curriculum content'
   },
   {
     id: 'grader',
@@ -54,6 +62,11 @@ const tabColors: { [key: string]: { border: string; bg: string; activeBg: string
     border: 'border-blue-500', 
     bg: 'bg-blue-50', 
     activeBg: 'bg-blue-600' 
+  },
+  'curriculum': { 
+    border: 'border-green-500', 
+    bg: 'bg-green-50', 
+    activeBg: 'bg-green-600' 
   },
   'lesson-planner': { 
     border: 'border-green-500', 
@@ -129,7 +142,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  // Load tabs from localStorage on mount
   useEffect(() => {
     const savedTabs = localStorage.getItem('dashboard-tabs');
     const savedActiveTabId = localStorage.getItem('dashboard-active-tab');
@@ -147,7 +159,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, []);
 
-  // Save tabs to localStorage whenever they change
   useEffect(() => {
     if (tabs.length > 0) {
       localStorage.setItem('dashboard-tabs', JSON.stringify(tabs));
@@ -184,7 +195,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const handleSplitWithTab = (targetTabId: string) => {
     if (contextMenu) {
-      createSplitTab(contextMenu.tabId, targetTabId);
+      createSplitTab(contextMenu.tabId!, targetTabId);
     }
   };
 
@@ -222,27 +233,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  const renderTabContent = (tab: Tab) => {
-    if (tab.type === 'split' && tab.splitTabs) {
-      const [leftTabId, rightTabId] = tab.splitTabs;
-      const leftTab = tabs.find(t => t.id === leftTabId);
-      const rightTab = tabs.find(t => t.id === rightTabId);
-
-      return (
-        <div className="flex h-full divide-x divide-gray-200">
-          <div className="flex-1 overflow-hidden">
-            {leftTab && renderSingleTabContent(leftTab)}
-          </div>
-          <div className="flex-1 overflow-hidden">
-            {rightTab && renderSingleTabContent(rightTab)}
-          </div>
-        </div>
-      );
-    }
-
-    return renderSingleTabContent(tab);
-  };
-
   const renderSingleTabContent = (tab: Tab) => {
     switch (tab.type) {
       case 'chat':
@@ -252,6 +242,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             savedData={tab.data} 
             onDataChange={(data) => updateTabData(tab.id, data)} 
             onTitleChange={(title) => updateTabTitle(tab.id, title)}
+            onPanelClick={() => setSidebarOpen(false)}
+          />
+        );
+      case 'curriculum':
+        return (
+          <CurriculumViewer
+            tabId={tab.id}
+            savedData={tab.data}
+            onDataChange={(data) => updateTabData(tab.id, data)}
             onPanelClick={() => setSidebarOpen(false)}
           />
         );
@@ -276,7 +275,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  // Group tabs by type
+  const renderTabContent = (tab: Tab) => {
+    if (tab.type === 'split' && tab.splitTabs) {
+      const [leftTabId, rightTabId] = tab.splitTabs;
+      const leftTab = tabs.find(t => t.id === leftTabId);
+      const rightTab = tabs.find(t => t.id === rightTabId);
+
+      return (
+        <div className="flex h-full divide-x divide-gray-200">
+          <div className="flex-1 overflow-hidden">
+            {leftTab && renderSingleTabContent(leftTab)}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            {rightTab && renderSingleTabContent(rightTab)}
+          </div>
+        </div>
+      );
+    }
+
+    return renderSingleTabContent(tab);
+  };
+
   const groupedTabs = tabs.reduce((acc, tab) => {
     if (tab.type === 'split') {
       if (!acc['split']) acc['split'] = [];
@@ -302,7 +321,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           onClick={(e) => e.stopPropagation()}
         >
           {contextMenu.groupType ? (
-            // Group menu
             <>
               <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Group Actions</div>
               <button
@@ -314,7 +332,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </button>
             </>
           ) : (
-            // Split menu
             <>
               <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Split with...</div>
               {availableTabsForSplit.length === 0 ? (
@@ -423,8 +440,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-
-          {/* Grouped Tabs */}
           <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto scrollbar-hide">
             {Object.entries(groupedTabs).map(([type, groupTabs]) => {
               const isCollapsed = collapsedGroups.has(type);
@@ -432,7 +447,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               const colors = tabColors[type] || tabColors['split'];
               
               if (groupTabs.length === 1) {
-                // Single tab - show normally
                 const tab = groupTabs[0];
                 return (
                   <div
@@ -461,7 +475,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 );
               }
 
-              // Multiple tabs - group them
               return (
                 <div key={type} className="flex items-center gap-1">
                   <button
@@ -523,9 +536,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         {/* Content Area */}
         <div 
           className="flex-1 overflow-hidden relative"
-          onClick={() => {
-            setSidebarOpen(false);
-          }}
+          onClick={() => setSidebarOpen(false)}
         >
           {tabs.length > 0 ? (
             <>

@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +11,7 @@ export default function BelongingUnitWeek1() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/belonging">
+        <Link to="/curriculum/kindergarten/belonging">
           <Button variant="outline" className="mb-2 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Belonging Unit
           </Button>
@@ -50,7 +50,7 @@ export default function BelongingUnitWeek1() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-pink-300 text-pink-700 hover:bg-pink-50 flex items-center gap-2 bg-transparent"
@@ -58,7 +58,7 @@ export default function BelongingUnitWeek1() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/belonging/week-2">
+            <Link to="/curriculum/kindergarten/belonging/week-2">
               <Button
                 variant="outline"
                 className="border-pink-300 text-pink-700 hover:bg-pink-50 flex items-center gap-2 bg-transparent"
@@ -72,12 +72,7 @@ export default function BelongingUnitWeek1() {
           <Card className="border-pink-200 shadow-md overflow-hidden">
             <div className="h-48 bg-gradient-to-r from-pink-400 to-purple-400 relative">
               <div className="absolute inset-0 flex items-center justify-center p-2">
-                <Image
-                  src="/kindergarten-self-portraits.png"
-                  alt="Children creating self portraits"
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                <img src="/kindergarten-self-portraits.png" alt="Children creating self portraits" className="w-full h-full object-cover" />
               </div>
             </div>
             <CardHeader className="bg-white">
@@ -333,20 +328,8 @@ export default function BelongingUnitWeek1() {
                       stickers, or drawings that represent things they like.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-name-art-example.png"
-                        alt="Name art example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-decorated-name.png"
-                        alt="Decorated name example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-name-art-example.png" alt="Name art example" className="w-auto h-auto" />
+                      <img src="/kindergarten-decorated-name.png" alt="Decorated name example" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -472,13 +455,7 @@ export default function BelongingUnitWeek1() {
                       compare which has the most/least.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-eye-color-graph.png"
-                        alt="Eye color graph example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-eye-color-graph.png" alt="Eye color graph example" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -645,20 +622,8 @@ export default function BelongingUnitWeek1() {
                       favorite things. Include favorite food, color, toy, and activity.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-favorite-things-book.png"
-                        alt="Favorite things book example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-likes-collage.png"
-                        alt="Likes collage example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-favorite-things-book.png" alt="Favorite things book example" className="w-auto h-auto" />
+                      <img src="/kindergarten-likes-collage.png" alt="Likes collage example" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -805,20 +770,8 @@ export default function BelongingUnitWeek1() {
                       can do. Include both current abilities and goals for learning.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-i-can-booklet.png"
-                        alt="I can booklet example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-abilities-chart.png"
-                        alt="Abilities chart example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-i-can-booklet.png" alt="I can booklet example" className="w-auto h-auto" />
+                      <img src="/kindergarten-abilities-chart.png" alt="Abilities chart example" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -965,20 +918,8 @@ export default function BelongingUnitWeek1() {
                       represents their uniqueness. Include their name and special qualities.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-special-crown-craft.png"
-                        alt="Special crown example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-i-am-special-badge.png"
-                        alt="Special badge example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-special-crown-craft.png" alt="Special crown example" className="w-auto h-auto" />
+                      <img src="/kindergarten-i-am-special-badge.png" alt="Special badge example" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>

@@ -13,7 +13,7 @@ import {
   ChevronRight,
   BookOpen,
 } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade6MathematicsActivitiesPage() {
@@ -346,7 +346,7 @@ export default function Grade6MathematicsActivitiesPage() {
                   {/* Action Button */}
                   <div className="pt-4">
                     <Button asChild className="w-full">
-                      <Link href={`/curriculum/grade6-subjects/activities/mathematics/${strand.id}`}>
+                      <Link to={`/curriculum/grade6-subjects/activities/mathematics/${strand.id}`}>
                         Explore {strand.title}
                         <ChevronRight className="w-4 h-4 ml-2" />
                       </Link>
@@ -519,8 +519,7 @@ export default function Grade6MathematicsActivitiesPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {activityStrands.map((strand) => (
                 <Button key={strand.id} asChild variant="outline" className="h-auto p-4">
-                  <Link
-                    href={`/curriculum/grade6-subjects/activities/mathematics/${strand.id}`}
+                  <Link to={`/curriculum/grade6-subjects/activities/mathematics/${strand.id}`}
                     className="flex flex-col items-center gap-2"
                   >
                     <strand.icon className="w-6 h-6" />
@@ -531,9 +530,7 @@ export default function Grade6MathematicsActivitiesPage() {
             </div>
 
             <div className="mt-6 text-center">
-              <Button asChild size="lg">
-                <Link href="/curriculum/grade6-subjects/mathematics">View Full Mathematics Curriculum</Link>
-              </Button>
+              <Link to="/curriculum/grade6-subjects/mathematics"><Button>View Full Mathematics Curriculum</Button></Link>
             </div>
           </CardContent>
         </Card>

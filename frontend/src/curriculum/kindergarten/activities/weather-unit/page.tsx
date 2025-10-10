@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import {
   CloudSun,
   CloudRain,
@@ -200,7 +200,7 @@ export default function WeatherUnitActivitiesPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/curriculum/kindergarten">
+            <Link to="/curriculum/kindergarten">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Kindergarten
             </Link>
@@ -277,8 +277,7 @@ export default function WeatherUnitActivitiesPage() {
                       </div>
 
                       <Button asChild className="w-full">
-                        <Link
-                          href={`/curriculum/kindergarten/activities/weather-unit/${week.id}/${activity.id}`}
+                        <Link to={`/curriculum/kindergarten/activities/weather-unit/${week.id}/${activity.id}`}
                         >
                           View Full Instructions
                         </Link>
@@ -298,11 +297,9 @@ export default function WeatherUnitActivitiesPage() {
           <p className="text-gray-600 mb-4">
             Start with Week 1 activities to introduce students to weather observation and vocabulary.
           </p>
-          <Button asChild className="bg-sky-600 hover:bg-sky-700">
-            <Link href="/curriculum/kindergarten/activities/weather-unit/week1/weather-observation-station">
+          <Link to="/curriculum/kindergarten/activities/weather-unit/week1/weather-observation-station"><Button>
               Start with Weather Observation Station
-            </Link>
-          </Button>
+            </Button></Link>
         </div>
       </div>
     </div>

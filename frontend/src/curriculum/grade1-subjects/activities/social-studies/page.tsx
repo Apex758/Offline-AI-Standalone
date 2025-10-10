@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -287,7 +285,7 @@ function EnhancedActivityCard({ activity }: { activity: any }) {
               {activity.strand}
             </Badge>
           </div>
-          <Link href={activity.href} className="block group-hover:text-gray-900 transition-colors">
+          <Link to={activity.href} className="block group-hover:text-gray-900 transition-colors">
             <CardTitle className="text-xl font-bold text-gray-800 mb-2 cursor-pointer">
               {activity.title}
             </CardTitle>
@@ -340,7 +338,7 @@ function EnhancedActivityCard({ activity }: { activity: any }) {
           size="sm" 
           className="flex-1 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
         >
-          <Link href={activity.href} className="flex items-center justify-center gap-2">
+          <Link to={activity.href} className="flex items-center justify-center gap-2">
             <BookOpen className="w-4 h-4" />
             View Details
           </Link>

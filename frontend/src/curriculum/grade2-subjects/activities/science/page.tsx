@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -234,7 +234,7 @@ function ActivityCard({
         </div>
       </CardContent>
       <CardFooter>
-        <Link href={href} className="w-full">
+        <Link to={href} className="w-full">
           <Button className="w-full">View Activity</Button>
         </Link>
       </CardFooter>

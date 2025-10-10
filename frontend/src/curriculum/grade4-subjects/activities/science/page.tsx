@@ -1,12 +1,10 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Search, Beaker, Leaf, Dna, Cloud } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { useState, useEffect } from "react"
 
 const scienceStrands = [
@@ -88,7 +86,7 @@ export default function Grade4ScienceActivitiesPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Link href="/curriculum/grade4-subjects/science">
+      <Link to="/curriculum/grade4-subjects/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Science
         </Button>
@@ -145,7 +143,7 @@ export default function Grade4ScienceActivitiesPage() {
               className={`h-full transition-all duration-300 hover:shadow-lg ${strand.color} border-2 ${strand.borderColor} overflow-hidden`}
             >
               <div className="relative h-48 w-full">
-                <Image src={strand.image || "/placeholder.svg"} alt={strand.title} fill className="object-cover" />
+                <img src="" alt="" className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex items-center justify-between">

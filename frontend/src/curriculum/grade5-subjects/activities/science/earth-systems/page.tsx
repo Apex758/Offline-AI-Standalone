@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +10,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function EarthSystemsActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade5-subjects/activities/science">
+            <Link to="/curriculum/grade5-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 5 Science Activities
         </Button>

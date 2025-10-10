@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -719,11 +719,11 @@ export default async function ActivityInstructionPage({ params }: PageProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-          <Link href="/curriculum/kindergarten" className="hover:text-cyan-600">
+          <Link to="/curriculum/kindergarten" className="hover:text-cyan-600">
             Kindergarten
           </Link>
           <span>→</span>
-          <Link href="/curriculum/kindergarten/activities/celebrations-unit" className="hover:text-cyan-600">
+          <Link to="/curriculum/kindergarten/activities/celebrations-unit" className="hover:text-cyan-600">
             Celebrations Activities
           </Link>
           <span>→</span>
@@ -894,11 +894,9 @@ export default async function ActivityInstructionPage({ params }: PageProps) {
 
       <div className="mt-8 flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/activities/celebrations-unit">Back to Activities</Link>
+          <Link to="/curriculum/kindergarten/activities/celebrations-unit">Back to Activities</Link>
         </Button>
-        <Button asChild className="bg-cyan-600 hover:bg-cyan-700">
-          <Link href="/curriculum/kindergarten/activities/celebrations-unit">View All Activities</Link>
-        </Button>
+        <Link to="/curriculum/kindergarten/activities/celebrations-unit"><Button>View All Activities</Button></Link>
       </div>
     </div>
   )

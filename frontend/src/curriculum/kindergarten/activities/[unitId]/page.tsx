@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { notFound } from "next/navigation"
 import {
   Heart,
@@ -229,7 +229,7 @@ function Breadcrumb({ items }: { items: { label: string; href: string }[] }) {
                 />
               </svg>
             )}
-            <Link href={item.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
+            <Link to={item.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
               {item.label}
             </Link>
           </li>
@@ -330,12 +330,10 @@ export default async function UnitActivitiesPage({ params }: { params: Promise<{
           
           {/* Lesson Plan Creation Button */}
           <div className="mt-6 text-center">
-            <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-              <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner"><Button>
                 <BookOpen className="mr-2 h-5 w-5" />
                 Create Lesson Plan for This Unit
-              </Link>
-            </Button>
+              </Button></Link>
           </div>
         </div>
       </div>
@@ -399,7 +397,7 @@ export default async function UnitActivitiesPage({ params }: { params: Promise<{
                       size="sm"
                       className={`w-full ${week.color.split(" ")[1].replace("text-", "bg-").replace("-700", "-600")} hover:${week.color.split(" ")[1].replace("text-", "bg-").replace("-700", "-700")}`}
                     >
-                      <Link href={`/curriculum/kindergarten/activities/${unitId}/${week.week}/${activity.slug}`}>
+                      <Link to={`/curriculum/kindergarten/activities/${unitId}/${week.week}/${activity.slug}`}>
                         <BookOpen className="h-4 w-4 mr-2" />
                         View Full Instructions
                       </Link>
@@ -433,10 +431,10 @@ export default async function UnitActivitiesPage({ params }: { params: Promise<{
 
       <div className="flex justify-between mt-8">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
         </Button>
         <Button className="bg-purple-600 hover:bg-purple-700" asChild>
-          <Link href={`/curriculum/kindergarten/activities/${unitId}/${unit.weeklyActivities[0].week}/${unit.weeklyActivities[0].activities[0].slug}`}>
+          <Link to={`/curriculum/kindergarten/activities/${unitId}/${unit.weeklyActivities[0].week}/${unit.weeklyActivities[0].activities[0].slug}`}>
             Start with Week 1 Activities
           </Link>
         </Button>

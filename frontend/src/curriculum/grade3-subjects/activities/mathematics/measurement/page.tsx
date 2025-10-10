@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -438,8 +438,7 @@ export default function MeasurementActivitiesPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="https://www.splashlearn.com/math-skills/third-grade/measurements"
+                  <Link to="https://www.splashlearn.com/math-skills/third-grade/measurements"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -447,8 +446,7 @@ export default function MeasurementActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.mathplayground.com/grade_3_games.html"
+                  <Link to="https://www.mathplayground.com/grade_3_games.html"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -456,8 +454,7 @@ export default function MeasurementActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.abcya.com/grades/3/skill/measurement"
+                  <Link to="https://www.abcya.com/grades/3/skill/measurement"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -475,8 +472,7 @@ export default function MeasurementActivitiesPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="https://www.k5learning.com/free-math-worksheets/third-grade-3/measurement"
+                  <Link to="https://www.k5learning.com/free-math-worksheets/third-grade-3/measurement"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -484,8 +480,7 @@ export default function MeasurementActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.mathworksheets4kids.com/measurement.php"
+                  <Link to="https://www.mathworksheets4kids.com/measurement.php"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -493,8 +488,7 @@ export default function MeasurementActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.math-salamanders.com/3rd-grade-measurement-worksheets.html"
+                  <Link to="https://www.math-salamanders.com/3rd-grade-measurement-worksheets.html"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -512,8 +506,7 @@ export default function MeasurementActivitiesPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="https://www.khanacademy.org/math/cc-third-grade-math/3rd-measure-data"
+                  <Link to="https://www.khanacademy.org/math/cc-third-grade-math/3rd-measure-data"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -521,8 +514,7 @@ export default function MeasurementActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.youtube.com/playlist?list=PLQlHzK9o1Hd8MtT7UT8f6EHsFZF4RQfzL"
+                  <Link to="https://www.youtube.com/playlist?list=PLQlHzK9o1Hd8MtT7UT8f6EHsFZF4RQfzL"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />
@@ -530,8 +522,7 @@ export default function MeasurementActivitiesPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="https://www.brainpop.com/math/geometryandmeasurement/"
+                  <Link to="https://www.brainpop.com/math/geometryandmeasurement/"
                     className="text-blue-600 hover:underline flex items-center"
                   >
                     <ArrowRight className="h-4 w-4 mr-2" />

@@ -1,10 +1,8 @@
-"use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Clock, Users, Target, Beaker, Zap, Globe, Microscope, Atom, Waves, Rocket } from "lucide-react"
 
 const scienceActivities = [
@@ -220,7 +218,7 @@ export default function Grade6ScienceActivitiesPage() {
               </div>
 
               <div className="mt-6 pt-4 border-t border-gray-200">
-                <Link href={`/curriculum/grade6-subjects/activities/science/${strand.id}`}>
+                <Link to={`/curriculum/grade6-subjects/activities/science/${strand.id}`}>
                   <Button className="w-full sm:w-auto">Explore {strand.title} Activities</Button>
                 </Link>
               </div>

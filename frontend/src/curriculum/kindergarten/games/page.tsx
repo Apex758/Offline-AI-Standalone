@@ -3,8 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 import {
   BookOpen,
   Clock,
@@ -44,23 +44,14 @@ export default function GamesUnit() {
           {/* Lesson Plan Creation and Activities Buttons */}
           <div className="mt-6 text-center">
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                <Link href="/kindergarten-planner">
+              <Link to="/kindergarten-planner"><Button>
                   <BookOpen className="mr-2 h-5 w-5" />
                   Create Games Lesson Plan
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-purple-500 text-purple-700 hover:bg-purple-50"
-              >
-                <Link href="/curriculum/kindergarten/activities/games-unit">
+                </Button></Link>
+              <Link to="/curriculum/kindergarten/activities/games-unit"><Button>
                   <Gamepad2 className="mr-2 h-5 w-5" />
                   View Activities
-                </Link>
-              </Button>
+                </Button></Link>
             </div>
           </div>
         </div>
@@ -68,13 +59,7 @@ export default function GamesUnit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <Image
-            src="/games.png"
-            alt="Kindergarten students playing games together"
-            width={800}
-            height={500}
-            className="rounded-lg shadow-md object-cover h-[400px]"
-          />
+          <img src="/games.png" alt="Kindergarten students playing games together" className="w-auto h-auto" />
         </div>
         <div>
           <Card className="border-purple-200 h-full shadow-md">
@@ -382,7 +367,7 @@ export default function GamesUnit() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
-          <Link href="/curriculum/kindergarten/games/week-1" className="block group">
+          <Link to="/curriculum/kindergarten/games/week-1" className="block group">
             <Card className="border-pink-200 hover:border-pink-300 hover:shadow-md transition-all">
               <CardHeader className="bg-pink-50 border-b border-pink-100 group-hover:bg-pink-100 transition-all">
                 <CardTitle className="text-pink-700 flex items-center">
@@ -402,7 +387,7 @@ export default function GamesUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/games/week-2" className="block group">
+          <Link to="/curriculum/kindergarten/games/week-2" className="block group">
             <Card className="border-amber-200 hover:border-amber-300 hover:shadow-md transition-all">
               <CardHeader className="bg-amber-50 border-b border-amber-100 group-hover:bg-amber-100 transition-all">
                 <CardTitle className="text-amber-700 flex items-center">
@@ -422,7 +407,7 @@ export default function GamesUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/games/week-3" className="block group">
+          <Link to="/curriculum/kindergarten/games/week-3" className="block group">
             <Card className="border-blue-200 hover:border-blue-300 hover:shadow-md transition-all">
               <CardHeader className="bg-blue-50 border-b border-blue-100 group-hover:bg-blue-100 transition-all">
                 <CardTitle className="text-blue-700 flex items-center">
@@ -442,7 +427,7 @@ export default function GamesUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/games/week-4" className="block group">
+          <Link to="/curriculum/kindergarten/games/week-4" className="block group">
             <Card className="border-emerald-200 hover:border-emerald-300 hover:shadow-md transition-all">
               <CardHeader className="bg-emerald-50 border-b border-emerald-100 group-hover:bg-emerald-100 transition-all">
                 <CardTitle className="text-emerald-700 flex items-center">
@@ -462,7 +447,7 @@ export default function GamesUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/games/week-5" className="block group">
+          <Link to="/curriculum/kindergarten/games/week-5" className="block group">
             <Card className="border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all">
               <CardHeader className="bg-indigo-50 border-b border-indigo-100 group-hover:bg-indigo-100 transition-all">
                 <CardTitle className="text-indigo-700 flex items-center">
@@ -588,16 +573,16 @@ export default function GamesUnit() {
 
       <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
         <Button className="bg-purple-600 hover:bg-purple-700" asChild>
-          <Link href="/curriculum/kindergarten/games/week-1">Begin Week 1: What games do I like to play?</Link>
+          <Link to="/curriculum/kindergarten/games/week-1">Begin Week 1: What games do I like to play?</Link>
         </Button>
         <Button variant="outline" className="border-purple-500 text-purple-700 hover:bg-purple-50" asChild>
-          <Link href="/curriculum/kindergarten/games/resources">View All Unit Resources</Link>
+          <Link to="/curriculum/kindergarten/games/resources">View All Unit Resources</Link>
         </Button>
       </div>
 
       <div className="flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
         </Button>
       </div>
     </div>

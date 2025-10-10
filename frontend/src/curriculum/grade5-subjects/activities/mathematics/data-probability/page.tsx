@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, BarChart3, Database, PieChart, Dice6, TrendingUp, AlertTriangle } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -138,7 +138,7 @@ export default function Grade5MathematicsDataProbabilityActivitiesPage() {
         ]}
       />
 
-      <Link href="/curriculum/grade5-subjects/mathematics/data-probability">
+      <Link to="/curriculum/grade5-subjects/mathematics/data-probability">
         <Button variant="outline" className="mb-6 hover:bg-gray-50 transition-colors">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Data & Probability
         </Button>

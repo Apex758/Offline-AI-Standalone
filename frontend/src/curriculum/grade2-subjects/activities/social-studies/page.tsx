@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { FallbackImage } from "@/components/fallback-image"
 import { Clock, BarChart2, BookOpen, ArrowRight } from "lucide-react"
@@ -20,7 +20,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {/* Historical and Cultural Thinking Activities */}
-        <Link href="/curriculum/grade2-subjects/activities/social-studies/family-tree-explorer">
+        <Link to="/curriculum/grade2-subjects/activities/social-studies/family-tree-explorer">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-teal-500 hover:-translate-y-1">
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
@@ -57,7 +57,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade2-subjects/activities/social-studies/community-map-makers">
+        <Link to="/curriculum/grade2-subjects/activities/social-studies/community-map-makers">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-green-500 hover:-translate-y-1">
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
@@ -93,7 +93,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade2-subjects/activities/social-studies/conflict-resolution-heroes">
+        <Link to="/curriculum/grade2-subjects/activities/social-studies/conflict-resolution-heroes">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-blue-500 hover:-translate-y-1">
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
@@ -129,7 +129,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade2-subjects/activities/social-studies/goods-and-services-sort">
+        <Link to="/curriculum/grade2-subjects/activities/social-studies/goods-and-services-sort">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-amber-500 hover:-translate-y-1">
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
@@ -165,7 +165,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade2-subjects/activities/social-studies/cultural-celebration-day">
+        <Link to="/curriculum/grade2-subjects/activities/social-studies/cultural-celebration-day">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-teal-500 hover:-translate-y-1">
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
@@ -201,7 +201,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
           </Card>
         </Link>
 
-        <Link href="/curriculum/grade2-subjects/activities/social-studies/community-helpers-interview">
+        <Link to="/curriculum/grade2-subjects/activities/social-studies/community-helpers-interview">
           <Card className="h-full transition-all hover:shadow-lg cursor-pointer border-l-4 border-amber-500 hover:-translate-y-1">
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
@@ -253,7 +253,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
       </div>
 
       <div className="flex justify-between">
-        <Link href="/curriculum/grade2-subjects/social-studies">
+        <Link to="/curriculum/grade2-subjects/social-studies">
           <button className="flex items-center px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700">
             <ArrowRight className="mr-2 h-4 w-4 rotate-180" />
             Back to Social Studies

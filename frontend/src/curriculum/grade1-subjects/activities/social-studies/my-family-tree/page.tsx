@@ -1,6 +1,4 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +11,7 @@ export default function MyFamilyTreePage() {
       <div className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
         <div className="container mx-auto px-4 py-12">
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/curriculum/grade1-subjects/activities/social-studies">
+            <Link to="/curriculum/grade1-subjects/activities/social-studies">
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Activities
@@ -351,7 +349,7 @@ export default function MyFamilyTreePage() {
 
         {/* Navigation */}
         <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-200">
-          <Link href="/curriculum/grade1-subjects/activities/social-studies">
+          <Link to="/curriculum/grade1-subjects/activities/social-studies">
             <Button variant="outline" className="flex items-center gap-2 bg-transparent">
               <ArrowLeft className="w-4 h-4" />
               Back to Social Studies Activities

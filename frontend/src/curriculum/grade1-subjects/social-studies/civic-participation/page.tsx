@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -8,9 +8,7 @@ export default function CivicParticipation() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Civic Participation</h1>
-        <Button asChild variant="outline">
-          <Link href="/curriculum/grade1-subjects/social-studies">Back to Grade 1 Social Studies</Link>
-        </Button>
+        <Link to="/curriculum/grade1-subjects/social-studies"><Button>Back to Grade 1 Social Studies</Button></Link>
       </div>
 
       <Card className="mb-6">

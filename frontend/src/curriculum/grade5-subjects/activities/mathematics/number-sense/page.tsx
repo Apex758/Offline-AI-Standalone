@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import {
   ChevronLeft,
@@ -209,7 +209,7 @@ export default function Grade5MathematicsNumberSenseActivitiesPage() {
         ]}
       />
 
-      <Link href="/curriculum/grade5-subjects/mathematics/number-sense">
+      <Link to="/curriculum/grade5-subjects/mathematics/number-sense">
         <Button variant="outline" className="mb-6 hover:bg-gray-50 transition-colors">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Number Sense
         </Button>

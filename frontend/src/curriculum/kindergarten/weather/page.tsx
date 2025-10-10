@@ -2,8 +2,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 import {
   BookOpen,
   Clock,
@@ -43,23 +43,14 @@ export default function WeatherUnit() {
           {/* Lesson Plan Creation and Activities Buttons */}
           <div className="mt-6 text-center">
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                <Link href="/kindergarten-planner">
+              <Link to="/kindergarten-planner"><Button>
                   <BookOpen className="mr-2 h-5 w-5" />
                   Create Weather Lesson Plan
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-sky-500 text-sky-700 hover:bg-sky-50"
-              >
-                <Link href="/curriculum/kindergarten/activities/weather-unit">
+                </Button></Link>
+              <Link to="/curriculum/kindergarten/activities/weather-unit"><Button>
                   <CloudSun className="mr-2 h-5 w-5" />
                   View Activities
-                </Link>
-              </Button>
+                </Button></Link>
             </div>
           </div>
         </div>
@@ -67,13 +58,7 @@ export default function WeatherUnit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <Image
-            src="/kindergarten-weather-exploration.png"
-            alt="Kindergarten students exploring weather concepts"
-            width={800}
-            height={500}
-            className="rounded-lg shadow-md object-cover h-[400px]"
-          />
+          <img src="/kindergarten-weather-exploration.png" alt="Kindergarten students exploring weather concepts" className="w-auto h-auto" />
         </div>
         <div>
           <Card className="border-sky-200 h-full shadow-md">
@@ -366,7 +351,7 @@ export default function WeatherUnit() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
-          <Link href="/curriculum/kindergarten/weather/week-1" className="block group">
+          <Link to="/curriculum/kindergarten/weather/week-1" className="block group">
             <Card className="border-cyan-200 hover:border-cyan-300 hover:shadow-md transition-all">
               <CardHeader className="bg-cyan-50 border-b border-cyan-100 group-hover:bg-cyan-100 transition-all">
                 <CardTitle className="text-cyan-700 flex items-center">
@@ -386,7 +371,7 @@ export default function WeatherUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/weather/week-2" className="block group">
+          <Link to="/curriculum/kindergarten/weather/week-2" className="block group">
             <Card className="border-blue-200 hover:border-blue-300 hover:shadow-md transition-all">
               <CardHeader className="bg-blue-50 border-b border-blue-100 group-hover:bg-blue-100 transition-all">
                 <CardTitle className="text-blue-700 flex items-center">
@@ -406,7 +391,7 @@ export default function WeatherUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/weather/week-3" className="block group">
+          <Link to="/curriculum/kindergarten/weather/week-3" className="block group">
             <Card className="border-green-200 hover:border-green-300 hover:shadow-md transition-all">
               <CardHeader className="bg-green-50 border-b border-green-100 group-hover:bg-green-100 transition-all">
                 <CardTitle className="text-green-700 flex items-center">
@@ -426,7 +411,7 @@ export default function WeatherUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/weather/week-4" className="block group">
+          <Link to="/curriculum/kindergarten/weather/week-4" className="block group">
             <Card className="border-amber-200 hover:border-amber-300 hover:shadow-md transition-all">
               <CardHeader className="bg-amber-50 border-b border-amber-100 group-hover:bg-amber-100 transition-all">
                 <CardTitle className="text-amber-700 flex items-center">
@@ -446,7 +431,7 @@ export default function WeatherUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/weather/week-5" className="block group">
+          <Link to="/curriculum/kindergarten/weather/week-5" className="block group">
             <Card className="border-purple-200 hover:border-purple-300 hover:shadow-md transition-all">
               <CardHeader className="bg-purple-50 border-b border-purple-100 group-hover:bg-purple-100 transition-all">
                 <CardTitle className="text-purple-700 flex items-center">
@@ -572,16 +557,16 @@ export default function WeatherUnit() {
 
       <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
         <Button className="bg-sky-600 hover:bg-sky-700" asChild>
-          <Link href="/curriculum/kindergarten/weather/week-1">Begin Week 1: Is the Weather Important?</Link>
+          <Link to="/curriculum/kindergarten/weather/week-1">Begin Week 1: Is the Weather Important?</Link>
         </Button>
         <Button variant="outline" className="border-sky-500 text-sky-700 hover:bg-sky-50" asChild>
-          <Link href="/curriculum/kindergarten/activities/weather-unit">View All Unit Activities</Link>
+          <Link to="/curriculum/kindergarten/activities/weather-unit">View All Unit Activities</Link>
         </Button>
       </div>
 
       <div className="flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
         </Button>
       </div>
     </div>

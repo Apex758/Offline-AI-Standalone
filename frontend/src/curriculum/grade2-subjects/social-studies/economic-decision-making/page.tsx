@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -10,7 +10,7 @@ export default function EconomicDecisionMakingPage() {
   return (
     <div className="container mx-auto py-8">
       
-      <Link href="/curriculum/grade2-subjects/social-studies">
+      <Link to="/curriculum/grade2-subjects/social-studies">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 2 Social Studies
         </Button>
@@ -296,12 +296,12 @@ export default function EconomicDecisionMakingPage() {
       </div>
 
       <div className="flex justify-between mt-8">
-        <Link href="/curriculum/grade2-subjects/social-studies/civic-participation">
+        <Link to="/curriculum/grade2-subjects/social-studies/civic-participation">
           <Button variant="outline">
             <ChevronLeft className="mr-2 h-4 w-4" /> Civic Participation
           </Button>
         </Link>
-        <Link href="/curriculum/grade2-subjects/social-studies">
+        <Link to="/curriculum/grade2-subjects/social-studies">
           <Button variant="outline">
             Back to Social Studies <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
           </Button>

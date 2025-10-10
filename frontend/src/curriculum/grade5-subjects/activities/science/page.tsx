@@ -1,10 +1,10 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChevronLeft, FlaskConical, Leaf, Globe, Star, Cog, Users } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function Grade5ScienceActivitiesPage() {
   const activityStrands = [
@@ -121,13 +121,7 @@ export default function Grade5ScienceActivitiesPage() {
               </CardHeader>
               <CardContent className="p-4">
                 <div className="mb-4">
-                  <Image
-                    src={strand.image || "/placeholder.svg"}
-                    alt={`${strand.title} activities`}
-                    width={300}
-                    height={200}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
+                  <img src="" alt="" className="w-auto h-auto" />
                 </div>
                 <div className="space-y-2 mb-4">
                   <h4 className="font-semibold text-sm">Featured Activities:</h4>
@@ -140,7 +134,7 @@ export default function Grade5ScienceActivitiesPage() {
                     ))}
                   </ul>
                 </div>
-                <Link href={strand.href}>
+                <Link to={strand.href}>
                   <Button className={`w-full bg-${strand.color}-600 hover:bg-${strand.color}-700`}>
                     Explore Activities
                   </Button>
@@ -173,7 +167,7 @@ export default function Grade5ScienceActivitiesPage() {
                 <li>• Weather Station Construction</li>
               </ul>
             </div>
-            <Link href="/curriculum/grade5-subjects/activities/science/cross-strand-integration">
+            <Link to="/curriculum/grade5-subjects/activities/science/cross-strand-integration">
               <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700">View Integration Projects</Button>
             </Link>
           </CardContent>

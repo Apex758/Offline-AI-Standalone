@@ -13,7 +13,7 @@ import {
   Grid3x3,
   Search,
 } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade6NumberSenseActivitiesPage() {
@@ -346,7 +346,7 @@ export default function Grade6NumberSenseActivitiesPage() {
           ]}
         />
 
-        <Link href="/curriculum/grade6-subjects/activities/mathematics">
+        <Link to="/curriculum/grade6-subjects/activities/mathematics">
           <Button variant="outline" className="mb-6">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Mathematics Activities
           </Button>
@@ -563,11 +563,9 @@ export default function Grade6NumberSenseActivitiesPage() {
 
         {/* Navigation */}
         <div className="flex justify-center">
-          <Button asChild size="lg">
-            <Link href="/curriculum/grade6-subjects/activities/mathematics/operations">
+          <Link to="/curriculum/grade6-subjects/activities/mathematics/operations"><Button>
               Next: Operations Activities
-            </Link>
-          </Button>
+            </Button></Link>
         </div>
       </div>
     </div>

@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function ForcesInteractionsActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade3-subjects/activities/science">
+      <Link to="/curriculum/grade3-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 3 Science Activities
         </Button>
@@ -65,12 +63,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder-g5qky.png"
-                        alt="Push and Pull Forces Activity"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder-g5qky.png" alt="Push and Pull Forces Activity" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -155,12 +148,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder-2rmq6.png"
-                        alt="Tug of War Activity"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder-2rmq6.png" alt="Tug of War Activity" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -244,12 +232,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/children-testing-magnets.png"
-                        alt="Testing Magnetic Materials"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/children-testing-magnets.png" alt="Testing Magnetic Materials" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -323,12 +306,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=children+testing+friction+with+toy+cars"
-                        alt="Friction Investigation"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=children+testing+friction+with+toy+cars" alt="Friction Investigation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

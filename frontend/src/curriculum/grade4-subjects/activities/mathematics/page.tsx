@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight } from "lucide-react"
@@ -41,12 +41,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/placeholder-1sfkd.png"
-                alt="Children learning number sense concepts"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/placeholder-1sfkd.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop understanding of numbers to 10,000, place value, fractions, and decimals through hands-on
@@ -54,8 +49,7 @@ export default function Grade4MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade4-subjects/activities/mathematics/number-sense"
+            <Link to="/curriculum/grade4-subjects/activities/mathematics/number-sense"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -70,12 +64,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/placeholder-pc7dd.png"
-                alt="Children learning multiplication and division"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/placeholder-pc7dd.png" alt="Children learning multiplication and division" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Build fluency with multi-digit operations, develop efficient calculation strategies, and apply operations
@@ -83,8 +72,7 @@ export default function Grade4MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade4-subjects/activities/mathematics/operations-with-numbers"
+            <Link to="/curriculum/grade4-subjects/activities/mathematics/operations-with-numbers"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -99,12 +87,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/placeholder-hiczo.png"
-                alt="Children exploring patterns and relationships"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/placeholder-hiczo.png" alt="Children exploring patterns and relationships" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Identify, describe, and extend patterns, explore number relationships, and develop early algebraic
@@ -112,8 +95,7 @@ export default function Grade4MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade4-subjects/activities/mathematics/patterns-relationships"
+            <Link to="/curriculum/grade4-subjects/activities/mathematics/patterns-relationships"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -128,12 +110,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/placeholder.svg?height=400&width=600&query=children measuring angles with protractors"
-                alt="Children learning about geometric shapes and angles"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/placeholder.svg?height=400&width=600&query=children measuring angles with protractors" alt="Children learning about geometric shapes and angles" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Explore properties of polygons, classify quadrilaterals, measure angles, and investigate symmetry and
@@ -141,8 +118,7 @@ export default function Grade4MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade4-subjects/activities/mathematics/geometrical-thinking"
+            <Link to="/curriculum/grade4-subjects/activities/mathematics/geometrical-thinking"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -157,12 +133,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/placeholder.svg?height=400&width=600&query=children calculating area and perimeter of shapes"
-                alt="Children measuring and calculating area"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/placeholder.svg?height=400&width=600&query=children calculating area and perimeter of shapes" alt="Children measuring and calculating area" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop measurement skills through practical activities involving perimeter, area, volume, and converting
@@ -170,8 +141,7 @@ export default function Grade4MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade4-subjects/activities/mathematics/measurement"
+            <Link to="/curriculum/grade4-subjects/activities/mathematics/measurement"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -188,12 +158,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/placeholder.svg?height=400&width=600&query=children analyzing data and creating line plots"
-                alt="Children creating and analyzing graphs"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/placeholder.svg?height=400&width=600&query=children analyzing data and creating line plots" alt="Children creating and analyzing graphs" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Collect, organize, and analyze data using various representations, interpret data to draw conclusions, and
@@ -201,8 +166,7 @@ export default function Grade4MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade4-subjects/activities/mathematics/data-probability"
+            <Link to="/curriculum/grade4-subjects/activities/mathematics/data-probability"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -221,7 +185,7 @@ export default function Grade4MathematicsActivitiesPage() {
                 <ArrowRight className="h-5 w-5 mr-2 mt-0.5 text-green-600" />
                 <span>
                   Use the{" "}
-                  <Link href="/planner" className="text-blue-600 hover:underline">
+                  <Link to="/planner" className="text-blue-600 hover:underline">
                     Lesson Planner
                   </Link>{" "}
                   to incorporate these activities into your lessons
@@ -235,7 +199,7 @@ export default function Grade4MathematicsActivitiesPage() {
                 <ArrowRight className="h-5 w-5 mr-2 mt-0.5 text-green-600" />
                 <span>
                   Adapt activities for different learning needs using our{" "}
-                  <Link href="/innovative-tools" className="text-blue-600 hover:underline">
+                  <Link to="/innovative-tools" className="text-blue-600 hover:underline">
                     Differentiation Tools
                   </Link>
                 </span>

@@ -1,5 +1,3 @@
-"use client"
-
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,8 +19,8 @@ import {
   FileText,
   LinkIcon,
 } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 
 export default function Week2Page() {
   return (
@@ -59,7 +57,7 @@ export default function Week2Page() {
             >
               <Download className="h-4 w-4" /> All Materials
             </Button>
-            <Link href="/kindergarten-planner">
+            <Link to="/kindergarten-planner">
               <Button
                 variant="outline"
                 className="border-orange-300 text-orange-700 hover:bg-orange-50 flex items-center gap-2 bg-transparent"
@@ -67,7 +65,7 @@ export default function Week2Page() {
                 <Calendar className="h-4 w-4" /> Plan your Lesson
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/belonging/week-1">
+            <Link to="/curriculum/kindergarten/belonging/week-1">
               <Button
                 variant="outline"
                 className="border-orange-300 text-orange-700 hover:bg-orange-50 flex items-center gap-2 bg-transparent"
@@ -75,7 +73,7 @@ export default function Week2Page() {
                 <ChevronLeft className="h-4 w-4" /> Previous Week
               </Button>
             </Link>
-            <Link href="/curriculum/kindergarten/belonging/week-3">
+            <Link to="/curriculum/kindergarten/belonging/week-3">
               <Button
                 variant="outline"
                 className="border-orange-300 text-orange-700 hover:bg-orange-50 flex items-center gap-2 bg-transparent"
@@ -89,12 +87,7 @@ export default function Week2Page() {
           <Card className="border-orange-200 shadow-md overflow-hidden">
           <div className="h-48 bg-gradient-to-r from-pink-400 to-purple-400 relative">
               <div className="absolute inset-0 flex items-center justify-center p-2">
-                <Image
-                  src="/kindergarten-self-portraits.png"
-                  alt="Children creating self portraits"
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                <img src="/kindergarten-self-portraits.png" alt="Children creating self portraits" className="w-full h-full object-cover" />
               </div>
             </div>
             <CardHeader className="bg-white">
@@ -358,20 +351,8 @@ export default function Week2Page() {
                       live with them or are important to them. Encourage details and storytelling.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-family-drawings.png"
-                        alt="Family drawings example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-caribbean-family-portrait.png"
-                        alt="Caribbean family portrait example"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-family-drawings.png" alt="Family drawings example" className="w-auto h-auto" />
+                      <img src="/kindergarten-caribbean-family-portrait.png" alt="Caribbean family portrait example" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -518,13 +499,7 @@ export default function Week2Page() {
                       create coupon books to give as gifts to family members.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-caribbean-family-helping.png"
-                        alt="Family helping activities"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-caribbean-family-helping.png" alt="Family helping activities" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -671,20 +646,8 @@ export default function Week2Page() {
                       family's special traditions and create colorful collages to share.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-caribbean-family-traditions.png"
-                        alt="Caribbean family traditions"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
-                      <Image
-                        src="/kindergarten-caribbean-family-celebration.png"
-                        alt="Family celebration"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-caribbean-family-traditions.png" alt="Caribbean family traditions" className="w-auto h-auto" />
+                      <img src="/kindergarten-caribbean-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -831,13 +794,7 @@ export default function Week2Page() {
                       memories. Bind the pages together to create personal family story books.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-caribbean-family-storytelling.png"
-                        alt="Family storytelling scene"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-caribbean-family-storytelling.png" alt="Family storytelling scene" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>
@@ -985,13 +942,7 @@ export default function Week2Page() {
                       belong in the classroom community.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Image
-                        src="/kindergarten-caribbean-extended-family.png"
-                        alt="Extended family representation"
-                        width={150}
-                        height={100}
-                        className="rounded-md border border-gray-200"
-                      />
+                      <img src="/kindergarten-caribbean-extended-family.png" alt="Extended family representation" className="w-auto h-auto" />
                     </div>
                   </div>
                 </div>

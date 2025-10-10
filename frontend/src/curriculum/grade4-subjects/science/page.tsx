@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Beaker, Leaf, Mountain, ChevronLeft, ChevronRight, Zap } from "lucide-react"
@@ -8,7 +8,7 @@ export default function Grade4SciencePage() {
   return (
     <div className="container mx-auto py-8">
       
-      <Link href="/curriculum/grade4-subjects">
+      <Link to="/curriculum/grade4-subjects">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Subjects
         </Button>
@@ -44,7 +44,7 @@ export default function Grade4SciencePage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade4-subjects/science/energy">
+            <Link to="/curriculum/grade4-subjects/science/energy">
               <Button className="w-full bg-green-600 hover:bg-green-700">View Strand</Button>
             </Link>
           </div>
@@ -65,7 +65,7 @@ export default function Grade4SciencePage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade4-subjects/science/waves">
+            <Link to="/curriculum/grade4-subjects/science/waves">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">View Strand</Button>
             </Link>
           </div>
@@ -87,7 +87,7 @@ export default function Grade4SciencePage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade4-subjects/science/structure-function">
+            <Link to="/curriculum/grade4-subjects/science/structure-function">
               <Button className="w-full bg-amber-600 hover:bg-amber-700">View Strand</Button>
             </Link>
           </div>
@@ -109,7 +109,7 @@ export default function Grade4SciencePage() {
             </p>
           </CardContent>
           <div className="p-4 pt-0 mt-auto">
-            <Link href="/curriculum/grade4-subjects/science/earth-systems">
+            <Link to="/curriculum/grade4-subjects/science/earth-systems">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">View Strand</Button>
             </Link>
           </div>
@@ -132,16 +132,10 @@ export default function Grade4SciencePage() {
       </div>
 
       <div className="mt-8 flex justify-center">
-        <Button
-          asChild
-          size="lg"
-          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <Link href="/curriculum/grade4-subjects/activities/science" className="flex items-center">
+        <Link to="/curriculum/grade4-subjects/activities/science"><Button>
             <span className="mr-2">View Science Activities</span>
             <ChevronRight className="h-5 w-5" />
-          </Link>
-        </Button>
+          </Button></Link>
       </div>
     </div>
   )

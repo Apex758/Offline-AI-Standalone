@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -8,9 +8,7 @@ export default function Grade1SocialStudies() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Grade 1 Social Studies Curriculum</h1>
-        <Button asChild variant="outline">
-          <Link href="/curriculum/grade1-subjects">Back to Grade 1 Curriculum</Link>
-        </Button>
+        <Link to="/curriculum/grade1-subjects"><Button>Back to Grade 1 Curriculum</Button></Link>
       </div>
 
       <div className="grid gap-6">
@@ -42,11 +40,9 @@ export default function Grade1SocialStudies() {
                     Students explore how celebrations help build pride in their identity, learning about cultural
                     heritage, national symbols, and traditions.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/social-studies/historical-cultural-thinking">
+                  <Link to="/curriculum/grade1-subjects/social-studies/historical-cultural-thinking"><Button>
                       View Strand
-                    </Link>
-                  </Button>
+                    </Button></Link>
                 </CardContent>
               </Card>
 
@@ -57,9 +53,7 @@ export default function Grade1SocialStudies() {
                     Students learn about roles and responsibilities in families, schools, and communities, developing an
                     understanding of leadership, cooperation, and respect.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/social-studies/civic-participation">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/social-studies/civic-participation"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
 
@@ -70,9 +64,7 @@ export default function Grade1SocialStudies() {
                     Students explore how we shape the local environment and how the local environment shapes who we are
                     and how we live, learning about neighborhoods and directions.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/social-studies/spatial-thinking">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/social-studies/spatial-thinking"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
 
@@ -83,9 +75,7 @@ export default function Grade1SocialStudies() {
                     Students develop awareness that we all have things we need and things we want, learning about goods,
                     services, resources, and transportation.
                   </p>
-                  <Button asChild>
-                    <Link href="/curriculum/grade1-subjects/social-studies/economic-decision-making">View Strand</Link>
-                  </Button>
+                  <Link to="/curriculum/grade1-subjects/social-studies/economic-decision-making"><Button>View Strand</Button></Link>
                 </CardContent>
               </Card>
             </div>
@@ -140,9 +130,7 @@ export default function Grade1SocialStudies() {
         </Tabs>
       </div>
       <div className="mt-8 flex justify-center">
-        <Button asChild size="lg" className="bg-amber-600 hover:bg-amber-700">
-          <Link href="/curriculum/grade1-subjects/activities/social-studies">View Social Studies Activities</Link>
-        </Button>
+        <Link to="/curriculum/grade1-subjects/activities/social-studies"><Button>View Social Studies Activities</Button></Link>
       </div>
     </div>
   )

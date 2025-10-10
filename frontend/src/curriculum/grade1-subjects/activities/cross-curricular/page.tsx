@@ -1,9 +1,7 @@
-"use client"
-
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -786,7 +784,7 @@ export default function CrossCurricularActivitiesPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade1-subjects/activities">
+      <Link to="/curriculum/grade1-subjects/activities">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Activities
         </Button>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Leaf, Droplets, Home, TreesIcon as Tree, Recycle, Clock, Users, BookOpen, ArrowLeft } from "lucide-react"
 
 export default function PlantsAnimalsActivitiesPage() {
@@ -234,7 +234,7 @@ export default function PlantsAnimalsActivitiesPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/curriculum/kindergarten">
+            <Link to="/curriculum/kindergarten">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Kindergarten
             </Link>
@@ -312,8 +312,7 @@ export default function PlantsAnimalsActivitiesPage() {
                       </div>
 
                       <Button asChild className="w-full">
-                        <Link
-                          href={`/curriculum/kindergarten/activities/plants-animals-unit/${week.id}/${activity.id}`}
+                        <Link to={`/curriculum/kindergarten/activities/plants-animals-unit/${week.id}/${activity.id}`}
                         >
                           View Full Instructions
                         </Link>
@@ -334,11 +333,9 @@ export default function PlantsAnimalsActivitiesPage() {
             Start with Week 1 activities to introduce students to the wonderful world of plants and animals in the
             Caribbean.
           </p>
-          <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-            <Link href="/curriculum/kindergarten/activities/plants-animals-unit/week1/community-food-connection">
+          <Link to="/curriculum/kindergarten/activities/plants-animals-unit/week1/community-food-connection"><Button>
               Start with Community Food Connection
-            </Link>
-          </Button>
+            </Button></Link>
         </div>
       </div>
     </div>

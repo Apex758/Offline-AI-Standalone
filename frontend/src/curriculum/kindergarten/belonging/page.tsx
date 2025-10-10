@@ -3,8 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 import {
   BookOpen,
   Clock,
@@ -42,23 +42,14 @@ export default function BelongingUnit() {
           {/* Lesson Plan Creation and Activities Buttons */}
           <div className="mt-6 text-center">
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                <Link href="/kindergarten-planner">
+              <Link to="/kindergarten-planner"><Button>
                   <BookOpen className="mr-2 h-5 w-5" />
                   Create Belonging Lesson Plan
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-purple-500 text-purple-700 hover:bg-purple-50"
-              >
-                <Link href="/curriculum/kindergarten/activities/belonging-unit">
+                </Button></Link>
+              <Link to="/curriculum/kindergarten/activities/belonging-unit"><Button>
                   <Puzzle className="mr-2 h-5 w-5" />
                   View Activities
-                </Link>
-              </Button>
+                </Button></Link>
             </div>
           </div>
         </div>
@@ -66,13 +57,7 @@ export default function BelongingUnit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <Image
-            src="/kindergarten-friendship.png"
-            alt="Kindergarten students learning about belonging"
-            width={800}
-            height={500}
-            className="rounded-lg shadow-md object-cover h-[400px]"
-          />
+          <img src="/kindergarten-friendship.png" alt="Kindergarten students learning about belonging" className="w-auto h-auto" />
         </div>
         <div>
           <Card className="border-purple-200 h-full shadow-md">
@@ -382,7 +367,7 @@ export default function BelongingUnit() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
-          <Link href="/curriculum/kindergarten/belonging/week-1" className="block group">
+          <Link to="/curriculum/kindergarten/belonging/week-1" className="block group">
             <Card className="border-pink-200 hover:border-pink-300 hover:shadow-md transition-all">
               <CardHeader className="bg-pink-50 border-b border-pink-100 group-hover:bg-pink-100 transition-all">
                 <CardTitle className="text-pink-700 flex items-center">
@@ -402,7 +387,7 @@ export default function BelongingUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/belonging/week-2" className="block group">
+          <Link to="/curriculum/kindergarten/belonging/week-2" className="block group">
             <Card className="border-orange-200 hover:border-orange-300 hover:shadow-md transition-all">
               <CardHeader className="bg-orange-50 border-b border-orange-100 group-hover:bg-orange-100 transition-all">
                 <CardTitle className="text-orange-700 flex items-center">
@@ -422,7 +407,7 @@ export default function BelongingUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/belonging/week-3" className="block group">
+          <Link to="/curriculum/kindergarten/belonging/week-3" className="block group">
             <Card className="border-green-200 hover:border-green-300 hover:shadow-md transition-all">
               <CardHeader className="bg-green-50 border-b border-green-100 group-hover:bg-green-100 transition-all">
                 <CardTitle className="text-green-700 flex items-center">
@@ -442,7 +427,7 @@ export default function BelongingUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/belonging/week-4" className="block group">
+          <Link to="/curriculum/kindergarten/belonging/week-4" className="block group">
             <Card className="border-blue-200 hover:border-blue-300 hover:shadow-md transition-all">
               <CardHeader className="bg-blue-50 border-b border-blue-100 group-hover:bg-blue-100 transition-all">
                 <CardTitle className="text-blue-700 flex items-center">
@@ -462,7 +447,7 @@ export default function BelongingUnit() {
             </Card>
           </Link>
 
-          <Link href="/curriculum/kindergarten/belonging/week-5" className="block group">
+          <Link to="/curriculum/kindergarten/belonging/week-5" className="block group">
             <Card className="border-purple-200 hover:border-purple-300 hover:shadow-md transition-all">
               <CardHeader className="bg-purple-50 border-b border-purple-100 group-hover:bg-purple-100 transition-all">
                 <CardTitle className="text-purple-700 flex items-center">
@@ -588,16 +573,16 @@ export default function BelongingUnit() {
 
       <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
         <Button className="bg-purple-600 hover:bg-purple-700" asChild>
-          <Link href="/curriculum/kindergarten/belonging/week-1">Begin Week 1: All About Me</Link>
+          <Link to="/curriculum/kindergarten/belonging/week-1">Begin Week 1: All About Me</Link>
         </Button>
         <Button variant="outline" className="border-purple-500 text-purple-700 hover:bg-purple-50" asChild>
-          <Link href="/curriculum/kindergarten/belonging/resources">View All Unit Resources</Link>
+          <Link to="/curriculum/kindergarten/belonging/resources">View All Unit Resources</Link>
         </Button>
       </div>
 
       <div className="flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
+          <Link to="/curriculum/kindergarten">Back to Kindergarten Overview</Link>
         </Button>
       </div>
     </div>

@@ -1,8 +1,8 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Search, ListChecks, Users, RotateCcw, CalendarDays } from "lucide-react"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function WordDetectivesPage() {
   return (
@@ -38,7 +38,7 @@ export default function WordDetectivesPage() {
               </p>
 
               <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden">
-                <Image src="/children-with-magnifying-glasses-examining-word-ca.png" alt="Word Detectives Activity" fill className="object-cover" />
+                <img src="/children-with-magnifying-glasses-examining-word-ca.png" alt="Word Detectives Activity" className="w-full h-full object-cover" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2">Learning Outcomes</h3>
@@ -335,12 +335,12 @@ export default function WordDetectivesPage() {
       </div>
 
       <div className="flex justify-center">
-        <Link href="/resources/activities/puppet-show-storytelling">
+        <Link to="/resources/activities/puppet-show-storytelling">
           <Button variant="outline" className="mr-4 bg-transparent">
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous Activity
           </Button>
         </Link>
-        <Link href="/resources/activities/reading-response-centers">
+        <Link to="/resources/activities/reading-response-centers">
           <Button className="bg-amber-600 hover:bg-amber-700">Next Activity: Reading Response Centers</Button>
         </Link>
       </div>

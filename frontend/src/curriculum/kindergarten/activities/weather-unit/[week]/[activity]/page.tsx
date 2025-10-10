@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { notFound } from "next/navigation"
 import {
   Calendar,
@@ -834,7 +834,7 @@ export default async function WeatherActivityPage({
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/curriculum/kindergarten/activities/weather-unit">
+            <Link to="/curriculum/kindergarten/activities/weather-unit">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Weather Activities
             </Link>
@@ -1010,14 +1010,14 @@ export default async function WeatherActivityPage({
 
       <div className="flex flex-col md:flex-row gap-4 justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/activities/weather-unit">
+          <Link to="/curriculum/kindergarten/activities/weather-unit">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Weather Activities
           </Link>
         </Button>
 
         <Button className={colors.button} asChild>
-          <Link href="/curriculum/kindergarten/weather">
+          <Link to="/curriculum/kindergarten/weather">
             View Weather Unit Overview
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>

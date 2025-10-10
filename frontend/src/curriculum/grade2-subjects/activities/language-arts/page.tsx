@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft, Clock, BarChart } from "lucide-react"
@@ -9,7 +9,7 @@ import { Breadcrumb } from "@/components/breadcrumb"
 export default function Grade2LanguageArtsActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade2-subjects/language-arts">
+            <Link to="/curriculum/grade2-subjects/language-arts">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Language Arts
         </Button>
@@ -46,12 +46,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image
-                src="/storytelling-circle.png"
-                alt="Storytelling Circle"
-                fill
-                className="object-cover rounded-t-lg"
-              />
+              <img src="/storytelling-circle.png" alt="Storytelling Circle" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Storytelling Circle</CardTitle>
@@ -71,7 +66,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/storytelling-circle" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/storytelling-circle" className="w-full">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -79,12 +74,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image
-                src="/children-following-directions.png"
-                alt="Follow the Leader"
-                fill
-                className="object-cover rounded-t-lg"
-              />
+              <img src="/children-following-directions.png" alt="Follow the Leader" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Follow the Leader</CardTitle>
@@ -104,7 +94,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/follow-the-leader" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/follow-the-leader" className="w-full">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -112,12 +102,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image
-                src="/children-sound-identification.png"
-                alt="Sound Detectives"
-                fill
-                className="object-cover rounded-t-lg"
-              />
+              <img src="/children-sound-identification.png" alt="Sound Detectives" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Sound Detectives</CardTitle>
@@ -137,7 +122,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/sound-detectives" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/sound-detectives" className="w-full">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -150,7 +135,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image src="/reading-buddies.png" alt="Reading Buddies" fill className="object-cover rounded-t-lg" />
+              <img src="/reading-buddies.png" alt="Reading Buddies" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Reading Buddies</CardTitle>
@@ -170,7 +155,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/reading-buddies" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/reading-buddies" className="w-full">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -178,7 +163,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image src="/picture-books.png" alt="Picture Books" fill className="object-cover rounded-t-lg" />
+              <img src="/picture-books.png" alt="Picture Books" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Picture Books</CardTitle>
@@ -198,7 +183,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/picture-books" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/picture-books" className="w-full">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -206,7 +191,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image src="/video-clips.png" alt="Video Clips" fill className="object-cover rounded-t-lg" />
+              <img src="/video-clips.png" alt="Video Clips" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Video Clips</CardTitle>
@@ -226,7 +211,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/video-clips" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/video-clips" className="w-full">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -239,7 +224,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image src="/drawing-stories.png" alt="Drawing Stories" fill className="object-cover rounded-t-lg" />
+              <img src="/drawing-stories.png" alt="Drawing Stories" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Drawing Stories</CardTitle>
@@ -259,7 +244,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/drawing-stories" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/drawing-stories" className="w-full">
                 <Button className="w-full bg-green-600 hover:bg-green-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -267,7 +252,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image src="/writing-journal.png" alt="Writing Journal" fill className="object-cover rounded-t-lg" />
+              <img src="/writing-journal.png" alt="Writing Journal" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Writing Journal</CardTitle>
@@ -287,7 +272,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/writing-journal" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/writing-journal" className="w-full">
                 <Button className="w-full bg-green-600 hover:bg-green-700">View Activity</Button>
               </Link>
             </CardFooter>
@@ -295,12 +280,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <Image
-                src="/acting-out-stories.png"
-                alt="Acting Out Stories"
-                fill
-                className="object-cover rounded-t-lg"
-              />
+              <img src="/acting-out-stories.png" alt="Acting Out Stories" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Acting Out Stories</CardTitle>
@@ -320,7 +300,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/curriculum/grade2-subjects/activities/language-arts/acting-out-stories" className="w-full">
+              <Link to="/curriculum/grade2-subjects/activities/language-arts/acting-out-stories" className="w-full">
                 <Button className="w-full bg-green-600 hover:bg-green-700">View Activity</Button>
               </Link>
             </CardFooter>

@@ -1,9 +1,8 @@
-"use client"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { useState } from "react"
 import { BookOpen, GraduationCap, Calendar, Search, Filter, ChevronRight, Users, Target, Award, Sparkles } from "lucide-react"
-import { CurriculumSearch } from "@/components/curriculum-search"
+//import { CurriculumSearch } from "@/components/curriculum-search"
 
 export default function CurriculumPage() {
   const [hoveredStandard, setHoveredStandard] = useState<string | null>(null)
@@ -140,7 +139,7 @@ export default function CurriculumPage() {
 
               {/* Call-to-Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/curriculum/standards" className="group">
+                <Link to="/curriculum/standards" className="group">
                   <div className="relative overflow-hidden bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
                     <div className="flex items-center justify-center">
                       <BookOpen className="w-5 h-5 mr-2" />
@@ -152,7 +151,7 @@ export default function CurriculumPage() {
                   </div>
                 </Link>
                 
-                <Link href="/curriculum/standards?quick=true" className="group">
+                <Link to="/curriculum/standards?quick=true" className="group">
                   <div className="relative bg-white hover:bg-gray-50 text-green-600 font-semibold px-8 py-4 rounded-xl border-2 border-green-600 shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
                     <div className="flex items-center justify-center">
                       <Filter className="w-5 h-5 mr-2" />
@@ -199,7 +198,7 @@ export default function CurriculumPage() {
                 Search for concepts like "verbs", "numbers", "forces", or any curriculum topic.
               </p>
             </div>
-            <CurriculumSearch />
+            {/* <CurriculumSearch /> */}
           </div>
         </div>
 
@@ -207,7 +206,7 @@ export default function CurriculumPage() {
           {/* Kindergarten */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/kindergarten.png" alt="Kindergarten classroom" fill className="object-cover" />
+              <img src="/kindergarten.png" alt="Kindergarten classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Kindergarten</h3>
@@ -227,7 +226,7 @@ export default function CurriculumPage() {
                   <span>12 Developmental Goals</span>
                 </div>
               </div>
-              <Link href="/curriculum/kindergarten" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/kindergarten" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Kindergarten Curriculum
               </Link>
             </div>
@@ -236,7 +235,7 @@ export default function CurriculumPage() {
           {/* Grade 1 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/grade_1.png" alt="Grade 1 classroom" fill className="object-cover" />
+              <img src="/grade_1.png" alt="Grade 1 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 1</h3>
@@ -256,7 +255,7 @@ export default function CurriculumPage() {
                   <span>16 Strands</span>
                 </div>
               </div>
-              <Link href="/curriculum/grade1-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/grade1-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Grade 1 Curriculum
               </Link>
             </div>
@@ -265,7 +264,7 @@ export default function CurriculumPage() {
           {/* Grade 2 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/Grade_2.png" alt="Grade 2 classroom" fill className="object-cover" />
+              <img src="/Grade_2.png" alt="Grade 2 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 2</h3>
@@ -285,7 +284,7 @@ export default function CurriculumPage() {
                   <span>16 Strands</span>
                 </div>
               </div>
-              <Link href="/curriculum/grade2-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/grade2-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Grade 2 Curriculum
               </Link>
             </div>
@@ -294,7 +293,7 @@ export default function CurriculumPage() {
           {/* Grade 3 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/grade_3.png" alt="Grade 3 classroom" fill className="object-cover" />
+              <img src="/grade_3.png" alt="Grade 3 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 3</h3>
@@ -314,7 +313,7 @@ export default function CurriculumPage() {
                   <span>16 Strands</span>
                 </div>
               </div>
-              <Link href="/curriculum/grade3-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/grade3-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Grade 3 Curriculum
               </Link>
             </div>
@@ -323,7 +322,7 @@ export default function CurriculumPage() {
           {/* Grade 4 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/grade_4.png" alt="Grade 4 classroom" fill className="object-cover" />
+              <img src="/grade_4.png" alt="Grade 4 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 4</h3>
@@ -343,7 +342,7 @@ export default function CurriculumPage() {
                   <span>16 Strands</span>
                 </div>
               </div>
-              <Link href="/curriculum/grade4-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/grade4-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Grade 4 Curriculum
               </Link>
             </div>
@@ -352,7 +351,7 @@ export default function CurriculumPage() {
           {/* Grade 5 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/grade_5.png" alt="Grade 5 classroom" fill className="object-cover" />
+              <img src="/grade_5.png" alt="Grade 5 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 5</h3>
@@ -372,7 +371,7 @@ export default function CurriculumPage() {
                   <span>16 Strands</span>
                 </div>
               </div>
-              <Link href="/curriculum/grade5-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/grade5-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Grade 5 Curriculum
               </Link>
             </div>
@@ -381,12 +380,7 @@ export default function CurriculumPage() {
           {/* Grade 6 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image
-                src="/grade_6.png"
-                alt="Grade 6 classroom"
-                fill
-                className="object-cover"
-              />
+              <img src="/grade_6.png" alt="Grade 6 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 6</h3>
@@ -405,7 +399,7 @@ export default function CurriculumPage() {
                   <span>16 Strands</span>
                 </div>
               </div>
-              <Link href="/curriculum/grade6-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/grade6-subjects" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Grade 6 Curriculum
               </Link>
             </div>
@@ -414,7 +408,7 @@ export default function CurriculumPage() {
           {/* Enrichment Programmes */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/enrichment.png" alt="Enrichment programmes" fill className="object-cover" />
+              <img src="/enrichment.png" alt="Enrichment programmes" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Enrichment Programmes</h3>
@@ -434,7 +428,7 @@ export default function CurriculumPage() {
                   <span>12 Activities</span>
                 </div>
               </div>
-              <Link href="/curriculum/enrichment" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/curriculum/enrichment" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Enrichment Programmes
               </Link>
             </div>
@@ -443,7 +437,7 @@ export default function CurriculumPage() {
           {/* Digital Skills */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image src="/digital_skills.png" alt="Digital skills" fill className="object-cover" />
+              <img src="/digital_skills.png" alt="Digital skills" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Digital Skills</h3>
@@ -463,7 +457,7 @@ export default function CurriculumPage() {
                   <span>10 Skills</span>
                 </div>
               </div>
-              <Link href="https://dl.oecslearning.org/" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="https://dl.oecslearning.org/" className="w-full inline-block text-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 View Digital Skills
               </Link>
             </div>
@@ -476,12 +470,7 @@ export default function CurriculumPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image
-                src="/tresources.png"
-                alt="Teaching resources"
-                fill
-                className="object-cover"
-              />
+              <img src="/tresources.png" alt="Teaching resources" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Teaching Resources</h3>
@@ -490,7 +479,7 @@ export default function CurriculumPage() {
                 Browse our collection of teaching resources including worksheets, activities, videos, and more to
                 support your classroom instruction.
               </p>
-              <Link href="/resources" className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/resources" className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Browse Resources
               </Link>
@@ -499,12 +488,7 @@ export default function CurriculumPage() {
 
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <Image
-                src="/planner.png"
-                alt="Lesson planning"
-                fill
-                className="object-cover"
-              />
+              <img src="/planner.png" alt="Lesson planning" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Lesson Planner</h3>
@@ -513,7 +497,7 @@ export default function CurriculumPage() {
                 Use our lesson planner to create, organize, and manage your lesson plans aligned with the OECS
                 curriculum standards.
               </p>
-              <Link href="/planner" className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              <Link to="/planner" className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                 <Calendar className="mr-2 h-4 w-4" />
                 Go to Planner
               </Link>

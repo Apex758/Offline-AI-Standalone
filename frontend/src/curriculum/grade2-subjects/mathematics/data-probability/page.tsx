@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -74,16 +74,16 @@ export default function DataProbability() {
       </Card>
 
       <div className="flex justify-between mt-8">
-        <Link href="/curriculum/grade2-subjects/mathematics/measurement" passHref>
+        <Link to="/curriculum/grade2-subjects/mathematics/measurement" passHref>
           <Button variant="outline">← Measurement</Button>
         </Link>
-        <Link href="/curriculum/grade2-subjects/mathematics" passHref>
+        <Link to="/curriculum/grade2-subjects/mathematics" passHref>
           <Button variant="outline">Back to Mathematics</Button>
         </Link>
       </div>
 
       <div className="mt-8">
-        <Link href="/curriculum/grade2-subjects/activities/mathematics" passHref>
+        <Link to="/curriculum/grade2-subjects/activities/mathematics" passHref>
           <Button className="w-full">View Grade 2 Mathematics Activities</Button>
         </Link>
       </div>

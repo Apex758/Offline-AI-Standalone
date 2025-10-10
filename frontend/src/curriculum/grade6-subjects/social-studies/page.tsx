@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { History, MapPin, Users, DollarSign, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ export default function Grade6SocialStudiesPage() {
   return (
     <div>
       <div className="container mx-auto py-8">
-                <Link href="/curriculum/grade6-subjects">
+                <Link to="/curriculum/grade6-subjects">
           <Button variant="outline" className="mb-6">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 6 Subjects
           </Button>
@@ -56,7 +56,7 @@ export default function Grade6SocialStudiesPage() {
                   Migration Patterns
                 </span>
               </div>
-              <Link href="/curriculum/grade6-subjects/social-studies/historical-cultural-thinking">
+              <Link to="/curriculum/grade6-subjects/social-studies/historical-cultural-thinking">
                 <Button className="w-full bg-amber-600 hover:bg-amber-700">Explore Historical Thinking</Button>
               </Link>
             </CardContent>
@@ -90,7 +90,7 @@ export default function Grade6SocialStudiesPage() {
                   Extreme Weather
                 </span>
               </div>
-              <Link href="/curriculum/grade6-subjects/social-studies/spatial-thinking">
+              <Link to="/curriculum/grade6-subjects/social-studies/spatial-thinking">
                 <Button className="w-full bg-green-600 hover:bg-green-700">Explore Spatial Thinking</Button>
               </Link>
             </CardContent>
@@ -124,7 +124,7 @@ export default function Grade6SocialStudiesPage() {
                   Media Literacy
                 </span>
               </div>
-              <Link href="/curriculum/grade6-subjects/social-studies/civic-participation">
+              <Link to="/curriculum/grade6-subjects/social-studies/civic-participation">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">Explore Civic Participation</Button>
               </Link>
             </CardContent>
@@ -158,7 +158,7 @@ export default function Grade6SocialStudiesPage() {
                   Economic Sectors
                 </span>
               </div>
-              <Link href="/curriculum/grade6-subjects/social-studies/economic-decision-making">
+              <Link to="/curriculum/grade6-subjects/social-studies/economic-decision-making">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">Explore Economic Decision Making</Button>
               </Link>
             </CardContent>
@@ -183,7 +183,7 @@ export default function Grade6SocialStudiesPage() {
       </div>
 
       <div className="mb-8 text-center">
-        <Link href="/curriculum/grade6-subjects/activities/social-studies">
+        <Link to="/curriculum/grade6-subjects/activities/social-studies">
           <Button
             size="lg"
             className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"

@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function WavesActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade4-subjects/activities/science">
+      <Link to="/curriculum/grade4-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Science Activities
         </Button>
@@ -68,12 +66,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=periscope+reflection+light+waves"
-                        alt="Reflection Experiment"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=periscope+reflection+light+waves" alt="Reflection Experiment" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -105,12 +98,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=water+waves+ripples+circular+pattern"
-                        alt="Water Wave Creation"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=water+waves+ripples+circular+pattern" alt="Water Wave Creation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -154,12 +142,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=sound+frequency+pitch+tuning+forks"
-                        alt="Sound Frequency"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=sound+frequency+pitch+tuning+forks" alt="Sound Frequency" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -196,12 +179,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=slinky+wave+transverse+longitudinal+demonstration"
-                        alt="Slinky Wave Experiments"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=slinky+wave+transverse+longitudinal+demonstration" alt="Slinky Wave Experiments" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -272,12 +250,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=morse+code+light+sound+communication"
-                        alt="Morse Code"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=morse+code+light+sound+communication" alt="Morse Code" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -316,12 +289,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=string+telephone+cups+communication"
-                        alt="String Telephone Investigation"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=string+telephone+cups+communication" alt="String Telephone Investigation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

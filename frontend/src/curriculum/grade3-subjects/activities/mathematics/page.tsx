@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight } from "lucide-react"
@@ -41,20 +41,14 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/number-sense-g3.png"
-                alt="Children learning number sense concepts"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/number-sense-g3.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop understanding of numbers, place value, and fractions through hands-on activities and games.
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade3-subjects/activities/mathematics/number-sense"
+            <Link to="/curriculum/grade3-subjects/activities/mathematics/number-sense"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -69,12 +63,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/operations-w-numbers-g3.png"
-                alt="Children learning multiplication"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/operations-w-numbers-g3.png" alt="Children learning multiplication" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Build fluency with the four operations through engaging games, problem-solving activities, and real-world
@@ -82,8 +71,7 @@ export default function Grade3MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade3-subjects/activities/mathematics/operations-with-numbers"
+            <Link to="/curriculum/grade3-subjects/activities/mathematics/operations-with-numbers"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -98,12 +86,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/geometrical-thinking-g3.png"
-                alt="Children learning about geometric shapes"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/geometrical-thinking-g3.png" alt="Children learning about geometric shapes" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Explore 2D and 3D shapes, develop spatial sense, and understand transformations through hands-on
@@ -111,8 +94,7 @@ export default function Grade3MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade3-subjects/activities/mathematics/geometrical-thinking"
+            <Link to="/curriculum/grade3-subjects/activities/mathematics/geometrical-thinking"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -127,12 +109,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/measurement-g3.png"
-                alt="Children measuring objects"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/measurement-g3.png" alt="Children measuring objects" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop measurement skills through practical activities involving length, area, perimeter, mass, capacity,
@@ -140,8 +117,7 @@ export default function Grade3MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade3-subjects/activities/mathematics/measurement"
+            <Link to="/curriculum/grade3-subjects/activities/mathematics/measurement"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -158,12 +134,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/data-probability-g3.png"
-                alt="Children creating graphs and charts"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/data-probability-g3.png" alt="Children creating graphs and charts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Learn to collect, organize, and analyze data, as well as understand basic probability concepts through
@@ -171,8 +142,7 @@ export default function Grade3MathematicsActivitiesPage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link
-              href="/curriculum/grade3-subjects/activities/mathematics/data-probability"
+            <Link to="/curriculum/grade3-subjects/activities/mathematics/data-probability"
               className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View activities <ArrowRight className="ml-2 h-4 w-4" />
@@ -187,12 +157,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <Image
-                src="/cross-strand-g3.png"
-                alt="Children working on mathematics projects"
-                fill
-                className="object-cover rounded-md"
-              />
+              <img src="/cross-strand-g3.png" alt="Children working on mathematics projects" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Engage in project-based learning activities that integrate concepts from multiple mathematics strands.
@@ -216,7 +181,7 @@ export default function Grade3MathematicsActivitiesPage() {
                 <ArrowRight className="h-5 w-5 mr-2 mt-0.5 text-green-600" />
                 <span>
                   Use the{" "}
-                  <Link href="/planner" className="text-blue-600 hover:underline">
+                  <Link to="/planner" className="text-blue-600 hover:underline">
                     Lesson Planner
                   </Link>{" "}
                   to incorporate these activities into your lessons
@@ -230,7 +195,7 @@ export default function Grade3MathematicsActivitiesPage() {
                 <ArrowRight className="h-5 w-5 mr-2 mt-0.5 text-green-600" />
                 <span>
                   Adapt activities for different learning needs using our{" "}
-                  <Link href="/innovative-tools" className="text-blue-600 hover:underline">
+                  <Link to="/innovative-tools" className="text-blue-600 hover:underline">
                     Differentiation Tools
                   </Link>
                 </span>

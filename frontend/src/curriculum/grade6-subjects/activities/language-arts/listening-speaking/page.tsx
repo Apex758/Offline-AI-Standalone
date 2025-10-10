@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Mic, Users, Clock, Target, Video, Headphones, MessageCircle } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function ListeningSpeakingActivitiesPage() {
@@ -426,8 +426,7 @@ export default function ListeningSpeakingActivitiesPage() {
 
                   <div className="pt-4 border-t">
                     <Button asChild>
-                      <Link
-                        href={`/curriculum/grade6-subjects/activities/language-arts/listening-speaking/${activity.id}`}
+                      <Link to={`/curriculum/grade6-subjects/activities/language-arts/listening-speaking/${activity.id}`}
                       >
                         View Detailed Lesson Plan
                       </Link>

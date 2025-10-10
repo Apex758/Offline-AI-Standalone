@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -7,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { ArrowLeft, Globe, Target, BookOpen, Lightbulb, Play, Map, Mountain, Landmark, CloudRain } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 
 export default function SpatialThinkingActivitiesPage() {
   const activityCategories = [
@@ -189,7 +187,7 @@ export default function SpatialThinkingActivitiesPage() {
         />
 
         <div className="mb-8">
-          <Link href="/curriculum/grade5-subjects/activities/social-studies">
+          <Link to="/curriculum/grade5-subjects/activities/social-studies">
             <Button variant="outline" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Social Studies Activities

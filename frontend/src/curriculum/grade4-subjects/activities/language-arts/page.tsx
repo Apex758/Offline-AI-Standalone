@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { FallbackImage } from "@/components/fallback-image"
 export default function Grade4LanguageArtsActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-            <Link href="/curriculum/grade4-subjects/language-arts">
+            <Link to="/curriculum/grade4-subjects/language-arts">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Language Arts
         </Button>
@@ -472,7 +472,7 @@ function ActivityCard({
         </div>
       </CardContent>
       <CardFooter>
-        <Link href={path} className="w-full">
+        <Link to={path} className="w-full">
           <Button className="w-full">View Activity</Button>
         </Link>
       </CardFooter>

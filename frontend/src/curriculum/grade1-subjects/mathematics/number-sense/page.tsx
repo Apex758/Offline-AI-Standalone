@@ -1,7 +1,5 @@
-"use client"
-
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -38,7 +36,7 @@ export default function NumberSensePage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <Link href="/curriculum/grade1-subjects/mathematics" className="inline-flex items-center text-blue-600 hover:text-blue-800">
+          <Link to="/curriculum/grade1-subjects/mathematics" className="inline-flex items-center text-blue-600 hover:text-blue-800">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Mathematics
         </Link>

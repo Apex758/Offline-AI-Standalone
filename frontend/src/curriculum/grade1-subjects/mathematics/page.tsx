@@ -1,7 +1,5 @@
-"use client"
-
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -144,7 +142,7 @@ export default function Grade1MathematicsPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade1-subjects">
+      <Link to="/curriculum/grade1-subjects">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 1 Curriculum
         </Button>
@@ -175,10 +173,10 @@ export default function Grade1MathematicsPage() {
           <div className="mt-6">
             <div className="flex gap-3">
               <Button className="bg-white text-blue-600 hover:bg-white/90" asChild>
-                <Link href="/curriculum/grade1-subjects/activities/mathematics">View Activities</Link>
+                <Link to="/curriculum/grade1-subjects/activities/mathematics">View Activities</Link>
               </Button>
               <Button variant="outline" className="border-white text-white hover:bg-white/10" asChild>
-                <Link href="/planner">Create Lesson Plan</Link>
+                <Link to="/planner">Create Lesson Plan</Link>
               </Button>
             </div>
           </div>
@@ -207,7 +205,7 @@ export default function Grade1MathematicsPage() {
         <TabsContent value="strands">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredResources.map((resource) => (
-              <Link href={resource.path} className="block" key={resource.id}>
+              <Link to={resource.path} className="block" key={resource.id}>
                 <div
                   className={`h-full overflow-hidden rounded-lg border transition-all duration-300 ${
                     activeCard === resource.id
@@ -563,12 +561,7 @@ export default function Grade1MathematicsPage() {
           {featuredActivities.map((activity, index) => (
             <div key={index} className="overflow-hidden rounded-lg bg-white shadow-sm">
               <div className="relative h-40">
-                <Image
-                  src={activity.image || "/placeholder.svg"}
-                  alt={activity.title}
-                  fill
-                  className="object-cover transition-transform duration-300 hover:scale-105"
-                />
+                <img src="" alt="" className="w-full h-full object-cover" />
               </div>
               <div className="p-4">
                 <div className="mb-2 flex items-center justify-between">
@@ -584,7 +577,7 @@ export default function Grade1MathematicsPage() {
                 </div>
                 <p className="mb-4 text-sm text-gray-600">{activity.description}</p>
                 <Button asChild className="w-full">
-                  <Link href={activity.url}>View Activity</Link>
+                  <Link to={activity.url}>View Activity</Link>
                 </Button>
               </div>
             </div>
@@ -597,12 +590,7 @@ export default function Grade1MathematicsPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="relative h-48 bg-gray-200">
-              <Image
-                src="/placeholder-4d0eb.png"
-                alt="Students counting blocks"
-                fill
-                className="object-cover transition-transform duration-300 hover:scale-105"
-              />
+              <img src="/placeholder-4d0eb.png" alt="Students counting blocks" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="mb-2 font-semibold">Hands-on Learning</h3>
@@ -610,18 +598,13 @@ export default function Grade1MathematicsPage() {
                 Students develop number sense through concrete experiences with manipulatives.
               </p>
               <Button variant="link" className="mt-2 p-0" asChild>
-                <Link href="#">View lesson ideas</Link>
+                <Link to="#">View lesson ideas</Link>
               </Button>
             </div>
           </div>
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="relative h-48 bg-gray-200">
-              <Image
-                src="/placeholder-34akh.png"
-                alt="Students measuring"
-                fill
-                className="object-cover transition-transform duration-300 hover:scale-105"
-              />
+              <img src="/placeholder-34akh.png" alt="Students measuring" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="mb-2 font-semibold">Measurement Activities</h3>
@@ -629,18 +612,13 @@ export default function Grade1MathematicsPage() {
                 Exploring measurement concepts through practical, real-world applications.
               </p>
               <Button variant="link" className="mt-2 p-0" asChild>
-                <Link href="#">View lesson ideas</Link>
+                <Link to="#">View lesson ideas</Link>
               </Button>
             </div>
           </div>
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="relative h-48 bg-gray-200">
-              <Image
-                src="/placeholder-dzl0x.png"
-                alt="Students creating patterns"
-                fill
-                className="object-cover transition-transform duration-300 hover:scale-105"
-              />
+              <img src="/placeholder-dzl0x.png" alt="Students creating patterns" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="mb-2 font-semibold">Pattern Exploration</h3>
@@ -648,7 +626,7 @@ export default function Grade1MathematicsPage() {
                 Discovering and creating patterns helps develop algebraic thinking skills.
               </p>
               <Button variant="link" className="mt-2 p-0" asChild>
-                <Link href="#">View lesson ideas</Link>
+                <Link to="#">View lesson ideas</Link>
               </Button>
             </div>
           </div>
@@ -663,10 +641,10 @@ export default function Grade1MathematicsPage() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
-            <Link href="/curriculum/grade1-subjects/activities/mathematics">Browse Activities</Link>
+            <Link to="/curriculum/grade1-subjects/activities/mathematics">Browse Activities</Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
-            <Link href="/planner">Create Lesson Plan</Link>
+            <Link to="/planner">Create Lesson Plan</Link>
           </Button>
         </div>
       </div>

@@ -1,16 +1,14 @@
-"use client"
-
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function WeatherClimateActivitiesPage() {
   return (
     <div className="container mx-auto py-8">
-      <Link href="/curriculum/grade3-subjects/activities/science">
+      <Link to="/curriculum/grade3-subjects/activities/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 3 Science Activities
         </Button>
@@ -71,12 +69,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=children+recording+weather+data+in+journal"
-                        alt="Weather Journal"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=children+recording+weather+data+in+journal" alt="Weather Journal" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -111,12 +104,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=homemade+weather+instruments+for+kids"
-                        alt="Homemade Weather Instruments"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=homemade+weather+instruments+for+kids" alt="Homemade Weather Instruments" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -173,12 +161,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=world+map+climate+zones"
-                        alt="Climate Zone Map"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=world+map+climate+zones" alt="Climate Zone Map" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -228,12 +211,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=climate+region+postcards+student+project"
-                        alt="Climate Postcards"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=climate+region+postcards+student+project" alt="Climate Postcards" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -283,12 +261,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=flood+protection+model+classroom+activity"
-                        alt="Flood Protection Design Challenge"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=flood+protection+model+classroom+activity" alt="Flood Protection Design Challenge" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -325,12 +298,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <Image
-                        src="/placeholder.svg?height=250&width=400&query=weather+hazard+warning+posters+classroom"
-                        alt="Weather Hazard Warning Posters"
-                        fill
-                        className="object-contain rounded-md"
-                      />
+                      <img src="/placeholder.svg?height=250&width=400&query=weather+hazard+warning+posters+classroom" alt="Weather Hazard Warning Posters" className="w-full h-full object-cover" />
                     </div>
                   </div>
 

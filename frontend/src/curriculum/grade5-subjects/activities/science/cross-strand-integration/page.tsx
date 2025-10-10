@@ -1,12 +1,10 @@
-"use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Clock, Users, Target, Lightbulb, Rocket, Leaf, Globe, Zap, Beaker, Search } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 const crossStrandProjects = [
   {
@@ -317,7 +315,7 @@ export default function CrossStrandIntegrationPage() {
 
             <CardContent>
               <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
-                <Image src={project.image || "/placeholder.svg"} alt={project.title} fill className="object-cover" />
+                <img src="" alt="" className="w-full h-full object-cover" />
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
@@ -382,12 +380,12 @@ export default function CrossStrandIntegrationPage() {
 
               <div className="flex gap-2 mt-6">
                 <Button asChild className="flex-1">
-                  <Link href={`/planner?activity=${project.id}&subject=science&grade=5`}>
+                  <Link to={`/planner?activity=${project.id}&subject=science&grade=5`}>
                     Create Lesson Plan
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href={`/curriculum/grade5-subjects/activities/science/cross-strand-integration/${project.id}`}>
+                  <Link to={`/curriculum/grade5-subjects/activities/science/cross-strand-integration/${project.id}`}>
                     View Details
                   </Link>
                 </Button>
@@ -423,13 +421,11 @@ export default function CrossStrandIntegrationPage() {
 
       <div className="mt-6 flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/grade5-subjects/activities/science">← Back to Science Activities</Link>
+          <Link to="/curriculum/grade5-subjects/activities/science">← Back to Science Activities</Link>
         </Button>
-        <Button asChild>
-          <Link href="/curriculum/grade5-subjects/activities/science/engineering-design">
+        <Link to="/curriculum/grade5-subjects/activities/science/engineering-design"><Button>
             Engineering Design Activities →
-          </Link>
-        </Button>
+          </Button></Link>
       </div>
     </div>
   )

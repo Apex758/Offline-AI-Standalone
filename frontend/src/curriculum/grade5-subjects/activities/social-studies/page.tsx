@@ -1,11 +1,9 @@
-"use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { ArrowLeft, Clock, Users, Globe, DollarSign, BookOpen, Target, Lightbulb } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 
 export default function Grade5SocialStudiesActivitiesPage() {
   const activityStrands = [
@@ -200,7 +198,7 @@ export default function Grade5SocialStudiesActivitiesPage() {
                     </div>
                   </div>
                   <div className="mt-6">
-                    <Link href={`/curriculum/grade5-subjects/activities/social-studies/${strand.id}`}>
+                    <Link to={`/curriculum/grade5-subjects/activities/social-studies/${strand.id}`}>
                       <Button className="w-full">Explore {strand.title}</Button>
                     </Link>
                   </div>

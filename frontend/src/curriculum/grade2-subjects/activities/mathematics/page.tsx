@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -98,7 +98,7 @@ export default function Grade2MathematicsActivitiesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {activities.map((activity) => (
-          <Link href={`/curriculum/grade2-subjects/activities/mathematics/${activity.id}`} key={activity.id}>
+          <Link to={`/curriculum/grade2-subjects/activities/mathematics/${activity.id}`} key={activity.id}>
             <Card className="h-full transition-transform hover:scale-105 hover:shadow-lg">
               <CardHeader className="p-4">
                 <CardTitle className="text-xl">{activity.title}</CardTitle>

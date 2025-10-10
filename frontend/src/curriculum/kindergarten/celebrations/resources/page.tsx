@@ -2,14 +2,14 @@ import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Download, FileText, Video, ChevronLeft, FileImage, Music, Palette } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Link } from "react-router-dom"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function CelebrationsResourcesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
             <div className="flex items-center gap-2 mb-4">
-        <Link href="/curriculum/kindergarten/celebrations">
+        <Link to="/curriculum/kindergarten/celebrations">
           <Button variant="outline" className="mb-2">
             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Celebrations Unit
           </Button>
@@ -25,20 +25,8 @@ export default function CelebrationsResourcesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Image
-          src="/kindergarten-family-celebration.png"
-          alt="Family celebration"
-          width={600}
-          height={400}
-          className="rounded-lg shadow-md object-cover h-[300px]"
-        />
-        <Image
-          src="/kindergarten-cultural-celebration.png"
-          alt="Cultural celebration"
-          width={600}
-          height={400}
-          className="rounded-lg shadow-md object-cover h-[300px]"
-        />
+        <img src="/kindergarten-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
+        <img src="/kindergarten-cultural-celebration.png" alt="Cultural celebration" className="w-auto h-auto" />
       </div>
 
       <div className="mb-8">
@@ -287,34 +275,10 @@ export default function CelebrationsResourcesPage() {
           </CardHeader>
           <CardContent className="pt-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <Image
-                src="/kindergarten-family-celebration.png"
-                alt="Family celebration"
-                width={150}
-                height={150}
-                className="rounded-lg shadow-sm object-cover h-[100px]"
-              />
-              <Image
-                src="/kindergarten-cultural-celebration.png"
-                alt="Cultural celebration"
-                width={150}
-                height={150}
-                className="rounded-lg shadow-sm object-cover h-[100px]"
-              />
-              <Image
-                src="/kindergarten-community-celebration.png"
-                alt="Community celebration"
-                width={150}
-                height={150}
-                className="rounded-lg shadow-sm object-cover h-[100px]"
-              />
-              <Image
-                src="/kindergarten-celebration-together.png"
-                alt="Celebrating together"
-                width={150}
-                height={150}
-                className="rounded-lg shadow-sm object-cover h-[100px]"
-              />
+              <img src="/kindergarten-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
+              <img src="/kindergarten-cultural-celebration.png" alt="Cultural celebration" className="w-auto h-auto" />
+              <img src="/kindergarten-community-celebration.png" alt="Community celebration" className="w-auto h-auto" />
+              <img src="/kindergarten-celebration-together.png" alt="Celebrating together" className="w-auto h-auto" />
             </div>
             <Button variant="outline" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
               <Download className="mr-2 h-4 w-4" /> Full Image Collection
@@ -325,11 +289,9 @@ export default function CelebrationsResourcesPage() {
 
       <div className="flex justify-between">
         <Button variant="outline" asChild>
-          <Link href="/curriculum/kindergarten/celebrations">Back to Celebrations Unit</Link>
+          <Link to="/curriculum/kindergarten/celebrations">Back to Celebrations Unit</Link>
         </Button>
-        <Button asChild>
-          <Link href="/curriculum/kindergarten/celebrations/week-1">Start with Week 1</Link>
-        </Button>
+        <Link to="/curriculum/kindergarten/celebrations/week-1"><Button>Start with Week 1</Button></Link>
       </div>
     </div>
   )

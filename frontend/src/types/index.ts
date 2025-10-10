@@ -16,7 +16,7 @@ export interface Message {
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'split';
+  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'split';
   active: boolean;
   data?: any;
   splitTabs?: [string, string]; // IDs of tabs in split view
@@ -26,6 +26,6 @@ export interface Tool {
   id: string;
   name: string;
   icon: string;
-  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator';
+  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum';
   description: string;
 }

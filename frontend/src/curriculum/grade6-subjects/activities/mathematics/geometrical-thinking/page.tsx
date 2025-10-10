@@ -19,7 +19,7 @@ import {
   Palette,
   ChevronRight,
 } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function GeometricalThinkingActivitiesPage() {
@@ -506,8 +506,7 @@ export default function GeometricalThinkingActivitiesPage() {
                     {/* Action Button */}
                     <div className="pt-2">
                       <Button asChild className="w-full" size="sm">
-                        <Link
-                          href={`/curriculum/grade6-subjects/activities/mathematics/geometrical-thinking/${activity.id}`}
+                        <Link to={`/curriculum/grade6-subjects/activities/mathematics/geometrical-thinking/${activity.id}`}
                         >
                           View Full Activity
                           <ChevronRight className="w-4 h-4 ml-2" />
@@ -659,12 +658,8 @@ export default function GeometricalThinkingActivitiesPage() {
         {/* Navigation */}
         <div className="text-center">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild variant="outline" size="lg">
-              <Link href="/curriculum/grade6-subjects/activities/mathematics">← Back to Mathematics Activities</Link>
-            </Button>
-            <Button asChild size="lg">
-              <Link href="/curriculum/grade6-subjects/mathematics/geometrical-thinking">View Curriculum Standards</Link>
-            </Button>
+            <Link to="/curriculum/grade6-subjects/activities/mathematics"><Button>← Back to Mathematics Activities</Button></Link>
+            <Link to="/curriculum/grade6-subjects/mathematics/geometrical-thinking"><Button>View Curriculum Standards</Button></Link>
           </div>
         </div>
       </div>

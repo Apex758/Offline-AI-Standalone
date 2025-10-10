@@ -1,8 +1,8 @@
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, PenTool, ListChecks, Users, RotateCcw, CalendarDays } from "lucide-react"
-import Image from "next/image"
+// // import Image from "next/image" - replaced with img tag - replaced with img tag
 
 export default function AuthorsWorkshopPage() {
   return (
@@ -38,12 +38,7 @@ export default function AuthorsWorkshopPage() {
               </p>
 
               <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden">
-                <Image
-                  src="/authors-workshop.png"
-                  alt="Authors' Workshop Activity"
-                  fill
-                  className="object-cover"
-                />
+                <img src="/authors-workshop.png" alt="Authors" className="w-full h-full object-cover" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2">Learning Outcomes</h3>
@@ -464,12 +459,12 @@ export default function AuthorsWorkshopPage() {
       </div>
 
       <div className="flex justify-center">
-        <Link href="/curriculum/grade3-subjects/activities/language-arts/reading-response-journals">
+        <Link to="/curriculum/grade3-subjects/activities/language-arts/reading-response-journals">
           <Button variant="outline" className="mr-4">
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous Activity
           </Button>
         </Link>
-        <Link href="/curriculum/grade3-subjects/activities/language-arts/readers-theater">
+        <Link to="/curriculum/grade3-subjects/activities/language-arts/readers-theater">
           <Button className="bg-green-600 hover:bg-green-700">Next Activity: Reader's Theater</Button>
         </Link>
       </div>

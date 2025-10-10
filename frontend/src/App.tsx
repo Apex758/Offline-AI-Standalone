@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { User } from './types';
@@ -43,13 +44,13 @@ function App() {
   }
 
   return (
-    <>
+    <BrowserRouter>
       {!user ? (
         <Login onLoginSuccess={handleLoginSuccess} />
       ) : (
         <Dashboard user={user} onLogout={handleLogout} />
       )}
-    </>
+    </BrowserRouter>
   );
 }
 
