@@ -183,7 +183,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       {/* Sidebar */}
       <div 
         className={`border-r border-gray-200 bg-gray-50 transition-all duration-300 ${
-          sidebarOpen ? 'w-80' : 'w-0'
+          sidebarOpen ? 'w-50' : 'w-0'
         } overflow-hidden flex flex-col`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200">

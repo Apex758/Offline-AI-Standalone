@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
+import { ChevronRight, ChevronDown, Folder, FolderOpen, FileText } from 'lucide-react';
 
 interface TreeNode {
   [key: string]: TreeNode | FileInfo;
@@ -23,6 +23,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const hasAutoExpandedRef = useRef(false);
 
   useEffect(() => {
     import('../data/curriculumTree.json')
@@ -37,41 +38,46 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
       });
   }, []);
 
-  // Auto-expand folders in current path (only on location change, not on every render)
+  // Auto-expand folders in current path ONLY on initial load
   useEffect(() => {
+    if (hasAutoExpandedRef.current) return;
+    
     const pathParts = location.pathname.replace('/curriculum/', '').split('/').filter(Boolean);
     
+    if (pathParts.length > 0) {
+      setExpandedNodes(prev => {
+        const newExpanded = new Set(prev);
+        let currentPath = '';
+        for (const part of pathParts) {
+          currentPath = currentPath ? `${currentPath}/${part}` : part;
+          newExpanded.add(currentPath);
+        }
+        return newExpanded;
+      });
+      hasAutoExpandedRef.current = true;
+    }
+  }, [loading]);
+
+  const toggleNode = (path: string) => {
     setExpandedNodes(prev => {
       const newExpanded = new Set(prev);
-      let currentPath = '';
-      for (const part of pathParts) {
-        currentPath = currentPath ? `${currentPath}/${part}` : part;
-        newExpanded.add(currentPath);
+      if (newExpanded.has(path)) {
+        newExpanded.delete(path);
+      } else {
+        newExpanded.add(path);
       }
       return newExpanded;
     });
-  }, [location.pathname]);
-
-  const toggleNode = (path: string) => {
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(path)) {
-      newExpanded.delete(path);
-    } else {
-      newExpanded.add(path);
-    }
-    setExpandedNodes(newExpanded);
   };
 
   const formatFolderName = (name: string): string => {
     if (name === 'kindergarten') return 'Kindergarten';
     if (name === 'standards') return 'Standards';
     
-    // Handle grade folders - remove "subjects" suffix
     if (name.match(/^grade(\d+)-subjects$/)) {
       return name.replace(/grade(\d+)-subjects/, 'Grade $1');
     }
     
-    // This shouldn't show up, but just in case
     if (name.match(/^grade(\d+)$/)) {
       return name.replace(/grade(\d+)/, 'Grade $1');
     }
@@ -88,12 +94,11 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
 
   const hasValidChildren = (node: TreeNode): boolean => {
     return Object.entries(node).some(([key, value]) => {
-      if (isFileInfo(value)) return false; // Files don't count as valid children for display
+      if (isFileInfo(value)) return false;
       return hasValidChildren(value as TreeNode) || Object.keys(value).length > 0;
     });
   };
 
-  // Find the index page for a folder
   const getIndexPageForFolder = (node: TreeNode): string | null => {
     for (const [key, value] of Object.entries(node)) {
       if (isFileInfo(value) && (key === 'page.tsx' || key === 'index.tsx')) {
@@ -103,41 +108,32 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     return null;
   };
 
-  // Check if current path matches a folder
-  const isCurrentFolder = (path: string, node: TreeNode): boolean => {
-    const indexRoute = getIndexPageForFolder(node);
-    if (!indexRoute) return false;
-    
-    // Normalize paths for comparison
+  const isCurrentPath = (route: string): boolean => {
     const currentPath = location.pathname.replace(/\/$/, '');
-    const folderPath = indexRoute.replace(/\/$/, '');
-    
-    return currentPath === folderPath;
+    const routePath = route.replace(/\/$/, '');
+    return currentPath === routePath;
   };
 
-  const handleFolderClick = (path: string, node: TreeNode, e: React.MouseEvent) => {
+  const handleFolderToggle = (path: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    const indexRoute = getIndexPageForFolder(node);
-    
-    if (indexRoute) {
-      console.log('Navigating to folder index:', indexRoute);
-      navigate(indexRoute);
-      if (onNavigate) {
-        onNavigate();
-      }
-    } else {
-      toggleNode(path);
+    toggleNode(path);
+  };
+
+  const handlePageClick = (route: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('Navigating to:', route);
+    navigate(route);
+    if (onNavigate) {
+      onNavigate();
     }
   };
 
   const sortEntries = (entries: [string, any][]): [string, any][] => {
     return entries
-      .filter(([key, value]) => !isFileInfo(value)) // Only keep folders
+      .filter(([key, value]) => !isFileInfo(value))
       .sort(([keyA], [keyB]) => {
         if (keyA === 'kindergarten') return -1;
         if (keyB === 'kindergarten') return 1;
-
         if (keyA === 'standards') return 1;
         if (keyB === 'standards') return -1;
 
@@ -145,9 +141,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
         const gradeB = keyB.match(/grade(\d+)/);
         
         if (gradeA && gradeB) {
-          const numA = parseInt(gradeA[1]);
-          const numB = parseInt(gradeB[1]);
-          return numA - numB;
+          return parseInt(gradeA[1]) - parseInt(gradeB[1]);
         }
 
         return keyA.localeCompare(keyB);
@@ -159,47 +153,61 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     const sortedEntries = sortEntries(Object.entries(node));
 
     sortedEntries.forEach(([key, value]) => {
-      if (isFileInfo(value)) return; // Skip files completely
+      if (isFileInfo(value)) return;
 
       const currentPath = path ? `${path}/${key}` : key;
       const isExpanded = expandedNodes.has(currentPath);
       const indentation = level * 12;
       const folderNode = value as TreeNode;
-      
-      // Check if this folder is currently active
-      const isActive = isCurrentFolder(currentPath, folderNode);
+      const indexRoute = getIndexPageForFolder(folderNode);
 
-      if (!hasValidChildren(folderNode) && !getIndexPageForFolder(folderNode)) {
-        return; // Skip folders with no valid children and no index page
+      if (!hasValidChildren(folderNode) && !indexRoute) {
+        return;
       }
 
       const displayName = formatFolderName(key);
       
       elements.push(
         <div key={currentPath}>
+          {/* Folder button - always toggles */}
           <button
-            onClick={(e) => handleFolderClick(currentPath, folderNode, e)}
-            className={`flex items-center w-full py-2 px-2 rounded-md transition-colors text-sm font-medium text-left ${
-              isActive 
-                ? 'bg-blue-100 border-l-4 border-blue-600 text-blue-700' 
-                : 'hover:bg-gray-100 text-gray-900'
-            }`}
+            onClick={(e) => handleFolderToggle(currentPath, e)}
+            className="flex items-center w-full py-2 px-2 rounded-md transition-colors text-sm font-medium text-left hover:bg-gray-100 text-gray-900"
             style={{ paddingLeft: `${indentation + 8}px` }}
           >
             {isExpanded ? 
-              <ChevronDown className={`w-4 h-4 mr-1 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} /> :
-              <ChevronRight className={`w-4 h-4 mr-1 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
+              <ChevronDown className="w-4 h-4 mr-1 flex-shrink-0 text-gray-600" /> :
+              <ChevronRight className="w-4 h-4 mr-1 flex-shrink-0 text-gray-600" />
             }
-            {isExpanded || isActive ? 
-              <FolderOpen className={`w-4 h-4 mr-2 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-blue-500'}`} /> :
-              <Folder className={`w-4 h-4 mr-2 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-blue-500'}`} />
+            {isExpanded ? 
+              <FolderOpen className="w-4 h-4 mr-2 flex-shrink-0 text-blue-500" /> :
+              <Folder className="w-4 h-4 mr-2 flex-shrink-0 text-blue-500" />
             }
-            <span className={`text-sm ${isActive ? 'font-bold' : 'font-semibold'}`}>
+            <span className="text-sm font-semibold">
               {displayName}
             </span>
           </button>
+
           {isExpanded && (
             <div className="mt-1">
+              {/* Show index page as a clickable item if it exists */}
+              {indexRoute && (
+                <button
+                  onClick={(e) => handlePageClick(indexRoute, e)}
+                  className={`flex items-center w-full py-2 px-2 rounded-md transition-colors text-sm text-left ${
+                    isCurrentPath(indexRoute)
+                      ? 'bg-blue-100 border-l-4 border-blue-600 text-blue-700 font-semibold'
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                  style={{ paddingLeft: `${(level + 1) * 12 + 8}px` }}
+                >
+                  <FileText className={`w-4 h-4 mr-2 flex-shrink-0 ${
+                    isCurrentPath(indexRoute) ? 'text-blue-600' : 'text-gray-500'
+                  }`} />
+                  <span className="text-sm">Overview</span>
+                </button>
+              )}
+              {/* Render child folders */}
               {renderTree(folderNode, currentPath, level + 1)}
             </div>
           )}
