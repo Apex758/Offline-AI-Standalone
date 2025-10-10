@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen } from 'lucide-react';
+import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
 
 interface TreeNode {
   [key: string]: TreeNode | FileInfo;
@@ -37,6 +37,21 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
       });
   }, []);
 
+  // Auto-expand folders in current path (only on location change, not on every render)
+  useEffect(() => {
+    const pathParts = location.pathname.replace('/curriculum/', '').split('/').filter(Boolean);
+    
+    setExpandedNodes(prev => {
+      const newExpanded = new Set(prev);
+      let currentPath = '';
+      for (const part of pathParts) {
+        currentPath = currentPath ? `${currentPath}/${part}` : part;
+        newExpanded.add(currentPath);
+      }
+      return newExpanded;
+    });
+  }, [location.pathname]);
+
   const toggleNode = (path: string) => {
     const newExpanded = new Set(expandedNodes);
     if (newExpanded.has(path)) {
@@ -48,19 +63,19 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
   };
 
   const formatFolderName = (name: string): string => {
-    // Handle special cases first
     if (name === 'kindergarten') return 'Kindergarten';
     if (name === 'standards') return 'Standards';
     
-    // Handle grade folders
+    // Handle grade folders - remove "subjects" suffix
+    if (name.match(/^grade(\d+)-subjects$/)) {
+      return name.replace(/grade(\d+)-subjects/, 'Grade $1');
+    }
+    
+    // This shouldn't show up, but just in case
     if (name.match(/^grade(\d+)$/)) {
       return name.replace(/grade(\d+)/, 'Grade $1');
     }
-    if (name.match(/^grade(\d+)-subjects$/)) {
-      return name.replace(/grade(\d+)-subjects/, 'Grade $1 Subjects');
-    }
     
-    // Convert kebab-case to Title Case
     return name
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -71,58 +86,72 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     return value && typeof value === 'object' && value.type === 'file';
   };
 
-  const shouldShowFile = (key: string): boolean => {
-    // Don't show layout, loading, or error files
-    const excludeFiles = ['layout.tsx', 'loading.tsx', 'error.tsx', 'not-found.tsx'];
-    return !excludeFiles.includes(key);
-  };
-
   const hasValidChildren = (node: TreeNode): boolean => {
     return Object.entries(node).some(([key, value]) => {
-      if (isFileInfo(value)) {
-        return shouldShowFile(key);
-      }
-      return hasValidChildren(value as TreeNode);
+      if (isFileInfo(value)) return false; // Files don't count as valid children for display
+      return hasValidChildren(value as TreeNode) || Object.keys(value).length > 0;
     });
   };
 
-  const handleFileClick = (route: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log('Navigating to:', route);
-    navigate(route);
-    if (onNavigate) {
-      onNavigate();
+  // Find the index page for a folder
+  const getIndexPageForFolder = (node: TreeNode): string | null => {
+    for (const [key, value] of Object.entries(node)) {
+      if (isFileInfo(value) && (key === 'page.tsx' || key === 'index.tsx')) {
+        return value.route;
+      }
+    }
+    return null;
+  };
+
+  // Check if current path matches a folder
+  const isCurrentFolder = (path: string, node: TreeNode): boolean => {
+    const indexRoute = getIndexPageForFolder(node);
+    if (!indexRoute) return false;
+    
+    // Normalize paths for comparison
+    const currentPath = location.pathname.replace(/\/$/, '');
+    const folderPath = indexRoute.replace(/\/$/, '');
+    
+    return currentPath === folderPath;
+  };
+
+  const handleFolderClick = (path: string, node: TreeNode, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const indexRoute = getIndexPageForFolder(node);
+    
+    if (indexRoute) {
+      console.log('Navigating to folder index:', indexRoute);
+      navigate(indexRoute);
+      if (onNavigate) {
+        onNavigate();
+      }
+    } else {
+      toggleNode(path);
     }
   };
 
-  // Custom sort function to put Kindergarten first, then grades in order
   const sortEntries = (entries: [string, any][]): [string, any][] => {
-    return entries.sort(([keyA], [keyB]) => {
-      // Skip non-displayable files
-      if (!shouldShowFile(keyA)) return 1;
-      if (!shouldShowFile(keyB)) return -1;
-      
-      // Kindergarten always first
-      if (keyA === 'kindergarten') return -1;
-      if (keyB === 'kindergarten') return 1;
+    return entries
+      .filter(([key, value]) => !isFileInfo(value)) // Only keep folders
+      .sort(([keyA], [keyB]) => {
+        if (keyA === 'kindergarten') return -1;
+        if (keyB === 'kindergarten') return 1;
 
-      // Standards near the end
-      if (keyA === 'standards') return 1;
-      if (keyB === 'standards') return -1;
+        if (keyA === 'standards') return 1;
+        if (keyB === 'standards') return -1;
 
-      // Grade ordering
-      const gradeA = keyA.match(/grade(\d+)/);
-      const gradeB = keyB.match(/grade(\d+)/);
-      
-      if (gradeA && gradeB) {
-        const numA = parseInt(gradeA[1]);
-        const numB = parseInt(gradeB[1]);
-        return numA - numB;
-      }
+        const gradeA = keyA.match(/grade(\d+)/);
+        const gradeB = keyB.match(/grade(\d+)/);
+        
+        if (gradeA && gradeB) {
+          const numA = parseInt(gradeA[1]);
+          const numB = parseInt(gradeB[1]);
+          return numA - numB;
+        }
 
-      // Alphabetical for everything else
-      return keyA.localeCompare(keyB);
-    });
+        return keyA.localeCompare(keyB);
+      });
   };
 
   const renderTree = (node: TreeNode, path: string = '', level: number = 0): JSX.Element[] => {
@@ -130,73 +159,52 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     const sortedEntries = sortEntries(Object.entries(node));
 
     sortedEntries.forEach(([key, value]) => {
-      if (!shouldShowFile(key) && isFileInfo(value)) {
-        return; // Skip layout/loading/error files
-      }
+      if (isFileInfo(value)) return; // Skip files completely
 
       const currentPath = path ? `${path}/${key}` : key;
       const isExpanded = expandedNodes.has(currentPath);
       const indentation = level * 12;
+      const folderNode = value as TreeNode;
+      
+      // Check if this folder is currently active
+      const isActive = isCurrentFolder(currentPath, folderNode);
 
-      if (isFileInfo(value)) {
-        // It's a file - use the name from the FileInfo object
-        const displayName = value.name;
-        
-        // Skip if display name is empty
-        if (!displayName || !displayName.trim() || displayName === 'Index') return;
+      if (!hasValidChildren(folderNode) && !getIndexPageForFolder(folderNode)) {
+        return; // Skip folders with no valid children and no index page
+      }
 
-        const isActive = location.pathname === value.route;
-        
-        elements.push(
+      const displayName = formatFolderName(key);
+      
+      elements.push(
+        <div key={currentPath}>
           <button
-            key={currentPath}
-            onClick={(e) => handleFileClick(value.route, e)}
-            className={`flex items-center w-full py-2 px-2 hover:bg-blue-50 rounded-md transition-colors text-sm group text-left ${
-              isActive ? 'bg-blue-100 border-l-4 border-blue-600' : ''
+            onClick={(e) => handleFolderClick(currentPath, folderNode, e)}
+            className={`flex items-center w-full py-2 px-2 rounded-md transition-colors text-sm font-medium text-left ${
+              isActive 
+                ? 'bg-blue-100 border-l-4 border-blue-600 text-blue-700' 
+                : 'hover:bg-gray-100 text-gray-900'
             }`}
             style={{ paddingLeft: `${indentation + 8}px` }}
           >
-            <FileText className={`w-4 h-4 mr-2 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
-            <span className={`${isActive ? 'text-blue-700 font-semibold' : 'text-gray-800 group-hover:text-blue-600'} text-sm`}>
+            {isExpanded ? 
+              <ChevronDown className={`w-4 h-4 mr-1 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} /> :
+              <ChevronRight className={`w-4 h-4 mr-1 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
+            }
+            {isExpanded || isActive ? 
+              <FolderOpen className={`w-4 h-4 mr-2 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-blue-500'}`} /> :
+              <Folder className={`w-4 h-4 mr-2 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-blue-500'}`} />
+            }
+            <span className={`text-sm ${isActive ? 'font-bold' : 'font-semibold'}`}>
               {displayName}
             </span>
           </button>
-        );
-      } else {
-        // It's a directory
-        if (!hasValidChildren(value as TreeNode)) {
-          return; // Skip folders with no valid children
-        }
-
-        const displayName = formatFolderName(key);
-        
-        elements.push(
-          <div key={currentPath}>
-            <button
-              onClick={() => toggleNode(currentPath)}
-              className="flex items-center w-full py-2 px-2 hover:bg-gray-100 rounded-md transition-colors text-sm font-medium"
-              style={{ paddingLeft: `${indentation + 8}px` }}
-            >
-              {isExpanded ? 
-                <ChevronDown className="w-4 h-4 mr-1 text-gray-600 flex-shrink-0" /> :
-                <ChevronRight className="w-4 h-4 mr-1 text-gray-600 flex-shrink-0" />
-              }
-              {isExpanded ? 
-                <FolderOpen className="w-4 h-4 mr-2 text-blue-500 flex-shrink-0" /> :
-                <Folder className="w-4 h-4 mr-2 text-blue-500 flex-shrink-0" />
-              }
-              <span className="text-gray-900 font-semibold text-sm">
-                {displayName}
-              </span>
-            </button>
-            {isExpanded && (
-              <div className="mt-1">
-                {renderTree(value as TreeNode, currentPath, level + 1)}
-              </div>
-            )}
-          </div>
-        );
-      }
+          {isExpanded && (
+            <div className="mt-1">
+              {renderTree(folderNode, currentPath, level + 1)}
+            </div>
+          )}
+        </div>
+      );
     });
 
     return elements;

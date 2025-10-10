@@ -11,7 +11,15 @@ interface CurriculumViewerProps {
 }
 
 // Import all curriculum pages using Vite's glob import
-const curriculumPages = import.meta.glob('../curriculum/**/*.tsx', { eager: false });
+const allCurriculumPages = import.meta.glob('../curriculum/**/*.tsx');
+
+// Filter out dynamic route pages (containing [...])
+const curriculumPages = Object.keys(allCurriculumPages)
+  .filter(path => !path.includes('[') || !path.includes(']'))
+  .reduce((acc, key) => {
+    acc[key] = allCurriculumPages[key];
+    return acc;
+  }, {} as Record<string, () => Promise<unknown>>);
 
 const CurriculumViewer: React.FC<CurriculumViewerProps> = ({ 
   tabId, 
@@ -45,66 +53,58 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
     const loadComponent = async () => {
       setLoading(true);
       setError(null);
-      
-      // Extract the curriculum path from the current route
-      // Current path: /curriculum/grade1-subjects/page
-      // Need to find: ../curriculum/grade1-subjects/page.tsx
+      setCurrentComponent(null); // Clear previous component
       
       let curriculumPath = location.pathname.replace('/curriculum/', '').replace('/curriculum', '');
+      
+      // Check if this is a dynamic route (contains [...] pattern)
+      if (curriculumPath.includes('[') && curriculumPath.includes(']')) {
+        console.log('Skipping dynamic route:', curriculumPath);
+        setError('This page uses dynamic routing and cannot be displayed directly.');
+        setLoading(false);
+        return;
+      }
       
       // Try different path variations
       const possiblePaths = [
         `../curriculum/${curriculumPath}/page.tsx`,
         `../curriculum/${curriculumPath}.tsx`,
         `../curriculum/${curriculumPath}/index.tsx`,
-        `../curriculum/page.tsx`, // Root curriculum page
+        `../curriculum/page.tsx`,
       ];
 
       console.log('Looking for component at:', curriculumPath);
       console.log('Possible paths:', possiblePaths);
-      console.log('Available paths:', Object.keys(curriculumPages));
 
-      let componentModule = null;
+      let foundComponent = null;
 
       for (const path of possiblePaths) {
+        // Skip any paths that contain dynamic route segments
+        if (path.includes('[') && path.includes(']')) {
+          console.log('Skipping dynamic route path:', path);
+          continue;
+        }
+        
         if (curriculumPages[path]) {
           console.log('Found match:', path);
           try {
-            componentModule = await curriculumPages[path]();
-            break;
+            const module = await curriculumPages[path]();
+            if (module && (module as any).default) {
+              foundComponent = (module as any).default;
+              break;
+            }
           } catch (err) {
             console.error(`Failed to load ${path}:`, err);
           }
         }
       }
 
-      if (componentModule && componentModule.default) {
-        setCurrentComponent(() => componentModule.default);
+      if (foundComponent) {
+        setCurrentComponent(() => foundComponent);
         setLoading(false);
       } else {
-        // Try to find closest match
-        const partialPath = curriculumPath.split('/')[0];
-        const matchingPath = Object.keys(curriculumPages).find(p => 
-          p.includes(partialPath) && p.endsWith('page.tsx')
-        );
-
-        if (matchingPath) {
-          console.log('Found partial match:', matchingPath);
-          try {
-            componentModule = await curriculumPages[matchingPath]();
-            if (componentModule && componentModule.default) {
-              setCurrentComponent(() => componentModule.default);
-              setLoading(false);
-              return;
-            }
-          } catch (err) {
-            console.error(`Failed to load ${matchingPath}:`, err);
-          }
-        }
-
         console.error('No component found for path:', curriculumPath);
         setError(`Could not load page: ${curriculumPath}`);
-        setCurrentComponent(null);
         setLoading(false);
       }
     };
@@ -142,10 +142,21 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
 
     if (currentComponent) {
       const Component = currentComponent;
-      return <Component />;
+      // Wrap in error boundary to catch any render errors
+      try {
+        return <Component />;
+      } catch (err) {
+        console.error('Error rendering component:', err);
+        return (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Render Error</h2>
+            <p className="text-gray-600">Failed to render this page.</p>
+            <p className="text-sm text-red-500 mt-2">{String(err)}</p>
+          </div>
+        );
+      }
     }
 
-    // Default welcome page
     return (
       <div className="p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">

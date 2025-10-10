@@ -12,8 +12,11 @@ def generate_curriculum_tree(base_path):
         return filename.endswith('.tsx') and not filename.startswith('_')
     
     def should_include_dir(dirname):
-        """Exclude certain directories"""
+        """Exclude certain directories and dynamic routes"""
         exclude = ['node_modules', '.next', 'dist', 'build']
+        # Exclude Next.js dynamic route folders (starts with [)
+        if dirname.startswith('[') and dirname.endswith(']'):
+            return False
         return dirname not in exclude and not dirname.startswith('.')
     
     def process_directory(current_path, current_tree):
@@ -30,6 +33,9 @@ def generate_curriculum_tree(base_path):
                 if should_include_dir(item):
                     current_tree[item] = {}
                     process_directory(full_path, current_tree[item])
+                    # Remove empty directories
+                    if not current_tree[item]:
+                        del current_tree[item]
             elif os.path.isfile(full_path):
                 if should_include_file(item):
                     # Store file info
@@ -39,11 +45,20 @@ def generate_curriculum_tree(base_path):
                     if route_path.endswith('/'):
                         route_path = route_path[:-1]
                     
+                    # Extract a display name from the file
+                    display_name = item.replace('.tsx', '').replace('page', '').replace('-', ' ').strip()
+                    
+                    # Get better names from folder structure
+                    if item == 'page.tsx':
+                        # Use parent folder name
+                        parent_folder = os.path.basename(os.path.dirname(full_path))
+                        display_name = parent_folder.replace('-', ' ').title()
+                    
                     current_tree[item] = {
                         'type': 'file',
                         'path': rel_path.replace('\\', '/'),
                         'route': '/curriculum/' + route_path if route_path else '/curriculum',
-                        'name': item.replace('.tsx', '').replace('page', 'index')
+                        'name': display_name
                     }
     
     process_directory(base_path, tree)
@@ -60,7 +75,7 @@ def generate_route_list(tree, base_route=''):
                     routes.append({
                         'path': value['route'],
                         'file_path': value['path'],
-                        'name': key.replace('.tsx', '').replace('page', '').replace('-', ' ').title()
+                        'name': value['name']
                     })
                 else:
                     # It's a directory
@@ -100,6 +115,7 @@ if __name__ == '__main__':
     
     print(f"✓ Generated curriculum tree: {tree_file}")
     print(f"✓ Generated {len(routes)} routes: {routes_file}")
+    print(f"✓ Excluded dynamic route folders (e.g., [unitId], [week])")
     print("\nSample routes:")
-    for route in routes[:5]:
-        print(f"  - {route['path']}")
+    for route in routes[:10]:
+        print(f"  - {route['path']}: {route['name']}")

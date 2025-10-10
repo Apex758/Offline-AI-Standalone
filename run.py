@@ -1,153 +1,121 @@
 import os
-import re
+import json
 
-def find_and_fix_missing_imports(content):
+def generate_curriculum_tree(base_path):
     """
-    Find and comment out imports for components that don't exist
+    Generate a hierarchical tree structure of curriculum files
     """
-    changes_made = False
+    tree = {}
     
-    # List of components that might be missing
-    potentially_missing = [
-        'teacher-tip',
-        'activity-card', 
-        'weekly-overview',
-        'lesson-objectives',
-        'assessment-criteria',
-        'differentiation-strategies',
-        'resources-list'
-    ]
+    def should_include_file(filename):
+        """Only include .tsx files that are actual pages"""
+        return filename.endswith('.tsx') and not filename.startswith('_')
     
-    for component in potentially_missing:
-        # Pattern to match import statements for this component
-        pattern = rf'import\s*\{{[^}}]*\}}\s*from\s*["\']@/components/{component}["\'];?\s*\n'
+    def should_include_dir(dirname):
+        """Exclude certain directories and dynamic routes"""
+        exclude = ['node_modules', '.next', 'dist', 'build']
+        # Exclude Next.js dynamic route folders (starts with [)
+        if dirname.startswith('[') and dirname.endswith(']'):
+            return False
+        return dirname not in exclude and not dirname.startswith('.')
+    
+    def process_directory(current_path, current_tree):
+        """Recursively process directories"""
+        try:
+            items = sorted(os.listdir(current_path))
+        except PermissionError:
+            return
         
-        if re.search(pattern, content):
-            # Comment out the import
-            content = re.sub(
-                pattern,
-                f'// Commented out missing import: @/components/{component}\n',
-                content
-            )
-            changes_made = True
-    
-    return content, changes_made
-
-def check_if_components_exist():
-    """
-    Check which components actually exist in the components folder
-    """
-    components_path = os.path.join('frontend', 'src', 'components')
-    
-    if not os.path.exists(components_path):
-        print(f"Components folder not found: {components_path}")
-        return set()
-    
-    existing_components = set()
-    for file in os.listdir(components_path):
-        if file.endswith('.tsx') or file.endswith('.ts'):
-            component_name = file.replace('.tsx', '').replace('.ts', '')
-            existing_components.add(component_name)
-    
-    print("Existing components:", existing_components)
-    return existing_components
-
-def process_file(file_path):
-    """
-    Process a single file
-    """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # Fix missing imports
-        new_content, changes = find_and_fix_missing_imports(content)
-        
-        # Only write if changes were made
-        if changes:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(new_content)
-            return True
-        return False
-    except Exception as e:
-        print(f"Error processing {file_path}: {e}")
-        return False
-
-def scan_and_report_imports(curriculum_path):
-    """
-    Scan all files and report which components are being imported
-    """
-    imports_found = {}
-    
-    for root, dirs, files in os.walk(curriculum_path):
-        for file in files:
-            if file.endswith('.tsx'):
-                file_path = os.path.join(root, file)
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
+        for item in items:
+            full_path = os.path.join(current_path, item)
+            
+            if os.path.isdir(full_path):
+                if should_include_dir(item):
+                    current_tree[item] = {}
+                    process_directory(full_path, current_tree[item])
+                    # Remove empty directories
+                    if not current_tree[item]:
+                        del current_tree[item]
+            elif os.path.isfile(full_path):
+                if should_include_file(item):
+                    # Store file info
+                    rel_path = os.path.relpath(full_path, base_path)
+                    # Convert to route path
+                    route_path = rel_path.replace('\\', '/').replace('page.tsx', '').replace('.tsx', '')
+                    if route_path.endswith('/'):
+                        route_path = route_path[:-1]
                     
-                    # Find all component imports
-                    pattern = r'import\s*\{[^}]*\}\s*from\s*["\']@/components/([^"\']+)["\']'
-                    matches = re.findall(pattern, content)
+                    # Extract a display name from the file
+                    display_name = item.replace('.tsx', '').replace('page', '').replace('-', ' ').strip()
                     
-                    for component in matches:
-                        if component not in imports_found:
-                            imports_found[component] = []
-                        imports_found[component].append(file_path)
-                except:
-                    pass
+                    # Get better names from folder structure
+                    if item == 'page.tsx':
+                        # Use parent folder name
+                        parent_folder = os.path.basename(os.path.dirname(full_path))
+                        display_name = parent_folder.replace('-', ' ').title()
+                    
+                    current_tree[item] = {
+                        'type': 'file',
+                        'path': rel_path.replace('\\', '/'),
+                        'route': '/curriculum/' + route_path if route_path else '/curriculum',
+                        'name': display_name
+                    }
     
-    return imports_found
+    process_directory(base_path, tree)
+    return tree
 
-def fix_all_files(curriculum_path):
-    """
-    Fix all .tsx files in the curriculum folder
-    """
-    fixed_count = 0
-    total_count = 0
+def generate_route_list(tree, base_route=''):
+    """Generate a flat list of routes from the tree"""
+    routes = []
     
-    for root, dirs, files in os.walk(curriculum_path):
-        for file in files:
-            if file.endswith('.tsx'):
-                total_count += 1
-                file_path = os.path.join(root, file)
-                if process_file(file_path):
-                    fixed_count += 1
-                    print(f"✓ Fixed: {file_path}")
+    def traverse(node, current_route):
+        for key, value in node.items():
+            if isinstance(value, dict):
+                if value.get('type') == 'file':
+                    routes.append({
+                        'path': value['route'],
+                        'file_path': value['path'],
+                        'name': value['name']
+                    })
+                else:
+                    # It's a directory
+                    new_route = f"{current_route}/{key}" if current_route else key
+                    traverse(value, new_route)
     
-    return fixed_count, total_count
+    traverse(tree, base_route)
+    return routes
 
 if __name__ == '__main__':
+    # Set the path to your curriculum folder
     curriculum_path = os.path.join('frontend', 'src', 'curriculum')
     
     if not os.path.exists(curriculum_path):
         print(f"Error: Curriculum path not found: {curriculum_path}")
         exit(1)
     
-    print("Scanning for component imports...")
-    print("-" * 60)
+    # Generate tree
+    print("Generating curriculum tree...")
+    tree = generate_curriculum_tree(curriculum_path)
     
-    # Check which components exist
-    existing_components = check_if_components_exist()
+    # Generate routes
+    routes = generate_route_list(tree)
     
-    # Scan and report
-    imports_found = scan_and_report_imports(curriculum_path)
+    # Save tree
+    output_dir = os.path.join('frontend', 'src', 'data')
+    os.makedirs(output_dir, exist_ok=True)
     
-    print("\nComponent imports found:")
-    for component, files in imports_found.items():
-        status = "✓ EXISTS" if component in existing_components else "✗ MISSING"
-        print(f"{status} - {component} (used in {len(files)} files)")
-        if component not in existing_components:
-            print(f"  Files: {files[:3]}...")  # Show first 3 files
+    tree_file = os.path.join(output_dir, 'curriculumTree.json')
+    with open(tree_file, 'w', encoding='utf-8') as f:
+        json.dump(tree, f, indent=2)
     
-    print("\n" + "-" * 60)
-    print("Fixing missing component imports...")
-    print("-" * 60)
+    # Save routes
+    routes_file = os.path.join(output_dir, 'curriculumRoutes.json')
+    with open(routes_file, 'w', encoding='utf-8') as f:
+        json.dump(routes, f, indent=2)
     
-    fixed, total = fix_all_files(curriculum_path)
-    
-    print("-" * 60)
-    print(f"Fix complete!")
-    print(f"Files processed: {total}")
-    print(f"Files fixed: {fixed}")
+    print(f"✓ Generated curriculum tree: {tree_file}")
+    print(f"✓ Generated {len(routes)} routes: {routes_file}")
+    print(f"✓ Excluded dynamic route folders (e.g., [unitId], [week])")
+    print("\nSample routes:")
+    for route in routes[:10]:
+        print(f"  - {route['path']}: {route['name']}")
