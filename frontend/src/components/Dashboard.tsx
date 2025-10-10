@@ -345,11 +345,70 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             savedData={tab.data} 
             onDataChange={(data) => updateTabData(tab.id, data)}
             onNavigate={(route) => {
-              // Handle navigation to curriculum or opening other tools
+              // Handle navigation to curriculum
               if (route.startsWith('/curriculum')) {
-                // Open curriculum tab
-                const curriculumTool = tools.find(t => t.type === 'curriculum');
-                if (curriculumTool) openTool(curriculumTool);
+                // Check if there's already an open curriculum tab
+                const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
+                
+                if (existingCurriculumTab) {
+                  // Update existing curriculum tab with new route
+                  updateTabData(existingCurriculumTab.id, { currentPath: route });
+                  setActiveTabId(existingCurriculumTab.id);
+                } else {
+                  // Check if there's any curriculum tab (even inactive)
+                  const anyCurriculumTab = tabs.find(t => t.type === 'curriculum');
+                  
+                  if (anyCurriculumTab) {
+                    // Activate existing curriculum tab and update route
+                    setTabs(prev => prev.map(t => ({
+                      ...t,
+                      active: t.id === anyCurriculumTab.id
+                    })));
+                    updateTabData(anyCurriculumTab.id, { currentPath: route });
+                    setActiveTabId(anyCurriculumTab.id);
+                  } else {
+                    // Create new curriculum tab
+                    const curriculumTool = tools.find(t => t.type === 'curriculum');
+                    if (curriculumTool) {
+                      const newTab: Tab = {
+                        id: `tab-${Date.now()}`,
+                        title: curriculumTool.name,
+                        type: 'curriculum',
+                        active: true,
+                        data: { currentPath: route }
+                      };
+                      setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                      setActiveTabId(newTab.id);
+                    }
+                  }
+                }
+              }
+            }}
+            onCreateTab={(toolType) => {
+              // Handle creating new tool tabs from action cards
+              const tool = tools.find(t => t.type === toolType);
+              if (tool) {
+                // Check if this tool type already has an open tab
+                const existingTab = tabs.find(t => t.type === toolType);
+                
+                if (existingTab) {
+                  // Just activate the existing tab
+                  setTabs(prev => prev.map(t => ({
+                    ...t,
+                    active: t.id === existingTab.id
+                  })));
+                  setActiveTabId(existingTab.id);
+                } else {
+                  // Create new tab for this tool
+                  const newTab: Tab = {
+                    id: `tab-${Date.now()}`,
+                    title: tool.name,
+                    type: toolType as any,
+                    active: true
+                  };
+                  setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                  setActiveTabId(newTab.id);
+                }
               }
             }}
           />

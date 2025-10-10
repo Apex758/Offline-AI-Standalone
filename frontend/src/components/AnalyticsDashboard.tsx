@@ -11,6 +11,7 @@ interface AnalyticsDashboardProps {
   savedData?: any;
   onDataChange: (data: any) => void;
   onNavigate?: (route: string) => void;
+  onCreateTab?: (type: string) => void; // Add this prop
 }
 
 interface Stats {
@@ -26,7 +27,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   tabId, 
   savedData, 
   onDataChange,
-  onNavigate 
+  onNavigate,
+  onCreateTab // Add this
 }) => {
   const [stats, setStats] = useState<Stats>({
     lessonPlans: 0,
@@ -38,48 +40,33 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   });
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
-  const [isAlreadyOpen, setIsAlreadyOpen] = useState(false);
-  const ANALYTICS_DASHBOARD_OPEN_KEY = 'analyticsDashboardOpen';
 
   useEffect(() => {
-    // Load user name from localStorage
-    const storedUser = localStorage.getItem('user');
+    // Load user name from context/props instead of localStorage
+    // This assumes user data is passed from parent component
+    const storedUser = localStorage.getItem('user'); // Only for user name - not for app state
     if (storedUser) {
+      try {
         const user = JSON.parse(storedUser);
         setUserName(user.name || user.username || 'Teacher');
-    }
-
-    if (localStorage.getItem(ANALYTICS_DASHBOARD_OPEN_KEY)) {
-      setIsAlreadyOpen(true);
-    } else {
-      localStorage.setItem(ANALYTICS_DASHBOARD_OPEN_KEY, 'true');
-      loadStats();
-    }
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === ANALYTICS_DASHBOARD_OPEN_KEY) {
-        setIsAlreadyOpen(e.newValue !== null);
+      } catch (e) {
+        console.error('Error parsing user:', e);
       }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      localStorage.removeItem(ANALYTICS_DASHBOARD_OPEN_KEY);
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    }
+    
+    loadStats();
   }, []);
 
   const loadStats = async () => {
     setLoading(true);
     try {
       const [lessonPlans, rubrics, quizzes, kindergarten, multigrade, crossCurricular] = await Promise.all([
-        axios.get('http://localhost:8000/api/lesson-plan-history'),
-        axios.get('http://localhost:8000/api/rubric-history'),
-        axios.get('http://localhost:8000/api/quiz-history'),
-        axios.get('http://localhost:8000/api/kindergarten-history'),
-        axios.get('http://localhost:8000/api/multigrade-history'),
-        axios.get('http://localhost:8000/api/cross-curricular-history')
+        axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/rubric-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/kindergarten-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] }))
       ]);
 
       setStats({
@@ -194,7 +181,47 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     { label: 'Cross-Curricular', value: stats.crossCurricularPlans, color: 'bg-teal-500' }
   ];
 
+  // Action card handlers
+  const actionCards = [
+    {
+      title: 'Create Lesson Plan',
+      description: 'Start a new lesson plan',
+      icon: BookMarked,
+      color: 'from-purple-500 to-purple-600',
+      textColor: 'text-purple-100',
+      toolType: 'lesson-planner'
+    },
+    {
+      title: 'Generate Rubric',
+      description: 'Create grading criteria',
+      icon: FileText,
+      color: 'from-amber-500 to-orange-600',
+      textColor: 'text-amber-100',
+      toolType: 'rubric-generator'
+    },
+    {
+      title: 'Build Quiz',
+      description: 'Generate assessments',
+      icon: ListChecks,
+      color: 'from-green-500 to-emerald-600',
+      textColor: 'text-green-100',
+      toolType: 'quiz-generator'
+    },
+    {
+      title: 'Browse Curriculum',
+      description: 'Explore OECS content',
+      icon: School,
+      color: 'from-pink-500 to-rose-600',
+      textColor: 'text-pink-100',
+      toolType: 'curriculum'
+    }
+  ];
 
+  const handleActionCardClick = (toolType: string) => {
+    if (onCreateTab) {
+      onCreateTab(toolType);
+    }
+  };
 
   if (loading) {
     return (
@@ -296,7 +323,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-8 h-8" />
                 <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
-                  This Month
+                  All Time
                 </span>
               </div>
               <div className="text-4xl font-bold mb-2">{totalResources}</div>
@@ -306,13 +333,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center">
                 <Clock className="w-5 h-5 mr-2 text-blue-600" />
-                Recent Activity
+                Resource Summary
               </h3>
               <div className="space-y-3">
                 {totalPlans > 0 && (
                   <div className="flex items-center text-sm">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                    <span className="text-gray-600">{stats.lessonPlans} standard lesson plans</span>
+                    <span className="text-gray-600">{totalPlans} lesson plans</span>
                   </div>
                 )}
                 {stats.rubrics > 0 && (
@@ -325,6 +352,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   <div className="flex items-center text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                     <span className="text-gray-600">{stats.quizzes} assessment quizzes</span>
+                  </div>
+                )}
+                {totalResources === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-500 text-sm">No resources created yet</p>
+                    <p className="text-gray-400 text-xs mt-1">Start by creating your first lesson plan!</p>
                   </div>
                 )}
               </div>
@@ -362,31 +395,44 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
         </div>
 
+
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:shadow-xl transition-shadow cursor-pointer">
+        <button
+            onClick={() => handleActionCardClick('lesson-planner')}
+            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
+        >
             <BookMarked className="w-8 h-8 mb-3" />
             <h3 className="font-bold text-lg mb-2">Create Lesson Plan</h3>
             <p className="text-purple-100 text-sm">Start a new lesson plan</p>
-          </div>
+        </button>
 
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-6 text-white hover:shadow-xl transition-shadow cursor-pointer">
+        <button
+            onClick={() => handleActionCardClick('rubric-generator')}
+            className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
+        >
             <FileText className="w-8 h-8 mb-3" />
             <h3 className="font-bold text-lg mb-2">Generate Rubric</h3>
             <p className="text-amber-100 text-sm">Create grading criteria</p>
-          </div>
+        </button>
 
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white hover:shadow-xl transition-shadow cursor-pointer">
+        <button
+            onClick={() => handleActionCardClick('quiz-generator')}
+            className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
+        >
             <ListChecks className="w-8 h-8 mb-3" />
             <h3 className="font-bold text-lg mb-2">Build Quiz</h3>
             <p className="text-green-100 text-sm">Generate assessments</p>
-          </div>
+        </button>
 
-          <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl p-6 text-white hover:shadow-xl transition-shadow cursor-pointer">
+        <button
+            onClick={() => handleActionCardClick('curriculum')}
+            className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
+        >
             <School className="w-8 h-8 mb-3" />
             <h3 className="font-bold text-lg mb-2">Browse Curriculum</h3>
             <p className="text-pink-100 text-sm">Explore OECS content</p>
-          </div>
+        </button>
         </div>
       </div>
     </div>
