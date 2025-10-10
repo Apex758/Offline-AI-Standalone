@@ -330,40 +330,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       case 'lesson-planner':
         return <LessonPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'kindergarten-planner':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Kindergarten Lesson Planner</h2>
-            <p className="text-gray-600">Coming soon - AI-powered kindergarten lesson planning...</p>
-          </div>
-        );
+        return <KindergartenPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'multigrade-planner':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Multigrade Lesson Planner</h2>
-            <p className="text-gray-600">Coming soon - Design lessons for multiple grade levels...</p>
-          </div>
-        );
+        return <MultigradePlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'cross-curricular-planner':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Cross-Curricular Planner</h2>
-            <p className="text-gray-600">Coming soon - Create integrated subject lesson plans...</p>
-          </div>
-        );
+        return <CrossCurricularPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'quiz-generator':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Quiz Generator</h2>
-            <p className="text-gray-600">Coming soon - Generate customized quizzes...</p>
-          </div>
-        );
+        return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'rubric-generator':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Rubric Generator</h2>
-            <p className="text-gray-600">Coming soon - Create detailed grading rubrics...</p>
-          </div>
-        );
+        return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       default:
         return null;
     }
