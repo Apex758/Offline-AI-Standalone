@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock, Users, CheckCircle, Lightbulb, Target } from "lucide-react"
-import { notFound } from "next/navigation"
+// Removed Next.js notFound - using React Router navigation instead
 
 // Define the activity data structure with proper types
 interface ActivityInfo {
@@ -700,12 +700,12 @@ export default async function ActivityInstructionPage({ params }: PageProps) {
 
   const weekData = activityData[week as WeekKey]
   if (!weekData) {
-    notFound()
+    navigate("/404")
   }
 
   const activityInfo = weekData[activity]
   if (!activityInfo) {
-    notFound()
+    navigate("/404")
   }
 
   const weekTitles = {

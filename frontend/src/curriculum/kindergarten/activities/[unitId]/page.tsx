@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
-import { notFound } from "next/navigation"
+// Removed Next.js notFound - using React Router navigation instead
 import {
   Heart,
   Users,
@@ -244,7 +244,7 @@ export default async function UnitActivitiesPage({ params }: { params: Promise<{
   const unit = unitData[unitId as keyof typeof unitData]
 
   if (!unit) {
-    notFound()
+    navigate("/404")
   }
 
   // Generate breadcrumb items based on unit ID

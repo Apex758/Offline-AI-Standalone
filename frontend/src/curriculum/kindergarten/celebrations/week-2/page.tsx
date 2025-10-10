@@ -6,9 +6,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { BookOpen, Clock, Calendar, Lightbulb, Download, CheckCircle2, Printer, ChevronLeft, Globe } from "lucide-react"
 import { Link } from "react-router-dom"
 // // import Image from "next/image" - replaced with img tag - replaced with img tag
-import { TeacherTip } from "@/components/teacher-tip"
-import { ActivityCard } from "@/components/activity-card"
-import { WeeklyOverview } from "@/components/weekly-overview"
+// Commented out missing import: @/components/teacher-tip
+// Commented out missing import: @/components/activity-card
+// Commented out missing import: @/components/weekly-overview
 import { DailyPlan } from "@/components/daily-plan"
 
 export default function CelebrationsUnitWeek2() {

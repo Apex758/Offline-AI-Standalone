@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Link } from "react-router-dom"
-import { notFound } from "next/navigation"
+// Removed Next.js notFound - using React Router navigation instead
 import {
   Calendar,
   Palette,
@@ -820,12 +820,12 @@ export default async function WeatherActivityPage({
 
   const weekData = activityData[weekKey]
   if (!weekData) {
-    notFound()
+    navigate("/404")
   }
 
   const activityInfo = weekData[activity]
   if (!activityInfo) {
-    notFound()
+    navigate("/404")
   }
 
   return (

@@ -1,56 +1,56 @@
 import os
 import re
 
-def convert_nextjs_to_react(content):
+def find_and_fix_missing_imports(content):
     """
-    Convert Next.js specific code to React code
+    Find and comment out imports for components that don't exist
     """
-    # Replace Next.js Link import with React Router Link
-    content = re.sub(
-        r'import\s+Link\s+from\s+["\']next/link["\']',
-        'import { Link } from "react-router-dom"',
-        content
-    )
+    changes_made = False
     
-    # Replace Next.js Image import
-    content = re.sub(
-        r'import\s+Image\s+from\s+["\']next/image["\']',
-        '// import Image from "next/image" - replaced with img tag',
-        content
-    )
+    # List of components that might be missing
+    potentially_missing = [
+        'teacher-tip',
+        'activity-card', 
+        'weekly-overview',
+        'lesson-objectives',
+        'assessment-criteria',
+        'differentiation-strategies',
+        'resources-list'
+    ]
     
-    # Replace Image component with img tag
-    # This is a simple replacement - you may need to adjust based on your usage
-    content = re.sub(
-        r'<Image\s+([^>]+)/>',
-        lambda m: convert_image_tag(m.group(1)),
-        content
-    )
+    for component in potentially_missing:
+        # Pattern to match import statements for this component
+        pattern = rf'import\s*\{{[^}}]*\}}\s*from\s*["\']@/components/{component}["\'];?\s*\n'
+        
+        if re.search(pattern, content):
+            # Comment out the import
+            content = re.sub(
+                pattern,
+                f'// Commented out missing import: @/components/{component}\n',
+                content
+            )
+            changes_made = True
     
-    # Remove "use client" directive
-    content = re.sub(r'["\']use client["\']\s*\n', '', content)
-    
-    # Remove "use server" directive  
-    content = re.sub(r'["\']use server["\']\s*\n', '', content)
-    
-    return content
+    return content, changes_made
 
-def convert_image_tag(props_str):
+def check_if_components_exist():
     """
-    Convert Next.js Image props to standard img tag
+    Check which components actually exist in the components folder
     """
-    # Extract src
-    src_match = re.search(r'src=["\']([^"\']+)["\']', props_str)
-    alt_match = re.search(r'alt=["\']([^"\']+)["\']', props_str)
+    components_path = os.path.join('frontend', 'src', 'components')
     
-    src = src_match.group(1) if src_match else ''
-    alt = alt_match.group(1) if alt_match else ''
+    if not os.path.exists(components_path):
+        print(f"Components folder not found: {components_path}")
+        return set()
     
-    # Check if it uses fill prop
-    if 'fill' in props_str:
-        return f'<img src="{src}" alt="{alt}" className="w-full h-full object-cover" />'
+    existing_components = set()
+    for file in os.listdir(components_path):
+        if file.endswith('.tsx') or file.endswith('.ts'):
+            component_name = file.replace('.tsx', '').replace('.ts', '')
+            existing_components.add(component_name)
     
-    return f'<img src="{src}" alt="{alt}" className="w-auto h-auto" />'
+    print("Existing components:", existing_components)
+    return existing_components
 
 def process_file(file_path):
     """
@@ -60,24 +60,51 @@ def process_file(file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # Convert Next.js code to React
-        converted = convert_nextjs_to_react(content)
+        # Fix missing imports
+        new_content, changes = find_and_fix_missing_imports(content)
         
         # Only write if changes were made
-        if converted != content:
+        if changes:
             with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(converted)
+                f.write(new_content)
             return True
         return False
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
         return False
 
-def convert_all_curriculum_files(curriculum_path):
+def scan_and_report_imports(curriculum_path):
     """
-    Convert all .tsx files in curriculum folder
+    Scan all files and report which components are being imported
     """
-    converted_count = 0
+    imports_found = {}
+    
+    for root, dirs, files in os.walk(curriculum_path):
+        for file in files:
+            if file.endswith('.tsx'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Find all component imports
+                    pattern = r'import\s*\{[^}]*\}\s*from\s*["\']@/components/([^"\']+)["\']'
+                    matches = re.findall(pattern, content)
+                    
+                    for component in matches:
+                        if component not in imports_found:
+                            imports_found[component] = []
+                        imports_found[component].append(file_path)
+                except:
+                    pass
+    
+    return imports_found
+
+def fix_all_files(curriculum_path):
+    """
+    Fix all .tsx files in the curriculum folder
+    """
+    fixed_count = 0
     total_count = 0
     
     for root, dirs, files in os.walk(curriculum_path):
@@ -86,10 +113,10 @@ def convert_all_curriculum_files(curriculum_path):
                 total_count += 1
                 file_path = os.path.join(root, file)
                 if process_file(file_path):
-                    converted_count += 1
-                    print(f"✓ Converted: {file_path}")
+                    fixed_count += 1
+                    print(f"✓ Fixed: {file_path}")
     
-    return converted_count, total_count
+    return fixed_count, total_count
 
 if __name__ == '__main__':
     curriculum_path = os.path.join('frontend', 'src', 'curriculum')
@@ -98,19 +125,29 @@ if __name__ == '__main__':
         print(f"Error: Curriculum path not found: {curriculum_path}")
         exit(1)
     
-    print("Converting curriculum files from Next.js to React...")
+    print("Scanning for component imports...")
     print("-" * 60)
     
-    converted, total = convert_all_curriculum_files(curriculum_path)
+    # Check which components exist
+    existing_components = check_if_components_exist()
+    
+    # Scan and report
+    imports_found = scan_and_report_imports(curriculum_path)
+    
+    print("\nComponent imports found:")
+    for component, files in imports_found.items():
+        status = "✓ EXISTS" if component in existing_components else "✗ MISSING"
+        print(f"{status} - {component} (used in {len(files)} files)")
+        if component not in existing_components:
+            print(f"  Files: {files[:3]}...")  # Show first 3 files
+    
+    print("\n" + "-" * 60)
+    print("Fixing missing component imports...")
+    print("-" * 60)
+    
+    fixed, total = fix_all_files(curriculum_path)
     
     print("-" * 60)
-    print(f"Conversion complete!")
+    print(f"Fix complete!")
     print(f"Files processed: {total}")
-    print(f"Files converted: {converted}")
-    
-    if converted > 0:
-        print("\n⚠️  Please review the converted files to ensure:")
-        print("  - All imports are correct")
-        print("  - Image paths are correct")
-        print("  - Links work as expected")
-        print("  - No Next.js specific code remains")
+    print(f"Files fixed: {fixed}")

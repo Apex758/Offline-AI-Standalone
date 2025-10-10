@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"
 import { BookOpen, Clock, Calendar, Lightbulb, Download, CheckCircle2, Printer, ChevronLeft } from "lucide-react"
 import { Link } from "react-router-dom"
 // // import Image from "next/image" - replaced with img tag - replaced with img tag
-import { TeacherTip } from "@/components/teacher-tip"
-import { ActivityCard } from "@/components/activity-card"
-import { WeeklyOverview } from "@/components/weekly-overview"
+// Commented out missing import: @/components/teacher-tip
+// Commented out missing import: @/components/activity-card
+// Commented out missing import: @/components/weekly-overview
 import { DailyPlan } from "@/components/daily-plan"
 
 export default function GamesUnitWeek3() {

@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
-import { notFound } from "next/navigation"
+// Removed Next.js notFound - using React Router navigation instead
 import { ArrowLeft, Clock, Users, Target, CheckCircle, Lightbulb, Plus } from "lucide-react"
 
 // Define the activity data structure with proper types
@@ -831,7 +831,7 @@ export default async function ActivityInstructionsPage({
   const activity = unit?.[weekNum]?.[activityName]
 
   if (!activity) {
-    notFound()
+    navigate("/404")
   }
 
   return (

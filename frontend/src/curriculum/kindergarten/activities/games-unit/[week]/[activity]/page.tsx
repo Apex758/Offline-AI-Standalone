@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Link } from "react-router-dom"
-import { notFound } from "next/navigation"
+// Removed Next.js notFound - using React Router navigation instead
 import {
   Clock,
   Users,
@@ -1036,10 +1036,10 @@ const activityData = {
 export default async function GamesActivityPage({ params }: { params: Promise<{ week: string; activity: string }> }) {
   const { week, activity: activitySlug } = await params
   const weekData = activityData[week as keyof typeof activityData]
-  if (!weekData) notFound()
+  if (!weekData) navigate("/404")
 
   const activity = weekData[activitySlug as keyof typeof weekData]
-  if (!activity) notFound()
+  if (!activity) navigate("/404")
 
   // Type assertion to help TypeScript understand the structure
   const typedActivity = activity as {

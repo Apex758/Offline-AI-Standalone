@@ -19,7 +19,7 @@ interface CurriculumNavigatorProps {
 
 const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate }) => {
   const [tree, setTree] = useState<TreeNode>({});
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['kindergarten', 'grade1', 'grade1-subjects']));
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['kindergarten', 'grade1-subjects']));
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,41 +47,43 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     setExpandedNodes(newExpanded);
   };
 
-  const formatName = (name: string, isFolder: boolean = false): string => {
-    // Remove file extensions
-    let formatted = name
-      .replace(/page\.tsx$/, '')
-      .replace(/\.tsx$/, '')
-      .replace(/loading\.tsx$/, '');
-
-    // Handle special cases for cleaner display
-    if (isFolder) {
-      // Kindergarten
-      if (formatted === 'kindergarten') return 'Kindergarten';
-      
-      // Grade folders - simplify names
-      if (formatted.match(/^grade(\d+)$/)) {
-        return formatted.replace(/grade(\d+)/, 'Grade $1');
-      }
-      if (formatted.match(/^grade(\d+)-subjects$/)) {
-        return formatted.replace(/grade(\d+)-subjects/, 'Grade $1');
-      }
-      
-      // Standards
-      if (formatted === 'standards') return 'Standards';
+  const formatFolderName = (name: string): string => {
+    // Handle special cases first
+    if (name === 'kindergarten') return 'Kindergarten';
+    if (name === 'standards') return 'Standards';
+    
+    // Handle grade folders
+    if (name.match(/^grade(\d+)$/)) {
+      return name.replace(/grade(\d+)/, 'Grade $1');
     }
-
+    if (name.match(/^grade(\d+)-subjects$/)) {
+      return name.replace(/grade(\d+)-subjects/, 'Grade $1 Subjects');
+    }
+    
     // Convert kebab-case to Title Case
-    formatted = formatted
-      .replace(/-/g, ' ')
-      .replace(/\b\w/g, c => c.toUpperCase());
-
-    // If it's empty after processing, return original
-    return formatted.trim() || name;
+    return name
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   const isFileInfo = (value: any): value is FileInfo => {
     return value && typeof value === 'object' && value.type === 'file';
+  };
+
+  const shouldShowFile = (key: string): boolean => {
+    // Don't show layout, loading, or error files
+    const excludeFiles = ['layout.tsx', 'loading.tsx', 'error.tsx', 'not-found.tsx'];
+    return !excludeFiles.includes(key);
+  };
+
+  const hasValidChildren = (node: TreeNode): boolean => {
+    return Object.entries(node).some(([key, value]) => {
+      if (isFileInfo(value)) {
+        return shouldShowFile(key);
+      }
+      return hasValidChildren(value as TreeNode);
+    });
   };
 
   const handleFileClick = (route: string, e: React.MouseEvent) => {
@@ -96,6 +98,10 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
   // Custom sort function to put Kindergarten first, then grades in order
   const sortEntries = (entries: [string, any][]): [string, any][] => {
     return entries.sort(([keyA], [keyB]) => {
+      // Skip non-displayable files
+      if (!shouldShowFile(keyA)) return 1;
+      if (!shouldShowFile(keyB)) return -1;
+      
       // Kindergarten always first
       if (keyA === 'kindergarten') return -1;
       if (keyB === 'kindergarten') return 1;
@@ -124,16 +130,20 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     const sortedEntries = sortEntries(Object.entries(node));
 
     sortedEntries.forEach(([key, value]) => {
+      if (!shouldShowFile(key) && isFileInfo(value)) {
+        return; // Skip layout/loading/error files
+      }
+
       const currentPath = path ? `${path}/${key}` : key;
       const isExpanded = expandedNodes.has(currentPath);
       const indentation = level * 12;
 
       if (isFileInfo(value)) {
-        // It's a file - only show if it has meaningful content
-        const displayName = formatName(key, false);
+        // It's a file - use the name from the FileInfo object
+        const displayName = value.name;
         
-        // Skip if display name is empty or just whitespace
-        if (!displayName.trim()) return;
+        // Skip if display name is empty
+        if (!displayName || !displayName.trim() || displayName === 'Index') return;
 
         const isActive = location.pathname === value.route;
         
@@ -154,10 +164,11 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
         );
       } else {
         // It's a directory
-        const hasChildren = Object.keys(value).length > 0;
-        if (!hasChildren) return; // Skip empty folders
+        if (!hasValidChildren(value as TreeNode)) {
+          return; // Skip folders with no valid children
+        }
 
-        const displayName = formatName(key, true);
+        const displayName = formatFolderName(key);
         
         elements.push(
           <div key={currentPath}>
@@ -178,7 +189,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
                 {displayName}
               </span>
             </button>
-            {isExpanded && hasChildren && (
+            {isExpanded && (
               <div className="mt-1">
                 {renderTree(value as TreeNode, currentPath, level + 1)}
               </div>
