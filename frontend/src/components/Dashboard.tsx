@@ -541,9 +541,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     >
                       {tool.name}
                     </p>
-                    <p className="text-xs text-gray-400 whitespace-nowrap">
-                      {count}/{MAX_TABS_PER_TYPE} open
-                    </p>
+                    {tool.type !== 'analytics' && (
+                      <p className="text-xs text-gray-400 whitespace-nowrap">
+                        {count}/{MAX_TABS_PER_TYPE} open
+                      </p>
+                    )}
                   </div>
                 )}
               </button>

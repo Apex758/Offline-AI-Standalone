@@ -37,10 +37,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     crossCurricularPlans: 0
   });
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('Teacher');
   const [isAlreadyOpen, setIsAlreadyOpen] = useState(false);
   const ANALYTICS_DASHBOARD_OPEN_KEY = 'analyticsDashboardOpen';
 
   useEffect(() => {
+    // Load user name from localStorage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        setUserName(user.name || user.username || 'Teacher');
+    }
+
     if (localStorage.getItem(ANALYTICS_DASHBOARD_OPEN_KEY)) {
       setIsAlreadyOpen(true);
     } else {
@@ -213,7 +221,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-center mb-4">
             <BarChart3 className="w-12 h-12 mr-4" />
             <div>
-              <h1 className="text-4xl font-bold">Welcome Back, Teacher!</h1>
+              <h1 className="text-4xl font-bold">Welcome Back, {userName}!</h1>
               <p className="text-blue-100 mt-2">Your Teaching Resource Hub</p>
             </div>
           </div>

@@ -95,18 +95,18 @@ class ChatHistory(BaseModel):
     messages: List[Message]
 
 @app.post("/api/login")
-async def login(request: LoginRequest):
-    if request.username and request.password:
-        return {
-            "success": True,
-            "user": {
-                "id": "1",
-                "username": request.username,
-                "name": request.username.title()
-            },
-            "token": "demo_token_123"
-        }
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+async def login(credentials: dict):
+    username = credentials.get("username")
+    password = credentials.get("password")
+    
+    return {
+        "success": True,
+        "user": {
+            "username": username,
+            "name": username.replace("_", " ").title()  
+        },
+        "token": "some_token_here"
+    }
 
 @app.get("/api/chat-history")
 async def get_chat_history():
