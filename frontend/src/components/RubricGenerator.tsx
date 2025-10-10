@@ -31,21 +31,80 @@ interface FormData {
 const formatRubricText = (text: string) => {
   if (!text) return null;
 
+  // CRITICAL: Clean out ALL llama model metadata
   let cleanText = text;
-  if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
-    cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
+  
+  // Remove everything before the actual content starts
+  const contentMarkers = [
+    'GRADING RUBRIC',
+    'Rubric',
+    'Assignment:',
+    'Performance Level',
+    'Criteria',
+    '**'
+  ];
+  
+  // Find where actual content starts
+  let startIndex = 0;
+  for (const marker of contentMarkers) {
+    const idx = cleanText.indexOf(marker);
+    if (idx !== -1 && (startIndex === 0 || idx < startIndex)) {
+      // Look backwards for any model metadata
+      const beforeMarker = cleanText.substring(Math.max(0, idx - 500), idx);
+      if (beforeMarker.includes('llama') || beforeMarker.includes('build:') || beforeMarker.includes('main:')) {
+        startIndex = idx;
+      }
+    }
   }
+  
+  if (startIndex > 0) {
+    cleanText = cleanText.substring(startIndex);
+  }
+  
+  // Remove common llama model output patterns
+  cleanText = cleanText
+    .replace(/build: \d+ \([a-f0-9]+\).*/gi, '')
+    .replace(/main: .*/gi, '')
+    .replace(/llama_.*/gi, '')
+    .replace(/.*GGUF.*/gi, '')
+    .replace(/.*backend.*/gi, '')
+    .replace(/.*loader:.*/gi, '')
+    .replace(/.*kv \d+:.*/gi, '')
+    .replace(/.*metadata.*/gi, '')
+    .replace(/.*dumping.*/gi, '')
+    .replace(/.*overrides.*/gi, '')
+    .trim();
 
+  // Remove any remaining system messages at the start
   const lines = cleanText.split('\n');
+  let contentStartLine = 0;
+  for (let i = 0; i < Math.min(20, lines.length); i++) {
+    const line = lines[i].toLowerCase();
+    if (line.includes('llama') || line.includes('build') || line.includes('main:') || 
+        line.includes('loader') || line.includes('backend') || line.includes('gguf')) {
+      contentStartLine = i + 1;
+    } else if (lines[i].trim().length > 0) {
+      break;
+    }
+  }
+  
+  const filteredLines = lines.slice(contentStartLine);
   const elements: JSX.Element[] = [];
   let currentIndex = 0;
-  let inTable = false;
 
-  lines.forEach((line) => {
+  filteredLines.forEach((line) => {
     const trimmed = line.trim();
     
     if (!trimmed) {
       elements.push(<div key={`space-${currentIndex++}`} className="h-3"></div>);
+      return;
+    }
+
+    // Skip any remaining metadata lines
+    if (trimmed.toLowerCase().includes('llama') || 
+        trimmed.toLowerCase().includes('build:') ||
+        trimmed.toLowerCase().includes('backend') ||
+        trimmed.includes('kv ')) {
       return;
     }
 
@@ -64,19 +123,19 @@ const formatRubricText = (text: string) => {
     if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
       const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <h3 key={`subsection-${currentIndex++}`} className="text-lg font-semibold text-amber-700 mt-6 mb-3">
+        <h3 key={`subsection-${currentIndex++}`} className="text-lg font-semibold text-amber-700 mt-6 mb-3 bg-amber-50 px-3 py-2 rounded-lg border-l-4 border-amber-500">
           {title}:
         </h3>
       );
       return;
     }
 
-    // Criteria levels (e.g., "Excellent (4 points):")
-    if (trimmed.match(/^(Excellent|Proficient|Developing|Beginning|Outstanding|Good|Fair|Needs Improvement).*:/i)) {
+    // Criteria levels with special highlighting
+    if (trimmed.match(/^(Excellent|Proficient|Developing|Beginning|Outstanding|Good|Satisfactory|Fair|Needs Improvement|Advanced|Basic).*:/i)) {
       elements.push(
-        <div key={`criteria-${currentIndex++}`} className="mt-4 mb-2">
-          <div className="bg-amber-100 border-l-4 border-amber-500 p-3 rounded-r-lg">
-            <h4 className="font-bold text-amber-900">{trimmed}</h4>
+        <div key={`criteria-${currentIndex++}`} className="mt-4 mb-3">
+          <div className="bg-gradient-to-r from-amber-100 to-orange-50 border-l-4 border-amber-600 p-4 rounded-r-lg shadow-sm">
+            <h4 className="font-bold text-amber-900 text-lg">{trimmed}</h4>
           </div>
         </div>
       );
@@ -85,20 +144,19 @@ const formatRubricText = (text: string) => {
 
     // Table detection (contains | characters)
     if (trimmed.includes('|')) {
-      if (!inTable) {
-        inTable = true;
-      }
-      
       const cells = trimmed.split('|').map(cell => cell.trim()).filter(cell => cell.length > 0);
       
-      // Check if it's a separator row (contains dashes)
+      // Skip separator rows
       if (trimmed.includes('---')) {
-        return; // Skip separator rows
+        return;
       }
       
       if (cells.length > 0) {
+        const isHeaderRow = currentIndex < 3;
         elements.push(
-          <div key={`table-row-${currentIndex++}`} className="grid grid-cols-${cells.length} gap-2 border-b border-amber-200 py-2">
+          <div key={`table-row-${currentIndex++}`} 
+               className={`grid gap-2 py-3 px-2 border-b border-amber-200 ${isHeaderRow ? 'bg-amber-100 font-semibold' : 'hover:bg-amber-50'}`}
+               style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>
             {cells.map((cell, idx) => (
               <div key={idx} className={`px-2 ${idx === 0 ? 'font-semibold text-amber-900' : 'text-gray-700'}`}>
                 {cell}
@@ -108,13 +166,11 @@ const formatRubricText = (text: string) => {
         );
       }
       return;
-    } else {
-      inTable = false;
     }
 
     // Bullet points
-    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
-      const content = trimmed.replace(/^\s*\*\s+/, '');
+    if (trimmed.match(/^\s*[\*\-•]\s+/) && !trimmed.startsWith('**')) {
+      const content = trimmed.replace(/^\s*[\*\-•]\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
           <span className="text-amber-500 mr-3 mt-1.5 font-bold text-sm">•</span>
@@ -240,7 +296,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       try {
         const ws = new WebSocket('ws://localhost:8000/ws/rubric');
         
-        ws.onopen = () => console.log('Rubric WebSocket connected');
+        ws.onopen = () => {
+          console.log('Rubric WebSocket connected');
+        };
         
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
@@ -265,7 +323,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         ws.onclose = () => {
           console.log('WebSocket closed');
           wsRef.current = null;
-          if (shouldReconnectRef.current) {
+          if (shouldReconnectRef.current && !loading) {
             reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
           }
         };
@@ -520,7 +578,7 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
             <div className="flex-1 overflow-y-auto bg-white p-6">
               {(streamingRubric || generatedRubric) && (
                 <div className="mb-8">
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-700"></div>
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500/90 to-orange-600/90"></div>
                     
@@ -586,7 +644,7 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
               )}
 
               <div className="prose prose-lg max-w-none">
-                <div className="space-y-1">
+                <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                   {formatRubricText(streamingRubric || generatedRubric)}
                   {loading && streamingRubric && (
                     <span className="inline-flex items-center ml-1">
