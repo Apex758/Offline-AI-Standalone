@@ -16,17 +16,17 @@ export interface Message {
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'split' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner';
+  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'split' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics';
   active: boolean;
   data?: any;
-  splitTabs?: [string, string]; // IDs of tabs in split view
+  splitTabs?: [string, string];
 }
 
 export interface Tool {
   id: string;
   name: string;
   icon: string;
-  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner';
+  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics';
   description: string;
-  group?: string; // For grouping tools in sidebar
+  group?: string;
 }

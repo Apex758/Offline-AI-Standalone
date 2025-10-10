@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, MessageSquare, ClipboardCheck, BookOpen, FileText, LogOut, Plus, Columns, ChevronDown, ChevronRight, GraduationCap, ListChecks, BookMarked, School, Users } from 'lucide-react';
+import { 
+  Menu, 
+  X, 
+  MessageSquare, 
+  ClipboardCheck, 
+  BookOpen, 
+  FileText, 
+  LogOut, 
+  Plus, 
+  Columns, 
+  ChevronDown, 
+  ChevronRight, 
+  GraduationCap, 
+  ListChecks, 
+  BookMarked, 
+  School, 
+  Users, 
+  BarChart3 
+} from 'lucide-react';
+
 import { User, Tab, Tool } from '../types';
 import Chat from './Chat';
 import LessonPlanner from './LessonPlanner';
@@ -9,6 +28,7 @@ import RubricGenerator from './RubricGenerator';
 import MultigradePlanner from './MultigradePlanner';
 import KindergartenPlanner from './KindergartenPlanner';
 import CrossCurricularPlanner from './CrossCurricularPlanner';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 interface DashboardProps {
   user: User;
@@ -16,6 +36,13 @@ interface DashboardProps {
 }
 
 const tools: Tool[] = [
+  {
+    id: 'analytics',
+    name: 'Dashboard',
+    icon: 'BarChart3',
+    type: 'analytics',
+    description: 'View your teaching analytics and quick access'
+  },
   {
     id: 'chat',
     name: 'Chat with AI',
@@ -97,7 +124,8 @@ const iconMap: { [key: string]: any } = {
   ListChecks,
   BookMarked,
   School,
-  Users
+  Users,
+  BarChart3
 };
 
 const MAX_TABS_PER_TYPE = 3;
@@ -163,11 +191,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
 
+
   const getTabCountByType = (type: string) => {
     return tabs.filter(tab => tab.type === type && tab.type !== 'split').length;
   };
 
   const openTool = (tool: Tool) => {
+    if (tool.type === 'analytics') {
+      const existingAnalyticsTab = tabs.find(tab => tab.type === 'analytics');
+      if (existingAnalyticsTab) {
+        setActiveTabId(existingAnalyticsTab.id);
+        return;
+      }
+    }
+
     const currentCount = getTabCountByType(tool.type);
     if (currentCount >= MAX_TABS_PER_TYPE) {
       alert(`Maximum of ${MAX_TABS_PER_TYPE} ${tool.name} tabs allowed at once.`);
@@ -301,6 +338,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const renderSingleTabContent = (tab: Tab) => {
     switch (tab.type) {
+      case 'analytics':
+        return (
+          <AnalyticsDashboard 
+            tabId={tab.id} 
+            savedData={tab.data} 
+            onDataChange={(data) => updateTabData(tab.id, data)}
+            onNavigate={(route) => {
+              // Handle navigation to curriculum or opening other tools
+              if (route.startsWith('/curriculum')) {
+                // Open curriculum tab
+                const curriculumTool = tools.find(t => t.type === 'curriculum');
+                if (curriculumTool) openTool(curriculumTool);
+              }
+            }}
+          />
+        );
       case 'chat':
         return (
           <Chat 

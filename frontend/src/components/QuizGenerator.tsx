@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X } from 'lucide-react';
+import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
 import axios from 'axios';
 
 interface QuizGeneratorProps {
@@ -129,6 +129,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  // Add new states for editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && Object.keys(saved).length > 0 && saved.subject) {
@@ -153,6 +158,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const grades = ['K', '1', '2', '3', '4', '5', '6'];
   const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
   const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
+
+  // Initialize edited content when quiz is generated
+  useEffect(() => {
+    if (generatedQuiz && !editedContent) {
+      setEditedContent(generatedQuiz);
+    }
+  }, [generatedQuiz]);
 
   useEffect(() => {
     const saved = savedData?.formData;
@@ -242,6 +254,35 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     };
   }, []);
 
+  // Enable editing mode
+  const enableEditing = () => {
+    setEditedContent(generatedQuiz);
+    setIsEditing(true);
+  };
+
+  // Save edited content
+  const saveEditedContent = () => {
+    setGeneratedQuiz(editedContent);
+    setIsEditing(false);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditedContent(generatedQuiz);
+    setIsEditing(false);
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(editedContent || generatedQuiz);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
   const loadQuizHistories = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/quiz-history');
@@ -251,8 +292,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   };
 
+  // Update saveQuiz to use edited content
   const saveQuiz = async () => {
-    if (!generatedQuiz) {
+    const contentToSave = isEditing ? editedContent : generatedQuiz;
+    if (!contentToSave) {
       alert('No quiz to save');
       return;
     }
@@ -264,7 +307,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         title: `${formData.subject} Quiz - Grade ${formData.gradeLevel} (${formData.numberOfQuestions} questions)`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedQuiz: generatedQuiz
+        generatedQuiz: contentToSave
       };
 
       if (!currentQuizId) {
@@ -275,12 +318,44 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       await loadQuizHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
+      
+      // If we were editing, exit editing mode after save
+      if (isEditing) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Failed to save quiz:', error);
       alert('Failed to save quiz');
       setSaveStatus('idle');
     }
   };
+
+  // Update exportQuiz to use edited content
+  const exportQuiz = () => {
+    const contentToExport = isEditing ? editedContent : generatedQuiz;
+    if (!contentToExport) return;
+
+    const content = `QUIZ
+${formData.subject} - Grade ${formData.gradeLevel}
+${formData.numberOfQuestions} Questions
+Generated: ${new Date().toLocaleDateString()}
+
+${contentToExport}`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    loadQuizHistories();
+  }, []);
 
   const loadQuizHistory = (history: QuizHistory) => {
     setFormData(history.formData);
@@ -303,31 +378,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       console.error('Failed to delete quiz:', error);
     }
   };
-
-  const exportQuiz = () => {
-    if (!generatedQuiz) return;
-
-    const content = `QUIZ
-${formData.subject} - Grade ${formData.gradeLevel}
-${formData.numberOfQuestions} Questions
-Generated: ${new Date().toLocaleDateString()}
-
-${generatedQuiz}`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  useEffect(() => {
-    loadQuizHistories();
-  }, []);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -392,6 +442,8 @@ Please generate a well-structured quiz with clear questions, answer choices (for
     setGeneratedQuiz('');
     setStreamingQuiz('');
     setCurrentQuizId(null);
+    setIsEditing(false);
+    setEditedContent('');
   };
 
   const validateForm = () => {
@@ -402,46 +454,91 @@ Please generate a well-structured quiz with clear questions, answer choices (for
   return (
     <div className="flex h-full bg-white relative">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedQuiz || streamingQuiz) ? (
+        {(generatedQuiz || streamingQuiz || isEditing) ? (
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Quiz...' : 'Generated Quiz'}
+                  {loading ? 'Generating Quiz...' : 
+                   isEditing ? 'Editing Quiz' : 'Generated Quiz'}
                 </h2>
                 <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
               </div>
               {!loading && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={saveQuiz}
-                    disabled={saveStatus === 'saving'}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-                  >
-                    {saveStatus === 'saving' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === 'saved' ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Saved!
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Quiz
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={exportQuiz}
-                    className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={cancelEditing}
+                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveEditedContent}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Save Edits
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={enableEditing}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={copyToClipboard}
+                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                      >
+                        {copyStatus === 'copied' ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={saveQuiz}
+                        disabled={saveStatus === 'saving'}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                      >
+                        {saveStatus === 'saving' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : saveStatus === 'saved' ? (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Quiz
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={exportQuiz}
+                        className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -453,8 +550,9 @@ Please generate a well-structured quiz with clear questions, answer choices (for
                     onClick={() => {
                       setGeneratedQuiz('');
                       setStreamingQuiz('');
+                      setIsEditing(false);
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                   >
                     Create New Quiz
                   </button>
@@ -463,7 +561,7 @@ Please generate a well-structured quiz with clear questions, answer choices (for
             </div>
             
             <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingQuiz || generatedQuiz) && (
+              {(streamingQuiz || generatedQuiz) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-cyan-600 to-blue-700"></div>
@@ -527,14 +625,37 @@ Please generate a well-structured quiz with clear questions, answer choices (for
               )}
 
               <div className="prose prose-lg max-w-none">
-                <div className="space-y-1">
-                  {formatQuizText(streamingQuiz || generatedQuiz)}
-                  {loading && streamingQuiz && (
-                    <span className="inline-flex items-center ml-1">
-                      <span className="w-0.5 h-5 bg-cyan-500 animate-pulse rounded-full"></span>
-                    </span>
-                  )}
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Edit your quiz:
+                      </label>
+                      <div className="text-sm text-gray-500">
+                        {editedContent.length} characters
+                      </div>
+                    </div>
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-vertical"
+                      placeholder="Edit your quiz content here..."
+                    />
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>You can format using markdown-style **bold** and *italic*</span>
+                      <span>Lines will be preserved in the final output</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {formatQuizText(streamingQuiz || generatedQuiz)}
+                    {loading && streamingQuiz && (
+                      <span className="inline-flex items-center ml-1">
+                        <span className="w-0.5 h-5 bg-cyan-500 animate-pulse rounded-full"></span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {loading && (
@@ -555,6 +676,7 @@ Please generate a well-structured quiz with clear questions, answer choices (for
             </div>
           </>
         ) : (
+          // ... (keep the existing form JSX exactly as it is)
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between">
               <div>
