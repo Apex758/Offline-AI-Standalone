@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, Users, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X } from 'lucide-react';
+import axios from 'axios';
 
 interface MultigradePlannerProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+}
+
+interface MultigradeHistory {
+  id: string;
+  title: string;
+  timestamp: string;
+  formData: FormData;
+  generatedPlan: string;
 }
 
 interface FormData {
@@ -28,9 +37,111 @@ interface FormData {
   differentiationNotes: string;
 }
 
+const formatMultigradeText = (text: string) => {
+  if (!text) return null;
+
+  let cleanText = text;
+  if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
+    cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
+  }
+
+  const lines = cleanText.split('\n');
+  const elements: JSX.Element[] = [];
+  let currentIndex = 0;
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    
+    if (!trimmed) {
+      elements.push(<div key={`space-${currentIndex++}`} className="h-3"></div>);
+      return;
+    }
+
+    // Main section headings
+    if (trimmed.match(/^\*\*(.+)\*\*$/)) {
+      const title = trimmed.replace(/\*\*/g, '');
+      elements.push(
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-indigo-900 mt-8 mb-4 pb-2 border-b border-indigo-200">
+          {title}
+        </h2>
+      );
+      return;
+    }
+
+    // Field labels
+    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
+      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
+      elements.push(
+        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold text-indigo-700 mt-6 mb-3 bg-indigo-50 px-3 py-2 rounded-lg border-l-4 border-indigo-500">
+          {title}:
+        </h3>
+      );
+      return;
+    }
+
+    // Grade level sections with special highlighting
+    if (trimmed.match(/^(Grade|Kindergarten|Differentiated Activities|Extension Activities).*:/i)) {
+      elements.push(
+        <div key={`grade-${currentIndex++}`} className="mt-4 mb-3">
+          <div className="bg-gradient-to-r from-indigo-100 to-purple-50 border-l-4 border-indigo-600 p-4 rounded-r-lg shadow-sm">
+            <h4 className="font-bold text-indigo-900 text-lg">{trimmed}</h4>
+          </div>
+        </div>
+      );
+      return;
+    }
+
+    // Bullet points
+    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
+      const content = trimmed.replace(/^\s*\*\s+/, '');
+      elements.push(
+        <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
+          <span className="text-indigo-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="text-gray-700 leading-relaxed">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Numbered items
+    if (trimmed.match(/^\d+\./)) {
+      const number = trimmed.match(/^\d+\./)?.[0] || '';
+      const content = trimmed.replace(/^\d+\.\s*/, '');
+      elements.push(
+        <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
+          <span className="text-indigo-600 mr-3 font-semibold min-w-[2rem] bg-indigo-50 rounded px-2 py-1 text-sm">
+            {number}
+          </span>
+          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Regular paragraphs
+    if (trimmed.length > 0) {
+      elements.push(
+        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+          {trimmed}
+        </p>
+      );
+    }
+  });
+
+  return elements;
+};
+
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
+  const shouldReconnectRef = useRef(true);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [multigradeHistories, setMultigradeHistories] = useState<MultigradeHistory[]>([]);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [step, setStep] = useState(savedData?.step || 1);
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && Object.keys(saved).length > 0 && saved.subject) {
@@ -59,6 +170,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
+  const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
 
   const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Art', 'Music', 'Physical Education'];
   
@@ -113,17 +225,170 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         differentiationNotes: ''
       });
       setGeneratedPlan('');
+      setStreamingPlan('');
       setStep(1);
     } else {
       setFormData(saved);
       setGeneratedPlan(savedData?.generatedPlan || '');
+      setStreamingPlan(savedData?.streamingPlan || '');
       setStep(savedData?.step || 1);
     }
   }, [tabId]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, step });
-  }, [formData, generatedPlan, step]);
+    onDataChange({ formData, generatedPlan, streamingPlan, step });
+  }, [formData, generatedPlan, streamingPlan, step]);
+
+  useEffect(() => {
+    shouldReconnectRef.current = true;
+
+    const connectWebSocket = () => {
+      if (!shouldReconnectRef.current) return;
+
+      try {
+        const ws = new WebSocket('ws://localhost:8000/ws/multigrade');
+        
+        ws.onopen = () => {
+          console.log('Multigrade WebSocket connected');
+        };
+        
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'token') {
+            setStreamingPlan(prev => prev + data.content);
+          } else if (data.type === 'done') {
+            setStreamingPlan(current => {
+              const finalMessage = current || data.full_response;
+              setGeneratedPlan(finalMessage);
+              setLoading(false);
+              return '';
+            });
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setLoading(false);
+        };
+        
+        ws.onclose = () => {
+          console.log('WebSocket closed');
+          wsRef.current = null;
+          if (shouldReconnectRef.current && !loading) {
+            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
+          }
+        };
+        
+        wsRef.current = ws;
+      } catch (error) {
+        console.error('Failed to create WebSocket:', error);
+        if (shouldReconnectRef.current) {
+          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
+        }
+      }
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      shouldReconnectRef.current = false;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+      wsRef.current = null;
+    };
+  }, []);
+
+  const loadMultigradeHistories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/multigrade-history');
+      setMultigradeHistories(response.data);
+    } catch (error) {
+      console.error('Failed to load multigrade histories:', error);
+    }
+  };
+
+  const savePlan = async () => {
+    if (!generatedPlan) {
+      alert('No plan to save');
+      return;
+    }
+
+    setSaveStatus('saving');
+    try {
+      const planData = {
+        id: currentPlanId || `multigrade_${Date.now()}`,
+        title: `${formData.subject} - ${formData.topic} (${formData.gradeRange})`,
+        timestamp: new Date().toISOString(),
+        formData: formData,
+        generatedPlan: generatedPlan
+      };
+
+      if (!currentPlanId) {
+        setCurrentPlanId(planData.id);
+      }
+
+      await axios.post('http://localhost:8000/api/multigrade-history', planData);
+      await loadMultigradeHistories();
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      console.error('Failed to save multigrade plan:', error);
+      alert('Failed to save multigrade plan');
+      setSaveStatus('idle');
+    }
+  };
+
+  const loadMultigradeHistory = (history: MultigradeHistory) => {
+    setFormData(history.formData);
+    setGeneratedPlan(history.generatedPlan);
+    setCurrentPlanId(history.id);
+    setHistoryOpen(false);
+  };
+
+  const deleteMultigradeHistory = async (planId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this multigrade plan?')) return;
+    
+    try {
+      await axios.delete(`http://localhost:8000/api/multigrade-history/${planId}`);
+      await loadMultigradeHistories();
+      if (currentPlanId === planId) {
+        clearForm();
+      }
+    } catch (error) {
+      console.error('Failed to delete multigrade plan:', error);
+    }
+  };
+
+  const exportPlan = () => {
+    if (!generatedPlan) return;
+
+    const content = `MULTIGRADE LESSON PLAN
+${formData.subject} - ${formData.gradeRange}
+${formData.topic}
+Generated: ${new Date().toLocaleDateString()}
+
+${generatedPlan}`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `multigrade-${formData.topic.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    loadMultigradeHistories();
+  }, []);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -152,12 +417,54 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   const generatePlan = () => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      alert('Connection not established. Please wait and try again.');
+      return;
+    }
+
     setLoading(true);
-    // TODO: Implement WebSocket connection for streaming
-    setTimeout(() => {
-      setGeneratedPlan('Multigrade plan generation will be implemented with backend');
+    setStreamingPlan('');
+
+    const prompt = `Generate a comprehensive multigrade lesson plan with the following specifications:
+
+MULTIGRADE INFORMATION:
+- Subject: ${formData.subject}
+- Grade Range: ${formData.gradeRange}
+- Topic: ${formData.topic}
+- Total Students: ${formData.totalStudents}
+- Duration: ${formData.duration} minutes
+- Date: ${new Date().toLocaleDateString()}
+
+CURRICULUM ALIGNMENT:
+Essential Learning Outcomes: ${formData.essentialLearningOutcomes}
+
+Specific Learning Objectives: ${formData.specificLearningObjectives}
+
+${formData.prerequisiteSkills ? `PREREQUISITE SKILLS:\n${formData.prerequisiteSkills}\n` : ''}
+
+RESOURCES:
+- Materials: ${formData.materials}
+
+TEACHING APPROACH:
+- Learning Styles: ${formData.learningStyles.join(', ')}
+- Learning Preferences: ${formData.learningPreferences.join(', ')}
+- Multiple Intelligences: ${formData.multipleIntelligences.join(', ')}
+${formData.customLearningStyles ? `- Custom Learning Styles: ${formData.customLearningStyles}` : ''}
+- Pedagogical Strategies: ${formData.pedagogicalStrategies.join(', ')}
+- Multigrade Strategies: ${formData.multigradeStrategies.join(', ')}
+
+${formData.specialNeeds ? `SPECIAL NEEDS ACCOMMODATIONS:\n${formData.specialNeedsDetails}\n` : ''}
+
+${formData.differentiationNotes ? `DIFFERENTIATION NOTES:\n${formData.differentiationNotes}\n` : ''}
+
+Please generate a detailed multigrade lesson plan with clear differentiation strategies for each grade level, flexible grouping approaches, and activities that can be implemented simultaneously across multiple grades. Include specific learning objectives and activities tailored to each grade level within the range.`;
+
+    try {
+      wsRef.current.send(JSON.stringify({ prompt }));
+    } catch (error) {
+      console.error('Failed to send multigrade plan request:', error);
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const clearForm = () => {
@@ -182,37 +489,188 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       differentiationNotes: ''
     });
     setGeneratedPlan('');
+    setStreamingPlan('');
+    setCurrentPlanId(null);
     setStep(1);
   };
 
   return (
-    <div className="flex h-full bg-white">
-      <div className="flex-1 flex flex-col">
-        {generatedPlan ? (
+    <div className="flex h-full bg-white relative">
+      <div className="flex-1 flex flex-col bg-white">
+        {(generatedPlan || streamingPlan) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Generated Multigrade Plan</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {loading ? 'Generating Multigrade Plan...' : 'Generated Multigrade Plan'}
+                </h2>
                 <p className="text-sm text-gray-500">{formData.subject} - {formData.gradeRange}</p>
               </div>
-              <button
-                onClick={() => setGeneratedPlan('')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Create New Plan
-              </button>
+              {!loading && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={savePlan}
+                    disabled={saveStatus === 'saving'}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                  >
+                    {saveStatus === 'saving' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveStatus === 'saved' ? (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Saved!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Plan
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={exportPlan}
+                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </button>
+                  <button
+                    onClick={() => setHistoryOpen(!historyOpen)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition"
+                    title="Multigrade Plan History"
+                  >
+                    <History className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setGeneratedPlan('');
+                      setStreamingPlan('');
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Create New Plan
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex-1 overflow-y-auto p-8">
-              <div className="prose max-w-none">
-                {generatedPlan}
+            
+            <div className="flex-1 overflow-y-auto bg-white p-6">
+              {(streamingPlan || generatedPlan) && (
+                <div className="mb-8">
+                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-700"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/90 to-blue-600/90"></div>
+                    
+                    <div className="relative px-8 py-8">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
+                            <span className="text-white text-sm font-medium">{formData.subject}</span>
+                          </div>
+                          
+                          <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
+                            {formData.topic ? `${formData.topic} - Multigrade` : 'Multigrade Lesson Plan'}
+                          </h1>
+                          
+                          <div className="flex flex-wrap items-center gap-4 text-indigo-100">
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-indigo-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.gradeRange}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-indigo-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.totalStudents} students</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-indigo-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.duration} minutes</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-indigo-200 rounded-full mr-2"></div>
+                              <span className="text-sm">{formData.multigradeStrategies.length} strategies</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {loading && (
+                          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                            <div className="flex items-center text-white">
+                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              <div>
+                                <div className="text-sm font-medium">Generating...</div>
+                                <div className="text-xs text-indigo-100">AI-powered multigrade plan</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="mt-6 pt-4 border-t border-white/20">
+                        <div className="flex items-center justify-between">
+                          <div className="text-indigo-100 text-sm">
+                            <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
+                          </div>
+                          {!loading && (
+                            <div className="flex items-center text-green-200 text-sm">
+                              <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
+                              <span>Generation Complete</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                  </div>
+                </div>
+              )}
+
+              <div className="prose prose-lg max-w-none">
+                <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                  {formatMultigradeText(streamingPlan || generatedPlan)}
+                  {loading && streamingPlan && (
+                    <span className="inline-flex items-center ml-1">
+                      <span className="w-0.5 h-5 bg-indigo-500 animate-pulse rounded-full"></span>
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {loading && (
+                <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-indigo-900 font-medium">Creating your multigrade plan</div>
+                      <div className="text-indigo-600 text-sm mt-1">Differentiated activities for multiple grade levels</div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-indigo-400 rounded-full animate-bounce"></div>
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-3 h-3 bg-indigo-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
           <>
-            <div className="border-b border-gray-200 p-4">
-              <h2 className="text-xl font-semibold text-gray-800">Create Multigrade Lesson Plan</h2>
-              <p className="text-sm text-gray-500">Design a lesson that addresses multiple grade levels simultaneously</p>
+            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Create Multigrade Lesson Plan</h2>
+                <p className="text-sm text-gray-500">Design a lesson that addresses multiple grade levels simultaneously</p>
+              </div>
+              <button
+                onClick={() => setHistoryOpen(!historyOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                title="Multigrade Plan History"
+              >
+                <History className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
 
             {/* Progress Steps */}
@@ -561,7 +1019,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   ) : (
                     <button
                       onClick={generatePlan}
-                      disabled={loading}
+                      disabled={loading || !validateStep()}
                       className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300"
                     >
                       {loading ? (
@@ -582,6 +1040,63 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             </div>
           </>
         )}
+      </div>
+
+      {/* History Panel */}
+      <div
+        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+          historyOpen ? 'w-80' : 'w-0'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-full flex flex-col p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Saved Multigrade Plans</h3>
+            <button
+              onClick={() => setHistoryOpen(false)}
+              className="p-1 rounded hover:bg-gray-200 transition"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
+            {multigradeHistories.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">No saved multigrade plans yet</p>
+              </div>
+            ) : (
+              multigradeHistories.map((history) => (
+                <div
+                  key={history.id}
+                  onClick={() => loadMultigradeHistory(history)}
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
+                    currentPlanId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                        {history.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => deleteMultigradeHistory(history.id, e)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                      title="Delete multigrade plan"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
