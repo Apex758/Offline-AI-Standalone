@@ -195,7 +195,7 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 600,
-    icon: path.join(__dirname, '../build/icon.ico'),
+    icon: path.join(__dirname, 'frontend/public/OECS.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

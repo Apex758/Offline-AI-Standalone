@@ -11,13 +11,15 @@ interface CurriculumViewerProps {
 }
 
 // Import all curriculum pages using Vite's glob import
-const allCurriculumPages = import.meta.glob('../curriculum/**/*.tsx');
+const allCurriculumPages = import.meta.glob('../curriculum/**/*.tsx', { eager: true });
 
 // Filter out dynamic route pages (containing [...])
 const curriculumPages = Object.keys(allCurriculumPages)
-  .filter(path => !path.includes('[') || !path.includes(']'))
+  .filter(path => !path.includes('[') && !path.includes(']'))
   .reduce((acc, key) => {
-    acc[key] = allCurriculumPages[key];
+    // With eager loading, modules are already loaded
+    const module = allCurriculumPages[key];
+    acc[key] = () => Promise.resolve(module);
     return acc;
   }, {} as Record<string, () => Promise<unknown>>);
 
@@ -44,18 +46,30 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   // Restore saved location on mount
   useEffect(() => {
     if (savedData?.currentPath && savedData.currentPath !== location.pathname) {
+      console.log('📍 Restoring path from savedData:', savedData.currentPath);
       navigate(savedData.currentPath, { replace: true });
     }
-  }, []);
+  }, [savedData?.currentPath]); 
 
   // Load component when route changes
   useEffect(() => {
     const loadComponent = async () => {
       setLoading(true);
       setError(null);
-      setCurrentComponent(null); // Clear previous component
+      setCurrentComponent(null);
       
-      let curriculumPath = location.pathname.replace('/curriculum/', '').replace('/curriculum', '');
+      // DECLARE curriculumPath FIRST!
+      let curriculumPath = '';
+      
+      // THEN assign to it
+      if (location.pathname === '/' || location.pathname === '') {
+        curriculumPath = '';
+      } else {
+        curriculumPath = location.pathname
+          .replace('/curriculum/', '')
+          .replace('/curriculum', '')
+          .replace(/^\//, '');
+      }
       
       // Check if this is a dynamic route (contains [...] pattern)
       if (curriculumPath.includes('[') && curriculumPath.includes(']')) {

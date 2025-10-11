@@ -38,12 +38,14 @@
     "appId": "com.oleducation.aisuite",
     "productName": "OLH AI Education Suite",
     "copyright": "Copyright © 2024 OLH Education",
+    "icon": "build/icon.png",
     "directories": {
       "output": "dist-electron"
     },
     "files": [
       "electron/**/*",
       "frontend/dist/**/*",
+      "frontend/src/curriculum/**/*",
       "backend-bundle/**/*",
       "package.json",
       "!backend/**/*",
@@ -58,7 +60,9 @@
       "!**/node_modules/*.d.ts",
       "!**/node_modules/.bin"
     ],
+
     "win": {
+      "icon": "build/icon.ico", 
       "target": [
         {
           "target": "nsis",

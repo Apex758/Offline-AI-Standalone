@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import curriculumTreeData from '../data/curriculumTree.json';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, FileText } from 'lucide-react';
 
@@ -26,16 +27,14 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
   const hasAutoExpandedRef = useRef(false);
 
   useEffect(() => {
-    import('../data/curriculumTree.json')
-      .then(module => {
-        console.log('Curriculum tree loaded:', module.default);
-        setTree(module.default);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Failed to load curriculum tree:', error);
-        setLoading(false);
-      });
+    try {
+      console.log('Curriculum tree loaded:', curriculumTreeData);
+      setTree(curriculumTreeData);
+    } catch (error) {
+      console.error('Failed to load curriculum tree:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // Auto-expand folders in current path ONLY on initial load
