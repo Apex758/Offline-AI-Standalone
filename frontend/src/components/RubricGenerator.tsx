@@ -1028,19 +1028,20 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        content={generatedRubric}
+        contentType="rubric"
+        onContentUpdate={(newContent) => {
+          setGeneratedRubric(newContent);
+          setEditedContent(newContent);
+        }}
+      />
     </div>
   );
-  {/* AI Assistant Panel */}
-  <AIAssistantPanel
-    isOpen={assistantOpen}
-    onClose={() => setAssistantOpen(false)}
-    content={generatedRubric}
-    contentType="rubric"
-    onContentUpdate={(newContent) => {
-      setGeneratedRubric(newContent);
-      setEditedContent(newContent);
-    }}
-  />
 };
 
 export default RubricGenerator;

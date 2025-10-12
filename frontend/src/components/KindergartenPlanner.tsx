@@ -1013,19 +1013,20 @@ Please create an engaging, play-based lesson plan with clear learning objectives
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        content={generatedPlan}
+        contentType="kindergarten"
+        onContentUpdate={(newContent) => {
+          setGeneratedPlan(newContent);
+          setEditedContent(newContent);
+        }}
+      />
     </div>
   );
-  {/* AI Assistant Panel */}
-  <AIAssistantPanel
-    isOpen={assistantOpen}
-    onClose={() => setAssistantOpen(false)}
-    content={generatedPlan}
-    contentType="kindergarten"
-    onContentUpdate={(newContent) => {
-      setGeneratedPlan(newContent);
-      setEditedContent(newContent);
-    }}
-  />
 };
 
 export default KindergartenPlanner;

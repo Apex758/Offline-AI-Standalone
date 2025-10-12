@@ -897,19 +897,20 @@ Please generate a well-structured quiz with clear questions, answer choices (for
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        content={generatedQuiz}
+        contentType="quiz"
+        onContentUpdate={(newContent) => {
+          setGeneratedQuiz(newContent);
+          setEditedContent(newContent);
+        }}
+      />
     </div>
   );
-  {/* AI Assistant Panel */}
-  <AIAssistantPanel
-    isOpen={assistantOpen}
-    onClose={() => setAssistantOpen(false)}
-    content={generatedQuiz}
-    contentType="quiz"
-    onContentUpdate={(newContent) => {
-      setGeneratedQuiz(newContent);
-      setEditedContent(newContent);
-    }}
-  />
 };
 
 export default QuizGenerator;

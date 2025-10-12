@@ -1333,19 +1333,20 @@ ${contentToExport}`;
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        content={generatedPlan}
+        contentType="lesson"
+        onContentUpdate={(newContent) => {
+          setGeneratedPlan(newContent);
+          setEditedContent(newContent);
+        }}
+      />
     </div>
   );
-  {/* AI Assistant Panel */}
-  <AIAssistantPanel
-    isOpen={assistantOpen}
-    onClose={() => setAssistantOpen(false)}
-    content={generatedPlan}
-    contentType="lesson"
-    onContentUpdate={(newContent) => {
-      setGeneratedPlan(newContent);
-      setEditedContent(newContent);
-    }}
-  />
 };
 
 export default LessonPlanner;

@@ -1212,19 +1212,20 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        content={generatedPlan}
+        contentType="multigrade"
+        onContentUpdate={(newContent) => {
+          setGeneratedPlan(newContent);
+          setEditedContent(newContent);
+        }}
+      />
     </div>
   );
-  {/* AI Assistant Panel */}
-  <AIAssistantPanel
-    isOpen={assistantOpen}
-    onClose={() => setAssistantOpen(false)}
-    content={generatedPlan}
-    contentType="multigrade"
-    onContentUpdate={(newContent) => {
-      setGeneratedPlan(newContent);
-      setEditedContent(newContent);
-    }}
-  />
 };
 
 export default MultigradePlanner;
