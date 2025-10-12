@@ -22,5 +22,5 @@ Next steps:
 
 -Work on the grader ai.
 -Connect the curriculum with the lesson planners.
--Do some prompt engineering and response sanitation.
+-Do some prompt engineering 
 -Add the ability improve lesson plans using ai

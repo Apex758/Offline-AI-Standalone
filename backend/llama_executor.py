@@ -1,22 +1,42 @@
-from jina import Executor, requests
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+import subprocess
+import re
+import os
 
-class LlamaResponder(Executor):
-    def __init__(self, model_path="facebook/opt-125m", **kwargs):
-        super().__init__(**kwargs)
-        self.device = torch.device("cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_path, 
-            torch_dtype=torch.float32
-        ).to(self.device)
 
-    @requests
-    def respond(self, docs, **kwargs):
-        for doc in docs:
-            inputs = self.tokenizer(doc.text, return_tensors="pt").to(self.device)
-            outputs = self.model.generate(**inputs, max_new_tokens=200)
-            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            doc.text = response
-        return docs
+def run_llama(prompt: str) -> str:
+    """
+    Executes llama.cpp (llama-cli) with a given prompt
+    and filters out system log noise to return only model output.
+
+    All llama loader / metadata / system logs are redirected to a file (logs/llama.log)
+    while the cleaned natural language response is returned to the caller.
+    """
+    os.makedirs("logs", exist_ok=True)
+    log_file = open(os.path.join("logs", "llama.log"), "a", encoding="utf-8")
+
+    process = subprocess.Popen(
+        [
+            "llama-cli",
+            "--model",
+            "llama-3.2-1b-instruct-Q5_K_M.gguf",
+            "--prompt",
+            prompt,
+        ],
+        stdout=subprocess.PIPE,
+        stderr=log_file,
+        text=True,
+    )
+
+    raw_output, _ = process.communicate()
+
+    # Filter out unwanted system lines
+    clean_output = "\n".join(
+        line
+        for line in raw_output.splitlines()
+        if not re.match(r"^(llama_model_loader|print_info|main:|load:|build:)", line)
+    )
+
+    result = clean_output.strip()
+
+    log_file.close()
+    return result
