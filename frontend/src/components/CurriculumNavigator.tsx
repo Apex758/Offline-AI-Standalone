@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, FileText } from 'lucide-react';
 
 interface TreeNode {
-  [key: string]: TreeNode | FileInfo;
+  [key: string]: TreeNode | FileInfo | any;
 }
 
 interface FileInfo {
@@ -234,13 +234,23 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
     );
   }
 
+  const handleCollapseAll = () => {
+    setExpandedNodes(new Set());
+  };
+
   return (
     <div className="curriculum-navigator h-full overflow-y-auto">
       <div className="p-2">
-        <div className="mb-2 px-2">
+        <div className="mb-2 px-2 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Browse Curriculum
           </h3>
+          <button
+            onClick={handleCollapseAll}
+            className="text-[10px] px-2 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
+          >
+            Collapse All
+          </button>
         </div>
         {renderTree(tree)}
       </div>

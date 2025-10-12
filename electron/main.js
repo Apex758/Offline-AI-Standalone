@@ -195,7 +195,7 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 600,
-    icon: path.join(__dirname, 'frontend/public/OECS.png'),
+    icon: path.join('C:', 'Users', 'LG', 'Desktop', 'Offline AI Standalone', 'frontend', 'public', 'OECS.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
