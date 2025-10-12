@@ -7,11 +7,7 @@ py -m uvicorn main:app --reload --port 8000
 
 .\python-embed\python.exe build-scripts/package-backend.py
 
-npm run build:frontend
-
-npm run electron:build:portable
-
-
+.\build-release.ps1
 
 
 

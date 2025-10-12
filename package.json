@@ -35,10 +35,10 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-      "appId": "com.oecs.learninghub",
-      "productName": "OECS Learning Hub",
+    "appId": "com.oecs.learninghub",
+    "productName": "OECS Learning Hub",
     "copyright": "Copyright © 2024 OLH Education",
-    "icon": "build/icon.png",
+    "icon": "build/OECS.ico",
     "directories": {
       "output": "dist-electron"
     },
@@ -47,6 +47,7 @@
       "frontend/dist/**/*",
       "frontend/src/curriculum/**/*",
       "backend-bundle/**/*",
+      "!backend-bundle/*.gguf",
       "package.json",
       "!backend/**/*",
       "!frontend/src/**/*",
@@ -60,33 +61,37 @@
       "!**/node_modules/*.d.ts",
       "!**/node_modules/.bin"
     ],
-
     "win": {
-      "icon": "build/icon.ico", 
+      "icon": "build/OECS.ico",
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
-      "artifactName": "${productName} Setup ${version}.${ext}"
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "requestedExecutionLevel": "highestAvailable"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "OECS Learning Hub"
+      "shortcutName": "OECS Learning Hub",
+      "perMachine": false,
+      "allowElevation": true,
+      "installerIcon": "build/OECS.ico",
+      "uninstallerIcon": "build/OECS.ico",
+      "installerHeaderIcon": "build/OECS.ico",
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh",
+      "warningsAsErrors": false
     },
     "extraResources": [
       {
         "from": "backend-bundle",
         "to": "backend-bundle",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*", "!*.gguf"]
       }
     ],
     "compression": "normal",
