@@ -237,16 +237,37 @@ function createWindow() {
 // App lifecycle
 app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');
-  
+
   try {
+    // === First install cleanup logic ===
+    const userDataPath = app.getPath('userData');
+    const firstRunFlag = path.join(userDataPath, 'firstrun.json');
+    const { session } = require('electron');
+
+    if (!fs.existsSync(firstRunFlag)) {
+      log.info('First install detected — clearing cache, storage, and history.');
+      const defaultSession = session.defaultSession;
+
+      await defaultSession.clearCache();
+      await defaultSession.clearStorageData({
+        storages: [
+          'cookies',
+          'localstorage',
+          'sessionstorage',
+          'indexdb',
+          'serviceworkers'
+        ],
+      });
+
+      fs.writeFileSync(firstRunFlag, JSON.stringify({ initialized: true }));
+    }
+
+    // === Continue with normal startup ===
     await startBackend();
     log.info('Backend started successfully');
-    
-    // Give backend time to fully initialize
     await new Promise(resolve => setTimeout(resolve, 3000));
-    
     createWindow();
-    
+
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();

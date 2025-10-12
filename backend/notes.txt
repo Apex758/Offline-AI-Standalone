@@ -2,9 +2,7 @@ py -m uvicorn main:app --reload --port 8000
 
 
 
-
 .\setup-embedded-python.bat
-
 
 
 .\python-embed\python.exe build-scripts/package-backend.py
@@ -21,6 +19,20 @@ npm run electron:build:win
 Next steps:
 
 -Work on the grader ai.
+
+-Parse plans and quizzes into json structure
+-Edit fields with rich text editor after generation
+
+-Convert curriculum to vectors in FAISS
 -Connect the curriculum with the lesson planners.
--Do some prompt engineering 
--Add the ability improve lesson plans using ai
+-Connect AI Assistant
+
+-Better organize curriculum pages and develop map to feed into ai
+
+-Create and include options for LLM
+
+-Apply LoRA patches 
+
+-Update Tab Names with current content
+
+-Clean up code
