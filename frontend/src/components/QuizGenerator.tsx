@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
+import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
 
 interface QuizGeneratorProps {
@@ -133,6 +134,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
@@ -401,7 +403,9 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingQuiz('');
 
-    const prompt = `Generate a comprehensive quiz with the following specifications:
+    const prompt = `Generate a comprehensive quiz with the following specifications.
+    IMPORTANT: Do NOT include any introduction or preface like "Here is a quiz" or "Below is a quiz".
+    Output only the actual quiz content and questions themselves, directly and cleanly:
 
 QUIZ INFORMATION:
 - Subject: ${formData.subject}
@@ -493,20 +497,11 @@ Please generate a well-structured quiz with clear questions, answer choices (for
                         Edit
                       </button>
                       <button
-                        onClick={copyToClipboard}
-                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                        onClick={() => setAssistantOpen(true)}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        {copyStatus === 'copied' ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy
-                          </>
-                        )}
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Assistant
                       </button>
                       <button
                         onClick={saveQuiz}
@@ -904,6 +899,17 @@ Please generate a well-structured quiz with clear questions, answer choices (for
       </div>
     </div>
   );
+  {/* AI Assistant Panel */}
+  <AIAssistantPanel
+    isOpen={assistantOpen}
+    onClose={() => setAssistantOpen(false)}
+    content={generatedQuiz}
+    contentType="quiz"
+    onContentUpdate={(newContent) => {
+      setGeneratedQuiz(newContent);
+      setEditedContent(newContent);
+    }}
+  />
 };
 
 export default QuizGenerator;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Sparkles } from 'lucide-react';
+import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
 
 interface CrossCurricularPlannerProps {
@@ -193,6 +194,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
   const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const grades = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 
                   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -535,11 +537,11 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                     )}
                   </button>
                   <button
-                    onClick={exportPlan}
-                    className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                    onClick={() => setAssistantOpen(true)}
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    AI Assistant
                   </button>
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
@@ -994,6 +996,16 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
       </div>
     </div>
   );
+  {/* AI Assistant Panel */}
+  <AIAssistantPanel
+    isOpen={assistantOpen}
+    onClose={() => setAssistantOpen(false)}
+    content={generatedPlan}
+    contentType="cross-curricular"
+    onContentUpdate={(newContent) => {
+      setGeneratedPlan(newContent);
+    }}
+  />
 };
 
 export default CrossCurricularPlanner;

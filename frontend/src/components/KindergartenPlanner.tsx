@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
+import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
 
 interface KindergartenPlannerProps {
@@ -140,6 +141,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
@@ -533,20 +535,11 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                         Edit
                       </button>
                       <button
-                        onClick={copyToClipboard}
-                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                        onClick={() => setAssistantOpen(true)}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        {copyStatus === 'copied' ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy
-                          </>
-                        )}
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Assistant
                       </button>
                       <button
                         onClick={savePlan}
@@ -1022,6 +1015,17 @@ Please create an engaging, play-based lesson plan with clear learning objectives
       </div>
     </div>
   );
+  {/* AI Assistant Panel */}
+  <AIAssistantPanel
+    isOpen={assistantOpen}
+    onClose={() => setAssistantOpen(false)}
+    content={generatedPlan}
+    contentType="kindergarten"
+    onContentUpdate={(newContent) => {
+      setGeneratedPlan(newContent);
+      setEditedContent(newContent);
+    }}
+  />
 };
 
 export default KindergartenPlanner;

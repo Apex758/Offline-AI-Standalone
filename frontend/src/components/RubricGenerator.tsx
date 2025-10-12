@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
+import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
 
 interface RubricGeneratorProps {
@@ -222,6 +223,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
@@ -511,7 +513,8 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingRubric('');
 
-    const prompt = `Generate a comprehensive grading rubric with the following specifications:
+    const prompt = `Generate a comprehensive grading rubric with the following specifications.
+    IMPORTANT: Do NOT include any intro text like "Here is a rubric" or "Below is a grading rubric" — start immediately with the rubric table or structure content itself:
 
 ASSIGNMENT INFORMATION:
 - Title: ${formData.assignmentTitle}
@@ -606,20 +609,11 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                         Edit
                       </button>
                       <button
-                        onClick={copyToClipboard}
-                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                        onClick={() => setAssistantOpen(true)}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        {copyStatus === 'copied' ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy
-                          </>
-                        )}
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Assistant
                       </button>
                       <button
                         onClick={saveRubric}
@@ -1036,6 +1030,17 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
       </div>
     </div>
   );
+  {/* AI Assistant Panel */}
+  <AIAssistantPanel
+    isOpen={assistantOpen}
+    onClose={() => setAssistantOpen(false)}
+    content={generatedRubric}
+    contentType="rubric"
+    onContentUpdate={(newContent) => {
+      setGeneratedRubric(newContent);
+      setEditedContent(newContent);
+    }}
+  />
 };
 
 export default RubricGenerator;

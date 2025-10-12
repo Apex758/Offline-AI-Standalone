@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X, Edit, Check, Copy } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
 
 interface MultigradePlannerProps {
@@ -146,6 +147,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
@@ -588,20 +590,11 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         Edit
                       </button>
                       <button
-                        onClick={copyToClipboard}
-                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                        onClick={() => setAssistantOpen(true)}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        {copyStatus === 'copied' ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy
-                          </>
-                        )}
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Assistant
                       </button>
                       <button
                         onClick={savePlan}
@@ -1221,6 +1214,17 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
       </div>
     </div>
   );
+  {/* AI Assistant Panel */}
+  <AIAssistantPanel
+    isOpen={assistantOpen}
+    onClose={() => setAssistantOpen(false)}
+    content={generatedPlan}
+    contentType="multigrade"
+    onContentUpdate={(newContent) => {
+      setGeneratedPlan(newContent);
+      setEditedContent(newContent);
+    }}
+  />
 };
 
 export default MultigradePlanner;
