@@ -18,7 +18,7 @@ def get_data_directory():
     """Get user-writable data directory"""
     if os.name == 'nt':  # Windows
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-        data_dir = Path(app_data) / 'OLH AI Education Suite' / 'data'
+        data_dir = Path(app_data) / 'OECS Learning Hub' / 'data'
     else:  # macOS/Linux
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     

@@ -195,7 +195,8 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 600,
-    icon: path.join('C:', 'Users', 'LG', 'Desktop', 'Offline AI Standalone', 'frontend', 'public', 'OECS.png'),
+    icon: path.join(__dirname, '..', 'frontend', 'public', 'OECS.png'),
+    title: 'OECS Learning Hub',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -233,6 +234,8 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+app.setName('OECS Learning Hub');
 
 // App lifecycle
 app.whenReady().then(async () => {

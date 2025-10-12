@@ -9,7 +9,8 @@ py -m uvicorn main:app --reload --port 8000
 
 npm run build:frontend
 
-npm run electron:build:win
+npm run electron:build:portable
+
 
 
 
