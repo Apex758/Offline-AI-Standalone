@@ -22,7 +22,9 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onContentUpdate
 }) => {
   const [mode, setMode] = useState<'chat' | 'modify'>('chat');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [modifyMessages, setModifyMessages] = useState<Message[]>([]);
+  const messages = mode === 'chat' ? chatMessages : modifyMessages;
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -47,7 +49,36 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       if (!shouldReconnectRef.current) return;
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/chat');
+        // Determine WebSocket route depending on mode and content type
+        let route = '';
+        if (mode === 'chat') {
+          route = 'ws://localhost:8000/ws/chat';
+        } else {
+          switch (contentType) {
+            case 'lesson':
+              route = 'ws://localhost:8000/ws/lesson-plan';
+              break;
+            case 'quiz':
+              route = 'ws://localhost:8000/ws/quiz';
+              break;
+            case 'rubric':
+              route = 'ws://localhost:8000/ws/rubric';
+              break;
+            case 'kindergarten':
+              route = 'ws://localhost:8000/ws/kindergarten';
+              break;
+            case 'multigrade':
+              route = 'ws://localhost:8000/ws/multigrade';
+              break;
+            case 'cross-curricular':
+              route = 'ws://localhost:8000/ws/cross-curricular';
+              break;
+            default:
+              route = 'ws://localhost:8000/ws/chat';
+          }
+        }
+
+        const ws = new WebSocket(route);
         
         ws.onopen = () => {
           console.log('AI Assistant WebSocket connected');
@@ -55,18 +86,20 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
-          
+
+          // Stream each token in real time
           if (data.type === 'token') {
             setStreamingMessage(prev => prev + data.content);
-          } else if (data.type === 'done') {
+          }
+          // When generation completes, finalize message
+          else if (data.type === 'done') {
             const finalMessage = streamingMessage || data.full_response;
-            
-            if (mode === 'modify') {
-              // Update the content with the modification
-              onContentUpdate(finalMessage);
+            if (mode === 'modify') onContentUpdate(finalMessage);
+            if (mode === 'chat') {
+              setChatMessages(prev => [...prev, { role: 'assistant', content: finalMessage }]);
+            } else {
+              setModifyMessages(prev => [...prev, { role: 'assistant', content: finalMessage }]);
             }
-            
-            setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }]);
             setStreamingMessage('');
             setIsStreaming(false);
           }
@@ -109,7 +142,11 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     if (!input.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
     const userMessage: Message = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    if (mode === 'chat') {
+      setChatMessages(prev => [...prev, userMessage]);
+    } else {
+      setModifyMessages(prev => [...prev, userMessage]);
+    }
     setIsStreaming(true);
     setStreamingMessage('');
 
@@ -192,12 +229,17 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
           </p>
 
           {/* Mode Toggle */}
+          {/* Independent Chat/Modify Tabs with persistent state */}
           <div className="flex gap-2 bg-white/10 rounded-lg p-1">
             <button
-              onClick={() => setMode('chat')}
+              onClick={() => {
+                if (wsRef.current) wsRef.current.close();
+                setMode('chat');
+                setStreamingMessage('');
+              }}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition ${
-                mode === 'chat' 
-                  ? 'bg-white text-purple-600 font-semibold' 
+                mode === 'chat'
+                  ? 'bg-white text-purple-600 font-semibold'
                   : 'text-white hover:bg-white/10'
               }`}
             >
@@ -205,10 +247,14 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
               Chat
             </button>
             <button
-              onClick={() => setMode('modify')}
+              onClick={() => {
+                if (wsRef.current) wsRef.current.close();
+                setMode('modify');
+                setStreamingMessage('');
+              }}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition ${
-                mode === 'modify' 
-                  ? 'bg-white text-purple-600 font-semibold' 
+                mode === 'modify'
+                  ? 'bg-white text-purple-600 font-semibold'
                   : 'text-white hover:bg-white/10'
               }`}
             >
