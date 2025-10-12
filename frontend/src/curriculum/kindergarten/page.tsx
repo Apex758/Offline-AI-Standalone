@@ -662,7 +662,11 @@ export default function KindergartenSubjectsPage() {
               return (
                 <Card key={unit.id} className="hover:shadow-lg transition-shadow duration-300 overflow-hidden">
                   <div className="relative w-full h-48">
-                    <img src="" alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={unit.image}
+                      alt={unit.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
                   <CardHeader className="pb-2">

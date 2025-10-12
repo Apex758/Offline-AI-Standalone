@@ -19,11 +19,8 @@ npm run electron:build:win
 
 
 Next steps:
--Organize the weekly activities section of curriculum (need to add some missing components).
--Add pictures to the curriculum.
+
 -Work on the grader ai.
 -Connect the curriculum with the lesson planners.
 -Do some prompt engineering and response sanitation.
 -Add the ability improve lesson plans using ai
--It’s not urgent, but I’ll continue later cause running the recorder as well as the complete app is really slowing down my pc so i'll empty it up a bit then try again.
--I’ve shared the latest version in the same drive for you to try out.
