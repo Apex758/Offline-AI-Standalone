@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Clock, Users, Target, Lightbulb, Rocket, Leaf, Globe, Zap, Beaker, Search } from "lucide-react"
 import { Link } from "react-router-dom"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 const crossStrandProjects = [
   {

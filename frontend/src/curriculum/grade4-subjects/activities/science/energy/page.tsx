@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 export default function EnergyActivitiesPage() {
   return (

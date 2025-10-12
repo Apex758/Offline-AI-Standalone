@@ -9,6 +9,8 @@ interface ActivityCardProps {
   groupSize?: string;
   materials?: string[];
   instructions?: string[];
+  learningAreas?: string[];
+  color?: string;
   children?: React.ReactNode;
 }
 
@@ -19,6 +21,8 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   groupSize,
   materials,
   instructions,
+  learningAreas,
+  color = "blue",
   children
 }) => {
   return (
@@ -50,6 +54,17 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             <ul className="list-disc pl-5 space-y-1">
               {materials.map((material, index) => (
                 <li key={index}>{material}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {learningAreas && learningAreas.length > 0 && (
+          <div className="mb-4">
+            <h4 className="font-semibold mb-2">Learning Areas:</h4>
+            <ul className="list-disc pl-5 space-y-1 text-gray-700">
+              {learningAreas.map((area, index) => (
+                <li key={index}>{area}</li>
               ))}
             </ul>
           </div>

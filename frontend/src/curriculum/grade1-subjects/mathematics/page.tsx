@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"

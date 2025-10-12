@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChevronLeft, FlaskConical, Leaf, Globe, Star, Cog, Users } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 export default function Grade5ScienceActivitiesPage() {
   const activityStrands = [

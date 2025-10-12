@@ -12,14 +12,25 @@ import time
 import json
 import asyncio
 from config import MODEL_PATH, LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS
+from pathlib import Path
 
+def get_data_directory():
+    """Get user-writable data directory"""
+    if os.name == 'nt':  # Windows
+        app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
+        data_dir = Path(app_data) / 'OLH AI Education Suite' / 'data'
+    else:  # macOS/Linux
+        data_dir = Path.home() / '.olh_ai_education' / 'data'
+    
+    # Create directory if it doesn't exist
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir
 
 def load_json_data(filename: str):
     """Load data from a JSON file, create if doesn't exist"""
-    filepath = os.path.join("data", filename)
-    os.makedirs("data", exist_ok=True)
+    filepath = get_data_directory() / filename
     
-    if not os.path.exists(filepath):
+    if not filepath.exists():
         with open(filepath, 'w') as f:
             json.dump([], f)
         return []
@@ -32,8 +43,7 @@ def load_json_data(filename: str):
 
 def save_json_data(filename: str, data):
     """Save data to a JSON file"""
-    filepath = os.path.join("data", filename)
-    os.makedirs("data", exist_ok=True)
+    filepath = get_data_directory() / filename
     
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)

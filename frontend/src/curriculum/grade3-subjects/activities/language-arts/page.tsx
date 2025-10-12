@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Headphones, Eye, PenTool, MessageSquare, BookOpen } from "lucide-react"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 export default function Grade3LanguageArtsActivitiesPage() {
   return (

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { useState } from "react"
 import { BookOpen, GraduationCap, Calendar, Search, Filter, ChevronRight, Users, Target, Award, Sparkles } from "lucide-react"
 //import { CurriculumSearch } from "@/components/curriculum-search"

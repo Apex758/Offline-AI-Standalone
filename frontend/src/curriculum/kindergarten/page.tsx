@@ -17,7 +17,7 @@ import {
   Download,
 } from "lucide-react"
 import { Link } from "react-router-dom"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 // Mock Breadcrumb component since it's not in the standard shadcn/ui
 function Breadcrumb({ items }: { items: { label: string; href: string }[] }) {

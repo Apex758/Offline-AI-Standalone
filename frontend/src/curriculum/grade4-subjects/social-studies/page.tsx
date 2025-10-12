@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { BookOpen, Map, Users, DollarSign, ArrowRight, ChevronRight } from "lucide-react"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { Button } from "@/components/ui/button"
 
 export default function SocialStudiesPage() {

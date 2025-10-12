@@ -4,7 +4,7 @@ import { ChevronLeft, Search, Beaker, Leaf, Dna, Cloud } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-// // import Image from "next/image" - replaced with img tag - replaced with img tag
+// // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { useState, useEffect } from "react"
 
 const scienceStrands = [
