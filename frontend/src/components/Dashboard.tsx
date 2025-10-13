@@ -911,17 +911,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </div>
           )}
           
-          {/* Floating Tutorial Button */}
-          <button
-            onClick={() => {
-              localStorage.removeItem('dashboard-tutorial-completed');
-              setShowFirstTimeTutorial(true);
-            }}
-            className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-700 transition z-50"
-            title="Start Tutorial"
-          >
-            ?
-          </button>
         </div>
       </div>
 
