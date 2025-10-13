@@ -5,6 +5,7 @@ import {
   BookOpen, Sparkles
 } from 'lucide-react';
 import axios from 'axios';
+import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -245,7 +246,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
         
         <div className="relative px-8 py-12">
-          <div className="flex items-center mb-4">
+          <div className="flex items-center mb-4" data-tutorial="welcome-header">
             <BarChart3 className="w-12 h-12 mr-4" />
             <div>
               <h1 className="text-4xl font-bold">Welcome Back, {userName}!</h1>
@@ -253,7 +254,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8" data-tutorial="stat-cards">
             {statCards.map((card, index) => (
               <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div className="flex items-center justify-between">
@@ -275,7 +276,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Lesson Plan Breakdown */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100" data-tutorial="lesson-breakdown">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Lesson Plan Breakdown</h2>
                 <TrendingUp className="w-6 h-6 text-green-600" />
@@ -319,7 +320,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
           {/* Quick Stats */}
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white" data-tutorial="quick-stats">
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-8 h-8" />
                 <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
@@ -367,7 +368,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         {/* Quick Access to Curriculum */}
         <div className="mt-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100" data-tutorial="curriculum-access">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Quick Access - Curriculum</h2>
               <BookOpen className="w-6 h-6 text-blue-600" />
@@ -397,7 +398,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8" data-tutorial="action-cards">
         <button
             onClick={() => handleActionCardClick('lesson-planner')}
             className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
@@ -435,6 +436,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </button>
         </div>
       </div>
+      {/* Tutorial Overlay */}
+      <TutorialOverlay steps={analyticsDashboardSteps} />
     </div>
   );
 };

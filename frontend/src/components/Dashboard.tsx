@@ -29,6 +29,8 @@ import MultigradePlanner from './MultigradePlanner';
 import KindergartenPlanner from './KindergartenPlanner';
 import CrossCurricularPlanner from './CrossCurricularPlanner';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
+
 
 interface DashboardProps {
   user: User;
@@ -190,6 +192,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [contextMenu, setContextMenu] = useState<{ tabId?: string; groupType?: string; x: number; y: number } | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
+  const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('dashboard-tutorial-completed');
+    if (!hasSeenTutorial) {
+      // Show tutorial after a brief delay for better UX
+      setTimeout(() => setShowFirstTimeTutorial(true), 1000);
+    }
+  }, []);
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('dashboard-tutorial-completed', 'true');
+    setShowFirstTimeTutorial(false);
+  };
 
 
   const getTabCountByType = (type: string) => {
@@ -542,6 +558,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Sidebar */}
       <div 
         className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
+        data-tutorial="main-sidebar"
         onMouseEnter={() => setSidebarOpen(true)}
         onMouseLeave={() => setSidebarOpen(false)}
       >
@@ -577,9 +594,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 key={tool.id}
                 onClick={() => openTool(tool)}
                 disabled={count >= MAX_TABS_PER_TYPE}
+                data-tutorial={
+                  tool.type === 'analytics'
+                    ? 'tool-analytics'
+                    : tool.type === 'chat'
+                    ? 'tool-chat'
+                    : undefined
+                }
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
-                  count >= MAX_TABS_PER_TYPE 
-                    ? 'opacity-50 cursor-not-allowed' 
+                  count >= MAX_TABS_PER_TYPE
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'hover:bg-gray-800'
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
@@ -623,9 +647,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 key={tool.id}
                 onClick={() => openTool(tool)}
                 disabled={count >= MAX_TABS_PER_TYPE}
+                data-tutorial={
+                  tool.type === 'quiz-generator'
+                    ? 'tool-quiz'
+                    : tool.type === 'rubric-generator'
+                    ? 'tool-rubric'
+                    : undefined
+                }
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
-                  count >= MAX_TABS_PER_TYPE 
-                    ? 'opacity-50 cursor-not-allowed' 
+                  count >= MAX_TABS_PER_TYPE
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'hover:bg-gray-800'
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
@@ -656,7 +687,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })}
 
           {/* Lesson Planners Dropdown */}
-          <div className="mt-4">
+          <div className="mt-4" data-tutorial="lesson-planners-group">
             <button
               onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
               className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition hover:bg-gray-800`}
@@ -736,7 +767,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto scrollbar-hide">
+          {/* Close All Tabs Button */}
+          {tabs.length > 0 && (
+            <button
+              onClick={() => {
+                setTabs([]);
+                setActiveTabId(null);
+                localStorage.removeItem('dashboard-tabs');
+                localStorage.removeItem('dashboard-active-tab');
+              }}
+              data-tutorial="close-all-tabs"
+              className="p-2 rounded-lg hover:bg-red-50 transition group ml-auto"
+              title="Close All Tabs"
+            >
+              <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
+            </button>
+          )}
+
+          <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar">
             {Object.entries(groupedTabs).map(([type, groupTabs]) => {
               const isCollapsed = collapsedGroups.has(type);
               const activeInGroup = groupTabs.find(t => t.id === activeTabId);
@@ -747,6 +795,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 return (
                   <div
                     key={tab.id}
+                    data-tutorial={activeTabId === tab.id ? "single-tab-demo" : undefined}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition border-l-4 ${colors.border} ${
                       activeTabId === tab.id
                         ? `${colors.activeBg} text-white`
@@ -772,7 +821,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               }
 
               return (
-                <div key={type} className="flex items-center gap-1">
+                <div key={type} className="flex items-center gap-1" data-tutorial="tab-groups">
                   <button
                     onClick={() => toggleGroupCollapse(type)}
                     onContextMenu={(e) => {
@@ -830,9 +879,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
 
         {/* Content Area */}
-        <div 
+        <div
           className="flex-1 overflow-hidden relative"
           onClick={() => setSidebarOpen(false)}
+          data-tutorial="main-content"
         >
           {tabs.length > 0 ? (
             <>
@@ -862,6 +912,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           )}
         </div>
       </div>
+
+      {/* First-time Dashboard Tutorial */}
+      {showFirstTimeTutorial && (
+        <TutorialOverlay
+          steps={dashboardWalkthroughSteps}
+          onComplete={handleTutorialComplete}
+        />
+      )}
     </div>
   );
 };
