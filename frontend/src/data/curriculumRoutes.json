@@ -1,25 +1,5 @@
 [
   {
-    "path": "/curriculum/grade1/listening-speaking",
-    "file_path": "grade1/listening-speaking/page.tsx",
-    "name": "Listening Speaking"
-  },
-  {
-    "path": "/curriculum/grade1",
-    "file_path": "grade1/page.tsx",
-    "name": "Grade1"
-  },
-  {
-    "path": "/curriculum/grade1/reading-viewing",
-    "file_path": "grade1/reading-viewing/page.tsx",
-    "name": "Reading Viewing"
-  },
-  {
-    "path": "/curriculum/grade1/writing-representing",
-    "file_path": "grade1/writing-representing/page.tsx",
-    "name": "Writing Representing"
-  },
-  {
     "path": "/curriculum/grade1-subjects/activities/cross-curricular/loading",
     "file_path": "grade1-subjects/activities/cross-curricular/loading.tsx",
     "name": "loading"

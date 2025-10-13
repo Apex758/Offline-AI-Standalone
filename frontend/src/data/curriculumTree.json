@@ -1,36 +1,5 @@
 {
-  "grade1": {
-    "listening-speaking": {
-      "page.tsx": {
-        "type": "file",
-        "path": "grade1/listening-speaking/page.tsx",
-        "route": "/curriculum/grade1/listening-speaking",
-        "name": "Listening Speaking"
-      }
-    },
-    "page.tsx": {
-      "type": "file",
-      "path": "grade1/page.tsx",
-      "route": "/curriculum/grade1",
-      "name": "Grade1"
-    },
-    "reading-viewing": {
-      "page.tsx": {
-        "type": "file",
-        "path": "grade1/reading-viewing/page.tsx",
-        "route": "/curriculum/grade1/reading-viewing",
-        "name": "Reading Viewing"
-      }
-    },
-    "writing-representing": {
-      "page.tsx": {
-        "type": "file",
-        "path": "grade1/writing-representing/page.tsx",
-        "route": "/curriculum/grade1/writing-representing",
-        "name": "Writing Representing"
-      }
-    }
-  },
+
   "grade1-subjects": {
     "activities": {
       "cross-curricular": {
