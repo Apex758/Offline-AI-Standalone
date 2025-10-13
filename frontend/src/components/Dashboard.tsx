@@ -767,24 +767,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          {/* Close All Tabs Button */}
-          {tabs.length > 0 && (
-            <button
-              onClick={() => {
-                setTabs([]);
-                setActiveTabId(null);
-                localStorage.removeItem('dashboard-tabs');
-                localStorage.removeItem('dashboard-active-tab');
-              }}
-              data-tutorial="close-all-tabs"
-              className="p-2 rounded-lg hover:bg-red-50 transition group ml-auto"
-              title="Close All Tabs"
-            >
-              <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
-            </button>
-          )}
-
-          <div className="flex-1 flex items-center space-x-2 ml-4 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar">
+          {/* Tabs on the left */}
+          <div className="flex-1 flex items-center space-x-2 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar">
             {Object.entries(groupedTabs).map(([type, groupTabs]) => {
               const isCollapsed = collapsedGroups.has(type);
               const activeInGroup = groupTabs.find(t => t.id === activeTabId);
@@ -876,6 +860,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               );
             })}
           </div>
+
+          {/* Close All Tabs Button on the right */}
+          {tabs.length > 0 && (
+            <button
+              onClick={() => {
+                setTabs([]);
+                setActiveTabId(null);
+                localStorage.removeItem('dashboard-tabs');
+                localStorage.removeItem('dashboard-active-tab');
+              }}
+              data-tutorial="close-all-tabs"
+              className="p-2 rounded-lg hover:bg-red-50 transition group ml-4 flex-shrink-0"
+              title="Close All Tabs"
+            >
+              <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
+            </button>
+          )}
         </div>
 
         {/* Content Area */}
