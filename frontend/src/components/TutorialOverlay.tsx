@@ -67,15 +67,15 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             return () => element.removeEventListener('click', clickHandler);
           }
 
-          // ADD THIS NEW BLOCK FOR RIGHT-CLICK
+         
           if (step.waitForAction === 'contextmenu') {
             const contextMenuHandler = (e: Event) => {
-              e.preventDefault(); // Prevent default context menu briefly
+              // Don't prevent default - let the menu open naturally
               
               setTimeout(() => {
                 setWaitingForAction(false);
                 handleNext();
-              }, 800); // Give time to see the context menu
+              }, 500); // Shorter delay, just advance to next step
             };
             element.addEventListener('contextmenu', contextMenuHandler, { once: true });
             
@@ -449,19 +449,35 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 height: `${highlightRect.height + 16}px`,
               }}
               onClick={() => {
-      
-                // Check if step has explicit clickTarget
                 const step = steps[currentStep];
-                let clickElement = highlightedElementRef.current;
+                if (step.waitForAction === 'click') {
+                  let clickElement = highlightedElementRef.current;
 
-                if (step.clickTarget) {
-                  const specificTarget = document.querySelector(step.clickTarget);
-                  if (specificTarget) {
-                    clickElement = specificTarget;
+                  if (step.clickTarget) {
+                    const specificTarget = document.querySelector(step.clickTarget);
+                    if (specificTarget) {
+                      clickElement = specificTarget;
+                    }
                   }
-                }
 
-                clickElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                  clickElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                }
+              }}
+              onContextMenu={(e) => {
+                const step = steps[currentStep];
+                if (step.waitForAction === 'contextmenu') {
+                  e.preventDefault(); // Prevent default briefly
+                  let clickElement = highlightedElementRef.current;
+
+                  if (step.clickTarget) {
+                    const specificTarget = document.querySelector(step.clickTarget);
+                    if (specificTarget) {
+                      clickElement = specificTarget;
+                    }
+                  }
+
+                  clickElement?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+                }
               }}
             />
           )}
@@ -484,9 +500,9 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
       {/* Tooltip */}
       {highlightRect && (
-        <div
-          ref={tooltipRef}
-          className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-10 transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
+      <div
+        ref={tooltipRef}
+        className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-10 transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
           style={Object.keys(tooltipPosition).length > 0 ? tooltipPosition : { 
             top: `${highlightRect.bottom + 24}px`,
             left: `${highlightRect.left + highlightRect.width / 2}px`,
@@ -694,6 +710,22 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     actionHint: '👆 Right-click here!',
   },
   {
+    target: '[data-tutorial="split-context-menu"]',
+    title: 'Choose a Tab to Split With',
+    description: 'Click on any of the available tabs to create a split view. Let\'s click the first one to see it in action!',
+    position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click to split!',
+    clickTarget: '[data-tutorial="split-context-menu"] button:first-of-type',
+  },
+  {
+  target: '[data-tutorial="split-view-demo"]',
+  title: 'Split View in Action! 🎉',
+  description: 'Perfect! Now you can see two tools side-by-side. The left panel shows your Dashboard, and the right panel shows Chat. You can work with both simultaneously - perfect for referencing curriculum while planning lessons!',
+  position: 'bottom',
+  },
+  {
     target: '[data-tutorial="lesson-planners-group"]',
     title: 'Lesson Planner Tools 📚',
     description: 'Click this dropdown to expand and see different types of lesson planners: Standard, Kindergarten, Multigrade, and Cross-Curricular.',
@@ -719,7 +751,7 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     target: '[data-tutorial="close-all-tabs"]',
     title: 'Close All Tabs',
     description: 'Click this red X button to close all open tabs at once and start fresh. Give it a try!',
-    position: 'left',
+    position: 'bottom ',
     interactive: true,
     waitForAction: 'click',
     className: 'p-4', 

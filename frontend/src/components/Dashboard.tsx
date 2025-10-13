@@ -308,7 +308,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const handleTabContextMenu = (e: React.MouseEvent, tabId: string) => {
     e.preventDefault();
-    setContextMenu({ tabId, x: e.clientX, y: e.clientY });
+    const rect = e.currentTarget.getBoundingClientRect();
+    setContextMenu({ 
+      tabId, 
+      x: rect.left, 
+      y: rect.bottom + 8 // 8px below the tab
+    });
   };
 
   const handleSplitWithTab = (targetTabId: string) => {
@@ -478,7 +483,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       const rightTab = tabs.find(t => t.id === rightTabId);
 
       return (
-        <div className="flex h-full divide-x divide-gray-200">
+        <div className="flex h-full divide-x divide-gray-200" data-tutorial="split-view-demo">
           <div className="flex-1 overflow-hidden">
             {leftTab && renderSingleTabContent(leftTab)}
           </div>
@@ -517,6 +522,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Context Menu */}
       {contextMenu && (
         <div
+          data-tutorial="split-context-menu"
           className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
@@ -923,8 +929,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         autoStart={showFirstTimeTutorial}
         showFloatingButton={tabs.length === 0}
         onStepChange={(step) => {
-          // Step 6 is the lesson planner dropdown (0-indexed, so step 6 is the 7th step)
-          if (step === 6) {
+          // Step 6 is the lesson planner dropdown (0-indexed, so step 14 is the 15th step)
+          if (step === 14) {
             setSidebarOpen(true); // Force sidebar open for lesson planner step
           }
         }}
