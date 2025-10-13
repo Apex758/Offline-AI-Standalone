@@ -358,8 +358,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   if (!isActive) {
     if (!showFloatingButton) {
-      return null;  
-    
+      return null;
+    }
     return (
       <button
         onClick={() => setIsActive(true)}
