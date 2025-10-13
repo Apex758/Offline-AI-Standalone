@@ -571,7 +571,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <div className="flex items-center justify-center">
             {sidebarOpen ? (
               <div>
-                <h2 className="text-xl font-bold whitespace-nowrap">OLH Innovative Tools</h2>
+                <h2 className="text-xl font-bold whitespace-nowrap">OECS Learning Hub</h2>
                 <p className="text-sm text-gray-400 whitespace-nowrap">{user.name}</p>
               </div>
             ) : (
