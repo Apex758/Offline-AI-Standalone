@@ -920,6 +920,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         steps={dashboardWalkthroughSteps}
         onComplete={handleTutorialComplete}
         autoStart={showFirstTimeTutorial}
+        showFloatingButton={tabs.length === 0}
         onStepChange={(step) => {
           // Step 6 is the lesson planner dropdown (0-indexed, so step 6 is the 7th step)
           if (step === 6) {

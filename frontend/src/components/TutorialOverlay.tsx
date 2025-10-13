@@ -16,13 +16,15 @@ interface TutorialOverlayProps {
   onComplete?: () => void;
   autoStart?: boolean; 
   onStepChange?: (step: number) => void; 
+  showFloatingButton?: boolean; 
 }
 
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ 
   steps, 
   onComplete, 
   autoStart = false,
-  onStepChange 
+  onStepChange, 
+  showFloatingButton = true
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(autoStart);
@@ -355,6 +357,9 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   };
 
   if (!isActive) {
+    if (!showFloatingButton) {
+      return null;  
+    
     return (
       <button
         onClick={() => setIsActive(true)}
