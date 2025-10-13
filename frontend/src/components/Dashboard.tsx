@@ -686,9 +686,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })}
 
           {/* Lesson Planners Dropdown */}
-          <div className="mt-4" data-tutorial="lesson-planners-group">
+          <div className="mt-4"> {/* ❌ Remove data-tutorial from here */}
             <button
               onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
+              data-tutorial="lesson-planners-group" // ✅ Add it to the button
               className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition hover:bg-gray-800`}
             >
               <BookOpen className="w-5 h-5 flex-shrink-0 text-gray-400" />
@@ -912,16 +913,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           )}
           
         </div>
-      </div>
+      </div> 
 
       {/* First-time Dashboard Tutorial */}
-      {tabs.length === 0 && (
-        <TutorialOverlay
-          steps={dashboardWalkthroughSteps}
-          onComplete={handleTutorialComplete}
-          autoStart={showFirstTimeTutorial}
-        />
-      )}
+      <TutorialOverlay
+        steps={dashboardWalkthroughSteps}
+        onComplete={handleTutorialComplete}
+        autoStart={showFirstTimeTutorial}
+        onStepChange={(step) => {
+          // Step 6 is the lesson planner dropdown (0-indexed, so step 6 is the 7th step)
+          if (step === 6) {
+            setSidebarOpen(true); // Force sidebar open for lesson planner step
+          }
+        }}
+      />
     </div>
   );
 };

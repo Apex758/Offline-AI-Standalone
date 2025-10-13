@@ -14,13 +14,15 @@ interface TutorialStep {
 interface TutorialOverlayProps {
   steps: TutorialStep[];
   onComplete?: () => void;
-  autoStart?: boolean; // Add this prop
+  autoStart?: boolean; 
+  onStepChange?: (step: number) => void; 
 }
 
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ 
   steps, 
   onComplete, 
-  autoStart = false // Default to false
+  autoStart = false,
+  onStepChange 
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(autoStart);
@@ -191,30 +193,96 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       const tempRect = tempDiv.getBoundingClientRect();
       document.body.removeChild(tempDiv);
 
+      // Adaptive repositioning for edge collisions (instead of hardcoded 100px check)
+      // Ensure viewport and tooltip sizes initialized only once globally within this calculation
+      const viewWidth = window.innerWidth;
+      const viewHeight = window.innerHeight;
+      const ttWidth = tooltipRect.width;
+      const ttHeight = tooltipRect.height;
+      // Precompute viewport sizes and tooltip metrics early
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const tooltipHeight = tooltipRect.height;
+
+      const isNearTop = tempRect.top < padding;
+      const isNearRight = tempRect.right + ttWidth > viewWidth - padding;
+      const isNearBottom = tempRect.bottom + ttHeight > viewHeight - padding;
+
+      if (position === 'left') {
+        const stepNumber = currentStep + 1;
+        
+        // Slight manual adjustment for steps 10 and 11
+        if (stepNumber === 10 || stepNumber === 11) {
+          style = {
+            top: `${highlightRect.bottom + padding * 1.8}px`,
+            right: `${viewWidth - highlightRect.left + padding * 1.8}px`,
+            left: 'auto',
+            transform: 'none',
+          };
+        } else if (isNearTop) {
+          style = {
+            top: `${highlightRect.bottom + padding}px`,
+            right: `${padding}px`,
+            left: 'auto',
+            transform: 'none',
+          };
+        } else if (isNearBottom) {
+          style = {
+            top: `${highlightRect.top - tooltipHeight - padding}px`,
+            right: `${padding}px`,
+            left: 'auto',
+            transform: 'none',
+          };
+        } else if (isNearRight) {
+          style = {
+            top: `${highlightRect.top + highlightRect.height / 2}px`,
+            right: `${padding}px`,
+            left: 'auto',
+            transform: 'translateY(-50%)',
+          };
+        } else {
+          style = {
+            top: `${highlightRect.top + highlightRect.height / 2}px`,
+            right: `${viewWidth - highlightRect.left + padding}px`,
+            transform: 'translateY(-50%)',
+          };
+        }
+      }
+
       // Boundary checks with the calculated position
       const margin = 20;
-      
+      const viewportWidth = vw;
+      const viewportHeight = vh;
+
       // Right edge overflow
-      if (tempRect.right > window.innerWidth - margin) {
-        style.left = 'auto';
-        style.right = `${margin}px`;
-        style.transform = style.transform?.includes('translateY') ? 'translateY(-50%)' : 'none';
+      if (tempRect.right > viewportWidth - margin) {
+        if (position === 'bottom' || position === 'top') {
+          // For horizontal positions, align to right edge
+          style.left = 'auto';
+          style.right = `${margin}px`;
+          style.transform = 'none';
+        } else {
+          // For vertical positions, shift left
+          style.left = `${viewportWidth - tooltipRect.width - margin}px`;
+          style.right = 'auto';
+          style.transform = style.transform?.includes('translateY') ? 'translateY(-50%)' : 'none';
+        }
       }
-      
+
       // Left edge overflow
       if (tempRect.left < margin) {
         style.left = `${margin}px`;
         style.right = 'auto';
         style.transform = style.transform?.includes('translateY') ? 'translateY(-50%)' : 'none';
       }
-      
+
       // Bottom edge overflow
-      if (tempRect.bottom > window.innerHeight - margin) {
+      if (tempRect.bottom > viewportHeight - margin) {
         style.top = 'auto';
         style.bottom = `${margin}px`;
         style.transform = style.transform?.includes('translateX') ? 'translateX(-50%)' : 'none';
       }
-      
+
       // Top edge overflow
       if (tempRect.top < margin) {
         style.top = `${margin}px`;
@@ -236,12 +304,13 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      // Briefly hide highlight during transition
       setHighlightRect(null);
       setTooltipPosition({});
       setWaitingForAction(false);
       setTimeout(() => {
-        setCurrentStep(currentStep + 1);
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
+        onStepChange?.(nextStep); // Add this
       }, 100);
     } else {
       handleClose();
@@ -250,11 +319,12 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      // Briefly hide highlight during transition
       setHighlightRect(null);
       setWaitingForAction(false);
       setTimeout(() => {
-        setCurrentStep(currentStep - 1);
+        const prevStep = currentStep - 1;
+        setCurrentStep(prevStep);
+        onStepChange?.(prevStep); // Add this
       }, 100);
     }
   };
@@ -508,22 +578,30 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="tab-bar"]',
     title: 'Tab Management 📑',
-    description: 'Great! You opened your first tab. Your open tools appear here. You can have up to 3 tabs of each type open simultaneously. Let\'s open another tool!',
+    description: 'Great! You opened your first tab. Your open tools appear here. You can have up to 3 tabs of each type open simultaneously.',
+    position: 'bottom',
+  },
+  // ✅ SHOW SINGLE TAB DEMO RIGHT AWAY
+  {
+    target: '[data-tutorial="single-tab-demo"]',
+    title: 'Working with Tabs',
+    description: 'Each tab shows your active tool. You can click the X to close a tab, or right-click to split it side-by-side with another tool.',
     position: 'bottom',
   },
   {
     target: '[data-tutorial="tool-chat"]',
     title: 'AI Chat Assistant',
-    description: 'Chat with your AI teaching assistant for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
+    description: 'Let\'s open another tool! Chat with your AI teaching assistant for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
     position: 'right',
     interactive: true,
     waitForAction: 'click',
     actionHint: '👆 Click to open!',
   },
+  // ✅ NOW WE HAVE 2 DIFFERENT TABS, NOT A GROUP
   {
-    target: '[data-tutorial="tab-groups"]',
-    title: 'Grouped Tabs',
-    description: 'Perfect! Now you have multiple tabs open. When you have multiple tabs of the same type, they automatically group together. Click the arrow to expand/collapse the group. Right-click the group name to close all tabs of that type.',
+    target: '[data-tutorial="tab-bar"]',
+    title: 'Multiple Tabs Open 📑',
+    description: 'Excellent! Now you have two different tools open. Notice how each tab type has its own color. When you open multiple tabs of the SAME type, they automatically group together.',
     position: 'bottom',
   },
   {
@@ -548,22 +626,13 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'right',
   },
   {
-    target: '[data-tutorial="single-tab-demo"]',
-    title: 'Working with Individual Tabs',
-    description: 'Right-click any tab to split it side-by-side with another tool. Or try clicking the X on a tab to close it individually. Go ahead, close one now!',
-    position: 'bottom',
-    interactive: true,
-    waitForAction: 'click',
-    actionHint: '👆 Click the X to close a tab!',
-  },
-  {
     target: '[data-tutorial="close-all-tabs"]',
     title: 'Close All Tabs',
     description: 'Click this red X button to close all open tabs at once and start fresh. Give it a try!',
-    position: 'bottom',
+    position: 'left',
     interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click to close all!',
+
   },
   {
     target: '[data-tutorial="main-content"]',
