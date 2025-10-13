@@ -10,6 +10,7 @@ interface TutorialStep {
   waitForAction?: string;
   actionHint?: string;
   clickTarget?: string;  
+  className?: string; 
 }
 interface TutorialOverlayProps {
   steps: TutorialStep[];
@@ -52,7 +53,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           
           if (step.waitForAction === 'click') {
             const clickHandler = () => {
-              // Update highlight after expansion animation
               setTimeout(() => {
                 updateHighlight();
               }, 100);
@@ -60,11 +60,26 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               setTimeout(() => {
                 setWaitingForAction(false);
                 handleNext();
-              }, 600);
+              }, 300);
             };
             element.addEventListener('click', clickHandler, { once: true });
             
             return () => element.removeEventListener('click', clickHandler);
+          }
+
+          // ADD THIS NEW BLOCK FOR RIGHT-CLICK
+          if (step.waitForAction === 'contextmenu') {
+            const contextMenuHandler = (e: Event) => {
+              e.preventDefault(); // Prevent default context menu briefly
+              
+              setTimeout(() => {
+                setWaitingForAction(false);
+                handleNext();
+              }, 800); // Give time to see the context menu
+            };
+            element.addEventListener('contextmenu', contextMenuHandler, { once: true });
+            
+            return () => element.removeEventListener('contextmenu', contextMenuHandler);
           }
         }
         
@@ -363,6 +378,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     return (
       <button
         onClick={() => setIsActive(true)}
+        data-tutorial="help-button" 
         className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-[9998] group animate-bounce"
         title="Start Tutorial"
         style={{ animationDuration: '2s' }}
@@ -433,8 +449,18 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 height: `${highlightRect.height + 16}px`,
               }}
               onClick={() => {
-                // Forward click to the actual element
-                const clickElement = document.querySelector(`[data-tutorial-click="${steps[currentStep].target.replace('[data-tutorial="', '').replace('"]', '')}"]`) || highlightedElementRef.current;
+      
+                // Check if step has explicit clickTarget
+                const step = steps[currentStep];
+                let clickElement = highlightedElementRef.current;
+
+                if (step.clickTarget) {
+                  const specificTarget = document.querySelector(step.clickTarget);
+                  if (specificTarget) {
+                    clickElement = specificTarget;
+                  }
+                }
+
                 clickElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
               }}
             />
@@ -460,7 +486,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       {highlightRect && (
         <div
           ref={tooltipRef}
-          className="absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-10 transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn"
+          className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-10 transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
           style={Object.keys(tooltipPosition).length > 0 ? tooltipPosition : { 
             top: `${highlightRect.bottom + 24}px`,
             left: `${highlightRect.left + highlightRect.width / 2}px`,
@@ -592,7 +618,6 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     description: 'Great! You opened your first tab. Your open tools appear here. You can have up to 3 tabs of each type open simultaneously.',
     position: 'bottom',
   },
-  // ✅ SHOW SINGLE TAB DEMO RIGHT AWAY
   {
     target: '[data-tutorial="single-tab-demo"]',
     title: 'Working with Tabs',
@@ -608,12 +633,65 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     waitForAction: 'click',
     actionHint: '👆 Click to open!',
   },
-  // ✅ NOW WE HAVE 2 DIFFERENT TABS, NOT A GROUP
   {
     target: '[data-tutorial="tab-bar"]',
-    title: 'Multiple Tabs Open 📑',
-    description: 'Excellent! Now you have two different tools open. Notice how each tab type has its own color. When you open multiple tabs of the SAME type, they automatically group together.',
+    title: 'Multiple Different Tabs 📑',
+    description: 'Excellent! Now you have two different tools open. Notice how each tab type has its own color. Let\'s explore what happens when you open multiple tabs of the SAME type...',
     position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="tool-chat"]',
+    title: 'Open Another Chat Tab',
+    description: 'Click the Chat tool again to open a second chat tab. This will demonstrate tab grouping!',
+    position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click again!',
+  },
+  {
+    target: '[data-tutorial="tab-groups"]',
+    title: 'Tab Groups 📚',
+    description: 'See how the two Chat tabs automatically grouped together? The dropdown arrow lets you collapse/expand the group. The group header shows which tool type it is.',
+    position: 'bottom',
+  },
+  {
+    target: '[data-tutorial="tab-groups"]',
+    title: 'Collapse Groups',
+    description: 'Click the dropdown arrow on the Chat group to collapse it and save tab bar space. Try it now!',
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click to collapse!',
+    clickTarget: '[data-tutorial="tab-groups"] button',
+  },
+  {
+    target: '[data-tutorial="tab-groups"]',
+    title: 'Expand Groups',
+    description: 'Perfect! Now click the arrow again to expand the group and see all your Chat tabs.',
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click to expand!',
+    clickTarget: '[data-tutorial="tab-groups"] button',
+  },
+  {
+    target: '[data-tab-type="analytics"]',
+    title: 'Switch Between Tabs',
+    description: 'You can click any tab to switch to it. Let\'s click back to the Dashboard tab to learn about split view.',
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click Dashboard!',
+    clickTarget: '[data-tab-type="analytics"]', 
+  },
+  {
+    target: '[data-tutorial="single-tab-demo"]',
+    title: 'Split View Feature 🔀',
+    description: 'Right-click this tab to open the context menu and see split options. This lets you view two tools side-by-side!',
+    position: 'bottom',
+    interactive: true,
+    waitForAction: 'contextmenu',
+    actionHint: '👆 Right-click here!',
   },
   {
     target: '[data-tutorial="lesson-planners-group"]',
@@ -623,6 +701,7 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     interactive: true,
     waitForAction: 'click',
     actionHint: '👆 Click to expand!',
+    clickTarget: '[data-tutorial-click="lesson-planners-group"]',
   },
   {
     target: '[data-tutorial="tool-quiz"]',
@@ -643,12 +722,18 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'left',
     interactive: true,
     waitForAction: 'click',
-
+    className: 'p-4', 
   },
   {
     target: '[data-tutorial="main-content"]',
     title: 'Your Workspace',
-    description: 'This is your main workspace where your active tool or split view will appear. Start creating amazing teaching resources!',
+    description: 'This is your main workspace where your active tool or split view will appear. You\'re all set to create amazing teaching resources!',
     position: 'top',
+  },
+  {
+    target: '[data-tutorial="help-button"]',
+    title: 'Need Help Later? 💡',
+    description: 'Click this floating help button anytime to replay this walkthrough or get assistance with any feature. Happy teaching!',
+    position: 'left',
   },
 ];

@@ -780,6 +780,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   <div
                     key={tab.id}
                     data-tutorial={activeTabId === tab.id ? "single-tab-demo" : undefined}
+                    data-tab-type={tab.type} 
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition border-l-4 ${colors.border} ${
                       activeTabId === tab.id
                         ? `${colors.activeBg} text-white`
