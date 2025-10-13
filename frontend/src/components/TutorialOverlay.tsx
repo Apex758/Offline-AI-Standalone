@@ -762,10 +762,5 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     description: 'This is your main workspace where your active tool or split view will appear. You\'re all set to create amazing teaching resources!',
     position: 'top',
   },
-  {
-    target: '[data-tutorial="help-button"]',
-    title: 'Need Help Later? 💡',
-    description: 'Click this floating help button anytime to replay this walkthrough or get assistance with any feature. Happy teaching!',
-    position: 'left',
-  },
+
 ];
