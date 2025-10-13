@@ -6,6 +6,9 @@ interface TutorialStep {
   title: string;
   description: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  interactive?: boolean; // Allow clicking the highlighted element
+  waitForAction?: string; // Wait for user to perform action (e.g., 'click', 'tab-open')
+  actionHint?: string; // Hint text for what action to perform
 }
 
 interface TutorialOverlayProps {
@@ -18,8 +21,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
   const [isActive, setIsActive] = useState(false);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<React.CSSProperties>({});
+  const [waitingForAction, setWaitingForAction] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const highlightedElementRef = useRef<Element | null>(null);
 
   useEffect(() => {
     if (!isActive || !steps[currentStep]) return;
@@ -27,8 +32,27 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
     const updateHighlight = () => {
       const element = document.querySelector(steps[currentStep].target);
       if (element) {
+        highlightedElementRef.current = element;
         const rect = element.getBoundingClientRect();
         setHighlightRect(rect);
+        
+        // Set up action listeners if this step requires user interaction
+        const step = steps[currentStep];
+        if (step.interactive && step.waitForAction) {
+          setWaitingForAction(true);
+          
+          if (step.waitForAction === 'click') {
+            const clickHandler = () => {
+              setTimeout(() => {
+                setWaitingForAction(false);
+                handleNext();
+              }, 300);
+            };
+            element.addEventListener('click', clickHandler, { once: true });
+            
+            return () => element.removeEventListener('click', clickHandler);
+          }
+        }
         
         // Find the scrollable parent container
         const getScrollParent = (node: HTMLElement | null): HTMLElement | null => {
@@ -210,6 +234,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
       // Briefly hide highlight during transition
       setHighlightRect(null);
       setTooltipPosition({});
+      setWaitingForAction(false);
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
       }, 100);
@@ -222,6 +247,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
     if (currentStep > 0) {
       // Briefly hide highlight during transition
       setHighlightRect(null);
+      setWaitingForAction(false);
       setTimeout(() => {
         setCurrentStep(currentStep - 1);
       }, 100);
@@ -232,6 +258,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
     setIsActive(false);
     setCurrentStep(0);
     setTooltipPosition({});
+    setWaitingForAction(false);
     
     // Scroll back to top of the scrollable container
     const scrollableContainers = document.querySelectorAll('[class*="overflow-y-auto"]');
@@ -245,78 +272,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
     });
     
     onComplete?.();
-  };
-
-  const getTooltipPosition = () => {
-    if (!highlightRect) return {};
-
-    const step = steps[currentStep];
-    const position = step.position || 'bottom';
-    const padding = 20;
-    const tooltipWidth = 384; // max-w-md = 28rem = 448px, but we'll use 384 for safety
-    const tooltipHeight = 200; // estimated height
-
-    let style: React.CSSProperties = {};
-
-    switch (position) {
-      case 'top':
-        style = {
-          bottom: `${window.innerHeight - highlightRect.top + padding}px`,
-          left: `${highlightRect.left + highlightRect.width / 2}px`,
-          transform: 'translateX(-50%)',
-        };
-        break;
-      case 'bottom':
-        style = {
-          top: `${highlightRect.bottom + padding}px`,
-          left: `${highlightRect.left + highlightRect.width / 2}px`,
-          transform: 'translateX(-50%)',
-        };
-        break;
-      case 'left':
-        style = {
-          top: `${highlightRect.top + highlightRect.height / 2}px`,
-          right: `${window.innerWidth - highlightRect.left + padding}px`,
-          transform: 'translateY(-50%)',
-        };
-        break;
-      case 'right':
-        style = {
-          top: `${highlightRect.top + highlightRect.height / 2}px`,
-          left: `${highlightRect.right + padding}px`,
-          transform: 'translateY(-50%)',
-        };
-        break;
-    }
-
-    // Ensure tooltip stays within viewport bounds
-    const rect = tooltipRef.current?.getBoundingClientRect();
-    if (rect) {
-      // Check right edge
-      if (rect.right > window.innerWidth - 20) {
-        style.left = 'auto';
-        style.right = '20px';
-        style.transform = 'none';
-      }
-      // Check left edge
-      if (rect.left < 20) {
-        style.left = '20px';
-        style.right = 'auto';
-        style.transform = 'none';
-      }
-      // Check bottom edge
-      if (rect.bottom > window.innerHeight - 20) {
-        style.top = 'auto';
-        style.bottom = '20px';
-      }
-      // Check top edge
-      if (rect.top < 20) {
-        style.top = '20px';
-        style.bottom = 'auto';
-      }
-    }
-
-    return style;
   };
 
   if (!isActive) {
@@ -339,7 +294,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
   return (
     <div className="fixed inset-0 z-[9999]">
       {/* Dark overlay with spotlight cutout */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className={`absolute inset-0 ${steps[currentStep]?.interactive ? 'pointer-events-none' : ''}`}>
         <svg width="100%" height="100%" className="absolute inset-0">
           <defs>
             <mask id="spotlight-mask">
@@ -367,17 +322,52 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
         </svg>
       </div>
 
-      {/* Highlighted element border */}
+      {/* Highlighted element border with pulsing animation */}
       {highlightRect && (
+        <>
+          <div
+            className={`absolute border-4 border-blue-500 rounded-lg pointer-events-none transition-all duration-300 ${
+              waitingForAction ? 'animate-pulse' : ''
+            }`}
+            style={{
+              left: `${highlightRect.left - 8}px`,
+              top: `${highlightRect.top - 8}px`,
+              width: `${highlightRect.width + 16}px`,
+              height: `${highlightRect.height + 16}px`,
+            }}
+          />
+          
+          {/* Interactive click area - only render for interactive steps */}
+          {steps[currentStep]?.interactive && (
+            <div
+              className="absolute cursor-pointer z-[10000]"
+              style={{
+                left: `${highlightRect.left - 8}px`,
+                top: `${highlightRect.top - 8}px`,
+                width: `${highlightRect.width + 16}px`,
+                height: `${highlightRect.height + 16}px`,
+              }}
+              onClick={() => {
+                // Forward click to the actual element
+                highlightedElementRef.current?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+              }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Action hint for interactive steps */}
+      {waitingForAction && steps[currentStep]?.actionHint && highlightRect && (
         <div
-          className="absolute border-4 border-blue-500 rounded-lg pointer-events-none animate-pulse transition-all duration-300"
+          className="absolute bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium animate-bounce shadow-lg z-[10001]"
           style={{
-            left: `${highlightRect.left - 8}px`,
-            top: `${highlightRect.top - 8}px`,
-            width: `${highlightRect.width + 16}px`,
-            height: `${highlightRect.height + 16}px`,
+            left: `${highlightRect.left + highlightRect.width / 2}px`,
+            top: `${highlightRect.top - 50}px`,
+            transform: 'translateX(-50%)',
           }}
-        />
+        >
+          {steps[currentStep].actionHint}
+        </div>
       )}
 
       {/* Tooltip */}
@@ -391,60 +381,61 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onCompl
             transform: 'translateX(-50%)'
           }}
         >
-        <button
-          onClick={handleClose}
-          className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition"
-        >
-          <X className="w-5 h-5 text-gray-500" />
-        </button>
+          <button
+            onClick={handleClose}
+            className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
 
-        <div className="pr-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {steps[currentStep].title}
-          </h3>
-          <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
+          <div className="pr-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {steps[currentStep].title}
+            </h3>
+            <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
 
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Step {currentStep + 1} of {steps.length}
-            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Step {currentStep + 1} of {steps.length}
+              </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </button>
-              <button
-                onClick={handleNext}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
-              >
-                {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
-                {currentStep < steps.length - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentStep === 0 || waitingForAction}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={waitingForAction}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {currentStep === steps.length - 1 ? 'Finish' : waitingForAction ? 'Waiting...' : 'Next'}
+                  {currentStep < steps.length - 1 && !waitingForAction && <ChevronRight className="w-4 h-4 ml-1" />}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Progress dots */}
-        <div className="flex gap-1 mt-4 justify-center">
-          {steps.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentStep
-                  ? 'bg-blue-600 w-6'
-                  : index < currentStep
-                  ? 'bg-blue-400'
-                  : 'bg-gray-300'
-              }`}
-            />
-          ))}
+          {/* Progress dots */}
+          <div className="flex gap-1 mt-4 justify-center">
+            {steps.map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  index === currentStep
+                    ? 'bg-blue-600 w-6'
+                    : index < currentStep
+                    ? 'bg-blue-400'
+                    : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
       )}
     </div>
   );
@@ -503,20 +494,41 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="tool-analytics"]',
     title: 'Dashboard Overview',
-    description: 'Start here to see your teaching resources, statistics, and quick access to curriculum content.',
+    description: 'Start here to see your teaching resources, statistics, and quick access to curriculum content. Click it now to open your first tab!',
     position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click here!',
+  },
+  {
+    target: '[data-tutorial="tab-bar"]',
+    title: 'Tab Management 📑',
+    description: 'Great! You opened your first tab. Your open tools appear here. You can have up to 3 tabs of each type open simultaneously. Let\'s open another tool!',
+    position: 'bottom',
   },
   {
     target: '[data-tutorial="tool-chat"]',
     title: 'AI Chat Assistant',
-    description: 'Chat with your AI teaching assistant for help, ideas, or to discuss your lesson plans.',
+    description: 'Chat with your AI teaching assistant for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
     position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click to open!',
+  },
+  {
+    target: '[data-tutorial="tab-groups"]',
+    title: 'Grouped Tabs',
+    description: 'Perfect! Now you have multiple tabs open. When you have multiple tabs of the same type, they automatically group together. Click the arrow to expand/collapse the group. Right-click the group name to close all tabs of that type.',
+    position: 'bottom',
   },
   {
     target: '[data-tutorial="lesson-planners-group"]',
     title: 'Lesson Planner Tools 📚',
-    description: 'Click to expand and see different types of lesson planners: Standard, Kindergarten, Multigrade, and Cross-Curricular.',
+    description: 'Click this dropdown to expand and see different types of lesson planners: Standard, Kindergarten, Multigrade, and Cross-Curricular.',
     position: 'right',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click to expand!',
   },
   {
     target: '[data-tutorial="tool-quiz"]',
@@ -531,28 +543,22 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'right',
   },
   {
-    target: '[data-tutorial="tab-bar"]',
-    title: 'Tab Management 📑',
-    description: 'Your open tools appear here as tabs. You can have up to 3 tabs of each type open simultaneously.',
+    target: '[data-tutorial="single-tab-demo"]',
+    title: 'Working with Individual Tabs',
+    description: 'Right-click any tab to split it side-by-side with another tool. Or try clicking the X on a tab to close it individually. Go ahead, close one now!',
     position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click the X to close a tab!',
   },
   {
     target: '[data-tutorial="close-all-tabs"]',
     title: 'Close All Tabs',
-    description: 'Click this red X button to close all open tabs at once and start fresh.',
+    description: 'Click this red X button to close all open tabs at once and start fresh. Give it a try!',
     position: 'bottom',
-  },
-  {
-    target: '[data-tutorial="single-tab-demo"]',
-    title: 'Working with Individual Tabs',
-    description: 'Right-click any tab to split it side-by-side with another tool. Try clicking the X on a tab to close it individually.',
-    position: 'bottom',
-  },
-  {
-    target: '[data-tutorial="tab-groups"]',
-    title: 'Grouped Tabs',
-    description: 'When you have multiple tabs of the same type, they automatically group together. Click the arrow to expand/collapse the group. Right-click the group name to close all tabs of that type.',
-    position: 'bottom',
+    interactive: true,
+    waitForAction: 'click',
+    actionHint: '👆 Click to close all!',
   },
   {
     target: '[data-tutorial="main-content"]',
