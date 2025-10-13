@@ -165,7 +165,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         case 'bottom':
           style = {
             top: `${highlightRect.bottom + padding}px`,
-            left: `${highlightRect.left + highlightRect.width / 2}px`,
+            left: `${highlightRect.left + highlightRect.width / 2 + 80 }px`,
             transform: 'translateX(-50%)',
           };
           break;
