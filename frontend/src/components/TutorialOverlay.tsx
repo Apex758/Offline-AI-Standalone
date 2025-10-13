@@ -14,11 +14,16 @@ interface TutorialStep {
 interface TutorialOverlayProps {
   steps: TutorialStep[];
   onComplete?: () => void;
+  autoStart?: boolean; // Add this prop
 }
 
-export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ steps, onComplete }) => {
+export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ 
+  steps, 
+  onComplete, 
+  autoStart = false // Default to false
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(autoStart);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<React.CSSProperties>({});
   const [waitingForAction, setWaitingForAction] = useState(false);

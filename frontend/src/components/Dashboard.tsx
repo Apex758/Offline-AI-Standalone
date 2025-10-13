@@ -197,8 +197,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('dashboard-tutorial-completed');
     if (!hasSeenTutorial) {
-      // Show tutorial after a brief delay for better UX
-      setTimeout(() => setShowFirstTimeTutorial(true), 1000);
+      setShowFirstTimeTutorial(true); // Still set this for first-time users
     }
   }, []);
 
@@ -911,14 +910,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </div>
           )}
+          
+          {/* Floating Tutorial Button */}
+          <button
+            onClick={() => {
+              localStorage.removeItem('dashboard-tutorial-completed');
+              setShowFirstTimeTutorial(true);
+            }}
+            className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-700 transition z-50"
+            title="Start Tutorial"
+          >
+            ?
+          </button>
         </div>
       </div>
 
       {/* First-time Dashboard Tutorial */}
-      {showFirstTimeTutorial && (
+      {tabs.length === 0 && (
         <TutorialOverlay
           steps={dashboardWalkthroughSteps}
           onComplete={handleTutorialComplete}
+          autoStart={showFirstTimeTutorial}
         />
       )}
     </div>
