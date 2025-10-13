@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HelpCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface TutorialStep {
-  target: string; // CSS selector for the element to highlight
+  target: string;
   title: string;
   description: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
-  interactive?: boolean; // Allow clicking the highlighted element
-  waitForAction?: string; // Wait for user to perform action (e.g., 'click', 'tab-open')
-  actionHint?: string; // Hint text for what action to perform
+  interactive?: boolean;
+  waitForAction?: string;
+  actionHint?: string;
+  clickTarget?: string;  
 }
-
 interface TutorialOverlayProps {
   steps: TutorialStep[];
   onComplete?: () => void;
@@ -50,10 +50,15 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           
           if (step.waitForAction === 'click') {
             const clickHandler = () => {
+              // Update highlight after expansion animation
+              setTimeout(() => {
+                updateHighlight();
+              }, 100);
+              
               setTimeout(() => {
                 setWaitingForAction(false);
                 handleNext();
-              }, 300);
+              }, 600);
             };
             element.addEventListener('click', clickHandler, { once: true });
             
@@ -424,7 +429,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               }}
               onClick={() => {
                 // Forward click to the actual element
-                highlightedElementRef.current?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                const clickElement = document.querySelector(`[data-tutorial-click="${steps[currentStep].target.replace('[data-tutorial="', '').replace('"]', '')}"]`) || highlightedElementRef.current;
+                clickElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
               }}
             />
           )}

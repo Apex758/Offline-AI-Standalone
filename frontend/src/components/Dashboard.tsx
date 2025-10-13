@@ -686,10 +686,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })}
 
           {/* Lesson Planners Dropdown */}
-          <div className="mt-4"> {/* ❌ Remove data-tutorial from here */}
+          <div className="mt-4" data-tutorial="lesson-planners-group">
             <button
               onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
-              data-tutorial="lesson-planners-group" // ✅ Add it to the button
+              data-tutorial-click="lesson-planners-group"
               className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition hover:bg-gray-800`}
             >
               <BookOpen className="w-5 h-5 flex-shrink-0 text-gray-400" />
