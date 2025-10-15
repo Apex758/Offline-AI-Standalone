@@ -403,26 +403,174 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingQuiz('');
 
+    // Grade-specific guidance
+    const gradeGuidance: { [key: string]: string } = {
+      'K': 'Kindergarten level: Use very simple vocabulary, concrete concepts, visual/tactile learning references. Focus on basic observation skills. Questions should be about things children can see, touch, or experience directly.',
+      '1': 'Grade 1 level: Use simple sentences and basic vocabulary. Focus on concrete, observable concepts. Include familiar everyday examples from home and school.',
+      '2': 'Grade 2 level: Use age-appropriate vocabulary with some descriptive words. Introduce basic scientific terms. Focus on observable patterns and simple cause-and-effect relationships.',
+      '3': 'Grade 3 level: Introduce more complex vocabulary and concepts. Students can handle multi-step thinking. Include more abstract concepts but still relate to concrete examples.',
+      '4': 'Grade 4 level: Use grade-level academic vocabulary. Students can analyze patterns and make predictions. Include more complex scientific processes and relationships.',
+      '5': 'Grade 5 level: Use subject-specific terminology. Students can handle abstract concepts and complex systems. Include questions requiring analysis and synthesis.',
+      '6': 'Grade 6 level: Use advanced academic vocabulary. Students can engage in critical thinking, analyze complex systems, and make evidence-based conclusions.'
+    };
+
+    // Subject-specific guidance
+    const subjectGuidance: { [key: string]: string } = {
+      'Mathematics': 'Focus on number sense, operations, patterns, geometry, measurement, and problem-solving appropriate for the grade level. Use real-world math scenarios.',
+      'Science': 'Focus on life science, physical science, earth science, and scientific inquiry. Use age-appropriate scientific vocabulary and observable phenomena.',
+      'Language Arts': 'Focus on reading comprehension, grammar, vocabulary, writing conventions, and literary elements appropriate for the grade level.',
+      'Social Studies': 'Focus on communities, geography, history, culture, and citizenship. Use examples from students\' local community and expand outward.',
+      'Music': 'Focus on rhythm, melody, musical instruments, composers, musical notation, and listening skills appropriate for the grade level.',
+      'Physical Education': 'Focus on movement skills, fitness concepts, healthy habits, sportsmanship, and age-appropriate physical activities.'
+    };
+
+    const currentGradeGuidance = gradeGuidance[formData.gradeLevel] || 'Use age-appropriate language and concepts.';
+    const currentSubjectGuidance = subjectGuidance[formData.subject] || 'Focus on core concepts for this subject area.';
+
+    // Build question type specific instructions
+    let questionTypeInstructions = '';
+    const types = formData.questionTypes;
+    
+    if (types.length === 1) {
+      const type = types[0];
+      
+      if (type === 'True/False') {
+        questionTypeInstructions = `
+  FORMAT REQUIREMENTS - CRITICAL:
+  ALL ${formData.numberOfQuestions} questions MUST be True/False format.
+  Each question must be a STATEMENT (not a question) that can be answered with True or False.
+
+  GRADE ${formData.gradeLevel} TRUE/FALSE RULES:
+  - Use vocabulary appropriate for ${formData.gradeLevel} students
+  - Make statements about ${formData.subject} concepts from the learning outcomes
+  - Ensure statements are clear and unambiguous for this age group
+  - Mix true and false statements (not all true, not all false)
+
+  Format each question EXACTLY like this:
+  Question 1: [Clear statement about ${formData.subject} that is either true or false]
+  A) True
+  B) False
+
+  ${formData.gradeLevel === 'K' || formData.gradeLevel === '1' || formData.gradeLevel === '2' 
+    ? 'Example for young learners:\nQuestion 1: Plants need water to grow.\nA) True\nB) False' 
+    : `Example:\nQuestion 1: ${formData.subject === 'Science' ? 'Photosynthesis occurs in the chloroplasts of plant cells.' : 'The water cycle includes evaporation, condensation, and precipitation.'}\nA) True\nB) False`}
+
+  DO NOT create multiple choice questions with A, B, C, D options.
+  DO NOT ask "Which of the following..." style questions.
+  DO NOT use question format - use statement format.
+  ONLY create clear statements that are definitively True or False for Grade ${formData.gradeLevel}.`;
+      } else if (type === 'Multiple Choice') {
+        questionTypeInstructions = `
+  FORMAT REQUIREMENTS:
+  ALL ${formData.numberOfQuestions} questions MUST be Multiple Choice format with 4 options (A, B, C, D).
+  Each question should have exactly one correct answer.
+
+  GRADE ${formData.gradeLevel} MULTIPLE CHOICE RULES:
+  - Use ${formData.gradeLevel} level vocabulary and concepts
+  - All options should be plausible to avoid obvious wrong answers
+  - Wrong answers (distractors) should be based on common misconceptions at this grade level
+  - Focus on ${formData.subject} concepts from the learning outcomes
+
+  Format each question like this:
+  Question 1: [Question about ${formData.subject} appropriate for Grade ${formData.gradeLevel}]
+  A) [Option 1]
+  B) [Option 2]
+  C) [Option 3]
+  D) [Option 4]`;
+      } else if (type === 'Fill-in-the-Blank') {
+        questionTypeInstructions = `
+  FORMAT REQUIREMENTS:
+  ALL ${formData.numberOfQuestions} questions MUST be Fill-in-the-Blank format.
+  Use _____ to indicate where students should fill in the answer.
+
+  GRADE ${formData.gradeLevel} FILL-IN-THE-BLANK RULES:
+  - Sentences should use Grade ${formData.gradeLevel} appropriate vocabulary
+  - The blank should test key ${formData.subject} terms from the learning outcomes
+  - Provide enough context so students at this grade can determine the answer
+  - One-word or short phrase answers work best
+
+  Format each question like this:
+  Question 1: [Sentence with _____ about ${formData.subject} for Grade ${formData.gradeLevel}]`;
+      } else if (type === 'Open-Ended') {
+        questionTypeInstructions = `
+  FORMAT REQUIREMENTS:
+  ALL ${formData.numberOfQuestions} questions MUST be Open-Ended format.
+  These questions require detailed written responses based on what Grade ${formData.gradeLevel} students can express.
+
+  GRADE ${formData.gradeLevel} OPEN-ENDED RULES:
+  - Questions should match the writing ability of Grade ${formData.gradeLevel} students
+  - Focus on ${formData.subject} concepts that can be explained at this level
+  - ${formData.gradeLevel === 'K' || formData.gradeLevel === '1' 
+      ? 'Keep responses short - students may draw or write 1-2 sentences' 
+      : formData.gradeLevel === '2' || formData.gradeLevel === '3'
+      ? 'Expect 2-4 sentence responses'
+      : 'Expect paragraph-length responses with details and examples'}
+
+  Format each question like this:
+  Question 1: [Question about ${formData.subject} requiring Grade ${formData.gradeLevel} appropriate explanation]`;
+      }
+    } else {
+      questionTypeInstructions = `
+  FORMAT REQUIREMENTS:
+  Create a mix of the following question types: ${types.join(', ')}
+  Distribute questions evenly across these types.
+  All questions must be appropriate for Grade ${formData.gradeLevel} ${formData.subject}.
+
+  For True/False questions, format as:
+  Question X: [Grade ${formData.gradeLevel} appropriate statement about ${formData.subject}]
+  A) True
+  B) False
+
+  For Multiple Choice questions, format as:
+  Question X: [Grade ${formData.gradeLevel} level question]
+  A) [Option 1]
+  B) [Option 2]
+  C) [Option 3]
+  D) [Option 4]
+
+  For Fill-in-the-Blank, use _____:
+  Question X: [Grade ${formData.gradeLevel} sentence with _____ for blank]
+
+  For Open-Ended:
+  Question X: [Question requiring explanation at Grade ${formData.gradeLevel} writing level]`;
+    }
+
     const prompt = `Generate a comprehensive quiz with the following specifications.
-    IMPORTANT: Do NOT include any introduction or preface like "Here is a quiz" or "Below is a quiz".
-    Output only the actual quiz content and questions themselves, directly and cleanly:
+  IMPORTANT: Do NOT include any introduction, preface, or explanatory text like "Here is a quiz" or "Below is...".
+  Start directly with the quiz title and questions.
 
-QUIZ INFORMATION:
-- Subject: ${formData.subject}
-- Grade Level: ${formData.gradeLevel}
-- Number of Questions: ${formData.numberOfQuestions}
-- Date: ${new Date().toLocaleDateString()}
+  QUIZ INFORMATION:
+  - Subject: ${formData.subject}
+  - Grade Level: Grade ${formData.gradeLevel}
+  - Number of Questions: ${formData.numberOfQuestions}
+  - Date: ${new Date().toLocaleDateString()}
 
-LEARNING OUTCOMES:
-${formData.learningOutcomes}
+  GRADE & SUBJECT CONTEXT:
+  ${currentGradeGuidance}
+  ${currentSubjectGuidance}
 
-QUESTION REQUIREMENTS:
-- Question Types: ${formData.questionTypes.join(', ')}
-- Cognitive Levels: ${formData.cognitiveLevels.join(', ')}
-${formData.timeLimitPerQuestion ? `- Time Limit per Question: ${formData.timeLimitPerQuestion} seconds` : ''}
-${formData.randomizeQuestions ? '- Questions should be designed for randomization' : ''}
+  LEARNING OUTCOMES TO ASSESS:
+  ${formData.learningOutcomes}
 
-Please generate a well-structured quiz with clear questions, answer choices (for multiple choice), and an answer key at the end.`;
+  ${questionTypeInstructions}
+
+  COGNITIVE LEVELS:
+  Create questions at these cognitive levels: ${formData.cognitiveLevels.join(', ')}
+  Ensure cognitive complexity is appropriate for Grade ${formData.gradeLevel}.
+  ${formData.timeLimitPerQuestion ? `\nTIME LIMIT: ${formData.timeLimitPerQuestion} seconds per question` : ''}
+  ${formData.randomizeQuestions ? '\nDesign questions suitable for randomization.' : ''}
+
+  CRITICAL INSTRUCTIONS:
+  1. Create EXACTLY ${formData.numberOfQuestions} questions
+  2. EVERY question must be appropriate for Grade ${formData.gradeLevel} students studying ${formData.subject}
+  3. Use vocabulary, concepts, and complexity suitable for ${formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`} students
+  4. All content must relate to the subject of ${formData.subject}
+  5. Questions must assess the learning outcomes: ${formData.learningOutcomes}
+  6. Follow the format requirements EXACTLY as specified above
+  7. End with a clear "Answer Key:" section listing answers 1-${formData.numberOfQuestions}
+  8. For True/False questions, create STATEMENTS not questions
+
+  Generate the quiz now:`;
 
     try {
       wsRef.current.send(JSON.stringify({ prompt }));
