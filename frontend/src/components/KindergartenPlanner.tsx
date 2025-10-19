@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -33,7 +37,7 @@ interface FormData {
   includeMaterials: boolean;
 }
 
-const formatKindergartenText = (text: string) => {
+const formatKindergartenText = (text: string, accentColor: string) => {
   if (!text) return null;
 
   let cleanText = text;
@@ -57,7 +61,7 @@ const formatKindergartenText = (text: string) => {
     if (trimmed.match(/^\*\*(.+)\*\*$/)) {
       const title = trimmed.replace(/\*\*/g, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-pink-900 mt-8 mb-4 pb-2 border-b border-pink-200">
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
           {title}
         </h2>
       );
@@ -68,7 +72,7 @@ const formatKindergartenText = (text: string) => {
     if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
       const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold text-pink-700 mt-6 mb-3 bg-pink-50 px-3 py-2 rounded-lg border-l-4 border-pink-500">
+        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-3 px-3 py-2 rounded-lg border-l-4" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d`, borderColor: accentColor }}>
           {title}:
         </h3>
       );
@@ -79,8 +83,8 @@ const formatKindergartenText = (text: string) => {
     if (trimmed.match(/^(Circle Time|Art Activity|Story Time|Music|Outdoor Play|Learning Centers|Small Group).*:/i)) {
       elements.push(
         <div key={`activity-${currentIndex++}`} className="mt-4 mb-3">
-          <div className="bg-gradient-to-r from-pink-100 to-purple-50 border-l-4 border-pink-600 p-4 rounded-r-lg shadow-sm">
-            <h4 className="font-bold text-pink-900 text-lg">{trimmed}</h4>
+          <div className="border-l-4 p-4 rounded-r-lg shadow-sm" style={{ background: `linear-gradient(to right, ${accentColor}1a, ${accentColor}0d)`, borderColor: `${accentColor}cc` }}>
+            <h4 className="font-bold text-lg" style={{ color: `${accentColor}dd` }}>{trimmed}</h4>
           </div>
         </div>
       );
@@ -92,7 +96,7 @@ const formatKindergartenText = (text: string) => {
       const content = trimmed.replace(/^\s*\*\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
-          <span className="text-pink-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
       );
@@ -105,7 +109,7 @@ const formatKindergartenText = (text: string) => {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       elements.push(
         <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
-          <span className="text-pink-600 mr-3 font-semibold min-w-[2rem] bg-pink-50 rounded px-2 py-1 text-sm">
+          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
           <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
@@ -128,6 +132,9 @@ const formatKindergartenText = (text: string) => {
 };
 
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const tabColor = settings.tabColors['kindergarten-planner'];
+  const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -188,6 +195,21 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       setEditedContent(generatedPlan);
     }
   }, [generatedPlan]);
+
+  // Tutorial auto-show logic
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.KINDERGARTEN_PLANNER)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.KINDERGARTEN_PLANNER);
+    setShowTutorial(false);
+  };
 
   useEffect(() => {
     const saved = savedData?.formData;
@@ -494,7 +516,7 @@ Please create an engaging, play-based lesson plan with clear learning objectives
   };
 
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="kinder-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
         {(generatedPlan || streamingPlan || isEditing) ? (
           <>
@@ -565,7 +587,11 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                       </button>
                       <button
                         onClick={exportPlan}
-                        className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
+                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
+                        style={{ backgroundColor: tabColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        data-tutorial="kinder-planner-export"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export
@@ -597,8 +623,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
               {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
-                    <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-purple-600 to-purple-700"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-pink-500/90 to-purple-600/90"></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
                     
                     <div className="relative px-8 py-8">
                       <div className="flex items-start justify-between">
@@ -689,10 +715,10 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                   </div>
                 ) : (
                   <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatKindergartenText(streamingPlan || generatedPlan)}
+                    {formatKindergartenText(streamingPlan || generatedPlan, tabColor)}
                     {loading && streamingPlan && (
                       <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 bg-pink-500 animate-pulse rounded-full"></span>
+                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
                       </span>
                     )}
                   </div>
@@ -700,16 +726,16 @@ Please create an engaging, play-based lesson plan with clear learning objectives
               </div>
 
               {loading && (
-                <div className="mt-8 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-6 border border-pink-100">
+                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-pink-900 font-medium">Creating your kindergarten plan</div>
-                      <div className="text-pink-600 text-sm mt-1">Play-based learning activities and developmentally appropriate practices</div>
+                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your kindergarten plan</div>
+                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Play-based learning activities and developmentally appropriate practices</div>
                     </div>
                     <div className="flex space-x-1">
-                      <div className="w-3 h-3 bg-pink-400 rounded-full animate-bounce"></div>
-                      <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-3 h-3 bg-pink-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -734,7 +760,7 @@ Please create an engaging, play-based lesson plan with clear learning objectives
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
-                <div>
+                <div data-tutorial="kinder-planner-theme">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Lesson Topic <span className="text-red-500">*</span>
                   </label>
@@ -742,7 +768,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                     type="text"
                     value={formData.lessonTopic}
                     onChange={(e) => handleInputChange('lessonTopic', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Exploring Colors"
                   />
                 </div>
@@ -754,7 +781,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                   <select
                     value={formData.curriculumUnit}
                     onChange={(e) => handleInputChange('curriculumUnit', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select unit</option>
                     {curriculumUnits.map(u => <option key={u} value={u}>{u}</option>)}
@@ -770,7 +798,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                       type="number"
                       value={formData.week}
                       onChange={(e) => handleInputChange('week', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       min="1"
                     />
                   </div>
@@ -782,7 +811,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                     <select
                       value={formData.dayOfWeek}
                       onChange={(e) => handleInputChange('dayOfWeek', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
                       <option value="">Select day</option>
                       {daysOfWeek.map(d => <option key={d} value={d}>{d}</option>)}
@@ -797,7 +827,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                       type="text"
                       value={formData.date}
                       onChange={(e) => handleInputChange('date', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     />
                   </div>
                 </div>
@@ -825,12 +856,13 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                       type="number"
                       value={formData.students}
                       onChange={(e) => handleInputChange('students', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     />
                   </div>
                 </div>
 
-                <div>
+                <div data-tutorial="kinder-planner-centers">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Creativity Level <span className="text-red-500">*</span>
                   </label>
@@ -851,7 +883,7 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                   </p>
                 </div>
 
-                <div>
+                <div data-tutorial="kinder-planner-learning-areas">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Learning Domains <span className="text-red-500">*</span>
                   </label>
@@ -862,7 +894,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                           type="checkbox"
                           checked={formData.learningDomains.includes(domain)}
                           onChange={() => handleCheckboxChange('learningDomains', domain)}
-                          className="w-4 h-4 text-pink-600 rounded"
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
                         />
                         <span className="text-sm">{domain}</span>
                       </label>
@@ -870,7 +903,7 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                   </div>
                 </div>
 
-                <div>
+                <div data-tutorial="kinder-planner-circle-time">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Duration (minutes) <span className="text-red-500">*</span>
                   </label>
@@ -878,14 +911,15 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                     type="number"
                     value={formData.duration}
                     onChange={(e) => handleInputChange('duration', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     min="15"
                     max="480"
                     placeholder="15 minutes to 8 hours"
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="kinder-planner-play-activities">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Additional Requirements
                   </label>
@@ -893,11 +927,12 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                     value={formData.additionalRequirements}
                     onChange={(e) => handleInputChange('additionalRequirements', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="kinder-planner-assessment">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Generation Options
                   </label>
@@ -907,7 +942,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                         type="checkbox"
                         checked={formData.includeAssessments}
                         onChange={(e) => handleInputChange('includeAssessments', e.target.checked)}
-                        className="w-4 h-4 text-pink-600 rounded"
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: tabColor }}
                       />
                       <span className="text-sm">Include Assessments</span>
                     </label>
@@ -916,7 +952,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                         type="checkbox"
                         checked={formData.includeMaterials}
                         onChange={(e) => handleInputChange('includeMaterials', e.target.checked)}
-                        className="w-4 h-4 text-pink-600 rounded"
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: tabColor }}
                       />
                       <span className="text-sm">Include Materials</span>
                     </label>
@@ -937,7 +974,11 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                 <button
                   onClick={generatePlan}
                   disabled={!validateForm() || loading}
-                  className="flex items-center px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:bg-gray-300"
+                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                  style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
+                  onMouseEnter={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '1')}
+                  data-tutorial="kinder-planner-generate"
                 >
                   {loading ? (
                     <>
@@ -1025,6 +1066,22 @@ Please create an engaging, play-based lesson plan with clear learning objectives
           setEditedContent(newContent);
         }}
       />
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.KINDERGARTEN_PLANNER].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.KINDERGARTEN_PLANNER}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

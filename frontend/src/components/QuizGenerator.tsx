@@ -5,6 +5,10 @@ import QuizEditor from './QuizEditor';
 import axios from 'axios';
 import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
 import { buildQuizPrompt } from '../utils/quizPromptBuilder';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -32,7 +36,7 @@ interface FormData {
   numberOfQuestions: string;
 }
 
-const formatQuizText = (text: string) => {
+const formatQuizText = (text: string, accentColor: string) => {
   if (!text) return null;
 
   let cleanText = text;
@@ -56,7 +60,7 @@ const formatQuizText = (text: string) => {
     if (trimmed.match(/^\*\*(.+)\*\*$/)) {
       const title = trimmed.replace(/\*\*/g, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-cyan-900 mt-8 mb-4 pb-2 border-b border-cyan-200">
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
           {title}
         </h2>
       );
@@ -66,7 +70,7 @@ const formatQuizText = (text: string) => {
     // Question numbers
     if (trimmed.match(/^Question \d+:/)) {
       elements.push(
-        <h3 key={`question-${currentIndex++}`} className="text-lg font-semibold text-cyan-700 mt-6 mb-3 bg-cyan-50 p-3 rounded-lg">
+        <h3 key={`question-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-3 p-3 rounded-lg" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
           {trimmed}
         </h3>
       );
@@ -77,7 +81,7 @@ const formatQuizText = (text: string) => {
     if (trimmed.match(/^[A-D]\)/)) {
       elements.push(
         <div key={`option-${currentIndex++}`} className="ml-6 mb-2 flex items-start">
-          <span className="text-cyan-600 mr-3 font-semibold">{trimmed.substring(0, 2)}</span>
+          <span className="mr-3 font-semibold" style={{ color: `${accentColor}cc` }}>{trimmed.substring(0, 2)}</span>
           <span className="text-gray-700">{trimmed.substring(2).trim()}</span>
         </div>
       );
@@ -89,7 +93,7 @@ const formatQuizText = (text: string) => {
       const content = trimmed.replace(/^\s*\*\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
-          <span className="text-cyan-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
       );
@@ -102,7 +106,7 @@ const formatQuizText = (text: string) => {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       elements.push(
         <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
-          <span className="text-cyan-600 mr-3 font-semibold min-w-[2rem] bg-cyan-50 rounded px-2 py-1 text-sm">
+          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
           <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
@@ -125,7 +129,10 @@ const formatQuizText = (text: string) => {
 };
 
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const tabColor = settings.tabColors['quiz-generator'];
   const [loading, setLoading] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -444,6 +451,21 @@ ${contentToExport}`;
            formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0;
   };
 
+  // Auto-show tutorial on first use
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.QUIZ_GENERATOR)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.QUIZ_GENERATOR);
+    setShowTutorial(false);
+  };
+
   // Save data whenever it changes
   useEffect(() => {
     onDataChange({ formData, generatedQuiz, streamingQuiz, parsedQuiz });
@@ -451,7 +473,7 @@ ${contentToExport}`;
 
 
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="quiz-generator-welcome">
       <div className="flex-1 flex flex-col bg-white">
         {(generatedQuiz || streamingQuiz || isEditing) ? (
           <>
@@ -514,7 +536,11 @@ ${contentToExport}`;
                       </button>
                       <button
                         onClick={exportQuiz}
-                        className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition"
+                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
+                        data-tutorial="quiz-generator-export"
+                        style={{ backgroundColor: tabColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export
@@ -545,8 +571,12 @@ ${contentToExport}`;
                   {(streamingQuiz || generatedQuiz) && (
                     <div className="mb-8">
                       <div className="relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-cyan-600 to-blue-700"></div>
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/90 to-blue-600/90"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br" style={{
+                          background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)`
+                        }}></div>
+                        <div className="absolute inset-0" style={{
+                          background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)`
+                        }}></div>
                         
                         <div className="relative px-8 py-8">
                           <div className="flex items-start justify-between">
@@ -607,26 +637,29 @@ ${contentToExport}`;
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1">
-                      {formatQuizText(streamingQuiz || generatedQuiz)}
+                      {formatQuizText(streamingQuiz || generatedQuiz, tabColor)}
                       {loading && streamingQuiz && (
                         <span className="inline-flex items-center ml-1">
-                          <span className="w-0.5 h-5 bg-cyan-500 animate-pulse rounded-full"></span>
+                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
                         </span>
                       )}
                     </div>
                   </div>
 
                   {loading && (
-                    <div className="mt-8 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-100">
+                    <div className="mt-8 rounded-xl p-6 border" style={{
+                      background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`,
+                      borderColor: `${tabColor}33`
+                    }}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-cyan-900 font-medium">Creating your quiz</div>
-                          <div className="text-cyan-600 text-sm mt-1">Tailored for your learning outcomes</div>
+                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your quiz</div>
+                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Tailored for your learning outcomes</div>
                         </div>
                         <div className="flex space-x-1">
-                          <div className="w-3 h-3 bg-cyan-400 rounded-full animate-bounce"></div>
-                          <div className="w-3 h-3 bg-cyan-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-3 h-3 bg-cyan-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
                         </div>
                       </div>
                     </div>
@@ -654,35 +687,37 @@ ${contentToExport}`;
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
-                <div>
+                <div data-tutorial="quiz-generator-subject">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Subject <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.subject}
                     onChange={(e) => handleInputChange('subject', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select a subject</option>
                     {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
 
-                <div>
+                <div data-tutorial="quiz-generator-grade">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Grade Level <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.gradeLevel}
                     onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select a grade</option>
                     {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
                   </select>
                 </div>
 
-                <div>
+                <div data-tutorial="quiz-generator-question-count">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Number of Questions <span className="text-red-500">*</span>
                   </label>
@@ -690,13 +725,14 @@ ${contentToExport}`;
                     type="number"
                     value={formData.numberOfQuestions}
                     onChange={(e) => handleInputChange('numberOfQuestions', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     min="1"
                     max="50"
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="quiz-generator-topic">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Learning Outcomes <span className="text-red-500">*</span>
                   </label>
@@ -704,12 +740,13 @@ ${contentToExport}`;
                     value={formData.learningOutcomes}
                     onChange={(e) => handleInputChange('learningOutcomes', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="What should students know or be able to demonstrate?"
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="quiz-generator-question-types">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Question Types <span className="text-red-500">*</span>
                   </label>
@@ -720,7 +757,8 @@ ${contentToExport}`;
                           type="checkbox"
                           checked={formData.questionTypes.includes(type)}
                           onChange={() => handleCheckboxChange('questionTypes', type)}
-                          className="w-4 h-4 text-cyan-600 rounded"
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
                         />
                         <span className="text-sm">{type}</span>
                       </label>
@@ -728,7 +766,7 @@ ${contentToExport}`;
                   </div>
                 </div>
 
-                <div>
+                <div data-tutorial="quiz-generator-cognitive-levels">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Cognitive Levels <span className="text-red-500">*</span>
                   </label>
@@ -739,7 +777,8 @@ ${contentToExport}`;
                           type="checkbox"
                           checked={formData.cognitiveLevels.includes(level)}
                           onChange={() => handleCheckboxChange('cognitiveLevels', level)}
-                          className="w-4 h-4 text-cyan-600 rounded"
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
                         />
                         <span className="text-sm">{level}</span>
                       </label>
@@ -755,7 +794,8 @@ ${contentToExport}`;
                     type="number"
                     value={formData.timeLimitPerQuestion}
                     onChange={(e) => handleInputChange('timeLimitPerQuestion', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., 60"
                   />
                 </div>
@@ -766,7 +806,8 @@ ${contentToExport}`;
                       type="checkbox"
                       checked={formData.randomizeQuestions}
                       onChange={(e) => handleInputChange('randomizeQuestions', e.target.checked)}
-                      className="w-4 h-4 text-cyan-600 rounded"
+                      className="w-4 h-4 rounded"
+                      style={{ accentColor: tabColor }}
                     />
                     <span className="text-sm font-medium text-gray-700">Randomize Questions</span>
                   </label>
@@ -786,7 +827,11 @@ ${contentToExport}`;
                 <button
                   onClick={generateQuiz}
                   disabled={!validateForm() || loading}
-                  className="flex items-center px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:bg-gray-300"
+                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                  data-tutorial="quiz-generator-generate"
+                  style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
+                  onMouseEnter={(e) => !loading && !(!validateForm()) && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !loading && !(!validateForm()) && (e.currentTarget.style.opacity = '1')}
                 >
                   {loading ? (
                     <>
@@ -875,6 +920,21 @@ ${contentToExport}`;
           if (parsed) setParsedQuiz(parsed);
         }}
       />
+
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.QUIZ_GENERATOR].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.QUIZ_GENERATOR}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

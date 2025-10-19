@@ -34,8 +34,11 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import ResourceManager from './ResourceManager';
 import Settings from './Settings';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import WelcomeModal from './WelcomeModal';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateColorVariants, isColorDark } from '../lib/utils';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 
 interface DashboardProps {
@@ -155,7 +158,7 @@ const iconMap: { [key: string]: any } = {
 const MAX_TABS_PER_TYPE = 3;
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
-  const { settings } = useSettings();
+  const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
   
   // Generate dynamic tab colors based on settings
   const tabColors = useMemo(() => {
@@ -183,18 +186,48 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
   const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
 
+  // Check if user has seen welcome modal on mount
   useEffect(() => {
-    const hasSeenTutorial = localStorage.getItem('dashboard-tutorial-completed');
-    if (!hasSeenTutorial) {
-      setShowFirstTimeTutorial(true); // Still set this for first-time users
+    if (!settings.tutorials.hasSeenWelcome) {
+      setShowWelcomeModal(true);
     }
-  }, []);
+  }, [settings.tutorials.hasSeenWelcome]);
 
   const handleTutorialComplete = () => {
-    localStorage.setItem('dashboard-tutorial-completed', 'true');
+    markTutorialComplete(TUTORIAL_IDS.DASHBOARD_MAIN);
     setShowFirstTimeTutorial(false);
   };
+
+  const handleWelcomeStartTour = () => {
+    setWelcomeSeen(true);
+    setShowWelcomeModal(false);
+    setShowFirstTimeTutorial(true);
+  };
+
+  const handleWelcomeSkip = () => {
+    setWelcomeSeen(true);
+    setShowWelcomeModal(false);
+  };
+
+  const handleResourceManagerTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.RESOURCE_MANAGER);
+    setShowResourceManagerTutorial(false);
+  };
+
+  // Auto-show ResourceManager tutorial when tab becomes active
+  useEffect(() => {
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    if (
+      activeTab?.type === 'resource-manager' &&
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.RESOURCE_MANAGER)
+    ) {
+      setShowResourceManagerTutorial(true);
+    }
+  }, [activeTabId, tabs, settings, isTutorialCompleted]);
 
 
   const getTabCountByType = (type: string) => {
@@ -512,13 +545,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         );
       case 'resource-manager':
         return (
-          <ResourceManager
-            tabId={tab.id}
-            savedData={tab.data}
-            onDataChange={(data) => updateTabData(tab.id, data)}
-            onEditResource={handleEditResource}
+          <div className="h-full relative" data-tutorial="resource-welcome">
+            <ResourceManager
+              tabId={tab.id}
+              savedData={tab.data}
+              onDataChange={(data) => updateTabData(tab.id, data)}
+              onEditResource={handleEditResource}
+            />
             
-          />
+            {/* ResourceManager Tutorial Components */}
+            {activeTabId === tab.id && (
+              <TutorialOverlay
+                steps={tutorials[TUTORIAL_IDS.RESOURCE_MANAGER].steps}
+                onComplete={handleResourceManagerTutorialComplete}
+                autoStart={showResourceManagerTutorial}
+                showFloatingButton={false}
+              />
+            )}
+
+            {/* Tutorial Button - Always visible when ResourceManager tab exists */}
+            {!showResourceManagerTutorial && settings.tutorials.tutorialPreferences.showFloatingButtons && (
+              <TutorialButton
+                tutorialId={TUTORIAL_IDS.RESOURCE_MANAGER}
+                onStartTutorial={() => setShowResourceManagerTutorial(true)}
+                position="bottom-right"
+              />
+            )}
+          </div>
         );
       case 'lesson-planner':
         return <LessonPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
@@ -1187,7 +1240,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           )}
           
         </div>
-      </div> 
+      </div>
+
+      {/* Welcome Modal for first-time users */}
+      {showWelcomeModal && (
+        <WelcomeModal
+          onClose={handleWelcomeSkip}
+          onStartTour={handleWelcomeStartTour}
+        />
+      )}
 
       {/* First-time Dashboard Tutorial */}
       <TutorialOverlay

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, Play } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,6 +7,9 @@ import { ScrollArea } from './ui/scroll-area';
 import { useSettings } from '../contexts/SettingsContext';
 import { downloadJSON } from '../lib/utils';
 import axios from 'axios';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface SettingsProps {
   tabId?: string;
@@ -15,9 +18,27 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = () => {
-  const { settings, updateSettings, resetSettings } = useSettings();
+  const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials } = useSettings();
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  
+  // Tutorial integration
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Auto-show tutorial on first use
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.SETTINGS)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.SETTINGS);
+    setShowTutorial(false);
+  };
 
   // Tab types and their default colors (matching sidebar order)
   const tabTypes = [
@@ -177,7 +198,7 @@ const Settings: React.FC<SettingsProps> = () => {
   };
 
   return (
-    <div className="h-full bg-gray-50">
+    <div className="h-full bg-gray-50" data-tutorial="settings-welcome">
       <ScrollArea className="h-full">
         <div className="max-w-4xl mx-auto p-6 pb-20">
           {/* Header */}
@@ -221,7 +242,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Tab Colors Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-tutorial="settings-tab-colors">
             <CardHeader>
               <CardTitle>Tab Colors</CardTitle>
               <CardDescription>Customize the color scheme for each tab type</CardDescription>
@@ -263,7 +284,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* OECS Authentication Key Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-tutorial="settings-api">
             <CardHeader>
               <CardTitle>OECS Authentication Key (OAK)</CardTitle>
               <CardDescription>Used for app updates and accessing new models</CardDescription>
@@ -288,8 +309,117 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>
 
+          {/* Tutorial Management Section */}
+          <Card className="mb-6" data-tutorial="settings-tutorials">
+            <CardHeader>
+              <CardTitle>Tutorial Management</CardTitle>
+              <CardDescription>Control tutorial behavior and reset completed tutorials</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Auto-show tutorials toggle */}
+                <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Auto-show tutorials on first use</p>
+                    <p className="text-xs text-gray-500">Automatically display tutorials when you open a tool for the first time</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.tutorials.tutorialPreferences.autoShowOnFirstUse}
+                    onChange={(e) => updateSettings({
+                      tutorials: {
+                        ...settings.tutorials,
+                        tutorialPreferences: {
+                          ...settings.tutorials.tutorialPreferences,
+                          autoShowOnFirstUse: e.target.checked
+                        }
+                      }
+                    })}
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  />
+                </label>
+
+                {/* Show floating buttons toggle */}
+                <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Show floating tutorial buttons</p>
+                    <p className="text-xs text-gray-500">Display help buttons in the corner of each tool</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.tutorials.tutorialPreferences.showFloatingButtons}
+                    onChange={(e) => updateSettings({
+                      tutorials: {
+                        ...settings.tutorials,
+                        tutorialPreferences: {
+                          ...settings.tutorials.tutorialPreferences,
+                          showFloatingButtons: e.target.checked
+                        }
+                      }
+                    })}
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  />
+                </label>
+
+                {/* Tutorial list */}
+                <div className="mt-6">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Available Tutorials</h4>
+                  <div className="space-y-2">
+                    {Object.values(tutorials).map((tutorial) => {
+                      const isCompleted = isTutorialCompleted(tutorial.id);
+                      return (
+                        <div key={tutorial.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-gray-300">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-700">{tutorial.name}</p>
+                            <p className="text-xs text-gray-500">{tutorial.description}</p>
+                            {isCompleted && (
+                              <span className="text-xs text-green-600 mt-1 inline-block">✓ Completed</span>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Remove from completed list to allow replay
+                              updateSettings({
+                                tutorials: {
+                                  ...settings.tutorials,
+                                  completedTutorials: settings.tutorials.completedTutorials.filter(id => id !== tutorial.id)
+                                }
+                              });
+                            }}
+                            className="ml-3"
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            Replay
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Reset all tutorials button */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (confirm('Reset all tutorials? This will mark all tutorials as not completed.')) {
+                        resetTutorials();
+                      }
+                    }}
+                    className="w-full"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset All Tutorials
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Export Data Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-tutorial="settings-export">
             <CardHeader>
               <CardTitle>Export Data</CardTitle>
               <CardDescription>Export your data for backup or transfer</CardDescription>
@@ -313,7 +443,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* App Behavior Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-tutorial="settings-notifications">
             <CardHeader>
               <CardTitle>Application Behavior</CardTitle>
               <CardDescription>Configure how the application behaves</CardDescription>
@@ -334,7 +464,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Theme Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-tutorial="settings-appearance">
             <CardHeader>
               <CardTitle>Theme</CardTitle>
               <CardDescription>Choose your preferred theme</CardDescription>
@@ -404,7 +534,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Reset Section */}
-          <Card className="mb-6 border-red-200 bg-red-50">
+          <Card className="mb-6 border-red-200 bg-red-50" data-tutorial="settings-reset">
             <CardHeader>
               <CardTitle className="text-red-700 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
@@ -453,6 +583,22 @@ const Settings: React.FC<SettingsProps> = () => {
           )}
         </div>
       </ScrollArea>
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.SETTINGS].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && settings.tutorials.tutorialPreferences.showFloatingButtons && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.SETTINGS}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

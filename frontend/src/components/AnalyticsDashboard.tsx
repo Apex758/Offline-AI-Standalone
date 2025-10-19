@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3, TrendingUp, FileText, ListChecks, BookMarked, 
+import {
+  BarChart3, TrendingUp, FileText, ListChecks, BookMarked,
   School, Users, GraduationCap, Calendar, Clock, ArrowRight,
   BookOpen, Sparkles
 } from 'lucide-react';
 import axios from 'axios';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -438,6 +440,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </div>
       {/* Tutorial Overlay */}
       <TutorialOverlay steps={analyticsDashboardSteps} />
+      
+      {/* Tutorial Button */}
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.ANALYTICS}
+        onStartTutorial={() => {}}
+      />
     </div>
   );
 };

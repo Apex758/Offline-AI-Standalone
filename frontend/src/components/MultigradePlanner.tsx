@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -38,7 +42,7 @@ interface FormData {
   differentiationNotes: string;
 }
 
-const formatMultigradeText = (text: string) => {
+const formatMultigradeText = (text: string, accentColor: string) => {
   if (!text) return null;
 
   let cleanText = text;
@@ -62,7 +66,7 @@ const formatMultigradeText = (text: string) => {
     if (trimmed.match(/^\*\*(.+)\*\*$/)) {
       const title = trimmed.replace(/\*\*/g, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-indigo-900 mt-8 mb-4 pb-2 border-b border-indigo-200">
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
           {title}
         </h2>
       );
@@ -73,7 +77,7 @@ const formatMultigradeText = (text: string) => {
     if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
       const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold text-indigo-700 mt-6 mb-3 bg-indigo-50 px-3 py-2 rounded-lg border-l-4 border-indigo-500">
+        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-3 px-3 py-2 rounded-lg border-l-4" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d`, borderColor: accentColor }}>
           {title}:
         </h3>
       );
@@ -84,8 +88,8 @@ const formatMultigradeText = (text: string) => {
     if (trimmed.match(/^(Grade|Kindergarten|Differentiated Activities|Extension Activities).*:/i)) {
       elements.push(
         <div key={`grade-${currentIndex++}`} className="mt-4 mb-3">
-          <div className="bg-gradient-to-r from-indigo-100 to-purple-50 border-l-4 border-indigo-600 p-4 rounded-r-lg shadow-sm">
-            <h4 className="font-bold text-indigo-900 text-lg">{trimmed}</h4>
+          <div className="border-l-4 p-4 rounded-r-lg shadow-sm" style={{ background: `linear-gradient(to right, ${accentColor}1a, ${accentColor}0d)`, borderColor: `${accentColor}cc` }}>
+            <h4 className="font-bold text-lg" style={{ color: `${accentColor}dd` }}>{trimmed}</h4>
           </div>
         </div>
       );
@@ -97,7 +101,7 @@ const formatMultigradeText = (text: string) => {
       const content = trimmed.replace(/^\s*\*\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
-          <span className="text-indigo-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
       );
@@ -110,7 +114,7 @@ const formatMultigradeText = (text: string) => {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       elements.push(
         <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
-          <span className="text-indigo-600 mr-3 font-semibold min-w-[2rem] bg-indigo-50 rounded px-2 py-1 text-sm">
+          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
           <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
@@ -133,6 +137,9 @@ const formatMultigradeText = (text: string) => {
 };
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const tabColor = settings.tabColors['multigrade-planner'];
+  const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -214,6 +221,21 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       setEditedContent(generatedPlan);
     }
   }, [generatedPlan]);
+
+  // Tutorial auto-show logic
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.MULTIGRADE_PLANNER)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.MULTIGRADE_PLANNER);
+    setShowTutorial(false);
+  };
 
   useEffect(() => {
     const saved = savedData?.formData;
@@ -549,7 +571,7 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
   };
 
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="multigrade-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
         {(generatedPlan || streamingPlan || isEditing) ? (
           <>
@@ -620,7 +642,11 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                       </button>
                       <button
                         onClick={exportPlan}
-                        className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
+                        style={{ backgroundColor: tabColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        data-tutorial="multigrade-planner-export"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export
@@ -652,8 +678,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
               {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-700"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/90 to-blue-600/90"></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
                     
                     <div className="relative px-8 py-8">
                       <div className="flex items-start justify-between">
@@ -744,10 +770,10 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                   </div>
                 ) : (
                   <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatMultigradeText(streamingPlan || generatedPlan)}
+                    {formatMultigradeText(streamingPlan || generatedPlan, tabColor)}
                     {loading && streamingPlan && (
                       <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 bg-indigo-500 animate-pulse rounded-full"></span>
+                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
                       </span>
                     )}
                   </div>
@@ -755,16 +781,16 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
               </div>
 
               {loading && (
-                <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
+                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-indigo-900 font-medium">Creating your multigrade plan</div>
-                      <div className="text-indigo-600 text-sm mt-1">Differentiated activities for multiple grade levels</div>
+                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your multigrade plan</div>
+                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Differentiated activities for multiple grade levels</div>
                     </div>
                     <div className="flex space-x-1">
-                      <div className="w-3 h-3 bg-indigo-400 rounded-full animate-bounce"></div>
-                      <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-3 h-3 bg-indigo-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -816,28 +842,30 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                     <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
+                      <div data-tutorial="multigrade-planner-subject">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Subject <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={formData.subject}
                           onChange={(e) => handleInputChange('subject', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
                           <option value="">Select a subject</option>
                           {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>
 
-                      <div>
+                      <div data-tutorial="multigrade-planner-grades">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Grade Range <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={formData.gradeRange}
                           onChange={(e) => handleInputChange('gradeRange', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
                           <option value="">Select grade range</option>
                           {gradeRanges.map(r => <option key={r} value={r}>{r}</option>)}
@@ -845,7 +873,7 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                       </div>
                     </div>
 
-                    <div>
+                    <div data-tutorial="multigrade-planner-theme">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Topic <span className="text-red-500">*</span>
                       </label>
@@ -853,7 +881,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         type="text"
                         value={formData.topic}
                         onChange={(e) => handleInputChange('topic', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
@@ -865,7 +894,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         value={formData.essentialLearningOutcomes}
                         onChange={(e) => handleInputChange('essentialLearningOutcomes', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Include outcomes for each grade level in your range"
                       />
                     </div>
@@ -878,7 +908,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         value={formData.specificLearningObjectives}
                         onChange={(e) => handleInputChange('specificLearningObjectives', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
@@ -903,7 +934,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                           type="number"
                           value={formData.duration}
                           onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         />
                       </div>
                     </div>
@@ -916,11 +948,12 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         value={formData.prerequisiteSkills}
                         onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
-                    <div>
+                    <div data-tutorial="multigrade-planner-resources">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Materials <span className="text-red-500">*</span>
                       </label>
@@ -928,7 +961,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         value={formData.materials}
                         onChange={(e) => handleInputChange('materials', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
                   </div>
@@ -939,7 +973,7 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-gray-800">Learning Styles & Preferences</h3>
 
-                    <div>
+                    <div data-tutorial="multigrade-planner-grouping">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Learning Styles <span className="text-red-500">*</span>
                       </label>
@@ -950,7 +984,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                               type="checkbox"
                               checked={formData.learningStyles.includes(style)}
                               onChange={() => handleCheckboxChange('learningStyles', style)}
-                              className="w-4 h-4 text-indigo-600 rounded"
+                              className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }}
                             />
                             <span className="text-sm">{style}</span>
                           </label>
@@ -969,7 +1004,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                               type="checkbox"
                               checked={formData.learningPreferences.includes(pref)}
                               onChange={() => handleCheckboxChange('learningPreferences', pref)}
-                              className="w-4 h-4 text-indigo-600 rounded"
+                              className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }}
                             />
                             <span className="text-sm">{pref}</span>
                           </label>
@@ -988,7 +1024,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                               type="checkbox"
                               checked={formData.multipleIntelligences.includes(intel)}
                               onChange={() => handleCheckboxChange('multipleIntelligences', intel)}
-                              className="w-4 h-4 text-indigo-600 rounded"
+                              className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }}
                             />
                             <span className="text-sm">{intel}</span>
                           </label>
@@ -1004,13 +1041,14 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         value={formData.customLearningStyles}
                         onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
                     <h3 className="text-lg font-bold text-gray-800 mt-8">Teaching Strategies</h3>
 
-                    <div>
+                    <div data-tutorial="multigrade-planner-common-activities">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Pedagogical Strategies <span className="text-red-500">*</span>
                       </label>
@@ -1021,7 +1059,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                               type="checkbox"
                               checked={formData.pedagogicalStrategies.includes(strategy)}
                               onChange={() => handleCheckboxChange('pedagogicalStrategies', strategy)}
-                              className="w-4 h-4 text-indigo-600 rounded"
+                              className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }}
                             />
                             <span className="text-sm">{strategy}</span>
                           </label>
@@ -1029,7 +1068,7 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                       </div>
                     </div>
 
-                    <div>
+                    <div data-tutorial="multigrade-planner-differentiation">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Multigrade Teaching Strategies <span className="text-red-500">*</span>
                       </label>
@@ -1040,7 +1079,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                               type="checkbox"
                               checked={formData.multigradeStrategies.includes(strategy)}
                               onChange={() => handleCheckboxChange('multigradeStrategies', strategy)}
-                              className="w-4 h-4 text-indigo-600 rounded"
+                              className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }}
                             />
                             <span className="text-sm">{strategy}</span>
                           </label>
@@ -1061,7 +1101,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                           type="checkbox"
                           checked={formData.specialNeeds}
                           onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
-                          className="w-4 h-4 text-indigo-600 rounded"
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
                         />
                         <span className="text-sm font-medium">Check if there are students with special needs in any grade level</span>
                       </label>
@@ -1076,7 +1117,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                           value={formData.specialNeedsDetails}
                           onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
                           rows={3}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         />
                       </div>
                     )}
@@ -1089,7 +1131,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         value={formData.differentiationNotes}
                         onChange={(e) => handleInputChange('differentiationNotes', e.target.value)}
                         rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="How will you differentiate for different grade levels?"
                       />
                     </div>
@@ -1125,7 +1168,10 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                     <button
                       onClick={() => setStep(step + 1)}
                       disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300"
+                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                      style={!validateStep() ? {} : { backgroundColor: tabColor }}
+                      onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
+                      onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}
                     >
                       Next
                       <ChevronRight className="w-5 h-5 ml-1" />
@@ -1134,7 +1180,9 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                     <button
                       onClick={generatePlan}
                       disabled={loading || !validateStep()}
-                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300"
+                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition"
+                      style={loading || !validateStep() ? {} : { backgroundColor: 'rgb(22 163 74)' }}
+                      data-tutorial="multigrade-planner-generate"
                     >
                       {loading ? (
                         <>
@@ -1224,6 +1272,22 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
           setEditedContent(newContent);
         }}
       />
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.MULTIGRADE_PLANNER].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.MULTIGRADE_PLANNER}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

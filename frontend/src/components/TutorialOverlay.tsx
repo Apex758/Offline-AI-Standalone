@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HelpCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface TutorialStep {
+export interface TutorialStep {
   target: string;
   title: string;
   description: string;
@@ -9,8 +9,8 @@ interface TutorialStep {
   interactive?: boolean;
   waitForAction?: string;
   actionHint?: string;
-  clickTarget?: string;  
-  className?: string; 
+  clickTarget?: string;
+  className?: string;
 }
 interface TutorialOverlayProps {
   steps: TutorialStep[];
@@ -69,7 +69,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
          
           if (step.waitForAction === 'contextmenu') {
-            const contextMenuHandler = (e: Event) => {
+            const contextMenuHandler = () => {
               // Don't prevent default - let the menu open naturally
               
               setTimeout(() => {
@@ -108,7 +108,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           
           if (!isInView) {
             // Scroll within the container only
-            const scrollTop = scrollParent.scrollTop;
             const elementTop = (element as HTMLElement).offsetTop;
             const scrollParentHeight = scrollParent.clientHeight;
             const elementHeight = (element as HTMLElement).offsetHeight;
@@ -162,155 +161,107 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     };
   }, [currentStep, isActive, steps]);
 
+  // Helper function to calculate optimal tooltip position
+  const calculateOptimalPosition = (
+    highlightRect: DOMRect,
+    tooltipWidth: number,
+    tooltipHeight: number
+  ): { position: string; style: React.CSSProperties } => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const spacing = 24; // Consistent spacing from highlighted element
+    const margin = 20; // Minimum margin from viewport edges
+
+    // Calculate available space in all directions
+    const spaceRight = viewportWidth - highlightRect.right - margin;
+    const spaceLeft = highlightRect.left - margin;
+    const spaceBottom = viewportHeight - highlightRect.bottom - margin;
+    const spaceTop = highlightRect.top - margin;
+
+    // Calculate center points for alignment
+    const highlightCenterX = highlightRect.left + highlightRect.width / 2;
+    const highlightCenterY = highlightRect.top + highlightRect.height / 2;
+
+    // Try positions in priority order: right → bottom → left → top
+    const positions = [
+      {
+        name: 'right',
+        fits: spaceRight >= tooltipWidth + spacing,
+        style: {
+          left: `${highlightRect.right + spacing}px`,
+          top: `${Math.max(margin, Math.min(highlightCenterY - tooltipHeight / 2, viewportHeight - tooltipHeight - margin))}px`,
+        }
+      },
+      {
+        name: 'bottom',
+        fits: spaceBottom >= tooltipHeight + spacing,
+        style: {
+          top: `${highlightRect.bottom + spacing}px`,
+          left: `${Math.max(margin, Math.min(highlightCenterX - tooltipWidth / 2, viewportWidth - tooltipWidth - margin))}px`,
+        }
+      },
+      {
+        name: 'left',
+        fits: spaceLeft >= tooltipWidth + spacing,
+        style: {
+          right: `${viewportWidth - highlightRect.left + spacing}px`,
+          top: `${Math.max(margin, Math.min(highlightCenterY - tooltipHeight / 2, viewportHeight - tooltipHeight - margin))}px`,
+        }
+      },
+      {
+        name: 'top',
+        fits: spaceTop >= tooltipHeight + spacing,
+        style: {
+          bottom: `${viewportHeight - highlightRect.top + spacing}px`,
+          left: `${Math.max(margin, Math.min(highlightCenterX - tooltipWidth / 2, viewportWidth - tooltipWidth - margin))}px`,
+        }
+      }
+    ];
+
+    // Check if preferred position from step configuration fits
+    const step = steps[currentStep];
+    const preferredPosition = step.position || 'bottom';
+    const preferred = positions.find(p => p.name === preferredPosition);
+    
+    if (preferred && preferred.fits) {
+      return { position: preferred.name, style: preferred.style };
+    }
+
+    // Otherwise, find first position that fits
+    const bestFit = positions.find(p => p.fits);
+    if (bestFit) {
+      return { position: bestFit.name, style: bestFit.style };
+    }
+
+    // Fallback: use position with most space, constrained to viewport
+    const spacesWithNames = [
+      { name: 'right', space: spaceRight },
+      { name: 'bottom', space: spaceBottom },
+      { name: 'left', space: spaceLeft },
+      { name: 'top', space: spaceTop }
+    ];
+    const maxSpace = spacesWithNames.reduce((max, current) =>
+      current.space > max.space ? current : max
+    );
+    
+    const fallback = positions.find(p => p.name === maxSpace.name)!;
+    return { position: fallback.name, style: fallback.style };
+  };
+
   // Separate effect for tooltip positioning to avoid jitter
   useEffect(() => {
     if (!highlightRect || !tooltipRef.current) return;
 
     const calculatePosition = () => {
-      const step = steps[currentStep];
-      const position = step.position || 'bottom';
-      const padding = 24;
       const tooltip = tooltipRef.current;
       if (!tooltip) return;
 
       const tooltipRect = tooltip.getBoundingClientRect();
-      let style: React.CSSProperties = {};
-
-      switch (position) {
-        case 'top':
-          style = {
-            bottom: `${window.innerHeight - highlightRect.top + padding}px`,
-            left: `${highlightRect.left + highlightRect.width / 2}px`,
-            transform: 'translateX(-50%)',
-          };
-          break;
-        case 'bottom':
-          style = {
-            top: `${highlightRect.bottom + padding}px`,
-            left: `${highlightRect.left + highlightRect.width / 2 + 80 }px`,
-            transform: 'translateX(-50%)',
-          };
-          break;
-        case 'left':
-          style = {
-            top: `${highlightRect.top + highlightRect.height / 2}px`,
-            right: `${window.innerWidth - highlightRect.left + padding}px`,
-            transform: 'translateY(-50%)',
-          };
-          break;
-        case 'right':
-          style = {
-            top: `${highlightRect.top + highlightRect.height / 2}px`,
-            left: `${highlightRect.right + padding}px`,
-            transform: 'translateY(-50%)',
-          };
-          break;
-      }
-
-      // Calculate actual position after transform
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'fixed';
-      Object.assign(tempDiv.style, style);
-      document.body.appendChild(tempDiv);
-      const tempRect = tempDiv.getBoundingClientRect();
-      document.body.removeChild(tempDiv);
-
-      // Adaptive repositioning for edge collisions (instead of hardcoded 100px check)
-      // Ensure viewport and tooltip sizes initialized only once globally within this calculation
-      const viewWidth = window.innerWidth;
-      const viewHeight = window.innerHeight;
-      const ttWidth = tooltipRect.width;
-      const ttHeight = tooltipRect.height;
-      // Precompute viewport sizes and tooltip metrics early
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const tooltipHeight = tooltipRect.height;
-
-      const isNearTop = tempRect.top < padding;
-      const isNearRight = tempRect.right + ttWidth > viewWidth - padding;
-      const isNearBottom = tempRect.bottom + ttHeight > viewHeight - padding;
-
-      if (position === 'left') {
-        const stepNumber = currentStep + 1;
-        
-        // Slight manual adjustment for steps 10 and 11
-        if (stepNumber === 10 || stepNumber === 11) {
-          style = {
-            top: `${highlightRect.bottom + padding * 1.8}px`,
-            right: `${viewWidth - highlightRect.left + padding * 1.8}px`,
-            left: 'auto',
-            transform: 'none',
-          };
-        } else if (isNearTop) {
-          style = {
-            top: `${highlightRect.bottom + padding}px`,
-            right: `${padding}px`,
-            left: 'auto',
-            transform: 'none',
-          };
-        } else if (isNearBottom) {
-          style = {
-            top: `${highlightRect.top - tooltipHeight - padding}px`,
-            right: `${padding}px`,
-            left: 'auto',
-            transform: 'none',
-          };
-        } else if (isNearRight) {
-          style = {
-            top: `${highlightRect.top + highlightRect.height / 2}px`,
-            right: `${padding}px`,
-            left: 'auto',
-            transform: 'translateY(-50%)',
-          };
-        } else {
-          style = {
-            top: `${highlightRect.top + highlightRect.height / 2}px`,
-            right: `${viewWidth - highlightRect.left + padding}px`,
-            transform: 'translateY(-50%)',
-          };
-        }
-      }
-
-      // Boundary checks with the calculated position
-      const margin = 20;
-      const viewportWidth = vw;
-      const viewportHeight = vh;
-
-      // Right edge overflow
-      if (tempRect.right > viewportWidth - margin) {
-        if (position === 'bottom' || position === 'top') {
-          // For horizontal positions, align to right edge
-          style.left = 'auto';
-          style.right = `${margin}px`;
-          style.transform = 'none';
-        } else {
-          // For vertical positions, shift left
-          style.left = `${viewportWidth - tooltipRect.width - margin}px`;
-          style.right = 'auto';
-          style.transform = style.transform?.includes('translateY') ? 'translateY(-50%)' : 'none';
-        }
-      }
-
-      // Left edge overflow
-      if (tempRect.left < margin) {
-        style.left = `${margin}px`;
-        style.right = 'auto';
-        style.transform = style.transform?.includes('translateY') ? 'translateY(-50%)' : 'none';
-      }
-
-      // Bottom edge overflow
-      if (tempRect.bottom > viewportHeight - margin) {
-        style.top = 'auto';
-        style.bottom = `${margin}px`;
-        style.transform = style.transform?.includes('translateX') ? 'translateX(-50%)' : 'none';
-      }
-
-      // Top edge overflow
-      if (tempRect.top < margin) {
-        style.top = `${margin}px`;
-        style.bottom = 'auto';
-        style.transform = style.transform?.includes('translateX') ? 'translateX(-50%)' : 'none';
-      }
+      const { style } = calculateOptimalPosition(
+        highlightRect,
+        tooltipRect.width,
+        tooltipRect.height
+      );
 
       setTooltipPosition(style);
     };
@@ -503,11 +454,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       <div
         ref={tooltipRef}
         className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-10 transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
-          style={Object.keys(tooltipPosition).length > 0 ? tooltipPosition : { 
-            top: `${highlightRect.bottom + 24}px`,
-            left: `${highlightRect.left + highlightRect.width / 2}px`,
-            transform: 'translateX(-50%)'
-          }}
+        style={tooltipPosition}
         >
           <button
             onClick={handleClose}
@@ -751,10 +698,10 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     target: '[data-tutorial="close-all-tabs"]',
     title: 'Close All Tabs',
     description: 'Click this red X button to close all open tabs at once and start fresh. Give it a try!',
-    position: 'bottom ',
+    position: 'bottom',
     interactive: true,
     waitForAction: 'click',
-    className: 'p-4', 
+    className: 'p-4',
   },
   {
     target: '[data-tutorial="main-content"]',

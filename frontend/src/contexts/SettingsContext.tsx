@@ -15,6 +15,15 @@ export interface TabColors {
   'resource-manager': string;
 }
 
+export interface TutorialState {
+  completedTutorials: string[];
+  hasSeenWelcome: boolean;
+  tutorialPreferences: {
+    autoShowOnFirstUse: boolean;
+    showFloatingButtons: boolean;
+  };
+}
+
 export interface Settings {
   fontSize: number; // Percentage (100 = default)
   tabColors: TabColors;
@@ -23,12 +32,17 @@ export interface Settings {
   autoCloseTabsOnExit: boolean;
   theme: 'light' | 'dark' | 'system';
   sidebarColor: string;
+  tutorials: TutorialState;
 }
 
 export interface SettingsContextValue {
   settings: Settings;
   updateSettings: (updates: Partial<Settings>) => void;
   resetSettings: () => void;
+  markTutorialComplete: (tutorialId: string) => void;
+  isTutorialCompleted: (tutorialId: string) => boolean;
+  resetTutorials: () => void;
+  setWelcomeSeen: (seen: boolean) => void;
 }
 
 // Default Settings (hex colors matching Settings.tsx defaults)
@@ -51,7 +65,15 @@ export const DEFAULT_SETTINGS: Settings = {
   oakKey: '',
   autoCloseTabsOnExit: false,
   theme: 'system',
-  sidebarColor: '#1e293b'
+  sidebarColor: '#1e293b',
+  tutorials: {
+    completedTutorials: [],
+    hasSeenWelcome: false,
+    tutorialPreferences: {
+      autoShowOnFirstUse: true,
+      showFloatingButtons: true
+    }
+  }
 };
 
 // localStorage key
@@ -60,10 +82,32 @@ const STORAGE_KEY = 'app-settings-main';
 // Create Context
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
+// Helper function to migrate old tutorial data
+const migrateTutorialData = (): Partial<TutorialState> => {
+  const migrated: Partial<TutorialState> = {};
+  
+  try {
+    // Migrate old dashboard tutorial completion
+    const oldDashboardTutorial = localStorage.getItem('dashboard-tutorial-completed');
+    if (oldDashboardTutorial === 'true') {
+      migrated.completedTutorials = ['dashboard-main'];
+      migrated.hasSeenWelcome = true;
+      // Clean up old key
+      localStorage.removeItem('dashboard-tutorial-completed');
+    }
+  } catch (error) {
+    console.error('Error migrating tutorial data:', error);
+  }
+  
+  return migrated;
+};
+
 // Helper function to safely load from localStorage
 const loadSettingsFromStorage = (): Settings => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
+    const migratedTutorials = migrateTutorialData();
+    
     if (stored) {
       const parsed = JSON.parse(stored);
       // Merge with defaults to ensure all fields exist
@@ -73,6 +117,30 @@ const loadSettingsFromStorage = (): Settings => {
         tabColors: {
           ...DEFAULT_SETTINGS.tabColors,
           ...(parsed.tabColors || {})
+        },
+        tutorials: {
+          ...DEFAULT_SETTINGS.tutorials,
+          ...(parsed.tutorials || {}),
+          ...migratedTutorials,
+          completedTutorials: [
+            ...(parsed.tutorials?.completedTutorials || []),
+            ...(migratedTutorials.completedTutorials || [])
+          ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates
+          tutorialPreferences: {
+            ...DEFAULT_SETTINGS.tutorials.tutorialPreferences,
+            ...(parsed.tutorials?.tutorialPreferences || {})
+          }
+        }
+      };
+    }
+    
+    // If no stored settings, check for migration data
+    if (Object.keys(migratedTutorials).length > 0) {
+      return {
+        ...DEFAULT_SETTINGS,
+        tutorials: {
+          ...DEFAULT_SETTINGS.tutorials,
+          ...migratedTutorials
         }
       };
     }
@@ -125,10 +193,51 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     saveSettingsToStorage(DEFAULT_SETTINGS);
   };
 
+  const markTutorialComplete = (tutorialId: string) => {
+    setSettings(prevSettings => {
+      const newCompletedTutorials = prevSettings.tutorials.completedTutorials.includes(tutorialId)
+        ? prevSettings.tutorials.completedTutorials
+        : [...prevSettings.tutorials.completedTutorials, tutorialId];
+      
+      return {
+        ...prevSettings,
+        tutorials: {
+          ...prevSettings.tutorials,
+          completedTutorials: newCompletedTutorials
+        }
+      };
+    });
+  };
+
+  const isTutorialCompleted = (tutorialId: string): boolean => {
+    return settings.tutorials.completedTutorials.includes(tutorialId);
+  };
+
+  const resetTutorials = () => {
+    setSettings(prevSettings => ({
+      ...prevSettings,
+      tutorials: DEFAULT_SETTINGS.tutorials
+    }));
+  };
+
+  const setWelcomeSeen = (seen: boolean) => {
+    setSettings(prevSettings => ({
+      ...prevSettings,
+      tutorials: {
+        ...prevSettings.tutorials,
+        hasSeenWelcome: seen
+      }
+    }));
+  };
+
   const value: SettingsContextValue = {
     settings,
     updateSettings,
-    resetSettings
+    resetSettings,
+    markTutorialComplete,
+    isTutorialCompleted,
+    resetTutorials,
+    setWelcomeSeen
   };
 
   return (

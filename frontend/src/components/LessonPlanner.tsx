@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface LessonPlannerProps {
   tabId: string;
@@ -39,7 +43,7 @@ interface FormData {
   referenceUrl: string;
 }
 
-const formatLessonText = (text: string) => {
+const formatLessonText = (text: string, accentColor: string) => {
   if (!text) return null;
 
   // Clean the text first
@@ -94,7 +98,7 @@ const formatLessonText = (text: string) => {
     if (trimmed.match(/^\*\*(.+)\*\*$/)) {
       const title = trimmed.replace(/\*\*/g, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b border-gray-200">
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
           {title}
         </h2>
       );
@@ -105,7 +109,7 @@ const formatLessonText = (text: string) => {
     if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
       const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold text-blue-700 mt-6 mb-2">
+        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-2" style={{ color: `${accentColor}cc` }}>
           {title}:
         </h3>
       );
@@ -117,7 +121,7 @@ const formatLessonText = (text: string) => {
       const content = trimmed.replace(/^\s*\+\s+/, '');
       elements.push(
         <div key={`nested-${currentIndex++}`} className="ml-8 mb-2 flex items-start">
-          <span className="text-blue-400 mr-2 mt-1.5 text-xs">▸</span>
+          <span className="mr-2 mt-1.5 text-xs" style={{ color: `${accentColor}66` }}>▸</span>
           <span className="text-gray-600 leading-relaxed text-sm">{content}</span>
         </div>
       );
@@ -129,7 +133,7 @@ const formatLessonText = (text: string) => {
       const content = trimmed.replace(/^\s*\*\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start">
-          <span className="text-blue-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
       );
@@ -142,7 +146,7 @@ const formatLessonText = (text: string) => {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       elements.push(
         <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start">
-          <span className="text-blue-600 mr-3 font-semibold min-w-[2rem] bg-blue-50 rounded px-2 py-1 text-sm">
+          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
           <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
@@ -165,6 +169,9 @@ const formatLessonText = (text: string) => {
 };
 
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const tabColor = settings.tabColors['lesson-planner'];
+  const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -214,6 +221,21 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
   const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [step, setStep] = useState(() => savedData?.step || 1);
+
+  // Tutorial auto-show logic
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.LESSON_PLANNER)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.LESSON_PLANNER);
+    setShowTutorial(false);
+  };
 
   // Initialize edited content when plan is generated
   useEffect(() => {
@@ -618,7 +640,7 @@ ${contentToExport}`;
 
  
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="lesson-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
         {(generatedPlan || streamingPlan || isEditing) ? (
           // Generated plan view
@@ -690,7 +712,11 @@ ${contentToExport}`;
                       </button>
                       <button
                         onClick={exportLessonPlan}
-                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
+                        style={{ backgroundColor: tabColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        data-tutorial="lesson-planner-export"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export
@@ -724,8 +750,8 @@ ${contentToExport}`;
                 <div className="mb-8">
                   <div className="relative overflow-hidden">
                     {/* Background gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/90 to-purple-600/90"></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
                     
                     {/* Content */}
                     <div className="relative px-8 py-8">
@@ -824,10 +850,10 @@ ${contentToExport}`;
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    {formatLessonText(streamingPlan || generatedPlan)}
+                    {formatLessonText(streamingPlan || generatedPlan, tabColor)}
                     {loading && streamingPlan && (
                       <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 bg-blue-500 animate-pulse rounded-full"></span>
+                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
                       </span>
                     )}
                   </div>
@@ -836,16 +862,16 @@ ${contentToExport}`;
 
               {/* Loading progress at bottom */}
               {loading && (
-                <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-blue-900 font-medium">Creating your lesson plan</div>
-                      <div className="text-blue-600 text-sm mt-1">Tailored for your specific requirements</div>
+                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your lesson plan</div>
+                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Tailored for your specific requirements</div>
                     </div>
                     <div className="flex space-x-1">
-                      <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
-                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -900,7 +926,7 @@ ${contentToExport}`;
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
 
-                    <div>
+                    <div data-tutorial="lesson-planner-basic-info">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Subject <span className="text-red-500">*</span>
                       </label>
@@ -910,7 +936,8 @@ ${contentToExport}`;
                           handleInputChange('subject', e.target.value);
                           handleInputChange('strand', '');
                         }}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       >
                         <option value="">Select a subject</option>
                         {subjects.map(subject => (
@@ -927,7 +954,8 @@ ${contentToExport}`;
                         <select
                           value={formData.strand}
                           onChange={(e) => handleInputChange('strand', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
                           <option value="">Select a strand</option>
                           {strandsBySubject[formData.subject]?.map(strand => (
@@ -944,7 +972,8 @@ ${contentToExport}`;
                       <select
                         value={formData.gradeLevel}
                         onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       >
                         <option value="">Select a grade</option>
                         {grades.map(grade => (
@@ -961,7 +990,8 @@ ${contentToExport}`;
                         type="text"
                         value={formData.topic}
                         onChange={(e) => handleInputChange('topic', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="e.g., Water Cycle"
                       />
                     </div>
@@ -974,12 +1004,13 @@ ${contentToExport}`;
                         value={formData.essentialOutcomes}
                         onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="The broad, overarching curriculum outcomes from curriculum standards"
                       />
                     </div>
 
-                    <div>
+                    <div data-tutorial="lesson-planner-objectives">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Specific Curriculum Outcomes <span className="text-red-500">*</span>
                       </label>
@@ -987,7 +1018,8 @@ ${contentToExport}`;
                         value={formData.specificOutcomes}
                         onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="What students should know or be able to do by the end of the lesson"
                       />
                     </div>
@@ -1001,12 +1033,13 @@ ${contentToExport}`;
                           type="number"
                           value={formData.studentCount}
                           onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="e.g., 20"
                         />
                       </div>
 
-                      <div>
+                      <div data-tutorial="lesson-planner-duration">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Duration (minutes) <span className="text-red-500">*</span>
                         </label>
@@ -1014,7 +1047,8 @@ ${contentToExport}`;
                           type="number"
                           value={formData.duration}
                           onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="e.g., 50"
                         />
                       </div>
@@ -1027,7 +1061,7 @@ ${contentToExport}`;
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-gray-800">Teaching Strategy</h3>
 
-                    <div>
+                    <div data-tutorial="lesson-planner-activities">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Pedagogical Strategies <span className="text-red-500">*</span>
                       </label>
@@ -1041,7 +1075,8 @@ ${contentToExport}`;
                               type="checkbox"
                               checked={formData.pedagogicalStrategies.includes(strategy)}
                               onChange={() => handleCheckboxChange('pedagogicalStrategies', strategy)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 rounded focus:ring-2"
+                              style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
                             <span className="text-sm text-gray-700">{strategy}</span>
                           </label>
@@ -1063,7 +1098,8 @@ ${contentToExport}`;
                               type="checkbox"
                               checked={formData.learningStyles.includes(style)}
                               onChange={() => handleCheckboxChange('learningStyles', style)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 rounded focus:ring-2"
+                              style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
                             <span className="text-sm text-gray-700">{style}</span>
                           </label>
@@ -1085,7 +1121,8 @@ ${contentToExport}`;
                               type="checkbox"
                               checked={formData.learningPreferences.includes(pref)}
                               onChange={() => handleCheckboxChange('learningPreferences', pref)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 rounded focus:ring-2"
+                              style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
                             <span className="text-sm text-gray-700">{pref}</span>
                           </label>
@@ -1107,7 +1144,8 @@ ${contentToExport}`;
                               type="checkbox"
                               checked={formData.multipleIntelligences.includes(intel)}
                               onChange={() => handleCheckboxChange('multipleIntelligences', intel)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 rounded focus:ring-2"
+                              style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
                             <span className="text-sm text-gray-700">{intel}</span>
                           </label>
@@ -1123,12 +1161,13 @@ ${contentToExport}`;
                         value={formData.customLearningStyles}
                         onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Add any specific learning styles or preferences not covered above"
                       />
                     </div>
 
-                    <div>
+                    <div data-tutorial="lesson-planner-materials">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Materials <span className="text-red-500">*</span>
                       </label>
@@ -1136,7 +1175,8 @@ ${contentToExport}`;
                         value={formData.materials}
                         onChange={(e) => handleInputChange('materials', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Resources needed for the lesson (e.g., chart paper, colored markers, projector)"
                       />
                     </div>
@@ -1149,7 +1189,8 @@ ${contentToExport}`;
                         value={formData.prerequisiteSkills}
                         onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Skills students should already have before this lesson"
                       />
                     </div>
@@ -1167,7 +1208,8 @@ ${contentToExport}`;
                           type="checkbox"
                           checked={formData.specialNeeds}
                           onChange={(e) => handleInputChange('specialNeeds', e.target.checked)}
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                          className="w-4 h-4 rounded focus:ring-2"
+                          style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                         />
                         <span className="text-sm font-medium text-gray-700">Students with Special Needs</span>
                       </label>
@@ -1182,7 +1224,8 @@ ${contentToExport}`;
                           value={formData.specialNeedsDetails}
                           onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
                           rows={3}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="Describe specific accommodations or modifications needed"
                         />
                       </div>
@@ -1209,7 +1252,8 @@ ${contentToExport}`;
                         type="url"
                         value={formData.referenceUrl}
                         onChange={(e) => handleInputChange('referenceUrl', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="https://example.com/resource"
                       />
                     </div>
@@ -1246,7 +1290,10 @@ ${contentToExport}`;
                     <button
                       onClick={() => setStep(step + 1)}
                       disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex items-center px-6 py-2 text-white rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      style={!validateStep() ? {} : { backgroundColor: tabColor }}
+                      onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
+                      onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}
                     >
                       Next
                       <ChevronRight className="w-5 h-5 ml-1" />
@@ -1256,6 +1303,7 @@ ${contentToExport}`;
                       onClick={generateLessonPlan}
                       disabled={loading}
                       className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      data-tutorial="lesson-planner-generate"
                     >
                       {loading ? (
                         <>
@@ -1345,6 +1393,22 @@ ${contentToExport}`;
           setEditedContent(newContent);
         }}
       />
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.LESSON_PLANNER].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.LESSON_PLANNER}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };
