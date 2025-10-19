@@ -1090,5 +1090,328 @@
         "timestamp": "2025-10-19T17:18:15.965Z"
       }
     ]
+  },
+  {
+    "id": "chat_1760894504493",
+    "title": "whats math in simple terms",
+    "timestamp": "2025-10-19T17:38:17.912Z",
+    "messages": [
+      {
+        "id": "1760894504488",
+        "role": "user",
+        "content": "whats math in simple terms",
+        "timestamp": "2025-10-19T17:21:44.488Z"
+      },
+      {
+        "id": "1760894512915",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:21:52.915Z"
+      },
+      {
+        "id": "1760894973316",
+        "role": "user",
+        "content": "whats food",
+        "timestamp": "2025-10-19T17:29:33.316Z"
+      },
+      {
+        "id": "1760894979615",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:29:39.615Z"
+      },
+      {
+        "id": "1760895027597",
+        "role": "user",
+        "content": "WHATS FIRE",
+        "timestamp": "2025-10-19T17:30:27.597Z"
+      },
+      {
+        "id": "1760895035374",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:30:35.374Z"
+      },
+      {
+        "id": "1760895075450",
+        "role": "user",
+        "content": "where is the tllest building in the world",
+        "timestamp": "2025-10-19T17:31:15.450Z"
+      },
+      {
+        "id": "1760895083109",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:31:23.109Z"
+      },
+      {
+        "id": "1760895492862",
+        "role": "user",
+        "content": "hey",
+        "timestamp": "2025-10-19T17:38:12.862Z"
+      },
+      {
+        "id": "1760895497897",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:38:17.897Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760895646832",
+    "title": "whats math in simple terms",
+    "timestamp": "2025-10-19T17:40:46.832Z",
+    "messages": [
+      {
+        "id": "1760894504488",
+        "role": "user",
+        "content": "whats math in simple terms",
+        "timestamp": "2025-10-19T17:21:44.488Z"
+      },
+      {
+        "id": "1760894512915",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:21:52.915Z"
+      },
+      {
+        "id": "1760894973316",
+        "role": "user",
+        "content": "whats food",
+        "timestamp": "2025-10-19T17:29:33.316Z"
+      },
+      {
+        "id": "1760894979615",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:29:39.615Z"
+      },
+      {
+        "id": "1760895027597",
+        "role": "user",
+        "content": "WHATS FIRE",
+        "timestamp": "2025-10-19T17:30:27.597Z"
+      },
+      {
+        "id": "1760895035374",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:30:35.374Z"
+      },
+      {
+        "id": "1760895075450",
+        "role": "user",
+        "content": "where is the tllest building in the world",
+        "timestamp": "2025-10-19T17:31:15.450Z"
+      },
+      {
+        "id": "1760895083109",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:31:23.109Z"
+      },
+      {
+        "id": "1760895492862",
+        "role": "user",
+        "content": "hey",
+        "timestamp": "2025-10-19T17:38:12.862Z"
+      },
+      {
+        "id": "1760895497897",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:38:17.897Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760895646836",
+    "title": "whats math in simple terms",
+    "timestamp": "2025-10-19T17:40:55.438Z",
+    "messages": [
+      {
+        "id": "1760894504488",
+        "role": "user",
+        "content": "whats math in simple terms",
+        "timestamp": "2025-10-19T17:21:44.488Z"
+      },
+      {
+        "id": "1760894512915",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:21:52.915Z"
+      },
+      {
+        "id": "1760894973316",
+        "role": "user",
+        "content": "whats food",
+        "timestamp": "2025-10-19T17:29:33.316Z"
+      },
+      {
+        "id": "1760894979615",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:29:39.615Z"
+      },
+      {
+        "id": "1760895027597",
+        "role": "user",
+        "content": "WHATS FIRE",
+        "timestamp": "2025-10-19T17:30:27.597Z"
+      },
+      {
+        "id": "1760895035374",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:30:35.374Z"
+      },
+      {
+        "id": "1760895075450",
+        "role": "user",
+        "content": "where is the tllest building in the world",
+        "timestamp": "2025-10-19T17:31:15.450Z"
+      },
+      {
+        "id": "1760895083109",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:31:23.109Z"
+      },
+      {
+        "id": "1760895492862",
+        "role": "user",
+        "content": "hey",
+        "timestamp": "2025-10-19T17:38:12.862Z"
+      },
+      {
+        "id": "1760895497897",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:38:17.897Z"
+      },
+      {
+        "id": "1760895649874",
+        "role": "user",
+        "content": "heyyy",
+        "timestamp": "2025-10-19T17:40:49.874Z"
+      },
+      {
+        "id": "1760895655418",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:40:55.418Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760895676489",
+    "title": "whats cat",
+    "timestamp": "2025-10-19T17:50:05.623Z",
+    "messages": [
+      {
+        "id": "1760895676481",
+        "role": "user",
+        "content": "whats cat",
+        "timestamp": "2025-10-19T17:41:16.481Z"
+      },
+      {
+        "id": "1760895684129",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:41:24.129Z"
+      },
+      {
+        "id": "1760895860813",
+        "role": "user",
+        "content": "whats a dog",
+        "timestamp": "2025-10-19T17:44:20.813Z"
+      },
+      {
+        "id": "1760895881760",
+        "role": "assistant",
+        "content": "\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACle questions, detailed for complex topics.user\n\nwhats a dogassistantassistant\n\nK = 1 | \n\nmain: interactive mode on.\nsampler seed: 3568163223\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA dog is a domesticated mammal that is often kept as a pet. They belong to the family Canidae and are closely related to wolves and jackals. Dogs are known for their loyalty, playfulness, and ability to be trained for various tasks. They come in a wide range of breeds, each with unique characteristics, sizes, and temperaments. Dogs are often used for companionship, hunting, and assistance, and are considered to be one of the most popular pets worldwide.\n\nl>l aEmOaF_ pbeyr fu_ssear\nm\np\nl\neIrn_tperrirnutp:t e d   bsya mupsleirn\ng time =      22.50 ms /   167 runs   (    0.13 ms per token,  7420.90 tokens per second)\n",
+        "timestamp": "2025-10-19T17:44:41.760Z"
+      },
+      {
+        "id": "1760895886224",
+        "role": "user",
+        "content": "what is a dog",
+        "timestamp": "2025-10-19T17:44:46.224Z"
+      },
+      {
+        "id": "1760895894298",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:44:54.298Z"
+      },
+      {
+        "id": "1760895916351",
+        "role": "user",
+        "content": "whats a dog",
+        "timestamp": "2025-10-19T17:45:16.351Z"
+      },
+      {
+        "id": "1760895924362",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:45:24.362Z"
+      },
+      {
+        "id": "1760896126078",
+        "role": "user",
+        "content": "whats a bus",
+        "timestamp": "2025-10-19T17:48:46.078Z"
+      },
+      {
+        "id": "1760896138491",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 3202998470\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA bus is a large vehicle designed to transport multiple people, typically along a fixed route. It's a type of public transportation that carries passengers from one place to another, often in a scheduled and organized manner. Buses can be fueled by diesel, gasoline, or electricity, and come in various sizes, from small minibuses to large coaches. They're a popular mode of transportation for daily commutes, school trips, and long-distance travel.\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:u p t e ds abmyp luisnegr \ntime =       9.58 ms /   158 runs   (    0.06 ms per token, 16499.58 tokens per second)\n",
+        "timestamp": "2025-10-19T17:48:58.491Z"
+      },
+      {
+        "id": "1760896141633",
+        "role": "user",
+        "content": "whats a car",
+        "timestamp": "2025-10-19T17:49:01.633Z"
+      },
+      {
+        "id": "1760896152239",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAlevel to what the user asks - brief for simple questions, detailed for complex topics.user\n\nwhats a carassistantassistant\n\nMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 526813687\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA car is a road vehicle, typically with four wheels, powered by an internal combustion engine, electric motor, or other propulsion system. It's designed for transporting people or goods over short to medium distances, usually on paved roads. Cars come in various styles, sizes, and shapes, and are a common mode of transportation worldwide.\n\nl>l aEmOaF_ pbeyr fu_ssearm\np\nl\ne\nrI_nptreirnrtu:p t e d  sbaym pulsienrg\n time =       7.63 ms /   135 runs   (    0.06 ms per token, 17702.60 tokens per second)\n",
+        "timestamp": "2025-10-19T17:49:12.239Z"
+      },
+      {
+        "id": "1760896158088",
+        "role": "user",
+        "content": "whats a donkey",
+        "timestamp": "2025-10-19T17:49:18.088Z"
+      },
+      {
+        "id": "1760896173564",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 252072957\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA donkey, also known as a burro or ass, is a domesticated mammal that belongs to the equine family. They're closely related to horses and zebras, but are generally smaller and have a more compact build. Donkeys are known for their distinctive loud braying sound, gray or brown coats, and long ears. They're often used as pack animals, especially in rural areas, due to their strength and sure-footedness. Would you like to know more about donkeys?\n\nl>l aEmOaF_ pbeyr fu_ssearm\np\nl\ne\nrI_nptreirnrtu:p t e d  sbaym pulsienrg\n time =      13.29 ms /   172 runs   (    0.08 ms per token, 12939.14 tokens per second)\n",
+        "timestamp": "2025-10-19T17:49:33.564Z"
+      },
+      {
+        "id": "1760896205614",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | sponses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode otopics.user\n\nwhats a duckassistantassistant\n\nn.\nsampler seed: 4163257628\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA duck is a type of bird that belongs to the family Anatidae. They are characterized by their broad, flat beaks, webbed feet, and feathers that are often bright and colorful. Ducks are found in many parts of the world, including ponds, lakes, rivers, and wetlands, and are known for their waddling gait and quacking calls. They are omnivores, eating a variety of foods including plants, insects, and small aquatic animals. Some common types of ducks include Mallards, Wood Ducks, and Pekin Ducks.\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:up t e d  sbaym pulsienrg\n time =      25.92 ms /   182 runs   (    0.14 ms per token,  7020.79 tokens per second)\n",
+        "timestamp": "2025-10-19T17:50:05.614Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760896181858",
+    "title": "whats a duck",
+    "timestamp": "2025-10-19T17:49:41.858Z",
+    "messages": [
+      {
+        "id": "1760896181852",
+        "role": "user",
+        "content": "whats a duck",
+        "timestamp": "2025-10-19T17:49:41.852Z"
+      }
+    ]
   }
 ]

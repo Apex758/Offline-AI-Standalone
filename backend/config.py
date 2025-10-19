@@ -29,7 +29,7 @@ LLAMA_PARAMS = {
     "temperature": 0.6,       # Lower temperature for more focused output
     "top_p": 0.9,            # Top-p sampling (--top-p)
     "context_size": 4096,    # Increased context window size (-c)
-    "timeout": 180,          # Timeout in seconds for generation
+    "timeout": 400,          # Timeout in seconds for generation
     "conversation_history_length": 2,  # Reduced history for lesson planning
     "batch_size": 512,       # Batch size for faster processing
     "repeat_penalty": 1.1,   # Slight penalty to avoid repetition
