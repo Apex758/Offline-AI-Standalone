@@ -1,0 +1,1637 @@
+[
+  {
+    "path": "/curriculum/grade1-subjects/activities/cross-curricular/loading",
+    "file_path": "grade1-subjects/activities/cross-curricular/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/cross-curricular",
+    "file_path": "grade1-subjects/activities/cross-curricular/page.tsx",
+    "name": "Cross Curricular"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/language-arts/loading",
+    "file_path": "grade1-subjects/activities/language-arts/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/language-arts",
+    "file_path": "grade1-subjects/activities/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/language-arts/sound-detectives",
+    "file_path": "grade1-subjects/activities/language-arts/sound-detectives/page.tsx",
+    "name": "Sound Detectives"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/language-arts/word-detectives",
+    "file_path": "grade1-subjects/activities/language-arts/word-detectives/page.tsx",
+    "name": "Word Detectives"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics/loading",
+    "file_path": "grade1-subjects/activities/mathematics/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics/measurement-olympics",
+    "file_path": "grade1-subjects/activities/mathematics/measurement-olympics/page.tsx",
+    "name": "Measurement Olympics"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics/number-detectives",
+    "file_path": "grade1-subjects/activities/mathematics/number-detectives/page.tsx",
+    "name": "Number Detectives"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics",
+    "file_path": "grade1-subjects/activities/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics/pattern-playground",
+    "file_path": "grade1-subjects/activities/mathematics/pattern-playground/page.tsx",
+    "name": "Pattern Playground"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics/shape-hunt",
+    "file_path": "grade1-subjects/activities/mathematics/shape-hunt/page.tsx",
+    "name": "Shape Hunt"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/mathematics/ten-frame-fun",
+    "file_path": "grade1-subjects/activities/mathematics/ten-frame-fun/page.tsx",
+    "name": "Ten Frame Fun"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities",
+    "file_path": "grade1-subjects/activities/page.tsx",
+    "name": "Activities"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/animal-adaptations",
+    "file_path": "grade1-subjects/activities/science/animal-adaptations/page.tsx",
+    "name": "Animal Adaptations"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/loading",
+    "file_path": "grade1-subjects/activities/science/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/material-sorters",
+    "file_path": "grade1-subjects/activities/science/material-sorters/page.tsx",
+    "name": "Material Sorters"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science",
+    "file_path": "grade1-subjects/activities/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/plant-detectives",
+    "file_path": "grade1-subjects/activities/science/plant-detectives/page.tsx",
+    "name": "Plant Detectives"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/push-pull-playground",
+    "file_path": "grade1-subjects/activities/science/push-pull-playground/page.tsx",
+    "name": "Push Pull Playground"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/shadow-investigators",
+    "file_path": "grade1-subjects/activities/science/shadow-investigators/page.tsx",
+    "name": "Shadow Investigators"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/science/weather-watchers",
+    "file_path": "grade1-subjects/activities/science/weather-watchers/page.tsx",
+    "name": "Weather Watchers"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/social-studies/loading",
+    "file_path": "grade1-subjects/activities/social-studies/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/social-studies/my-family-tree",
+    "file_path": "grade1-subjects/activities/social-studies/my-family-tree/page.tsx",
+    "name": "My Family Tree"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/social-studies/neighborhood-map",
+    "file_path": "grade1-subjects/activities/social-studies/neighborhood-map/page.tsx",
+    "name": "Neighborhood Map"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/activities/social-studies",
+    "file_path": "grade1-subjects/activities/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/language-arts/listening-speaking",
+    "file_path": "grade1-subjects/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/language-arts",
+    "file_path": "grade1-subjects/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/language-arts/reading-viewing",
+    "file_path": "grade1-subjects/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/language-arts/writing-representing",
+    "file_path": "grade1-subjects/language-arts/writing-representing/page.tsx",
+    "name": "Writing Representing"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/data-probability",
+    "file_path": "grade1-subjects/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/geometrical-thinking",
+    "file_path": "grade1-subjects/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/loading",
+    "file_path": "grade1-subjects/mathematics/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/measurement",
+    "file_path": "grade1-subjects/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/number-sense",
+    "file_path": "grade1-subjects/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/operations-with-numbers",
+    "file_path": "grade1-subjects/mathematics/operations-with-numbers/page.tsx",
+    "name": "Operations With Numbers"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics",
+    "file_path": "grade1-subjects/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/mathematics/patterns-relationships",
+    "file_path": "grade1-subjects/mathematics/patterns-relationships/page.tsx",
+    "name": "Patterns Relationships"
+  },
+  {
+    "path": "/curriculum/grade1-subjects",
+    "file_path": "grade1-subjects/page.tsx",
+    "name": "Grade1 Subjects"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/science",
+    "file_path": "grade1-subjects/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/science/scientific-inquiry",
+    "file_path": "grade1-subjects/science/scientific-inquiry/page.tsx",
+    "name": "Scientific Inquiry"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/science/space-systems",
+    "file_path": "grade1-subjects/science/space-systems/page.tsx",
+    "name": "Space Systems"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/science/structure-function-processing",
+    "file_path": "grade1-subjects/science/structure-function-processing/page.tsx",
+    "name": "Structure Function Processing"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/science/waves-lights-sounds",
+    "file_path": "grade1-subjects/science/waves-lights-sounds/page.tsx",
+    "name": "Waves Lights Sounds"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/social-studies/civic-participation",
+    "file_path": "grade1-subjects/social-studies/civic-participation/page.tsx",
+    "name": "Civic Participation"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/social-studies/economic-decision-making",
+    "file_path": "grade1-subjects/social-studies/economic-decision-making/page.tsx",
+    "name": "Economic Decision Making"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/social-studies/historical-cultural-thinking",
+    "file_path": "grade1-subjects/social-studies/historical-cultural-thinking/page.tsx",
+    "name": "Historical Cultural Thinking"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/social-studies",
+    "file_path": "grade1-subjects/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade1-subjects/social-studies/spatial-thinking",
+    "file_path": "grade1-subjects/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/acting-out-stories/loading",
+    "file_path": "grade2-subjects/activities/language-arts/acting-out-stories/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/acting-out-stories",
+    "file_path": "grade2-subjects/activities/language-arts/acting-out-stories/page.tsx",
+    "name": "Acting Out Stories"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/drawing-stories/loading",
+    "file_path": "grade2-subjects/activities/language-arts/drawing-stories/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/drawing-stories",
+    "file_path": "grade2-subjects/activities/language-arts/drawing-stories/page.tsx",
+    "name": "Drawing Stories"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/follow-the-leader",
+    "file_path": "grade2-subjects/activities/language-arts/follow-the-leader/page.tsx",
+    "name": "Follow The Leader"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/loading",
+    "file_path": "grade2-subjects/activities/language-arts/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts",
+    "file_path": "grade2-subjects/activities/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/picture-books/loading",
+    "file_path": "grade2-subjects/activities/language-arts/picture-books/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/picture-books",
+    "file_path": "grade2-subjects/activities/language-arts/picture-books/page.tsx",
+    "name": "Picture Books"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/reading-buddies",
+    "file_path": "grade2-subjects/activities/language-arts/reading-buddies/page.tsx",
+    "name": "Reading Buddies"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/sound-detectives",
+    "file_path": "grade2-subjects/activities/language-arts/sound-detectives/page.tsx",
+    "name": "Sound Detectives"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/video-clips/loading",
+    "file_path": "grade2-subjects/activities/language-arts/video-clips/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/video-clips",
+    "file_path": "grade2-subjects/activities/language-arts/video-clips/page.tsx",
+    "name": "Video Clips"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/writing-journal/loading",
+    "file_path": "grade2-subjects/activities/language-arts/writing-journal/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/language-arts/writing-journal",
+    "file_path": "grade2-subjects/activities/language-arts/writing-journal/page.tsx",
+    "name": "Writing Journal"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/data-collectors",
+    "file_path": "grade2-subjects/activities/mathematics/data-collectors/page.tsx",
+    "name": "Data Collectors"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/fraction-fun",
+    "file_path": "grade2-subjects/activities/mathematics/fraction-fun/page.tsx",
+    "name": "Fraction Fun"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/growing-patterns",
+    "file_path": "grade2-subjects/activities/mathematics/growing-patterns/page.tsx",
+    "name": "Growing Patterns"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/loading",
+    "file_path": "grade2-subjects/activities/mathematics/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/measurement-olympics",
+    "file_path": "grade2-subjects/activities/mathematics/measurement-olympics/page.tsx",
+    "name": "Measurement Olympics"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics",
+    "file_path": "grade2-subjects/activities/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/place-value-partners/loading",
+    "file_path": "grade2-subjects/activities/mathematics/place-value-partners/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/place-value-partners",
+    "file_path": "grade2-subjects/activities/mathematics/place-value-partners/page.tsx",
+    "name": "Place Value Partners"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/probability-games",
+    "file_path": "grade2-subjects/activities/mathematics/probability-games/page.tsx",
+    "name": "Probability Games"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/mathematics/shape-detectives",
+    "file_path": "grade2-subjects/activities/mathematics/shape-detectives/page.tsx",
+    "name": "Shape Detectives"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/building-blocks/loading",
+    "file_path": "grade2-subjects/activities/science/building-blocks/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/building-blocks",
+    "file_path": "grade2-subjects/activities/science/building-blocks/page.tsx",
+    "name": "Building Blocks"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/earth-systems-processes",
+    "file_path": "grade2-subjects/activities/science/earth-systems-processes/page.tsx",
+    "name": "Earth Systems Processes"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/engineering-design",
+    "file_path": "grade2-subjects/activities/science/engineering-design/page.tsx",
+    "name": "Engineering Design"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/loading",
+    "file_path": "grade2-subjects/activities/science/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/material-explorers/loading",
+    "file_path": "grade2-subjects/activities/science/material-explorers/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/material-explorers",
+    "file_path": "grade2-subjects/activities/science/material-explorers/page.tsx",
+    "name": "Material Explorers"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science",
+    "file_path": "grade2-subjects/activities/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/state-changers/loading",
+    "file_path": "grade2-subjects/activities/science/state-changers/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/science/state-changers",
+    "file_path": "grade2-subjects/activities/science/state-changers/page.tsx",
+    "name": "State Changers"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/activities/social-studies",
+    "file_path": "grade2-subjects/activities/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts/index",
+    "file_path": "grade2-subjects/language-arts/index.tsx",
+    "name": "index"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts/listening-speaking",
+    "file_path": "grade2-subjects/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts/loading",
+    "file_path": "grade2-subjects/language-arts/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts",
+    "file_path": "grade2-subjects/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts/reading-viewing/loading",
+    "file_path": "grade2-subjects/language-arts/reading-viewing/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts/reading-viewing",
+    "file_path": "grade2-subjects/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/language-arts/writing-representing",
+    "file_path": "grade2-subjects/language-arts/writing-representing/page.tsx",
+    "name": "Writing Representing"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/loading",
+    "file_path": "grade2-subjects/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/data-handling",
+    "file_path": "grade2-subjects/mathematics/data-handling/page.tsx",
+    "name": "Data Handling"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/data-probability",
+    "file_path": "grade2-subjects/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/geometrical-thinking",
+    "file_path": "grade2-subjects/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/loading",
+    "file_path": "grade2-subjects/mathematics/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/measurement",
+    "file_path": "grade2-subjects/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/number-sense/loading",
+    "file_path": "grade2-subjects/mathematics/number-sense/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/number-sense",
+    "file_path": "grade2-subjects/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/operations",
+    "file_path": "grade2-subjects/mathematics/operations/page.tsx",
+    "name": "Operations"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics",
+    "file_path": "grade2-subjects/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/mathematics/patterns-relationships",
+    "file_path": "grade2-subjects/mathematics/patterns-relationships/page.tsx",
+    "name": "Patterns Relationships"
+  },
+  {
+    "path": "/curriculum/grade2-subjects",
+    "file_path": "grade2-subjects/page.tsx",
+    "name": "Grade2 Subjects"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/science/earth-systems-processes",
+    "file_path": "grade2-subjects/science/earth-systems-processes/page.tsx",
+    "name": "Earth Systems Processes"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/science/engineering-design",
+    "file_path": "grade2-subjects/science/engineering-design/page.tsx",
+    "name": "Engineering Design"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/science/interdependent-relationships",
+    "file_path": "grade2-subjects/science/interdependent-relationships/page.tsx",
+    "name": "Interdependent Relationships"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/science",
+    "file_path": "grade2-subjects/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/science/structure-properties-matter",
+    "file_path": "grade2-subjects/science/structure-properties-matter/page.tsx",
+    "name": "Structure Properties Matter"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/social-studies/civic-participation",
+    "file_path": "grade2-subjects/social-studies/civic-participation/page.tsx",
+    "name": "Civic Participation"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/social-studies/economic-decision-making",
+    "file_path": "grade2-subjects/social-studies/economic-decision-making/page.tsx",
+    "name": "Economic Decision Making"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/social-studies/historical-cultural-thinking",
+    "file_path": "grade2-subjects/social-studies/historical-cultural-thinking/page.tsx",
+    "name": "Historical Cultural Thinking"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/social-studies",
+    "file_path": "grade2-subjects/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade2-subjects/social-studies/spatial-thinking",
+    "file_path": "grade2-subjects/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/language-arts/authors-workshop",
+    "file_path": "grade3-subjects/activities/language-arts/authors-workshop/page.tsx",
+    "name": "Authors Workshop"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/language-arts/cultural-poetry",
+    "file_path": "grade3-subjects/activities/language-arts/cultural-poetry/page.tsx",
+    "name": "Cultural Poetry"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/language-arts",
+    "file_path": "grade3-subjects/activities/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/language-arts/readers-theater",
+    "file_path": "grade3-subjects/activities/language-arts/readers-theater/page.tsx",
+    "name": "Readers Theater"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/mathematics/data-probability",
+    "file_path": "grade3-subjects/activities/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/mathematics/geometrical-thinking",
+    "file_path": "grade3-subjects/activities/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/mathematics/measurement",
+    "file_path": "grade3-subjects/activities/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/mathematics/number-sense",
+    "file_path": "grade3-subjects/activities/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/mathematics",
+    "file_path": "grade3-subjects/activities/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/science/engineering-design",
+    "file_path": "grade3-subjects/activities/science/engineering-design/page.tsx",
+    "name": "Engineering Design"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/science/forces-interactions",
+    "file_path": "grade3-subjects/activities/science/forces-interactions/page.tsx",
+    "name": "Forces Interactions"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/science/inheritance-variation",
+    "file_path": "grade3-subjects/activities/science/inheritance-variation/page.tsx",
+    "name": "Inheritance Variation"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/science/loading",
+    "file_path": "grade3-subjects/activities/science/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/science",
+    "file_path": "grade3-subjects/activities/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/science/weather-climate",
+    "file_path": "grade3-subjects/activities/science/weather-climate/page.tsx",
+    "name": "Weather Climate"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/social-studies/loading",
+    "file_path": "grade3-subjects/activities/social-studies/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/social-studies",
+    "file_path": "grade3-subjects/activities/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/social-studies/spatial-thinking/loading",
+    "file_path": "grade3-subjects/activities/social-studies/spatial-thinking/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/activities/social-studies/spatial-thinking",
+    "file_path": "grade3-subjects/activities/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/language-arts/listening-speaking",
+    "file_path": "grade3-subjects/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/language-arts",
+    "file_path": "grade3-subjects/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/language-arts/reading-viewing",
+    "file_path": "grade3-subjects/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/language-arts/writing-representing",
+    "file_path": "grade3-subjects/language-arts/writing-representing/page.tsx",
+    "name": "Writing Representing"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics/data-probability",
+    "file_path": "grade3-subjects/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics/geometrical-thinking",
+    "file_path": "grade3-subjects/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics/measurement",
+    "file_path": "grade3-subjects/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics/number-sense",
+    "file_path": "grade3-subjects/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics/operations-with-numbers",
+    "file_path": "grade3-subjects/mathematics/operations-with-numbers/page.tsx",
+    "name": "Operations With Numbers"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics",
+    "file_path": "grade3-subjects/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/mathematics/patterns-relationships",
+    "file_path": "grade3-subjects/mathematics/patterns-relationships/page.tsx",
+    "name": "Patterns Relationships"
+  },
+  {
+    "path": "/curriculum/grade3-subjects",
+    "file_path": "grade3-subjects/page.tsx",
+    "name": "Grade3 Subjects"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science/earth-systems",
+    "file_path": "grade3-subjects/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science/engineering-design",
+    "file_path": "grade3-subjects/science/engineering-design/page.tsx",
+    "name": "Engineering Design"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science/forces-interactions",
+    "file_path": "grade3-subjects/science/forces-interactions/page.tsx",
+    "name": "Forces Interactions"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science/inheritance-variation",
+    "file_path": "grade3-subjects/science/inheritance-variation/page.tsx",
+    "name": "Inheritance Variation"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science/interdependent-relationships",
+    "file_path": "grade3-subjects/science/interdependent-relationships/page.tsx",
+    "name": "Interdependent Relationships"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science",
+    "file_path": "grade3-subjects/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/science/weather-climate",
+    "file_path": "grade3-subjects/science/weather-climate/page.tsx",
+    "name": "Weather Climate"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/social-studies/civic-participation",
+    "file_path": "grade3-subjects/social-studies/civic-participation/page.tsx",
+    "name": "Civic Participation"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/social-studies/economic-decision-making",
+    "file_path": "grade3-subjects/social-studies/economic-decision-making/page.tsx",
+    "name": "Economic Decision Making"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/social-studies/historical-cultural-thinking",
+    "file_path": "grade3-subjects/social-studies/historical-cultural-thinking/page.tsx",
+    "name": "Historical Cultural Thinking"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/social-studies",
+    "file_path": "grade3-subjects/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade3-subjects/social-studies/spatial-thinking",
+    "file_path": "grade3-subjects/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/language-arts/caribbean-authors",
+    "file_path": "grade4-subjects/activities/language-arts/caribbean-authors/page.tsx",
+    "name": "Caribbean Authors"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/language-arts/debate-club",
+    "file_path": "grade4-subjects/activities/language-arts/debate-club/page.tsx",
+    "name": "Debate Club"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/language-arts/literature-circles",
+    "file_path": "grade4-subjects/activities/language-arts/literature-circles/page.tsx",
+    "name": "Literature Circles"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/language-arts",
+    "file_path": "grade4-subjects/activities/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/language-arts/podcast-production",
+    "file_path": "grade4-subjects/activities/language-arts/podcast-production/page.tsx",
+    "name": "Podcast Production"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/mathematics/data-probability",
+    "file_path": "grade4-subjects/activities/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/mathematics/geometrical-thinking",
+    "file_path": "grade4-subjects/activities/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/mathematics/measurement",
+    "file_path": "grade4-subjects/activities/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/mathematics/number-sense",
+    "file_path": "grade4-subjects/activities/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/mathematics",
+    "file_path": "grade4-subjects/activities/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/earth-systems/loading",
+    "file_path": "grade4-subjects/activities/science/earth-systems/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/earth-systems",
+    "file_path": "grade4-subjects/activities/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/energy/loading",
+    "file_path": "grade4-subjects/activities/science/energy/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/energy",
+    "file_path": "grade4-subjects/activities/science/energy/page.tsx",
+    "name": "Energy"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/loading",
+    "file_path": "grade4-subjects/activities/science/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science",
+    "file_path": "grade4-subjects/activities/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/structure-function/loading",
+    "file_path": "grade4-subjects/activities/science/structure-function/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/structure-function",
+    "file_path": "grade4-subjects/activities/science/structure-function/page.tsx",
+    "name": "Structure Function"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/waves/loading",
+    "file_path": "grade4-subjects/activities/science/waves/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/science/waves",
+    "file_path": "grade4-subjects/activities/science/waves/page.tsx",
+    "name": "Waves"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/social-studies/loading",
+    "file_path": "grade4-subjects/activities/social-studies/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/social-studies",
+    "file_path": "grade4-subjects/activities/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/social-studies/spatial-thinking/loading",
+    "file_path": "grade4-subjects/activities/social-studies/spatial-thinking/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/activities/social-studies/spatial-thinking",
+    "file_path": "grade4-subjects/activities/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/language-arts/listening-speaking",
+    "file_path": "grade4-subjects/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/language-arts",
+    "file_path": "grade4-subjects/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/language-arts/reading-viewing",
+    "file_path": "grade4-subjects/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/language-arts/writing-representing",
+    "file_path": "grade4-subjects/language-arts/writing-representing/page.tsx",
+    "name": "Writing Representing"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics/data-probability",
+    "file_path": "grade4-subjects/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics/geometrical-thinking",
+    "file_path": "grade4-subjects/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics/measurement",
+    "file_path": "grade4-subjects/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics/number-sense",
+    "file_path": "grade4-subjects/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics/operations-with-numbers",
+    "file_path": "grade4-subjects/mathematics/operations-with-numbers/page.tsx",
+    "name": "Operations With Numbers"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics",
+    "file_path": "grade4-subjects/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/mathematics/patterns-relationships",
+    "file_path": "grade4-subjects/mathematics/patterns-relationships/page.tsx",
+    "name": "Patterns Relationships"
+  },
+  {
+    "path": "/curriculum/grade4-subjects",
+    "file_path": "grade4-subjects/page.tsx",
+    "name": "Grade4 Subjects"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/science/earth-systems",
+    "file_path": "grade4-subjects/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/science/energy",
+    "file_path": "grade4-subjects/science/energy/page.tsx",
+    "name": "Energy"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/science",
+    "file_path": "grade4-subjects/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/science/structure-function",
+    "file_path": "grade4-subjects/science/structure-function/page.tsx",
+    "name": "Structure Function"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/science/waves",
+    "file_path": "grade4-subjects/science/waves/page.tsx",
+    "name": "Waves"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/social-studies/civic-participation",
+    "file_path": "grade4-subjects/social-studies/civic-participation/page.tsx",
+    "name": "Civic Participation"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/social-studies/economic-decision-making",
+    "file_path": "grade4-subjects/social-studies/economic-decision-making/page.tsx",
+    "name": "Economic Decision Making"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/social-studies/historical-cultural-thinking",
+    "file_path": "grade4-subjects/social-studies/historical-cultural-thinking/page.tsx",
+    "name": "Historical Cultural Thinking"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/social-studies",
+    "file_path": "grade4-subjects/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade4-subjects/social-studies/spatial-thinking",
+    "file_path": "grade4-subjects/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/language-arts",
+    "file_path": "grade5-subjects/activities/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/mathematics/data-probability",
+    "file_path": "grade5-subjects/activities/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/mathematics/geometrical-thinking",
+    "file_path": "grade5-subjects/activities/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/mathematics/measurement",
+    "file_path": "grade5-subjects/activities/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/mathematics/number-sense",
+    "file_path": "grade5-subjects/activities/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/mathematics",
+    "file_path": "grade5-subjects/activities/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/science/cross-strand-integration",
+    "file_path": "grade5-subjects/activities/science/cross-strand-integration/page.tsx",
+    "name": "Cross Strand Integration"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/science/earth-systems",
+    "file_path": "grade5-subjects/activities/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/science",
+    "file_path": "grade5-subjects/activities/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/social-studies",
+    "file_path": "grade5-subjects/activities/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/activities/social-studies/spatial-thinking",
+    "file_path": "grade5-subjects/activities/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/language-arts/listening-speaking",
+    "file_path": "grade5-subjects/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/language-arts",
+    "file_path": "grade5-subjects/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/language-arts/reading-viewing",
+    "file_path": "grade5-subjects/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/language-arts/writing-representing",
+    "file_path": "grade5-subjects/language-arts/writing-representing/page.tsx",
+    "name": "Writing Representing"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics/data-probability",
+    "file_path": "grade5-subjects/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics/geometrical-thinking",
+    "file_path": "grade5-subjects/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics/measurement",
+    "file_path": "grade5-subjects/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics/number-sense",
+    "file_path": "grade5-subjects/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics/operations-with-numbers",
+    "file_path": "grade5-subjects/mathematics/operations-with-numbers/page.tsx",
+    "name": "Operations With Numbers"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics",
+    "file_path": "grade5-subjects/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/mathematics/patterns-relationships",
+    "file_path": "grade5-subjects/mathematics/patterns-relationships/page.tsx",
+    "name": "Patterns Relationships"
+  },
+  {
+    "path": "/curriculum/grade5-subjects",
+    "file_path": "grade5-subjects/page.tsx",
+    "name": "Grade5 Subjects"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/science/earth-systems",
+    "file_path": "grade5-subjects/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/science/engineering",
+    "file_path": "grade5-subjects/science/engineering/page.tsx",
+    "name": "Engineering"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/science/matter-energy-organisms-ecosystems",
+    "file_path": "grade5-subjects/science/matter-energy-organisms-ecosystems/page.tsx",
+    "name": "Matter Energy Organisms Ecosystems"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/science",
+    "file_path": "grade5-subjects/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/science/space-systems",
+    "file_path": "grade5-subjects/science/space-systems/page.tsx",
+    "name": "Space Systems"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/science/structure-properties-matter",
+    "file_path": "grade5-subjects/science/structure-properties-matter/page.tsx",
+    "name": "Structure Properties Matter"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/social-studies/civic-participation",
+    "file_path": "grade5-subjects/social-studies/civic-participation/page.tsx",
+    "name": "Civic Participation"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/social-studies/economic-decision-making",
+    "file_path": "grade5-subjects/social-studies/economic-decision-making/page.tsx",
+    "name": "Economic Decision Making"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/social-studies/historical-cultural-thinking",
+    "file_path": "grade5-subjects/social-studies/historical-cultural-thinking/page.tsx",
+    "name": "Historical Cultural Thinking"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/social-studies",
+    "file_path": "grade5-subjects/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade5-subjects/social-studies/spatial-thinking",
+    "file_path": "grade5-subjects/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/language-arts/listening-speaking",
+    "file_path": "grade6-subjects/activities/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/language-arts",
+    "file_path": "grade6-subjects/activities/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/language-arts/reading-viewing",
+    "file_path": "grade6-subjects/activities/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics/data-probability/loading",
+    "file_path": "grade6-subjects/activities/mathematics/data-probability/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics/data-probability",
+    "file_path": "grade6-subjects/activities/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics/geometrical-thinking/loading",
+    "file_path": "grade6-subjects/activities/mathematics/geometrical-thinking/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics/geometrical-thinking",
+    "file_path": "grade6-subjects/activities/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics/number-sense",
+    "file_path": "grade6-subjects/activities/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics/operations",
+    "file_path": "grade6-subjects/activities/mathematics/operations/page.tsx",
+    "name": "Operations"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/mathematics",
+    "file_path": "grade6-subjects/activities/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/chemical-reactions",
+    "file_path": "grade6-subjects/activities/science/chemical-reactions/page.tsx",
+    "name": "Chemical Reactions"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/earth-systems",
+    "file_path": "grade6-subjects/activities/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/energy",
+    "file_path": "grade6-subjects/activities/science/energy/page.tsx",
+    "name": "Energy"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/forces-interactions",
+    "file_path": "grade6-subjects/activities/science/forces-interactions/page.tsx",
+    "name": "Forces Interactions"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/history-earth",
+    "file_path": "grade6-subjects/activities/science/history-earth/page.tsx",
+    "name": "History Earth"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/inheritance-variation",
+    "file_path": "grade6-subjects/activities/science/inheritance-variation/page.tsx",
+    "name": "Inheritance Variation"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/matter-energy-organisms",
+    "file_path": "grade6-subjects/activities/science/matter-energy-organisms/page.tsx",
+    "name": "Matter Energy Organisms"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science",
+    "file_path": "grade6-subjects/activities/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/science/space-systems",
+    "file_path": "grade6-subjects/activities/science/space-systems/page.tsx",
+    "name": "Space Systems"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/activities/social-studies",
+    "file_path": "grade6-subjects/activities/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/language-arts/listening-speaking",
+    "file_path": "grade6-subjects/language-arts/listening-speaking/page.tsx",
+    "name": "Listening Speaking"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/language-arts",
+    "file_path": "grade6-subjects/language-arts/page.tsx",
+    "name": "Language Arts"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/language-arts/reading-viewing",
+    "file_path": "grade6-subjects/language-arts/reading-viewing/page.tsx",
+    "name": "Reading Viewing"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/language-arts/writing-representing",
+    "file_path": "grade6-subjects/language-arts/writing-representing/page.tsx",
+    "name": "Writing Representing"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics/data-probability",
+    "file_path": "grade6-subjects/mathematics/data-probability/page.tsx",
+    "name": "Data Probability"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics/geometrical-thinking",
+    "file_path": "grade6-subjects/mathematics/geometrical-thinking/page.tsx",
+    "name": "Geometrical Thinking"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics/measurement",
+    "file_path": "grade6-subjects/mathematics/measurement/page.tsx",
+    "name": "Measurement"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics/number-sense",
+    "file_path": "grade6-subjects/mathematics/number-sense/page.tsx",
+    "name": "Number Sense"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics/operations-with-numbers",
+    "file_path": "grade6-subjects/mathematics/operations-with-numbers/page.tsx",
+    "name": "Operations With Numbers"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics",
+    "file_path": "grade6-subjects/mathematics/page.tsx",
+    "name": "Mathematics"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/mathematics/patterns-relationships",
+    "file_path": "grade6-subjects/mathematics/patterns-relationships/page.tsx",
+    "name": "Patterns Relationships"
+  },
+  {
+    "path": "/curriculum/grade6-subjects",
+    "file_path": "grade6-subjects/page.tsx",
+    "name": "Grade6 Subjects"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/chemical-reactions",
+    "file_path": "grade6-subjects/science/chemical-reactions/page.tsx",
+    "name": "Chemical Reactions"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/earth-systems",
+    "file_path": "grade6-subjects/science/earth-systems/page.tsx",
+    "name": "Earth Systems"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/forces-interactions",
+    "file_path": "grade6-subjects/science/forces-interactions/page.tsx",
+    "name": "Forces Interactions"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/inheritance-variation",
+    "file_path": "grade6-subjects/science/inheritance-variation/page.tsx",
+    "name": "Inheritance Variation"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science",
+    "file_path": "grade6-subjects/science/page.tsx",
+    "name": "Science"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/space-systems",
+    "file_path": "grade6-subjects/science/space-systems/page.tsx",
+    "name": "Space Systems"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/structure-properties-matter",
+    "file_path": "grade6-subjects/science/structure-properties-matter/page.tsx",
+    "name": "Structure Properties Matter"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/science/waves-electromagnetic",
+    "file_path": "grade6-subjects/science/waves-electromagnetic/page.tsx",
+    "name": "Waves Electromagnetic"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/social-studies/civic-participation",
+    "file_path": "grade6-subjects/social-studies/civic-participation/page.tsx",
+    "name": "Civic Participation"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/social-studies/economic-decision-making",
+    "file_path": "grade6-subjects/social-studies/economic-decision-making/page.tsx",
+    "name": "Economic Decision Making"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/social-studies/historical-cultural-thinking",
+    "file_path": "grade6-subjects/social-studies/historical-cultural-thinking/page.tsx",
+    "name": "Historical Cultural Thinking"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/social-studies",
+    "file_path": "grade6-subjects/social-studies/page.tsx",
+    "name": "Social Studies"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/social-studies/spatial-thinking/activities",
+    "file_path": "grade6-subjects/social-studies/spatial-thinking/activities/page.tsx",
+    "name": "Activities"
+  },
+  {
+    "path": "/curriculum/grade6-subjects/social-studies/spatial-thinking",
+    "file_path": "grade6-subjects/social-studies/spatial-thinking/page.tsx",
+    "name": "Spatial Thinking"
+  },
+  {
+    "path": "/curriculum/kindergarten/activities/celebrations-unit",
+    "file_path": "kindergarten/activities/celebrations-unit/page.tsx",
+    "name": "Celebrations Unit"
+  },
+  {
+    "path": "/curriculum/kindergarten/activities/games-unit",
+    "file_path": "kindergarten/activities/games-unit/page.tsx",
+    "name": "Games Unit"
+  },
+  {
+    "path": "/curriculum/kindergarten/activities/plants-animals-unit",
+    "file_path": "kindergarten/activities/plants-animals-unit/page.tsx",
+    "name": "Plants Animals Unit"
+  },
+  {
+    "path": "/curriculum/kindergarten/activities/weather-unit",
+    "file_path": "kindergarten/activities/weather-unit/page.tsx",
+    "name": "Weather Unit"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging",
+    "file_path": "kindergarten/belonging/page.tsx",
+    "name": "Belonging"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/resources/loading",
+    "file_path": "kindergarten/belonging/resources/loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/resources",
+    "file_path": "kindergarten/belonging/resources/page.tsx",
+    "name": "Resources"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/week-1",
+    "file_path": "kindergarten/belonging/week-1/page.tsx",
+    "name": "Week 1"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/week-2",
+    "file_path": "kindergarten/belonging/week-2/page.tsx",
+    "name": "Week 2"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/week-3",
+    "file_path": "kindergarten/belonging/week-3/page.tsx",
+    "name": "Week 3"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/week-4",
+    "file_path": "kindergarten/belonging/week-4/page.tsx",
+    "name": "Week 4"
+  },
+  {
+    "path": "/curriculum/kindergarten/belonging/week-5",
+    "file_path": "kindergarten/belonging/week-5/page.tsx",
+    "name": "Week 5"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations",
+    "file_path": "kindergarten/celebrations/page.tsx",
+    "name": "Celebrations"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations/resources",
+    "file_path": "kindergarten/celebrations/resources/page.tsx",
+    "name": "Resources"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations/week-1",
+    "file_path": "kindergarten/celebrations/week-1/page.tsx",
+    "name": "Week 1"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations/week-2",
+    "file_path": "kindergarten/celebrations/week-2/page.tsx",
+    "name": "Week 2"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations/week-3",
+    "file_path": "kindergarten/celebrations/week-3/page.tsx",
+    "name": "Week 3"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations/week-4",
+    "file_path": "kindergarten/celebrations/week-4/page.tsx",
+    "name": "Week 4"
+  },
+  {
+    "path": "/curriculum/kindergarten/celebrations/week-5",
+    "file_path": "kindergarten/celebrations/week-5/page.tsx",
+    "name": "Week 5"
+  },
+  {
+    "path": "/curriculum/kindergarten/games",
+    "file_path": "kindergarten/games/page.tsx",
+    "name": "Games"
+  },
+  {
+    "path": "/curriculum/kindergarten/games/week-1",
+    "file_path": "kindergarten/games/week-1/page.tsx",
+    "name": "Week 1"
+  },
+  {
+    "path": "/curriculum/kindergarten/games/week-2",
+    "file_path": "kindergarten/games/week-2/page.tsx",
+    "name": "Week 2"
+  },
+  {
+    "path": "/curriculum/kindergarten/games/week-3",
+    "file_path": "kindergarten/games/week-3/page.tsx",
+    "name": "Week 3"
+  },
+  {
+    "path": "/curriculum/kindergarten/games/week-4",
+    "file_path": "kindergarten/games/week-4/page.tsx",
+    "name": "Week 4"
+  },
+  {
+    "path": "/curriculum/kindergarten/games/week-5",
+    "file_path": "kindergarten/games/week-5/page.tsx",
+    "name": "Week 5"
+  },
+  {
+    "path": "/curriculum/kindergarten",
+    "file_path": "kindergarten/page.tsx",
+    "name": "Kindergarten"
+  },
+  {
+    "path": "/curriculum/kindergarten/plants-and-animals",
+    "file_path": "kindergarten/plants-and-animals/page.tsx",
+    "name": "Plants And Animals"
+  },
+  {
+    "path": "/curriculum/kindergarten/plants-and-animals/week-1",
+    "file_path": "kindergarten/plants-and-animals/week-1/page.tsx",
+    "name": "Week 1"
+  },
+  {
+    "path": "/curriculum/kindergarten/plants-and-animals/week-2",
+    "file_path": "kindergarten/plants-and-animals/week-2/page.tsx",
+    "name": "Week 2"
+  },
+  {
+    "path": "/curriculum/kindergarten/plants-and-animals/week-3",
+    "file_path": "kindergarten/plants-and-animals/week-3/page.tsx",
+    "name": "Week 3"
+  },
+  {
+    "path": "/curriculum/kindergarten/plants-and-animals/week-4",
+    "file_path": "kindergarten/plants-and-animals/week-4/page.tsx",
+    "name": "Week 4"
+  },
+  {
+    "path": "/curriculum/kindergarten/plants-and-animals/week-5",
+    "file_path": "kindergarten/plants-and-animals/week-5/page.tsx",
+    "name": "Week 5"
+  },
+  {
+    "path": "/curriculum/kindergarten/resources",
+    "file_path": "kindergarten/resources/page.tsx",
+    "name": "Resources"
+  },
+  {
+    "path": "/curriculum/kindergarten/weather",
+    "file_path": "kindergarten/weather/page.tsx",
+    "name": "Weather"
+  },
+  {
+    "path": "/curriculum/kindergarten/weather/week-1",
+    "file_path": "kindergarten/weather/week-1/page.tsx",
+    "name": "Week 1"
+  },
+  {
+    "path": "/curriculum/kindergarten/weather/week-2",
+    "file_path": "kindergarten/weather/week-2/page.tsx",
+    "name": "Week 2"
+  },
+  {
+    "path": "/curriculum/kindergarten/weather/week-3",
+    "file_path": "kindergarten/weather/week-3/page.tsx",
+    "name": "Week 3"
+  },
+  {
+    "path": "/curriculum/kindergarten/weather/week-4",
+    "file_path": "kindergarten/weather/week-4/page.tsx",
+    "name": "Week 4"
+  },
+  {
+    "path": "/curriculum/kindergarten/weather/week-5",
+    "file_path": "kindergarten/weather/week-5/page.tsx",
+    "name": "Week 5"
+  },
+  {
+    "path": "/curriculum/layout",
+    "file_path": "layout.tsx",
+    "name": "layout"
+  },
+  {
+    "path": "/curriculum/loading",
+    "file_path": "loading.tsx",
+    "name": "loading"
+  },
+  {
+    "path": "/curriculum",
+    "file_path": "page.tsx",
+    "name": "Curriculum"
+  },
+  {
+    "path": "/curriculum/standards",
+    "file_path": "standards/page.tsx",
+    "name": "Standards"
+  },
+  {
+    "path": "/curriculum/standards",
+    "file_path": "standards.tsx",
+    "name": "standards"
+  }
+]
