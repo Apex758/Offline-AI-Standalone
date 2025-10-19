@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import LessonEditor from './LessonEditor';
+import type { ParsedLesson } from './LessonEditor';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -19,6 +21,7 @@ interface LessonPlanHistory {
   timestamp: string;
   formData: FormData;
   generatedPlan: string;
+  parsedLesson?: ParsedLesson;
 }
 
 interface FormData {
@@ -168,6 +171,223 @@ const formatLessonText = (text: string, accentColor: string) => {
   return elements;
 };
 
+// Parse lesson plan text content into structured ParsedLesson format
+const parseLessonContent = (text: string, formData: FormData): ParsedLesson | null => {
+  if (!text) return null;
+
+  try {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Extract metadata from form data and generated content
+    const metadata = {
+      title: formData.topic || 'Lesson Plan',
+      subject: formData.subject,
+      gradeLevel: formData.gradeLevel,
+      strand: formData.strand,
+      topic: formData.topic,
+      duration: formData.duration,
+      studentCount: formData.studentCount,
+      date: new Date().toLocaleDateString()
+    };
+
+    // Parse learning objectives
+    const learningObjectives: string[] = [];
+    const objectivesSection = text.match(/\*\*Learning Objectives:\*\*(.*?)(?=\*\*|$)/s);
+    if (objectivesSection) {
+      const objText = objectivesSection[1];
+      const objMatches = objText.match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (objMatches) {
+        objMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) learningObjectives.push(cleaned);
+        });
+      }
+    }
+    
+    // Fallback: use specific outcomes from form if no objectives found
+    if (learningObjectives.length === 0 && formData.specificOutcomes) {
+      formData.specificOutcomes.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed) learningObjectives.push(trimmed);
+      });
+    }
+
+    // Parse materials needed
+    const materials: string[] = [];
+    const materialsSection = text.match(/\*\*Materials(?:\s+Needed)?:\*\*(.*?)(?=\*\*|$)/s);
+    if (materialsSection) {
+      const matText = materialsSection[1];
+      const matMatches = matText.match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (matMatches) {
+        matMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) materials.push(cleaned);
+        });
+      }
+    }
+    
+    // Fallback: use materials from form
+    if (materials.length === 0 && formData.materials) {
+      formData.materials.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed) materials.push(trimmed);
+      });
+    }
+
+    // Parse lesson sections
+    const sections: Array<{ id: string; name: string; content: string }> = [];
+    const sectionPatterns = [
+      'Introduction',
+      'Main Activity',
+      'Guided Practice',
+      'Independent Practice',
+      'Conclusion',
+      'Assessment',
+      'Warm-up',
+      'Development',
+      'Closure',
+      'Extension Activities',
+      'Differentiation'
+    ];
+
+    sectionPatterns.forEach((sectionName, index) => {
+      const regex = new RegExp(`\\*\\*${sectionName}:?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:${sectionPatterns.join('|')})|$)`, 'i');
+      const match = text.match(regex);
+      if (match && match[1]) {
+        const content = match[1].trim();
+        if (content) {
+          sections.push({
+            id: `section_${index}`,
+            name: sectionName,
+            content: content
+          });
+        }
+      }
+    });
+
+    // Parse assessment methods
+    const assessmentMethods: string[] = [];
+    const assessmentSection = text.match(/\*\*Assessment(?:\s+Methods)?:\*\*(.*?)(?=\*\*|$)/s);
+    if (assessmentSection) {
+      const assessText = assessmentSection[1];
+      const assessMatches = assessText.match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (assessMatches) {
+        assessMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) assessmentMethods.push(cleaned);
+        });
+      }
+    }
+
+    // Parse optional fields
+    const pedagogicalStrategies = formData.pedagogicalStrategies.length > 0
+      ? formData.pedagogicalStrategies
+      : undefined;
+    
+    const learningStyles = formData.learningStyles.length > 0
+      ? formData.learningStyles
+      : undefined;
+
+    const prerequisites = formData.prerequisiteSkills || undefined;
+    const specialNeeds = formData.specialNeeds && formData.specialNeedsDetails
+      ? formData.specialNeedsDetails
+      : undefined;
+    const additionalNotes = formData.additionalInstructions || undefined;
+
+    return {
+      metadata,
+      learningObjectives: learningObjectives.length > 0 ? learningObjectives : ['No objectives found'],
+      materials: materials.length > 0 ? materials : ['No materials specified'],
+      sections: sections.length > 0 ? sections : [{
+        id: 'section_0',
+        name: 'Lesson Content',
+        content: text.substring(0, 500) + '...'
+      }],
+      assessmentMethods: assessmentMethods.length > 0 ? assessmentMethods : ['Observation', 'Q&A'],
+      pedagogicalStrategies,
+      learningStyles,
+      prerequisites,
+      specialNeeds,
+      additionalNotes
+    };
+  } catch (error) {
+    console.error('Failed to parse lesson plan:', error);
+    return null;
+  }
+};
+
+// Convert ParsedLesson back to display text format
+const lessonToDisplayText = (lesson: ParsedLesson): string => {
+  let output = '';
+  
+  // Add metadata header
+  output += `**Lesson Plan: ${lesson.metadata.title}**\n\n`;
+  output += `**Grade Level:** ${lesson.metadata.gradeLevel}\n`;
+  output += `**Subject:** ${lesson.metadata.subject}\n`;
+  output += `**Strand:** ${lesson.metadata.strand}\n`;
+  output += `**Topic:** ${lesson.metadata.topic}\n`;
+  output += `**Duration:** ${lesson.metadata.duration} minutes\n`;
+  output += `**Date:** ${lesson.metadata.date}\n\n`;
+  
+  // Learning Objectives
+  output += `**Learning Objectives:**\n`;
+  lesson.learningObjectives.forEach(obj => {
+    output += `* ${obj}\n`;
+  });
+  output += '\n';
+  
+  // Materials
+  output += `**Materials Needed:**\n`;
+  lesson.materials.forEach(mat => {
+    output += `* ${mat}\n`;
+  });
+  output += '\n';
+  
+  // Prerequisites if present
+  if (lesson.prerequisites) {
+    output += `**Prerequisites:**\n${lesson.prerequisites}\n\n`;
+  }
+  
+  // Lesson Sections
+  lesson.sections.forEach(section => {
+    output += `**${section.name}:**\n`;
+    output += `${section.content}\n\n`;
+  });
+  
+  // Assessment Methods
+  if (lesson.assessmentMethods.length > 0) {
+    output += `**Assessment:**\n`;
+    lesson.assessmentMethods.forEach(method => {
+      output += `* ${method}\n`;
+    });
+    output += '\n';
+  }
+  
+  // Pedagogical Strategies if present
+  if (lesson.pedagogicalStrategies && lesson.pedagogicalStrategies.length > 0) {
+    output += `**Pedagogical Strategies:**\n`;
+    output += lesson.pedagogicalStrategies.join(', ') + '\n\n';
+  }
+  
+  // Learning Styles if present
+  if (lesson.learningStyles && lesson.learningStyles.length > 0) {
+    output += `**Learning Styles:**\n`;
+    output += lesson.learningStyles.join(', ') + '\n\n';
+  }
+  
+  // Special Needs if present
+  if (lesson.specialNeeds) {
+    output += `**Special Needs Accommodations:**\n${lesson.specialNeeds}\n\n`;
+  }
+  
+  // Additional Notes if present
+  if (lesson.additionalNotes) {
+    output += `**Additional Notes:**\n${lesson.additionalNotes}\n`;
+  }
+  
+  return output;
+};
+
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
@@ -181,10 +401,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Add new states for editing
+  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [parsedLesson, setParsedLesson] = useState<ParsedLesson | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   // Initialize with proper isolation - check if savedData has actual content
@@ -222,6 +441,20 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [step, setStep] = useState(() => savedData?.step || 1);
 
+  // Try to parse lesson when generated (for restored/loaded lessons)
+  useEffect(() => {
+    if (generatedPlan && !parsedLesson) {
+      console.log('Attempting to parse loaded/restored lesson...');
+      const parsed = parseLessonContent(generatedPlan, formData);
+      if (parsed) {
+        console.log('Loaded lesson parsed successfully');
+        setParsedLesson(parsed);
+      } else {
+        console.log('Loaded lesson parsing failed');
+      }
+    }
+  }, [generatedPlan]);
+
   // Tutorial auto-show logic
   useEffect(() => {
     if (
@@ -237,12 +470,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setShowTutorial(false);
   };
 
-  // Initialize edited content when plan is generated
-  useEffect(() => {
-    if (generatedPlan && !editedContent) {
-      setEditedContent(generatedPlan);
-    }
-  }, [generatedPlan]);
 
   // CRITICAL: Reset state when switching to a different tab (different tabId)
   useEffect(() => {
@@ -312,33 +539,26 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     'Bodily-Kinesthetic', 'Interpersonal', 'Intrapersonal', 'Naturalistic'
   ];
 
-  // Enable editing mode
+  // Enable structured editing mode
   const enableEditing = () => {
-    setEditedContent(generatedPlan);
-    setIsEditing(true);
+    if (parsedLesson) {
+      setIsEditing(true);
+    } else {
+      alert('Cannot edit: Lesson format not recognized. Try regenerating the lesson plan.');
+    }
   };
 
-  // Save edited content
-  const saveEditedContent = () => {
-    setGeneratedPlan(editedContent);
+  // Save edited lesson
+  const saveLessonEdit = (editedLesson: ParsedLesson) => {
+    setParsedLesson(editedLesson);
+    const displayText = lessonToDisplayText(editedLesson);
+    setGeneratedPlan(displayText);
     setIsEditing(false);
   };
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditedContent(generatedPlan);
     setIsEditing(false);
-  };
-
-  // Copy to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(editedContent || generatedPlan);
-      setCopyStatus('copied');
-      setTimeout(() => setCopyStatus('idle'), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
   };
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -373,9 +593,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       formData,
       generatedPlan,
       streamingPlan,
-      step
+      step,
+      parsedLesson
     });
-  }, [formData, generatedPlan, streamingPlan, step]);
+  }, [formData, generatedPlan, streamingPlan, step, parsedLesson]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
@@ -402,6 +623,18 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             setStreamingPlan(current => {
               const finalMessage = current || data.full_response;
               setGeneratedPlan(finalMessage);
+              
+              console.log('Lesson plan generation complete, parsing...');
+              
+              // Try to parse immediately
+              const parsed = parseLessonContent(finalMessage, formData);
+              if (parsed) {
+                console.log('Lesson plan parsed successfully:', parsed.sections.length, 'sections');
+                setParsedLesson(parsed);
+              } else {
+                console.warn('Lesson plan parsing failed');
+              }
+              
               setLoading(false);
               return '';
             });
@@ -521,9 +754,9 @@ Please generate a detailed lesson plan with clear sections and practical details
     }
   };
 
-  // Update saveLessonPlan to use edited content
+  // Update saveLessonPlan to use parsed lesson if available
   const saveLessonPlan = async () => {
-    const contentToSave = isEditing ? editedContent : generatedPlan;
+    const contentToSave = parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan;
     if (!contentToSave) {
       alert('No lesson plan to save');
       return;
@@ -536,7 +769,8 @@ Please generate a detailed lesson plan with clear sections and practical details
         title: `${formData.subject} - ${formData.topic} (Grade ${formData.gradeLevel})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave
+        generatedPlan: contentToSave,
+        parsedLesson: parsedLesson || undefined
       };
 
       if (!currentPlanId) {
@@ -547,11 +781,6 @@ Please generate a detailed lesson plan with clear sections and practical details
       await loadLessonPlanHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      
-      // If we were editing, exit editing mode after save
-      if (isEditing) {
-        setIsEditing(false);
-      }
     } catch (error) {
       console.error('Failed to save lesson plan:', error);
       alert('Failed to save lesson plan');
@@ -562,6 +791,7 @@ Please generate a detailed lesson plan with clear sections and practical details
   const loadLessonPlanHistory = (history: LessonPlanHistory) => {
     setFormData(history.formData);
     setGeneratedPlan(history.generatedPlan);
+    setParsedLesson(history.parsedLesson || null);
     setCurrentPlanId(history.id);
     setHistoryOpen(false);
   };
@@ -582,9 +812,9 @@ Please generate a detailed lesson plan with clear sections and practical details
     }
   };
 
-  // Update exportLessonPlan to use edited content
+  // Update exportLessonPlan to use parsed lesson if available
   const exportLessonPlan = () => {
-    const contentToExport = isEditing ? editedContent : generatedPlan;
+    const contentToExport = parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan;
     if (!contentToExport) return;
 
     const content = `LESSON PLAN
@@ -633,50 +863,41 @@ ${contentToExport}`;
     });
     setGeneratedPlan('');
     setStreamingPlan('');
+    setParsedLesson(null);
     setStep(1);
     setIsEditing(false);
-    setEditedContent('');
   };
 
  
   return (
     <div className="flex h-full bg-white relative" data-tutorial="lesson-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan || isEditing) ? (
-          // Generated plan view
+        {(generatedPlan || streamingPlan) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Lesson Plan...' : 
-                   isEditing ? 'Editing Lesson Plan' : 'Generated Lesson Plan'}
-                </h2>
-                <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
-              </div>
-              {!loading && (
-                <div className="flex items-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                      <button
-                        onClick={saveEditedContent}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Save Edits
-                      </button>
-                    </>
-                  ) : (
-                    <>
+            {isEditing && parsedLesson ? (
+              // Show Structured Editor
+              <LessonEditor
+                lesson={parsedLesson}
+                onSave={saveLessonEdit}
+                onCancel={cancelEditing}
+              />
+            ) : (
+              // Show generated lesson plan (existing display code)
+              <>
+                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {loading ? 'Generating Lesson Plan...' : 'Generated Lesson Plan'}
+                    </h2>
+                    <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
+                  </div>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        disabled={!parsedLesson}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        title={!parsedLesson ? "Lesson format not recognized" : "Edit lesson"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -721,28 +942,27 @@ ${contentToExport}`;
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </button>
-                    </>
+                      <button
+                        onClick={() => setHistoryOpen(!historyOpen)}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        title="Lesson Plan History"
+                      >
+                        <History className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGeneratedPlan('');
+                          setStreamingPlan('');
+                          setParsedLesson(null);
+                          setIsEditing(false);
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        Create New Plan
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Lesson Plan History"
-                  >
-                    <History className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGeneratedPlan('');
-                      setStreamingPlan('');
-                      setIsEditing(false);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Create New Plan
-                  </button>
                 </div>
-              )}
-            </div>
             
             <div className="flex-1 overflow-y-auto bg-white p-6">
               {/* Modern Header Card */}
@@ -825,30 +1045,8 @@ ${contentToExport}`;
                 </div>
               )}
 
-              {/* Formatted content */}
-              <div className="prose prose-lg max-w-none">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Edit your lesson plan:
-                      </label>
-                      <div className="text-sm text-gray-500">
-                        {editedContent.length} characters
-                      </div>
-                    </div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-                      placeholder="Edit your lesson plan content here..."
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>You can format using markdown-style **bold** and *italic*</span>
-                      <span>Lines will be preserved in the final output</span>
-                    </div>
-                  </div>
-                ) : (
+                {/* Formatted content */}
+                <div className="prose prose-lg max-w-none">
                   <div className="space-y-1">
                     {formatLessonText(streamingPlan || generatedPlan, tabColor)}
                     {loading && streamingPlan && (
@@ -857,8 +1055,7 @@ ${contentToExport}`;
                       </span>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
 
               {/* Loading progress at bottom */}
               {loading && (
@@ -875,8 +1072,10 @@ ${contentToExport}`;
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+                  )}
+                </div>
+              </>
+            )}
           </>
         ) : (
           // Form view
@@ -1390,7 +1589,8 @@ ${contentToExport}`;
         contentType="lesson"
         onContentUpdate={(newContent) => {
           setGeneratedPlan(newContent);
-          setEditedContent(newContent);
+          const parsed = parseLessonContent(newContent, formData);
+          if (parsed) setParsedLesson(parsed);
         }}
       />
 
@@ -1402,13 +1602,13 @@ ${contentToExport}`;
         showFloatingButton={false}
       />
 
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.LESSON_PLANNER}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+     
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.LESSON_PLANNER}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+  
     </div>
   );
 };

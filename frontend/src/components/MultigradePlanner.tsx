@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import MultigradeEditor from './MultigradeEditor';
+import type { ParsedMultigradePlan } from './MultigradeEditor';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -19,6 +21,7 @@ interface MultigradeHistory {
   timestamp: string;
   formData: FormData;
   generatedPlan: string;
+  parsedPlan?: ParsedMultigradePlan;
 }
 
 interface FormData {
@@ -136,6 +139,253 @@ const formatMultigradeText = (text: string, accentColor: string) => {
   return elements;
 };
 
+// Parse multigrade plan text content into structured ParsedMultigradePlan format
+const parseMultigradeContent = (text: string, formData: FormData): ParsedMultigradePlan | null => {
+  if (!text) return null;
+
+  try {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Extract metadata from form data
+    const gradeLevelsArray = formData.gradeRange.split(/[-,]/).map(g => g.trim());
+    const metadata = {
+      title: formData.topic || 'Multigrade Plan',
+      subject: formData.subject,
+      gradeLevels: gradeLevelsArray,
+      gradeRange: formData.gradeRange,
+      duration: formData.duration,
+      totalStudents: formData.totalStudents,
+      date: new Date().toLocaleDateString()
+    };
+
+    // Parse common objectives
+    const commonObjectives: string[] = [];
+    const commonObjSection = text.match(/\*\*Common (?:Learning )?Objectives.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (commonObjSection) {
+      const objMatches = commonObjSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (objMatches) {
+        objMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) commonObjectives.push(cleaned);
+        });
+      }
+    }
+
+    // Parse grade-specific objectives
+    const gradeSpecificObjectives: { [gradeLevel: string]: string[] } = {};
+    gradeLevelsArray.forEach(grade => {
+      const gradeObjRegex = new RegExp(`\\*\\*${grade}.*?Objectives.*?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:Grade|Kindergarten)|$)`, 'i');
+      const match = text.match(gradeObjRegex);
+      if (match && match[1]) {
+        const objectives: string[] = [];
+        const objMatches = match[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+        if (objMatches) {
+          objMatches.forEach(m => {
+            const cleaned = m.replace(/^\s*[\*\-•]\s+/, '').trim();
+            if (cleaned) objectives.push(cleaned);
+          });
+        }
+        if (objectives.length > 0) {
+          gradeSpecificObjectives[grade] = objectives;
+        }
+      }
+    });
+
+    // Parse materials
+    const materials: Array<{ id: string; name: string; gradeLevels?: string[] }> = [];
+    const materialsSection = text.match(/\*\*Materials.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (materialsSection) {
+      const matMatches = materialsSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (matMatches) {
+        matMatches.forEach((match, idx) => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) {
+            // Check for grade-level tags in materials (e.g., "Item (Grade 1, Grade 2)")
+            const gradeMatch = cleaned.match(/\(((?:Grade \d+|Kindergarten)(?:,\s*(?:Grade \d+|Kindergarten))*)\)/);
+            let name = cleaned;
+            let gradeLevels: string[] = [];
+            
+            if (gradeMatch) {
+              name = cleaned.replace(gradeMatch[0], '').trim();
+              gradeLevels = gradeMatch[1].split(',').map(g => g.trim());
+            }
+            
+            materials.push({
+              id: `material_${idx}`,
+              name,
+              gradeLevels: gradeLevels.length > 0 ? gradeLevels : []
+            });
+          }
+        });
+      }
+    }
+
+    // Parse grade-specific activities
+    const gradeActivities: Array<{
+      id: string;
+      gradeLevel: string;
+      activityName: string;
+      description: string;
+      duration?: string;
+    }> = [];
+    
+    gradeLevelsArray.forEach(grade => {
+      const gradeActRegex = new RegExp(`\\*\\*${grade}.*?Activities.*?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:Grade|Kindergarten|Assessment)|$)`, 'i');
+      const match = text.match(gradeActRegex);
+      if (match && match[1]) {
+        const activityBlocks = match[1].split(/(?=\d+\.)/);
+        activityBlocks.forEach((block, idx) => {
+          const trimmed = block.trim();
+          if (trimmed) {
+            const nameMatch = trimmed.match(/^\d+\.\s*(.+?)(?:\n|$)/);
+            const activityName = nameMatch ? nameMatch[1].trim() : `Activity ${idx + 1}`;
+            const description = trimmed.replace(/^\d+\.\s*.+?\n/, '').trim();
+            
+            gradeActivities.push({
+              id: `activity_${grade}_${idx}`,
+              gradeLevel: grade,
+              activityName,
+              description,
+              duration: ''
+            });
+          }
+        });
+      }
+    });
+
+    // Parse assessment strategies
+    const assessmentStrategies: string[] = [];
+    const assessSection = text.match(/\*\*Assessment.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (assessSection) {
+      const assessMatches = assessSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (assessMatches) {
+        assessMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) assessmentStrategies.push(cleaned);
+        });
+      }
+    }
+
+    // Parse optional fields
+    const differentiationMatch = text.match(/\*\*Differentiation.*?\*\*(.*?)(?=\*\*|$)/s);
+    const differentiationNotes = differentiationMatch ? differentiationMatch[1].trim() : undefined;
+
+    const prerequisitesMatch = text.match(/\*\*Prerequisites.*?\*\*(.*?)(?=\*\*|$)/s);
+    const prerequisites = prerequisitesMatch ? prerequisitesMatch[1].trim() : undefined;
+
+    const strategiesMatch = text.match(/\*\*Multigrade Strategies.*?\*\*(.*?)(?=\*\*|$)/s);
+    const multigradeStrategies = strategiesMatch
+      ? strategiesMatch[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g)?.map(m => m.replace(/^\s*[\*\-•]\s+/, '').trim())
+      : undefined;
+
+    return {
+      metadata,
+      commonObjectives: commonObjectives.length > 0 ? commonObjectives : ['No common objectives found'],
+      gradeSpecificObjectives,
+      materials: materials.length > 0 ? materials : [{ id: 'mat_0', name: 'No materials specified', gradeLevels: [] }],
+      gradeActivities: gradeActivities.length > 0 ? gradeActivities : [],
+      assessmentStrategies: assessmentStrategies.length > 0 ? assessmentStrategies : ['Observation'],
+      differentiationNotes,
+      multigradeStrategies,
+      prerequisites
+    };
+  } catch (error) {
+    console.error('Failed to parse multigrade plan:', error);
+    return null;
+  }
+};
+
+// Convert ParsedMultigradePlan back to display text format
+const multigradePlanToDisplayText = (plan: ParsedMultigradePlan): string => {
+  let output = '';
+  
+  // Add metadata header
+  output += `**MULTIGRADE LESSON PLAN**\n\n`;
+  output += `**Title:** ${plan.metadata.title}\n`;
+  output += `**Subject:** ${plan.metadata.subject}\n`;
+  output += `**Grade Range:** ${plan.metadata.gradeRange}\n`;
+  output += `**Duration:** ${plan.metadata.duration} minutes\n`;
+  output += `**Total Students:** ${plan.metadata.totalStudents}\n`;
+  output += `**Date:** ${plan.metadata.date}\n\n`;
+  
+  // Common Learning Objectives
+  output += `**Common Learning Objectives (All Grades)**\n`;
+  plan.commonObjectives.forEach(obj => {
+    output += `* ${obj}\n`;
+  });
+  output += '\n';
+  
+  // Grade-Specific Objectives
+  if (Object.keys(plan.gradeSpecificObjectives).length > 0) {
+    output += `**Grade-Specific Learning Objectives**\n\n`;
+    plan.metadata.gradeLevels.forEach(grade => {
+      if (plan.gradeSpecificObjectives[grade]) {
+        output += `**${grade} Objectives:**\n`;
+        plan.gradeSpecificObjectives[grade].forEach(obj => {
+          output += `* ${obj}\n`;
+        });
+        output += '\n';
+      }
+    });
+  }
+  
+  // Materials
+  output += `**Materials Needed:**\n`;
+  plan.materials.forEach(material => {
+    let materialLine = `* ${material.name}`;
+    if (material.gradeLevels && material.gradeLevels.length > 0) {
+      materialLine += ` (${material.gradeLevels.join(', ')})`;
+    }
+    output += `${materialLine}\n`;
+  });
+  output += '\n';
+  
+  // Grade-Specific Activities
+  if (plan.gradeActivities.length > 0) {
+    output += `**Grade-Specific Activities**\n\n`;
+    plan.metadata.gradeLevels.forEach(grade => {
+      const gradeActs = plan.gradeActivities.filter(a => a.gradeLevel === grade);
+      if (gradeActs.length > 0) {
+        output += `**${grade} Activities:**\n`;
+        gradeActs.forEach((activity, idx) => {
+          output += `${idx + 1}. **${activity.activityName}**\n`;
+          output += `${activity.description}\n`;
+          if (activity.duration) {
+            output += `Duration: ${activity.duration}\n`;
+          }
+          output += '\n';
+        });
+      }
+    });
+  }
+  
+  // Assessment Strategies
+  output += `**Assessment Strategies:**\n`;
+  plan.assessmentStrategies.forEach(strategy => {
+    output += `* ${strategy}\n`;
+  });
+  output += '\n';
+  
+  // Optional fields
+  if (plan.differentiationNotes) {
+    output += `**Differentiation Notes:**\n${plan.differentiationNotes}\n\n`;
+  }
+  
+  if (plan.multigradeStrategies && plan.multigradeStrategies.length > 0) {
+    output += `**Multigrade Strategies:**\n`;
+    plan.multigradeStrategies.forEach(strategy => {
+      output += `* ${strategy}\n`;
+    });
+    output += '\n';
+  }
+  
+  if (plan.prerequisites) {
+    output += `**Prerequisites:**\n${plan.prerequisites}\n`;
+  }
+  
+  return output;
+};
+
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['multigrade-planner'];
@@ -150,10 +400,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [step, setStep] = useState(savedData?.step || 1);
 
-  // Add new states for editing
+  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [parsedPlan, setParsedPlan] = useState<ParsedMultigradePlan | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -186,6 +435,20 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
   const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
 
+  // Try to parse plan when generated (for restored/loaded plans)
+  useEffect(() => {
+    if (generatedPlan && !parsedPlan) {
+      console.log('Attempting to parse loaded/restored multigrade plan...');
+      const parsed = parseMultigradeContent(generatedPlan, formData);
+      if (parsed) {
+        console.log('Loaded multigrade plan parsed successfully');
+        setParsedPlan(parsed);
+      } else {
+        console.log('Loaded multigrade plan parsing failed');
+      }
+    }
+  }, [generatedPlan]);
+
   const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Art', 'Music', 'Physical Education'];
   
   const gradeRanges = [
@@ -214,13 +477,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     'Mixed-Grade Collaborative Groups', 'Learning Centers', 'Tiered Assignments',
     'Flexible Grouping'
   ];
-
-  // Initialize edited content when plan is generated
-  useEffect(() => {
-    if (generatedPlan && !editedContent) {
-      setEditedContent(generatedPlan);
-    }
-  }, [generatedPlan]);
 
   // Tutorial auto-show logic
   useEffect(() => {
@@ -272,8 +528,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   }, [tabId]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, streamingPlan, step });
-  }, [formData, generatedPlan, streamingPlan, step]);
+    onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });
+  }, [formData, generatedPlan, streamingPlan, step, parsedPlan]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
@@ -297,6 +553,18 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             setStreamingPlan(current => {
               const finalMessage = current || data.full_response;
               setGeneratedPlan(finalMessage);
+              
+              console.log('Multigrade plan generation complete, parsing...');
+              
+              // Try to parse immediately
+              const parsed = parseMultigradeContent(finalMessage, formData);
+              if (parsed) {
+                console.log('Multigrade plan parsed successfully');
+                setParsedPlan(parsed);
+              } else {
+                console.warn('Multigrade plan parsing failed');
+              }
+              
               setLoading(false);
               return '';
             });
@@ -339,33 +607,26 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     };
   }, []);
 
-  // Enable editing mode
+  // Enable structured editing mode
   const enableEditing = () => {
-    setEditedContent(generatedPlan);
-    setIsEditing(true);
+    if (parsedPlan) {
+      setIsEditing(true);
+    } else {
+      alert('Cannot edit: Multigrade plan format not recognized. Try regenerating the plan.');
+    }
   };
 
-  // Save edited content
-  const saveEditedContent = () => {
-    setGeneratedPlan(editedContent);
+  // Save edited multigrade plan
+  const saveMultigradeEdit = (editedPlan: ParsedMultigradePlan) => {
+    setParsedPlan(editedPlan);
+    const displayText = multigradePlanToDisplayText(editedPlan);
+    setGeneratedPlan(displayText);
     setIsEditing(false);
   };
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditedContent(generatedPlan);
     setIsEditing(false);
-  };
-
-  // Copy to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(editedContent || generatedPlan);
-      setCopyStatus('copied');
-      setTimeout(() => setCopyStatus('idle'), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
   };
 
   const loadMultigradeHistories = async () => {
@@ -377,9 +638,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   };
 
-  // Update savePlan to use edited content
   const savePlan = async () => {
-    const contentToSave = isEditing ? editedContent : generatedPlan;
+    const contentToSave = parsedPlan ? multigradePlanToDisplayText(parsedPlan) : generatedPlan;
     if (!contentToSave) {
       alert('No plan to save');
       return;
@@ -392,7 +652,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         title: `${formData.subject} - ${formData.topic} (${formData.gradeRange})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave
+        generatedPlan: contentToSave,
+        parsedPlan: parsedPlan || undefined
       };
 
       if (!currentPlanId) {
@@ -403,11 +664,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       await loadMultigradeHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      
-      // If we were editing, exit editing mode after save
-      if (isEditing) {
-        setIsEditing(false);
-      }
     } catch (error) {
       console.error('Failed to save multigrade plan:', error);
       alert('Failed to save multigrade plan');
@@ -418,6 +674,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const loadMultigradeHistory = (history: MultigradeHistory) => {
     setFormData(history.formData);
     setGeneratedPlan(history.generatedPlan);
+    setParsedPlan(history.parsedPlan || null);
     setCurrentPlanId(history.id);
     setHistoryOpen(false);
   };
@@ -437,9 +694,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   };
 
-  // Update exportPlan to use edited content
   const exportPlan = () => {
-    const contentToExport = isEditing ? editedContent : generatedPlan;
+    const contentToExport = parsedPlan ? multigradePlanToDisplayText(parsedPlan) : generatedPlan;
     if (!contentToExport) return;
 
     const content = `MULTIGRADE LESSON PLAN
@@ -564,49 +820,41 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
     });
     setGeneratedPlan('');
     setStreamingPlan('');
+    setParsedPlan(null);
     setCurrentPlanId(null);
     setStep(1);
     setIsEditing(false);
-    setEditedContent('');
   };
 
   return (
     <div className="flex h-full bg-white relative" data-tutorial="multigrade-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan || isEditing) ? (
+        {(generatedPlan || streamingPlan) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Multigrade Plan...' : 
-                   isEditing ? 'Editing Multigrade Plan' : 'Generated Multigrade Plan'}
-                </h2>
-                <p className="text-sm text-gray-500">{formData.subject} - {formData.gradeRange}</p>
-              </div>
-              {!loading && (
-                <div className="flex items-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                      <button
-                        onClick={saveEditedContent}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Save Edits
-                      </button>
-                    </>
-                  ) : (
-                    <>
+            {isEditing && parsedPlan ? (
+              // Show Structured Editor
+              <MultigradeEditor
+                plan={parsedPlan}
+                onSave={saveMultigradeEdit}
+                onCancel={cancelEditing}
+              />
+            ) : (
+              // Show generated plan (existing display code)
+              <>
+                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {loading ? 'Generating Multigrade Plan...' : 'Generated Multigrade Plan'}
+                    </h2>
+                    <p className="text-sm text-gray-500">{formData.subject} - {formData.gradeRange}</p>
+                  </div>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        disabled={!parsedPlan}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        title={!parsedPlan ? "Multigrade plan format not recognized" : "Edit plan"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -651,30 +899,29 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </button>
-                    </>
+                      <button
+                        onClick={() => setHistoryOpen(!historyOpen)}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        title="Multigrade Plan History"
+                      >
+                        <History className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGeneratedPlan('');
+                          setStreamingPlan('');
+                          setParsedPlan(null);
+                          setIsEditing(false);
+                        }}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                      >
+                        Create New Plan
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Multigrade Plan History"
-                  >
-                    <History className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGeneratedPlan('');
-                      setStreamingPlan('');
-                      setIsEditing(false);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Create New Plan
-                  </button>
                 </div>
-              )}
-            </div>
             
-            <div className="flex-1 overflow-y-auto bg-white p-6">
+                <div className="flex-1 overflow-y-auto bg-white p-6">
               {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
@@ -744,58 +991,37 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                   </div>
                 </div>
-              )}
+                  )}
 
-              <div className="prose prose-lg max-w-none">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Edit your multigrade plan:
-                      </label>
-                      <div className="text-sm text-gray-500">
-                        {editedContent.length} characters
+                  <div className="prose prose-lg max-w-none">
+                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                      {formatMultigradeText(streamingPlan || generatedPlan, tabColor)}
+                      {loading && streamingPlan && (
+                        <span className="inline-flex items-center ml-1">
+                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {loading && (
+                    <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your multigrade plan</div>
+                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Differentiated activities for multiple grade levels</div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
+                        </div>
                       </div>
                     </div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-vertical"
-                      placeholder="Edit your multigrade plan content here..."
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>You can format using markdown-style **bold** and *italic*</span>
-                      <span>Lines will be preserved in the final output</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatMultigradeText(streamingPlan || generatedPlan, tabColor)}
-                    {loading && streamingPlan && (
-                      <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {loading && (
-                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your multigrade plan</div>
-                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Differentiated activities for multiple grade levels</div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </>
         ) : (
           <>
@@ -1269,7 +1495,8 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
         contentType="multigrade"
         onContentUpdate={(newContent) => {
           setGeneratedPlan(newContent);
-          setEditedContent(newContent);
+          const parsed = parseMultigradeContent(newContent, formData);
+          if (parsed) setParsedPlan(parsed);
         }}
       />
 
@@ -1281,13 +1508,13 @@ Please generate a detailed multigrade lesson plan with clear differentiation str
         showFloatingButton={false}
       />
 
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.MULTIGRADE_PLANNER}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+    
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.MULTIGRADE_PLANNER}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+  
     </div>
   );
 };
