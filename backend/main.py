@@ -572,10 +572,12 @@ async def websocket_chat(websocket: WebSocket):
             
             
             cmd = [
-                LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                str(LLAMA_CLI_PATH),
+                "-m", str(MODEL_PATH),
                 "-p", prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
+                "-n", str(LLAMA_PARAMS["max_tokens"]),
+                "-t", str(LLAMA_PARAMS["threads"]),
+                "--temp", str(LLAMA_PARAMS["temperature"])
             ]
             
             print(f"\n{'='*60}")
@@ -648,20 +650,10 @@ async def websocket_chat(websocket: WebSocket):
             
             while time.time() - start_time < timeout_seconds:
                 if process.poll() is not None:
+                    # Process finished, let threads finish reading
                     break
                 
                 current_output = ''.join(all_output)
-                
-                # Check for garbage patterns
-                if not should_stop_streaming:
-                    for pattern in garbage_patterns:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
-                
-                if should_stop_streaming:
-                    break
                 
                 # Find where assistant response actually starts
                 if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
@@ -693,14 +685,24 @@ async def websocket_chat(websocket: WebSocket):
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
                     
-                    # Check for end tokens or garbage in the new content
+                    # Check for end tokens or garbage ONLY in the content we're about to send
                     should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
+                    for pattern in garbage_patterns:
                         if pattern in new_content:
                             pattern_index = new_content.find(pattern)
                             new_content = new_content[:pattern_index]
                             should_break = True
+                            print(f"\n[Detected end pattern '{pattern}', stopping stream]")
                             break
+                    
+                    # Also check for end tokens
+                    if not should_break:
+                        for end_token in ["<|eot_id|>", "<|end_of_text|>"]:
+                            if end_token in new_content:
+                                end_index = new_content.find(end_token)
+                                new_content = new_content[:end_index]
+                                should_break = True
+                                break
                     
                     # Stream character by character
                     for char in new_content:
@@ -709,7 +711,8 @@ async def websocket_chat(websocket: WebSocket):
                                 "type": "token",
                                 "content": char
                             })
-                        except:
+                        except Exception as e:
+                            print(f"Error sending character: {e}")
                             break
                     
                     last_streamed_index += len(new_content)
@@ -717,16 +720,14 @@ async def websocket_chat(websocket: WebSocket):
                     if should_break:
                         break
                 
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.01)
             
-            # Kill the process and cleanup
-
+            # Wait for threads to finish reading ALL output first
+            stderr_thread.join(timeout=3)
+            stdout_thread.join(timeout=3)
             
+            # Now cleanup the process
             cleanup_process(process)
-            
-            # Wait for threads
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
             
             full_output = ''.join(all_output)
             
@@ -734,21 +735,30 @@ async def websocket_chat(websocket: WebSocket):
             print(f"RAW OUTPUT - {len(full_output)} characters total")
             print(f"{'='*60}\n")
             
-            # Clean the response
+            # Clean the response - extract assistant content
             response_text = full_output
             
+            # Find assistant response start
             if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
                 response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
             
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
+            # Remove initialization message if at the start
+            if response_text.startswith("To change it, set a different value via -sys PROMPT"):
+                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            if response_text.startswith("If you want to submit another line, end your input with"):
+                response_text = response_text.split("If you want to submit another line, end your input with", 1)[1]
             
-            # Remove initialization messages
-            for init_msg in ["To change it, set a different value via -sys PROMPT",
-                           "If you want to submit another line, end your input with"]:
-                if init_msg in response_text:
-                    response_text = response_text.split(init_msg, 1)[1]
+            # Remove end tokens and everything after
+            for end_marker in ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
+                if end_marker in response_text:
+                    response_text = response_text.split(end_marker)[0]
+                    break
+            
+            # Remove garbage patterns and everything after (these appear at the end)
+            for pattern in garbage_patterns:
+                if pattern in response_text:
+                    response_text = response_text.split(pattern)[0]
+                    break
             
             response_text = response_text.strip()
    
