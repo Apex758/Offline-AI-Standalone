@@ -10,14 +10,17 @@ lerna-debug.log*
 # Dependencies
 node_modules/
 backend/venv/
-backend-bundle/
-dist-electron/
 
-# Build artifacts
+# Backend bundle (contains large ML models and Python runtime)
+backend-bundle/
+
+# Build artifacts and distributions
 dist/
 dist-ssr/
+dist-electron/
 backend/bin/
 build/
+RELEASE/
 
 # Python cache
 __pycache__/
@@ -37,22 +40,17 @@ __pycache__/
 *.njsproj
 *.sln
 *.sw?
- 
-dist-electron/
-*.exe
-dist/
-build/
 
- 
-# Ignore model files
+# ML Model files (GGUF files are typically very large)
 *.gguf
 
-# Ignore python embed directories
+# Python embedded runtime
 python-embed/
 backend/python-embed/
 
-# Ignore large binary files
+# Large binary files
 *.dll
 *.pyd
 *.zip
 *.exe
+*.asar
