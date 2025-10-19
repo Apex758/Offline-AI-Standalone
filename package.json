@@ -1,0 +1,103 @@
+{
+  "name": "oecs-learning-hub",
+  "version": "1.0.0",
+  "description": "OECS Learning Hub - AI-powered educational tools suite",
+  "main": "electron/main.js",
+  "author": {
+    "name": "Delon Pierre",
+    "email": "delon.pierre@oecs.int"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
+    "electron:dev": "concurrently \"npm run backend\" \"wait-on http://localhost:8000 && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "echo Backend packaging skipped - already done manually",
+    "build": "npm run build:frontend && npm run build:backend",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:win": "npm run build && electron-builder --win --x64",
+    "electron:build:portable": "npm run build && electron-builder --win portable",
+    "package": "npm run build && electron-builder --win --x64",
+    "postinstall": "cd frontend && npm install"
+  },
+  "dependencies": {
+    "electron-log": "^5.0.1",
+    "electron-updater": "^6.1.7",
+    "react-router-dom": "^7.9.4"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.9.1",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.oecs.learninghub",
+    "productName": "OECS Learning Hub",
+    "copyright": "Copyright © 2024 OLH Education",
+    "icon": "build/OECS.ico",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "frontend/src/curriculum/**/*",
+      "backend-bundle/**/*",
+      "!backend-bundle/*.gguf",
+      "package.json",
+      "!backend/**/*",
+      "!frontend/src/**/*",
+      "!frontend/node_modules/**/*",
+      "!build-scripts/**/*",
+      "!**/*.ts",
+      "!**/*.map",
+      "!**/.git*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin"
+    ],
+    "win": {
+      "icon": "build/OECS.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "requestedExecutionLevel": "highestAvailable"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OECS Learning Hub",
+      "perMachine": false,
+      "allowElevation": true,
+      "installerIcon": "build/OECS.ico",
+      "uninstallerIcon": "build/OECS.ico",
+      "installerHeaderIcon": "build/OECS.ico",
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh",
+      "warningsAsErrors": false
+    },
+    "extraResources": [
+      {
+        "from": "backend-bundle",
+        "to": "backend-bundle",
+        "filter": ["**/*", "!*.gguf"]
+      }
+    ],
+    "compression": "normal",
+    "asar": true,
+    "asarUnpack": [
+      "**/backend-bundle/**/*"
+    ]
+  }
+}

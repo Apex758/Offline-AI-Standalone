@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://oecslearninghub.org/sitemap.xml
+
+# Allow crawling of curriculum pages
+Allow: /curriculum/
+Allow: /curriculum/*/
+Allow: /curriculum/*/*/
+
+# Allow crawling of search and other important pages
+Allow: /search
+Allow: /help
+Allow: /about 
