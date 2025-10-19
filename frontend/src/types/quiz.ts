@@ -31,14 +31,31 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
   try {
     const questions: QuizQuestion[] = [];
     
-    // Match questions in format: Question 1: ... A) ... B) ... C) ... D) ... Correct Answer: A
+    // Clean the text first - remove any remaining initialization logs
+    let cleanText = text;
+    const initPatterns = [
+      /llama_model_loader[^\n]*/g,
+      /llm_load_print_meta[^\n]*/g,
+      /system_info[^\n]*/g,
+      /Not using system message[^\n]*/g,
+      /To change it, set a different value via -sys PROMPT[^\n]*/g,
+    ];
+    
+    initPatterns.forEach(pattern => {
+      cleanText = cleanText.replace(pattern, '');
+    });
+    
+    // Match questions in format: Question 1: ... A) ... B) ... C) ... D) ... Correct Answer: A Explanation: ...
     const questionRegex = /Question\s+(\d+):\s*([^\n]+)\n([^]*?)(?=Question\s+\d+:|$)/gi;
-    const matches = [...text.matchAll(questionRegex)];
+    const matches = [...cleanText.matchAll(questionRegex)];
     
     if (matches.length === 0) {
       console.error('No questions found in text format');
+      console.log('Text being parsed:', cleanText.substring(0, 500));
       return null;
     }
+    
+    console.log(`Found ${matches.length} questions in text format`);
     
     matches.forEach((match, index) => {
       const questionText = match[2].trim();
@@ -57,23 +74,30 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
       const answerMatch = questionBody.match(/Correct\s+Answer:\s*([A-D])/i);
       const correctAnswer = answerMatch ? answerMatch[1].charCodeAt(0) - 65 : 0; // Convert A=0, B=1, etc.
       
-      // Extract explanation
-      const explanationMatch = questionBody.match(/Explanation:\s*([^\n]+)/i);
+      // Extract explanation (handle multi-line explanations)
+      const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
       const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
       
-      questions.push({
-        id: `q_${Date.now()}_${index}`,
-        type: 'multiple-choice',
-        question: questionText,
-        options: options.length > 0 ? options : undefined,
-        correctAnswer,
-        explanation
-      });
+      if (options.length === 4) {
+        questions.push({
+          id: `q_${Date.now()}_${index}`,
+          type: 'multiple-choice',
+          question: questionText,
+          options,
+          correctAnswer,
+          explanation
+        });
+      } else {
+        console.warn(`Question ${index + 1} has ${options.length} options (expected 4)`);
+      }
     });
     
     if (questions.length === 0) {
+      console.error('No valid questions parsed');
       return null;
     }
+    
+    console.log(`Successfully parsed ${questions.length} questions`);
     
     // Create metadata from parsed questions
     return {

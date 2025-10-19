@@ -820,12 +820,13 @@ async def quiz_websocket(websocket: WebSocket):
                 LLAMA_CLI_PATH,
                 "-m", MODEL_PATH,
                 "-p", full_prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
+                "-n", "4000",  # INCREASED TOKEN LIMIT
+                "-t", "4",
+                "--temp", "0.7"
             ]
             
             print(f"\n{'='*60}")
             print(f"Quiz Generation Request")
-            print(f"Command: {' '.join(cmd[:4])}...")  # Print first few parts of command
             print(f"{'='*60}\n")
             
             try:
@@ -835,12 +836,11 @@ async def quiz_websocket(websocket: WebSocket):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    bufsize=0,
+                    bufsize=1,  # Line buffered instead of 0
                     creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
                 )
                 
                 print("✓ Subprocess created successfully")
-                
                 process.stdin.close()
                 
             except Exception as e:
@@ -849,11 +849,10 @@ async def quiz_websocket(websocket: WebSocket):
                 continue
             
             all_output = []
-            generation_started = {'value': False}
             
             garbage_patterns = [
                 'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-                'llama_print', '> llama', 'sampler_', 'l>a m',
+                'llama_print', '> llama', 'sampler_'
             ]
             
             def read_stream(stream, output_list):
@@ -863,18 +862,12 @@ async def quiz_websocket(websocket: WebSocket):
                         if not char:
                             break
                         output_list.append(char)
-                        
-                        current_text = ''.join(output_list)
-                        if not generation_started['value'] and "Not using system message" in current_text:
-                            generation_started['value'] = True
-                            print(f"\n{'='*60}\n🎯 GENERATING QUIZ:\n{'='*60}\n")
-                        
-                        if generation_started['value']:
-                            sys.stdout.write(char)
-                            sys.stdout.flush()
+                        sys.stdout.write(char)
+                        sys.stdout.flush()
                 except Exception as e:
                     print(f"Error in read_stream: {e}")
             
+            # Start reading both streams
             stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
             stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
             stderr_thread.daemon = True
@@ -884,14 +877,37 @@ async def quiz_websocket(websocket: WebSocket):
             
             print("✓ Read threads started")
             
+            # IMPROVED STREAMING LOGIC - Filter all initialization logs
             start_time = time.time()
             timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
             chars_sent = 0
+            started_streaming = False
+            last_sent_index = 0
+            
+            # Comprehensive initialization markers to skip
+            init_markers = [
+                "llama_model_loader",
+                "llama_load_model",
+                "llm_load_print_meta",
+                "llama_new_context",
+                "system_info",
+                "Not using system message",
+                "To change it, set a different value via -sys PROMPT",
+                "log_",
+                "compute params",
+                "total RAM required",
+                "ROPs",
+                "model desc",
+                "model size",
+                "model ftype",
+                "model params",
+                "model type",
+                "ggml ctx size",
+                "batch size",
+                "context size",
+                "vocab type",
+                "pooling type",
+            ]
             
             while time.time() - start_time < timeout_seconds:
                 if process.poll() is not None:
@@ -900,47 +916,43 @@ async def quiz_websocket(websocket: WebSocket):
                 
                 current_output = ''.join(all_output)
                 
-                if not should_stop_streaming:
-                    for pattern in garbage_patterns:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
+                # Check if we should start streaming
+                if not started_streaming:
+                    # Look for the assistant header to start streaming
+                    if "<|start_header_id|>assistant<|end_header_id|>" in current_output:
+                        started_streaming = True
+                        # Find position after the header
+                        header_pos = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
+                        last_sent_index = header_pos + len("<|start_header_id|>assistant<|end_header_id|>")
+                        
+                        # Skip whitespace and initialization markers
+                        while last_sent_index < len(current_output) and current_output[last_sent_index] in ['\n', '\r', ' ']:
+                            last_sent_index += 1
+                        
+                        # Skip "To change it..." message if present
+                        remaining = current_output[last_sent_index:]
+                        if remaining.startswith("To change it, set a different value via -sys PROMPT"):
+                            last_sent_index += len("To change it, set a different value via -sys PROMPT")
+                            while last_sent_index < len(current_output) and current_output[last_sent_index] in ['\n', '\r']:
+                                last_sent_index += 1
+                        
+                        print("✓ Started streaming quiz content (initialization logs filtered)")
                 
-                if should_stop_streaming:
-                    break
-                
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    print("✓ Found assistant start marker")
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
-                            print("✓ Skipped initial garbage")
-                
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
+                # Stream content if we've started
+                if started_streaming and last_sent_index < len(current_output):
+                    new_content = current_output[last_sent_index:]
                     
-                    should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
+                    # Check for end patterns
+                    should_stop = False
+                    for pattern in garbage_patterns:
                         if pattern in new_content:
                             pattern_index = new_content.find(pattern)
                             new_content = new_content[:pattern_index]
-                            should_break = True
+                            should_stop = True
+                            print(f"\n[Detected end pattern '{pattern}', stopping stream]")
                             break
                     
+                    # Send character by character
                     for char in new_content:
                         try:
                             await websocket.send_json({
@@ -952,15 +964,16 @@ async def quiz_websocket(websocket: WebSocket):
                             print(f"Error sending character: {e}")
                             break
                     
-                    last_streamed_index += len(new_content)
+                    last_sent_index += len(new_content)
                     
-                    if should_break:
+                    if should_stop:
                         break
                 
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.01)
             
             print(f"\n✓ Sent {chars_sent} characters to frontend")
             
+            # Clean up process
             process.terminate()
             time.sleep(0.5)
             if process.poll() is None:
@@ -975,20 +988,29 @@ async def quiz_websocket(websocket: WebSocket):
             print(f"Total output length: {len(full_output)} characters")
             print(f"{'='*60}\n")
             
+            # Clean the response - remove ALL initialization logs
             response_text = full_output
             
+            # Extract only content after assistant header
             if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
                 response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
             
+            # Remove all initialization markers
+            for marker in init_markers:
+                if marker in response_text:
+                    # For init markers, take everything after (they appear at the start)
+                    parts = response_text.split(marker, 1)
+                    if len(parts) > 1:
+                        response_text = parts[1]
+            
+            # Remove end markers
             for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
-            
             response_text = response_text.strip()
             
+            # Send final response
             try:
                 await websocket.send_json({"type": "done", "full_response": response_text})
                 print("✓ Sent done message")
@@ -997,7 +1019,6 @@ async def quiz_websocket(websocket: WebSocket):
 
             print(f"\n{'='*60}")
             print(f"Quiz generation complete - {len(response_text)} chars")
-            print(f"First 200 chars: {response_text[:200]}")
             print(f"{'='*60}\n")
                         
     except WebSocketDisconnect:

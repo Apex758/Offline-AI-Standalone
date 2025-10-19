@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Menu, 
-  X, 
-  MessageSquare, 
-  ClipboardCheck, 
-  BookOpen, 
-  FileText, 
-  LogOut, 
-  Plus, 
-  Columns, 
-  ChevronDown, 
-  ChevronRight, 
-  GraduationCap, 
-  ListChecks, 
-  BookMarked, 
-  School, 
-  Users, 
+import {
+  Menu,
+  X,
+  MessageSquare,
+  ClipboardCheck,
+  BookOpen,
+  FileText,
+  LogOut,
+  Plus,
+  Columns,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  ListChecks,
+  BookMarked,
+  School,
+  Users,
   BarChart3,
-  Library
+  Library,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 import { User, Tab, Tool } from '../types';
@@ -31,6 +32,7 @@ import KindergartenPlanner from './KindergartenPlanner';
 import CrossCurricularPlanner from './CrossCurricularPlanner';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import ResourceManager from './ResourceManager';
+import Settings from './Settings';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 
 
@@ -123,6 +125,13 @@ const tools: Tool[] = [
     type: 'cross-curricular-planner',
     description: 'Integrated subject lesson plans',
     group: 'lesson-planners'
+  },
+  {
+    id: 'settings',
+    name: 'Settings',
+    icon: 'Settings',
+    type: 'settings',
+    description: 'Application settings'
   }
 ];
 
@@ -137,7 +146,8 @@ const iconMap: { [key: string]: any } = {
   School,
   Users,
   BarChart3,
-  Library
+  Library,
+  Settings: SettingsIcon
 };
 
 const MAX_TABS_PER_TYPE = 3;
@@ -193,10 +203,15 @@ const tabColors: { [key: string]: { border: string; bg: string; activeBg: string
     bg: 'bg-emerald-50',
     activeBg: 'bg-emerald-600'
   },
-  'split': { 
-    border: 'border-gray-400', 
-    bg: 'bg-gray-50', 
-    activeBg: 'bg-gray-600' 
+  'settings': {
+    border: 'border-slate-500',
+    bg: 'bg-slate-50',
+    activeBg: 'bg-slate-600'
+  },
+  'split': {
+    border: 'border-gray-400',
+    bg: 'bg-gray-50',
+    activeBg: 'bg-gray-600'
   }
 };
 
@@ -231,6 +246,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       const existingAnalyticsTab = tabs.find(tab => tab.type === 'analytics');
       if (existingAnalyticsTab) {
         setActiveTabId(existingAnalyticsTab.id);
+        return;
+      }
+    }
+
+    if (tool.type === 'settings') {
+      const existingSettingsTab = tabs.find(tab => tab.type === 'settings');
+      if (existingSettingsTab) {
+        setActiveTabId(existingSettingsTab.id);
         return;
       }
     }
@@ -532,6 +555,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'rubric-generator':
         return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'settings':
+        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       default:
         return null;
     }
@@ -574,9 +599,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   );
 
   // Group tools by category
-  const regularTools = tools.filter(t => !t.group);
+  const regularTools = tools.filter(t => !t.group && t.type !== 'settings');
   const lessonPlannerTools = tools.filter(t => t.group === 'lesson-planners');
   const otherGroupedTools = tools.filter(t => t.group === 'tools');
+  const settingsTool = tools.find(t => t.type === 'settings');
 
   return (
     <div className="flex h-screen bg-gray-50" onClick={() => setContextMenu(null)}>
@@ -814,6 +840,44 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             )}
           </div>
+
+          {/* Settings Tool */}
+          {settingsTool && (
+            <div className="mt-4">
+              {(() => {
+                const Icon = iconMap[settingsTool.icon];
+                const activeTab = tabs.find(t => t.id === activeTabId);
+                const isActiveToolType = activeTab?.type === settingsTool.type;
+                
+                return (
+                  <button
+                    onClick={() => openTool(settingsTool)}
+                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group hover:bg-gray-800`}
+                    title={!sidebarOpen ? settingsTool.name : ''}
+                  >
+                    <Icon className={`w-5 h-5 flex-shrink-0 ${
+                      isActiveToolType
+                        ? 'text-blue-400 icon-glow'
+                        : 'text-gray-400 group-hover:text-white'
+                    }`} />
+                    {sidebarOpen && (
+                      <div className="flex-1 text-left overflow-hidden">
+                        <p
+                          className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                          style={{
+                            maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                          }}
+                        >
+                          {settingsTool.name}
+                        </p>
+                      </div>
+                    )}
+                  </button>
+                );
+              })()}
+            </div>
+          )}
         </div>
 
         {sidebarOpen && (
