@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface RubricGeneratorProps {
   tabId: string;
@@ -29,7 +33,7 @@ interface FormData {
   focusAreas: string[];
 }
 
-const formatRubricText = (text: string) => {
+const formatRubricText = (text: string, accentColor: string) => {
   if (!text) return null;
 
   // CRITICAL: Clean out ALL llama model metadata
@@ -113,7 +117,7 @@ const formatRubricText = (text: string) => {
     if (trimmed.match(/^\*\*(.+)\*\*$/) && !trimmed.includes(':')) {
       const title = trimmed.replace(/\*\*/g, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-amber-900 mt-8 mb-4 pb-2 border-b-2 border-amber-300">
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2 border-b-2" style={{ color: `${accentColor}dd`, borderColor: `${accentColor}4d` }}>
           {title}
         </h2>
       );
@@ -124,7 +128,7 @@ const formatRubricText = (text: string) => {
     if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
       const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <h3 key={`subsection-${currentIndex++}`} className="text-lg font-semibold text-amber-700 mt-6 mb-3 bg-amber-50 px-3 py-2 rounded-lg border-l-4 border-amber-500">
+        <h3 key={`subsection-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-3 px-3 py-2 rounded-lg border-l-4" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d`, borderColor: accentColor }}>
           {title}:
         </h3>
       );
@@ -135,8 +139,8 @@ const formatRubricText = (text: string) => {
     if (trimmed.match(/^(Excellent|Proficient|Developing|Beginning|Outstanding|Good|Satisfactory|Fair|Needs Improvement|Advanced|Basic).*:/i)) {
       elements.push(
         <div key={`criteria-${currentIndex++}`} className="mt-4 mb-3">
-          <div className="bg-gradient-to-r from-amber-100 to-orange-50 border-l-4 border-amber-600 p-4 rounded-r-lg shadow-sm">
-            <h4 className="font-bold text-amber-900 text-lg">{trimmed}</h4>
+          <div className="border-l-4 p-4 rounded-r-lg shadow-sm" style={{ background: `linear-gradient(to right, ${accentColor}1a, ${accentColor}0d)`, borderColor: `${accentColor}cc` }}>
+            <h4 className="font-bold text-lg" style={{ color: `${accentColor}dd` }}>{trimmed}</h4>
           </div>
         </div>
       );
@@ -155,11 +159,18 @@ const formatRubricText = (text: string) => {
       if (cells.length > 0) {
         const isHeaderRow = currentIndex < 3;
         elements.push(
-          <div key={`table-row-${currentIndex++}`} 
-               className={`grid gap-2 py-3 px-2 border-b border-amber-200 ${isHeaderRow ? 'bg-amber-100 font-semibold' : 'hover:bg-amber-50'}`}
-               style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>
+          <div key={`table-row-${currentIndex++}`}
+               className="grid gap-2 py-3 px-2"
+               style={{
+                 gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))`,
+                 borderBottom: `1px solid ${accentColor}33`,
+                 backgroundColor: isHeaderRow ? `${accentColor}1a` : 'transparent',
+                 fontWeight: isHeaderRow ? 600 : 400
+               }}
+               onMouseEnter={(e) => !isHeaderRow && (e.currentTarget.style.backgroundColor = `${accentColor}0d`)}
+               onMouseLeave={(e) => !isHeaderRow && (e.currentTarget.style.backgroundColor = 'transparent')}>
             {cells.map((cell, idx) => (
-              <div key={idx} className={`px-2 ${idx === 0 ? 'font-semibold text-amber-900' : 'text-gray-700'}`}>
+              <div key={idx} className={`px-2 ${idx === 0 ? 'font-semibold' : 'text-gray-700'}`} style={idx === 0 ? { color: `${accentColor}dd` } : {}}>
                 {cell}
               </div>
             ))}
@@ -174,7 +185,7 @@ const formatRubricText = (text: string) => {
       const content = trimmed.replace(/^\s*[\*\-•]\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
-          <span className="text-amber-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
       );
@@ -187,7 +198,7 @@ const formatRubricText = (text: string) => {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       elements.push(
         <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
-          <span className="text-amber-600 mr-3 font-semibold min-w-[2rem] bg-amber-50 rounded px-2 py-1 text-sm">
+          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
           <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
@@ -210,7 +221,10 @@ const formatRubricText = (text: string) => {
 };
 
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const tabColor = settings.tabColors['rubric-generator'];
   const [loading, setLoading] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -296,6 +310,21 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       setStreamingRubric(savedData?.streamingRubric || '');
     }
   }, [tabId]);
+
+  // Auto-show tutorial on first use
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.RUBRIC_GENERATOR)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.RUBRIC_GENERATOR);
+    setShowTutorial(false);
+  };
 
   useEffect(() => {
     onDataChange({ formData, generatedRubric, streamingRubric });
@@ -568,7 +597,7 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
   };
 
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="rubric-generator-welcome">
       <div className="flex-1 flex flex-col bg-white">
         {(generatedRubric || streamingRubric || isEditing) ? (
           <>
@@ -639,7 +668,11 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                       </button>
                       <button
                         onClick={exportRubric}
-                        className="flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
+                        data-tutorial="rubric-generator-export"
+                        style={{ backgroundColor: tabColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export
@@ -671,8 +704,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
               {(streamingRubric || generatedRubric) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-700"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/90 to-orange-600/90"></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
                     
                     <div className="relative px-8 py-8">
                       <div className="flex items-start justify-between">
@@ -759,10 +792,10 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                   </div>
                 ) : (
                   <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatRubricText(streamingRubric || generatedRubric)}
+                    {formatRubricText(streamingRubric || generatedRubric, tabColor)}
                     {loading && streamingRubric && (
                       <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 bg-amber-500 animate-pulse rounded-full"></span>
+                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
                       </span>
                     )}
                   </div>
@@ -770,16 +803,16 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
               </div>
 
               {loading && (
-                <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
+                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-amber-900 font-medium">Creating your rubric</div>
-                      <div className="text-amber-600 text-sm mt-1">Detailed grading criteria and performance levels</div>
+                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your rubric</div>
+                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Detailed grading criteria and performance levels</div>
                     </div>
                     <div className="flex space-x-1">
-                      <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce"></div>
-                      <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-3 h-3 bg-amber-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -804,7 +837,7 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
-                <div>
+                <div data-tutorial="rubric-generator-assignment">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Assignment Title <span className="text-red-500">*</span>
                   </label>
@@ -812,7 +845,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                     type="text"
                     value={formData.assignmentTitle}
                     onChange={(e) => handleInputChange('assignmentTitle', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Persuasive Essay on Climate Change"
                   />
                 </div>
@@ -824,7 +858,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                   <select
                     value={formData.assignmentType}
                     onChange={(e) => handleInputChange('assignmentType', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select type</option>
                     {assignmentTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -838,7 +873,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                   <select
                     value={formData.subject}
                     onChange={(e) => handleInputChange('subject', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select subject</option>
                     {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -852,14 +888,15 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                   <select
                     value={formData.gradeLevel}
                     onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select grade</option>
                     {grades.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-criteria">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Learning Objectives <span className="text-red-500">*</span>
                   </label>
@@ -867,12 +904,13 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                     value={formData.learningObjectives}
                     onChange={(e) => handleInputChange('learningObjectives', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="What should students demonstrate or achieve?"
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-descriptors">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Specific Requirements
                   </label>
@@ -880,12 +918,13 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                     value={formData.specificRequirements}
                     onChange={(e) => handleInputChange('specificRequirements', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="Any specific requirements or criteria for the assignment"
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-levels">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Performance Levels
                   </label>
@@ -898,7 +937,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                           value={level}
                           checked={formData.performanceLevels === level}
                           onChange={(e) => handleInputChange('performanceLevels', e.target.value)}
-                          className="w-4 h-4 text-amber-600"
+                          className="w-4 h-4"
+                          style={{ accentColor: tabColor }}
                         />
                         <span className="text-sm">{level} Levels</span>
                       </label>
@@ -906,14 +946,15 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                   </div>
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-points">
                   <label className="block text-sm font-medium text-gray-700 mb-3">Options</label>
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.includePointValues}
                       onChange={(e) => handleInputChange('includePointValues', e.target.checked)}
-                      className="w-4 h-4 text-amber-600 rounded"
+                      className="w-4 h-4 rounded"
+                      style={{ accentColor: tabColor }}
                     />
                     <span className="text-sm">Include point values</span>
                   </label>
@@ -930,7 +971,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                           type="checkbox"
                           checked={formData.focusAreas.includes(area)}
                           onChange={() => handleCheckboxChange('focusAreas', area)}
-                          className="w-4 h-4 text-amber-600 rounded"
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
                         />
                         <span className="text-sm">{area}</span>
                       </label>
@@ -952,7 +994,11 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                 <button
                   onClick={generateRubric}
                   disabled={!validateForm() || loading}
-                  className="flex items-center px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:bg-gray-300"
+                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                  data-tutorial="rubric-generator-generate"
+                  style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
+                  onMouseEnter={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '1')}
                 >
                   {loading ? (
                     <>
@@ -1040,6 +1086,21 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
           setEditedContent(newContent);
         }}
       />
+
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.RUBRIC_GENERATOR].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.RUBRIC_GENERATOR}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

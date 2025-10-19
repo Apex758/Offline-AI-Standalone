@@ -1326,9 +1326,6 @@ async def quiz_websocket(websocket: WebSocket):
                 if started_streaming and last_sent_index < len(current_output):
                     new_content = current_output[last_sent_index:]
                     
-                    if len(response_text.strip()) < 20:
-                        # Don't cleanup yet, response is too short
-                        continue
                     # Check for end patterns
                     should_stop = False
                     for pattern in garbage_patterns:

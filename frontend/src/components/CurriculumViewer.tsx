@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import CurriculumNavigator from './CurriculumNavigator';
 import { Menu, X } from 'lucide-react';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface CurriculumViewerProps {
   tabId: string;
@@ -33,8 +37,10 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   const [currentComponent, setCurrentComponent] = useState<React.ComponentType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
 
   // Save current location to tab data
   useEffect(() => {
@@ -49,7 +55,23 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       console.log('📍 Restoring path from savedData:', savedData.currentPath);
       navigate(savedData.currentPath, { replace: true });
     }
-  }, [savedData?.currentPath]); 
+  }, [savedData?.currentPath]);
+
+  // Auto-show tutorial on first use
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.CURRICULUM)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  // Tutorial complete handler
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.CURRICULUM);
+    setShowTutorial(false);
+  };
 
   // Load component when route changes
   useEffect(() => {
@@ -172,7 +194,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
     }
 
     return (
-      <div className="p-8">
+      <div className="p-8" data-tutorial="curriculum-welcome">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
           Welcome to OECS Curriculum
         </h2>
@@ -193,12 +215,13 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   };
 
   return (
-    <div className="flex h-full bg-white" onClick={onPanelClick}>
+    <div className="flex h-full bg-white relative" onClick={onPanelClick}>
       {/* Sidebar */}
-      <div 
+      <div
         className={`border-r border-gray-200 bg-gray-50 transition-all duration-300 ${
           sidebarOpen ? 'w-50' : 'w-0'
         } overflow-hidden flex flex-col`}
+        data-tutorial="curriculum-grades"
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="font-semibold text-gray-800">Curriculum</h3>
@@ -209,7 +232,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
             <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" data-tutorial="curriculum-subjects">
           <CurriculumNavigator onNavigate={() => {}} />
         </div>
       </div>
@@ -217,7 +240,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="border-b border-gray-200 p-4 flex items-center">
+        <div className="border-b border-gray-200 p-4 flex items-center" data-tutorial="curriculum-breadcrumb">
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
@@ -233,10 +256,26 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" data-tutorial="curriculum-topics">
           {renderContent()}
         </div>
       </div>
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.CURRICULUM].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && settings.tutorials.tutorialPreferences.showFloatingButtons && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.CURRICULUM}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

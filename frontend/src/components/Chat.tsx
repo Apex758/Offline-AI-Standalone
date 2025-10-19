@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Loader2, History, X, Trash2, Plus } from 'lucide-react';
 import { Message } from '../types';
 import axios from 'axios';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface ChatProps {
   tabId: string;
@@ -24,7 +28,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState(savedData?.streamingMessage || '');
+  const [streamingMessage, setStreamingMessage] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -34,13 +38,32 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const shouldReconnectRef = useRef(true);
+  
+  // Tutorial integration
+  const [showTutorial, setShowTutorial] = useState(false);
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+
+  // Auto-show tutorial on first use
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.CHAT)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.CHAT);
+    setShowTutorial(false);
+  };
 
   useEffect(() => {
     const saved = savedData?.messages;
     // If no saved data or it's empty, reset to fresh state
     if (!saved || saved.length === 0) {
       setMessages([]);
-      setStreamingMessage(savedData?.streamingMessage || '');
+      setStreamingMessage('');
       setCurrentChatId(null);
       setTitleSet(false);
       setInput('');
@@ -52,7 +75,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     } else {
       // Load the saved data for this specific tab
       setMessages(saved);
-      setStreamingMessage(savedData?.streamingMessage || '');
+      setStreamingMessage('');
       
       // Optionally set the title from first message if available
       if (saved.length > 0 && onTitleChange && !titleSet) {
@@ -412,7 +435,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   };
 
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="chat-welcome">
       <div className="flex-1 flex flex-col" onClick={(e) => {
         e.stopPropagation();
         onPanelClick?.();
@@ -437,6 +460,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               }}
               className="p-2 rounded-lg hover:bg-gray-100 transition"
               title="New Chat"
+              data-tutorial="chat-new"
             >
               <Plus className="w-5 h-5 text-gray-600" />
             </button>
@@ -447,13 +471,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               }}
               className="p-2 rounded-lg hover:bg-gray-100 transition"
               title="Chat History"
+              data-tutorial="chat-conversations"
             >
               <History className="w-5 h-5 text-gray-600" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" data-tutorial="chat-history">
           {messages.length === 0 && !streamingMessage ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-md">
@@ -528,11 +553,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               rows={1}
               style={{ minHeight: '48px', maxHeight: '120px' }}
               disabled={loading}
+              data-tutorial="chat-input"
             />
             <button
               onClick={handleSend}
               disabled={loading || !input.trim() || wsRef.current?.readyState !== WebSocket.OPEN}
               className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+              data-tutorial="chat-send"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -550,6 +577,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
+        data-tutorial="chat-sidebar"
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
@@ -603,6 +631,22 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           </div>
         </div>
       </div>
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.CHAT].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.CHAT}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 };

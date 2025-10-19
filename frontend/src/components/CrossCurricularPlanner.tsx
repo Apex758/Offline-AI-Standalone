@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import axios from 'axios';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface CrossCurricularPlannerProps {
   tabId: string;
@@ -49,7 +53,7 @@ interface FormData {
   crossCurricularConnections: string;
 }
 
-const formatCrossCurricularText = (text: string) => {
+const formatCrossCurricularText = (text: string, accentColor: string) => {
   if (!text) return null;
 
   let cleanText = text;
@@ -73,7 +77,7 @@ const formatCrossCurricularText = (text: string) => {
     if (trimmed.match(/^\*\*(.+)\*\*$/)) {
       const title = trimmed.replace(/\*\*/g, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold text-teal-900 mt-8 mb-4 pb-2 border-b border-teal-200">
+        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
           {title}
         </h2>
       );
@@ -84,7 +88,7 @@ const formatCrossCurricularText = (text: string) => {
     if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
       const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold text-teal-700 mt-6 mb-3 bg-teal-50 px-3 py-2 rounded-lg border-l-4 border-teal-500">
+        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-3 px-3 py-2 rounded-lg border-l-4" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d`, borderColor: accentColor }}>
           {title}:
         </h3>
       );
@@ -95,8 +99,8 @@ const formatCrossCurricularText = (text: string) => {
     if (trimmed.match(/^(Multidisciplinary|Interdisciplinary|Transdisciplinary).*:/i)) {
       elements.push(
         <div key={`integration-${currentIndex++}`} className="mt-4 mb-3">
-          <div className="bg-gradient-to-r from-teal-100 to-green-50 border-l-4 border-teal-600 p-4 rounded-r-lg shadow-sm">
-            <h4 className="font-bold text-teal-900 text-lg">{trimmed}</h4>
+          <div className="border-l-4 p-4 rounded-r-lg shadow-sm" style={{ background: `linear-gradient(to right, ${accentColor}1a, ${accentColor}0d)`, borderColor: `${accentColor}cc` }}>
+            <h4 className="font-bold text-lg" style={{ color: `${accentColor}dd` }}>{trimmed}</h4>
           </div>
         </div>
       );
@@ -108,7 +112,7 @@ const formatCrossCurricularText = (text: string) => {
       const content = trimmed.replace(/^\s*\*\s+/, '');
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
-          <span className="text-teal-500 mr-3 mt-1.5 font-bold text-sm">•</span>
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
       );
@@ -121,7 +125,7 @@ const formatCrossCurricularText = (text: string) => {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       elements.push(
         <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
-          <span className="text-teal-600 mr-3 font-semibold min-w-[2rem] bg-teal-50 rounded px-2 py-1 text-sm">
+          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
           <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
@@ -144,6 +148,9 @@ const formatCrossCurricularText = (text: string) => {
 };
 
 const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const tabColor = settings.tabColors['cross-curricular-planner'];
+  const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -152,6 +159,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const [crossCurricularHistories, setCrossCurricularHistories] = useState<CrossCurricularHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  // Add new states for editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
 
   const [step, setStep] = useState(() => savedData?.step || 1);
   const [formData, setFormData] = useState<FormData>(() => {
@@ -215,6 +226,28 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const learningPreferencesOptions = ['Individual Work', 'Group Work', 'Pair Work', 'Whole Class', 'Independent Study'];
   const multipleIntelligencesOptions = ['Linguistic', 'Logical-Mathematical', 'Spatial', 'Musical',
                                         'Bodily-Kinesthetic', 'Interpersonal', 'Intrapersonal', 'Naturalistic'];
+
+  // Initialize edited content when plan is generated
+  useEffect(() => {
+    if (generatedPlan && !editedContent) {
+      setEditedContent(generatedPlan);
+    }
+  }, [generatedPlan]);
+
+  // Tutorial auto-show logic
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER);
+    setShowTutorial(false);
+  };
 
   useEffect(() => {
     const saved = savedData?.formData;
@@ -316,8 +349,27 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   };
 
+  // Enable editing mode
+  const enableEditing = () => {
+    setEditedContent(generatedPlan);
+    setIsEditing(true);
+  };
+
+  // Save edited content
+  const saveEditedContent = () => {
+    setGeneratedPlan(editedContent);
+    setIsEditing(false);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditedContent(generatedPlan);
+    setIsEditing(false);
+  };
+
   const savePlan = async () => {
-    if (!generatedPlan) {
+    const contentToSave = isEditing ? editedContent : generatedPlan;
+    if (!contentToSave) {
       alert('No plan to save');
       return;
     }
@@ -329,7 +381,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         title: `${formData.lessonTitle} - ${formData.primarySubject} (${formData.gradeLevel})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: generatedPlan
+        generatedPlan: contentToSave
       };
 
       if (!currentPlanId) {
@@ -340,6 +392,11 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       await loadCrossCurricularHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
+      
+      // If we were editing, exit editing mode after save
+      if (isEditing) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Failed to save cross-curricular plan:', error);
       alert('Failed to save cross-curricular plan');
@@ -370,7 +427,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   };
 
   const exportPlan = () => {
-    if (!generatedPlan) return;
+    const contentToExport = isEditing ? editedContent : generatedPlan;
+    if (!contentToExport) return;
 
     const content = `CROSS-CURRICULAR LESSON PLAN
 ${formData.lessonTitle}
@@ -378,7 +436,7 @@ ${formData.primarySubject} - ${formData.gradeLevel}
 Integration Model: ${formData.integrationModel}
 Generated: ${new Date().toLocaleDateString()}
 
-${generatedPlan}`;
+${contentToExport}`;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -496,53 +554,95 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
     setStreamingPlan('');
     setStep(1);
     setCurrentPlanId(null);
+    setIsEditing(false);
+    setEditedContent('');
   };
 
   const stepLabels = ['Basic Info', 'Subjects', 'Objectives', 'Activities', 'Assessment', 'Teaching & Learning', 'Resources'];
 
   return (
-    <div className="flex h-full bg-white relative">
+    <div className="flex h-full bg-white relative" data-tutorial="cross-curricular-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan) ? (
+        {(generatedPlan || streamingPlan || isEditing) ? (
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Cross-Curricular Plan...' : 'Generated Cross-Curricular Plan'}
+                  {loading ? 'Generating Cross-Curricular Plan...' :
+                   isEditing ? 'Editing Cross-Curricular Plan' : 'Generated Cross-Curricular Plan'}
                 </h2>
                 <p className="text-sm text-gray-500">{formData.lessonTitle} - {formData.primarySubject}</p>
               </div>
               {!loading && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={savePlan}
-                    disabled={saveStatus === 'saving'}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-                  >
-                    {saveStatus === 'saving' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === 'saved' ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Saved!
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Plan
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setAssistantOpen(true)}
-                    className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    AI Assistant
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={cancelEditing}
+                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveEditedContent}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Save Edits
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={enableEditing}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setAssistantOpen(true)}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Assistant
+                      </button>
+                      <button
+                        onClick={savePlan}
+                        disabled={saveStatus === 'saving'}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                      >
+                        {saveStatus === 'saving' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : saveStatus === 'saved' ? (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Plan
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={exportPlan}
+                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
+                        style={{ backgroundColor: tabColor }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        data-tutorial="cross-curricular-planner-export"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -554,6 +654,7 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                     onClick={() => {
                       setGeneratedPlan('');
                       setStreamingPlan('');
+                      setIsEditing(false);
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >
@@ -564,11 +665,11 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
             </div>
             
             <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingPlan || generatedPlan) && (
+              {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
-                    <div className="absolute inset-0 bg-gradient-to-br from-teal-500 via-green-600 to-emerald-700"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-teal-500/90 to-green-600/90"></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
                     
                     <div className="relative px-8 py-8">
                       <div className="flex items-start justify-between">
@@ -636,27 +737,50 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
               )}
 
               <div className="prose prose-lg max-w-none">
-                <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  {formatCrossCurricularText(streamingPlan || generatedPlan)}
-                  {loading && streamingPlan && (
-                    <span className="inline-flex items-center ml-1">
-                      <span className="w-0.5 h-5 bg-teal-500 animate-pulse rounded-full"></span>
-                    </span>
-                  )}
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Edit your cross-curricular plan:
+                      </label>
+                      <div className="text-sm text-gray-500">
+                        {editedContent.length} characters
+                      </div>
+                    </div>
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-vertical"
+                      placeholder="Edit your cross-curricular plan content here..."
+                    />
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>You can format using markdown-style **bold** and *italic*</span>
+                      <span>Lines will be preserved in the final output</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    {formatCrossCurricularText(streamingPlan || generatedPlan, tabColor)}
+                    {loading && streamingPlan && (
+                      <span className="inline-flex items-center ml-1">
+                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {loading && (
-                <div className="mt-8 bg-gradient-to-r from-teal-50 to-green-50 rounded-xl p-6 border border-teal-100">
+                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-teal-900 font-medium">Creating your cross-curricular plan</div>
-                      <div className="text-teal-600 text-sm mt-1">Integrating multiple subject areas for meaningful learning</div>
+                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your cross-curricular plan</div>
+                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Integrating multiple subject areas for meaningful learning</div>
                     </div>
                     <div className="flex space-x-1">
-                      <div className="w-3 h-3 bg-teal-400 rounded-full animate-bounce"></div>
-                      <div className="w-3 h-3 bg-teal-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-3 h-3 bg-teal-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -708,10 +832,11 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                       <input type="text" value={formData.lessonTitle} onChange={(e) => handleInputChange('lessonTitle', e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Enter lesson title" />
                     </div>
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-grade">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Grade Level *</label>
                       <select value={formData.gradeLevel} onChange={(e) => handleInputChange('gradeLevel', e.target.value)} 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select grade level</option>
                         {grades.map(g => <option key={g} value={g}>{g}</option>)}
                       </select>
@@ -719,17 +844,20 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Duration *</label>
                       <input type="text" value={formData.duration} onChange={(e) => handleInputChange('duration', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="e.g., 60 minutes, 2 class periods" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="e.g., 60 minutes, 2 class periods" />
                     </div>
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-theme">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Big Idea / Driving Concept *</label>
                       <textarea value={formData.bigIdea} onChange={(e) => handleInputChange('bigIdea', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="The central concept that connects all subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The central concept that connects all subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Integration Model *</label>
                       <select value={formData.integrationModel} onChange={(e) => handleInputChange('integrationModel', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select integration model</option>
                         {integrationModels.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
@@ -740,23 +868,26 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                 {/* Step 2: Subjects */}
                 {step === 2 && (
                   <div className="space-y-6">
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-subjects">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Primary Subject *</label>
                       <select value={formData.primarySubject} onChange={(e) => handleInputChange('primarySubject', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select primary subject</option>
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-connections">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Supporting Subjects</label>
                       <input type="text" value={formData.supportingSubjects} onChange={(e) => handleInputChange('supportingSubjects', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Other subjects integrated (comma-separated)" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Other subjects integrated (comma-separated)" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Learning Standards *</label>
                       <textarea value={formData.learningStandards} onChange={(e) => handleInputChange('learningStandards', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Curriculum standards from all integrated subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Curriculum standards from all integrated subjects" />
                     </div>
                   </div>
                 )}
@@ -764,30 +895,35 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                 {/* Step 3: Objectives */}
                 {step === 3 && (
                   <div className="space-y-6">
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-objectives">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Primary Learning Objective *</label>
                       <textarea value={formData.primaryObjective} onChange={(e) => handleInputChange('primaryObjective', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="The main learning goal for this lesson" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The main learning goal for this lesson" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Learning Objectives</label>
                       <textarea value={formData.secondaryObjectives} onChange={(e) => handleInputChange('secondaryObjectives', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Additional learning goals from integrated subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Additional learning goals from integrated subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Students Will Know (Facts)</label>
                       <textarea value={formData.studentsWillKnow} onChange={(e) => handleInputChange('studentsWillKnow', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Key knowledge and facts students will learn" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Key knowledge and facts students will learn" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Students Will Be Skilled At (Actions)</label>
                       <textarea value={formData.studentsWillBeSkilled} onChange={(e) => handleInputChange('studentsWillBeSkilled', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Skills and abilities students will develop" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Skills and abilities students will develop" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Key Vocabulary</label>
                       <input type="text" value={formData.keyVocabulary} onChange={(e) => handleInputChange('keyVocabulary', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Important terms from all subjects (comma-separated)" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Important terms from all subjects (comma-separated)" />
                     </div>
                   </div>
                 )}
@@ -795,25 +931,29 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                 {/* Step 4: Activities */}
                 {step === 4 && (
                   <div className="space-y-6">
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-activities">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Introduction/Hook *</label>
                       <textarea value={formData.introduction} onChange={(e) => handleInputChange('introduction', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Engaging opening activity that introduces the big idea" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Engaging opening activity that introduces the big idea" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Core Learning Activities *</label>
                       <textarea value={formData.coreActivities} onChange={(e) => handleInputChange('coreActivities', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Main activities that integrate multiple subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Main activities that integrate multiple subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Closure Activities</label>
                       <textarea value={formData.closureActivities} onChange={(e) => handleInputChange('closureActivities', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Activities to summarize and reflect on learning" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Activities to summarize and reflect on learning" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Differentiation Strategies</label>
                       <textarea value={formData.differentiationStrategies} onChange={(e) => handleInputChange('differentiationStrategies', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="How you'll support diverse learners" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll support diverse learners" />
                     </div>
                   </div>
                 )}
@@ -821,30 +961,35 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                 {/* Step 5: Assessment */}
                 {step === 5 && (
                   <div className="space-y-6">
-                    <div>
+                    <div data-tutorial="cross-curricular-planner-assessment">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Assessment Methods *</label>
                       <textarea value={formData.assessmentMethods} onChange={(e) => handleInputChange('assessmentMethods', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="How you'll assess learning across subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll assess learning across subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Most children will *</label>
                       <textarea value={formData.mostChildren} onChange={(e) => handleInputChange('mostChildren', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Expected learning outcomes for most students" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Expected learning outcomes for most students" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Some will not have made so much progress</label>
                       <textarea value={formData.someNotProgressed} onChange={(e) => handleInputChange('someNotProgressed', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Support for students who need additional help" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Support for students who need additional help" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Some will have progressed further</label>
                       <textarea value={formData.someProgressedFurther} onChange={(e) => handleInputChange('someProgressedFurther', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Extensions for students who need more challenge" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Extensions for students who need more challenge" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Reflection Prompts</label>
                       <textarea value={formData.reflectionPrompts} onChange={(e) => handleInputChange('reflectionPrompts', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Questions to help students reflect on their learning" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Questions to help students reflect on their learning" />
                     </div>
                   </div>
                 )}
@@ -858,7 +1003,8 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                         {teachingStrategiesOptions.map(s => (
                           <label key={s} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                             <input type="checkbox" checked={formData.teachingStrategies.includes(s)}
-                              onChange={() => handleCheckboxChange('teachingStrategies', s)} className="w-4 h-4 text-teal-600 rounded" />
+                              onChange={() => handleCheckboxChange('teachingStrategies', s)} className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }} />
                             <span className="text-sm">{s}</span>
                           </label>
                         ))}
@@ -870,7 +1016,8 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                         {learningStylesOptions.map(s => (
                           <label key={s} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                             <input type="checkbox" checked={formData.learningStyles.includes(s)}
-                              onChange={() => handleCheckboxChange('learningStyles', s)} className="w-4 h-4 text-teal-600 rounded" />
+                              onChange={() => handleCheckboxChange('learningStyles', s)} className="w-4 h-4 rounded"
+                              style={{ accentColor: tabColor }} />
                             <span className="text-sm">{s}</span>
                           </label>
                         ))}
@@ -885,12 +1032,14 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Materials and Resources</label>
                       <textarea value={formData.materials} onChange={(e) => handleInputChange('materials', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="All materials needed across subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="All materials needed across subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Suggested Cross-Curricular Connections</label>
                       <textarea value={formData.crossCurricularConnections} onChange={(e) => handleInputChange('crossCurricularConnections', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Additional ideas for connecting subjects" />
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Additional ideas for connecting subjects" />
                     </div>
                   </div>
                 )}
@@ -912,12 +1061,17 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                   </button>
                   {step < 7 ? (
                     <button onClick={() => setStep(step + 1)} disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-gray-300">
+                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                      style={!validateStep() ? {} : { backgroundColor: tabColor }}
+                      onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
+                      onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}>
                       Next<ChevronRight className="w-5 h-5 ml-1" />
                     </button>
                   ) : (
                     <button onClick={generatePlan} disabled={loading || !validateStep()}
-                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300">
+                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition"
+                      style={loading || !validateStep() ? {} : { backgroundColor: 'rgb(22 163 74)' }}
+                      data-tutorial="cross-curricular-planner-generate">
                       {loading ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -994,18 +1148,36 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        content={generatedPlan}
+        contentType="cross-curricular"
+        onContentUpdate={(newContent) => {
+          setGeneratedPlan(newContent);
+          setEditedContent(newContent);
+        }}
+      />
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
+
+      {!showTutorial && (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER}
+          onStartTutorial={() => setShowTutorial(true)}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
-  {/* AI Assistant Panel */}
-  <AIAssistantPanel
-    isOpen={assistantOpen}
-    onClose={() => setAssistantOpen(false)}
-    content={generatedPlan}
-    contentType="cross-curricular"
-    onContentUpdate={(newContent) => {
-      setGeneratedPlan(newContent);
-    }}
-  />
 };
 
 export default CrossCurricularPlanner;

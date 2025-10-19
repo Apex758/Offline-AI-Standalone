@@ -210,7 +210,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
         {/* Search and Filters */}
         <div className="flex gap-4">
-          <div className="flex-1 relative">
+          <div className="flex-1 relative" data-tutorial="resource-search">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -234,6 +234,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'type')}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              data-tutorial="resource-sort"
             >
               <option value="date">Sort by Date</option>
               <option value="title">Sort by Title</option>
@@ -244,7 +245,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       </div>
 
       {/* Type Filters */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 overflow-x-auto">
+      <div className="bg-white border-b border-gray-200 px-6 py-3 overflow-x-auto" data-tutorial="resource-filters">
         <div className="flex gap-2 min-w-max">
           {resourceTypes.map(({ key, label, icon: Icon }) => {
             const count = key === 'all' 
@@ -280,7 +281,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       <div className="flex-1 overflow-y-auto p-6">
         {/* Favorites Section */}
         {favoriteResources.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-8" data-tutorial="resource-favorites">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
               <Star className="w-5 h-5 mr-2 text-yellow-500 fill-yellow-500" />
               Favorite Resources ({favoriteResources.length})
@@ -294,7 +295,6 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                   onDelete={() => setShowDeleteConfirm(resource.id)}
                   onExport={() => exportResource(resource)}
                   onEdit={() => onEditResource?.(resource.type, resource)}
-                  onView={() => onViewResource?.(resource.type, resource)}
                   getTypeIcon={getTypeIcon}
                   getTypeColor={getTypeColor}
                 />
@@ -382,7 +382,6 @@ interface ResourceCardProps {
   onDelete: () => void;
   onExport: () => void;
   onEdit: () => void;
-  onView: () => void;
   getTypeIcon: (type: string) => any;
   getTypeColor: (type: string) => string;
 }
@@ -393,14 +392,13 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   onDelete,
   onExport,
   onEdit,
-  onView,
   getTypeIcon,
   getTypeColor
 }) => {
   const Icon = getTypeIcon(resource.type);
   
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition group">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition group" data-tutorial="resource-card">
       <div className="flex items-start justify-between mb-3">
         <div className={`p-2 rounded-lg ${getTypeColor(resource.type)} border`}>
           <Icon className="w-5 h-5" />
@@ -428,15 +426,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         {new Date(resource.timestamp).toLocaleDateString()}
       </div>
 
-      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {/*  "View" Button */}
-        <button
-          onClick={onView}
-          className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-700 text-white text-sm rounded-lg hover:bg-gray-800 transition"
-        >
-          <Eye className="w-4 h-4 mr-1" />
-          View
-        </button>
+      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
         {/* "Edit" Button */}
         <button
           onClick={onEdit}

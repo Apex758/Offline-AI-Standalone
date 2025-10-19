@@ -111,7 +111,9 @@ Explanation: [explanation]
     if (hasTrueFalse) {
       formatInstructions += `TRUE/FALSE FORMAT:
 Question X: [True or False statement]
-Correct Answer: True (or False)
+A) True
+B) False
+Correct Answer: True
 Explanation: [Why this is true/false]
 
 `;
