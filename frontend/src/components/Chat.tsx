@@ -342,6 +342,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   const formatMessage = (content: string) => {
     let cleaned = content
+      .replace(/Hi there<\|eot_id\|><\|start_header_id\|>user<\|end_header_id\|>[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
+      .replace(/\bl[\s\n]+l?[\s\n]*e[\s\n]+r[\s\S]*?tokens per second\)/gi, '')
+      .replace(/system_info:[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
+      .replace(/^\s*[a-z]{1,2}\s*$/gmi, '')
+      .replace(/[\s\S]*?assistantassistant/gi, '')
       .replace(/l>a m.*/gi, '')
       .replace(/llama_perf.*/gi, '')
       .replace(/sampler_.*/gi, '')

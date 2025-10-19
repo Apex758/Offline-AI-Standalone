@@ -185,6 +185,8 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
       /system_info[^\n]*/g,
       /Not using system message[^\n]*/g,
       /To change it, set a different value via -sys PROMPT[^\n]*/g,
+      // Remove format headers that duplicate question labels
+      /^(MULTIPLE CHOICE|TRUE\/FALSE|FILL-IN-THE-BLANK|OPEN-ENDED)\s+FORMAT:\s*$/gmi,
     ];
     
     initPatterns.forEach(pattern => {
@@ -192,7 +194,8 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
     });
     
     // Match questions in format: Question 1: ... [question content] ... (until next Question or end)
-    const questionRegex = /Question\s+(\d+):\s*([^\n]+)\n([^]*?)(?=Question\s+\d+:|$)/gi;
+    // This regex handles both inline and next-line question text
+    const questionRegex = /Question\s+(\d+):\s*\n?([^]*?)(?=(?:\n\s*)?Question\s+\d+:|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];
     
     if (matches.length === 0) {
@@ -204,8 +207,12 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
     console.log(`Found ${matches.length} questions in text format`);
     
     matches.forEach((match, index) => {
-      const questionText = match[2].trim();
-      const questionBody = match[3];
+      const fullQuestionContent = match[2].trim();
+      
+      // Extract question text (first line(s) before "Correct Answer:", "Answer:", etc.)
+      const questionTextMatch = fullQuestionContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:))/s);
+      const questionText = questionTextMatch ? questionTextMatch[1].trim() : fullQuestionContent.split('\n')[0].trim();
+      const questionBody = fullQuestionContent;
       
       // Detect question type
       const questionType = detectQuestionType(questionBody);
