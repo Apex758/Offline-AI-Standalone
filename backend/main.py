@@ -569,6 +569,8 @@ async def websocket_chat(websocket: WebSocket):
             prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
             prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
+            
+            
             cmd = [
                 LLAMA_CLI_PATH,
                 "-m", MODEL_PATH,

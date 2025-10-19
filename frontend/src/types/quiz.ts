@@ -1,5 +1,3 @@
-// types/quiz.ts - Add to frontend/src/types/quiz.ts
-
 export interface QuizQuestion {
   id: string;
   type: 'multiple-choice' | 'true-false' | 'fill-blank' | 'open-ended';
@@ -26,6 +24,154 @@ export interface ParsedQuiz {
   questions: QuizQuestion[];
 }
 
+// Helper function to parse multiple choice questions
+function parseMultipleChoiceQuestion(questionText: string, questionBody: string, index: number): QuizQuestion | null {
+  // Extract options (A), B), C), D))
+  const optionRegex = /([A-D])\)\s*([^\n]+)/g;
+  const options: string[] = [];
+  let optionMatch;
+  
+  while ((optionMatch = optionRegex.exec(questionBody)) !== null) {
+    options.push(optionMatch[2].trim());
+  }
+  
+  // Extract correct answer
+  const answerMatch = questionBody.match(/Correct\s+Answer:\s*([A-D])/i);
+  const correctAnswer = answerMatch ? answerMatch[1].charCodeAt(0) - 65 : 0; // Convert A=0, B=1, etc.
+  
+  // Extract explanation (handle multi-line explanations)
+  const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
+  const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
+  
+  // Extract points if specified
+  const pointsMatch = questionBody.match(/Points:\s*(\d+)/i);
+  const points = pointsMatch ? parseInt(pointsMatch[1]) : 1;
+  
+  if (options.length >= 2) {
+    return {
+      id: `q_${Date.now()}_${index}`,
+      type: 'multiple-choice',
+      question: questionText,
+      options,
+      correctAnswer,
+      explanation,
+      points
+    };
+  }
+  
+  console.warn(`Multiple choice question ${index + 1} has ${options.length} options (expected at least 2)`);
+  return null;
+}
+
+// Helper function to parse true/false questions
+function parseTrueFalseQuestion(questionText: string, questionBody: string, index: number): QuizQuestion | null {
+  // Extract correct answer - look for "Correct Answer: True" or "Correct Answer: False"
+  const answerMatch = questionBody.match(/Correct\s+Answer:\s*(True|False)/i);
+  const correctAnswer = answerMatch ? answerMatch[1].toLowerCase() : 'true';
+  
+  // Extract explanation (handle multi-line explanations)
+  const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
+  const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
+  
+  // Extract points if specified
+  const pointsMatch = questionBody.match(/Points:\s*(\d+)/i);
+  const points = pointsMatch ? parseInt(pointsMatch[1]) : 1;
+  
+  return {
+    id: `q_${Date.now()}_${index}`,
+    type: 'true-false',
+    question: questionText,
+    options: ['True', 'False'],
+    correctAnswer,
+    explanation,
+    points
+  };
+}
+
+// Helper function to parse fill-in-the-blank questions
+function parseFillBlankQuestion(questionText: string, questionBody: string, index: number): QuizQuestion | null {
+  // Extract answer - look for "Answer: [text]" but not "Correct Answer:"
+  const answerMatch = questionBody.match(/(?<!Correct\s)Answer:\s*(.+?)(?=\n|$)/i);
+  const correctAnswer = answerMatch ? answerMatch[1].trim() : '';
+  
+  // Extract explanation (handle multi-line explanations)
+  const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
+  const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
+  
+  // Extract points if specified
+  const pointsMatch = questionBody.match(/Points:\s*(\d+)/i);
+  const points = pointsMatch ? parseInt(pointsMatch[1]) : 1;
+  
+  return {
+    id: `q_${Date.now()}_${index}`,
+    type: 'fill-blank',
+    question: questionText,
+    correctAnswer,
+    explanation,
+    points
+  };
+}
+
+// Helper function to parse open-ended questions
+function parseOpenEndedQuestion(questionText: string, questionBody: string, index: number): QuizQuestion | null {
+  // Extract sample answer - look for "Sample Answer:"
+  let correctAnswer = '';
+  const sampleAnswerMatch = questionBody.match(/Sample\s+Answer:\s*(.+?)(?=\n(?:Key Points:|Explanation:)|\n\n|$)/is);
+  if (sampleAnswerMatch) {
+    correctAnswer = sampleAnswerMatch[1].trim();
+  }
+  
+  // Extract key points if present and append to correct answer
+  const keyPointsMatch = questionBody.match(/Key\s+Points:\s*(.+?)(?=\nExplanation:|\n\n|$)/is);
+  if (keyPointsMatch) {
+    const keyPoints = keyPointsMatch[1].trim();
+    correctAnswer = correctAnswer ? `${correctAnswer}\n\nKey Points:\n${keyPoints}` : keyPoints;
+  }
+  
+  // Extract explanation (handle multi-line explanations)
+  const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
+  const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
+  
+  // Extract points if specified
+  const pointsMatch = questionBody.match(/Points:\s*(\d+)/i);
+  const points = pointsMatch ? parseInt(pointsMatch[1]) : 1;
+  
+  return {
+    id: `q_${Date.now()}_${index}`,
+    type: 'open-ended',
+    question: questionText,
+    correctAnswer,
+    explanation,
+    points
+  };
+}
+
+// Detect question type based on content structure
+function detectQuestionType(questionBody: string): 'multiple-choice' | 'true-false' | 'fill-blank' | 'open-ended' {
+  // Check for True/False format
+  if (/Correct\s+Answer:\s*(True|False)/i.test(questionBody)) {
+    return 'true-false';
+  }
+  
+  // Check for Multiple Choice format (has options A) and B))
+  if (/[A-D]\)\s*[^\n]+/.test(questionBody) && /[A-D]\)\s*[^\n]+.*[A-D]\)\s*[^\n]+/s.test(questionBody)) {
+    return 'multiple-choice';
+  }
+  
+  // Check for Fill-in-Blank format (has "Answer:" but not "Correct Answer:")
+  if (/(?<!Correct\s)Answer:\s*[^\n]+/i.test(questionBody)) {
+    return 'fill-blank';
+  }
+  
+  // Check for Open-Ended format (has "Sample Answer:" or "Key Points:")
+  if (/Sample\s+Answer:|Key\s+Points:/i.test(questionBody)) {
+    return 'open-ended';
+  }
+  
+  // Default to open-ended if unclear
+  return 'open-ended';
+}
+
 // Parse text-based quiz format
 function parseTextBasedQuiz(text: string): ParsedQuiz | null {
   try {
@@ -45,7 +191,7 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
       cleanText = cleanText.replace(pattern, '');
     });
     
-    // Match questions in format: Question 1: ... A) ... B) ... C) ... D) ... Correct Answer: A Explanation: ...
+    // Match questions in format: Question 1: ... [question content] ... (until next Question or end)
     const questionRegex = /Question\s+(\d+):\s*([^\n]+)\n([^]*?)(?=Question\s+\d+:|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];
     
@@ -61,34 +207,31 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
       const questionText = match[2].trim();
       const questionBody = match[3];
       
-      // Extract options (A), B), C), D))
-      const optionRegex = /([A-D])\)\s*([^\n]+)/g;
-      const options: string[] = [];
-      let optionMatch;
+      // Detect question type
+      const questionType = detectQuestionType(questionBody);
       
-      while ((optionMatch = optionRegex.exec(questionBody)) !== null) {
-        options.push(optionMatch[2].trim());
+      // Parse based on detected type
+      let parsedQuestion: QuizQuestion | null = null;
+      
+      switch (questionType) {
+        case 'multiple-choice':
+          parsedQuestion = parseMultipleChoiceQuestion(questionText, questionBody, index);
+          break;
+        case 'true-false':
+          parsedQuestion = parseTrueFalseQuestion(questionText, questionBody, index);
+          break;
+        case 'fill-blank':
+          parsedQuestion = parseFillBlankQuestion(questionText, questionBody, index);
+          break;
+        case 'open-ended':
+          parsedQuestion = parseOpenEndedQuestion(questionText, questionBody, index);
+          break;
       }
       
-      // Extract correct answer
-      const answerMatch = questionBody.match(/Correct\s+Answer:\s*([A-D])/i);
-      const correctAnswer = answerMatch ? answerMatch[1].charCodeAt(0) - 65 : 0; // Convert A=0, B=1, etc.
-      
-      // Extract explanation (handle multi-line explanations)
-      const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
-      const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
-      
-      if (options.length === 4) {
-        questions.push({
-          id: `q_${Date.now()}_${index}`,
-          type: 'multiple-choice',
-          question: questionText,
-          options,
-          correctAnswer,
-          explanation
-        });
+      if (parsedQuestion) {
+        questions.push(parsedQuestion);
       } else {
-        console.warn(`Question ${index + 1} has ${options.length} options (expected 4)`);
+        console.warn(`Failed to parse question ${index + 1} of type ${questionType}`);
       }
     });
     
