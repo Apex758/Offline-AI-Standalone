@@ -165,13 +165,16 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
   const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
 
-  // Try to parse quiz when generated
+  // Try to parse quiz when generated (for restored/loaded quizzes)
   useEffect(() => {
     if (generatedQuiz && !parsedQuiz) {
+      console.log('Attempting to parse loaded/restored quiz...');
       const parsed = parseQuizFromAI(generatedQuiz);
       if (parsed) {
+        console.log('Loaded quiz parsed successfully');
         setParsedQuiz(parsed);
       } else {
+        console.log('Loaded quiz parsing failed, creating fallback');
         // Fallback: convert text to parsed format
         setParsedQuiz(displayTextToQuiz(generatedQuiz, {
           title: `${formData.subject} Quiz`,
@@ -193,7 +196,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       try {
         const ws = new WebSocket('ws://localhost:8000/ws/quiz');
         
-        ws.onopen = () => console.log('Quiz WebSocket connected');
+        ws.onopen = () => {
+          console.log('Quiz WebSocket connected');
+        };
         
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
@@ -205,15 +210,31 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
               const finalMessage = current || data.full_response;
               setGeneratedQuiz(finalMessage);
               
+              console.log('Quiz generation complete, parsing...');
+              
               // Try to parse immediately
               const parsed = parseQuizFromAI(finalMessage);
               if (parsed) {
+                console.log('Quiz parsed successfully:', parsed.questions.length, 'questions');
                 setParsedQuiz(parsed);
+              } else {
+                console.warn('Quiz parsing failed, creating fallback structure');
+                // Create a fallback parsed quiz so editing still works
+                setParsedQuiz(displayTextToQuiz(finalMessage, {
+                  title: `${formData.subject} Quiz`,
+                  subject: formData.subject,
+                  gradeLevel: formData.gradeLevel,
+                  totalQuestions: parseInt(formData.numberOfQuestions)
+                }));
               }
               
               setLoading(false);
               return '';
             });
+          } else if (data.type === 'error') {
+            console.error('Quiz generation error:', data.message);
+            alert('Quiz generation failed: ' + data.message);
+            setLoading(false);
           }
         };
         
