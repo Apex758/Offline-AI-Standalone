@@ -406,5 +406,178 @@
         "timestamp": "2025-10-15T09:25:45.612Z"
       }
     ]
+  },
+  {
+    "id": "chat_1760874202334",
+    "title": "hi",
+    "timestamp": "2025-10-19T11:43:33.371Z",
+    "messages": [
+      {
+        "id": "1760874202326",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:43:22.326Z"
+      },
+      {
+        "id": "1760874203780",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:23.780Z"
+      },
+      {
+        "id": "1760874212675",
+        "role": "user",
+        "content": "hiii",
+        "timestamp": "2025-10-19T11:43:32.675Z"
+      },
+      {
+        "id": "1760874213367",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:33.367Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760874361026",
+    "title": "hi",
+    "timestamp": "2025-10-19T11:46:01.026Z",
+    "messages": [
+      {
+        "id": "1760874202326",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:43:22.326Z"
+      },
+      {
+        "id": "1760874203780",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:23.780Z"
+      },
+      {
+        "id": "1760874212675",
+        "role": "user",
+        "content": "hiii",
+        "timestamp": "2025-10-19T11:43:32.675Z"
+      },
+      {
+        "id": "1760874213367",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:33.367Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760874361028",
+    "title": "hi",
+    "timestamp": "2025-10-19T11:46:02.486Z",
+    "messages": [
+      {
+        "id": "1760874202326",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:43:22.326Z"
+      },
+      {
+        "id": "1760874203780",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:23.780Z"
+      },
+      {
+        "id": "1760874212675",
+        "role": "user",
+        "content": "hiii",
+        "timestamp": "2025-10-19T11:43:32.675Z"
+      },
+      {
+        "id": "1760874213367",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:33.367Z"
+      },
+      {
+        "id": "1760874362481",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:46:02.481Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760874384361",
+    "title": "hi",
+    "timestamp": "2025-10-19T11:46:24.361Z",
+    "messages": [
+      {
+        "id": "1760874202326",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:43:22.326Z"
+      },
+      {
+        "id": "1760874203780",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:23.780Z"
+      },
+      {
+        "id": "1760874212675",
+        "role": "user",
+        "content": "hiii",
+        "timestamp": "2025-10-19T11:43:32.675Z"
+      },
+      {
+        "id": "1760874213367",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:33.367Z"
+      },
+      {
+        "id": "1760874362481",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:46:02.481Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760874384364",
+    "title": "hi",
+    "timestamp": "2025-10-19T11:46:24.364Z",
+    "messages": [
+      {
+        "id": "1760874202326",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:43:22.326Z"
+      },
+      {
+        "id": "1760874203780",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:23.780Z"
+      },
+      {
+        "id": "1760874212675",
+        "role": "user",
+        "content": "hiii",
+        "timestamp": "2025-10-19T11:43:32.675Z"
+      },
+      {
+        "id": "1760874213367",
+        "role": "assistant",
+        "content": "build: 6608 (c0bfc57a) with MSVC 19.43.34810.0 for x64\nmain: llama backend init\nmain: load the model and apply lora adapter, if any\ngguf_init_from_file: failed to open GGUF file 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf'\nllama_model_load: error loading model: llama_model_loader: failed to load model from C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf\nllama_model_load_from_file_impl: failed to load model\ncommon_init_from_params: failed to load model 'C:\\Users\\LG\\Desktop\\Offline AI Standalone\\backend\\PEARL_AI.gguf', try reducing --n-gpu-layers if you're running out of VRAM\nmain: error: unable to load model",
+        "timestamp": "2025-10-19T11:43:33.367Z"
+      },
+      {
+        "id": "1760874362481",
+        "role": "user",
+        "content": "hi",
+        "timestamp": "2025-10-19T11:46:02.481Z"
+      }
+    ]
   }
 ]

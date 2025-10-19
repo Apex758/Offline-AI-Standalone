@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import QuizEditor from './QuizEditor';
 import axios from 'axios';
+import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
+import { buildQuizPrompt } from '../utils/quizPromptBuilder';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -15,6 +18,7 @@ interface QuizHistory {
   timestamp: string;
   formData: FormData;
   generatedQuiz: string;
+  parsedQuiz?: ParsedQuiz; // Add parsed quiz to history
 }
 
 interface FormData {
@@ -130,12 +134,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Add new states for editing
+  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Form data
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && Object.keys(saved).length > 0 && saved.subject) {
@@ -161,39 +165,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
   const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
 
-  // Initialize edited content when quiz is generated
+  // Try to parse quiz when generated
   useEffect(() => {
-    if (generatedQuiz && !editedContent) {
-      setEditedContent(generatedQuiz);
+    if (generatedQuiz && !parsedQuiz) {
+      const parsed = parseQuizFromAI(generatedQuiz);
+      if (parsed) {
+        setParsedQuiz(parsed);
+      } else {
+        // Fallback: convert text to parsed format
+        setParsedQuiz(displayTextToQuiz(generatedQuiz, {
+          title: `${formData.subject} Quiz`,
+          subject: formData.subject,
+          gradeLevel: formData.gradeLevel,
+          totalQuestions: parseInt(formData.numberOfQuestions)
+        }));
+      }
     }
   }, [generatedQuiz]);
 
-  useEffect(() => {
-    const saved = savedData?.formData;
-    if (!saved || Object.keys(saved).length === 0 || !saved.subject) {
-      setFormData({
-        subject: '',
-        gradeLevel: '',
-        learningOutcomes: '',
-        questionTypes: [],
-        cognitiveLevels: [],
-        timeLimitPerQuestion: '',
-        randomizeQuestions: false,
-        numberOfQuestions: '10'
-      });
-      setGeneratedQuiz('');
-      setStreamingQuiz('');
-    } else {
-      setFormData(saved);
-      setGeneratedQuiz(savedData?.generatedQuiz || '');
-      setStreamingQuiz(savedData?.streamingQuiz || '');
-    }
-  }, [tabId]);
-
-  useEffect(() => {
-    onDataChange({ formData, generatedQuiz, streamingQuiz });
-  }, [formData, generatedQuiz, streamingQuiz]);
-
+  // WebSocket setup
   useEffect(() => {
     shouldReconnectRef.current = true;
 
@@ -214,6 +204,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             setStreamingQuiz(current => {
               const finalMessage = current || data.full_response;
               setGeneratedQuiz(finalMessage);
+              
+              // Try to parse immediately
+              const parsed = parseQuizFromAI(finalMessage);
+              if (parsed) {
+                setParsedQuiz(parsed);
+              }
+              
               setLoading(false);
               return '';
             });
@@ -256,33 +253,26 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     };
   }, []);
 
-  // Enable editing mode
+  // Enable structured editing mode
   const enableEditing = () => {
-    setEditedContent(generatedQuiz);
-    setIsEditing(true);
+    if (parsedQuiz) {
+      setIsEditing(true);
+    } else {
+      alert('Cannot edit: Quiz format not recognized. Try regenerating the quiz.');
+    }
   };
 
-  // Save edited content
-  const saveEditedContent = () => {
-    setGeneratedQuiz(editedContent);
+  // Save edited quiz
+  const saveEditedQuiz = (editedQuiz: ParsedQuiz) => {
+    setParsedQuiz(editedQuiz);
+    const displayText = quizToDisplayText(editedQuiz);
+    setGeneratedQuiz(displayText);
     setIsEditing(false);
   };
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditedContent(generatedQuiz);
     setIsEditing(false);
-  };
-
-  // Copy to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(editedContent || generatedQuiz);
-      setCopyStatus('copied');
-      setTimeout(() => setCopyStatus('idle'), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
   };
 
   const loadQuizHistories = async () => {
@@ -294,9 +284,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  // Update saveQuiz to use edited content
   const saveQuiz = async () => {
-    const contentToSave = isEditing ? editedContent : generatedQuiz;
+    const contentToSave = parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz;
     if (!contentToSave) {
       alert('No quiz to save');
       return;
@@ -309,7 +298,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         title: `${formData.subject} Quiz - Grade ${formData.gradeLevel} (${formData.numberOfQuestions} questions)`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedQuiz: contentToSave
+        generatedQuiz: contentToSave,
+        parsedQuiz: parsedQuiz || undefined
       };
 
       if (!currentQuizId) {
@@ -320,11 +310,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       await loadQuizHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      
-      // If we were editing, exit editing mode after save
-      if (isEditing) {
-        setIsEditing(false);
-      }
     } catch (error) {
       console.error('Failed to save quiz:', error);
       alert('Failed to save quiz');
@@ -332,9 +317,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  // Update exportQuiz to use edited content
   const exportQuiz = () => {
-    const contentToExport = isEditing ? editedContent : generatedQuiz;
+    const contentToExport = parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz;
     if (!contentToExport) return;
 
     const content = `QUIZ
@@ -362,6 +346,7 @@ ${contentToExport}`;
   const loadQuizHistory = (history: QuizHistory) => {
     setFormData(history.formData);
     setGeneratedQuiz(history.generatedQuiz);
+    setParsedQuiz(history.parsedQuiz || null);
     setCurrentQuizId(history.id);
     setHistoryOpen(false);
   };
@@ -402,175 +387,10 @@ ${contentToExport}`;
 
     setLoading(true);
     setStreamingQuiz('');
+    setParsedQuiz(null);
 
-    // Grade-specific guidance
-    const gradeGuidance: { [key: string]: string } = {
-      'K': 'Kindergarten level: Use very simple vocabulary, concrete concepts, visual/tactile learning references. Focus on basic observation skills. Questions should be about things children can see, touch, or experience directly.',
-      '1': 'Grade 1 level: Use simple sentences and basic vocabulary. Focus on concrete, observable concepts. Include familiar everyday examples from home and school.',
-      '2': 'Grade 2 level: Use age-appropriate vocabulary with some descriptive words. Introduce basic scientific terms. Focus on observable patterns and simple cause-and-effect relationships.',
-      '3': 'Grade 3 level: Introduce more complex vocabulary and concepts. Students can handle multi-step thinking. Include more abstract concepts but still relate to concrete examples.',
-      '4': 'Grade 4 level: Use grade-level academic vocabulary. Students can analyze patterns and make predictions. Include more complex scientific processes and relationships.',
-      '5': 'Grade 5 level: Use subject-specific terminology. Students can handle abstract concepts and complex systems. Include questions requiring analysis and synthesis.',
-      '6': 'Grade 6 level: Use advanced academic vocabulary. Students can engage in critical thinking, analyze complex systems, and make evidence-based conclusions.'
-    };
-
-    // Subject-specific guidance
-    const subjectGuidance: { [key: string]: string } = {
-      'Mathematics': 'Focus on number sense, operations, patterns, geometry, measurement, and problem-solving appropriate for the grade level. Use real-world math scenarios.',
-      'Science': 'Focus on life science, physical science, earth science, and scientific inquiry. Use age-appropriate scientific vocabulary and observable phenomena.',
-      'Language Arts': 'Focus on reading comprehension, grammar, vocabulary, writing conventions, and literary elements appropriate for the grade level.',
-      'Social Studies': 'Focus on communities, geography, history, culture, and citizenship. Use examples from students\' local community and expand outward.',
-      'Music': 'Focus on rhythm, melody, musical instruments, composers, musical notation, and listening skills appropriate for the grade level.',
-      'Physical Education': 'Focus on movement skills, fitness concepts, healthy habits, sportsmanship, and age-appropriate physical activities.'
-    };
-
-    const currentGradeGuidance = gradeGuidance[formData.gradeLevel] || 'Use age-appropriate language and concepts.';
-    const currentSubjectGuidance = subjectGuidance[formData.subject] || 'Focus on core concepts for this subject area.';
-
-    // Build question type specific instructions
-    let questionTypeInstructions = '';
-    const types = formData.questionTypes;
-    
-    if (types.length === 1) {
-      const type = types[0];
-      
-      if (type === 'True/False') {
-        questionTypeInstructions = `
-  FORMAT REQUIREMENTS - CRITICAL:
-  ALL ${formData.numberOfQuestions} questions MUST be True/False format.
-  Each question must be a STATEMENT (not a question) that can be answered with True or False.
-
-  GRADE ${formData.gradeLevel} TRUE/FALSE RULES:
-  - Use vocabulary appropriate for ${formData.gradeLevel} students
-  - Make statements about ${formData.subject} concepts from the learning outcomes
-  - Ensure statements are clear and unambiguous for this age group
-  - Mix true and false statements (not all true, not all false)
-
-  Format each question EXACTLY like this:
-  Question 1: [Clear statement about ${formData.subject} that is either true or false]
-  A) True
-  B) False
-
-  ${formData.gradeLevel === 'K' || formData.gradeLevel === '1' || formData.gradeLevel === '2' 
-    ? 'Example for young learners:\nQuestion 1: Plants need water to grow.\nA) True\nB) False' 
-    : `Example:\nQuestion 1: ${formData.subject === 'Science' ? 'Photosynthesis occurs in the chloroplasts of plant cells.' : 'The water cycle includes evaporation, condensation, and precipitation.'}\nA) True\nB) False`}
-
-  DO NOT create multiple choice questions with A, B, C, D options.
-  DO NOT ask "Which of the following..." style questions.
-  DO NOT use question format - use statement format.
-  ONLY create clear statements that are definitively True or False for Grade ${formData.gradeLevel}.`;
-      } else if (type === 'Multiple Choice') {
-        questionTypeInstructions = `
-  FORMAT REQUIREMENTS:
-  ALL ${formData.numberOfQuestions} questions MUST be Multiple Choice format with 4 options (A, B, C, D).
-  Each question should have exactly one correct answer.
-
-  GRADE ${formData.gradeLevel} MULTIPLE CHOICE RULES:
-  - Use ${formData.gradeLevel} level vocabulary and concepts
-  - All options should be plausible to avoid obvious wrong answers
-  - Wrong answers (distractors) should be based on common misconceptions at this grade level
-  - Focus on ${formData.subject} concepts from the learning outcomes
-
-  Format each question like this:
-  Question 1: [Question about ${formData.subject} appropriate for Grade ${formData.gradeLevel}]
-  A) [Option 1]
-  B) [Option 2]
-  C) [Option 3]
-  D) [Option 4]`;
-      } else if (type === 'Fill-in-the-Blank') {
-        questionTypeInstructions = `
-  FORMAT REQUIREMENTS:
-  ALL ${formData.numberOfQuestions} questions MUST be Fill-in-the-Blank format.
-  Use _____ to indicate where students should fill in the answer.
-
-  GRADE ${formData.gradeLevel} FILL-IN-THE-BLANK RULES:
-  - Sentences should use Grade ${formData.gradeLevel} appropriate vocabulary
-  - The blank should test key ${formData.subject} terms from the learning outcomes
-  - Provide enough context so students at this grade can determine the answer
-  - One-word or short phrase answers work best
-
-  Format each question like this:
-  Question 1: [Sentence with _____ about ${formData.subject} for Grade ${formData.gradeLevel}]`;
-      } else if (type === 'Open-Ended') {
-        questionTypeInstructions = `
-  FORMAT REQUIREMENTS:
-  ALL ${formData.numberOfQuestions} questions MUST be Open-Ended format.
-  These questions require detailed written responses based on what Grade ${formData.gradeLevel} students can express.
-
-  GRADE ${formData.gradeLevel} OPEN-ENDED RULES:
-  - Questions should match the writing ability of Grade ${formData.gradeLevel} students
-  - Focus on ${formData.subject} concepts that can be explained at this level
-  - ${formData.gradeLevel === 'K' || formData.gradeLevel === '1' 
-      ? 'Keep responses short - students may draw or write 1-2 sentences' 
-      : formData.gradeLevel === '2' || formData.gradeLevel === '3'
-      ? 'Expect 2-4 sentence responses'
-      : 'Expect paragraph-length responses with details and examples'}
-
-  Format each question like this:
-  Question 1: [Question about ${formData.subject} requiring Grade ${formData.gradeLevel} appropriate explanation]`;
-      }
-    } else {
-      questionTypeInstructions = `
-  FORMAT REQUIREMENTS:
-  Create a mix of the following question types: ${types.join(', ')}
-  Distribute questions evenly across these types.
-  All questions must be appropriate for Grade ${formData.gradeLevel} ${formData.subject}.
-
-  For True/False questions, format as:
-  Question X: [Grade ${formData.gradeLevel} appropriate statement about ${formData.subject}]
-  A) True
-  B) False
-
-  For Multiple Choice questions, format as:
-  Question X: [Grade ${formData.gradeLevel} level question]
-  A) [Option 1]
-  B) [Option 2]
-  C) [Option 3]
-  D) [Option 4]
-
-  For Fill-in-the-Blank, use _____:
-  Question X: [Grade ${formData.gradeLevel} sentence with _____ for blank]
-
-  For Open-Ended:
-  Question X: [Question requiring explanation at Grade ${formData.gradeLevel} writing level]`;
-    }
-
-    const prompt = `Generate a comprehensive quiz with the following specifications.
-  IMPORTANT: Do NOT include any introduction, preface, or explanatory text like "Here is a quiz" or "Below is...".
-  Start directly with the quiz title and questions.
-
-  QUIZ INFORMATION:
-  - Subject: ${formData.subject}
-  - Grade Level: Grade ${formData.gradeLevel}
-  - Number of Questions: ${formData.numberOfQuestions}
-  - Date: ${new Date().toLocaleDateString()}
-
-  GRADE & SUBJECT CONTEXT:
-  ${currentGradeGuidance}
-  ${currentSubjectGuidance}
-
-  LEARNING OUTCOMES TO ASSESS:
-  ${formData.learningOutcomes}
-
-  ${questionTypeInstructions}
-
-  COGNITIVE LEVELS:
-  Create questions at these cognitive levels: ${formData.cognitiveLevels.join(', ')}
-  Ensure cognitive complexity is appropriate for Grade ${formData.gradeLevel}.
-  ${formData.timeLimitPerQuestion ? `\nTIME LIMIT: ${formData.timeLimitPerQuestion} seconds per question` : ''}
-  ${formData.randomizeQuestions ? '\nDesign questions suitable for randomization.' : ''}
-
-  CRITICAL INSTRUCTIONS:
-  1. Create EXACTLY ${formData.numberOfQuestions} questions
-  2. EVERY question must be appropriate for Grade ${formData.gradeLevel} students studying ${formData.subject}
-  3. Use vocabulary, concepts, and complexity suitable for ${formData.gradeLevel === 'K' ? 'Kindergarten' : `Grade ${formData.gradeLevel}`} students
-  4. All content must relate to the subject of ${formData.subject}
-  5. Questions must assess the learning outcomes: ${formData.learningOutcomes}
-  6. Follow the format requirements EXACTLY as specified above
-  7. End with a clear "Answer Key:" section listing answers 1-${formData.numberOfQuestions}
-  8. For True/False questions, create STATEMENTS not questions
-
-  Generate the quiz now:`;
+    // Use the new prompt builder
+    const prompt = buildQuizPrompt(formData);
 
     try {
       wsRef.current.send(JSON.stringify({ prompt }));
@@ -593,9 +413,9 @@ ${contentToExport}`;
     });
     setGeneratedQuiz('');
     setStreamingQuiz('');
+    setParsedQuiz(null);
     setCurrentQuizId(null);
     setIsEditing(false);
-    setEditedContent('');
   };
 
   const validateForm = () => {
@@ -603,43 +423,41 @@ ${contentToExport}`;
            formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0;
   };
 
+  // Save data whenever it changes
+  useEffect(() => {
+    onDataChange({ formData, generatedQuiz, streamingQuiz, parsedQuiz });
+  }, [formData, generatedQuiz, streamingQuiz, parsedQuiz]);
+
+
   return (
     <div className="flex h-full bg-white relative">
       <div className="flex-1 flex flex-col bg-white">
         {(generatedQuiz || streamingQuiz || isEditing) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Quiz...' : 
-                   isEditing ? 'Editing Quiz' : 'Generated Quiz'}
-                </h2>
-                <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
-              </div>
-              {!loading && (
-                <div className="flex items-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                      <button
-                        onClick={saveEditedContent}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Save Edits
-                      </button>
-                    </>
-                  ) : (
-                    <>
+            {isEditing && parsedQuiz ? (
+              // Show Structured Editor
+              <QuizEditor
+                quiz={parsedQuiz}
+                onSave={saveEditedQuiz}
+                onCancel={cancelEditing}
+              />
+            ) : (
+              // Show generated quiz (existing display code)
+              <>
+                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {loading ? 'Generating Quiz...' : 'Generated Quiz'}
+                    </h2>
+                    <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
+                  </div>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        disabled={!parsedQuiz}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        title={!parsedQuiz ? "Quiz format not recognized" : "Edit quiz"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -680,146 +498,124 @@ ${contentToExport}`;
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </button>
-                    </>
+                      <button
+                        onClick={() => setHistoryOpen(!historyOpen)}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        title="Quiz History"
+                      >
+                        <History className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGeneratedQuiz('');
+                          setStreamingQuiz('');
+                          setParsedQuiz(null);
+                          setIsEditing(false);
+                        }}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                      >
+                        Create New Quiz
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Quiz History"
-                  >
-                    <History className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGeneratedQuiz('');
-                      setStreamingQuiz('');
-                      setIsEditing(false);
-                    }}
-                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
-                  >
-                    Create New Quiz
-                  </button>
                 </div>
-              )}
-            </div>
             
-            <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingQuiz || generatedQuiz) && !isEditing && (
-                <div className="mb-8">
-                  <div className="relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-cyan-600 to-blue-700"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/90 to-blue-600/90"></div>
-                    
-                    <div className="relative px-8 py-8">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
-                            <span className="text-white text-sm font-medium">{formData.subject}</span>
+                <div className="flex-1 overflow-y-auto bg-white p-6">
+                  {(streamingQuiz || generatedQuiz) && (
+                    <div className="mb-8">
+                      <div className="relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-cyan-600 to-blue-700"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/90 to-blue-600/90"></div>
+                        
+                        <div className="relative px-8 py-8">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
+                                <span className="text-white text-sm font-medium">{formData.subject}</span>
+                              </div>
+                              
+                              <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
+                                {formData.numberOfQuestions}-Question Assessment
+                              </h1>
+                              
+                              <div className="flex flex-wrap items-center gap-4 text-cyan-100">
+                                <div className="flex items-center">
+                                  <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
+                                  <span className="text-sm">Grade {formData.gradeLevel}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
+                                  <span className="text-sm">{formData.questionTypes.join(', ')}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {loading && (
+                              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                                <div className="flex items-center text-white">
+                                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                  <div>
+                                    <div className="text-sm font-medium">Generating...</div>
+                                    <div className="text-xs text-cyan-100">AI-powered quiz</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                           
-                          <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                            {formData.numberOfQuestions}-Question Assessment
-                          </h1>
-                          
-                          <div className="flex flex-wrap items-center gap-4 text-cyan-100">
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
-                              <span className="text-sm">Grade {formData.gradeLevel}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.questionTypes.join(', ')}</span>
+                          <div className="mt-6 pt-4 border-t border-white/20">
+                            <div className="flex items-center justify-between">
+                              <div className="text-cyan-100 text-sm">
+                                <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
+                              </div>
+                              {!loading && (
+                                <div className="flex items-center text-green-200 text-sm">
+                                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
+                                  <span>Generation Complete</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
                         
-                        {loading && (
-                          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-                            <div className="flex items-center text-white">
-                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                              <div>
-                                <div className="text-sm font-medium">Generating...</div>
-                                <div className="text-xs text-cyan-100">AI-powered quiz</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                       </div>
-                      
-                      <div className="mt-6 pt-4 border-t border-white/20">
-                        <div className="flex items-center justify-between">
-                          <div className="text-cyan-100 text-sm">
-                            <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
-                          </div>
-                          {!loading && (
-                            <div className="flex items-center text-green-200 text-sm">
-                              <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
-                              <span>Generation Complete</span>
-                            </div>
-                          )}
+                    </div>
+                  )}
+
+                  <div className="prose prose-lg max-w-none">
+                    <div className="space-y-1">
+                      {formatQuizText(streamingQuiz || generatedQuiz)}
+                      {loading && streamingQuiz && (
+                        <span className="inline-flex items-center ml-1">
+                          <span className="w-0.5 h-5 bg-cyan-500 animate-pulse rounded-full"></span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {loading && (
+                    <div className="mt-8 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-100">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-cyan-900 font-medium">Creating your quiz</div>
+                          <div className="text-cyan-600 text-sm mt-1">Tailored for your learning outcomes</div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 bg-cyan-400 rounded-full animate-bounce"></div>
+                          <div className="w-3 h-3 bg-cyan-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-3 h-3 bg-cyan-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-                  </div>
+                  )}
                 </div>
-              )}
-
-              <div className="prose prose-lg max-w-none">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Edit your quiz:
-                      </label>
-                      <div className="text-sm text-gray-500">
-                        {editedContent.length} characters
-                      </div>
-                    </div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-vertical"
-                      placeholder="Edit your quiz content here..."
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>You can format using markdown-style **bold** and *italic*</span>
-                      <span>Lines will be preserved in the final output</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {formatQuizText(streamingQuiz || generatedQuiz)}
-                    {loading && streamingQuiz && (
-                      <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 bg-cyan-500 animate-pulse rounded-full"></span>
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {loading && (
-                <div className="mt-8 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-100">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-cyan-900 font-medium">Creating your quiz</div>
-                      <div className="text-cyan-600 text-sm mt-1">Tailored for your learning outcomes</div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 bg-cyan-400 rounded-full animate-bounce"></div>
-                      <div className="w-3 h-3 bg-cyan-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-3 h-3 bg-cyan-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+              </>
+            )}
           </>
         ) : (
-          // ... (keep the existing form JSX exactly as it is)
+          // Form view
           <>
             <div className="border-b border-gray-200 p-4 flex items-center justify-between">
               <div>
@@ -1054,7 +850,8 @@ ${contentToExport}`;
         contentType="quiz"
         onContentUpdate={(newContent) => {
           setGeneratedQuiz(newContent);
-          setEditedContent(newContent);
+          const parsed = parseQuizFromAI(newContent);
+          if (parsed) setParsedQuiz(parsed);
         }}
       />
     </div>

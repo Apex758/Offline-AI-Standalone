@@ -793,6 +793,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
         traceback.print_exc()
  
  
+
 @app.websocket("/ws/quiz")
 async def quiz_websocket(websocket: WebSocket):
     await websocket.accept()
@@ -803,6 +804,10 @@ async def quiz_websocket(websocket: WebSocket):
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
             print(f"Received quiz prompt: {prompt[:100]}...")
+            
+            if not prompt:
+                print("ERROR: Empty prompt received")
+                continue
             
             system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
             
@@ -820,19 +825,28 @@ async def quiz_websocket(websocket: WebSocket):
             
             print(f"\n{'='*60}")
             print(f"Quiz Generation Request")
+            print(f"Command: {' '.join(cmd[:4])}...")  # Print first few parts of command
             print(f"{'='*60}\n")
             
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            process.stdin.close()
+            try:
+                process = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    bufsize=0,
+                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+                )
+                
+                print("✓ Subprocess created successfully")
+                
+                process.stdin.close()
+                
+            except Exception as e:
+                print(f"ERROR: Failed to create subprocess: {e}")
+                await websocket.send_json({"type": "error", "message": str(e)})
+                continue
             
             all_output = []
             generation_started = {'value': False}
@@ -843,20 +857,23 @@ async def quiz_websocket(websocket: WebSocket):
             ]
             
             def read_stream(stream, output_list):
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n🎯 GENERATING QUIZ:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
+                try:
+                    while True:
+                        char = stream.read(1)
+                        if not char:
+                            break
+                        output_list.append(char)
+                        
+                        current_text = ''.join(output_list)
+                        if not generation_started['value'] and "Not using system message" in current_text:
+                            generation_started['value'] = True
+                            print(f"\n{'='*60}\n🎯 GENERATING QUIZ:\n{'='*60}\n")
+                        
+                        if generation_started['value']:
+                            sys.stdout.write(char)
+                            sys.stdout.flush()
+                except Exception as e:
+                    print(f"Error in read_stream: {e}")
             
             stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
             stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
@@ -865,6 +882,8 @@ async def quiz_websocket(websocket: WebSocket):
             stderr_thread.start()
             stdout_thread.start()
             
+            print("✓ Read threads started")
+            
             start_time = time.time()
             timeout_seconds = LLAMA_PARAMS["timeout"]
             last_streamed_index = 0
@@ -872,8 +891,11 @@ async def quiz_websocket(websocket: WebSocket):
             skip_initial_garbage = False
             should_stop_streaming = False
             
+            chars_sent = 0
+            
             while time.time() - start_time < timeout_seconds:
                 if process.poll() is not None:
+                    print(f"Process exited with code: {process.poll()}")
                     break
                 
                 current_output = ''.join(all_output)
@@ -890,6 +912,7 @@ async def quiz_websocket(websocket: WebSocket):
                 
                 if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
                     found_assistant_start = True
+                    print("✓ Found assistant start marker")
                     assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
                     if assistant_index != -1:
                         last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
@@ -905,6 +928,7 @@ async def quiz_websocket(websocket: WebSocket):
                             while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
                                 last_streamed_index += 1
                             skip_initial_garbage = True
+                            print("✓ Skipped initial garbage")
                 
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
@@ -923,7 +947,9 @@ async def quiz_websocket(websocket: WebSocket):
                                 "type": "token",
                                 "content": char
                             })
-                        except:
+                            chars_sent += 1
+                        except Exception as e:
+                            print(f"Error sending character: {e}")
                             break
                     
                     last_streamed_index += len(new_content)
@@ -932,6 +958,8 @@ async def quiz_websocket(websocket: WebSocket):
                         break
                 
                 await asyncio.sleep(0.05)
+            
+            print(f"\n✓ Sent {chars_sent} characters to frontend")
             
             process.terminate()
             time.sleep(0.5)
@@ -942,6 +970,10 @@ async def quiz_websocket(websocket: WebSocket):
             stdout_thread.join(timeout=2)
             
             full_output = ''.join(all_output)
+            
+            print(f"\n{'='*60}")
+            print(f"Total output length: {len(full_output)} characters")
+            print(f"{'='*60}\n")
             
             response_text = full_output
             
@@ -959,11 +991,13 @@ async def quiz_websocket(websocket: WebSocket):
             
             try:
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                print("✓ Sent done message")
             except Exception as e:
                 print(f"Could not send done message: {e}")
 
             print(f"\n{'='*60}")
             print(f"Quiz generation complete - {len(response_text)} chars")
+            print(f"First 200 chars: {response_text[:200]}")
             print(f"{'='*60}\n")
                         
     except WebSocketDisconnect:
@@ -972,8 +1006,12 @@ async def quiz_websocket(websocket: WebSocket):
         print(f"Quiz WebSocket error: {str(e)}")
         import traceback
         traceback.print_exc()
-
-
+        try:
+            await websocket.send_json({"type": "error", "message": str(e)})
+        except:
+            pass
+        
+        
 @app.websocket("/ws/rubric")
 async def rubric_websocket(websocket: WebSocket):
     await websocket.accept()
