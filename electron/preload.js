@@ -24,5 +24,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   }
 });
 
+// Expose IPC communication for splashscreen
+contextBridge.exposeInMainWorld('electron', {
+  ipcRenderer: {
+    on: (channel, callback) => {
+      ipcRenderer.on(channel, (event, ...args) => callback(...args));
+    },
+    send: (channel, ...args) => {
+      ipcRenderer.send(channel, ...args);
+    }
+  }
+});
+
 // Log that preload script has loaded
 console.log('Preload script loaded successfully');
