@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(__file__)
 
 # File paths
 # Model name (centralized configuration)
-MODEL_NAME = "PEARL_AI_qwen4bit copy.gguf"
+MODEL_NAME = "PEARL_AI.gguf"
 
 # Construct model path dynamically using the model name
 MODEL_PATH = os.path.join(BASE_DIR, MODEL_NAME)

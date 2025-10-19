@@ -5,7 +5,7 @@ IMPORTANT: Both files are required for installation!
 
 FILES IN THIS FOLDER:
 1. OECS-Learning-Hub-Setup.exe    (Application installer ~100-200 MB)
-2. PEARL_AI_qwen4bit copy.gguf    (AI Model ~900 MB)
+2. PEARL_AI.gguf    (AI Model ~900 MB)
 
 INSTALLATION STEPS:
 -------------------
@@ -26,9 +26,9 @@ TROUBLESHOOTING:
 If the app doesn't work after installation:
 1. Check that the model file is in: 
    C:\Users\[YourName]\AppData\Local\Programs\oecs-learning-hub\resources\backend-bundle\
-2. The file should be named: PEARL_AI_qwen4bit copy.gguf
+2. The file should be named: PEARL_AI.gguf
 3. The file size should be around 900 MB
 
 For support, contact: delon.pierre@oecs.int
 
-Generated: 2025-10-19 05:19:21
+Generated: 2025-10-19 06:39:09

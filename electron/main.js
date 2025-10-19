@@ -10,6 +10,7 @@ log.transports.file.level = 'info';
 log.info('Application starting...');
 
 let mainWindow;
+let splashWindow;
 let backendProcess;
 const BACKEND_PORT = 8000;
 const FRONTEND_PORT = 5173;
@@ -186,9 +187,50 @@ async function startBackend() {
   });
 }
 
-// Function to create the main window
+// Function to get splashscreen path
+function getSplashscreenPath() {
+  log.info(`Getting splashscreen path - Running in ${isDev ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
+  
+  let splashPath;
+  if (isDev) {
+    // In development, use the source file
+    splashPath = path.join(__dirname, '..', 'frontend', 'public', 'splashscreen', 'splashscreen.html');
+  } else {
+    // In production, try multiple possible locations
+    const possiblePaths = [
+      path.join(__dirname, '..', 'frontend', 'dist', 'splashscreen', 'splashscreen.html'),
+      path.join(__dirname, '..', 'frontend', 'dist', 'splashscreen.html'),
+      path.join(process.resourcesPath, 'frontend', 'dist', 'splashscreen', 'splashscreen.html'),
+      path.join(process.resourcesPath, 'splashscreen', 'splashscreen.html'),
+      path.join(__dirname, '..', 'splashscreen', 'splashscreen.html')
+    ];
+    
+    for (const testPath of possiblePaths) {
+      if (fs.existsSync(testPath)) {
+        splashPath = testPath;
+        log.info(`Found splashscreen at: ${testPath}`);
+        break;
+      }
+    }
+    
+    if (!splashPath) {
+      log.error('Splashscreen file not found in any expected location!');
+      log.error('Searched paths:', possiblePaths);
+      
+      // Use the first path as fallback
+      splashPath = possiblePaths[0];
+    }
+  }
+  
+  log.info(`Splashscreen path: ${splashPath}`);
+  log.info(`File exists: ${fs.existsSync(splashPath)}`);
+  
+  return splashPath;
+}
+
+// Function to create the main window (with splashscreen)
 function createWindow() {
-  log.info('Creating main window...');
+  log.info('Creating main window with integrated splashscreen...');
   
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -197,31 +239,73 @@ function createWindow() {
     minHeight: 600,
     icon: path.join(__dirname, '..', 'frontend', 'public', 'OECS.png'),
     title: 'OECS Learning Hub',
+    frame: true, // Frameless for splashscreen effect
+    center: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      devTools: false,
+      devTools: isDev, // Enable DevTools in development
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: false // Allow local file access
     },
     show: false,
-    backgroundColor: '#f3f4f6'
+    backgroundColor: '#0a0e1a' // Match splashscreen background
   });
   
+  // Remove menu
   mainWindow.setMenuBarVisibility(false);
   mainWindow.removeMenu();
 
-  mainWindow.once('ready-to-show', () => {
-    log.info('Window ready to show');
+  // Load splashscreen first
+  const splashPath = getSplashscreenPath();
+  
+  log.info(`Loading splashscreen in main window: ${splashPath}`);
+  
+  mainWindow.loadFile(splashPath).then(() => {
+    log.info('Splashscreen loaded, showing window');
+    mainWindow.show();
+    
+    if (isDev) {
+      mainWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+  }).catch(err => {
+    log.error('Error loading splashscreen:', err);
+    // If splashscreen fails, show window anyway
     mainWindow.show();
   });
   
+  // Log console messages
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    log.info(`Window console [${level}]: ${message}`);
+  });
+  
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+// Function to load the main application content
+function loadMainContent() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    log.error('Cannot load main content: window does not exist');
+    return;
+  }
+  
+  log.info('Loading main application content...');
+  
+  // Add frame back for main application
+  // Note: Can't change frame property dynamically, so we keep it frameless
+  // but could add custom title bar in React if needed
+  
   if (isDev) {
-    mainWindow.loadURL(`http://localhost:${FRONTEND_PORT}`);
-    mainWindow.webContents.openDevTools();
+    mainWindow.loadURL(`http://localhost:${FRONTEND_PORT}`).then(() => {
+      log.info('Main content loaded (dev mode)');
+    }).catch(err => {
+      log.error('Error loading main content:', err);
+    });
   } else {
     const indexPath = path.join(__dirname, '..', 'frontend', 'dist', 'index.html');
-    log.info(`Loading: ${indexPath}`);
+    log.info(`Loading main content: ${indexPath}`);
     
     if (!fs.existsSync(indexPath)) {
       log.error('Frontend files not found!');
@@ -231,21 +315,30 @@ function createWindow() {
       return;
     }
     
-    mainWindow.loadFile(indexPath);
+    mainWindow.loadFile(indexPath).then(() => {
+      log.info('Main content loaded (production mode)');
+    }).catch(err => {
+      log.error('Error loading main content:', err);
+    });
   }
-  
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
 }
 
 app.setName('OECS Learning Hub');
+
+// IPC handlers for splashscreen communication
+ipcMain.on('splashscreen-complete', () => {
+  log.info('Splashscreen animation complete, loading main content');
+  loadMainContent();
+});
 
 // App lifecycle
 app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');
 
   try {
+    // === Create main window with splashscreen ===
+    createWindow();
+    
     // === First install cleanup logic ===
     const userDataPath = app.getPath('userData');
     const firstRunFlag = path.join(userDataPath, 'firstrun.json');
@@ -269,11 +362,15 @@ app.whenReady().then(async () => {
       fs.writeFileSync(firstRunFlag, JSON.stringify({ initialized: true }));
     }
 
-    // === Continue with normal startup ===
+    // === Start backend ===
     await startBackend();
     log.info('Backend started successfully');
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    createWindow();
+    
+    // Send IPC message to splashscreen that backend is ready
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('backend-ready');
+      log.info('Sent backend-ready message to window');
+    }
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
@@ -284,6 +381,12 @@ app.whenReady().then(async () => {
     log.error('Failed to initialize:', error);
     const { dialog } = require('electron');
     dialog.showErrorBox('Startup Error', `Failed to start application:\n${error.message}`);
+    
+    // Close window on error
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.close();
+    }
+    
     app.quit();
   }
 });
