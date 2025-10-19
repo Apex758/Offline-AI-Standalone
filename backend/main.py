@@ -562,7 +562,7 @@ async def websocket_chat(websocket: WebSocket):
                 continue
             
             # Build teaching assistant prompt
-            system_prompt = "You are a helpful AI teaching assistant. Your role is to explain concepts clearly, break down complex topics into understandable parts, provide examples, and encourage learning. Keep your explanations engaging and educational."
+            system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
             
             prompt = "<|begin_of_text|>"
             prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -607,12 +607,12 @@ async def websocket_chat(websocket: WebSocket):
             garbage_patterns = [
                 'llama_perf',
                 '> EOF',
-                'Interrupted by user',
+                # 'Interrupted by user',  # Too aggressive
                 'llama_sampler',
-                'llama_print',
-                '> llama',
-                'sampler_',
-                'l>a m',
+                # 'llama_print',  # Too aggressive  
+                # '> llama',  # Too aggressive
+                # 'sampler_',  # Too aggressive
+                # 'l>a m',  # DEFINITELY too aggressive - remove this!
             ]
             
             def read_stream(stream, output_list):
@@ -695,14 +695,6 @@ async def websocket_chat(websocket: WebSocket):
                             print(f"\n[Detected end pattern '{pattern}', stopping stream]")
                             break
                     
-                    # Also check for end tokens
-                    if not should_break:
-                        for end_token in ["<|eot_id|>", "<|end_of_text|>"]:
-                            if end_token in new_content:
-                                end_index = new_content.find(end_token)
-                                new_content = new_content[:end_index]
-                                should_break = True
-                                break
                     
                     # Stream character by character
                     for char in new_content:
@@ -1334,6 +1326,9 @@ async def quiz_websocket(websocket: WebSocket):
                 if started_streaming and last_sent_index < len(current_output):
                     new_content = current_output[last_sent_index:]
                     
+                    if len(response_text.strip()) < 20:
+                        # Don't cleanup yet, response is too short
+                        continue
                     # Check for end patterns
                     should_stop = False
                     for pattern in garbage_patterns:
