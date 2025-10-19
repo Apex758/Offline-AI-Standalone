@@ -46,3 +46,13 @@ build/
  
 # Ignore model files
 *.gguf
+
+# Ignore python embed directories
+python-embed/
+backend/python-embed/
+
+# Ignore large binary files
+*.dll
+*.pyd
+*.zip
+*.exe
