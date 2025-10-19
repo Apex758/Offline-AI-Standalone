@@ -928,13 +928,12 @@ ${contentToExport}`;
         showFloatingButton={false}
       />
 
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.QUIZ_GENERATOR}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.QUIZ_GENERATOR}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+      
     </div>
   );
 };

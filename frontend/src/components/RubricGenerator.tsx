@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+                                                                                                                              import React, { useState, useEffect, useRef } from 'react';
+import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import RubricEditor from './RubricEditor';
+import type { ParsedRubric, CriteriaRow } from './RubricEditor';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -19,6 +21,7 @@ interface RubricHistory {
   timestamp: string;
   formData: FormData;
   generatedRubric: string;
+  parsedRubric?: ParsedRubric;
 }
 
 interface FormData {
@@ -33,40 +36,54 @@ interface FormData {
   focusAreas: string[];
 }
 
-const formatRubricText = (text: string, accentColor: string) => {
+const formatRubricText = (text: string, accentColor: string, isStreaming: boolean = false) => {
   if (!text) return null;
 
-  // CRITICAL: Clean out ALL llama model metadata
   let cleanText = text;
   
-  // Remove everything before the actual content starts
-  const contentMarkers = [
-    'GRADING RUBRIC',
-    'Rubric',
-    'Assignment:',
-    'Performance Level',
-    'Criteria',
-    '**'
-  ];
-  
-  // Find where actual content starts
-  let startIndex = 0;
-  for (const marker of contentMarkers) {
-    const idx = cleanText.indexOf(marker);
-    if (idx !== -1 && (startIndex === 0 || idx < startIndex)) {
-      // Look backwards for any model metadata
-      const beforeMarker = cleanText.substring(Math.max(0, idx - 500), idx);
-      if (beforeMarker.includes('llama') || beforeMarker.includes('build:') || beforeMarker.includes('main:')) {
-        startIndex = idx;
+  // ONLY do aggressive cleaning when streaming is complete
+  if (!isStreaming) {
+    // Remove everything before the actual content starts
+    const contentMarkers = [
+      'GRADING RUBRIC',
+      'Rubric',
+      'Assignment:',
+      'Performance Level',
+      'Criteria',
+      '**'
+    ];
+    
+    let startIndex = 0;
+    for (const marker of contentMarkers) {
+      const idx = cleanText.indexOf(marker);
+      if (idx !== -1 && (startIndex === 0 || idx < startIndex)) {
+        const beforeMarker = cleanText.substring(Math.max(0, idx - 500), idx);
+        if (beforeMarker.includes('llama') || beforeMarker.includes('build:') || beforeMarker.includes('main:')) {
+          startIndex = idx;
+        }
       }
     }
+    
+    if (startIndex > 0) {
+      cleanText = cleanText.substring(startIndex);
+    }
+    
+    // Do the line-by-line filtering only when not streaming
+    const lines = cleanText.split('\n');
+    let contentStartLine = 0;
+    for (let i = 0; i < Math.min(20, lines.length); i++) {
+      const line = lines[i].toLowerCase();
+      if (line.includes('llama') || line.includes('build') || line.includes('main:') || 
+          line.includes('loader') || line.includes('backend') || line.includes('gguf')) {
+        contentStartLine = i + 1;
+      } else if (lines[i].trim().length > 0) {
+        break;
+      }
+    }
+    cleanText = lines.slice(contentStartLine).join('\n');
   }
   
-  if (startIndex > 0) {
-    cleanText = cleanText.substring(startIndex);
-  }
-  
-  // Remove common llama model output patterns
+  // Light cleaning for both streaming and final (just remove obvious metadata)
   cleanText = cleanText
     .replace(/build: \d+ \([a-f0-9]+\).*/gi, '')
     .replace(/main: .*/gi, '')
@@ -80,20 +97,7 @@ const formatRubricText = (text: string, accentColor: string) => {
     .replace(/.*overrides.*/gi, '')
     .trim();
 
-  // Remove any remaining system messages at the start
-  const lines = cleanText.split('\n');
-  let contentStartLine = 0;
-  for (let i = 0; i < Math.min(20, lines.length); i++) {
-    const line = lines[i].toLowerCase();
-    if (line.includes('llama') || line.includes('build') || line.includes('main:') || 
-        line.includes('loader') || line.includes('backend') || line.includes('gguf')) {
-      contentStartLine = i + 1;
-    } else if (lines[i].trim().length > 0) {
-      break;
-    }
-  }
-  
-  const filteredLines = lines.slice(contentStartLine);
+  const filteredLines = cleanText.split('\n');
   const elements: JSX.Element[] = [];
   let currentIndex = 0;
 
@@ -220,6 +224,199 @@ const formatRubricText = (text: string, accentColor: string) => {
   return elements;
 };
 
+// Parse rubric text content into structured ParsedRubric format
+const parseRubricContent = (text: string, formData: FormData): ParsedRubric | null => {
+  if (!text) return null;
+
+  try {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Extract metadata from form data
+    const metadata = {
+      title: formData.assignmentTitle,
+      assignmentType: formData.assignmentType,
+      subject: formData.subject,
+      gradeLevel: formData.gradeLevel,
+      learningObjectives: formData.learningObjectives,
+      specificRequirements: formData.specificRequirements,
+      includePointValues: formData.includePointValues
+    };
+
+    // Try to detect performance levels from table headers or text
+    const performanceLevels: string[] = [];
+    const criteria: CriteriaRow[] = [];
+    
+    // Look for table structure (lines with | characters)
+    const tableLines = lines.filter(line => line.includes('|'));
+    
+    if (tableLines.length > 0) {
+      // Extract header row (first table line)
+      const headerLine = tableLines[0];
+      const headerCells = headerLine.split('|')
+        .map(cell => cell.trim())
+        .filter(cell => cell.length > 0 && !cell.match(/^-+$/));
+      
+      if (headerCells.length > 1) {
+        // First cell is usually "Criteria" or criterion name, rest are performance levels
+        performanceLevels.push(...headerCells.slice(1));
+      }
+      
+      // Parse data rows (skip separator rows with ---)
+      const dataRows = tableLines.slice(1).filter(line => !line.includes('---'));
+      
+      dataRows.forEach((row, index) => {
+        const cells = row.split('|')
+          .map(cell => cell.trim())
+          .filter(cell => cell.length > 0);
+        
+        if (cells.length > 1) {
+          const criterionName = cells[0];
+          const levels: { [key: string]: string } = {};
+          const points: { [key: string]: number } = {};
+          
+          cells.slice(1).forEach((cell, i) => {
+            if (i < performanceLevels.length) {
+              const levelName = performanceLevels[i];
+              
+              // Try to extract points if present (e.g., "Description (5 pts)")
+              const pointsMatch = cell.match(/\((\d+)\s*pts?\)/i);
+              if (pointsMatch) {
+                points[levelName] = parseInt(pointsMatch[1]);
+                levels[levelName] = cell.replace(/\s*\(\d+\s*pts?\)/i, '').trim();
+              } else {
+                levels[levelName] = cell;
+              }
+            }
+          });
+          
+          criteria.push({
+            id: `criterion_${index}`,
+            criterion: criterionName,
+            levels,
+            points: metadata.includePointValues && Object.keys(points).length > 0 ? points : undefined
+          });
+        }
+      });
+    }
+    
+    // Fallback: if no table detected, try to parse from structured text
+    if (performanceLevels.length === 0) {
+      // Default performance levels based on form data
+      const numLevels = parseInt(formData.performanceLevels) || 4;
+      const defaultLevels = ['Excellent', 'Good', 'Satisfactory', 'Needs Improvement', 'Beginning', 'Advanced'];
+      performanceLevels.push(...defaultLevels.slice(0, numLevels));
+    }
+    
+    // If no criteria were found, create a default structure
+    if (criteria.length === 0) {
+      // Look for common criterion patterns in text
+      const criterionPatterns = [
+        /\*\*([^:]+):\*\*/g,
+        /^([^:]+):/gm
+      ];
+      
+      let foundCriteria: string[] = [];
+      for (const pattern of criterionPatterns) {
+        const matches = Array.from(text.matchAll(pattern));
+        if (matches.length > 0) {
+          foundCriteria = matches.map(m => m[1].trim());
+          break;
+        }
+      }
+      
+      if (foundCriteria.length > 0) {
+        foundCriteria.forEach((criterionName, index) => {
+          const levels: { [key: string]: string } = {};
+          performanceLevels.forEach(level => {
+            levels[level] = '';
+          });
+          
+          criteria.push({
+            id: `criterion_${index}`,
+            criterion: criterionName,
+            levels,
+            points: metadata.includePointValues ?
+              performanceLevels.reduce((acc, level) => ({ ...acc, [level]: 0 }), {} as { [key: string]: number })
+              : undefined
+          });
+        });
+      }
+    }
+    
+    // Final fallback: create at least one empty criterion
+    if (criteria.length === 0) {
+      const levels: { [key: string]: string } = {};
+      performanceLevels.forEach(level => {
+        levels[level] = '';
+      });
+      
+      criteria.push({
+        id: 'criterion_0',
+        criterion: 'Criterion 1',
+        levels,
+        points: metadata.includePointValues ?
+          performanceLevels.reduce((acc, level) => ({ ...acc, [level]: 0 }), {} as { [key: string]: number })
+          : undefined
+      });
+    }
+    
+    return {
+      metadata,
+      performanceLevels,
+      criteria
+    };
+  } catch (error) {
+    console.error('Failed to parse rubric:', error);
+    return null;
+  }
+};
+
+// Convert ParsedRubric back to display text format
+const rubricToDisplayText = (rubric: ParsedRubric): string => {
+  let output = '';
+  
+  // Add metadata header
+  output += `**GRADING RUBRIC**\n\n`;
+  output += `**Assignment:** ${rubric.metadata.title}\n`;
+  output += `**Type:** ${rubric.metadata.assignmentType}\n`;
+  output += `**Subject:** ${rubric.metadata.subject}\n`;
+  output += `**Grade Level:** ${rubric.metadata.gradeLevel}\n\n`;
+  
+  if (rubric.metadata.learningObjectives) {
+    output += `**Learning Objectives:**\n${rubric.metadata.learningObjectives}\n\n`;
+  }
+  
+  if (rubric.metadata.specificRequirements) {
+    output += `**Specific Requirements:**\n${rubric.metadata.specificRequirements}\n\n`;
+  }
+  
+  // Create table header
+  output += `**Rubric Table**\n\n`;
+  const headerRow = ['Criteria', ...rubric.performanceLevels];
+  output += `| ${headerRow.join(' | ')} |\n`;
+  output += `| ${headerRow.map(() => '---').join(' | ')} |\n`;
+  
+  // Add criteria rows
+  rubric.criteria.forEach(criterion => {
+    const cells = [criterion.criterion];
+    
+    rubric.performanceLevels.forEach(level => {
+      let cellContent = criterion.levels[level] || '';
+      
+      // Add points if included
+      if (rubric.metadata.includePointValues && criterion.points && criterion.points[level]) {
+        cellContent += ` (${criterion.points[level]} pts)`;
+      }
+      
+      cells.push(cellContent);
+    });
+    
+    output += `| ${cells.join(' | ')} |\n`;
+  });
+  
+  return output;
+};
+
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['rubric-generator'];
@@ -233,10 +430,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [currentRubricId, setCurrentRubricId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Add new states for editing
+  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [parsedRubric, setParsedRubric] = useState<ParsedRubric | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -281,10 +477,17 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     'Technical Skills', 'Presentation Skills'
   ];
 
-  // Initialize edited content when rubric is generated
+  // Try to parse rubric when generated (for restored/loaded rubrics)
   useEffect(() => {
-    if (generatedRubric && !editedContent) {
-      setEditedContent(generatedRubric);
+    if (generatedRubric && !parsedRubric) {
+      console.log('Attempting to parse loaded/restored rubric...');
+      const parsed = parseRubricContent(generatedRubric, formData);
+      if (parsed) {
+        console.log('Loaded rubric parsed successfully');
+        setParsedRubric(parsed);
+      } else {
+        console.log('Loaded rubric parsing failed');
+      }
     }
   }, [generatedRubric]);
 
@@ -327,20 +530,31 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   useEffect(() => {
-    onDataChange({ formData, generatedRubric, streamingRubric });
-  }, [formData, generatedRubric, streamingRubric]);
+    onDataChange({ formData, generatedRubric, streamingRubric, parsedRubric });
+  }, [formData, generatedRubric, streamingRubric, parsedRubric]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
 
     const connectWebSocket = () => {
       if (!shouldReconnectRef.current) return;
+      
+      // Prevent multiple simultaneous connections
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        console.log('WebSocket already connected, skipping');
+        return;
+      }
 
       try {
         const ws = new WebSocket('ws://localhost:8000/ws/rubric');
         
         ws.onopen = () => {
           console.log('Rubric WebSocket connected');
+          // Clear any pending reconnection attempts
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
+          }
         };
         
         ws.onmessage = (event) => {
@@ -366,16 +580,25 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         ws.onclose = () => {
           console.log('WebSocket closed');
           wsRef.current = null;
-          if (shouldReconnectRef.current && !loading) {
-            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
+          
+          // Only reconnect if not intentional close and not already reconnecting
+          if (shouldReconnectRef.current && !reconnectTimeoutRef.current) {
+            console.log('Reconnecting in 2 seconds...');
+            reconnectTimeoutRef.current = setTimeout(() => {
+              reconnectTimeoutRef.current = null;
+              connectWebSocket();
+            }, 2000);
           }
         };
         
         wsRef.current = ws;
       } catch (error) {
         console.error('Failed to create WebSocket:', error);
-        if (shouldReconnectRef.current) {
-          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
+        if (shouldReconnectRef.current && !reconnectTimeoutRef.current) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectTimeoutRef.current = null;
+            connectWebSocket();
+          }, 2000);
         }
       }
     };
@@ -383,44 +606,43 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     connectWebSocket();
     
     return () => {
+      console.log('Cleaning up WebSocket connection');
       shouldReconnectRef.current = false;
+      
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
+      
+      if (wsRef.current) {
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close();
+        }
+        wsRef.current = null;
       }
-      wsRef.current = null;
     };
-  }, []);
+  }, []);  
 
-  // Enable editing mode
+  // Enable structured editing mode
   const enableEditing = () => {
-    setEditedContent(generatedRubric);
-    setIsEditing(true);
+    if (parsedRubric) {
+      setIsEditing(true);
+    } else {
+      alert('Cannot edit: Rubric format not recognized. Try regenerating the rubric.');
+    }
   };
 
-  // Save edited content
-  const saveEditedContent = () => {
-    setGeneratedRubric(editedContent);
+  // Save edited rubric
+  const saveEditedRubric = (editedRubric: ParsedRubric) => {
+    setParsedRubric(editedRubric);
+    const displayText = rubricToDisplayText(editedRubric);
+    setGeneratedRubric(displayText);
     setIsEditing(false);
   };
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditedContent(generatedRubric);
     setIsEditing(false);
-  };
-
-  // Copy to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(editedContent || generatedRubric);
-      setCopyStatus('copied');
-      setTimeout(() => setCopyStatus('idle'), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
   };
 
   const loadRubricHistories = async () => {
@@ -432,9 +654,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   };
 
-  // Update saveRubric to use edited content
   const saveRubric = async () => {
-    const contentToSave = isEditing ? editedContent : generatedRubric;
+    const contentToSave = parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric;
     if (!contentToSave) {
       alert('No rubric to save');
       return;
@@ -447,7 +668,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         title: `${formData.assignmentTitle} - ${formData.subject} (${formData.gradeLevel})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedRubric: contentToSave
+        generatedRubric: contentToSave,
+        parsedRubric: parsedRubric || undefined
       };
 
       if (!currentRubricId) {
@@ -458,11 +680,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       await loadRubricHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      
-      // If we were editing, exit editing mode after save
-      if (isEditing) {
-        setIsEditing(false);
-      }
     } catch (error) {
       console.error('Failed to save rubric:', error);
       alert('Failed to save rubric');
@@ -473,6 +690,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const loadRubricHistory = (history: RubricHistory) => {
     setFormData(history.formData);
     setGeneratedRubric(history.generatedRubric);
+    setParsedRubric(history.parsedRubric || null);
     setCurrentRubricId(history.id);
     setHistoryOpen(false);
   };
@@ -492,9 +710,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   };
 
-  // Update exportRubric to use edited content
   const exportRubric = () => {
-    const contentToExport = isEditing ? editedContent : generatedRubric;
+    const contentToExport = parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric;
     if (!contentToExport) return;
 
     const content = `GRADING RUBRIC
@@ -586,9 +803,9 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
     });
     setGeneratedRubric('');
     setStreamingRubric('');
+    setParsedRubric(null);
     setCurrentRubricId(null);
     setIsEditing(false);
-    setEditedContent('');
   };
 
   const validateForm = () => {
@@ -599,40 +816,32 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
   return (
     <div className="flex h-full bg-white relative" data-tutorial="rubric-generator-welcome">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedRubric || streamingRubric || isEditing) ? (
+        {(generatedRubric || streamingRubric) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Rubric...' : 
-                   isEditing ? 'Editing Rubric' : 'Generated Rubric'}
-                </h2>
-                <p className="text-sm text-gray-500">{formData.assignmentTitle} - {formData.subject}</p>
-              </div>
-              {!loading && (
-                <div className="flex items-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                      <button
-                        onClick={saveEditedContent}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Save Edits
-                      </button>
-                    </>
-                  ) : (
-                    <>
+            {isEditing && parsedRubric ? (
+              // Show Structured Editor
+              <RubricEditor
+                rubric={parsedRubric}
+                onSave={saveEditedRubric}
+                onCancel={cancelEditing}
+              />
+            ) : (
+              // Show generated rubric (existing display code)
+              <>
+                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {loading ? 'Generating Rubric...' : 'Generated Rubric'}
+                    </h2>
+                    <p className="text-sm text-gray-500">{formData.assignmentTitle} - {formData.subject}</p>
+                  </div>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        disabled={!parsedRubric}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        title={!parsedRubric ? "Rubric format not recognized" : "Edit rubric"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -677,33 +886,32 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </button>
-                    </>
+                      <button
+                        onClick={() => setHistoryOpen(!historyOpen)}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        title="Rubric History"
+                      >
+                        <History className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGeneratedRubric('');
+                          setStreamingRubric('');
+                          setParsedRubric(null);
+                          setIsEditing(false);
+                        }}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                      >
+                        Create New Rubric
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Rubric History"
-                  >
-                    <History className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGeneratedRubric('');
-                      setStreamingRubric('');
-                      setIsEditing(false);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Create New Rubric
-                  </button>
                 </div>
-              )}
-            </div>
             
-            <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingRubric || generatedRubric) && !isEditing && (
-                <div className="mb-8">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
+                <div className="flex-1 overflow-y-auto bg-white p-6">
+                  {(streamingRubric || generatedRubric) && (
+                    <div className="mb-8">
+                      <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>
                     
@@ -766,58 +974,37 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                   </div>
                 </div>
-              )}
+                    )}
 
-              <div className="prose prose-lg max-w-none">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Edit your rubric:
-                      </label>
-                      <div className="text-sm text-gray-500">
-                        {editedContent.length} characters
+                  <div className="prose prose-lg max-w-none">
+                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                      {formatRubricText(streamingRubric || generatedRubric, tabColor, !!streamingRubric)}
+                      {loading && streamingRubric && (
+                        <span className="inline-flex items-center ml-1">
+                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {loading && (
+                    <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your rubric</div>
+                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Detailed grading criteria and performance levels</div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
+                        </div>
                       </div>
                     </div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-vertical"
-                      placeholder="Edit your rubric content here..."
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>You can format using markdown-style **bold** and *italic*</span>
-                      <span>Lines will be preserved in the final output</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatRubricText(streamingRubric || generatedRubric, tabColor)}
-                    {loading && streamingRubric && (
-                      <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {loading && (
-                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your rubric</div>
-                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Detailed grading criteria and performance levels</div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </>
         ) : (
           <>
@@ -1083,7 +1270,8 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
         contentType="rubric"
         onContentUpdate={(newContent) => {
           setGeneratedRubric(newContent);
-          setEditedContent(newContent);
+          const parsed = parseRubricContent(newContent, formData);
+          if (parsed) setParsedRubric(parsed);
         }}
       />
 
@@ -1093,14 +1281,13 @@ Please create a detailed, well-structured rubric with clear criteria for each pe
         autoStart={showTutorial}
         showFloatingButton={false}
       />
-
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.RUBRIC_GENERATOR}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+ 
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.RUBRIC_GENERATOR}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+  
     </div>
   );
 };

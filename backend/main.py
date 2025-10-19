@@ -1512,17 +1512,21 @@ async def rubric_websocket(websocket: WebSocket):
                 if should_stop_streaming:
                     break
                 
+                # Find where assistant response starts
                 if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
                     found_assistant_start = True
                     assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
                     if assistant_index != -1:
                         last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
+                        # Skip whitespace after assistant marker
                         while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
                             last_streamed_index += 1
                 
+                # FIXED: Skip initial garbage AFTER finding assistant start
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
                     skip_messages = [
+                        "Not using system message. To change it, set a different value via -sys PROMPT",
                         "To change it, set a different value via -sys PROMPT",
                         "If you want to submit another line, end your input with"
                     ]
@@ -1530,12 +1534,14 @@ async def rubric_websocket(websocket: WebSocket):
                         if msg in remaining:
                             skip_index = remaining.find(msg)
                             if skip_index != -1:
+                                # Skip past the message
                                 last_streamed_index += skip_index + len(msg)
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                # Skip any trailing newlines/whitespace
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
                                     last_streamed_index += 1
-                                remaining = current_output[last_streamed_index:]
                     skip_initial_garbage = True
                 
+                # Stream the actual content
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
                     
@@ -1562,7 +1568,7 @@ async def rubric_websocket(websocket: WebSocket):
                         break
                 
                 await asyncio.sleep(0.05)
-            
+                        
             cleanup_process(process)
             
             stderr_thread.join(timeout=2)

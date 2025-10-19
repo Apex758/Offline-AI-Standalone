@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Check, Copy, Sparkles } from 'lucide-react';
+import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import KindergartenEditor from './KindergartenEditor';
+import type { ParsedKindergartenPlan } from './KindergartenEditor';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -19,6 +21,7 @@ interface KindergartenHistory {
   timestamp: string;
   formData: FormData;
   generatedPlan: string;
+  parsedPlan?: ParsedKindergartenPlan;
 }
 
 interface FormData {
@@ -131,6 +134,219 @@ const formatKindergartenText = (text: string, accentColor: string) => {
   return elements;
 };
 
+// Parse kindergarten plan text content into structured ParsedKindergartenPlan format
+const parseKindergartenContent = (text: string, formData: FormData): ParsedKindergartenPlan | null => {
+  if (!text) return null;
+
+  try {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Extract metadata from form data
+    const metadata = {
+      title: formData.lessonTopic || 'Kindergarten Plan',
+      theme: formData.lessonTopic,
+      curriculumUnit: formData.curriculumUnit,
+      week: formData.week,
+      dayOfWeek: formData.dayOfWeek,
+      date: formData.date,
+      ageGroup: formData.ageGroup,
+      students: formData.students,
+      duration: formData.duration
+    };
+
+    // Parse learning objectives
+    const learningObjectives: string[] = [];
+    const objectivesSection = text.match(/\*\*(?:Learning )?Objectives.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (objectivesSection) {
+      const objMatches = objectivesSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (objMatches) {
+        objMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) learningObjectives.push(cleaned);
+        });
+      }
+    }
+
+    // Parse developmental domains from learning domains field
+    const developmentalDomains = formData.learningDomains || [];
+
+    // Parse activities with activity types
+    const activities: Array<{
+      id: string;
+      type: string;
+      name: string;
+      description: string;
+      duration?: string;
+      learningGoals?: string;
+    }> = [];
+    
+    const activitiesSection = text.match(/\*\*Activities.*?\*\*(.*?)(?=\*\*(?:Materials|Assessment)|$)/s);
+    if (activitiesSection) {
+      const activityBlocks = activitiesSection[1].split(/(?=Circle Time|Art Activity|Story Time|Music|Outdoor Play|Learning Centers|Small Group|Snack Time)/i);
+      activityBlocks.forEach((block, idx) => {
+        const trimmed = block.trim();
+        if (trimmed) {
+          // Detect activity type
+          let activityType = 'circle-time';
+          if (trimmed.match(/^Circle Time/i)) activityType = 'circle-time';
+          else if (trimmed.match(/^Learning Centers/i)) activityType = 'centers';
+          else if (trimmed.match(/^Art Activity/i)) activityType = 'art';
+          else if (trimmed.match(/^Music/i)) activityType = 'music';
+          else if (trimmed.match(/^Story Time/i)) activityType = 'story';
+          else if (trimmed.match(/^Outdoor Play/i)) activityType = 'outdoor';
+          else if (trimmed.match(/^Snack Time/i)) activityType = 'snack';
+
+          const nameMatch = trimmed.match(/^([^:\n]+):/);
+          const activityName = nameMatch ? nameMatch[1].trim() : `Activity ${idx + 1}`;
+          const description = trimmed.replace(/^[^:\n]+:\s*/, '').trim();
+          
+          activities.push({
+            id: `activity_${idx}`,
+            type: activityType,
+            name: activityName,
+            description,
+            duration: '',
+            learningGoals: ''
+          });
+        }
+      });
+    }
+
+    // Parse materials
+    const materials: Array<{ id: string; name: string; ageAppropriate: boolean; safetyNotes?: string }> = [];
+    const materialsSection = text.match(/\*\*Materials.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (materialsSection) {
+      const matMatches = materialsSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (matMatches) {
+        matMatches.forEach((match, idx) => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) {
+            materials.push({
+              id: `material_${idx}`,
+              name: cleaned,
+              ageAppropriate: true,
+              safetyNotes: ''
+            });
+          }
+        });
+      }
+    }
+
+    // Parse assessment observations
+    const assessmentObservations: string[] = [];
+    const assessSection = text.match(/\*\*Assessment.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (assessSection) {
+      const assessMatches = assessSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (assessMatches) {
+        assessMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) assessmentObservations.push(cleaned);
+        });
+      }
+    }
+
+    // Parse optional fields
+    const differentiationMatch = text.match(/\*\*Differentiation.*?\*\*(.*?)(?=\*\*|$)/s);
+    const differentiationNotes = differentiationMatch ? differentiationMatch[1].trim() : undefined;
+
+    const prerequisitesMatch = text.match(/\*\*Prerequisites.*?\*\*(.*?)(?=\*\*|$)/s);
+    const prerequisites = prerequisitesMatch ? prerequisitesMatch[1].trim() : undefined;
+
+    return {
+      metadata,
+      learningObjectives: learningObjectives.length > 0 ? learningObjectives : ['No objectives found'],
+      developmentalDomains,
+      activities: activities.length > 0 ? activities : [],
+      materials: materials.length > 0 ? materials : [],
+      assessmentObservations: assessmentObservations.length > 0 ? assessmentObservations : ['Observation'],
+      differentiationNotes,
+      prerequisites
+    };
+  } catch (error) {
+    console.error('Failed to parse kindergarten plan:', error);
+    return null;
+  }
+};
+
+// Convert ParsedKindergartenPlan back to display text format
+const kindergartenPlanToDisplayText = (plan: ParsedKindergartenPlan): string => {
+  let output = '';
+  
+  // Add metadata header
+  output += `**KINDERGARTEN LESSON PLAN**\n\n`;
+  output += `**Topic:** ${plan.metadata.title}\n`;
+  output += `**Curriculum Unit:** ${plan.metadata.curriculumUnit}\n`;
+  output += `**Week ${plan.metadata.week}, ${plan.metadata.dayOfWeek}**\n`;
+  output += `**Date:** ${plan.metadata.date}\n`;
+  output += `**Age Group:** ${plan.metadata.ageGroup}\n`;
+  output += `**Students:** ${plan.metadata.students}\n`;
+  output += `**Duration:** ${plan.metadata.duration} minutes\n\n`;
+  
+  // Learning Objectives
+  output += `**Learning Objectives:**\n`;
+  plan.learningObjectives.forEach(obj => {
+    output += `* ${obj}\n`;
+  });
+  output += '\n';
+  
+  // Developmental Domains
+  if (plan.developmentalDomains.length > 0) {
+    output += `**Developmental Domains:**\n`;
+    plan.developmentalDomains.forEach(domain => {
+      output += `* ${domain}\n`;
+    });
+    output += '\n';
+  }
+  
+  // Activities
+  if (plan.activities.length > 0) {
+    output += `**Activities:**\n\n`;
+    plan.activities.forEach(activity => {
+      output += `${activity.name}:\n`;
+      output += `${activity.description}\n`;
+      if (activity.duration) {
+        output += `Duration: ${activity.duration}\n`;
+      }
+      if (activity.learningGoals) {
+        output += `Learning Goals: ${activity.learningGoals}\n`;
+      }
+      output += '\n';
+    });
+  }
+  
+  // Materials
+  output += `**Materials Needed:**\n`;
+  plan.materials.forEach(material => {
+    let materialLine = `* ${material.name}`;
+    if (material.ageAppropriate) {
+      materialLine += ' (age-appropriate)';
+    }
+    output += `${materialLine}\n`;
+    if (material.safetyNotes) {
+      output += `  Safety: ${material.safetyNotes}\n`;
+    }
+  });
+  output += '\n';
+  
+  // Assessment
+  output += `**Assessment & Observations:**\n`;
+  plan.assessmentObservations.forEach(assessment => {
+    output += `* ${assessment}\n`;
+  });
+  output += '\n';
+  
+  // Optional fields
+  if (plan.differentiationNotes) {
+    output += `**Differentiation Notes:**\n${plan.differentiationNotes}\n\n`;
+  }
+  
+  if (plan.prerequisites) {
+    output += `**Prerequisites:**\n${plan.prerequisites}\n`;
+  }
+  
+  return output;
+};
+
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['kindergarten-planner'];
@@ -144,10 +360,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Add new states for editing
+  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -189,10 +404,17 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     'Social Studies'
   ];
 
-  // Initialize edited content when plan is generated
+  // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {
-    if (generatedPlan && !editedContent) {
-      setEditedContent(generatedPlan);
+    if (generatedPlan && !parsedPlan) {
+      console.log('Attempting to parse loaded/restored kindergarten plan...');
+      const parsed = parseKindergartenContent(generatedPlan, formData);
+      if (parsed) {
+        console.log('Loaded kindergarten plan parsed successfully');
+        setParsedPlan(parsed);
+      } else {
+        console.log('Loaded kindergarten plan parsing failed');
+      }
     }
   }, [generatedPlan]);
 
@@ -239,8 +461,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   }, [tabId]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, streamingPlan });
-  }, [formData, generatedPlan, streamingPlan]);
+    onDataChange({ formData, generatedPlan, streamingPlan, parsedPlan });
+  }, [formData, generatedPlan, streamingPlan, parsedPlan]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
@@ -264,6 +486,18 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
             setStreamingPlan(current => {
               const finalMessage = current || data.full_response;
               setGeneratedPlan(finalMessage);
+              
+              console.log('Kindergarten plan generation complete, parsing...');
+              
+              // Try to parse immediately
+              const parsed = parseKindergartenContent(finalMessage, formData);
+              if (parsed) {
+                console.log('Kindergarten plan parsed successfully');
+                setParsedPlan(parsed);
+              } else {
+                console.warn('Kindergarten plan parsing failed');
+              }
+              
               setLoading(false);
               return '';
             });
@@ -306,33 +540,26 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     };
   }, []);
 
-  // Enable editing mode
+  // Enable structured editing mode
   const enableEditing = () => {
-    setEditedContent(generatedPlan);
-    setIsEditing(true);
+    if (parsedPlan) {
+      setIsEditing(true);
+    } else {
+      alert('Cannot edit: Kindergarten plan format not recognized. Try regenerating the plan.');
+    }
   };
 
-  // Save edited content
-  const saveEditedContent = () => {
-    setGeneratedPlan(editedContent);
+  // Save edited kindergarten plan
+  const saveKindergartenEdit = (editedPlan: ParsedKindergartenPlan) => {
+    setParsedPlan(editedPlan);
+    const displayText = kindergartenPlanToDisplayText(editedPlan);
+    setGeneratedPlan(displayText);
     setIsEditing(false);
   };
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditedContent(generatedPlan);
     setIsEditing(false);
-  };
-
-  // Copy to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(editedContent || generatedPlan);
-      setCopyStatus('copied');
-      setTimeout(() => setCopyStatus('idle'), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
   };
 
   const loadKindergartenHistories = async () => {
@@ -344,9 +571,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     }
   };
 
-  // Update savePlan to use edited content
   const savePlan = async () => {
-    const contentToSave = isEditing ? editedContent : generatedPlan;
+    const contentToSave = parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan;
     if (!contentToSave) {
       alert('No plan to save');
       return;
@@ -359,7 +585,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         title: `${formData.lessonTopic} - ${formData.curriculumUnit} (${formData.ageGroup})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave
+        generatedPlan: contentToSave,
+        parsedPlan: parsedPlan || undefined
       };
 
       if (!currentPlanId) {
@@ -370,11 +597,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       await loadKindergartenHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      
-      // If we were editing, exit editing mode after save
-      if (isEditing) {
-        setIsEditing(false);
-      }
     } catch (error) {
       console.error('Failed to save kindergarten plan:', error);
       alert('Failed to save kindergarten plan');
@@ -385,6 +607,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const loadKindergartenHistory = (history: KindergartenHistory) => {
     setFormData(history.formData);
     setGeneratedPlan(history.generatedPlan);
+    setParsedPlan(history.parsedPlan || null);
     setCurrentPlanId(history.id);
     setHistoryOpen(false);
   };
@@ -404,9 +627,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     }
   };
 
-  // Update exportPlan to use edited content
   const exportPlan = () => {
-    const contentToExport = isEditing ? editedContent : generatedPlan;
+    const contentToExport = parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan;
     if (!contentToExport) return;
 
     const content = `KINDERGARTEN LESSON PLAN
@@ -506,7 +728,7 @@ Please create an engaging, play-based lesson plan with clear learning objectives
     setStreamingPlan('');
     setCurrentPlanId(null);
     setIsEditing(false);
-    setEditedContent('');
+    setParsedPlan(null);
   };
 
   const validateForm = () => {
@@ -518,40 +740,32 @@ Please create an engaging, play-based lesson plan with clear learning objectives
   return (
     <div className="flex h-full bg-white relative" data-tutorial="kinder-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan || isEditing) ? (
+        {(generatedPlan || streamingPlan) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Kindergarten Plan...' : 
-                   isEditing ? 'Editing Kindergarten Plan' : 'Generated Kindergarten Plan'}
-                </h2>
-                <p className="text-sm text-gray-500">{formData.lessonTopic} - {formData.curriculumUnit}</p>
-              </div>
-              {!loading && (
-                <div className="flex items-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                      <button
-                        onClick={saveEditedContent}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Save Edits
-                      </button>
-                    </>
-                  ) : (
-                    <>
+            {isEditing && parsedPlan ? (
+              // Show Structured Editor
+              <KindergartenEditor
+                plan={parsedPlan}
+                onSave={saveKindergartenEdit}
+                onCancel={cancelEditing}
+              />
+            ) : (
+              // Show generated plan (existing display code)
+              <>
+                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {loading ? 'Generating Kindergarten Plan...' : 'Generated Kindergarten Plan'}
+                    </h2>
+                    <p className="text-sm text-gray-500">{formData.lessonTopic} - {formData.curriculumUnit}</p>
+                  </div>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        disabled={!parsedPlan}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        title={!parsedPlan ? "Kindergarten plan format not recognized" : "Edit plan"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -596,31 +810,30 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </button>
-                    </>
+                      <button
+                        onClick={() => setHistoryOpen(!historyOpen)}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        title="Kindergarten Plan History"
+                      >
+                        <History className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGeneratedPlan('');
+                          setStreamingPlan('');
+                          setParsedPlan(null);
+                          setIsEditing(false);
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        Create New Plan
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Kindergarten Plan History"
-                  >
-                    <History className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGeneratedPlan('');
-                      setStreamingPlan('');
-                      setIsEditing(false);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Create New Plan
-                  </button>
                 </div>
-              )}
-            </div>
-            
-            <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingPlan || generatedPlan) && !isEditing && (
+                
+                <div className="flex-1 overflow-y-auto bg-white p-6">
+                  {(streamingPlan || generatedPlan) && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
@@ -689,58 +902,37 @@ Please create an engaging, play-based lesson plan with clear learning objectives
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                   </div>
                 </div>
-              )}
+                  )}
 
-              <div className="prose prose-lg max-w-none">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Edit your kindergarten plan:
-                      </label>
-                      <div className="text-sm text-gray-500">
-                        {editedContent.length} characters
+                  <div className="prose prose-lg max-w-none">
+                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                      {formatKindergartenText(streamingPlan || generatedPlan, tabColor)}
+                      {loading && streamingPlan && (
+                        <span className="inline-flex items-center ml-1">
+                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {loading && (
+                    <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your kindergarten plan</div>
+                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Play-based learning activities and developmentally appropriate practices</div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
+                        </div>
                       </div>
                     </div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-vertical"
-                      placeholder="Edit your kindergarten plan content here..."
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>You can format using markdown-style **bold** and *italic*</span>
-                      <span>Lines will be preserved in the final output</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatKindergartenText(streamingPlan || generatedPlan, tabColor)}
-                    {loading && streamingPlan && (
-                      <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {loading && (
-                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your kindergarten plan</div>
-                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Play-based learning activities and developmentally appropriate practices</div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </>
         ) : (
           <>
@@ -1063,7 +1255,8 @@ Please create an engaging, play-based lesson plan with clear learning objectives
         contentType="kindergarten"
         onContentUpdate={(newContent) => {
           setGeneratedPlan(newContent);
-          setEditedContent(newContent);
+          const parsed = parseKindergartenContent(newContent, formData);
+          if (parsed) setParsedPlan(parsed);
         }}
       />
 
@@ -1075,13 +1268,13 @@ Please create an engaging, play-based lesson plan with clear learning objectives
         showFloatingButton={false}
       />
 
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.KINDERGARTEN_PLANNER}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.KINDERGARTEN_PLANNER}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+    
     </div>
   );
 };

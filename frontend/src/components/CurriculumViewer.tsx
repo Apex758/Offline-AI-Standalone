@@ -268,14 +268,13 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
         autoStart={showTutorial}
         showFloatingButton={false}
       />
-
-      {!showTutorial && settings.tutorials.tutorialPreferences.showFloatingButtons && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.CURRICULUM}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+ 
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.CURRICULUM}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+    
     </div>
   );
 };

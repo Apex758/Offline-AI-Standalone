@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import CrossCurricularEditor from './CrossCurricularEditor';
+import type { ParsedCrossCurricularPlan } from './CrossCurricularEditor';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -19,6 +21,7 @@ interface CrossCurricularHistory {
   timestamp: string;
   formData: FormData;
   generatedPlan: string;
+  parsedPlan?: ParsedCrossCurricularPlan;
 }
 
 interface FormData {
@@ -147,6 +150,306 @@ const formatCrossCurricularText = (text: string, accentColor: string) => {
   return elements;
 };
 
+// Parse cross-curricular plan text content into structured ParsedCrossCurricularPlan format
+const parseCrossCurricularContent = (text: string, formData: FormData): ParsedCrossCurricularPlan | null => {
+  if (!text) return null;
+
+  try {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Extract metadata from form data
+    const integrationSubjectsArray = formData.supportingSubjects
+      ? formData.supportingSubjects.split(',').map(s => s.trim()).filter(s => s)
+      : [];
+    
+    const metadata = {
+      title: formData.lessonTitle || 'Cross-Curricular Plan',
+      theme: formData.bigIdea,
+      primarySubject: formData.primarySubject,
+      integrationSubjects: integrationSubjectsArray,
+      gradeLevel: formData.gradeLevel,
+      duration: formData.duration,
+      integrationModel: formData.integrationModel,
+      date: new Date().toLocaleDateString()
+    };
+
+    // Parse learning standards
+    const standardsMatch = text.match(/\*\*Learning Standards.*?\*\*(.*?)(?=\*\*|$)/s);
+    const learningStandards = standardsMatch ? standardsMatch[1].trim() : formData.learningStandards;
+
+    // Parse subject-specific objectives
+    const subjectObjectives: Array<{ id: string; subject: string; objective: string }> = [];
+    const allSubjects = [formData.primarySubject, ...integrationSubjectsArray];
+    
+    allSubjects.forEach((subject, subjectIdx) => {
+      const subjectObjRegex = new RegExp(`\\*\\*${subject}.*?Objectives.*?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:[A-Z])|$)`, 'i');
+      const match = text.match(subjectObjRegex);
+      if (match && match[1]) {
+        const objMatches = match[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+        if (objMatches) {
+          objMatches.forEach((m, idx) => {
+            const cleaned = m.replace(/^\s*[\*\-•]\s+/, '').trim();
+            if (cleaned) {
+              subjectObjectives.push({
+                id: `obj_${subjectIdx}_${idx}`,
+                subject,
+                objective: cleaned
+              });
+            }
+          });
+        }
+      }
+    });
+
+    // If no subject-specific objectives found, try to parse from primary/secondary objectives
+    if (subjectObjectives.length === 0) {
+      if (formData.primaryObjective) {
+        subjectObjectives.push({
+          id: 'obj_primary_0',
+          subject: formData.primarySubject,
+          objective: formData.primaryObjective
+        });
+      }
+      if (formData.secondaryObjectives) {
+        const secondaryObjs = formData.secondaryObjectives.split('\n').filter(o => o.trim());
+        secondaryObjs.forEach((obj, idx) => {
+          subjectObjectives.push({
+            id: `obj_secondary_${idx}`,
+            subject: integrationSubjectsArray[0] || 'Supporting Subject',
+            objective: obj.trim()
+          });
+        });
+      }
+    }
+
+    // Parse cross-curricular activities
+    const crossCurricularActivities: Array<{
+      id: string;
+      name: string;
+      description: string;
+      subjects: string[];
+      duration?: string;
+    }> = [];
+    
+    const activitiesSection = text.match(/\*\*(?:Cross-Curricular )?Activities.*?\*\*(.*?)(?=\*\*(?:Materials|Assessment)|$)/s);
+    if (activitiesSection) {
+      const activityBlocks = activitiesSection[1].split(/(?=\d+\.)/);
+      activityBlocks.forEach((block, idx) => {
+        const trimmed = block.trim();
+        if (trimmed) {
+          const nameMatch = trimmed.match(/^\d+\.\s*(.+?)(?:\n|$)/);
+          const activityName = nameMatch ? nameMatch[1].trim() : `Activity ${idx + 1}`;
+          const description = trimmed.replace(/^\d+\.\s*.+?\n/, '').trim();
+          
+          // Try to determine which subjects are involved
+          const involvedSubjects = allSubjects.filter(subject =>
+            description.toLowerCase().includes(subject.toLowerCase())
+          );
+          
+          crossCurricularActivities.push({
+            id: `activity_${idx}`,
+            name: activityName,
+            description,
+            subjects: involvedSubjects.length > 0 ? involvedSubjects : [formData.primarySubject],
+            duration: ''
+          });
+        }
+      });
+    }
+
+    // If no activities parsed, try to get from form data
+    if (crossCurricularActivities.length === 0 && formData.coreActivities) {
+      crossCurricularActivities.push({
+        id: 'activity_0',
+        name: 'Core Learning Activity',
+        description: formData.coreActivities,
+        subjects: [formData.primarySubject],
+        duration: ''
+      });
+    }
+
+    // Parse materials
+    const materials: Array<{ id: string; name: string; subjects?: string[] }> = [];
+    const materialsSection = text.match(/\*\*Materials.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (materialsSection) {
+      const matMatches = materialsSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (matMatches) {
+        matMatches.forEach((match, idx) => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) {
+            // Check for subject tags in materials
+            const subjectMatch = cleaned.match(/\(((?:[A-Za-z\s]+)(?:,\s*[A-Za-z\s]+)*)\)/);
+            let name = cleaned;
+            let subjectTags: string[] = [];
+            
+            if (subjectMatch) {
+              name = cleaned.replace(subjectMatch[0], '').trim();
+              subjectTags = subjectMatch[1].split(',').map(s => s.trim());
+            }
+            
+            materials.push({
+              id: `material_${idx}`,
+              name,
+              subjects: subjectTags.length > 0 ? subjectTags : []
+            });
+          }
+        });
+      }
+    }
+
+    // If no materials parsed, try from form data
+    if (materials.length === 0 && formData.materials) {
+      const matList = formData.materials.split('\n').filter(m => m.trim());
+      matList.forEach((mat, idx) => {
+        materials.push({
+          id: `material_${idx}`,
+          name: mat.trim(),
+          subjects: []
+        });
+      });
+    }
+
+    // Parse assessment strategies
+    const assessmentStrategies: string[] = [];
+    const assessSection = text.match(/\*\*Assessment.*?\*\*(.*?)(?=\*\*|$)/s);
+    if (assessSection) {
+      const assessMatches = assessSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
+      if (assessMatches) {
+        assessMatches.forEach(match => {
+          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
+          if (cleaned) assessmentStrategies.push(cleaned);
+        });
+      }
+    }
+
+    // If no assessment strategies parsed, use from form data
+    if (assessmentStrategies.length === 0 && formData.assessmentMethods) {
+      assessmentStrategies.push(formData.assessmentMethods);
+    }
+
+    // Parse optional fields
+    const differentiationMatch = text.match(/\*\*Differentiation.*?\*\*(.*?)(?=\*\*|$)/s);
+    const differentiationNotes = differentiationMatch
+      ? differentiationMatch[1].trim()
+      : formData.differentiationStrategies || undefined;
+
+    const reflectionMatch = text.match(/\*\*Reflection.*?\*\*(.*?)(?=\*\*|$)/s);
+    const reflectionPrompts = reflectionMatch
+      ? reflectionMatch[1].trim()
+      : formData.reflectionPrompts || undefined;
+
+    const vocabMatch = text.match(/\*\*(?:Key )?Vocabulary.*?\*\*(.*?)(?=\*\*|$)/s);
+    const keyVocabulary = vocabMatch
+      ? vocabMatch[1].trim()
+      : formData.keyVocabulary || undefined;
+
+    return {
+      metadata,
+      learningStandards,
+      subjectObjectives: subjectObjectives.length > 0 ? subjectObjectives : [
+        { id: 'obj_0', subject: formData.primarySubject, objective: 'No objectives found' }
+      ],
+      crossCurricularActivities: crossCurricularActivities.length > 0 ? crossCurricularActivities : [],
+      materials: materials.length > 0 ? materials : [
+        { id: 'mat_0', name: 'No materials specified', subjects: [] }
+      ],
+      assessmentStrategies: assessmentStrategies.length > 0 ? assessmentStrategies : ['Observation'],
+      differentiationNotes,
+      reflectionPrompts,
+      keyVocabulary
+    };
+  } catch (error) {
+    console.error('Failed to parse cross-curricular plan:', error);
+    return null;
+  }
+};
+
+// Convert ParsedCrossCurricularPlan back to display text format
+const crossCurricularPlanToDisplayText = (plan: ParsedCrossCurricularPlan): string => {
+  let output = '';
+  
+  // Add metadata header
+  output += `**CROSS-CURRICULAR LESSON PLAN**\n\n`;
+  output += `**Title:** ${plan.metadata.title}\n`;
+  output += `**Big Idea/Theme:** ${plan.metadata.theme}\n`;
+  output += `**Primary Subject:** ${plan.metadata.primarySubject}\n`;
+  output += `**Integration Model:** ${plan.metadata.integrationModel}\n`;
+  if (plan.metadata.integrationSubjects.length > 0) {
+    output += `**Supporting Subjects:** ${plan.metadata.integrationSubjects.join(', ')}\n`;
+  }
+  output += `**Grade Level:** ${plan.metadata.gradeLevel}\n`;
+  output += `**Duration:** ${plan.metadata.duration}\n`;
+  output += `**Date:** ${plan.metadata.date}\n\n`;
+  
+  // Learning Standards
+  output += `**Learning Standards**\n${plan.learningStandards}\n\n`;
+  
+  // Subject-Specific Objectives
+  output += `**Subject-Specific Learning Objectives**\n\n`;
+  const subjectGroups: { [key: string]: string[] } = {};
+  plan.subjectObjectives.forEach(obj => {
+    if (!subjectGroups[obj.subject]) {
+      subjectGroups[obj.subject] = [];
+    }
+    subjectGroups[obj.subject].push(obj.objective);
+  });
+  
+  Object.keys(subjectGroups).forEach(subject => {
+    output += `**${subject} Objectives:**\n`;
+    subjectGroups[subject].forEach(obj => {
+      output += `* ${obj}\n`;
+    });
+    output += '\n';
+  });
+  
+  // Cross-Curricular Activities
+  if (plan.crossCurricularActivities.length > 0) {
+    output += `**Cross-Curricular Activities**\n\n`;
+    plan.crossCurricularActivities.forEach((activity, idx) => {
+      output += `${idx + 1}. **${activity.name}**\n`;
+      output += `   Subjects: ${activity.subjects.join(', ')}\n`;
+      output += `   ${activity.description}\n`;
+      if (activity.duration) {
+        output += `   Duration: ${activity.duration}\n`;
+      }
+      output += '\n';
+    });
+  }
+  
+  // Materials
+  output += `**Materials Needed:**\n`;
+  plan.materials.forEach(material => {
+    let materialLine = `* ${material.name}`;
+    if (material.subjects && material.subjects.length > 0) {
+      materialLine += ` (${material.subjects.join(', ')})`;
+    }
+    output += `${materialLine}\n`;
+  });
+  output += '\n';
+  
+  // Assessment Strategies
+  output += `**Assessment Strategies:**\n`;
+  plan.assessmentStrategies.forEach(strategy => {
+    output += `* ${strategy}\n`;
+  });
+  output += '\n';
+  
+  // Optional fields
+  if (plan.keyVocabulary) {
+    output += `**Key Vocabulary:**\n${plan.keyVocabulary}\n\n`;
+  }
+  
+  if (plan.differentiationNotes) {
+    output += `**Differentiation Strategies:**\n${plan.differentiationNotes}\n\n`;
+  }
+  
+  if (plan.reflectionPrompts) {
+    output += `**Reflection Prompts:**\n${plan.reflectionPrompts}\n`;
+  }
+  
+  return output;
+};
+
 const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['cross-curricular-planner'];
@@ -160,9 +463,9 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Add new states for editing
+  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
+  const [parsedPlan, setParsedPlan] = useState<ParsedCrossCurricularPlan | null>(null);
 
   const [step, setStep] = useState(() => savedData?.step || 1);
   const [formData, setFormData] = useState<FormData>(() => {
@@ -207,6 +510,20 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Try to parse plan when generated (for restored/loaded plans)
+  useEffect(() => {
+    if (generatedPlan && !parsedPlan) {
+      console.log('Attempting to parse loaded/restored cross-curricular plan...');
+      const parsed = parseCrossCurricularContent(generatedPlan, formData);
+      if (parsed) {
+        console.log('Loaded cross-curricular plan parsed successfully');
+        setParsedPlan(parsed);
+      } else {
+        console.log('Loaded cross-curricular plan parsing failed');
+      }
+    }
+  }, [generatedPlan]);
+
   const grades = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 
                   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
   
@@ -227,12 +544,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const multipleIntelligencesOptions = ['Linguistic', 'Logical-Mathematical', 'Spatial', 'Musical',
                                         'Bodily-Kinesthetic', 'Interpersonal', 'Intrapersonal', 'Naturalistic'];
 
-  // Initialize edited content when plan is generated
-  useEffect(() => {
-    if (generatedPlan && !editedContent) {
-      setEditedContent(generatedPlan);
-    }
-  }, [generatedPlan]);
 
   // Tutorial auto-show logic
   useEffect(() => {
@@ -273,8 +584,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   }, [tabId]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, streamingPlan, step });
-  }, [formData, generatedPlan, streamingPlan, step]);
+    onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });
+  }, [formData, generatedPlan, streamingPlan, step, parsedPlan]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
@@ -298,6 +609,18 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             setStreamingPlan(current => {
               const finalMessage = current || data.full_response;
               setGeneratedPlan(finalMessage);
+              
+              console.log('Cross-curricular plan generation complete, parsing...');
+              
+              // Try to parse immediately
+              const parsed = parseCrossCurricularContent(finalMessage, formData);
+              if (parsed) {
+                console.log('Cross-curricular plan parsed successfully');
+                setParsedPlan(parsed);
+              } else {
+                console.warn('Cross-curricular plan parsing failed');
+              }
+              
               setLoading(false);
               return '';
             });
@@ -349,26 +672,30 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   };
 
-  // Enable editing mode
+  // Enable structured editing mode
   const enableEditing = () => {
-    setEditedContent(generatedPlan);
-    setIsEditing(true);
+    if (parsedPlan) {
+      setIsEditing(true);
+    } else {
+      alert('Cannot edit: Cross-curricular plan format not recognized. Try regenerating the plan.');
+    }
   };
 
-  // Save edited content
-  const saveEditedContent = () => {
-    setGeneratedPlan(editedContent);
+  // Save edited cross-curricular plan
+  const saveCrossCurricularEdit = (editedPlan: ParsedCrossCurricularPlan) => {
+    setParsedPlan(editedPlan);
+    const displayText = crossCurricularPlanToDisplayText(editedPlan);
+    setGeneratedPlan(displayText);
     setIsEditing(false);
   };
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditedContent(generatedPlan);
     setIsEditing(false);
   };
 
   const savePlan = async () => {
-    const contentToSave = isEditing ? editedContent : generatedPlan;
+    const contentToSave = parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan;
     if (!contentToSave) {
       alert('No plan to save');
       return;
@@ -381,7 +708,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         title: `${formData.lessonTitle} - ${formData.primarySubject} (${formData.gradeLevel})`,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave
+        generatedPlan: contentToSave,
+        parsedPlan: parsedPlan || undefined
       };
 
       if (!currentPlanId) {
@@ -392,11 +720,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       await loadCrossCurricularHistories();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      
-      // If we were editing, exit editing mode after save
-      if (isEditing) {
-        setIsEditing(false);
-      }
     } catch (error) {
       console.error('Failed to save cross-curricular plan:', error);
       alert('Failed to save cross-curricular plan');
@@ -407,6 +730,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const loadCrossCurricularHistory = (history: CrossCurricularHistory) => {
     setFormData(history.formData);
     setGeneratedPlan(history.generatedPlan);
+    setParsedPlan(history.parsedPlan || null);
     setCurrentPlanId(history.id);
     setHistoryOpen(false);
   };
@@ -427,7 +751,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   };
 
   const exportPlan = () => {
-    const contentToExport = isEditing ? editedContent : generatedPlan;
+    const contentToExport = parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan;
     if (!contentToExport) return;
 
     const content = `CROSS-CURRICULAR LESSON PLAN
@@ -555,7 +879,7 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
     setStep(1);
     setCurrentPlanId(null);
     setIsEditing(false);
-    setEditedContent('');
+    setParsedPlan(null);
   };
 
   const stepLabels = ['Basic Info', 'Subjects', 'Objectives', 'Activities', 'Assessment', 'Teaching & Learning', 'Resources'];
@@ -563,40 +887,32 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
   return (
     <div className="flex h-full bg-white relative" data-tutorial="cross-curricular-planner-welcome">
       <div className="flex-1 flex flex-col bg-white">
-        {(generatedPlan || streamingPlan || isEditing) ? (
+        {(generatedPlan || streamingPlan) ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {loading ? 'Generating Cross-Curricular Plan...' :
-                   isEditing ? 'Editing Cross-Curricular Plan' : 'Generated Cross-Curricular Plan'}
-                </h2>
-                <p className="text-sm text-gray-500">{formData.lessonTitle} - {formData.primarySubject}</p>
-              </div>
-              {!loading && (
-                <div className="flex items-center gap-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                      <button
-                        onClick={saveEditedContent}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Save Edits
-                      </button>
-                    </>
-                  ) : (
-                    <>
+            {isEditing && parsedPlan ? (
+              // Show Structured Editor
+              <CrossCurricularEditor
+                plan={parsedPlan}
+                onSave={saveCrossCurricularEdit}
+                onCancel={cancelEditing}
+              />
+            ) : (
+              // Show generated plan (existing display code)
+              <>
+                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {loading ? 'Generating Cross-Curricular Plan...' : 'Generated Cross-Curricular Plan'}
+                    </h2>
+                    <p className="text-sm text-gray-500">{formData.lessonTitle} - {formData.primarySubject}</p>
+                  </div>
+                  {!loading && (
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        disabled={!parsedPlan}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        title={!parsedPlan ? "Cross-curricular plan format not recognized" : "Edit plan"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -641,31 +957,30 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                         <Download className="w-4 h-4 mr-2" />
                         Export
                       </button>
-                    </>
+                      <button
+                        onClick={() => setHistoryOpen(!historyOpen)}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        title="Cross-Curricular Plan History"
+                      >
+                        <History className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGeneratedPlan('');
+                          setStreamingPlan('');
+                          setParsedPlan(null);
+                          setIsEditing(false);
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        Create New Plan
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setHistoryOpen(!historyOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Cross-Curricular Plan History"
-                  >
-                    <History className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGeneratedPlan('');
-                      setStreamingPlan('');
-                      setIsEditing(false);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Create New Plan
-                  </button>
                 </div>
-              )}
-            </div>
-            
-            <div className="flex-1 overflow-y-auto bg-white p-6">
-              {(streamingPlan || generatedPlan) && !isEditing && (
+                
+                <div className="flex-1 overflow-y-auto bg-white p-6">
+                  {(streamingPlan || generatedPlan) && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
@@ -734,58 +1049,37 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                   </div>
                 </div>
-              )}
+                  )}
 
-              <div className="prose prose-lg max-w-none">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Edit your cross-curricular plan:
-                      </label>
-                      <div className="text-sm text-gray-500">
-                        {editedContent.length} characters
+                  <div className="prose prose-lg max-w-none">
+                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                      {formatCrossCurricularText(streamingPlan || generatedPlan, tabColor)}
+                      {loading && streamingPlan && (
+                        <span className="inline-flex items-center ml-1">
+                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {loading && (
+                    <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your cross-curricular plan</div>
+                          <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Integrating multiple subject areas for meaningful learning</div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
+                          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
+                        </div>
                       </div>
                     </div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-vertical"
-                      placeholder="Edit your cross-curricular plan content here..."
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>You can format using markdown-style **bold** and *italic*</span>
-                      <span>Lines will be preserved in the final output</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                    {formatCrossCurricularText(streamingPlan || generatedPlan, tabColor)}
-                    {loading && streamingPlan && (
-                      <span className="inline-flex items-center ml-1">
-                        <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {loading && (
-                <div className="mt-8 rounded-xl p-6 border" style={{ background: `linear-gradient(to right, ${tabColor}0d, ${tabColor}1a)`, borderColor: `${tabColor}33` }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium" style={{ color: `${tabColor}dd` }}>Creating your cross-curricular plan</div>
-                      <div className="text-sm mt-1" style={{ color: `${tabColor}99` }}>Integrating multiple subject areas for meaningful learning</div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}66` }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}99`, animationDelay: '0.1s' }}></div>
-                      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: `${tabColor}cc`, animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </>
         ) : (
           <>
@@ -1157,7 +1451,8 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
         contentType="cross-curricular"
         onContentUpdate={(newContent) => {
           setGeneratedPlan(newContent);
-          setEditedContent(newContent);
+          const parsed = parseCrossCurricularContent(newContent, formData);
+          if (parsed) setParsedPlan(parsed);
         }}
       />
 
@@ -1169,13 +1464,13 @@ Please generate a detailed, integrated lesson plan that seamlessly connects mult
         showFloatingButton={false}
       />
 
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER}
+        onStartTutorial={() => setShowTutorial(true)}
+        position="bottom-right"
+      />
+
     </div>
   );
 };

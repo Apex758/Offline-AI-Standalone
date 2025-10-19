@@ -639,14 +639,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         autoStart={showTutorial}
         showFloatingButton={false}
       />
-
-      {!showTutorial && (
-        <TutorialButton
-          tutorialId={TUTORIAL_IDS.CHAT}
-          onStartTutorial={() => setShowTutorial(true)}
-          position="bottom-right"
-        />
-      )}
+ 
     </div>
   );
 };
