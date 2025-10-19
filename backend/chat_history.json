@@ -1307,7 +1307,7 @@
   {
     "id": "chat_1760895676489",
     "title": "whats cat",
-    "timestamp": "2025-10-19T17:50:05.623Z",
+    "timestamp": "2025-10-19T17:54:45.935Z",
     "messages": [
       {
         "id": "1760895676481",
@@ -1411,6 +1411,242 @@
         "role": "user",
         "content": "whats a duck",
         "timestamp": "2025-10-19T17:49:41.852Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760896345659",
+    "title": "whats a buss",
+    "timestamp": "2025-10-19T17:52:33.686Z",
+    "messages": [
+      {
+        "id": "1760896345653",
+        "role": "user",
+        "content": "whats a buss",
+        "timestamp": "2025-10-19T17:52:25.653Z"
+      },
+      {
+        "id": "1760896353682",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T17:52:33.682Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760896860492",
+    "title": "whats food",
+    "timestamp": "2025-10-19T18:01:00.492Z",
+    "messages": [
+      {
+        "id": "1760896860483",
+        "role": "user",
+        "content": "whats food",
+        "timestamp": "2025-10-19T18:01:00.484Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760896911058",
+    "title": "food",
+    "timestamp": "2025-10-19T18:09:07.075Z",
+    "messages": [
+      {
+        "id": "1760896911053",
+        "role": "user",
+        "content": "food",
+        "timestamp": "2025-10-19T18:01:51.053Z"
+      },
+      {
+        "id": "1760896923363",
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2025-10-19T18:02:03.363Z"
+      },
+      {
+        "id": "1760897043500",
+        "role": "user",
+        "content": "food",
+        "timestamp": "2025-10-19T18:04:03.500Z"
+      },
+      {
+        "id": "1760897056394",
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2025-10-19T18:04:16.394Z"
+      },
+      {
+        "id": "1760897113885",
+        "role": "user",
+        "content": "hot",
+        "timestamp": "2025-10-19T18:05:13.885Z"
+      },
+      {
+        "id": "1760897122048",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_is naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions,d|>\n\n\n\n",
+        "timestamp": "2025-10-19T18:05:22.048Z"
+      },
+      {
+        "id": "1760897157906",
+        "role": "user",
+        "content": "god",
+        "timestamp": "2025-10-19T18:05:57.906Z"
+      },
+      {
+        "id": "1760897165652",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 3547431037\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA profound topic! What aspect of God would you like to know more about? The existence of God, biblical theology, religious traditions, or something else?\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\n\nrI_nptreirnrtu:p t e d  sbaym pulsienrg\n time =       3.60 ms /    97 runs   (    0.04 ms per token, 26929.48 tokens per second)\nllama_perf_context_print:        load time =    1077.96 ms\n",
+        "timestamp": "2025-10-19T18:06:05.652Z"
+      },
+      {
+        "id": "1760897338225",
+        "role": "user",
+        "content": "HOW ARE YOU",
+        "timestamp": "2025-10-19T18:08:58.225Z"
+      },
+      {
+        "id": "1760897347071",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_headplex topics.user\n\nHOW ARE YOUassistantassistant\n\ner_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 120137226\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nI'm doing great, thanks for asking! I'm a large language model, so I don't have feelings like humans do, but I'm functioning properly and ready to help with any questions or tasks you have. How about you? How's your day going?\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:u p t e ds abmyp luisnegr \ntime =       5.55 ms /   121 runs   (    0.05 ms per token, 21797.87 tokens per second)\nllama_perf_context_print:        load time =    1111.08 ms\n",
+        "timestamp": "2025-10-19T18:09:07.071Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760897366649",
+    "title": "whats the tallest building",
+    "timestamp": "2025-10-19T18:10:58.758Z",
+    "messages": [
+      {
+        "id": "1760897366642",
+        "role": "user",
+        "content": "whats the tallest building",
+        "timestamp": "2025-10-19T18:09:26.642Z"
+      },
+      {
+        "id": "1760897384829",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 2197298907\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nThe tallest building in the world is the Burj Khalifa, located in Dubai, United Arab Emirates. It stands at a height of 828 meters (2,722 feet) and has 163 floors. Completed in 2010, it was designed by the American architectural firm Skidmore, Owings & Merrill, and was developed by Emaar Properties.\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr_\nprIinntte:r r u p tseadm pblyi nugs etri\nme =      19.06 ms /   144 runs   (    0.13 ms per token,  7555.88 tokens per second)\n",
+        "timestamp": "2025-10-19T18:09:44.829Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760897476258",
+    "title": "whats a cwo",
+    "timestamp": "2025-10-19T18:13:08.759Z",
+    "messages": [
+      {
+        "id": "1760897476252",
+        "role": "user",
+        "content": "whats a cwo",
+        "timestamp": "2025-10-19T18:11:16.252Z"
+      },
+      {
+        "id": "1760897501562",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 1119106912\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nI think you meant to ask \"What's a CWO?\"\n\nCWO stands for Chief Warrant Officer. In the US military, a CWO is a non-commissioned officer (NCO) rank that's equivalent to a warrant officer. They're responsible for technical expertise and often oversee specific areas, such as engineering, intelligence, or communications.\n\nIn the US Navy, CWO is a specific rank that ranks below O-4 and above E-7. It's a prestigious rank that requires significant technical knowledge and leadership skills.\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:u p t e ds abmy pulsienrg\n time =      29.75 ms /   178 runs   (    0.17 ms per token,  5982.19 tokens per second)\n",
+        "timestamp": "2025-10-19T18:11:41.562Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760897603657",
+    "title": "butterfly",
+    "timestamp": "2025-10-19T18:15:21.769Z",
+    "messages": [
+      {
+        "id": "1760897603650",
+        "role": "user",
+        "content": "butterfly",
+        "timestamp": "2025-10-19T18:13:23.650Z"
+      },
+      {
+        "id": "1760897638555",
+        "role": "assistant",
+        "content": "system_info: n_threads, detailed for complex topics.user\n\nbutts = 4 (n_threads_batch = 4) / 16 | CPU : SSerflyassistantassistant\n\nE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 3367880835\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nA beautiful butterfly! There are over 20,000 known species, but I'll give you a brief overview.\n\nButterflies are insects that belong to the order Lepidoptera. They have distinct characteristics, such as:\n\n* Delicate wings with scales that reflect light\n* Long, slender bodies\n* Six legs\n* A proboscis for sipping nectar\n* A complex life cycle with four stages: egg, larva, pupa, and adult\n\nSome popular types of butterflies include:\n\n* Monarch butterflies, known for their distinctive orange and black wings\n* Blue morpho butterflies, with iridescent blue wings\n* Swallowtails, recognized by their distinctive tail feathers\n\nWould you like to know more about a specific type of butterfly or their habits?\nl\nl>a mEaO_pFe rbfy_ suasmeprl\ne\nr\n_\npIrnitnetr:r u p t esda mbpyl iunsge rt\nime =      40.58 ms /   226 runs   (    0.18 ms per token,  5569.25 tokens per second)\n",
+        "timestamp": "2025-10-19T18:13:58.555Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760897800825",
+    "title": "goat",
+    "timestamp": "2025-10-19T18:17:44.248Z",
+    "messages": [
+      {
+        "id": "1760897800818",
+        "role": "user",
+        "content": "goat",
+        "timestamp": "2025-10-19T18:16:40.818Z"
+      },
+      {
+        "id": "1760897815523",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_thd for complex topics.user\n\ngoatassistantassistant\n\nreads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 1300530925\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nGoats! Those agile and curious creatures can be found on every continent except Antarctica. They're known for their distinctive beards and ability to climb steep terrain. What would you like to know about goats?\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:u p t e ds abmyp luisnegr \ntime =      10.23 ms /   108 runs   (    0.09 ms per token, 10556.15 tokens per second)\n",
+        "timestamp": "2025-10-19T18:16:55.523Z"
+      },
+      {
+        "id": "1760897823588",
+        "role": "user",
+        "content": "yess where are they found",
+        "timestamp": "2025-10-19T18:17:03.588Z"
+      },
+      {
+        "id": "1760897839496",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info:tailed for complex topics.user\n\nyess where are they foundassistantassistant\n\n n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 1591184699\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nYou're referring to something, but I don't think we've discussed what that is yet. Could you please provide more context or clarify what you're asking about? I'll do my best to help!\nl\nl>a mEaO_Fp beyr fu_ssearm\np\nl\ne\nrI_nptreirnrtu:p t e d  sbaym pulsienrg\n time =      11.30 ms /   112 runs   (    0.10 ms per token,  9908.00 tokens per second)\nllama_perf_context_print:        load time =    1162.06 ms\n",
+        "timestamp": "2025-10-19T18:17:19.496Z"
+      },
+      {
+        "id": "1760897849667",
+        "role": "user",
+        "content": "we were talking about goats",
+        "timestamp": "2025-10-19T18:17:29.667Z"
+      },
+      {
+        "id": "1760897864239",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics.user\n\nwE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsamplee were talking about goatsassistantassistant\n\nr seed: 2005744102\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nI'm afraid we didn't have a conversation about goats before, so we're starting from scratch! Would you like to talk about goats now? I'd be happy to chat with you about them. What would you like to know?\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:u p t e ds abmyp luisnegr \ntime =      12.88 ms /   117 runs   (    0.11 ms per token,  9081.03 tokens per second)\nll",
+        "timestamp": "2025-10-19T18:17:44.239Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760898060045",
+    "title": "whats butter",
+    "timestamp": "2025-10-19T18:26:43.786Z",
+    "messages": [
+      {
+        "id": "1760898060038",
+        "role": "user",
+        "content": "whats butter",
+        "timestamp": "2025-10-19T18:21:00.038Z"
+      },
+      {
+        "id": "1760898074192",
+        "role": "assistant",
+        "content": "Hi there<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow are you?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n\n\nsystem_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 1624721040\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\n - Press Ctrl+C to interject at any time.\n - Press Return to return control to the AI.\n - To return control without starting a new line, end your input with '/'.\n - If you want to submit another line, end your input with '\\'.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nButter! Butter is a type of food made from the fat of milk, typically from cows, goats, or sheep. It's a solid, semi-solid, or spreadable fat that's often used in cooking and baking. Butter is a key ingredient in many recipes, adding flavor, texture, and moisture to dishes like baked goods, sauces, and savory meals.\n\nIt's also a popular spread on its own, enjoyed on toast, crackers, or bread with various toppings like jam, honey, or salt. And of course, who can forget the classic butter and salt on popcorn?\n\nl>l aEmOaF_ pbeyr fu_ssearm\np\nl\ne\nrI_nptreirnrtu:p t e d  sbaym pulsienrg\n time =      12.09 ms /   186 runs   (    0.06 ms per token, 15389.71 tokens per second)\n",
+        "timestamp": "2025-10-19T18:21:14.192Z"
+      },
+      {
+        "id": "1760898086480",
+        "role": "user",
+        "content": "what recipies can i use it in?",
+        "timestamp": "2025-10-19T18:21:26.480Z"
+      },
+      {
+        "id": "1760898248258",
+        "role": "assistant",
+        "content": "system_info: n_threads = 4 (n_threads_batch = 4) / 16 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n\nmain: interactive mode on.\nsampler seed: 3118143874\nsampler params: \n\trepeat_laon.\nsampler seed: 1624721040\nsampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multipst_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.0lier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = 4096\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xt00, temp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits -> logit-bias -> penaltiec_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, ts -> dry -> top-n-sigma -> top-k -> typical -> top-p -> min-p ->emp = 0.600\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000\nsampler chain: logits ->  xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch = 2048, logit-bias -> penalties -> dry -> top-n-sigma -> top-k -> typical -> tn_predict = 2500, n_keep = 1\n\n== Running in interactive mode. op-p -> min-p -> xtc -> temp-ext -> dist \ngenerate: n_ctx = 4096, n_batch ===\n - Press Ctrl+C to interject at any time.\n - Press R 2048, n_predict = 2500, n_keep = 1\n\n== Running in interactive mode. ==\neturn to return control to the AI.\n - To return control without starti - Press Ctrl+C to interject at any time.\n - Press Return to return cong a new line, end your input with '/'.\n - If you want to suntrol to the AI.\n - To retbmit another line, end your input with '\\'.\n - Not using systeurn control without starting a new line, end your input with '/m message. To change it, set a different value via -sys PROMPT\n'.\n - If you want to submit another line, end your input w\nith ''.\n - Not using system message. To change it, set a different value via -sys PROMPT\n\nButter! Butter is a type of food made from the fat of milk, typically from cows, goats, or sheep. It's a solid, semi-solid, or spreadable fat that's often used in cooking and baking. Butter is a key ingredient in many recipes, adding flavor, texture, and moisture to dishes like baked goods, sauces, and savory meals.\n\nIt's also a popular spread on its own, enjoyed on toast, crackers, or bread with various toppings like jam, honey, or salt. And of course, who can forget the classic butter and salt on popcorn?\n\nl>l aEmOaF_ pbeyr fu_ssearm\np\nl\ne\nrI_nptreirnrtu:p t e d  sbaym pulsienrg\n time =      12.09 ms /   186 runs   (    0.06 ms per token, 15389.71 tokens per second)\nuser\n\nwhat recipies can i use it in?assistantassistant\n\nButter is a versatile ingredient! Here are some popular recipes that you can use butter in:\n\n**Baked Goods**\n\n1. Cakes: Butter is a key ingredient in many cake recipes, especially those that require a tender crumb and a rich flavor.\n2. Cookies: Butter is a must-have in cookie recipes, especially for classic chocolate chip cookies, oatmeal raisin cookies, and snickerdoodles.\n3. Muffins: Butter adds moisture and flavor to muffin recipes, especially when combined with sugar and eggs.\n4. Scones: Butter is a key ingredient in traditional scone recipes, which require a flaky and tender texture.\n5. Biscuits: Butter is used to make flaky, tender biscuits, often paired with baking powder and salt.\n\n**Sauces and Marinades**\n\n1. Hollandaise Sauce: A rich and creamy sauce made with butter, eggs, and lemon juice, often served with seafood or asparagus.\n2. Beurre Blanc: A French sauce made with butter, shallots, and white wine, often served with fish or poultry.\n3. Garlic Butter: A simple sauce made with melted butter, garlic, and parsley, often used as a topping for bread or vegetables.\n4. Herb Butter: A flavorful spread made with melted butter, herbs like parsley or thyme, and sometimes lemon zest.\n\n**Savory Dishes**\n\n1. Roasted Vegetables: Butter can be used to add flavor and richness to roasted vegetables like Brussels sprouts, carrots, or sweet potatoes.\n2. Mashed Potatoes: Butter adds a creamy texture and flavor to mashed potatoes, especially when combined with milk or cream.\n3. Grilled Cheese: Butter can be used to add flavor and moisture to grilled cheese sandwiches.\n4. Popcorn: Melted butter is a classic topping for popcorn, adding a salty and savory flavor.\n\n**Breakfast Recipes**\n\n1. Pancakes: Butter is often used to grease pancakes and add flavor, especially when combined with sugar and eggs.\n2. Waffles: Similar to pancakes, butter is used to grease waffles and add flavor.\n3. Crepes: Butter is often used to grease crepes and add flavor, especially when filled with sweet or savory ingredients.\n\nThese are just a few examples of the many recipes that use butter. Get creative and experiment with different types of butter and flavor combinations to find your favorite ways to use it!\nl\nl>a mEaO_Fp ebryf _ussaemrp\nl\ne\nr\n_Ipnrtienrtr:u p t e ds abmyp luisnegr \ntime =     121.99 ms /  1194 runs   (    0.10 ms per token,  9787",
+        "timestamp": "2025-10-19T18:24:08.258Z"
+      },
+      {
+        "id": "1760898285854",
+        "role": "user",
+        "content": "can i use it in my bath?",
+        "timestamp": "2025-10-19T18:24:45.854Z"
       }
     ]
   }
