@@ -52,4 +52,4 @@ Next steps:
 -read up on the email ashley sent
 
 
--create animated welcome screen
+ 

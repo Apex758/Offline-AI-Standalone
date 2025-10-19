@@ -87,8 +87,7 @@ const GRADE_SPECS = {
 export function buildQuizPrompt(formData: QuizFormData): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   
-  // Simplified prompt that works better with smaller models
-  const prompt = `Create a ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students.
+  const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students. YOU MUST GENERATE ALL ${formData.numberOfQuestions} QUESTIONS.
 
 SUBJECT: ${formData.subject}
 
@@ -97,32 +96,28 @@ ${formData.learningOutcomes}
 
 QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
 
-GRADE LEVEL REQUIREMENTS for Grade ${formData.gradeLevel}:
+GRADE LEVEL REQUIREMENTS:
 - Use ${gradeSpec.vocabulary}
 - ${gradeSpec.sentenceStructure}
 - Focus on: ${gradeSpec.examples}
 
 FORMAT EACH QUESTION EXACTLY LIKE THIS:
 
-Question 1: [Write your question here]
-A) [First option]
-B) [Second option]
-C) [Third option]
-D) [Fourth option]
+Question 1: [question text]
+A) [option]
+B) [option]
+C) [option]
+D) [option]
 Correct Answer: A
-Explanation: [Why this is correct]
-
-Question 2: [Next question]
-...continue for all ${formData.numberOfQuestions} questions
+Explanation: [explanation]
 
 IMPORTANT:
-- Write clear questions appropriate for ${gradeSpec.name} students
-- Make answer choices similar in length
-- Include explanations for learning
-- Test the learning outcomes listed above
-- Start with "Question 1:" and number sequentially
+- Generate ALL ${formData.numberOfQuestions} questions
+- Each question must have all 4 options (A, B, C, D)
+- Include the correct answer for each
+- Add an explanation for each answer
 
-Begin the quiz now:`;
+Start generating all ${formData.numberOfQuestions} questions now:`;
 
   return prompt;
 }
