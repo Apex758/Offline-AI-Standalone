@@ -579,5 +579,55 @@
         "timestamp": "2025-10-19T11:46:02.481Z"
       }
     ]
+  },
+  {
+    "id": "chat_1760891505753",
+    "title": "explain what is photosynthesis simply",
+    "timestamp": "2025-10-19T16:33:09.895Z",
+    "messages": [
+      {
+        "id": "1760891505733",
+        "role": "user",
+        "content": "explain what is photosynthesis simply",
+        "timestamp": "2025-10-19T16:31:45.733Z"
+      },
+      {
+        "id": "1760891513316",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T16:31:53.316Z"
+      },
+      {
+        "id": "1760891522428",
+        "role": "user",
+        "content": "explain what is photosynthesis simply",
+        "timestamp": "2025-10-19T16:32:02.428Z"
+      },
+      {
+        "id": "1760891528502",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T16:32:08.502Z"
+      }
+    ]
+  },
+  {
+    "id": "chat_1760891583216",
+    "title": "whats fire",
+    "timestamp": "2025-10-19T16:33:05.974Z",
+    "messages": [
+      {
+        "id": "1760891583211",
+        "role": "user",
+        "content": "whats fire",
+        "timestamp": "2025-10-19T16:33:03.211Z"
+      },
+      {
+        "id": "1760891585971",
+        "role": "assistant",
+        "content": "Hi there",
+        "timestamp": "2025-10-19T16:33:05.971Z"
+      }
+    ]
   }
 ]

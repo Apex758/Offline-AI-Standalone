@@ -145,49 +145,58 @@ export function parseQuizFromAI(aiResponse: string): ParsedQuiz | null {
   }
 }
 
-// Convert ParsedQuiz to display text
+// Convert ParsedQuiz to display text (parser-compatible format)
 export function quizToDisplayText(quiz: ParsedQuiz): string {
-  let text = `# ${quiz.metadata.title}\n\n`;
+  let text = `# Generated Quiz\n\n`;
   text += `**Subject:** ${quiz.metadata.subject} | `;
   text += `**Grade:** ${quiz.metadata.gradeLevel} | `;
   text += `**Questions:** ${quiz.metadata.totalQuestions}\n\n`;
   
   if (quiz.metadata.instructions) {
-    text += `## Instructions\n${quiz.metadata.instructions}\n\n`;
+    text += `${quiz.metadata.instructions}\n\n`;
   }
   
   text += `## Questions\n\n`;
   
   quiz.questions.forEach((q, index) => {
-    text += `### Question ${index + 1}\n`;
-    text += `**Type:** ${q.type}\n\n`;
-    text += `${q.question}\n\n`;
+    // Use format that parser expects: "Question X: ..."
+    text += `Question ${index + 1}: ${q.question}\n`;
     
-    if (q.options && q.options.length > 0) {
+    if (q.type === 'multiple-choice' && q.options && q.options.length > 0) {
       q.options.forEach((option, i) => {
         const letter = String.fromCharCode(65 + i); // A, B, C, D
         text += `${letter}) ${option}\n`;
       });
+      
+      // Add correct answer in expected format
+      const correctLetter = String.fromCharCode(65 + (q.correctAnswer as number));
+      text += `Correct Answer: ${correctLetter}\n`;
+      
+      if (q.explanation) {
+        text += `Explanation: ${q.explanation}\n`;
+      }
+      text += '\n';
+    } else if (q.type === 'true-false') {
+      text += `A) True\n`;
+      text += `B) False\n`;
+      text += `Correct Answer: ${q.correctAnswer === 'true' ? 'True' : 'False'}\n`;
+      if (q.explanation) {
+        text += `Explanation: ${q.explanation}\n`;
+      }
+      text += '\n';
+    } else if (q.type === 'fill-blank') {
+      text += `Answer: ${q.correctAnswer}\n`;
+      if (q.explanation) {
+        text += `Explanation: ${q.explanation}\n`;
+      }
+      text += '\n';
+    } else if (q.type === 'open-ended') {
+      text += `Sample Answer: ${q.correctAnswer}\n`;
+      if (q.explanation) {
+        text += `Explanation: ${q.explanation}\n`;
+      }
       text += '\n';
     }
-    
-    if (q.explanation) {
-      text += `*Explanation:* ${q.explanation}\n\n`;
-    }
-  });
-  
-  // Answer Key
-  text += `## Answer Key\n\n`;
-  quiz.questions.forEach((q, index) => {
-    let answer = '';
-    if (q.type === 'multiple-choice' && typeof q.correctAnswer === 'number') {
-      answer = String.fromCharCode(65 + q.correctAnswer);
-    } else if (q.type === 'true-false') {
-      answer = q.correctAnswer === 'true' ? 'True' : 'False';
-    } else {
-      answer = String(q.correctAnswer || '');
-    }
-    text += `${index + 1}. ${answer}\n`;
   });
   
   return text;

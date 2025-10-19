@@ -397,9 +397,68 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('before-quit', () => {
+// Function to kill process tree on Windows
+function killProcessTree(pid) {
+  if (process.platform === 'win32') {
+    try {
+      // Use taskkill to kill the process and all child processes
+      const { execSync } = require('child_process');
+      execSync(`taskkill /pid ${pid} /T /F`, { windowsHide: true });
+      log.info(`Killed process tree for PID ${pid}`);
+    } catch (error) {
+      log.error(`Error killing process tree for PID ${pid}:`, error.message);
+    }
+  } else {
+    // On Unix-like systems, kill the process group
+    try {
+      process.kill(-pid, 'SIGTERM');
+      log.info(`Killed process group for PID ${pid}`);
+    } catch (error) {
+      log.error(`Error killing process group for PID ${pid}:`, error.message);
+    }
+  }
+}
+
+app.on('before-quit', (event) => {
+  log.info('App is quitting, cleaning up backend processes...');
+  
   if (backendProcess && !backendProcess.killed) {
-    backendProcess.kill();
+    const pid = backendProcess.pid;
+    log.info(`Terminating backend process (PID: ${pid})`);
+    
+    // Kill the entire process tree
+    killProcessTree(pid);
+    
+    // Also try regular kill as fallback
+    try {
+      backendProcess.kill('SIGTERM');
+    } catch (error) {
+      log.error('Error sending SIGTERM:', error.message);
+    }
+    
+    // Force kill after a short delay if still running
+    setTimeout(() => {
+      if (backendProcess && !backendProcess.killed) {
+        log.warn('Backend process still running, forcing kill...');
+        try {
+          backendProcess.kill('SIGKILL');
+        } catch (error) {
+          log.error('Error sending SIGKILL:', error.message);
+        }
+      }
+    }, 1000);
+  }
+});
+
+// Handle app quit to ensure cleanup
+app.on('will-quit', () => {
+  log.info('App will quit, final cleanup...');
+  if (backendProcess && !backendProcess.killed) {
+    try {
+      killProcessTree(backendProcess.pid);
+    } catch (error) {
+      log.error('Error in final cleanup:', error.message);
+    }
   }
 });
 
