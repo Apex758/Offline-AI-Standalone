@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter } from 'react-router-dom'; 
+import { HashRouter } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { User } from './types';
+import { SettingsProvider } from './contexts/SettingsContext';
+import { useTheme } from './hooks/useTheme';
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Apply theme
+  useTheme();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -51,6 +56,14 @@ function App() {
         <Dashboard user={user} onLogout={handleLogout} />
       )}
     </HashRouter>
+  );
+}
+
+function App() {
+  return (
+    <SettingsProvider>
+      <AppContent />
+    </SettingsProvider>
   );
 }
 

@@ -11,9 +11,99 @@ import threading
 import time
 import json
 import asyncio
+import signal
+import atexit
 from config import MODEL_PATH, LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS
 from pathlib import Path
 sys.stdout.reconfigure(encoding='utf-8')
+
+# Global set to track all active subprocess processes
+active_processes = set()
+process_lock = threading.Lock()
+
+def register_process(process):
+    """Register a subprocess for cleanup tracking"""
+    with process_lock:
+        active_processes.add(process)
+    print(f"Registered process PID {process.pid} (Total active: {len(active_processes)})")
+
+def unregister_process(process):
+    """Unregister a subprocess after it's been cleaned up"""
+    with process_lock:
+        active_processes.discard(process)
+    print(f"Unregistered process PID {process.pid if hasattr(process, 'pid') else 'unknown'} (Total active: {len(active_processes)})")
+
+def cleanup_process(process):
+    """Safely cleanup a subprocess and all its children"""
+    if not process or process.poll() is not None:
+        unregister_process(process)
+        return
+    
+    pid = process.pid
+    print(f"Cleaning up process PID {pid}...")
+    
+    try:
+        # Terminate gracefully first
+        process.terminate()
+        
+        # Wait briefly for graceful termination
+        try:
+            process.wait(timeout=2)
+            print(f"Process PID {pid} terminated gracefully")
+        except subprocess.TimeoutExpired:
+            # Force kill if still running
+            print(f"Process PID {pid} did not terminate, forcing kill...")
+            process.kill()
+            process.wait(timeout=1)
+            print(f"Process PID {pid} killed")
+        
+        # On Windows, also kill the process tree to ensure all child processes are terminated
+        if os.name == 'nt':
+            try:
+                subprocess.run(
+                    ['taskkill', '/F', '/T', '/PID', str(pid)],
+                    capture_output=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+                print(f"Killed process tree for PID {pid}")
+            except Exception as e:
+                print(f"Error killing process tree: {e}")
+    
+    except Exception as e:
+        print(f"Error cleaning up process PID {pid}: {e}")
+    finally:
+        unregister_process(process)
+
+def cleanup_all_processes():
+    """Cleanup all tracked processes"""
+    print(f"\n{'='*60}")
+    print(f"Cleaning up {len(active_processes)} active processes...")
+    print(f"{'='*60}\n")
+    
+    with process_lock:
+        processes_to_clean = list(active_processes)
+    
+    for process in processes_to_clean:
+        cleanup_process(process)
+    
+    print(f"\n{'='*60}")
+    print(f"All processes cleaned up")
+    print(f"{'='*60}\n")
+
+# Register cleanup function to run on exit
+atexit.register(cleanup_all_processes)
+
+# Handle termination signals
+def signal_handler(signum, frame):
+    print(f"\nReceived signal {signum}, shutting down...")
+    cleanup_all_processes()
+    sys.exit(0)
+
+# Register signal handlers
+if hasattr(signal, 'SIGTERM'):
+    signal.signal(signal.SIGTERM, signal_handler)
+if hasattr(signal, 'SIGINT'):
+    signal.signal(signal.SIGINT, signal_handler)
 
 
 def get_data_directory():
@@ -106,6 +196,16 @@ class ChatHistory(BaseModel):
     timestamp: str
     messages: List[Message]
 
+class TitleGenerateRequest(BaseModel):
+    user_message: str
+    assistant_message: str
+
+class TitleGenerateResponse(BaseModel):
+    title: str
+    generated: bool
+    fallback: bool
+    generationTime: float
+
 @app.post("/api/login")
 async def login(credentials: dict):
     username = credentials.get("username")
@@ -193,6 +293,260 @@ async def delete_chat_history(chat_id: str):
         print(f"Error deleting chat history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============================================================================
+# Title Generation Helper Functions
+# ============================================================================
+
+def build_title_prompt(user_msg: str, assistant_msg: str) -> str:
+    """
+    Constructs the LLM prompt for title generation.
+    
+    Args:
+        user_msg: The user's first message
+        assistant_msg: The assistant's first response
+        
+    Returns:
+        Formatted prompt for the LLM
+    """
+    system_prompt = """You are a title generation assistant. Create concise, descriptive titles for chat conversations.
+
+Rules:
+- Maximum 60 characters
+- Use title case
+- Be specific and descriptive
+- Capture the main topic or question
+- No special characters except hyphens and ampersands
+- No quotes or punctuation at the end
+- Focus on the key concept or action"""
+    
+    user_prompt = f"""Based on this conversation, create a concise title (max 60 characters):
+
+User: {user_msg[:200]}
+Assistant: {assistant_msg[:200]}
+
+Generate only the title, nothing else."""
+    
+    prompt = "<|begin_of_text|>"
+    prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+    prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_prompt}<|eot_id|>"
+    prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+    
+    return prompt
+
+
+def clean_title_text(raw_title: str) -> str:
+    """
+    Cleans and validates the generated title.
+    
+    Args:
+        raw_title: Raw title from LLM
+        
+    Returns:
+        Cleaned and validated title
+    """
+    import re
+    
+    # Remove common AI prefixes
+    prefixes_to_remove = [
+        r'^Title:\s*',
+        r'^Here\'s a title:\s*',
+        r'^Here is a title:\s*',
+        r'^A title:\s*',
+        r'^Chat title:\s*',
+        r'^Conversation title:\s*',
+    ]
+    
+    title = raw_title.strip()
+    
+    for prefix in prefixes_to_remove:
+        title = re.sub(prefix, '', title, flags=re.IGNORECASE)
+    
+    # Remove quotes
+    title = title.strip('"\'""''')
+    
+    # Remove trailing punctuation (except hyphens and ampersands)
+    title = re.sub(r'[.,:;!?]+$', '', title)
+    
+    # Truncate at word boundary if too long
+    max_length = 60
+    if len(title) > max_length:
+        # Find last space before max_length
+        truncated = title[:max_length]
+        last_space = truncated.rfind(' ')
+        if last_space > 30:  # Only truncate at space if reasonable length
+            title = truncated[:last_space] + "..."
+        else:
+            title = truncated[:max_length-3] + "..."
+    
+    return title.strip()
+
+
+def create_fallback_title(user_message: str) -> str:
+    """
+    Creates a fallback title from the user's first message.
+    
+    Args:
+        user_message: The user's first message
+        
+    Returns:
+        Fallback title
+    """
+    from datetime import datetime
+    
+    # Try smart truncation first
+    if user_message and len(user_message.strip()) > 0:
+        title = user_message.strip()
+        
+        # Remove newlines and extra spaces
+        title = ' '.join(title.split())
+        
+        # Truncate at word boundary
+        max_length = 60
+        if len(title) > max_length:
+            truncated = title[:max_length]
+            last_space = truncated.rfind(' ')
+            if last_space > 20:
+                title = truncated[:last_space] + "..."
+            else:
+                title = truncated[:max_length-3] + "..."
+        
+        return title
+    
+    # Generic timestamped title as final fallback
+    now = datetime.now()
+    return f"Chat - {now.strftime('%I:%M %p')}"
+
+
+def validate_title(title: str) -> bool:
+    """
+    Validates that a title meets the requirements.
+    
+    Args:
+        title: Title to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not title or len(title.strip()) == 0:
+        return False
+    
+    # Check length (allowing for "..." suffix)
+    if len(title) > 63:  # 60 + "..."
+        return False
+    
+    # Title should have some content
+    if len(title.strip()) < 3:
+        return False
+    
+    return True
+
+# ============================================================================
+# Title Generation Endpoint
+# ============================================================================
+
+@app.post("/api/generate-title")
+async def generate_title(request: TitleGenerateRequest):
+    """
+    Generate a concise title for a chat conversation based on the first exchange.
+    
+    Uses the LLM to create a descriptive title with fallback strategies.
+    """
+    start_time = time.time()
+    
+    try:
+        # Build the prompt
+        prompt = build_title_prompt(request.user_message, request.assistant_message)
+        
+        # LLM command with strict parameters for title generation
+        cmd = [
+            LLAMA_CLI_PATH,
+            "-m", MODEL_PATH,
+            "-p", prompt,
+            "-n", "30",  # Maximum 30 tokens for title
+            "-t", "4",
+            "--temp", "0.5"  # Lower temperature for consistency
+        ]
+        
+        print(f"\n{'='*60}")
+        print(f"Title Generation Request")
+        print(f"User message: {request.user_message[:100]}...")
+        print(f"{'='*60}\n")
+        
+        # Execute with strict 5-second timeout
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+        )
+        
+        # Combine stdout and stderr
+        output = result.stdout + result.stderr
+        
+        # Extract the response
+        if "<|start_header_id|>assistant<|end_header_id|>" in output:
+            raw_title = output.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
+        else:
+            raw_title = output
+        
+        # Clean up the response
+        garbage_patterns = [
+            'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
+            'llama_print', '> llama', 'sampler_', 'l>a m',
+            '<|eot_id|>', '<|end_of_text|>', '<|begin_of_text|>'
+        ]
+        
+        for pattern in garbage_patterns:
+            if pattern in raw_title:
+                raw_title = raw_title.split(pattern)[0]
+        
+        if "To change it, set a different value via -sys PROMPT" in raw_title:
+            raw_title = raw_title.split("To change it, set a different value via -sys PROMPT", 1)[1]
+        
+        # Clean and validate the title
+        title = clean_title_text(raw_title)
+        
+        if validate_title(title):
+            # Success - AI-generated title
+            generation_time = time.time() - start_time
+            print(f"✓ Generated title: '{title}' ({generation_time:.2f}s)")
+            
+            return TitleGenerateResponse(
+                title=title,
+                generated=True,
+                fallback=False,
+                generationTime=generation_time
+            )
+        else:
+            # Validation failed - use fallback
+            raise ValueError("Generated title failed validation")
+        
+    except subprocess.TimeoutExpired:
+        print(f"⚠ Title generation timed out, using fallback")
+        title = create_fallback_title(request.user_message)
+        generation_time = time.time() - start_time
+        
+        return TitleGenerateResponse(
+            title=title,
+            generated=False,
+            fallback=True,
+            generationTime=generation_time
+        )
+        
+    except Exception as e:
+        print(f"⚠ Title generation error: {e}, using fallback")
+        title = create_fallback_title(request.user_message)
+        generation_time = time.time() - start_time
+        
+        return TitleGenerateResponse(
+            title=title,
+            generated=False,
+            fallback=True,
+            generationTime=generation_time
+        )
+
+
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
@@ -236,6 +590,9 @@ async def websocket_chat(websocket: WebSocket):
                 bufsize=0,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
+            
+            # Register process for cleanup tracking
+            register_process(process)
             
             process.stdin.close()
             
@@ -313,16 +670,22 @@ async def websocket_chat(websocket: WebSocket):
                         while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
                             last_streamed_index += 1
                 
-                # Check if we need to skip the "To change it" message
+                # Check if we need to skip the "To change it" and "If you want" messages
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
+                    skip_messages = [
+                        "To change it, set a different value via -sys PROMPT",
+                        "If you want to submit another line, end your input with"
+                    ]
+                    for msg in skip_messages:
+                        if msg in remaining:
+                            skip_index = remaining.find(msg)
+                            if skip_index != -1:
+                                last_streamed_index += skip_index + len(msg)
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                    last_streamed_index += 1
+                                remaining = current_output[last_streamed_index:]
+                    skip_initial_garbage = True
                 
                 # Stream new content
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
@@ -354,11 +717,10 @@ async def websocket_chat(websocket: WebSocket):
                 
                 await asyncio.sleep(0.05)
             
-            # Kill the process
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            # Kill the process and cleanup
+
+            
+            cleanup_process(process)
             
             # Wait for threads
             stderr_thread.join(timeout=2)
@@ -380,8 +742,11 @@ async def websocket_chat(websocket: WebSocket):
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            # Remove initialization messages
+            for init_msg in ["To change it, set a different value via -sys PROMPT",
+                           "If you want to submit another line, end your input with"]:
+                if init_msg in response_text:
+                    response_text = response_text.split(init_msg, 1)[1]
             
             response_text = response_text.strip()
    
@@ -627,6 +992,9 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
             
+            # Register process for cleanup tracking
+            register_process(process)
+            
             process.stdin.close()
             
             all_output = []
@@ -703,16 +1071,22 @@ async def websocket_lesson_plan(websocket: WebSocket):
                         while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
                             last_streamed_index += 1
                 
-                # Check if we need to skip the "To change it" message - same as chat
+                # Check if we need to skip the "To change it" and "If you want" messages - same as chat
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
+                    skip_messages = [
+                        "To change it, set a different value via -sys PROMPT",
+                        "If you want to submit another line, end your input with"
+                    ]
+                    for msg in skip_messages:
+                        if msg in remaining:
+                            skip_index = remaining.find(msg)
+                            if skip_index != -1:
+                                last_streamed_index += skip_index + len(msg)
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                    last_streamed_index += 1
+                                remaining = current_output[last_streamed_index:]
+                    skip_initial_garbage = True
                 
                 # Stream new content - same as chat
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
@@ -744,11 +1118,10 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 
                 await asyncio.sleep(0.05)
             
-            # Kill the process - same as chat
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            # Kill the process and cleanup
+
+            
+            cleanup_process(process)
             
             # Wait for threads - same as chat
             stderr_thread.join(timeout=2)
@@ -770,8 +1143,11 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            # Remove initialization messages
+            for init_msg in ["To change it, set a different value via -sys PROMPT",
+                           "If you want to submit another line, end your input with"]:
+                if init_msg in response_text:
+                    response_text = response_text.split(init_msg, 1)[1]
             
             response_text = response_text.strip()
             
@@ -840,6 +1216,9 @@ async def quiz_websocket(websocket: WebSocket):
                     creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
                 )
                 
+                # Register process for cleanup tracking
+                register_process(process)
+                
                 print("✓ Subprocess created successfully")
                 process.stdin.close()
                 
@@ -893,6 +1272,7 @@ async def quiz_websocket(websocket: WebSocket):
                 "system_info",
                 "Not using system message",
                 "To change it, set a different value via -sys PROMPT",
+                "If you want to submit another line, end your input with",
                 "log_",
                 "compute params",
                 "total RAM required",
@@ -974,10 +1354,7 @@ async def quiz_websocket(websocket: WebSocket):
             print(f"\n✓ Sent {chars_sent} characters to frontend")
             
             # Clean up process
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            cleanup_process(process)
             
             stderr_thread.join(timeout=2)
             stdout_thread.join(timeout=2)
@@ -1072,6 +1449,9 @@ async def rubric_websocket(websocket: WebSocket):
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
             
+            # Register process for cleanup tracking
+            register_process(process)
+            
             process.stdin.close()
             
             all_output = []
@@ -1138,13 +1518,19 @@ async def rubric_websocket(websocket: WebSocket):
                 
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
+                    skip_messages = [
+                        "To change it, set a different value via -sys PROMPT",
+                        "If you want to submit another line, end your input with"
+                    ]
+                    for msg in skip_messages:
+                        if msg in remaining:
+                            skip_index = remaining.find(msg)
+                            if skip_index != -1:
+                                last_streamed_index += skip_index + len(msg)
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                    last_streamed_index += 1
+                                remaining = current_output[last_streamed_index:]
+                    skip_initial_garbage = True
                 
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
@@ -1173,10 +1559,7 @@ async def rubric_websocket(websocket: WebSocket):
                 
                 await asyncio.sleep(0.05)
             
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            cleanup_process(process)
             
             stderr_thread.join(timeout=2)
             stdout_thread.join(timeout=2)
@@ -1192,8 +1575,11 @@ async def rubric_websocket(websocket: WebSocket):
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            # Remove initialization messages
+            for init_msg in ["To change it, set a different value via -sys PROMPT",
+                           "If you want to submit another line, end your input with"]:
+                if init_msg in response_text:
+                    response_text = response_text.split(init_msg, 1)[1]
             
             response_text = response_text.strip()
             
@@ -1252,6 +1638,9 @@ async def kindergarten_websocket(websocket: WebSocket):
                 bufsize=0,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
+            
+            # Register process for cleanup tracking
+            register_process(process)
             
             process.stdin.close()
             
@@ -1319,13 +1708,19 @@ async def kindergarten_websocket(websocket: WebSocket):
                 
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
+                    skip_messages = [
+                        "To change it, set a different value via -sys PROMPT",
+                        "If you want to submit another line, end your input with"
+                    ]
+                    for msg in skip_messages:
+                        if msg in remaining:
+                            skip_index = remaining.find(msg)
+                            if skip_index != -1:
+                                last_streamed_index += skip_index + len(msg)
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                    last_streamed_index += 1
+                                remaining = current_output[last_streamed_index:]
+                    skip_initial_garbage = True
                 
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
@@ -1354,10 +1749,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                 
                 await asyncio.sleep(0.05)
             
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            cleanup_process(process)
             
             stderr_thread.join(timeout=2)
             stdout_thread.join(timeout=2)
@@ -1373,8 +1765,11 @@ async def kindergarten_websocket(websocket: WebSocket):
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            # Remove initialization messages
+            for init_msg in ["To change it, set a different value via -sys PROMPT",
+                           "If you want to submit another line, end your input with"]:
+                if init_msg in response_text:
+                    response_text = response_text.split(init_msg, 1)[1]
             
             response_text = response_text.strip()
             
@@ -1433,6 +1828,9 @@ async def multigrade_websocket(websocket: WebSocket):
                 bufsize=0,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
+            
+            # Register process for cleanup tracking
+            register_process(process)
             
             process.stdin.close()
             
@@ -1500,13 +1898,19 @@ async def multigrade_websocket(websocket: WebSocket):
                 
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
+                    skip_messages = [
+                        "To change it, set a different value via -sys PROMPT",
+                        "If you want to submit another line, end your input with"
+                    ]
+                    for msg in skip_messages:
+                        if msg in remaining:
+                            skip_index = remaining.find(msg)
+                            if skip_index != -1:
+                                last_streamed_index += skip_index + len(msg)
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                    last_streamed_index += 1
+                                remaining = current_output[last_streamed_index:]
+                    skip_initial_garbage = True
                 
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
@@ -1535,10 +1939,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 
                 await asyncio.sleep(0.05)
             
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            cleanup_process(process)
             
             stderr_thread.join(timeout=2)
             stdout_thread.join(timeout=2)
@@ -1554,8 +1955,11 @@ async def multigrade_websocket(websocket: WebSocket):
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            # Remove initialization messages
+            for init_msg in ["To change it, set a different value via -sys PROMPT",
+                           "If you want to submit another line, end your input with"]:
+                if init_msg in response_text:
+                    response_text = response_text.split(init_msg, 1)[1]
             
             response_text = response_text.strip()
             
@@ -1614,6 +2018,9 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 bufsize=0,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
+            
+            # Register process for cleanup tracking
+            register_process(process)
             
             process.stdin.close()
             
@@ -1681,13 +2088,19 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
-                    if "To change it, set a different value via -sys PROMPT" in remaining:
-                        skip_index = remaining.find("To change it, set a different value via -sys PROMPT")
-                        if skip_index != -1:
-                            last_streamed_index += skip_index + len("To change it, set a different value via -sys PROMPT")
-                            while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                last_streamed_index += 1
-                            skip_initial_garbage = True
+                    skip_messages = [
+                        "To change it, set a different value via -sys PROMPT",
+                        "If you want to submit another line, end your input with"
+                    ]
+                    for msg in skip_messages:
+                        if msg in remaining:
+                            skip_index = remaining.find(msg)
+                            if skip_index != -1:
+                                last_streamed_index += skip_index + len(msg)
+                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
+                                    last_streamed_index += 1
+                                remaining = current_output[last_streamed_index:]
+                    skip_initial_garbage = True
                 
                 if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
                     new_content = current_output[last_streamed_index:]
@@ -1716,10 +2129,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 
                 await asyncio.sleep(0.05)
             
-            process.terminate()
-            time.sleep(0.5)
-            if process.poll() is None:
-                process.kill()
+            cleanup_process(process)
             
             stderr_thread.join(timeout=2)
             stdout_thread.join(timeout=2)
@@ -1735,8 +2145,11 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
-            if "To change it, set a different value via -sys PROMPT" in response_text:
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
+            # Remove initialization messages
+            for init_msg in ["To change it, set a different value via -sys PROMPT",
+                           "If you want to submit another line, end your input with"]:
+                if init_msg in response_text:
+                    response_text = response_text.split(init_msg, 1)[1]
             
             response_text = response_text.strip()
             
@@ -1874,3 +2287,20 @@ async def health():
         "llama_cli_found": os.path.exists(LLAMA_CLI_PATH),
         "chat_history_file": os.path.exists(CHAT_HISTORY_FILE)
     }
+
+@app.post("/api/shutdown")
+async def shutdown():
+    """Gracefully shutdown the backend and cleanup all processes"""
+    print("\n" + "="*60)
+    print("Shutdown requested via API")
+    print("="*60 + "\n")
+    cleanup_all_processes()
+    return {"status": "shutting down"}
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    """Cleanup on application shutdown"""
+    print("\n" + "="*60)
+    print("Application shutdown event triggered")
+    print("="*60 + "\n")
+    cleanup_all_processes()

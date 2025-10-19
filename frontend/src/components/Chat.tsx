@@ -29,6 +29,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [titleSet, setTitleSet] = useState(false);
+  const [generatingTitle, setGeneratingTitle] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -98,9 +99,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     if (messages.length === 0) return;
 
     try {
+      // Get the current title from the first user message for fallback
+      const fallbackTitle = messages[0]?.content.substring(0, 50) || 'New Chat';
+      
       const chatData = {
         id: currentChatId || `chat_${Date.now()}`,
-        title: messages[0]?.content.substring(0, 50) || 'New Chat',
+        title: fallbackTitle,
         timestamp: new Date().toISOString(),
         messages: messages
       };
@@ -125,6 +129,50 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       const title = history.title.length > 30 ? history.title.substring(0, 30) + '...' : history.title;
       onTitleChange(title);
       setTitleSet(true);
+    }
+  };
+
+  const createFallbackTitle = (message: string): string => {
+    const cleaned = message.trim().replace(/\s+/g, ' ');
+    if (cleaned.length <= 60) return cleaned;
+    
+    const truncated = cleaned.substring(0, 57);
+    const lastSpace = truncated.lastIndexOf(' ');
+    return (lastSpace > 30 ? truncated.substring(0, lastSpace) : truncated) + '...';
+  };
+
+  const generateAndSetTitle = async (userMessage: string, assistantMessage: string) => {
+    if (!onTitleChange || titleSet) return;
+    
+    setGeneratingTitle(true);
+    
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/api/generate-title',
+        {
+          user_message: userMessage,
+          assistant_message: assistantMessage
+        },
+        { timeout: 6000 }
+      );
+      
+      if (response.data && response.data.title) {
+        onTitleChange(response.data.title);
+        setTitleSet(true);
+      } else {
+        // Use fallback if response doesn't contain title
+        const fallbackTitle = createFallbackTitle(userMessage);
+        onTitleChange(fallbackTitle);
+        setTitleSet(true);
+      }
+    } catch (error) {
+      console.error('Failed to generate title:', error);
+      // Use fallback title on error
+      const fallbackTitle = createFallbackTitle(userMessage);
+      onTitleChange(fallbackTitle);
+      setTitleSet(true);
+    } finally {
+      setGeneratingTitle(false);
     }
   };
 
@@ -182,7 +230,19 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 content: current || data.full_response,
                 timestamp: new Date().toISOString()
               };
-              setMessages(prev => [...prev, finalMessage]);
+              setMessages(prev => {
+                const newMessages = [...prev, finalMessage];
+                
+                // Generate title after first AI response
+                if (!titleSet && newMessages.length === 2 && onTitleChange) {
+                  const userMsg = newMessages.find(m => m.role === 'user');
+                  if (userMsg) {
+                    generateAndSetTitle(userMsg.content, finalMessage.content);
+                  }
+                }
+                
+                return newMessages;
+              });
               setLoading(false);
               return '';
             });

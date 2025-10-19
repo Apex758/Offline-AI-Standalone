@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Menu,
   X,
@@ -34,6 +34,8 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import ResourceManager from './ResourceManager';
 import Settings from './Settings';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
+import { useSettings } from '../contexts/SettingsContext';
+import { generateColorVariants, isColorDark } from '../lib/utils';
 
 
 interface DashboardProps {
@@ -152,70 +154,28 @@ const iconMap: { [key: string]: any } = {
 
 const MAX_TABS_PER_TYPE = 3;
 
-const tabColors: { [key: string]: { border: string; bg: string; activeBg: string } } = {
-  'chat': { 
-    border: 'border-blue-500', 
-    bg: 'bg-blue-50', 
-    activeBg: 'bg-blue-600' 
-  },
-  'curriculum': { 
-    border: 'border-green-500', 
-    bg: 'bg-green-50', 
-    activeBg: 'bg-green-600' 
-  },
-  'lesson-planner': { 
-    border: 'border-purple-500', 
-    bg: 'bg-purple-50', 
-    activeBg: 'bg-purple-600' 
-  },
-  'kindergarten-planner': { 
-    border: 'border-pink-500', 
-    bg: 'bg-pink-50', 
-    activeBg: 'bg-pink-600' 
-  },
-  'multigrade-planner': { 
-    border: 'border-indigo-500', 
-    bg: 'bg-indigo-50', 
-    activeBg: 'bg-indigo-600' 
-  },
-  'cross-curricular-planner': { 
-    border: 'border-teal-500', 
-    bg: 'bg-teal-50', 
-    activeBg: 'bg-teal-600' 
-  },
-  'grader': { 
-    border: 'border-orange-500', 
-    bg: 'bg-orange-50', 
-    activeBg: 'bg-orange-600' 
-  },
-  'quiz-generator': { 
-    border: 'border-cyan-500', 
-    bg: 'bg-cyan-50', 
-    activeBg: 'bg-cyan-600' 
-  },
-  'rubric-generator': { 
-    border: 'border-amber-500', 
-    bg: 'bg-amber-50', 
-    activeBg: 'bg-amber-600' 
-  },
-  'resource-manager': {
-    border: 'border-emerald-500',
-    bg: 'bg-emerald-50',
-    activeBg: 'bg-emerald-600'
-  },
-  'settings': {
-    border: 'border-slate-500',
-    bg: 'bg-slate-50',
-    activeBg: 'bg-slate-600'
-  },
-  'split': {
-    border: 'border-gray-400',
-    bg: 'bg-gray-50',
-    activeBg: 'bg-gray-600'
-  }
-};
-
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+  const { settings } = useSettings();
+  
+  // Generate dynamic tab colors based on settings
+  const tabColors = useMemo(() => {
+    const colors: { [key: string]: { border: string; bg: string; activeBg: string } } = {};
+    
+    // Generate colors for each tab type from settings
+    Object.entries(settings.tabColors).forEach(([type, hexColor]) => {
+      const variants = generateColorVariants(hexColor);
+      colors[type] = variants;
+    });
+    
+    // Add default colors for settings and split tabs
+    colors['settings'] = generateColorVariants('#64748b'); // slate-500
+    colors['split'] = generateColorVariants('#9ca3af'); // gray-400
+    
+    return colors;
+  }, [settings.tabColors]);
+  // Determine if sidebar color is dark for text contrast
+  const sidebarIsDark = useMemo(() => isColorDark(settings.sidebarColor), [settings.sidebarColor]);
+  
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
@@ -323,6 +283,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       localStorage.setItem('dashboard-active-tab', activeTabId);
     }
   }, [tabs, activeTabId]);
+
+  // Handle Auto-Close Tabs on App Exit
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (settings.autoCloseTabsOnExit) {
+        localStorage.removeItem('dashboard-tabs');
+        localStorage.removeItem('dashboard-active-tab');
+      }
+      // If setting is false, do nothing - let existing save logic work
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [settings.autoCloseTabsOnExit]);
 
   const createSplitTab = (leftTabId: string, rightTabId: string) => {
     const leftTab = tabs.find(t => t.id === leftTabId);
@@ -605,7 +582,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const settingsTool = tools.find(t => t.type === 'settings');
 
   return (
-    <div className="flex h-screen bg-gray-50" onClick={() => setContextMenu(null)}>
+    <div
+      className="flex h-screen bg-gray-50"
+      onClick={() => setContextMenu(null)}
+      style={{ fontSize: `${settings.fontSize}%` }}
+    >
       {/* Context Menu */}
       {contextMenu && (
         <div
@@ -648,18 +629,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       )}
 
       {/* Sidebar */}
-      <div 
-        className={`bg-gray-900 text-white transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
+      <div
+        className={`transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
+        style={{
+          backgroundColor: settings.sidebarColor,
+          color: sidebarIsDark ? '#ffffff' : '#1f2937'
+        }}
         data-tutorial="main-sidebar"
         onMouseEnter={() => setSidebarOpen(true)}
         onMouseLeave={() => setSidebarOpen(false)}
       >
-        <div className="p-4 border-b border-gray-700">
+        <div
+          className="p-4 border-b"
+          style={{
+            borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+          }}
+        >
           <div className="flex items-center justify-center">
             {sidebarOpen ? (
               <div>
                 <h2 className="text-xl font-bold whitespace-nowrap">OECS Learning Hub</h2>
-                <p className="text-sm text-gray-400 whitespace-nowrap">{user.name}</p>
+                <p
+                  className="text-sm whitespace-nowrap"
+                  style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                >
+                  {user.name}
+                </p>
               </div>
             ) : (
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
@@ -670,7 +665,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
 
         <div className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h3
+            className="text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+          >
             Tools
           </h3>
           
@@ -680,6 +678,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const count = getTabCountByType(tool.type);
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
+            const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
             
             return (
               <button
@@ -696,15 +695,40 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
                   count >= MAX_TABS_PER_TYPE
                     ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-800'
+                    : ''
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
+                style={
+                  count < MAX_TABS_PER_TYPE
+                    ? {
+                        backgroundColor: 'transparent',
+                        transition: 'background-color 0.2s'
+                      }
+                    : {}
+                }
+                onMouseEnter={(e) => {
+                  if (count < MAX_TABS_PER_TYPE) {
+                    e.currentTarget.style.backgroundColor = sidebarIsDark
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (count < MAX_TABS_PER_TYPE) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${
-                  isActiveToolType 
-                    ? 'text-blue-400 icon-glow' 
-                    : 'text-gray-400 group-hover:text-white'
-                }`} />
+                <Icon
+                  className={`w-5 h-5 flex-shrink-0 ${
+                    isActiveToolType ? 'icon-glow' : ''
+                  }`}
+                  style={
+                    isActiveToolType && toolColor
+                      ? { color: toolColor }
+                      : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                  }
+                />
                 {sidebarOpen && (
                   <div className="flex-1 text-left overflow-hidden">
                     <p 
@@ -717,7 +741,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       {tool.name}
                     </p>
                     {tool.type !== 'analytics' && (
-                      <p className="text-xs text-gray-400 whitespace-nowrap">
+                      <p
+                        className="text-xs whitespace-nowrap"
+                        style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                      >
                         {count}/{MAX_TABS_PER_TYPE} open
                       </p>
                     )}
@@ -733,6 +760,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const count = getTabCountByType(tool.type);
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
+            const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
             
             return (
               <button
@@ -749,15 +777,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
                   count >= MAX_TABS_PER_TYPE
                     ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-800'
+                    : ''
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
+                style={{
+                  backgroundColor: 'transparent',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (count < MAX_TABS_PER_TYPE) {
+                    e.currentTarget.style.backgroundColor = sidebarIsDark
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (count < MAX_TABS_PER_TYPE) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${
-                  isActiveToolType 
-                    ? 'text-blue-400 icon-glow' 
-                    : 'text-gray-400 group-hover:text-white'
-                }`} />
+                <Icon
+                  className={`w-5 h-5 flex-shrink-0 ${
+                    isActiveToolType ? 'icon-glow' : ''
+                  }`}
+                  style={
+                    isActiveToolType && toolColor
+                      ? { color: toolColor }
+                      : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                  }
+                />
                 {sidebarOpen && (
                   <div className="flex-1 text-left overflow-hidden">
                     <p 
@@ -769,7 +818,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     >
                       {tool.name}
                     </p>
-                    <p className="text-xs text-gray-400 whitespace-nowrap">
+                    <p
+                      className="text-xs whitespace-nowrap"
+                      style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                    >
                       {count}/{MAX_TABS_PER_TYPE} open
                     </p>
                   </div>
@@ -783,9 +835,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <button
               onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
               data-tutorial-click="lesson-planners-group"
-              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition hover:bg-gray-800`}
+              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition`}
+              style={{
+                backgroundColor: 'transparent',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = sidebarIsDark
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
-              <BookOpen className="w-5 h-5 flex-shrink-0 text-gray-400" />
+              <BookOpen
+                className="w-5 h-5 flex-shrink-0"
+                style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+              />
               {sidebarOpen && (
                 <>
                   <span className="flex-1 text-left text-sm font-medium">Lesson Planners</span>
@@ -799,12 +866,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </button>
 
             {lessonPlannerExpanded && sidebarOpen && (
-              <div className="ml-4 mt-2 space-y-1 border-l-2 border-gray-700 pl-2">
+              <div
+                className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
+                style={{
+                  borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+                }}
+              >
                 {lessonPlannerTools.map((tool) => {
                   const Icon = iconMap[tool.icon];
                   const count = getTabCountByType(tool.type);
                   const activeTab = tabs.find(t => t.id === activeTabId);
                   const isActiveToolType = activeTab?.type === tool.type;
+                  const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
                   
                   return (
                     <button
@@ -812,16 +885,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       onClick={() => openTool(tool)}
                       disabled={count >= MAX_TABS_PER_TYPE}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm ${
-                        count >= MAX_TABS_PER_TYPE 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-gray-800'
+                        count >= MAX_TABS_PER_TYPE
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
                       }`}
+                      style={{
+                        backgroundColor: 'transparent',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (count < MAX_TABS_PER_TYPE) {
+                          e.currentTarget.style.backgroundColor = sidebarIsDark
+                            ? 'rgba(255, 255, 255, 0.1)'
+                            : 'rgba(0, 0, 0, 0.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (count < MAX_TABS_PER_TYPE) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
                     >
-                      <Icon className={`w-4 h-4 flex-shrink-0 ${
-                        isActiveToolType 
-                          ? 'text-blue-400 icon-glow' 
-                          : 'text-gray-400 group-hover:text-white'
-                      }`} />
+                      <Icon
+                        className={`w-4 h-4 flex-shrink-0 ${
+                          isActiveToolType ? 'icon-glow' : ''
+                        }`}
+                        style={
+                          isActiveToolType && toolColor
+                            ? { color: toolColor }
+                            : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                        }
+                      />
                       <div className="flex-1 text-left overflow-hidden">
                         <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
                            style={{
@@ -830,7 +924,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                            }}>
                           {tool.name}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p
+                          className="text-xs"
+                          style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                        >
                           {count}/{MAX_TABS_PER_TYPE}
                         </p>
                       </div>
@@ -852,14 +949,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 return (
                   <button
                     onClick={() => openTool(settingsTool)}
-                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group hover:bg-gray-800`}
+                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group`}
                     title={!sidebarOpen ? settingsTool.name : ''}
+                    style={{
+                      backgroundColor: 'transparent',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = sidebarIsDark
+                        ? 'rgba(255, 255, 255, 0.1)'
+                        : 'rgba(0, 0, 0, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${
-                      isActiveToolType
-                        ? 'text-blue-400 icon-glow'
-                        : 'text-gray-400 group-hover:text-white'
-                    }`} />
+                    <Icon
+                      className={`w-5 h-5 flex-shrink-0 ${
+                        isActiveToolType ? 'icon-glow' : ''
+                      }`}
+                      style={
+                        isActiveToolType
+                          ? { color: '#64748b' }
+                          : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                      }
+                    />
                     {sidebarOpen && (
                       <div className="flex-1 text-left overflow-hidden">
                         <p
@@ -881,11 +995,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
 
         {sidebarOpen && (
-          <div className="p-4 border-t border-gray-700">
+          <div
+            className="p-4 border-t"
+            style={{
+              borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+            }}
+          >
             <button
               onClick={onLogout}
-              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg hover:bg-gray-800 transition text-red-400 hover:text-red-300`}
+              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
               title={!sidebarOpen ? 'Logout' : ''}
+              style={{
+                backgroundColor: 'transparent',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = sidebarIsDark
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               <LogOut className="w-5 h-5 flex-shrink-0" />
               {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
@@ -907,16 +1038,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               
               if (groupTabs.length === 1) {
                 const tab = groupTabs[0];
+                const isActive = activeTabId === tab.id;
                 return (
                   <div
                     key={tab.id}
-                    data-tutorial={activeTabId === tab.id ? "single-tab-demo" : undefined}
-                    data-tab-type={tab.type} 
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition border-l-4 ${colors.border} ${
-                      activeTabId === tab.id
-                        ? `${colors.activeBg} text-white`
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    data-tutorial={isActive ? "single-tab-demo" : undefined}
+                    data-tab-type={tab.type}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition border-l-4 ${
+                      isActive ? 'text-white' : 'text-gray-700 hover:bg-gray-200'
                     }`}
+                    style={{
+                      borderLeftColor: colors.border,
+                      backgroundColor: isActive ? colors.activeBg : colors.bg
+                    }}
                     onClick={() => setActiveTabId(tab.id)}
                     onContextMenu={(e) => tab.type !== 'split' && handleTabContextMenu(e, tab.id)}
                     title="Right-click to split"
@@ -945,9 +1079,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       e.stopPropagation();
                       setContextMenu({ groupType: type, x: e.clientX, y: e.clientY });
                     }}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition border-l-4 ${colors.border} ${
-                      activeInGroup ? `${colors.activeBg} text-white` : `${colors.bg} text-gray-700 hover:bg-gray-200`
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition border-l-4 ${
+                      activeInGroup ? 'text-white' : 'text-gray-700 hover:bg-gray-200'
                     }`}
+                    style={{
+                      borderLeftColor: colors.border,
+                      backgroundColor: activeInGroup ? colors.activeBg : colors.bg
+                    }}
                     title="Right-click for options"
                   >
                     {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -956,38 +1094,42 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </span>
                   </button>
 
-                  {!isCollapsed && groupTabs.map(tab => (
-                    <div
-                      key={tab.id}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg cursor-pointer transition relative ${
-                        activeTabId === tab.id
-                          ? `${colors.activeBg} text-white`
-                          : `${colors.bg} text-gray-700 hover:bg-gray-200`
-                      }`}
-                      onClick={() => setActiveTabId(tab.id)}
-                      onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
-                      style={{ maxWidth: '200px' }}
-                    >
-                      <span 
-                        className="text-sm whitespace-nowrap overflow-hidden relative"
+                  {!isCollapsed && groupTabs.map(tab => {
+                    const isTabActive = activeTabId === tab.id;
+                    return (
+                      <div
+                        key={tab.id}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg cursor-pointer transition relative ${
+                          isTabActive ? 'text-white' : 'text-gray-700 hover:bg-gray-200'
+                        }`}
                         style={{
-                          maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                          WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                          backgroundColor: isTabActive ? colors.activeBg : colors.bg,
+                          maxWidth: '200px'
                         }}
+                        onClick={() => setActiveTabId(tab.id)}
+                        onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
                       >
-                        {tab.title}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          closeTab(tab.id);
-                        }}
-                        className="hover:bg-white/20 rounded p-1 flex-shrink-0"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <span
+                          className="text-sm whitespace-nowrap overflow-hidden relative"
+                          style={{
+                            maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                          }}
+                        >
+                          {tab.title}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            closeTab(tab.id);
+                          }}
+                          className="hover:bg-white/20 rounded p-1 flex-shrink-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
