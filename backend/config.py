@@ -1,18 +1,14 @@
-# Updated config.py with better parameters for reliability
-
 import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
+from pathlib import Path
 
 # Base directory
 BASE_DIR = os.path.dirname(__file__)
 
-# File paths
-# Model name (centralized configuration)
+BASE_DIR = Path(__file__).parent
 MODEL_NAME = "PEARL_AI.gguf"
-
-# Construct model path dynamically using the model name
-MODEL_PATH = os.path.join(BASE_DIR, MODEL_NAME)
+MODEL_PATH = str(BASE_DIR / MODEL_NAME)
 
 # llama-cli.exe is in bin/Release subdirectory
 LLAMA_CLI_PATH = os.path.join(BASE_DIR, "bin", "Release", "llama-cli.exe")

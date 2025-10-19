@@ -1,5 +1,3 @@
-// utils/quizPromptBuilder.ts - Add to frontend/src/utils/
-
 interface QuizFormData {
   subject: string;
   gradeLevel: string;
@@ -87,6 +85,58 @@ const GRADE_SPECS = {
 export function buildQuizPrompt(formData: QuizFormData): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   
+  // Build format instructions based on selected question types
+  let formatInstructions = '';
+  const hasMultipleChoice = formData.questionTypes.includes('Multiple Choice');
+  const hasTrueFalse = formData.questionTypes.includes('True/False');
+  const hasFillBlank = formData.questionTypes.includes('Fill-in-the-Blank');
+  const hasOpenEnded = formData.questionTypes.includes('Open-Ended');
+  
+  if (hasMultipleChoice || hasTrueFalse || hasFillBlank || hasOpenEnded) {
+    formatInstructions = 'FORMAT EACH QUESTION EXACTLY BASED ON ITS TYPE:\n\n';
+    
+    if (hasMultipleChoice) {
+      formatInstructions += `MULTIPLE CHOICE FORMAT:
+Question X: [question text]
+A) [option]
+B) [option]
+C) [option]
+D) [option]
+Correct Answer: A
+Explanation: [explanation]
+
+`;
+    }
+    
+    if (hasTrueFalse) {
+      formatInstructions += `TRUE/FALSE FORMAT:
+Question X: [True or False statement]
+Correct Answer: True (or False)
+Explanation: [Why this is true/false]
+
+`;
+    }
+    
+    if (hasFillBlank) {
+      formatInstructions += `FILL-IN-THE-BLANK FORMAT:
+Question X: [Question text with _____ for the blank]
+Answer: [correct word/phrase]
+Explanation: [Why this is the answer]
+
+`;
+    }
+    
+    if (hasOpenEnded) {
+      formatInstructions += `OPEN-ENDED FORMAT:
+Question X: [Open-ended question]
+Sample Answer: [Example of a good response]
+Key Points: [Bullet points of what should be included]
+Explanation: [Additional context or rubric guidance]
+
+`;
+    }
+  }
+  
   const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students. YOU MUST GENERATE ALL ${formData.numberOfQuestions} QUESTIONS.
 
 SUBJECT: ${formData.subject}
@@ -101,22 +151,12 @@ GRADE LEVEL REQUIREMENTS:
 - ${gradeSpec.sentenceStructure}
 - Focus on: ${gradeSpec.examples}
 
-FORMAT EACH QUESTION EXACTLY LIKE THIS:
-
-Question 1: [question text]
-A) [option]
-B) [option]
-C) [option]
-D) [option]
-Correct Answer: A
-Explanation: [explanation]
-
-IMPORTANT:
+${formatInstructions}IMPORTANT:
 - Generate ALL ${formData.numberOfQuestions} questions
-- Each question must have all 4 options (A, B, C, D)
-- Include the correct answer for each
+- Use the appropriate format for each question type
+- Include the correct answer for each question
 - Add an explanation for each answer
-
+${hasMultipleChoice ? '- Each multiple choice question must have all 4 options (A, B, C, D)\n' : ''}${hasFillBlank ? '- For fill-in-the-blank, use _____ to mark where the answer goes\n' : ''}${hasOpenEnded ? '- For open-ended questions, provide sample answers and key points students should cover\n' : ''}
 Start generating all ${formData.numberOfQuestions} questions now:`;
 
   return prompt;
