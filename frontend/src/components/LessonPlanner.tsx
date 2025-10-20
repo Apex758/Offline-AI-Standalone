@@ -4,6 +4,7 @@ import AIAssistantPanel from './AIAssistantPanel';
 import LessonEditor from './LessonEditor';
 import type { ParsedLesson } from './LessonEditor';
 import axios from 'axios';
+import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -698,42 +699,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setLoading(true);
     setStreamingPlan('');
 
-    // Simple prompt - no complex formatting
-    const prompt = `Generate a comprehensive lesson plan with the following specifications.
-    IMPORTANT: Do NOT include any introductory text, titles, or sentences like "Here is a lesson plan" or similar.
-    Begin directly with the content sections and structure of the actual lesson plan itself:
-
-LESSON INFORMATION:
-- Subject: ${formData.subject}
-- Grade Level: ${formData.gradeLevel}
-- Strand: ${formData.strand}
-- Topic: ${formData.topic}
-- Duration: ${formData.duration} minutes
-- Number of Students: ${formData.studentCount}
-- Date: ${new Date().toLocaleDateString()}
-
-CURRICULUM ALIGNMENT:
-Essential Learning Outcome: ${formData.essentialOutcomes}
-
-Specific Curriculum Outcomes: ${formData.specificOutcomes}
-
-TEACHING APPROACH:
-- Pedagogical Strategies: ${formData.pedagogicalStrategies.join(', ')}
-- Learning Styles: ${formData.learningStyles.join(', ')}
-- Learning Preferences: ${formData.learningPreferences.join(', ')}
-- Multiple Intelligences: ${formData.multipleIntelligences.join(', ')}
-${formData.customLearningStyles ? `- Custom Learning Styles: ${formData.customLearningStyles}` : ''}
-
-RESOURCES:
-- Materials: ${formData.materials}
-- Prerequisite Skills: ${formData.prerequisiteSkills}
-${formData.referenceUrl ? `- Reference: ${formData.referenceUrl}` : ''}
-
-${formData.specialNeeds ? `SPECIAL NEEDS ACCOMMODATIONS:\n${formData.specialNeedsDetails}` : ''}
-
-${formData.additionalInstructions ? `ADDITIONAL INSTRUCTIONS:\n${formData.additionalInstructions}` : ''}
-
-Please generate a detailed lesson plan with clear sections and practical details that a teacher can immediately implement.`;
+    const prompt = buildLessonPrompt(formData);
 
     try {
       wsRef.current.send(JSON.stringify({

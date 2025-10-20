@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -422,6 +423,10 @@
 </div>
 
 <script>
+// Track when splashscreen started
+const MINIMUM_SPLASH_TIME = 3500; // 3.5 seconds
+const splashStartTime = Date.now();
+
 // Create floating particles
 const container = document.querySelector('.splash-container');
 const particles = [];
@@ -482,6 +487,19 @@ for (let i = 0; i < 120; i++) {
   createParticle();
 }
 
+// Ensure minimum splash time before triggering lightspeed
+async function ensureMinimumSplashTime() {
+  const elapsed = Date.now() - splashStartTime;
+  const remaining = MINIMUM_SPLASH_TIME - elapsed;
+  
+  if (remaining > 0) {
+    console.log(`Waiting ${remaining}ms to meet minimum splash time...`);
+    await new Promise(resolve => setTimeout(resolve, remaining));
+  }
+  
+  triggerLightspeed();
+}
+
 // Trigger lightspeed animation
 function triggerLightspeed() {
   document.body.classList.add('lightspeed');
@@ -515,7 +533,7 @@ function triggerLightspeed() {
 // Listen for backend-ready message from main process
 if (window.electron && window.electron.ipcRenderer) {
   window.electron.ipcRenderer.on('backend-ready', () => {
-    triggerLightspeed();
+    ensureMinimumSplashTime();
   });
 }
 </script>

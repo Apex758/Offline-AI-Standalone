@@ -1,9 +1,10 @@
-                                                                                                                              import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import RubricEditor from './RubricEditor';
 import type { ParsedRubric, CriteriaRow } from './RubricEditor';
 import axios from 'axios';
+import { buildRubricPrompt } from '../utils/rubricPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -759,27 +760,7 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingRubric('');
 
-    const prompt = `Generate a comprehensive grading rubric with the following specifications.
-    IMPORTANT: Do NOT include any intro text like "Here is a rubric" or "Below is a grading rubric" — start immediately with the rubric table or structure content itself:
-
-ASSIGNMENT INFORMATION:
-- Title: ${formData.assignmentTitle}
-- Type: ${formData.assignmentType}
-- Subject: ${formData.subject}
-- Grade Level: ${formData.gradeLevel}
-- Date: ${new Date().toLocaleDateString()}
-
-LEARNING OBJECTIVES:
-${formData.learningObjectives}
-
-${formData.specificRequirements ? `SPECIFIC REQUIREMENTS:\n${formData.specificRequirements}\n` : ''}
-
-RUBRIC SPECIFICATIONS:
-- Performance Levels: ${formData.performanceLevels}
-${formData.includePointValues ? '- Include point values for each level' : ''}
-${formData.focusAreas.length > 0 ? `- Focus Areas: ${formData.focusAreas.join(', ')}` : ''}
-
-Please create a detailed, well-structured rubric with clear criteria for each performance level. Format it as a table or structured list that's easy to read and use for grading.`;
+    const prompt = buildRubricPrompt(formData);
 
     try {
       wsRef.current.send(JSON.stringify({ prompt }));

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
 import CrossCurricularEditor from './CrossCurricularEditor';
 import type { ParsedCrossCurricularPlan } from './CrossCurricularEditor';
 import axios from 'axios';
+import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -809,52 +810,14 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingPlan('');
 
-    const prompt = `Generate a comprehensive cross-curricular lesson plan with the following specifications:
+    // Map formData to match the prompt builder's expected interface
+    const mappedData = {
+      ...formData,
+      theme: formData.bigIdea,
+      integrationSubjects: formData.supportingSubjects.split(',').map(s => s.trim()).filter(s => s)
+    };
 
-LESSON INFORMATION:
-- Title: ${formData.lessonTitle}
-- Grade Level: ${formData.gradeLevel}
-- Duration: ${formData.duration}
-- Big Idea: ${formData.bigIdea}
-- Integration Model: ${formData.integrationModel}
-
-SUBJECT INTEGRATION:
-- Primary Subject: ${formData.primarySubject}
-- Supporting Subjects: ${formData.supportingSubjects}
-- Learning Standards: ${formData.learningStandards}
-
-LEARNING OBJECTIVES:
-- Primary Objective: ${formData.primaryObjective}
-- Secondary Objectives: ${formData.secondaryObjectives}
-- Students Will Know: ${formData.studentsWillKnow}
-- Students Will Be Skilled At: ${formData.studentsWillBeSkilled}
-- Key Vocabulary: ${formData.keyVocabulary}
-
-ACTIVITIES:
-- Introduction: ${formData.introduction}
-- Core Activities: ${formData.coreActivities}
-- Closure Activities: ${formData.closureActivities}
-- Differentiation: ${formData.differentiationStrategies}
-
-ASSESSMENT:
-- Assessment Methods: ${formData.assessmentMethods}
-- Most Children Will: ${formData.mostChildren}
-- Some Not Progressed: ${formData.someNotProgressed}
-- Some Progressed Further: ${formData.someProgressedFurther}
-- Reflection: ${formData.reflectionPrompts}
-
-TEACHING STRATEGIES:
-- Strategies: ${formData.teachingStrategies.join(', ')}
-- Learning Styles: ${formData.learningStyles.join(', ')}
-- Learning Preferences: ${formData.learningPreferences.join(', ')}
-- Multiple Intelligences: ${formData.multipleIntelligences.join(', ')}
-${formData.customLearningStyles ? `- Custom Learning Styles: ${formData.customLearningStyles}` : ''}
-
-RESOURCES:
-- Materials: ${formData.materials}
-- Cross-Curricular Connections: ${formData.crossCurricularConnections}
-
-Please generate a detailed, integrated lesson plan that seamlessly connects multiple subject areas with clear learning progression and assessment strategies.`;
+    const prompt = buildCrossCurricularPrompt(mappedData);
 
     try {
       wsRef.current.send(JSON.stringify({ prompt }));

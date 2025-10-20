@@ -4,6 +4,7 @@ import AIAssistantPanel from './AIAssistantPanel';
 import MultigradeEditor from './MultigradeEditor';
 import type { ParsedMultigradePlan } from './MultigradeEditor';
 import axios from 'axios';
+import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -755,39 +756,7 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingPlan('');
 
-    const prompt = `Generate a comprehensive multigrade lesson plan with the following specifications:
-
-MULTIGRADE INFORMATION:
-- Subject: ${formData.subject}
-- Grade Range: ${formData.gradeRange}
-- Topic: ${formData.topic}
-- Total Students: ${formData.totalStudents}
-- Duration: ${formData.duration} minutes
-- Date: ${new Date().toLocaleDateString()}
-
-CURRICULUM ALIGNMENT:
-Essential Learning Outcomes: ${formData.essentialLearningOutcomes}
-
-Specific Learning Objectives: ${formData.specificLearningObjectives}
-
-${formData.prerequisiteSkills ? `PREREQUISITE SKILLS:\n${formData.prerequisiteSkills}\n` : ''}
-
-RESOURCES:
-- Materials: ${formData.materials}
-
-TEACHING APPROACH:
-- Learning Styles: ${formData.learningStyles.join(', ')}
-- Learning Preferences: ${formData.learningPreferences.join(', ')}
-- Multiple Intelligences: ${formData.multipleIntelligences.join(', ')}
-${formData.customLearningStyles ? `- Custom Learning Styles: ${formData.customLearningStyles}` : ''}
-- Pedagogical Strategies: ${formData.pedagogicalStrategies.join(', ')}
-- Multigrade Strategies: ${formData.multigradeStrategies.join(', ')}
-
-${formData.specialNeeds ? `SPECIAL NEEDS ACCOMMODATIONS:\n${formData.specialNeedsDetails}\n` : ''}
-
-${formData.differentiationNotes ? `DIFFERENTIATION NOTES:\n${formData.differentiationNotes}\n` : ''}
-
-Please generate a detailed multigrade lesson plan with clear differentiation strategies for each grade level, flexible grouping approaches, and activities that can be implemented simultaneously across multiple grades. Include specific learning objectives and activities tailored to each grade level within the range.`;
+    const prompt = buildMultigradePrompt(formData);
 
     try {
       wsRef.current.send(JSON.stringify({ prompt }));
