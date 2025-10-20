@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,8 +16,13 @@ import json
 import asyncio
 import signal
 import atexit
-from config import get_model_path, get_selected_model, set_selected_model, LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR
+from config import (
+    get_model_path, get_selected_model, set_selected_model,
+    LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR,
+    MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE
+)
 from pathlib import Path
+from llama_inference import LlamaInference
 sys.stdout.reconfigure(encoding='utf-8')
 
 # Set up logging
@@ -30,13 +36,11 @@ def register_process(process):
     """Register a subprocess for cleanup tracking"""
     with process_lock:
         active_processes.add(process)
-    print(f"Registered process PID {process.pid} (Total active: {len(active_processes)})")
 
 def unregister_process(process):
     """Unregister a subprocess after it's been cleaned up"""
     with process_lock:
         active_processes.discard(process)
-    print(f"Unregistered process PID {process.pid if hasattr(process, 'pid') else 'unknown'} (Total active: {len(active_processes)})")
 
 def cleanup_process(process):
     """Safely cleanup a subprocess and all its children"""
@@ -45,24 +49,16 @@ def cleanup_process(process):
         return
     
     pid = process.pid
-    print(f"Cleaning up process PID {pid}...")
     
     try:
-        # Terminate gracefully first
         process.terminate()
         
-        # Wait briefly for graceful termination
         try:
             process.wait(timeout=2)
-            print(f"Process PID {pid} terminated gracefully")
         except subprocess.TimeoutExpired:
-            # Force kill if still running
-            print(f"Process PID {pid} did not terminate, forcing kill...")
             process.kill()
             process.wait(timeout=1)
-            print(f"Process PID {pid} killed")
         
-        # On Windows, also kill the process tree to ensure all child processes are terminated
         if os.name == 'nt':
             try:
                 subprocess.run(
@@ -70,41 +66,30 @@ def cleanup_process(process):
                     capture_output=True,
                     creationflags=subprocess.CREATE_NO_WINDOW
                 )
-                print(f"Killed process tree for PID {pid}")
             except Exception as e:
-                print(f"Error killing process tree: {e}")
+                logger.error(f"Error killing process tree: {e}")
     
     except Exception as e:
-        print(f"Error cleaning up process PID {pid}: {e}")
+        logger.error(f"Error cleaning up process PID {pid}: {e}")
     finally:
         unregister_process(process)
 
 def cleanup_all_processes():
     """Cleanup all tracked processes"""
-    print(f"\n{'='*60}")
-    print(f"Cleaning up {len(active_processes)} active processes...")
-    print(f"{'='*60}\n")
-    
     with process_lock:
         processes_to_clean = list(active_processes)
     
     for process in processes_to_clean:
         cleanup_process(process)
-    
-    print(f"\n{'='*60}")
-    print(f"All processes cleaned up")
-    print(f"{'='*60}\n")
 
 # Register cleanup function to run on exit
 atexit.register(cleanup_all_processes)
 
 # Handle termination signals
 def signal_handler(signum, frame):
-    print(f"\nReceived signal {signum}, shutting down...")
     cleanup_all_processes()
     sys.exit(0)
 
-# Register signal handlers
 if hasattr(signal, 'SIGTERM'):
     signal.signal(signal.SIGTERM, signal_handler)
 if hasattr(signal, 'SIGINT'):
@@ -119,7 +104,6 @@ def get_data_directory():
     else:  # macOS/Linux
         data_dir = Path.home() / '.olh_ai_education' / 'data'
     
-    # Create directory if it doesn't exist
     data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir
 
@@ -160,26 +144,37 @@ CHAT_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "chat_history.json")
 
 @app.on_event("startup")
 async def check_files():
-    print("Checking for required files...")
+    logger.info("Checking for required files...")
     if not os.path.exists(get_model_path()):
-        print(f"[Warning]  Warning: Model file not found at {get_model_path()}")
+        logger.warning(f"Model file not found at {get_model_path()}")
     else:
-        print(f"[OK]Model file found: {get_model_path()}")
+        logger.info(f"Model file found: {get_model_path()}")
     
     if not os.path.exists(LLAMA_CLI_PATH):
-        print(f"[Warning]  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
+        logger.warning(f"llama-cli.exe not found at {LLAMA_CLI_PATH}")
     else:
-        print(f"[OK]llama-cli.exe found: {LLAMA_CLI_PATH}")
+        logger.info(f"llama-cli.exe found: {LLAMA_CLI_PATH}")
     
-    # Initialize chat history file if it doesn't exist
+    # Initialize chat history file
     if not os.path.exists(CHAT_HISTORY_FILE):
         with open(CHAT_HISTORY_FILE, 'w') as f:
             json.dump([], f)
-        print(f"[OK]Created chat history file: {CHAT_HISTORY_FILE}")
-    else:
-        print(f"[OK]Chat history file found: {CHAT_HISTORY_FILE}")
     
-    print("Server ready!")
+    # Initialize Llama model singleton
+    try:
+        logger.info("Initializing Llama model...")
+        llama = LlamaInference.get_instance(
+            model_path=get_model_path(),
+            n_ctx=MODEL_N_CTX
+        )
+        if llama.is_loaded:
+            logger.info(f"Llama model loaded successfully")
+        else:
+            logger.error("Failed to load Llama model")
+    except Exception as e:
+        logger.error(f"Model initialization failed: {e}")
+    
+    logger.info("Server ready!")
 
 class LoginRequest(BaseModel):
     username: str
@@ -232,48 +227,41 @@ async def get_chat_history():
         if os.path.exists(CHAT_HISTORY_FILE):
             with open(CHAT_HISTORY_FILE, 'r') as f:
                 histories = json.load(f)
-            # Sort by timestamp, newest first
             histories.sort(key=lambda x: x['timestamp'], reverse=True)
             return histories
         return []
     except Exception as e:
-        print(f"Error loading chat history: {e}")
+        logger.error(f"Error loading chat history: {e}")
         return []
 
 @app.post("/api/chat-history")
 async def save_chat_history(chat: ChatHistory):
     """Save or update a chat history"""
     try:
-        # Load existing histories
         histories = []
         if os.path.exists(CHAT_HISTORY_FILE):
             with open(CHAT_HISTORY_FILE, 'r') as f:
                 histories = json.load(f)
         
-        # Check if chat with this ID already exists
         existing_index = None
         for i, h in enumerate(histories):
             if h['id'] == chat.id:
                 existing_index = i
                 break
         
-        # Convert to dict
         chat_dict = chat.dict()
         
         if existing_index is not None:
-            # Update existing chat
             histories[existing_index] = chat_dict
         else:
-            # Add new chat
             histories.append(chat_dict)
         
-        # Save back to file
         with open(CHAT_HISTORY_FILE, 'w') as f:
             json.dump(histories, f, indent=2)
         
         return {"success": True, "id": chat.id}
     except Exception as e:
-        print(f"Error saving chat history: {e}")
+        logger.error(f"Error saving chat history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/chat-history/{chat_id}")
@@ -284,10 +272,8 @@ async def delete_chat_history(chat_id: str):
             with open(CHAT_HISTORY_FILE, 'r') as f:
                 histories = json.load(f)
             
-            # Filter out the chat to delete
             histories = [h for h in histories if h['id'] != chat_id]
             
-            # Save back to file
             with open(CHAT_HISTORY_FILE, 'w') as f:
                 json.dump(histories, f, indent=2)
             
@@ -295,7 +281,7 @@ async def delete_chat_history(chat_id: str):
         
         raise HTTPException(status_code=404, detail="Chat history not found")
     except Exception as e:
-        print(f"Error deleting chat history: {e}")
+        logger.error(f"Error deleting chat history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================================
@@ -303,16 +289,6 @@ async def delete_chat_history(chat_id: str):
 # ============================================================================
 
 def build_title_prompt(user_msg: str, assistant_msg: str) -> str:
-    """
-    Constructs the LLM prompt for title generation.
-    
-    Args:
-        user_msg: The user's first message
-        assistant_msg: The assistant's first response
-        
-    Returns:
-        Formatted prompt for the LLM
-    """
     system_prompt = """You are a title generation assistant. Create concise, descriptive titles for chat conversations.
 
 Rules:
@@ -340,18 +316,8 @@ Generate only the title, nothing else."""
 
 
 def clean_title_text(raw_title: str) -> str:
-    """
-    Cleans and validates the generated title.
-    
-    Args:
-        raw_title: Raw title from LLM
-        
-    Returns:
-        Cleaned and validated title
-    """
     import re
     
-    # Remove common AI prefixes
     prefixes_to_remove = [
         r'^Title:\s*',
         r'^Here\'s a title:\s*',
@@ -366,19 +332,14 @@ def clean_title_text(raw_title: str) -> str:
     for prefix in prefixes_to_remove:
         title = re.sub(prefix, '', title, flags=re.IGNORECASE)
     
-    # Remove quotes
     title = title.strip('"\'""''')
-    
-    # Remove trailing punctuation (except hyphens and ampersands)
     title = re.sub(r'[.,:;!?]+$', '', title)
     
-    # Truncate at word boundary if too long
     max_length = 60
     if len(title) > max_length:
-        # Find last space before max_length
         truncated = title[:max_length]
         last_space = truncated.rfind(' ')
-        if last_space > 30:  # Only truncate at space if reasonable length
+        if last_space > 30:
             title = truncated[:last_space] + "..."
         else:
             title = truncated[:max_length-3] + "..."
@@ -387,25 +348,12 @@ def clean_title_text(raw_title: str) -> str:
 
 
 def create_fallback_title(user_message: str) -> str:
-    """
-    Creates a fallback title from the user's first message.
-    
-    Args:
-        user_message: The user's first message
-        
-    Returns:
-        Fallback title
-    """
     from datetime import datetime
     
-    # Try smart truncation first
     if user_message and len(user_message.strip()) > 0:
         title = user_message.strip()
-        
-        # Remove newlines and extra spaces
         title = ' '.join(title.split())
         
-        # Truncate at word boundary
         max_length = 60
         if len(title) > max_length:
             truncated = title[:max_length]
@@ -417,29 +365,17 @@ def create_fallback_title(user_message: str) -> str:
         
         return title
     
-    # Generic timestamped title as final fallback
     now = datetime.now()
     return f"Chat - {now.strftime('%I:%M %p')}"
 
 
 def validate_title(title: str) -> bool:
-    """
-    Validates that a title meets the requirements.
-    
-    Args:
-        title: Title to validate
-        
-    Returns:
-        True if valid, False otherwise
-    """
     if not title or len(title.strip()) == 0:
         return False
     
-    # Check length (allowing for "..." suffix)
     if len(title) > 63:  # 60 + "..."
         return False
     
-    # Title should have some content
     if len(title.strip()) < 3:
         return False
     
@@ -451,72 +387,29 @@ def validate_title(title: str) -> bool:
 
 @app.post("/api/generate-title")
 async def generate_title(request: TitleGenerateRequest):
-    """
-    Generate a concise title for a chat conversation based on the first exchange.
-    
-    Uses the LLM to create a descriptive title with fallback strategies.
-    """
+    """Generate a concise title for a chat conversation"""
     start_time = time.time()
     
     try:
-        # Build the prompt
         prompt = build_title_prompt(request.user_message, request.assistant_message)
         
-        # LLM command with strict parameters for title generation
-        cmd = [
-            LLAMA_CLI_PATH,
-            "-m", get_model_path(),
-            "-p", prompt,
-            "-n", "30",  # Maximum 30 tokens for title
-            "-t", "4",
-            "--temp", "0.5"  # Lower temperature for consistency
-        ]
-        
-        print(f"\n{'='*60}")
-        print(f"Title Generation Request")
-        print(f"User message: {request.user_message[:100]}...")
-        print(f"{'='*60}\n")
-        
-        # Execute with strict 5-second timeout
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=5,
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+        inference = LlamaInference.get_instance()
+        result = inference.generate(
+            tool_name="title_generation",
+            input_data=request.user_message,
+            prompt_template=prompt,
+            max_tokens=30,
+            temperature=0.5
         )
         
-        # Combine stdout and stderr
-        output = result.stdout + result.stderr
+        if result["metadata"]["status"] == "error":
+            raise ValueError(result["metadata"].get("error_message", "Generation failed"))
         
-        # Extract the response
-        if "<|start_header_id|>assistant<|end_header_id|>" in output:
-            raw_title = output.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-        else:
-            raw_title = output
-        
-        # Clean up the response
-        garbage_patterns = [
-            'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-            'llama_print', '> llama', 'sampler_', 'l>a m',
-            '<|eot_id|>', '<|end_of_text|>', '<|begin_of_text|>'
-        ]
-        
-        for pattern in garbage_patterns:
-            if pattern in raw_title:
-                raw_title = raw_title.split(pattern)[0]
-        
-        if "To change it, set a different value via -sys PROMPT" in raw_title:
-            raw_title = raw_title.split("To change it, set a different value via -sys PROMPT", 1)[1]
-        
-        # Clean and validate the title
+        raw_title = result["result"]
         title = clean_title_text(raw_title)
         
         if validate_title(title):
-            # Success - AI-generated title
             generation_time = time.time() - start_time
-            print(f"✓ Generated title: '{title}' ({generation_time:.2f}s)")
-            
             return TitleGenerateResponse(
                 title=title,
                 generated=True,
@@ -524,23 +417,10 @@ async def generate_title(request: TitleGenerateRequest):
                 generationTime=generation_time
             )
         else:
-            # Validation failed - use fallback
             raise ValueError("Generated title failed validation")
         
-    except subprocess.TimeoutExpired:
-        print(f"⚠ Title generation timed out, using fallback")
-        title = create_fallback_title(request.user_message)
-        generation_time = time.time() - start_time
-        
-        return TitleGenerateResponse(
-            title=title,
-            generated=False,
-            fallback=True,
-            generationTime=generation_time
-        )
-        
     except Exception as e:
-        print(f"⚠ Title generation error: {e}, using fallback")
+        logger.error(f"Title generation error: {e}")
         title = create_fallback_title(request.user_message)
         generation_time = time.time() - start_time
         
@@ -558,7 +438,6 @@ async def websocket_chat(websocket: WebSocket):
     
     try:
         while True:
-            # Receive message from frontend
             data = await websocket.receive_text()
             message_data = json.loads(data)
             user_message = message_data.get("message", "")
@@ -566,7 +445,6 @@ async def websocket_chat(websocket: WebSocket):
             if not user_message:
                 continue
             
-            # Build teaching assistant prompt
             system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
             
             prompt = "<|begin_of_text|>"
@@ -574,244 +452,56 @@ async def websocket_chat(websocket: WebSocket):
             prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
             prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            
-            
-            cmd = [
-                str(LLAMA_CLI_PATH),
-                "-m", str(get_model_path()),
-                "-p", prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"]),
-                "-t", str(LLAMA_PARAMS["threads"]),
-                "--temp", str(LLAMA_PARAMS["temperature"])
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"WebSocket chat request")
-            print(f"User message: {user_message}")
-            print(f"{'='*60}\n")
-            
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            # Register process for cleanup tracking
-            register_process(process)
-            
-            process.stdin.close()
-            
-            all_output = []
-            generation_started = {'value': False}
-            
-            # Patterns that indicate end of useful content
-            garbage_patterns = [
-                'llama_perf',
-                '> EOF',
-                # 'Interrupted by user',  # Too aggressive
-                'llama_sampler',
-                # 'llama_print',  # Too aggressive  
-                # '> llama',  # Too aggressive
-                # 'sampler_',  # Too aggressive
-                # 'l>a m',  # DEFINITELY too aggressive - remove this!
-            ]
-            
-            def read_stream(stream, output_list):
-                """Read from stream character by character"""
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n🤖 AI RESPONSE:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-            
-            # Start threads to read both streams
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            # Wait for generation and stream to websocket
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    # Process finished, let threads finish reading
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                # Find where assistant response actually starts
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                # Check if we need to skip the "To change it" and "If you want" messages
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    skip_messages = [
-                        "To change it, set a different value via -sys PROMPT",
-                        "If you want to submit another line, end your input with"
-                    ]
-                    for msg in skip_messages:
-                        if msg in remaining:
-                            skip_index = remaining.find(msg)
-                            if skip_index != -1:
-                                last_streamed_index += skip_index + len(msg)
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                    last_streamed_index += 1
-                                remaining = current_output[last_streamed_index:]
-                    skip_initial_garbage = True
-                
-                # Stream new content
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
-                    
-                    # Check for end tokens or garbage ONLY in the content we're about to send
-                    should_break = False
-                    for pattern in garbage_patterns:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_break = True
-                            print(f"\n[Detected end pattern '{pattern}', stopping stream]")
-                            break
-                    
-                    
-                    # Stream character by character
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                        except Exception as e:
-                            print(f"Error sending character: {e}")
-                            break
-                    
-                    last_streamed_index += len(new_content)
-                    
-                    if should_break:
-                        break
-                
-                await asyncio.sleep(0.01)
-            
-            # Wait for threads to finish reading ALL output first
-            stderr_thread.join(timeout=3)
-            stdout_thread.join(timeout=3)
-            
-            # Now cleanup the process
-            cleanup_process(process)
-            
-            full_output = ''.join(all_output)
-            
-            print(f"\n\n{'='*60}")
-            print(f"RAW OUTPUT - {len(full_output)} characters total")
-            print(f"{'='*60}\n")
-            
-            # Clean the response - extract assistant content
-            response_text = full_output
-            
-            # Find assistant response start
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            # Remove initialization message if at the start
-            if response_text.startswith("To change it, set a different value via -sys PROMPT"):
-                response_text = response_text.split("To change it, set a different value via -sys PROMPT", 1)[1]
-            if response_text.startswith("If you want to submit another line, end your input with"):
-                response_text = response_text.split("If you want to submit another line, end your input with", 1)[1]
-            
-            # Remove end tokens and everything after
-            for end_marker in ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if end_marker in response_text:
-                    response_text = response_text.split(end_marker)[0]
-                    break
-            
-            # Remove garbage patterns and everything after (these appear at the end)
-            for pattern in garbage_patterns:
-                if pattern in response_text:
-                    response_text = response_text.split(pattern)[0]
-                    break
-            
-            response_text = response_text.strip()
-   
-            # Send completion
             try:
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="chat",
+                    input_data=user_message,
+                    prompt_template=prompt,
+                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    temperature=LLAMA_PARAMS["temperature"]
+                )
+                
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
+                
+                response_text = result["result"]
+                
+                # Stream response character by character
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
+                        break
+                
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                
             except Exception as e:
-                print(f"Could not send done message (connection may have closed): {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Response complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Chat generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
+        logger.info("WebSocket disconnected")
     except Exception as e:
-        print(f"WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"WebSocket error: {str(e)}")
 
 class LessonPlanRequest(BaseModel):
     prompt: str
 
 
 LESSON_PLAN_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "lesson_plan_history.json")
-
-@app.on_event("startup")
-async def check_files():
-    print("Checking for required files...")
-    if not os.path.exists(get_model_path()):
-        print(f"[Warning]  Warning: Model file not found at {get_model_path()}")
-    else:
-        print(f"[OK]Model file found: {get_model_path()}")
-    
-    if not os.path.exists(LLAMA_CLI_PATH):
-        print(f"[Warning]  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
-    else:
-        print(f"[OK]llama-cli.exe found: {LLAMA_CLI_PATH}")
-    
-    # Initialize chat history file if it doesn't exist
-    if not os.path.exists(CHAT_HISTORY_FILE):
-        with open(CHAT_HISTORY_FILE, 'w') as f:
-            json.dump([], f)
-        print(f"[OK]Created chat history file: {CHAT_HISTORY_FILE}")
-    else:
-        print(f"[OK]Chat history file found: {CHAT_HISTORY_FILE}")
-    
-    # Initialize lesson plan history file if it doesn't exist
-    if not os.path.exists(LESSON_PLAN_HISTORY_FILE):
-        with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
-            json.dump([], f)
-        print(f"[OK]Created lesson plan history file: {LESSON_PLAN_HISTORY_FILE}")
-    else:
-        print(f"[OK]Lesson plan history file found: {LESSON_PLAN_HISTORY_FILE}")
-    
-    print("Server ready!")
 
 class LessonPlanHistory(BaseModel):
     id: str
@@ -827,48 +517,41 @@ async def get_lesson_plan_history():
         if os.path.exists(LESSON_PLAN_HISTORY_FILE):
             with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
                 histories = json.load(f)
-            # Sort by timestamp, newest first
             histories.sort(key=lambda x: x['timestamp'], reverse=True)
             return histories
         return []
     except Exception as e:
-        print(f"Error loading lesson plan history: {e}")
+        logger.error(f"Error loading lesson plan history: {e}")
         return []
 
 @app.post("/api/lesson-plan-history")
 async def save_lesson_plan_history(plan: LessonPlanHistory):
     """Save or update a lesson plan history"""
     try:
-        # Load existing histories
         histories = []
         if os.path.exists(LESSON_PLAN_HISTORY_FILE):
             with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
                 histories = json.load(f)
         
-        # Check if plan with this ID already exists
         existing_index = None
         for i, h in enumerate(histories):
             if h['id'] == plan.id:
                 existing_index = i
                 break
         
-        # Convert to dict
         plan_dict = plan.dict()
         
         if existing_index is not None:
-            # Update existing plan
             histories[existing_index] = plan_dict
         else:
-            # Add new plan
             histories.append(plan_dict)
         
-        # Save back to file
         with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
             json.dump(histories, f, indent=2)
         
         return {"success": True, "id": plan.id}
     except Exception as e:
-        print(f"Error saving lesson plan history: {e}")
+        logger.error(f"Error saving lesson plan history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/lesson-plan-history/{plan_id}")
@@ -879,10 +562,8 @@ async def delete_lesson_plan_history(plan_id: str):
             with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
                 histories = json.load(f)
             
-            # Filter out the plan to delete
             histories = [h for h in histories if h['id'] != plan_id]
             
-            # Save back to file
             with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
                 json.dump(histories, f, indent=2)
             
@@ -890,7 +571,7 @@ async def delete_lesson_plan_history(plan_id: str):
         
         raise HTTPException(status_code=404, detail="Lesson plan history not found")
     except Exception as e:
-        print(f"Error deleting lesson plan history: {e}")
+        logger.error(f"Error deleting lesson plan history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     
     
@@ -900,62 +581,22 @@ async def generate_lesson_plan(request: LessonPlanRequest):
     try:
         prompt_text = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{request.prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
         
-        cmd = [
-            LLAMA_CLI_PATH,
-            "-m", get_model_path(),
-            "-p", prompt_text,
-            "-n", "3000",  # Allow longer responses for lesson plans
-            "-t", "4",
-            "--temp", "0.7"
-        ]
-        
-        print(f"\n{'='*60}")
-        print(f"Generating lesson plan...")
-        print(f"{'='*60}\n")
-        
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=180,
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+        inference = LlamaInference.get_instance()
+        result = inference.generate(
+            tool_name="lesson_plan",
+            input_data=request.prompt,
+            prompt_template=prompt_text,
+            max_tokens=3000,
+            temperature=0.7
         )
         
-        # Combine stdout and stderr
-        output = result.stdout + result.stderr
+        if result["metadata"]["status"] == "error":
+            raise HTTPException(status_code=500, detail=result["metadata"].get("error_message", "Generation failed"))
         
-        # Extract the response
-        if "<|start_header_id|>assistant<|end_header_id|>" in output:
-            response = output.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-        else:
-            response = output
+        return {"lessonPlan": result["result"]}
         
-        # Clean up the response
-        garbage_patterns = [
-            'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-            'llama_print', '> llama', 'sampler_', 'l>a m',
-            '<|eot_id|>', '<|end_of_text|>', '<|begin_of_text|>'
-        ]
-        
-        for pattern in garbage_patterns:
-            if pattern in response:
-                response = response.split(pattern)[0]
-        
-        if "To change it, set a different value via -sys PROMPT" in response:
-            response = response.split("To change it, set a different value via -sys PROMPT", 1)[1]
-        
-        response = response.strip()
-        
-        print(f"\n{'='*60}")
-        print(f"Lesson plan generated - {len(response)} characters")
-        print(f"{'='*60}\n")
-        
-        return {"lessonPlan": response}
-        
-    except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=500, detail="Lesson plan generation timed out")
     except Exception as e:
-        print(f"Error generating lesson plan: {e}")
+        logger.error(f"Error generating lesson plan: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws/lesson-plan")
@@ -964,7 +605,6 @@ async def websocket_lesson_plan(websocket: WebSocket):
     
     try:
         while True:
-            # Receive message from frontend
             data = await websocket.receive_text()
             message_data = json.loads(data)
             prompt = message_data.get("prompt", "")
@@ -972,7 +612,6 @@ async def websocket_lesson_plan(websocket: WebSocket):
             if not prompt:
                 continue
             
-            # Build lesson plan prompt - keep it simple like chat
             system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
             
             full_prompt = "<|begin_of_text|>"
@@ -980,218 +619,63 @@ async def websocket_lesson_plan(websocket: WebSocket):
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            cmd = [
-                LLAMA_CLI_PATH,
-                "-m", get_model_path(),
-                "-p", full_prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"Lesson Plan Generation Request")
-            print(f"{'='*60}\n")
-            
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            # Register process for cleanup tracking
-            register_process(process)
-            
-            process.stdin.close()
-            
-            all_output = []
-            generation_started = {'value': False}
-            
-            # Same garbage patterns as chat
-            garbage_patterns = [
-                'llama_perf',
-                '> EOF',
-                'Interrupted by user',
-                'llama_sampler',
-                'llama_print',
-                '> llama',
-                'sampler_',
-                'l>a m',
-            ]
-            
-            def read_stream(stream, output_list):
-                """Read from stream character by character - same as chat"""
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n📝 GENERATING LESSON PLAN:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-            
-            # Start threads to read both streams - same as chat
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            # Wait for generation and stream to websocket - same logic as chat
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                # Check for garbage patterns - same as chat
-                if not should_stop_streaming:
-                    for pattern in garbage_patterns:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
-                
-                if should_stop_streaming:
-                    break
-                
-                # Find where assistant response actually starts - same as chat
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                # Check if we need to skip the "To change it" and "If you want" messages - same as chat
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    skip_messages = [
-                        "To change it, set a different value via -sys PROMPT",
-                        "If you want to submit another line, end your input with"
-                    ]
-                    for msg in skip_messages:
-                        if msg in remaining:
-                            skip_index = remaining.find(msg)
-                            if skip_index != -1:
-                                last_streamed_index += skip_index + len(msg)
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                    last_streamed_index += 1
-                                remaining = current_output[last_streamed_index:]
-                    skip_initial_garbage = True
-                
-                # Stream new content - same as chat
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
-                    
-                    # Check for end tokens or garbage in the new content
-                    should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_break = True
-                            break
-                    
-                    # Stream character by character - same as chat
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                        except:
-                            break
-                    
-                    last_streamed_index += len(new_content)
-                    
-                    if should_break:
-                        break
-                
-                await asyncio.sleep(0.05)
-            
-            # Kill the process and cleanup
-
-            
-            cleanup_process(process)
-            
-            # Wait for threads - same as chat
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
-            
-            full_output = ''.join(all_output)
-            
-            print(f"\n\n{'='*60}")
-            print(f"Lesson plan generation complete")
-            print(f"{'='*60}\n")
-            
-            # Clean the response - same as chat
-            response_text = full_output
-            
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
-            
-            # Remove initialization messages
-            for init_msg in ["To change it, set a different value via -sys PROMPT",
-                           "If you want to submit another line, end your input with"]:
-                if init_msg in response_text:
-                    response_text = response_text.split(init_msg, 1)[1]
-            
-            response_text = response_text.strip()
-            
-            # Send completion
             try:
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="lesson_plan",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    temperature=0.7
+                )
+                
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
+                
+                response_text = result["result"]
+                
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
+                        break
+                
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                
             except Exception as e:
-                print(f"Could not send done message (connection may have closed): {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Response complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Lesson plan generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("Lesson Plan WebSocket disconnected")
+        logger.info("Lesson Plan WebSocket disconnected")
     except Exception as e:
-        print(f"Lesson Plan WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Lesson Plan WebSocket error: {str(e)}")
  
  
 
 @app.websocket("/ws/quiz")
 async def quiz_websocket(websocket: WebSocket):
     await websocket.accept()
-    print("Quiz WebSocket connection accepted")
     
     try:
         while True:
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
-            print(f"Received quiz prompt: {prompt[:100]}...")
             
             if not prompt:
-                print("ERROR: Empty prompt received")
+                logger.error("Empty quiz prompt received")
                 continue
             
             system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
@@ -1201,218 +685,49 @@ async def quiz_websocket(websocket: WebSocket):
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            cmd = [
-                LLAMA_CLI_PATH,
-                "-m", get_model_path(),
-                "-p", full_prompt,
-                "-n", "4000",  # INCREASED TOKEN LIMIT
-                "-t", "4",
-                "--temp", "0.7"
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"Quiz Generation Request")
-            print(f"{'='*60}\n")
-            
             try:
-                process = subprocess.Popen(
-                    cmd,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    bufsize=1,  # Line buffered instead of 0
-                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="quiz",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=4000,
+                    temperature=0.7
                 )
                 
-                # Register process for cleanup tracking
-                register_process(process)
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
                 
-                print("✓ Subprocess created successfully")
-                process.stdin.close()
+                response_text = result["result"]
                 
-            except Exception as e:
-                print(f"ERROR: Failed to create subprocess: {e}")
-                await websocket.send_json({"type": "error", "message": str(e)})
-                continue
-            
-            all_output = []
-            
-            garbage_patterns = [
-                'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-                'llama_print', '> llama', 'sampler_'
-            ]
-            
-            def read_stream(stream, output_list):
-                try:
-                    while True:
-                        char = stream.read(1)
-                        if not char:
-                            break
-                        output_list.append(char)
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-                except Exception as e:
-                    print(f"Error in read_stream: {e}")
-            
-            # Start reading both streams
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            print("✓ Read threads started")
-            
-            # IMPROVED STREAMING LOGIC - Filter all initialization logs
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            chars_sent = 0
-            started_streaming = False
-            last_sent_index = 0
-            
-            # Comprehensive initialization markers to skip
-            init_markers = [
-                "llama_model_loader",
-                "llama_load_model",
-                "llm_load_print_meta",
-                "llama_new_context",
-                "system_info",
-                "Not using system message",
-                "To change it, set a different value via -sys PROMPT",
-                "If you want to submit another line, end your input with",
-                "log_",
-                "compute params",
-                "total RAM required",
-                "ROPs",
-                "model desc",
-                "model size",
-                "model ftype",
-                "model params",
-                "model type",
-                "ggml ctx size",
-                "batch size",
-                "context size",
-                "vocab type",
-                "pooling type",
-            ]
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    print(f"Process exited with code: {process.poll()}")
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                # Check if we should start streaming
-                if not started_streaming:
-                    # Look for the assistant header to start streaming
-                    if "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                        started_streaming = True
-                        # Find position after the header
-                        header_pos = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                        last_sent_index = header_pos + len("<|start_header_id|>assistant<|end_header_id|>")
-                        
-                        # Skip whitespace and initialization markers
-                        while last_sent_index < len(current_output) and current_output[last_sent_index] in ['\n', '\r', ' ']:
-                            last_sent_index += 1
-                        
-                        # Skip "To change it..." message if present
-                        remaining = current_output[last_sent_index:]
-                        if remaining.startswith("To change it, set a different value via -sys PROMPT"):
-                            last_sent_index += len("To change it, set a different value via -sys PROMPT")
-                            while last_sent_index < len(current_output) and current_output[last_sent_index] in ['\n', '\r']:
-                                last_sent_index += 1
-                        
-                        print("✓ Started streaming quiz content (initialization logs filtered)")
-                
-                # Stream content if we've started
-                if started_streaming and last_sent_index < len(current_output):
-                    new_content = current_output[last_sent_index:]
-                    
-                    # Check for end patterns
-                    should_stop = False
-                    for pattern in garbage_patterns:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_stop = True
-                            print(f"\n[Detected end pattern '{pattern}', stopping stream]")
-                            break
-                    
-                    # Send character by character
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                            chars_sent += 1
-                        except Exception as e:
-                            print(f"Error sending character: {e}")
-                            break
-                    
-                    last_sent_index += len(new_content)
-                    
-                    if should_stop:
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
                         break
                 
-                await asyncio.sleep(0.01)
-            
-            print(f"\n✓ Sent {chars_sent} characters to frontend")
-            
-            # Clean up process
-            cleanup_process(process)
-            
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
-            
-            full_output = ''.join(all_output)
-            
-            print(f"\n{'='*60}")
-            print(f"Total output length: {len(full_output)} characters")
-            print(f"{'='*60}\n")
-            
-            # Clean the response - remove ALL initialization logs
-            response_text = full_output
-            
-            # Extract only content after assistant header
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            # Remove all initialization markers
-            for marker in init_markers:
-                if marker in response_text:
-                    # For init markers, take everything after (they appear at the start)
-                    parts = response_text.split(marker, 1)
-                    if len(parts) > 1:
-                        response_text = parts[1]
-            
-            # Remove end markers
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
-            
-            response_text = response_text.strip()
-            
-            # Send final response
-            try:
                 await websocket.send_json({"type": "done", "full_response": response_text})
-                print("✓ Sent done message")
+                
             except Exception as e:
-                print(f"Could not send done message: {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Quiz generation complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Quiz generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("Quiz WebSocket disconnected")
+        logger.info("Quiz WebSocket disconnected")
     except Exception as e:
-        print(f"Quiz WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Quiz WebSocket error: {str(e)}")
         try:
             await websocket.send_json({"type": "error", "message": str(e)})
         except:
@@ -1422,17 +737,14 @@ async def quiz_websocket(websocket: WebSocket):
 @app.websocket("/ws/rubric")
 async def rubric_websocket(websocket: WebSocket):
     await websocket.accept()
-    print("Rubric WebSocket connection accepted")
     
     try:
         while True:
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
-            print(f"Received rubric prompt: {prompt[:100]}...")
             
-            # Validate prompt is not empty
             if not prompt:
-                print("ERROR: Empty rubric prompt received")
+                logger.error("Empty rubric prompt received")
                 continue
             
             system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
@@ -1442,200 +754,62 @@ async def rubric_websocket(websocket: WebSocket):
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            cmd = [
-                LLAMA_CLI_PATH,
-                "-m", get_model_path(),
-                "-p", full_prompt,
-                "-n", "4000",  # INCREASED TOKEN LIMIT - same as quiz
-                "-t", "4",
-                "--temp", "0.7"
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"Rubric Generation Request")
-            print(f"{'='*60}\n")
-            
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            # Register process for cleanup tracking
-            register_process(process)
-            
-            process.stdin.close()
-            
-            all_output = []
-            generation_started = {'value': False}
-            
-            init_markers = [
-                "llama_model_loader", "llama_load_model", "llm_load_print_meta",
-                "llama_new_context", "system_info", "Not using system message",
-                "To change it, set a different value via -sys PROMPT",
-                "llama_perf", "> EOF", "Interrupted by user", "llama_sampler",
-                "llama_print", "> llama", "sampler_", "l>a m",
-                "llama_kv_cache", "build info", "CPU info", "sampling params",
-                "model_desc", "apply_lora", "llama_context_params"
-            ]
-            
-            def read_stream(stream, output_list):
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n📋 GENERATING RUBRIC:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-            
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                if not should_stop_streaming:
-                    for pattern in init_markers:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
-                
-                if should_stop_streaming:
-                    break
-                
-                # Find where assistant response starts
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        # Skip whitespace after assistant marker
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                # FIXED: Skip initial garbage AFTER finding assistant start
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    skip_messages = [
-                        "To change it, set a different value via -sys PROMPT",
-                        "If you want to submit another line, end your input with"
-                    ]
-                    for msg in skip_messages:
-                        if msg in remaining:
-                            skip_index = remaining.find(msg)
-                            if skip_index != -1:
-                                # Skip past the message
-                                last_streamed_index += skip_index + len(msg)
-                                # Skip any trailing newlines/whitespace
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                                    last_streamed_index += 1
-                    skip_initial_garbage = True
-                
-                # Stream the actual content
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
-                    
-                    should_break = False
-                    for pattern in ["<|", *init_markers]:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_break = True
-                            break
-                    
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                        except:
-                            break
-                    
-                    last_streamed_index += len(new_content)
-                    
-                    if should_break:
-                        break
-                
-                await asyncio.sleep(0.05)
-                        
-            cleanup_process(process)
-            
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
-            
-            full_output = ''.join(all_output)
-            
-            response_text = full_output
-            
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            for marker in init_markers + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
-            
-            # Remove initialization messages
-            for init_msg in ["To change it, set a different value via -sys PROMPT",
-                           "If you want to submit another line, end your input with"]:
-                if init_msg in response_text:
-                    response_text = response_text.split(init_msg, 1)[1]
-            
-            response_text = response_text.strip()
-            
             try:
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="rubric",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=4000,
+                    temperature=0.7
+                )
+                
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
+                
+                response_text = result["result"]
+                
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
+                        break
+                
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                
             except Exception as e:
-                print(f"Could not send done message: {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Rubric generation complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Rubric generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("Rubric WebSocket disconnected")
+        logger.info("Rubric WebSocket disconnected")
     except Exception as e:
-        print(f"Rubric WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Rubric WebSocket error: {str(e)}")
 
 
 @app.websocket("/ws/kindergarten")
 async def kindergarten_websocket(websocket: WebSocket):
     await websocket.accept()
-    print("Kindergarten WebSocket connection accepted")
     
     try:
         while True:
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
-            print(f"Received kindergarten prompt: {prompt[:100]}...")
+            
+            if not prompt:
+                continue
             
             system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
             
@@ -1644,188 +818,62 @@ async def kindergarten_websocket(websocket: WebSocket):
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            cmd = [
-                LLAMA_CLI_PATH,
-                "-m", get_model_path(),
-                "-p", full_prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"Kindergarten Plan Generation Request")
-            print(f"{'='*60}\n")
-            
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            # Register process for cleanup tracking
-            register_process(process)
-            
-            process.stdin.close()
-            
-            all_output = []
-            generation_started = {'value': False}
-            
-            garbage_patterns = [
-                'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-                'llama_print', '> llama', 'sampler_', 'l>a m',
-            ]
-            
-            def read_stream(stream, output_list):
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n🎨 GENERATING KINDERGARTEN PLAN:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-            
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                if not should_stop_streaming:
-                    for pattern in garbage_patterns:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
-                
-                if should_stop_streaming:
-                    break
-                
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    skip_messages = [
-                        "To change it, set a different value via -sys PROMPT",
-                        "If you want to submit another line, end your input with"
-                    ]
-                    for msg in skip_messages:
-                        if msg in remaining:
-                            skip_index = remaining.find(msg)
-                            if skip_index != -1:
-                                last_streamed_index += skip_index + len(msg)
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                    last_streamed_index += 1
-                                remaining = current_output[last_streamed_index:]
-                    skip_initial_garbage = True
-                
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
-                    
-                    should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_break = True
-                            break
-                    
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                        except:
-                            break
-                    
-                    last_streamed_index += len(new_content)
-                    
-                    if should_break:
-                        break
-                
-                await asyncio.sleep(0.05)
-            
-            cleanup_process(process)
-            
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
-            
-            full_output = ''.join(all_output)
-            
-            response_text = full_output
-            
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
-            
-            # Remove initialization messages
-            for init_msg in ["To change it, set a different value via -sys PROMPT",
-                           "If you want to submit another line, end your input with"]:
-                if init_msg in response_text:
-                    response_text = response_text.split(init_msg, 1)[1]
-            
-            response_text = response_text.strip()
-            
             try:
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="kindergarten",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    temperature=0.7
+                )
+                
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
+                
+                response_text = result["result"]
+                
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
+                        break
+                
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                
             except Exception as e:
-                print(f"Could not send done message: {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Kindergarten plan generation complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Kindergarten generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("Kindergarten WebSocket disconnected")
+        logger.info("Kindergarten WebSocket disconnected")
     except Exception as e:
-        print(f"Kindergarten WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Kindergarten WebSocket error: {str(e)}")
 
 
 @app.websocket("/ws/multigrade")
 async def multigrade_websocket(websocket: WebSocket):
     await websocket.accept()
-    print("Multigrade WebSocket connection accepted")
     
     try:
         while True:
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
-            print(f"Received multigrade prompt: {prompt[:100]}...")
+            
+            if not prompt:
+                continue
             
             system_prompt = "You are an expert educator specializing in multigrade and multi-age classroom instruction. Create comprehensive lesson plans that address multiple grade levels simultaneously with differentiated activities and flexible grouping strategies."
             
@@ -1834,188 +882,62 @@ async def multigrade_websocket(websocket: WebSocket):
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            cmd = [
-                LLAMA_CLI_PATH,
-                "-m", get_model_path(),
-                "-p", full_prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"Multigrade Plan Generation Request")
-            print(f"{'='*60}\n")
-            
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            # Register process for cleanup tracking
-            register_process(process)
-            
-            process.stdin.close()
-            
-            all_output = []
-            generation_started = {'value': False}
-            
-            garbage_patterns = [
-                'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-                'llama_print', '> llama', 'sampler_', 'l>a m',
-            ]
-            
-            def read_stream(stream, output_list):
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n👥 GENERATING MULTIGRADE PLAN:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-            
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                if not should_stop_streaming:
-                    for pattern in garbage_patterns:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
-                
-                if should_stop_streaming:
-                    break
-                
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    skip_messages = [
-                        "To change it, set a different value via -sys PROMPT",
-                        "If you want to submit another line, end your input with"
-                    ]
-                    for msg in skip_messages:
-                        if msg in remaining:
-                            skip_index = remaining.find(msg)
-                            if skip_index != -1:
-                                last_streamed_index += skip_index + len(msg)
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                    last_streamed_index += 1
-                                remaining = current_output[last_streamed_index:]
-                    skip_initial_garbage = True
-                
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
-                    
-                    should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_break = True
-                            break
-                    
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                        except:
-                            break
-                    
-                    last_streamed_index += len(new_content)
-                    
-                    if should_break:
-                        break
-                
-                await asyncio.sleep(0.05)
-            
-            cleanup_process(process)
-            
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
-            
-            full_output = ''.join(all_output)
-            
-            response_text = full_output
-            
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
-            
-            # Remove initialization messages
-            for init_msg in ["To change it, set a different value via -sys PROMPT",
-                           "If you want to submit another line, end your input with"]:
-                if init_msg in response_text:
-                    response_text = response_text.split(init_msg, 1)[1]
-            
-            response_text = response_text.strip()
-            
             try:
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="multigrade",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    temperature=0.7
+                )
+                
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
+                
+                response_text = result["result"]
+                
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
+                        break
+                
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                
             except Exception as e:
-                print(f"Could not send done message: {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Multigrade plan generation complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Multigrade generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("Multigrade WebSocket disconnected")
+        logger.info("Multigrade WebSocket disconnected")
     except Exception as e:
-        print(f"Multigrade WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Multigrade WebSocket error: {str(e)}")
 
 
 @app.websocket("/ws/cross-curricular")
 async def cross_curricular_websocket(websocket: WebSocket):
     await websocket.accept()
-    print("Cross-curricular WebSocket connection accepted")
     
     try:
         while True:
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
-            print(f"Received cross-curricular prompt: {prompt[:100]}...")
+            
+            if not prompt:
+                continue
             
             system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
             
@@ -2024,176 +946,49 @@ async def cross_curricular_websocket(websocket: WebSocket):
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
-            cmd = [
-                LLAMA_CLI_PATH,
-                "-m", get_model_path(),
-                "-p", full_prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
-            ]
-            
-            print(f"\n{'='*60}")
-            print(f"Cross-Curricular Plan Generation Request")
-            print(f"{'='*60}\n")
-            
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=0,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-            )
-            
-            # Register process for cleanup tracking
-            register_process(process)
-            
-            process.stdin.close()
-            
-            all_output = []
-            generation_started = {'value': False}
-            
-            garbage_patterns = [
-                'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-                'llama_print', '> llama', 'sampler_', 'l>a m',
-            ]
-            
-            def read_stream(stream, output_list):
-                while True:
-                    char = stream.read(1)
-                    if not char:
-                        break
-                    output_list.append(char)
-                    
-                    current_text = ''.join(output_list)
-                    if not generation_started['value'] and "Not using system message" in current_text:
-                        generation_started['value'] = True
-                        print(f"\n{'='*60}\n🔗 GENERATING CROSS-CURRICULAR PLAN:\n{'='*60}\n")
-                    
-                    if generation_started['value']:
-                        sys.stdout.write(char)
-                        sys.stdout.flush()
-            
-            stderr_thread = threading.Thread(target=read_stream, args=(process.stderr, all_output))
-            stdout_thread = threading.Thread(target=read_stream, args=(process.stdout, all_output))
-            stderr_thread.daemon = True
-            stdout_thread.daemon = True
-            stderr_thread.start()
-            stdout_thread.start()
-            
-            start_time = time.time()
-            timeout_seconds = LLAMA_PARAMS["timeout"]
-            last_streamed_index = 0
-            found_assistant_start = False
-            skip_initial_garbage = False
-            should_stop_streaming = False
-            
-            while time.time() - start_time < timeout_seconds:
-                if process.poll() is not None:
-                    break
-                
-                current_output = ''.join(all_output)
-                
-                if not should_stop_streaming:
-                    for pattern in garbage_patterns:
-                        if pattern in current_output[last_streamed_index:]:
-                            should_stop_streaming = True
-                            print("\n[Detected end pattern, stopping stream]")
-                            break
-                
-                if should_stop_streaming:
-                    break
-                
-                if not found_assistant_start and "<|start_header_id|>assistant<|end_header_id|>" in current_output:
-                    found_assistant_start = True
-                    assistant_index = current_output.find("<|start_header_id|>assistant<|end_header_id|>")
-                    if assistant_index != -1:
-                        last_streamed_index = assistant_index + len("<|start_header_id|>assistant<|end_header_id|>")
-                        while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r', ' ']:
-                            last_streamed_index += 1
-                
-                if found_assistant_start and not skip_initial_garbage:
-                    remaining = current_output[last_streamed_index:]
-                    skip_messages = [
-                        "To change it, set a different value via -sys PROMPT",
-                        "If you want to submit another line, end your input with"
-                    ]
-                    for msg in skip_messages:
-                        if msg in remaining:
-                            skip_index = remaining.find(msg)
-                            if skip_index != -1:
-                                last_streamed_index += skip_index + len(msg)
-                                while last_streamed_index < len(current_output) and current_output[last_streamed_index] in ['\n', '\r']:
-                                    last_streamed_index += 1
-                                remaining = current_output[last_streamed_index:]
-                    skip_initial_garbage = True
-                
-                if found_assistant_start and skip_initial_garbage and last_streamed_index < len(current_output):
-                    new_content = current_output[last_streamed_index:]
-                    
-                    should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
-                        if pattern in new_content:
-                            pattern_index = new_content.find(pattern)
-                            new_content = new_content[:pattern_index]
-                            should_break = True
-                            break
-                    
-                    for char in new_content:
-                        try:
-                            await websocket.send_json({
-                                "type": "token",
-                                "content": char
-                            })
-                        except:
-                            break
-                    
-                    last_streamed_index += len(new_content)
-                    
-                    if should_break:
-                        break
-                
-                await asyncio.sleep(0.05)
-            
-            cleanup_process(process)
-            
-            stderr_thread.join(timeout=2)
-            stdout_thread.join(timeout=2)
-            
-            full_output = ''.join(all_output)
-            
-            response_text = full_output
-            
-            if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
-                response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
-            
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
-                if marker in response_text:
-                    response_text = response_text.split(marker)[0]
-            
-            # Remove initialization messages
-            for init_msg in ["To change it, set a different value via -sys PROMPT",
-                           "If you want to submit another line, end your input with"]:
-                if init_msg in response_text:
-                    response_text = response_text.split(init_msg, 1)[1]
-            
-            response_text = response_text.strip()
-            
             try:
+                inference = LlamaInference.get_instance()
+                result = inference.generate(
+                    tool_name="cross_curricular",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    temperature=0.7
+                )
+                
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
+                
+                response_text = result["result"]
+                
+                for char in response_text:
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": char
+                        })
+                        await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.error(f"Error streaming character: {e}")
+                        break
+                
                 await websocket.send_json({"type": "done", "full_response": response_text})
+                
             except Exception as e:
-                print(f"Could not send done message: {e}")
-
-            print(f"\n{'='*60}")
-            print(f"Cross-curricular plan generation complete - {len(response_text)} chars")
-            print(f"{'='*60}\n")
+                logger.error(f"Cross-curricular generation error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "message": str(e)
+                })
                         
     except WebSocketDisconnect:
-        print("Cross-curricular WebSocket disconnected")
+        logger.info("Cross-curricular WebSocket disconnected")
     except Exception as e:
-        print(f"Cross-curricular WebSocket error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Cross-curricular WebSocket error: {str(e)}")
 
 @app.get("/api/quiz-history")
 async def get_quiz_history():
@@ -2306,25 +1101,18 @@ async def delete_cross_curricular_history(plan_id: str):
 
 
 def scan_models_directory():
-    """
-    Scan the models directory for available AI model files.
-    Returns a list of model information dictionaries.
-    """
+    """Scan the models directory for available AI model files"""
     models = []
     
-    # Create models directory if it doesn't exist
     if not MODELS_DIR.exists():
         MODELS_DIR.mkdir(parents=True, exist_ok=True)
         return models
     
-    # Supported model file extensions
     model_extensions = ['.gguf', '.bin', '.ggml']
     
     try:
-        # Scan for model files
         for file_path in MODELS_DIR.iterdir():
             if file_path.is_file() and file_path.suffix.lower() in model_extensions:
-                # Get file size in MB
                 file_size_mb = file_path.stat().st_size / (1024 * 1024)
                 
                 model_info = {
@@ -2332,25 +1120,21 @@ def scan_models_directory():
                     "path": str(file_path),
                     "size_mb": round(file_size_mb, 2),
                     "extension": file_path.suffix,
-                    "is_active": file_path.name == get_selected_model()  # Check if this is the currently active model
+                    "is_active": file_path.name == get_selected_model()
                 }
                 models.append(model_info)
         
-        # Sort by name
         models.sort(key=lambda x: x["name"])
         
     except Exception as e:
-        print(f"Error scanning models directory: {e}")
+        logger.error(f"Error scanning models directory: {e}")
     
     return models
 
 
 @app.get("/api/models")
 async def get_available_models():
-    """
-    Get list of available AI models in the models directory.
-    Returns model information including name, size, and active status.
-    """
+    """Get list of available AI models in the models directory"""
     try:
         models = scan_models_directory()
         return {
@@ -2360,13 +1144,13 @@ async def get_available_models():
             "count": len(models)
         }
     except Exception as e:
-        print(f"Error retrieving models: {e}")
+        logger.error(f"Error retrieving models: {e}")
         raise HTTPException(status_code=500, detail=f"Error retrieving models: {str(e)}")
 
 
 @app.post("/api/models/select")
 async def select_model(request: Request):
-    """Set the active model for generation."""
+    """Set the active model for generation"""
     try:
         data = await request.json()
         model_name = data.get('modelName')
@@ -2377,7 +1161,6 @@ async def select_model(request: Request):
                 content={"error": "Model name is required"}
             )
         
-        # Verify model exists
         model_path = MODELS_DIR / model_name
         if not model_path.exists():
             return JSONResponse(
@@ -2385,7 +1168,6 @@ async def select_model(request: Request):
                 content={"error": f"Model not found: {model_name}"}
             )
         
-        # Save selection
         if set_selected_model(model_name):
             return JSONResponse(content={
                 "success": True,
@@ -2408,7 +1190,7 @@ async def select_model(request: Request):
 
 @app.get("/api/models/active")
 async def get_active_model():
-    """Get the currently active model."""
+    """Get the currently active model"""
     try:
         selected_model = get_selected_model()
         model_path = get_model_path()
@@ -2428,17 +1210,13 @@ async def get_active_model():
 
 @app.post("/api/models/open-folder")
 async def open_models_folder():
-    """
-    Open the models directory in Windows File Explorer.
-    """
+    """Open the models directory in Windows File Explorer"""
     try:
         models_path = str(MODELS_DIR.resolve())
         
-        # Ensure the directory exists
         if not MODELS_DIR.exists():
             MODELS_DIR.mkdir(parents=True, exist_ok=True)
         
-        # Open the folder in File Explorer (Windows)
         if os.name == 'nt':  # Windows
             subprocess.run(['explorer', models_path], check=True)
             return {
@@ -2447,14 +1225,13 @@ async def open_models_folder():
                 "path": models_path
             }
         else:
-            # For non-Windows systems, could add support for xdg-open (Linux) or open (macOS)
             return {
                 "success": False,
                 "message": "Opening folder is only supported on Windows",
                 "path": models_path
             }
     except Exception as e:
-        print(f"Error opening models folder: {e}")
+        logger.error(f"Error opening models folder: {e}")
         raise HTTPException(status_code=500, detail=f"Error opening models folder: {str(e)}")
 
 
@@ -2470,16 +1247,18 @@ async def health():
 @app.post("/api/shutdown")
 async def shutdown():
     """Gracefully shutdown the backend and cleanup all processes"""
-    print("\n" + "="*60)
-    print("Shutdown requested via API")
-    print("="*60 + "\n")
     cleanup_all_processes()
     return {"status": "shutting down"}
 
 @app.on_event("shutdown")
 async def on_shutdown():
     """Cleanup on application shutdown"""
-    print("\n" + "="*60)
-    print("Application shutdown event triggered")
-    print("="*60 + "\n")
+    if LlamaInference.is_initialized():
+        try:
+            llama = LlamaInference.get_instance()
+            llama.cleanup()
+            logger.info("Llama model cleaned up")
+        except Exception as e:
+            logger.error(f"Error cleaning up model: {e}")
+    
     cleanup_all_processes()
