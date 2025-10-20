@@ -87,6 +87,10 @@ async function startBackend() {
     startScript = 'start_backend.py';
     log.info(`Production mode - Backend path: ${backendPath}`);
     
+    // Set models directory for production (models are in resources/models)
+    const modelsPath = path.join(process.resourcesPath, 'models');
+    log.info(`Production mode - Models path: ${modelsPath}`);
+    
     // Verify files exist
     const requiredFiles = ['main.py', 'config.py', 'start_backend.py'];
     for (const file of requiredFiles) {
@@ -103,6 +107,13 @@ async function startBackend() {
 
   return new Promise((resolve, reject) => {
     const env = { ...process.env };
+    
+    // In production, set MODELS_DIR environment variable for backend
+    if (!isDev) {
+      const modelsPath = path.join(process.resourcesPath, 'models');
+      env.MODELS_DIR = modelsPath;
+      log.info(`Set MODELS_DIR environment variable: ${modelsPath}`);
+    }
     
     // Use the startup script in production
     const args = isDev ? 

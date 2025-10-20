@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, Play } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, Play, FolderOpen, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -17,13 +17,31 @@ interface SettingsProps {
   onDataChange?: (data: Record<string, unknown>) => void;
 }
 
+interface ModelInfo {
+  name: string;
+  path: string;
+  size_mb: number;
+  extension: string;
+  is_active: boolean;
+}
+
 const Settings: React.FC<SettingsProps> = () => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials } = useSettings();
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('');
+  const [isSelectingModel, setIsSelectingModel] = useState(false);
+  const [modelChangeMessage, setModelChangeMessage] = useState('');
   
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // Fetch available models on component mount
+  useEffect(() => {
+    fetchAvailableModels();
+  }, []);
 
   // Auto-show tutorial on first use
   useEffect(() => {
@@ -34,6 +52,66 @@ const Settings: React.FC<SettingsProps> = () => {
       setShowTutorial(true);
     }
   }, [settings, isTutorialCompleted]);
+
+  const fetchAvailableModels = async () => {
+    setLoadingModels(true);
+    try {
+      const response = await axios.get('http://localhost:8000/api/models');
+      if (response.data.success) {
+        setAvailableModels(response.data.models);
+        // Set the currently active model
+        const activeModel = response.data.models.find((m: ModelInfo) => m.is_active);
+        if (activeModel) {
+          setSelectedModel(activeModel.name);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch models:', error);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  const handleOpenModelsFolder = async () => {
+    try {
+      await axios.post('http://localhost:8000/api/models/open-folder');
+    } catch (error) {
+      console.error('Failed to open models folder:', error);
+      alert('Failed to open models folder');
+    }
+  };
+
+  // Handle model selection
+  const handleModelSelect = async (modelName: string) => {
+    if (modelName === selectedModel) return;
+    
+    setIsSelectingModel(true);
+    setModelChangeMessage('');
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/models/select', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modelName }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedModel(modelName);
+        setModelChangeMessage(`✅ Model changed to ${modelName}. Please restart the app for changes to take effect.`);
+      } else {
+        const error = await response.json();
+        setModelChangeMessage(`❌ Error: ${error.error || 'Failed to change model'}`);
+      }
+    } catch (error) {
+      console.error('Error selecting model:', error);
+      setModelChangeMessage('❌ Error: Failed to communicate with backend');
+    } finally {
+      setIsSelectingModel(false);
+    }
+  };
 
   const handleTutorialComplete = () => {
     markTutorialComplete(TUTORIAL_IDS.SETTINGS);
@@ -273,13 +351,64 @@ const Settings: React.FC<SettingsProps> = () => {
               <CardDescription>Select the AI model to use for generation</CardDescription>
             </CardHeader>
             <CardContent>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={settings.aiModel}
-                onChange={(e) => updateSettings({ aiModel: e.target.value })}
-              >
-                <option value="anthropic/claude-sonnet-4.5">PEARL AI </option>
-              </select>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <select
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    value={selectedModel}
+                    onChange={(e) => handleModelSelect(e.target.value)}
+                    disabled={isSelectingModel || loadingModels || availableModels.length === 0}
+                  >
+                    {isSelectingModel ? (
+                      <option value="">Changing model...</option>
+                    ) : loadingModels ? (
+                      <option>Loading models...</option>
+                    ) : availableModels.length === 0 ? (
+                      <option>No models found</option>
+                    ) : (
+                      availableModels.map((model) => (
+                        <option key={model.name} value={model.name}>
+                          {model.name} ({model.size_mb.toFixed(2)} MB)
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchAvailableModels}
+                    disabled={loadingModels}
+                    className="px-3"
+                    title="Refresh model list"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loadingModels ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+                {modelChangeMessage && (
+                  <div className={`mt-2 p-3 rounded-lg text-sm ${
+                    modelChangeMessage.startsWith('✅')
+                      ? 'bg-green-100 text-green-800 border border-green-300'
+                      : 'bg-red-100 text-red-800 border border-red-300'
+                  }`}>
+                    {modelChangeMessage}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleOpenModelsFolder}
+                    className="flex-1"
+                  >
+                    <FolderOpen className="w-4 h-4 mr-2" />
+                    Browse Models Folder
+                  </Button>
+                </div>
+                {availableModels.length > 0 && (
+                  <p className="text-sm text-gray-500">
+                    {availableModels.length} model{availableModels.length !== 1 ? 's' : ''} found in models directory
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
 

@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -6,6 +7,7 @@ import subprocess
 import os
 import io
 import sys
+import logging
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 import threading
 import time
@@ -13,9 +15,12 @@ import json
 import asyncio
 import signal
 import atexit
-from config import MODEL_PATH, LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS
+from config import get_model_path, get_selected_model, set_selected_model, LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR
 from pathlib import Path
 sys.stdout.reconfigure(encoding='utf-8')
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # Global set to track all active subprocess processes
 active_processes = set()
@@ -156,10 +161,10 @@ CHAT_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "chat_history.json")
 @app.on_event("startup")
 async def check_files():
     print("Checking for required files...")
-    if not os.path.exists(MODEL_PATH):
-        print(f"[Warning]  Warning: Model file not found at {MODEL_PATH}")
+    if not os.path.exists(get_model_path()):
+        print(f"[Warning]  Warning: Model file not found at {get_model_path()}")
     else:
-        print(f"[OK]Model file found: {MODEL_PATH}")
+        print(f"[OK]Model file found: {get_model_path()}")
     
     if not os.path.exists(LLAMA_CLI_PATH):
         print(f"[Warning]  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
@@ -460,7 +465,7 @@ async def generate_title(request: TitleGenerateRequest):
         # LLM command with strict parameters for title generation
         cmd = [
             LLAMA_CLI_PATH,
-            "-m", MODEL_PATH,
+            "-m", get_model_path(),
             "-p", prompt,
             "-n", "30",  # Maximum 30 tokens for title
             "-t", "4",
@@ -573,7 +578,7 @@ async def websocket_chat(websocket: WebSocket):
             
             cmd = [
                 str(LLAMA_CLI_PATH),
-                "-m", str(MODEL_PATH),
+                "-m", str(get_model_path()),
                 "-p", prompt,
                 "-n", str(LLAMA_PARAMS["max_tokens"]),
                 "-t", str(LLAMA_PARAMS["threads"]),
@@ -780,10 +785,10 @@ LESSON_PLAN_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "lesson_plan_
 @app.on_event("startup")
 async def check_files():
     print("Checking for required files...")
-    if not os.path.exists(MODEL_PATH):
-        print(f"[Warning]  Warning: Model file not found at {MODEL_PATH}")
+    if not os.path.exists(get_model_path()):
+        print(f"[Warning]  Warning: Model file not found at {get_model_path()}")
     else:
-        print(f"[OK]Model file found: {MODEL_PATH}")
+        print(f"[OK]Model file found: {get_model_path()}")
     
     if not os.path.exists(LLAMA_CLI_PATH):
         print(f"[Warning]  Warning: llama-cli.exe not found at {LLAMA_CLI_PATH}")
@@ -897,7 +902,7 @@ async def generate_lesson_plan(request: LessonPlanRequest):
         
         cmd = [
             LLAMA_CLI_PATH,
-            "-m", MODEL_PATH,
+            "-m", get_model_path(),
             "-p", prompt_text,
             "-n", "3000",  # Allow longer responses for lesson plans
             "-t", "4",
@@ -977,7 +982,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
             
             cmd = [
                 LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                "-m", get_model_path(),
                 "-p", full_prompt,
                 "-n", str(LLAMA_PARAMS["max_tokens"])
             ]
@@ -1198,7 +1203,7 @@ async def quiz_websocket(websocket: WebSocket):
             
             cmd = [
                 LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                "-m", get_model_path(),
                 "-p", full_prompt,
                 "-n", "4000",  # INCREASED TOKEN LIMIT
                 "-t", "4",
@@ -1425,6 +1430,11 @@ async def rubric_websocket(websocket: WebSocket):
             prompt = data.get("prompt", "")
             print(f"Received rubric prompt: {prompt[:100]}...")
             
+            # Validate prompt is not empty
+            if not prompt:
+                print("ERROR: Empty rubric prompt received")
+                continue
+            
             system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
             
             full_prompt = "<|begin_of_text|>"
@@ -1434,9 +1444,11 @@ async def rubric_websocket(websocket: WebSocket):
             
             cmd = [
                 LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                "-m", get_model_path(),
                 "-p", full_prompt,
-                "-n", str(LLAMA_PARAMS["max_tokens"])
+                "-n", "4000",  # INCREASED TOKEN LIMIT - same as quiz
+                "-t", "4",
+                "--temp", "0.7"
             ]
             
             print(f"\n{'='*60}")
@@ -1461,9 +1473,14 @@ async def rubric_websocket(websocket: WebSocket):
             all_output = []
             generation_started = {'value': False}
             
-            garbage_patterns = [
-                'llama_perf', '> EOF', 'Interrupted by user', 'llama_sampler',
-                'llama_print', '> llama', 'sampler_', 'l>a m',
+            init_markers = [
+                "llama_model_loader", "llama_load_model", "llm_load_print_meta",
+                "llama_new_context", "system_info", "Not using system message",
+                "To change it, set a different value via -sys PROMPT",
+                "llama_perf", "> EOF", "Interrupted by user", "llama_sampler",
+                "llama_print", "> llama", "sampler_", "l>a m",
+                "llama_kv_cache", "build info", "CPU info", "sampling params",
+                "model_desc", "apply_lora", "llama_context_params"
             ]
             
             def read_stream(stream, output_list):
@@ -1503,7 +1520,7 @@ async def rubric_websocket(websocket: WebSocket):
                 current_output = ''.join(all_output)
                 
                 if not should_stop_streaming:
-                    for pattern in garbage_patterns:
+                    for pattern in init_markers:
                         if pattern in current_output[last_streamed_index:]:
                             should_stop_streaming = True
                             print("\n[Detected end pattern, stopping stream]")
@@ -1526,7 +1543,6 @@ async def rubric_websocket(websocket: WebSocket):
                 if found_assistant_start and not skip_initial_garbage:
                     remaining = current_output[last_streamed_index:]
                     skip_messages = [
-                        "Not using system message. To change it, set a different value via -sys PROMPT",
                         "To change it, set a different value via -sys PROMPT",
                         "If you want to submit another line, end your input with"
                     ]
@@ -1546,7 +1562,7 @@ async def rubric_websocket(websocket: WebSocket):
                     new_content = current_output[last_streamed_index:]
                     
                     should_break = False
-                    for pattern in ["<|", *garbage_patterns]:
+                    for pattern in ["<|", *init_markers]:
                         if pattern in new_content:
                             pattern_index = new_content.find(pattern)
                             new_content = new_content[:pattern_index]
@@ -1581,7 +1597,7 @@ async def rubric_websocket(websocket: WebSocket):
             if "<|start_header_id|>assistant<|end_header_id|>" in response_text:
                 response_text = response_text.split("<|start_header_id|>assistant<|end_header_id|>", 1)[1]
             
-            for marker in garbage_patterns + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
+            for marker in init_markers + ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]:
                 if marker in response_text:
                     response_text = response_text.split(marker)[0]
             
@@ -1630,7 +1646,7 @@ async def kindergarten_websocket(websocket: WebSocket):
             
             cmd = [
                 LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                "-m", get_model_path(),
                 "-p", full_prompt,
                 "-n", str(LLAMA_PARAMS["max_tokens"])
             ]
@@ -1820,7 +1836,7 @@ async def multigrade_websocket(websocket: WebSocket):
             
             cmd = [
                 LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                "-m", get_model_path(),
                 "-p", full_prompt,
                 "-n", str(LLAMA_PARAMS["max_tokens"])
             ]
@@ -2010,7 +2026,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
             
             cmd = [
                 LLAMA_CLI_PATH,
-                "-m", MODEL_PATH,
+                "-m", get_model_path(),
                 "-p", full_prompt,
                 "-n", str(LLAMA_PARAMS["max_tokens"])
             ]
@@ -2289,11 +2305,164 @@ async def delete_cross_curricular_history(plan_id: str):
     return {"success": True}
 
 
+def scan_models_directory():
+    """
+    Scan the models directory for available AI model files.
+    Returns a list of model information dictionaries.
+    """
+    models = []
+    
+    # Create models directory if it doesn't exist
+    if not MODELS_DIR.exists():
+        MODELS_DIR.mkdir(parents=True, exist_ok=True)
+        return models
+    
+    # Supported model file extensions
+    model_extensions = ['.gguf', '.bin', '.ggml']
+    
+    try:
+        # Scan for model files
+        for file_path in MODELS_DIR.iterdir():
+            if file_path.is_file() and file_path.suffix.lower() in model_extensions:
+                # Get file size in MB
+                file_size_mb = file_path.stat().st_size / (1024 * 1024)
+                
+                model_info = {
+                    "name": file_path.name,
+                    "path": str(file_path),
+                    "size_mb": round(file_size_mb, 2),
+                    "extension": file_path.suffix,
+                    "is_active": file_path.name == get_selected_model()  # Check if this is the currently active model
+                }
+                models.append(model_info)
+        
+        # Sort by name
+        models.sort(key=lambda x: x["name"])
+        
+    except Exception as e:
+        print(f"Error scanning models directory: {e}")
+    
+    return models
+
+
+@app.get("/api/models")
+async def get_available_models():
+    """
+    Get list of available AI models in the models directory.
+    Returns model information including name, size, and active status.
+    """
+    try:
+        models = scan_models_directory()
+        return {
+            "success": True,
+            "models": models,
+            "models_directory": str(MODELS_DIR),
+            "count": len(models)
+        }
+    except Exception as e:
+        print(f"Error retrieving models: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving models: {str(e)}")
+
+
+@app.post("/api/models/select")
+async def select_model(request: Request):
+    """Set the active model for generation."""
+    try:
+        data = await request.json()
+        model_name = data.get('modelName')
+        
+        if not model_name:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Model name is required"}
+            )
+        
+        # Verify model exists
+        model_path = MODELS_DIR / model_name
+        if not model_path.exists():
+            return JSONResponse(
+                status_code=404,
+                content={"error": f"Model not found: {model_name}"}
+            )
+        
+        # Save selection
+        if set_selected_model(model_name):
+            return JSONResponse(content={
+                "success": True,
+                "message": f"Model set to {model_name}",
+                "selectedModel": model_name
+            })
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Failed to save model selection"}
+            )
+            
+    except Exception as e:
+        logger.error(f"Error selecting model: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.get("/api/models/active")
+async def get_active_model():
+    """Get the currently active model."""
+    try:
+        selected_model = get_selected_model()
+        model_path = get_model_path()
+        
+        return JSONResponse(content={
+            "modelName": selected_model,
+            "modelPath": model_path,
+            "exists": Path(model_path).exists()
+        })
+    except Exception as e:
+        logger.error(f"Error getting active model: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/models/open-folder")
+async def open_models_folder():
+    """
+    Open the models directory in Windows File Explorer.
+    """
+    try:
+        models_path = str(MODELS_DIR.resolve())
+        
+        # Ensure the directory exists
+        if not MODELS_DIR.exists():
+            MODELS_DIR.mkdir(parents=True, exist_ok=True)
+        
+        # Open the folder in File Explorer (Windows)
+        if os.name == 'nt':  # Windows
+            subprocess.run(['explorer', models_path], check=True)
+            return {
+                "success": True,
+                "message": "Models folder opened",
+                "path": models_path
+            }
+        else:
+            # For non-Windows systems, could add support for xdg-open (Linux) or open (macOS)
+            return {
+                "success": False,
+                "message": "Opening folder is only supported on Windows",
+                "path": models_path
+            }
+    except Exception as e:
+        print(f"Error opening models folder: {e}")
+        raise HTTPException(status_code=500, detail=f"Error opening models folder: {str(e)}")
+
+
 @app.get("/api/health")
 async def health():
     return {
         "status": "healthy",
-        "model_found": os.path.exists(MODEL_PATH),
+        "model_found": os.path.exists(get_model_path()),
         "llama_cli_found": os.path.exists(LLAMA_CLI_PATH),
         "chat_history_file": os.path.exists(CHAT_HISTORY_FILE)
     }
