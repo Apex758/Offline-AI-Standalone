@@ -74,7 +74,14 @@ const GRADE_SPECS = {
 };
 
 export function buildRubricPrompt(formData: RubricFormData): string {
+  // Add diagnostic logging
+  console.log('DEBUG: formData.gradeLevel =', formData.gradeLevel);
+  console.log('DEBUG: Available GRADE_SPECS keys =', Object.keys(GRADE_SPECS));
+  
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
+  
+  // Log the lookup result
+  console.log('DEBUG: gradeSpec =', gradeSpec);
   
   const prompt = `Create a comprehensive assessment rubric for Grade ${formData.gradeLevel} students.
 

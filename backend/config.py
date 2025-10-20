@@ -98,3 +98,10 @@ CORS_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
 ]
+
+# AI Model Configuration
+MODEL_PATH = os.getenv("MODEL_PATH", str(MODELS_DIR / MODEL_NAME))
+MODEL_VERBOSE = False  # Never show model logs
+MODEL_N_CTX = 4096
+MODEL_MAX_TOKENS = 2000
+MODEL_TEMPERATURE = 0.7
