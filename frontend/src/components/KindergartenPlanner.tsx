@@ -4,6 +4,7 @@ import AIAssistantPanel from './AIAssistantPanel';
 import KindergartenEditor from './KindergartenEditor';
 import type { ParsedKindergartenPlan } from './KindergartenEditor';
 import axios from 'axios';
+import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -676,29 +677,14 @@ ${contentToExport}`;
     setLoading(true);
     setStreamingPlan('');
 
-    const prompt = `Generate a developmentally appropriate kindergarten lesson plan with the following specifications:
+    // Map formData to match the prompt builder's expected interface
+    const mappedData = {
+      ...formData,
+      theme: formData.lessonTopic,
+      day: formData.dayOfWeek
+    };
 
-LESSON INFORMATION:
-- Topic: ${formData.lessonTopic}
-- Curriculum Unit: ${formData.curriculumUnit}
-- Week: ${formData.week}
-- Day: ${formData.dayOfWeek}
-- Date: ${formData.date}
-- Age Group: ${formData.ageGroup}
-- Number of Students: ${formData.students}
-- Duration: ${formData.duration} minutes
-- Creativity Level: ${formData.creativityLevel}/100
-
-LEARNING DOMAINS:
-${formData.learningDomains.join(', ')}
-
-${formData.additionalRequirements ? `ADDITIONAL REQUIREMENTS:\n${formData.additionalRequirements}\n` : ''}
-
-GENERATION OPTIONS:
-${formData.includeAssessments ? '- Include assessment strategies' : ''}
-${formData.includeMaterials ? '- Include materials list' : ''}
-
-Please create an engaging, play-based lesson plan with clear learning objectives, hands-on activities, and developmentally appropriate practices. Focus on exploration, creativity, and social-emotional learning.`;
+    const prompt = buildKindergartenPrompt(mappedData);
 
     try {
       wsRef.current.send(JSON.stringify({ prompt }));
