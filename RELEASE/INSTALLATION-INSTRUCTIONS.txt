@@ -5,30 +5,30 @@ IMPORTANT: Both files are required for installation!
 
 FILES IN THIS FOLDER:
 1. OECS-Learning-Hub-Setup.exe    (Application installer ~100-200 MB)
-2. PEARL_AI.gguf    (AI Model ~900 MB)
+2. models/                        (AI Models folder)
+   Contains all required AI model files (.gguf)
 
 INSTALLATION STEPS:
 -------------------
-1. Keep BOTH files in the SAME folder
-2. Run OECS-Learning-Hub-Setup.exe
-3. The installer will automatically detect and copy the model file
-4. Follow the installation wizard
-5. Launch the application from your desktop
+1. Run OECS-Learning-Hub-Setup.exe
+2. The installer includes all necessary files
+3. Follow the installation wizard
+4. Launch the application from your desktop
 
 NOTES:
 ------
-- The model file MUST be in the same folder as the installer
-- If the installer doesn't find the model, you can manually copy it later
-- Manual copy location: C:\Users\[YourName]\AppData\Local\Programs\oecs-learning-hub\resources\backend-bundle\
+- All AI models are already included in the installer
+- Models are automatically configured and ready to use
+- No manual file copying is required
 
 TROUBLESHOOTING:
 ----------------
 If the app doesn't work after installation:
-1. Check that the model file is in: 
-   C:\Users\[YourName]\AppData\Local\Programs\oecs-learning-hub\resources\backend-bundle\
-2. The file should be named: PEARL_AI.gguf
-3. The file size should be around 900 MB
+1. Check that the models folder exists at:
+   C:\Users\[YourName]\AppData\Local\Programs\oecs-learning-hub\resources\models\
+2. The folder should contain .gguf model files
+3. Verify the model files are not corrupted
 
 For support, contact: delon.pierre@oecs.int
 
-Generated: 2025-10-19 20:05:36
+Generated: 2025-10-19 21:18:08

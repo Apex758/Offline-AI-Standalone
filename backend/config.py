@@ -2,13 +2,55 @@ import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 from pathlib import Path
+import json
 
 # Base directory
 BASE_DIR = os.path.dirname(__file__)
 
 BASE_DIR = Path(__file__).parent
 MODEL_NAME = "PEARL_AI.gguf"
-MODEL_PATH = str(BASE_DIR / MODEL_NAME)
+
+# Models directory - at root level of the project
+PROJECT_ROOT = BASE_DIR.parent
+
+# Allow overriding models directory via environment variable (for packaged apps)
+if os.environ.get('MODELS_DIR'):
+    MODELS_DIR = Path(os.environ.get('MODELS_DIR'))
+else:
+    MODELS_DIR = PROJECT_ROOT / "models"
+
+# Model configuration file
+MODEL_CONFIG_FILE = MODELS_DIR / ".model-config.json"
+
+def get_selected_model():
+    """Get the currently selected model from config file."""
+    if MODEL_CONFIG_FILE.exists():
+        try:
+            with open(MODEL_CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                return config.get('selectedModel', MODEL_NAME)
+        except Exception:
+            pass
+    return MODEL_NAME
+
+def set_selected_model(model_name):
+    """Save the selected model to config file."""
+    try:
+        MODEL_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(MODEL_CONFIG_FILE, 'w') as f:
+            json.dump({'selectedModel': model_name}, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving model config: {e}")
+        return False
+
+def get_model_path():
+    """Get the full path to the currently selected model."""
+    selected_model = get_selected_model()
+    return str(MODELS_DIR / selected_model)
+
+# Update MODEL_PATH to use selected model
+MODEL_PATH = get_model_path()
 
 # llama-cli.exe is in bin/Release subdirectory
 LLAMA_CLI_PATH = os.path.join(BASE_DIR, "bin", "Release", "llama-cli.exe")

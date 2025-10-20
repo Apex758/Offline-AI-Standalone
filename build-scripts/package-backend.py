@@ -74,26 +74,11 @@ def copy_backend_files(bundle_dir):
                 print_warning(f"File not found: {file}")
 
 def copy_model_file(bundle_dir):
-    """Copy the LLM model file to bundle."""
-    print_step("Checking for model file...")
-    
-    from backend.config import MODEL_NAME
-    
-    model_file = os.path.join("backend", MODEL_NAME)
-    
-    if os.path.exists(model_file):
-        file_size = os.path.getsize(model_file) / (1024 * 1024)  # Size in MB
-        print_step(f"Copying model file ({file_size:.1f} MB)... This may take a while...")
-        
-        dest = os.path.join(bundle_dir, MODEL_NAME)
-        shutil.copy2(model_file, dest)
-        print_success("Model file copied successfully")
-    else:
-        print_error("Model file not found!")
-        print_warning("The application will not work without the model file.")
-        print_warning("Please ensure the model file is downloaded using Git LFS:")
-        print_warning("  git lfs install")
-        print_warning("  git lfs pull")
+    """Skip model file copy - models are now in separate resources/models folder."""
+    print_step("Skipping model file copy...")
+    print_success("Models will be copied to resources/models during final build")
+    print_warning("NOTE: Models are now stored in the 'models' folder at project root")
+    print_warning("      They will be copied to resources/models by the build scripts")
 
 def copy_llama_cli(bundle_dir):
     """Copy llama-cli executables to bundle."""
@@ -231,7 +216,6 @@ def verify_bundle(bundle_dir):
     critical_files = [
         "main.py",
         "config.py",
-        MODEL_NAME,
         os.path.join("bin", "Release", "llama-cli.exe"),
         "python_libs"
     ]

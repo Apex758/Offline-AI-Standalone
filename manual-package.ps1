@@ -29,18 +29,9 @@ if (Test-Path "backend\lesson_plan_history.json") {
     "[]" | Out-File -FilePath "$bundleDir\lesson_plan_history.json" -Encoding UTF8
 }
 
-Write-Host "Copying model file (this may take a while)..." -ForegroundColor Yellow
-# Copy model file dynamically based on backend/config.py
-# Get the MODEL_NAME value from backend/config.py
-$python = "python"
-$modelName = & $python -c "import sys; sys.path.append('backend'); from config import MODEL_NAME; print(MODEL_NAME)"
-
-$modelPath = "backend\$modelName"
-if (Test-Path $modelPath) {
-    Copy-Item $modelPath -Destination $bundleDir
-} else {
-    Write-Host "WARNING: Model file $modelName not found in backend!" -ForegroundColor Red
-}
+Write-Host "Skipping model file copy - models will be in separate resources/models folder..." -ForegroundColor Yellow
+Write-Host "NOTE: Models are now stored in the 'models' folder at project root" -ForegroundColor Cyan
+Write-Host "      They will be copied to resources/models during the final build" -ForegroundColor Cyan
 
 Write-Host "Copying llama-cli..." -ForegroundColor Yellow
 # Copy llama-cli
