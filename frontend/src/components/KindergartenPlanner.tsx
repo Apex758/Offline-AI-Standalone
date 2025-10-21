@@ -472,7 +472,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       if (!shouldReconnectRef.current) return;
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/kindergarten');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/kindergarten`);
         
         ws.onopen = () => {
           console.log('Kindergarten WebSocket connected');

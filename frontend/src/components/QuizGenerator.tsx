@@ -201,7 +201,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       if (!shouldReconnectRef.current) return;
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/quiz');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/quiz`);
         
         ws.onopen = () => {
           console.log('Quiz WebSocket connected');

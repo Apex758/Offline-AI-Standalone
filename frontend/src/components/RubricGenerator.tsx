@@ -547,7 +547,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       }
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/rubric');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/rubric`);
         
         ws.onopen = () => {
           console.log('Rubric WebSocket connected');
