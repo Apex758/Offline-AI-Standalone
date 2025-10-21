@@ -16,16 +16,15 @@ python -m uvicorn main:app --reload --port 8000
 
 Next steps:
 
--Parse plans and quizzes into json structure
--Edit fields with rich text editor after generation 
-6`
+
+-Implement  rich text editor after generation 
 -Convert curriculum to vectors in FAISS
 -Connect the curriculum with the lesson planners.
 -Connect AI Assistant
 
 -Better organize curriculum pages and develop map to feed into ai
 
--Create and include options for LLM
+-Create options for LLM
 
 -Apply LoRA patches 
 
@@ -36,8 +35,6 @@ Next steps:
 -Add walkthrough element
 
 -FIX PROMPTS
-
--other models
 
 -settings for updates
 

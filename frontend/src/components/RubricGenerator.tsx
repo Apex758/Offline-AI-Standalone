@@ -547,9 +547,21 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       }
 
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        const ws = new WebSocket(`${protocol}//${host}/ws/rubric`);
+        // Detect if running in Electron
+        const isElectron = typeof window !== 'undefined' && window.electronAPI;
+
+        let wsUrl: string;
+        if (isElectron) {
+          // Electron/Production: direct connection to backend
+          wsUrl = 'ws://127.0.0.1:8000/ws/rubric';
+        } else {
+          // Vite/Development: use proxy through dev server
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const host = window.location.host;
+          wsUrl = `${protocol}//${host}/ws/rubric`;
+        }
+
+        const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
           console.log('Rubric WebSocket connected');

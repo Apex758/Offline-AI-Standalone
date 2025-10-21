@@ -49,38 +49,50 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       if (!shouldReconnectRef.current) return;
 
       try {
-        // Determine WebSocket route depending on mode and content type
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        let route = '';
+        // Detect if running in Electron
+        const isElectron = typeof window !== 'undefined' && window.electronAPI;
+
+        // Determine WebSocket endpoint based on mode and content type
+        let endpoint = '';
         if (mode === 'chat') {
-          route = `${protocol}//${host}/ws/chat`;
+          endpoint = '/ws/chat';
         } else {
           switch (contentType) {
             case 'lesson':
-              route = `${protocol}//${host}/ws/lesson-plan`;
+              endpoint = '/ws/lesson-plan';
               break;
             case 'quiz':
-              route = `${protocol}//${host}/ws/quiz`;
+              endpoint = '/ws/quiz';
               break;
             case 'rubric':
-              route = `${protocol}//${host}/ws/rubric`;
+              endpoint = '/ws/rubric';
               break;
             case 'kindergarten':
-              route = `${protocol}//${host}/ws/kindergarten`;
+              endpoint = '/ws/kindergarten';
               break;
             case 'multigrade':
-              route = `${protocol}//${host}/ws/multigrade`;
+              endpoint = '/ws/multigrade';
               break;
             case 'cross-curricular':
-              route = `${protocol}//${host}/ws/cross-curricular`;
+              endpoint = '/ws/cross-curricular';
               break;
             default:
-              route = `${protocol}//${host}/ws/chat`;
+              endpoint = '/ws/chat';
           }
         }
 
-        const ws = new WebSocket(route);
+        let wsUrl: string;
+        if (isElectron) {
+          // Electron/Production: direct connection to backend
+          wsUrl = `ws://127.0.0.1:8000${endpoint}`;
+        } else {
+          // Vite/Development: use proxy through dev server
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const host = window.location.host;
+          wsUrl = `${protocol}//${host}${endpoint}`;
+        }
+
+        const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
           console.log('AI Assistant WebSocket connected');
@@ -138,7 +150,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       }
       wsRef.current = null;
     };
-  }, [isOpen]);
+  }, [isOpen, mode, contentType]);
 
   const handleSend = () => {
     if (!input.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;

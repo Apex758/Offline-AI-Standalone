@@ -539,9 +539,21 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       if (!shouldReconnectRef.current) return;
 
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        const ws = new WebSocket(`${protocol}//${host}/ws/multigrade`);
+        // Detect if running in Electron
+        const isElectron = typeof window !== 'undefined' && window.electronAPI;
+
+        let wsUrl: string;
+        if (isElectron) {
+          // Electron/Production: direct connection to backend
+          wsUrl = 'ws://127.0.0.1:8000/ws/multigrade';
+        } else {
+          // Vite/Development: use proxy through dev server
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const host = window.location.host;
+          wsUrl = `${protocol}//${host}/ws/multigrade`;
+        }
+
+        const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
           console.log('Multigrade WebSocket connected');
