@@ -31,7 +31,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <img src="/storytelling-circle.png" alt="Storytelling Circle" className="w-full h-full object-cover" />
+              <img src="./storytelling-circle.png" alt="Storytelling Circle" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students take turns sharing stories based on personal experiences, cultural tales, or creative prompts.
@@ -61,7 +61,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <img src="/reading-response-journals.png" alt="Reading Response Journals" className="w-full h-full object-cover" />
+              <img src="./reading-response-journals.png" alt="Reading Response Journals" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students maintain journals to record their thoughts, questions, and connections to texts they read. This
@@ -88,7 +88,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <img src="/authors-workshop.png" alt="Authors" className="w-full h-full object-cover" />
+              <img src="./authors-workshop.png" alt="Authors" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students engage in the complete writing process: brainstorming, drafting, revising, editing, and
@@ -115,7 +115,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <img src="/readers-theater-children.png" alt="Reader" className="w-full h-full object-cover" />
+              <img src="./readers-theater-children.png" alt="Reader" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students perform dramatic readings of scripts, focusing on expression, fluency, and character voices. This
@@ -144,7 +144,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <img src="/vocab-detective.png" alt="Vocabulary Detective" className="w-full h-full object-cover" />
+              <img src="./vocab-detective.png" alt="Vocabulary Detective" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students become "word detectives," investigating new vocabulary through context clues, word parts, and
@@ -171,7 +171,7 @@ export default function Grade3LanguageArtsActivitiesPage() {
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-              <img src="/diverse-children-poetry.png" alt="Cultural Poetry Exploration" className="w-full h-full object-cover" />
+              <img src="./diverse-children-poetry.png" alt="Cultural Poetry Exploration" className="w-full h-full object-cover" />
             </div>
             <p className="mb-4">
               Students explore poetry from diverse cultures, analyzing structures, themes, and language. They create

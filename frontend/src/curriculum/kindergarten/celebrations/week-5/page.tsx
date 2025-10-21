@@ -419,7 +419,7 @@ export default function CelebrationsUnitWeek5() {
 
         <div className="md:col-span-2">
 
-          <img src="/colorful-celebration-art-collages-and-posters.png" alt="Community celebrations and gatherings" className="w-auto h-auto" />
+          <img src="./colorful-celebration-art-collages-and-posters.png" alt="Community celebrations and gatherings" className="w-auto h-auto" />
 
         </div>
 

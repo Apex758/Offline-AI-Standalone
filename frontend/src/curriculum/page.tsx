@@ -206,7 +206,7 @@ export default function CurriculumPage() {
           {/* Kindergarten */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/kindergarten.png" alt="Kindergarten classroom" className="w-full h-full object-cover" />
+              <img src="./kindergarten.png" alt="Kindergarten classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Kindergarten</h3>
@@ -235,7 +235,7 @@ export default function CurriculumPage() {
           {/* Grade 1 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/grade_1.png" alt="Grade 1 classroom" className="w-full h-full object-cover" />
+              <img src="./grade_1.png" alt="Grade 1 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 1</h3>
@@ -264,7 +264,7 @@ export default function CurriculumPage() {
           {/* Grade 2 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/Grade_2.png" alt="Grade 2 classroom" className="w-full h-full object-cover" />
+              <img src="./Grade_2.png" alt="Grade 2 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 2</h3>
@@ -293,7 +293,7 @@ export default function CurriculumPage() {
           {/* Grade 3 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/grade_3.png" alt="Grade 3 classroom" className="w-full h-full object-cover" />
+              <img src="./grade_3.png" alt="Grade 3 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 3</h3>
@@ -322,7 +322,7 @@ export default function CurriculumPage() {
           {/* Grade 4 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/grade_4.png" alt="Grade 4 classroom" className="w-full h-full object-cover" />
+              <img src="./grade_4.png" alt="Grade 4 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 4</h3>
@@ -351,7 +351,7 @@ export default function CurriculumPage() {
           {/* Grade 5 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/grade_5.png" alt="Grade 5 classroom" className="w-full h-full object-cover" />
+              <img src="./grade_5.png" alt="Grade 5 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 5</h3>
@@ -380,7 +380,7 @@ export default function CurriculumPage() {
           {/* Grade 6 */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/grade_6.png" alt="Grade 6 classroom" className="w-full h-full object-cover" />
+              <img src="./grade_6.png" alt="Grade 6 classroom" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Grade 6</h3>
@@ -408,7 +408,7 @@ export default function CurriculumPage() {
           {/* Enrichment Programmes */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/enrichment.png" alt="Enrichment programmes" className="w-full h-full object-cover" />
+              <img src="./enrichment.png" alt="Enrichment programmes" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Enrichment Programmes</h3>
@@ -437,7 +437,7 @@ export default function CurriculumPage() {
           {/* Digital Skills */}
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/digital_skills.png" alt="Digital skills" className="w-full h-full object-cover" />
+              <img src="./digital_skills.png" alt="Digital skills" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Digital Skills</h3>
@@ -470,7 +470,7 @@ export default function CurriculumPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/tresources.png" alt="Teaching resources" className="w-full h-full object-cover" />
+              <img src="./tresources.png" alt="Teaching resources" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Teaching Resources</h3>
@@ -488,7 +488,7 @@ export default function CurriculumPage() {
 
           <div className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48 overflow-hidden">
-              <img src="/planner.png" alt="Lesson planning" className="w-full h-full object-cover" />
+              <img src="./planner.png" alt="Lesson planning" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-1">Lesson Planner</h3>

@@ -117,7 +117,7 @@ export default function DebateClubPage() {
           <Card className="mb-6">
             <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
               <FallbackImage
-                src="/placeholder-12wti.png"
+                src="./placeholder-12wti.png"
                 alt="Students participating in a classroom debate"
                 fallbackSrc="/placeholder.svg?height=200&width=400&query=debate+club"
                 fill

@@ -114,7 +114,7 @@ export default function PodcastProductionPage() {
           <Card className="mb-6">
             <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
               <FallbackImage
-                src="/placeholder-9r9wm.png"
+                src="./placeholder-9r9wm.png"
                 alt="Students recording a podcast"
                 fallbackSrc="/placeholder.svg?height=200&width=400&query=podcast+production"
                 fill

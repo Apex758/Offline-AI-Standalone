@@ -191,7 +191,7 @@ export default function GamesUnitWeek3() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-indoor-outdoor.png" alt="Children’s crayon drawing with the words “INDOOR & OUTDOOR GAMES,” showing kids playing, a dog, a ball, trees, sun, and a house to represent natural and built features of different play environments." className="w-auto h-auto" />
+          <img src="./kindergarten-indoor-outdoor.png" alt="Children’s crayon drawing with the words “INDOOR & OUTDOOR GAMES,” showing kids playing, a dog, a ball, trees, sun, and a house to represent natural and built features of different play environments." className="w-auto h-auto" />
 
         </div>
 

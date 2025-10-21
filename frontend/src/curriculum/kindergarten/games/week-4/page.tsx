@@ -191,7 +191,7 @@ export default function GamesUnitWeek4() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-week4.png" alt="Children’s crayon drawing with the words “GAMES & SPORTS,” showing kids playing with a soccer ball, basketball, and jump rope. Includes labels like “MATERIALS,” “SKILLS,” “PUSH,” “PULL,” “FAIR PLAY,” and “SPORTSMANSHIP,” with images of children smiling, a trophy, and cooperative play." className="w-auto h-auto" />
+          <img src="./kindergarten-week4.png" alt="Children’s crayon drawing with the words “GAMES & SPORTS,” showing kids playing with a soccer ball, basketball, and jump rope. Includes labels like “MATERIALS,” “SKILLS,” “PUSH,” “PULL,” “FAIR PLAY,” and “SPORTSMANSHIP,” with images of children smiling, a trophy, and cooperative play." className="w-auto h-auto" />
 
         </div>
 

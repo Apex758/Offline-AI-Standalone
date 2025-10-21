@@ -63,7 +63,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder-g5qky.png" alt="Push and Pull Forces Activity" className="w-full h-full object-cover" />
+                      <img src="./placeholder-g5qky.png" alt="Push and Pull Forces Activity" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -148,7 +148,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder-2rmq6.png" alt="Tug of War Activity" className="w-full h-full object-cover" />
+                      <img src="./placeholder-2rmq6.png" alt="Tug of War Activity" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function ForcesInteractionsActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/children-testing-magnets.png" alt="Testing Magnetic Materials" className="w-full h-full object-cover" />
+                      <img src="./children-testing-magnets.png" alt="Testing Magnetic Materials" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

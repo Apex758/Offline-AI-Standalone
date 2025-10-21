@@ -61,7 +61,7 @@ export default function PlantsAndAnimalsUnit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <img src="/plants_animals.png" alt="Kindergarten students exploring plants and animals" className="w-auto h-auto" />
+          <img src="./plants_animals.png" alt="Kindergarten students exploring plants and animals" className="w-auto h-auto" />
         </div>
         <div>
           <Card className="border-emerald-200 h-full shadow-md">

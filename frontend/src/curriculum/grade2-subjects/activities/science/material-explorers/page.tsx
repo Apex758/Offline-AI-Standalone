@@ -38,7 +38,7 @@ export default function MaterialExplorersActivity() {
 
           <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
             <FallbackImage
-              src="/material-explorers.png"
+              src="./material-explorers.png"
               fallbackSrc="/placeholder.svg?height=400&width=800&query=Children%20examining%20different%20materials"
               alt="Material Explorers Activity"
               fill

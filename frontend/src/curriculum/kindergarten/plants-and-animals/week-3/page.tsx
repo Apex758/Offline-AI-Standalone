@@ -189,7 +189,7 @@ export default function PlantsAndAnimalsWeek3() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-habitats.png" alt="Children’s crayon drawing with the word “HABITATS,” showing Arctic with a polar bear, Ocean with dolphins and fish, Desert with cactus and camel, and Forest with trees, fox, and a child, illustrating how plants and animals live in different environments." className="w-auto h-auto" />
+          <img src="./kindergarten-habitats.png" alt="Children’s crayon drawing with the word “HABITATS,” showing Arctic with a polar bear, Ocean with dolphins and fish, Desert with cactus and camel, and Forest with trees, fox, and a child, illustrating how plants and animals live in different environments." className="w-auto h-auto" />
 
         </div>
 

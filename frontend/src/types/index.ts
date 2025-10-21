@@ -16,7 +16,7 @@ export interface Message {
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'split' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'split' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings';
   active: boolean;
   data?: any;
   splitTabs?: [string, string];
@@ -26,7 +26,7 @@ export interface Tool {
   id: string;
   name: string;
   icon: string;
-  type: 'chat' | 'grader' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings';
   description: string;
   group?: string;
 }

@@ -174,7 +174,7 @@ export default function WeatherUnitWeek3() {
 
             <div className="absolute inset-0 flex items-center justify-center p-2">
 
-              <img src="/caribbean-weather-shapes.png" alt="Weather shapes and weather patterns" className="w-full h-full object-cover" />
+              <img src="./caribbean-weather-shapes.png" alt="Weather shapes and weather patterns" className="w-full h-full object-cover" />
 
             </div>
 
@@ -664,9 +664,9 @@ export default function WeatherUnitWeek3() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-seasons-spring.png" alt="Spring season activities" className="w-auto h-auto" />
+                      <img src="./kindergarten-seasons-spring.png" alt="Spring season activities" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-seasons-sorting.png" alt="Seasonal sorting game" className="w-auto h-auto" />
+                      <img src="./kindergarten-seasons-sorting.png" alt="Seasonal sorting game" className="w-auto h-auto" />
 
                     </div>
 
@@ -940,9 +940,9 @@ export default function WeatherUnitWeek3() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-spring-nature-walk.png" alt="Spring nature walk activities" className="w-auto h-auto" />
+                      <img src="./kindergarten-spring-nature-walk.png" alt="Spring nature walk activities" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-spring-flowers.png" alt="Spring flowers and growth" className="w-auto h-auto" />
+                      <img src="./kindergarten-spring-flowers.png" alt="Spring flowers and growth" className="w-auto h-auto" />
 
                     </div>
 
@@ -1216,9 +1216,9 @@ export default function WeatherUnitWeek3() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-summer-crafts.png" alt="Summer craft activities" className="w-auto h-auto" />
+                      <img src="./kindergarten-summer-crafts.png" alt="Summer craft activities" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-summer-activities.png" alt="Summer fun activities" className="w-auto h-auto" />
+                      <img src="./kindergarten-summer-activities.png" alt="Summer fun activities" className="w-auto h-auto" />
 
                     </div>
 
@@ -1492,9 +1492,9 @@ export default function WeatherUnitWeek3() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-fall-leaves.png" alt="Fall leaves and colors" className="w-auto h-auto" />
+                      <img src="./kindergarten-fall-leaves.png" alt="Fall leaves and colors" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-leaf-art.png" alt="Leaf art projects" className="w-auto h-auto" />
+                      <img src="./kindergarten-leaf-art.png" alt="Leaf art projects" className="w-auto h-auto" />
 
                     </div>
 
@@ -1768,9 +1768,9 @@ export default function WeatherUnitWeek3() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-winter-crafts.png" alt="Winter craft activities" className="w-auto h-auto" />
+                      <img src="./kindergarten-winter-crafts.png" alt="Winter craft activities" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-winter-activities.png" alt="Winter fun activities" className="w-auto h-auto" />
+                      <img src="./kindergarten-winter-activities.png" alt="Winter fun activities" className="w-auto h-auto" />
 
                     </div>
 

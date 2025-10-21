@@ -806,8 +806,7 @@ ${contentToExport}`;
                 onSave={saveEditedRubric}
                 onCancel={cancelEditing}
               />
-            ) : (
-              // Show generated rubric (existing display code)
+            ) : (   
               <>
                 <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
                   <div>

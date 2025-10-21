@@ -189,7 +189,7 @@ export default function PlantsAndAnimalsWeek4() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-environments.png" alt="Children’s crayon drawing with the words “CHANGING ENVIRONMENTS,” showing a boy building a house, a beaver cutting a tree, a rabbit digging, an elephant near palm trees, plants growing, and symbols of sun, rain, and shelter to illustrate how living things change their environments." className="w-auto h-auto" />
+          <img src="./kindergarten-environments.png" alt="Children’s crayon drawing with the words “CHANGING ENVIRONMENTS,” showing a boy building a house, a beaver cutting a tree, a rabbit digging, an elephant near palm trees, plants growing, and symbols of sun, rain, and shelter to illustrate how living things change their environments." className="w-auto h-auto" />
 
         </div>
 

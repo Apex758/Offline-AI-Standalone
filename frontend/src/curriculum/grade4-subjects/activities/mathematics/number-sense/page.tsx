@@ -35,7 +35,7 @@ export default function NumberSenseActivitiesPage() {
           </div>
           <div className="md:w-1/4 flex justify-center mt-4 md:mt-0">
             <img
-              src="/math-numbers-fractions.png"
+              src="./math-numbers-fractions.png"
               alt="Number sense illustration"
               className="rounded-full border-4 border-white shadow-md"
             />
@@ -69,7 +69,7 @@ export default function NumberSenseActivitiesPage() {
           <h2 className="text-2xl font-semibold mb-4">Place Value Activities</h2>
           <div className="flex justify-center mb-6">
             <img
-              src="/place-value-blocks.png"
+              src="./place-value-blocks.png"
               alt="Place value blocks and activities"
               className="rounded-lg shadow-md"
             />
@@ -170,7 +170,7 @@ export default function NumberSenseActivitiesPage() {
           <h2 className="text-2xl font-semibold mb-4">Fraction Activities</h2>
           <div className="flex justify-center mb-6">
             <img
-              src="/fraction-circles-math.png"
+              src="./fraction-circles-math.png"
               alt="Fraction circles and manipulatives"
               className="rounded-lg shadow-md"
             />

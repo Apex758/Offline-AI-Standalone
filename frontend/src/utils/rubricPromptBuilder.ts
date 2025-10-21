@@ -73,12 +73,30 @@ const GRADE_SPECS = {
   }
 };
 
+// Helper function to normalize grade level format
+function normalizeGradeLevel(gradeLevel: string): keyof typeof GRADE_SPECS {
+  // Remove "Grade " prefix if present
+  const normalized = gradeLevel.replace(/^Grade\s*/i, '').trim();
+  
+  // Handle Kindergarten
+  if (normalized.toLowerCase().startsWith('k')) {
+    return 'K';
+  }
+  
+  // Return the number as string
+  return normalized as keyof typeof GRADE_SPECS;
+}
+
 export function buildRubricPrompt(formData: RubricFormData): string {
   // Add diagnostic logging
   console.log('DEBUG: formData.gradeLevel =', formData.gradeLevel);
-  console.log('DEBUG: Available GRADE_SPECS keys =', Object.keys(GRADE_SPECS));
+  console.log('DEBUG: Available GRADE_SPECS keys =', Object.keys(GRADE_SPECS).join(','));
   
-  const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
+  // Normalize the grade level before lookup
+  const gradeKey = normalizeGradeLevel(formData.gradeLevel);
+  console.log('DEBUG: normalized gradeKey =', gradeKey);
+  
+  const gradeSpec = GRADE_SPECS[gradeKey];
   
   // Log the lookup result
   console.log('DEBUG: gradeSpec =', gradeSpec);

@@ -39,8 +39,8 @@ export default function BuildingBlocksActivity() {
 
           <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
             <FallbackImage
-              src="/colorful-building-blocks.png"
-              fallbackSrc="/placeholder-cerz8.png"
+              src="./colorful-building-blocks.png"
+              fallbacksrc="./placeholder-cerz8.png"
               alt="Children building with blocks"
               fill
               className="object-cover"

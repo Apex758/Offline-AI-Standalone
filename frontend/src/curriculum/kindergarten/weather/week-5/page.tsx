@@ -172,7 +172,7 @@ export default function WeatherUnitWeek5() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="/caribbean-weather-safety-preparation.png" alt="Caribbean children learning about weather safety" className="w-full h-full object-cover" />
+                <img src="./caribbean-weather-safety-preparation.png" alt="Caribbean children learning about weather safety" className="w-full h-full object-cover" />
 
               </div>
 
@@ -690,9 +690,9 @@ export default function WeatherUnitWeek5() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/caribbean-weather-protection-clothing.png" alt="Weather protection clothing" className="w-auto h-auto" />
+                      <img src="./caribbean-weather-protection-clothing.png" alt="Weather protection clothing" className="w-auto h-auto" />
 
-                      <img src="/caribbean-weather-safety-discussion.png" alt="Weather safety discussion" className="w-auto h-auto" />
+                      <img src="./caribbean-weather-safety-discussion.png" alt="Weather safety discussion" className="w-auto h-auto" />
 
                     </div>
 
@@ -992,9 +992,9 @@ export default function WeatherUnitWeek5() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/caribbean-fisherman-weather-safety.png" alt="Fisherman discussing weather safety" className="w-auto h-auto" />
+                      <img src="./caribbean-fisherman-weather-safety.png" alt="Fisherman discussing weather safety" className="w-auto h-auto" />
 
-                      <img src="/caribbean-severe-weather-preparation.png" alt="Severe weather preparation" className="w-auto h-auto" />
+                      <img src="./caribbean-severe-weather-preparation.png" alt="Severe weather preparation" className="w-auto h-auto" />
 
                     </div>
 
@@ -1292,9 +1292,9 @@ export default function WeatherUnitWeek5() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/caribbean-emergency-kit-activity.png" alt="Emergency kit drawing activity" className="w-auto h-auto" />
+                      <img src="./caribbean-emergency-kit-activity.png" alt="Emergency kit drawing activity" className="w-auto h-auto" />
 
-                      <img src="/caribbean-safety-drill-practice.png" alt="Safety drill practice" className="w-auto h-auto" />
+                      <img src="./caribbean-safety-drill-practice.png" alt="Safety drill practice" className="w-auto h-auto" />
 
                     </div>
 
@@ -1588,9 +1588,9 @@ export default function WeatherUnitWeek5() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/caribbean-shelter-building-activity.png" alt="Shelter building activity" className="w-auto h-auto" />
+                      <img src="./caribbean-shelter-building-activity.png" alt="Shelter building activity" className="w-auto h-auto" />
 
-                      <img src="/caribbean-shelter-gallery-display.png" alt="Shelter gallery display" className="w-auto h-auto" />
+                      <img src="./caribbean-shelter-gallery-display.png" alt="Shelter gallery display" className="w-auto h-auto" />
 
                     </div>
 
@@ -1884,9 +1884,9 @@ export default function WeatherUnitWeek5() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/caribbean-weather-unit-celebration.png" alt="Weather unit celebration" className="w-auto h-auto" />
+                      <img src="./caribbean-weather-unit-celebration.png" alt="Weather unit celebration" className="w-auto h-auto" />
 
-                      <img src="/caribbean-weather-learning-gallery.png" alt="Weather learning gallery walk" className="w-auto h-auto" />
+                      <img src="./caribbean-weather-learning-gallery.png" alt="Weather learning gallery walk" className="w-auto h-auto" />
 
                     </div>
 

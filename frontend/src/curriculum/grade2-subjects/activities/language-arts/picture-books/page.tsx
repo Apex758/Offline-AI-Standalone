@@ -160,7 +160,7 @@ export default function PictureBooksPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <div className="relative h-48 w-full mb-4">
-                  <img src="/picture-books.png" alt="Students exploring picture books" className="w-full h-full object-cover" />
+                  <img src="./picture-books.png" alt="Students exploring picture books" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-blue-700">Curriculum Connections</h3>
                 <ul className="space-y-3">

@@ -76,13 +76,6 @@ const tools: Tool[] = [
     description: 'Browse OECS curriculum content'
   },
   {
-    id: 'grader',
-    name: 'Grader AI',
-    icon: 'ClipboardCheck',
-    type: 'grader',
-    description: 'Automated grading assistant'
-  },
-  {
     id: 'quiz-generator',
     name: 'Quiz Generator',
     icon: 'ListChecks',
@@ -535,13 +528,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             onDataChange={(data) => updateTabData(tab.id, data)}
             onPanelClick={() => setSidebarOpen(false)}
           />
-        );
-      case 'grader':
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Grader AI</h2>
-            <p className="text-gray-600">Coming soon...</p>
-          </div>
         );
       case 'resource-manager':
         return (

@@ -116,7 +116,7 @@ export default function LiteratureCirclesPage() {
           <Card className="mb-6">
             <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
               <FallbackImage
-                src="/placeholder-bbn15.png"
+                src="./placeholder-bbn15.png"
                 alt="Students in a literature circle discussion"
                 fallbackSrc="/placeholder.svg?height=200&width=400&query=literature+circles"
                 fill

@@ -197,7 +197,7 @@ export default function ReadingBuddiesPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <div className="relative h-48 w-full mb-4">
-                  <img src="/reading-buddies.png" alt="Students reading together as buddies" className="w-full h-full object-cover" />
+                  <img src="./reading-buddies.png" alt="Students reading together as buddies" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-blue-700">Curriculum Connections</h3>
                 <ul className="space-y-3">

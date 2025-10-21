@@ -429,7 +429,7 @@ export default function CelebrationsUnitWeek2() {
 
         <div className="md:col-span-2">
 
-          <img src="/children-singing-and-dancing-to-celebration-music.png" alt="Cultural celebrations around the world" className="w-auto h-auto" />
+          <img src="./children-singing-and-dancing-to-celebration-music.png" alt="Cultural celebrations around the world" className="w-auto h-auto" />
 
         </div>
 

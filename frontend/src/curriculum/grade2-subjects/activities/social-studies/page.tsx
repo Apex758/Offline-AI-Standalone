@@ -25,9 +25,9 @@ export default function Grade2SocialStudiesActivitiesPage() {
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
                 <FallbackImage
-                  src="/family-tree-explorer.png"
+                  src="./family-tree-explorer.png"
                   alt="Family Tree Explorer"
-                  fallbackSrc="/family-tree-activity.png"
+                  fallbacksrc="./family-tree-activity.png"
                   fill
                   className="object-cover rounded-t-lg"
                 />
@@ -62,9 +62,9 @@ export default function Grade2SocialStudiesActivitiesPage() {
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
                 <FallbackImage
-                  src="/community-map-makers.png"
+                  src="./community-map-makers.png"
                   alt="Community Map Makers"
-                  fallbackSrc="/children-map-making.png"
+                  fallbacksrc="./children-map-making.png"
                   fill
                   className="object-cover rounded-t-lg"
                 />
@@ -98,9 +98,9 @@ export default function Grade2SocialStudiesActivitiesPage() {
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
                 <FallbackImage
-                  src="/conflict-resolution-heroes.png"
+                  src="./conflict-resolution-heroes.png"
                   alt="Conflict Resolution Heroes"
-                  fallbackSrc="/children-resolving-conflict.png"
+                  fallbacksrc="./children-resolving-conflict.png"
                   fill
                   className="object-cover rounded-t-lg"
                 />
@@ -134,7 +134,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
                 <FallbackImage
-                  src="/goods-and-services-sort.png"
+                  src="./goods-and-services-sort.png"
                   alt="Goods and Services Sort"
                   fallbackSrc="/placeholder.svg?height=200&width=400&query=goods+and+services+activity"
                   fill
@@ -170,7 +170,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
                 <FallbackImage
-                  src="/cultural-celebration-day.png"
+                  src="./cultural-celebration-day.png"
                   alt="Cultural Celebration Day"
                   fallbackSrc="/placeholder.svg?height=200&width=400&query=cultural+celebration+children"
                   fill
@@ -206,7 +206,7 @@ export default function Grade2SocialStudiesActivitiesPage() {
             <CardContent className="p-0">
               <div className="relative h-48 w-full">
                 <FallbackImage
-                  src="/community-helpers-interview.png"
+                  src="./community-helpers-interview.png"
                   alt="Community Helpers Interview"
                   fallbackSrc="/placeholder.svg?height=200&width=400&query=community+helpers+children"
                   fill

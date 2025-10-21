@@ -5,9 +5,29 @@ const log = require('electron-log');
 const fs = require('fs');
 const isDev = !app.isPackaged;
 
-// Configure logging
+// Configure logging paths
+const logsDir = path.join(app.getPath('appData'), 'OECS Learning Hub', 'logs');
+
+// Ensure logs directory exists
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Configure electron-log to use custom path
+log.transports.file.resolvePathFn = () => path.join(logsDir, 'main.logs');
 log.transports.file.level = 'info';
+log.transports.file.maxSize = 10 * 1024 * 1024; // 10MB max file size
+log.transports.console.level = isDev ? 'debug' : 'info';
+
+log.info('='.repeat(80));
 log.info('Application starting...');
+log.info(`Log file location: ${log.transports.file.getFile().path}`);
+log.info(`App version: ${app.getVersion()}`);
+log.info(`Electron version: ${process.versions.electron}`);
+log.info(`Node version: ${process.versions.node}`);
+log.info(`Platform: ${process.platform} ${process.arch}`);
+log.info(`Development mode: ${isDev}`);
+log.info('='.repeat(80));
 
 let mainWindow;
 let splashWindow;

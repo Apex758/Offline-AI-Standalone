@@ -38,7 +38,7 @@ export default function WeatherWatchersPage() {
               </p>
 
               <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden">
-                <img src="/children-observing-weather-with-thermometer-and-we.png" alt="Weather Watchers Activity" className="w-full h-full object-cover" />
+                <img src="./children-observing-weather-with-thermometer-and-we.png" alt="Weather Watchers Activity" className="w-full h-full object-cover" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2">Learning Outcomes</h3>

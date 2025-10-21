@@ -193,7 +193,7 @@ export default function ActingOutStoriesPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <div className="relative h-48 w-full mb-4">
-                  <img src="/acting-out-stories.png" alt="Students acting out a story" className="w-full h-full object-cover" />
+                  <img src="./acting-out-stories.png" alt="Students acting out a story" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-green-700">Curriculum Connections</h3>
                 <ul className="space-y-3">

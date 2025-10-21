@@ -185,7 +185,7 @@ export default function GamesUnitWeek1() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-fun-games.png" alt="Children’s crayon drawing with the words “FUN & GAMES,” showing kids, a hopscotch grid, dice, board game pieces, tic-tac-toe, ball, kite, and playful scenes with labels like “RULES,” “OBJECTIVE,” and “PLAY.”" className="w-auto h-auto" />
+          <img src="./kindergarten-fun-games.png" alt="Children’s crayon drawing with the words “FUN & GAMES,” showing kids, a hopscotch grid, dice, board game pieces, tic-tac-toe, ball, kite, and playful scenes with labels like “RULES,” “OBJECTIVE,” and “PLAY.”" className="w-auto h-auto" />
 
         </div>
 
