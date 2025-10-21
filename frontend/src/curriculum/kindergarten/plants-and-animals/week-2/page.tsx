@@ -189,7 +189,7 @@ export default function PlantsAndAnimalsWeek2() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-needs.png" alt="Children’s crayon drawing with the words “NEEDS FOR SURVIVAL,” showing a sun, rain cloud, plant, deer, apple, house, and children, labeled with “LIGHT,” “WATER,” “FOOD,” and “SHELTER” to illustrate basic needs of plants and animals." className="w-auto h-auto" />
+          <img src="./kindergarten-needs.png" alt="Children’s crayon drawing with the words “NEEDS FOR SURVIVAL,” showing a sun, rain cloud, plant, deer, apple, house, and children, labeled with “LIGHT,” “WATER,” “FOOD,” and “SHELTER” to illustrate basic needs of plants and animals." className="w-auto h-auto" />
 
         </div>
 

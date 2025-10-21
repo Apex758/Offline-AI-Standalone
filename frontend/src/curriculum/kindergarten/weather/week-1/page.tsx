@@ -172,7 +172,7 @@ export default function WeatherUnitWeek1() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="/kindergarten-weather-observation.png" alt="Children’s crayon drawing with the word “WEATHER,” showing a sun, clouds, rain, wind, plants, and a smiling child, labeled with simple weather words like “SUNNY,” “CLOUDY,” “RAIN,” and “WINDY.”" className="w-full h-full object-cover" />
+                <img src="./kindergarten-weather-observation.png" alt="Children’s crayon drawing with the word “WEATHER,” showing a sun, clouds, rain, wind, plants, and a smiling child, labeled with simple weather words like “SUNNY,” “CLOUDY,” “RAIN,” and “WINDY.”" className="w-full h-full object-cover" />
 
               </div>
 
@@ -690,9 +690,9 @@ export default function WeatherUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-weather-drawing.png" alt="Weather importance drawing example" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-drawing.png" alt="Weather importance drawing example" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-weather-stations.png" alt="Weather stations setup" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-stations.png" alt="Weather stations setup" className="w-auto h-auto" />
 
                     </div>
 
@@ -990,7 +990,7 @@ export default function WeatherUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-weather-walk.png" alt="Weather walk observation" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-walk.png" alt="Weather walk observation" className="w-auto h-auto" />
 
                     </div>
 
@@ -1286,9 +1286,9 @@ export default function WeatherUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-weather-shapes.png" alt="Weather shape craft example" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-shapes.png" alt="Weather shape craft example" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-weather-dance.png" alt="Weather movement activity" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-dance.png" alt="Weather movement activity" className="w-auto h-auto" />
 
                     </div>
 
@@ -1584,9 +1584,9 @@ export default function WeatherUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-weather-chart.png" alt="Daily weather tracking chart" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-chart.png" alt="Daily weather tracking chart" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-weather-crafts.png" alt="Weather craft examples" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-crafts.png" alt="Weather craft examples" className="w-auto h-auto" />
 
                     </div>
 
@@ -1882,9 +1882,9 @@ export default function WeatherUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="/kindergarten-weather-gallery.png" alt="Weather art gallery display" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-gallery.png" alt="Weather art gallery display" className="w-auto h-auto" />
 
-                      <img src="/kindergarten-weather-scenes.png" alt="Weather scene drawings" className="w-auto h-auto" />
+                      <img src="./kindergarten-weather-scenes.png" alt="Weather scene drawings" className="w-auto h-auto" />
 
                     </div>
 

@@ -189,7 +189,7 @@ export default function GamesUnitWeek2() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-social-games.png" alt="Children’s crayon drawing with the words “SOCIAL GAMES,” showing kids playing together, a girl holding a ball, children holding hands, puzzle pieces, dice, and a globe, with words like “FAMILY,” “FRIENDS,” “TEAMWORK,” “COOPERATION,” and “CLASSMATES." className="w-auto h-auto" />
+          <img src="./kindergarten-social-games.png" alt="Children’s crayon drawing with the words “SOCIAL GAMES,” showing kids playing together, a girl holding a ball, children holding hands, puzzle pieces, dice, and a globe, with words like “FAMILY,” “FRIENDS,” “TEAMWORK,” “COOPERATION,” and “CLASSMATES." className="w-auto h-auto" />
 
         </div>
 

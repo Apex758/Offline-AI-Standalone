@@ -189,7 +189,7 @@ export default function PlantsAndAnimalsWeek5() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-environmental-stewardship.png" alt="Children’s crayon drawing with the words “HELP PLANET,” showing a girl pointing to a recycling symbol, a boy holding a flower, Earth, trees, rain, sun, and crossed-out symbols of pollution like cars, trash, and factories to illustrate how human activities affect the environment and ways to help." className="w-auto h-auto" />
+          <img src="./kindergarten-environmental-stewardship.png" alt="Children’s crayon drawing with the words “HELP PLANET,” showing a girl pointing to a recycling symbol, a boy holding a flower, Earth, trees, rain, sun, and crossed-out symbols of pollution like cars, trash, and factories to illustrate how human activities affect the environment and ways to help." className="w-auto h-auto" />
 
         </div>
 

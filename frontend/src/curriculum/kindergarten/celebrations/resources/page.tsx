@@ -25,8 +25,8 @@ export default function CelebrationsResourcesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <img src="/kindergarten-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
-        <img src="/kindergarten-cultural-celebration.png" alt="Cultural celebration" className="w-auto h-auto" />
+        <img src="./kindergarten-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
+        <img src="./kindergarten-cultural-celebration.png" alt="Cultural celebration" className="w-auto h-auto" />
       </div>
 
       <div className="mb-8">
@@ -275,10 +275,10 @@ export default function CelebrationsResourcesPage() {
           </CardHeader>
           <CardContent className="pt-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <img src="/kindergarten-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
-              <img src="/kindergarten-cultural-celebration.png" alt="Cultural celebration" className="w-auto h-auto" />
-              <img src="/kindergarten-community-celebration.png" alt="Community celebration" className="w-auto h-auto" />
-              <img src="/kindergarten-celebration-together.png" alt="Celebrating together" className="w-auto h-auto" />
+              <img src="./kindergarten-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
+              <img src="./kindergarten-cultural-celebration.png" alt="Cultural celebration" className="w-auto h-auto" />
+              <img src="./kindergarten-community-celebration.png" alt="Community celebration" className="w-auto h-auto" />
+              <img src="./kindergarten-celebration-together.png" alt="Celebrating together" className="w-auto h-auto" />
             </div>
             <Button variant="outline" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
               <Download className="mr-2 h-4 w-4" /> Full Image Collection

@@ -41,7 +41,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/placeholder-1sfkd.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
+              <img src="./placeholder-1sfkd.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop understanding of numbers to 10,000, place value, fractions, and decimals through hands-on
@@ -64,7 +64,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/placeholder-pc7dd.png" alt="Children learning multiplication and division" className="w-full h-full object-cover" />
+              <img src="./placeholder-pc7dd.png" alt="Children learning multiplication and division" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Build fluency with multi-digit operations, develop efficient calculation strategies, and apply operations
@@ -87,7 +87,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/placeholder-hiczo.png" alt="Children exploring patterns and relationships" className="w-full h-full object-cover" />
+              <img src="./placeholder-hiczo.png" alt="Children exploring patterns and relationships" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Identify, describe, and extend patterns, explore number relationships, and develop early algebraic

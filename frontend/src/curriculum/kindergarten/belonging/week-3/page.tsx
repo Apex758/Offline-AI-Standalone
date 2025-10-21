@@ -182,7 +182,7 @@ export default function BelongingUnitWeek3() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="/kindergarten-my-school.png" alt="Children’s crayon drawings around the words “WEEKLY FOCUS,” showing school scenes, classmates, teachers, rules, and friendship." className="w-full h-full object-cover" />
+                <img src="./kindergarten-my-school.png" alt="Children’s crayon drawings around the words “WEEKLY FOCUS,” showing school scenes, classmates, teachers, rules, and friendship." className="w-full h-full object-cover" />
 
               </div>
 

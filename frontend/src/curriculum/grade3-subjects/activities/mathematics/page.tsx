@@ -41,7 +41,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/number-sense-g3.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
+              <img src="./number-sense-g3.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop understanding of numbers, place value, and fractions through hands-on activities and games.
@@ -63,7 +63,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/operations-w-numbers-g3.png" alt="Children learning multiplication" className="w-full h-full object-cover" />
+              <img src="./operations-w-numbers-g3.png" alt="Children learning multiplication" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Build fluency with the four operations through engaging games, problem-solving activities, and real-world
@@ -86,7 +86,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/geometrical-thinking-g3.png" alt="Children learning about geometric shapes" className="w-full h-full object-cover" />
+              <img src="./geometrical-thinking-g3.png" alt="Children learning about geometric shapes" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Explore 2D and 3D shapes, develop spatial sense, and understand transformations through hands-on
@@ -109,7 +109,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/measurement-g3.png" alt="Children measuring objects" className="w-full h-full object-cover" />
+              <img src="./measurement-g3.png" alt="Children measuring objects" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop measurement skills through practical activities involving length, area, perimeter, mass, capacity,
@@ -134,7 +134,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/data-probability-g3.png" alt="Children creating graphs and charts" className="w-full h-full object-cover" />
+              <img src="./data-probability-g3.png" alt="Children creating graphs and charts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Learn to collect, organize, and analyze data, as well as understand basic probability concepts through
@@ -157,7 +157,7 @@ export default function Grade3MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/cross-strand-g3.png" alt="Children working on mathematics projects" className="w-full h-full object-cover" />
+              <img src="./cross-strand-g3.png" alt="Children working on mathematics projects" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Engage in project-based learning activities that integrate concepts from multiple mathematics strands.

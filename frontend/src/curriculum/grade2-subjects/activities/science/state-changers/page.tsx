@@ -39,8 +39,8 @@ export default function StateChangersActivity() {
 
           <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
             <FallbackImage
-              src="/state-changers.png"
-              fallbackSrc="/students-state-changes.png"
+              src="./state-changers.png"
+              fallbacksrc="./students-state-changes.png"
               alt="Students observing state changes in matter"
               fill
               className="object-cover"

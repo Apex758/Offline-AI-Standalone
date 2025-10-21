@@ -130,7 +130,7 @@ export default function SocialStudiesPage() {
               <li>Technology: Using digital tools for research, mapping, and presentations</li>
             </ul>
             <div className="mt-4">
-              <img src="/placeholder-7284d.png" alt="Social Studies Learning" className="w-auto h-auto" />
+              <img src="./placeholder-7284d.png" alt="Social Studies Learning" className="w-auto h-auto" />
             </div>
           </div>
         </div>

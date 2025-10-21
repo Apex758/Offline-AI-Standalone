@@ -185,7 +185,7 @@ export default function DrawingStoriesPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <div className="relative h-48 w-full mb-4">
-                  <img src="/drawing-stories.png" alt="Students drawing story illustrations" className="w-full h-full object-cover" />
+                  <img src="./drawing-stories.png" alt="Students drawing story illustrations" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-green-700">Curriculum Connections</h3>
                 <ul className="space-y-3">

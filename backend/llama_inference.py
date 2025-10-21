@@ -242,6 +242,74 @@ class LlamaInference:
                 }
             }
     
+    def generate_stream(
+        self,
+        tool_name: str,
+        input_data: str,
+        prompt_template: Optional[str] = None,
+        max_tokens: int = 2000,
+        temperature: float = 0.7,
+        top_p: float = 0.9,
+        stop: Optional[list] = None
+    ):
+        """
+        Generate text using streaming (yields tokens as they're generated).
+        
+        Args:
+            tool_name: Identifier for the requesting module
+            input_data: The content or task-specific input
+            prompt_template: Optional custom task instructions
+            max_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+            top_p: Top-p sampling parameter
+            stop: List of stop sequences
+        
+        Yields:
+            Dict with token data: {"token": str, "finished": bool}
+        """
+        if not self.is_loaded or self.model is None:
+            yield {
+                "token": None,
+                "finished": True,
+                "error": "Model not loaded"
+            }
+            return
+        
+        try:
+            prompt = prompt_template if prompt_template else input_data
+            
+            if stop is None:
+                stop = ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]
+            
+            with self._model_lock:
+                with SilenceOutput():
+                    stream = self.model(
+                        prompt,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        stop=stop,
+                        echo=False,
+                        stream=True
+                    )
+                    
+                    for output in stream:
+                        token = output["choices"][0]["text"]
+                        yield {
+                            "token": token,
+                            "finished": False
+                        }
+            
+            yield {"token": "", "finished": True}
+            
+        except Exception as e:
+            logger.error(f"Streaming error for {tool_name}: {e}")
+            yield {
+                "token": None,
+                "finished": True,
+                "error": str(e)
+            }
+    
     def cleanup(self):
         """
         Cleanup the model and free resources.

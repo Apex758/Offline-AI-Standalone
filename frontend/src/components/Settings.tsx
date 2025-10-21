@@ -124,7 +124,6 @@ const Settings: React.FC<SettingsProps> = () => {
     { type: 'resource-manager', label: 'Resource Manager', defaultColor: '#84cc16' },
     { type: 'chat', label: 'Chat', defaultColor: '#3b82f6' },
     { type: 'curriculum', label: 'Curriculum', defaultColor: '#8b5cf6' },
-    { type: 'grader', label: 'Grader', defaultColor: '#10b981' },
     { type: 'quiz-generator', label: 'Quiz Generator', defaultColor: '#14b8a6' },
     { type: 'rubric-generator', label: 'Rubric Generator', defaultColor: '#f97316' },
     { type: 'lesson-planner', label: 'Standard Lesson', defaultColor: '#f59e0b' },

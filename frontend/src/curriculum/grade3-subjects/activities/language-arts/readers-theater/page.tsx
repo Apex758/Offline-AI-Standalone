@@ -37,7 +37,7 @@ export default function ReadersTheaterPage() {
               </p>
 
               <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden">
-                <img src="/readers-theater-children.png" alt="Reader" className="w-full h-full object-cover" />
+                <img src="./readers-theater-children.png" alt="Reader" className="w-full h-full object-cover" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2">Learning Outcomes</h3>

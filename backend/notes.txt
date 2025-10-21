@@ -16,8 +16,6 @@ python -m uvicorn main:app --reload --port 8000
 
 Next steps:
 
--Work on the grader ai.
-
 -Parse plans and quizzes into json structure
 -Edit fields with rich text editor after generation 
 6`
@@ -53,3 +51,23 @@ Next steps:
 
 
  
+
+
+
+
+
+
+ cd "C:\Users\LG\Desktop\Offline AI Standalone"
+
+# 1. Run the fixed packaging script
+.\manual-package.ps1
+
+# 2. Rebuild Electron
+npm run electron:build:win
+
+# 3. Copy models
+Copy-Item -Path "models\*" -Destination "dist-electron\win-unpacked\resources\models" -Recurse -Force
+
+# 4. Test manually first
+cd "dist-electron\win-unpacked\resources\backend-bundle"
+.\python-embed\python.exe start_backend.py

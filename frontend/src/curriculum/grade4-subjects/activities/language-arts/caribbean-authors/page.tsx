@@ -115,7 +115,7 @@ export default function CaribbeanAuthorsPage() {
           <Card className="mb-6">
             <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
               <FallbackImage
-                src="/caribbean-childrens-books.png"
+                src="./caribbean-childrens-books.png"
                 alt="Collection of Caribbean children's books"
                 fallbackSrc="/placeholder.svg?height=200&width=400&query=Caribbean+childrens+books"
                 fill

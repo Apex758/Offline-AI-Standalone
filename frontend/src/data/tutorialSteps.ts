@@ -16,7 +16,6 @@ export const TUTORIAL_IDS = {
   QUIZ_GENERATOR: 'quiz-generator',
   RUBRIC_GENERATOR: 'rubric-generator',
   RESOURCE_MANAGER: 'resource-manager',
-  GRADER: 'grader-ai',
   SETTINGS: 'settings',
 } as const;
 
@@ -666,68 +665,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         title: 'Export Analytics',
         description: 'Download your analytics data for reports or professional development documentation.',
         position: 'top'
-      }
-    ]
-  },
-  
-  [TUTORIAL_IDS.GRADER]: {
-    id: TUTORIAL_IDS.GRADER,
-    name: 'Grader AI',
-    description: 'Use the automated grading assistant',
-    steps: [
-      {
-        target: '[data-tutorial="grader-welcome"]',
-        title: 'Welcome to Grader AI',
-        description: 'Get AI assistance with grading written assignments, providing consistent feedback and saving time.',
-        position: 'bottom'
-      },
-      {
-        target: '[data-tutorial="grader-rubric"]',
-        title: 'Upload Rubric',
-        description: 'Upload or select your grading rubric so AI understands your assessment criteria.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="grader-submissions"]',
-        title: 'Add Submissions',
-        description: 'Upload student work as text, images, or documents for AI-assisted grading.',
-        position: 'right',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="grader-criteria"]',
-        title: 'Grading Focus',
-        description: 'Specify what aspects to assess: content, organization, grammar, creativity, etc.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="grader-process"]',
-        title: 'Start Grading',
-        description: 'PEARL AI analyzes each submission against your rubric and generates feedback.',
-        position: 'top',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="grader-review"]',
-        title: 'Review & Edit',
-        description: 'Review AI suggestions, adjust scores, and personalize feedback before finalizing.',
-        position: 'left'
-      },
-      {
-        target: '[data-tutorial="grader-feedback"]',
-        title: 'Generate Feedback',
-        description: 'AI creates constructive, personalized feedback for each student based on their work.',
-        position: 'left'
-      },
-      {
-        target: '[data-tutorial="grader-export"]',
-        title: 'Export Results',
-        description: 'Export grades and feedback for your gradebook or to share with students.',
-        position: 'left'
       }
     ]
   },

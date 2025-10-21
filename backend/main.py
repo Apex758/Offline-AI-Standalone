@@ -16,7 +16,7 @@ import json
 import asyncio
 import signal
 import atexit
-from config import (
+from config import ( 
     get_model_path, get_selected_model, set_selected_model,
     LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR,
     MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE
@@ -454,43 +454,52 @@ async def websocket_chat(websocket: WebSocket):
             
             try:
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="chat",
                     input_data=user_message,
                     prompt_template=prompt,
                     max_tokens=LLAMA_PARAMS["max_tokens"],
                     temperature=LLAMA_PARAMS["temperature"]
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                # Stream response character by character
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Chat generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    # Connection already closed, just log
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
@@ -605,9 +614,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
     
     try:
         while True:
-            data = await websocket.receive_text()
-            message_data = json.loads(data)
-            prompt = message_data.get("prompt", "")
+            data = await websocket.receive_json()
+            prompt = data.get("prompt", "")
             
             if not prompt:
                 continue
@@ -621,42 +629,51 @@ async def websocket_lesson_plan(websocket: WebSocket):
             
             try:
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="lesson_plan",
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=LLAMA_PARAMS["max_tokens"],
                     temperature=0.7
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Lesson plan generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("Lesson Plan WebSocket disconnected")
@@ -687,66 +704,77 @@ async def quiz_websocket(websocket: WebSocket):
             
             try:
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="quiz",
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=4000,
                     temperature=0.7
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Quiz generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("Quiz WebSocket disconnected")
     except Exception as e:
         logger.error(f"Quiz WebSocket error: {str(e)}")
-        try:
-            await websocket.send_json({"type": "error", "message": str(e)})
-        except:
-            pass
         
         
+
 @app.websocket("/ws/rubric")
 async def rubric_websocket(websocket: WebSocket):
     await websocket.accept()
+    logger.info("Rubric WebSocket connection accepted")
     
     try:
         while True:
+            logger.info("Waiting for rubric request...")
             data = await websocket.receive_json()
+            logger.info(f"Received rubric request, prompt length: {len(data.get('prompt', ''))}")
+            
             prompt = data.get("prompt", "")
             
             if not prompt:
                 logger.error("Empty rubric prompt received")
                 continue
             
+            logger.info("Building rubric prompt...")
             system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
             
             full_prompt = "<|begin_of_text|>"
@@ -755,48 +783,61 @@ async def rubric_websocket(websocket: WebSocket):
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
             
             try:
+                logger.info("Getting LlamaInference instance...")
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                logger.info("Starting rubric generation...")
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="rubric",
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=4000,
                     temperature=0.7
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        logger.info("Rubric generation complete")
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Rubric generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("Rubric WebSocket disconnected")
     except Exception as e:
         logger.error(f"Rubric WebSocket error: {str(e)}")
+
 
 
 @app.websocket("/ws/kindergarten")
@@ -820,48 +861,56 @@ async def kindergarten_websocket(websocket: WebSocket):
             
             try:
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="kindergarten",
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=LLAMA_PARAMS["max_tokens"],
                     temperature=0.7
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Kindergarten generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("Kindergarten WebSocket disconnected")
     except Exception as e:
         logger.error(f"Kindergarten WebSocket error: {str(e)}")
-
 
 @app.websocket("/ws/multigrade")
 async def multigrade_websocket(websocket: WebSocket):
@@ -884,42 +933,51 @@ async def multigrade_websocket(websocket: WebSocket):
             
             try:
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="multigrade",
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=LLAMA_PARAMS["max_tokens"],
                     temperature=0.7
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Multigrade generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("Multigrade WebSocket disconnected")
@@ -948,42 +1006,51 @@ async def cross_curricular_websocket(websocket: WebSocket):
             
             try:
                 inference = LlamaInference.get_instance()
-                result = inference.generate(
+                
+                # Use streaming method for real-time generation
+                for chunk in inference.generate_stream(
                     tool_name="cross_curricular",
                     input_data=prompt,
                     prompt_template=full_prompt,
                     max_tokens=LLAMA_PARAMS["max_tokens"],
                     temperature=0.7
-                )
-                
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
-                
-                response_text = result["result"]
-                
-                for char in response_text:
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+                    
+                    if chunk["finished"]:
+                        try:
+                            await websocket.send_json({"type": "done"})
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+                    
+                    # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
-                            "content": char
+                            "content": chunk["token"]
                         })
-                        await asyncio.sleep(0.01)
                     except Exception as e:
-                        logger.error(f"Error streaming character: {e}")
+                        logger.error(f"Error sending token: {e}")
                         break
-                
-                await websocket.send_json({"type": "done", "full_response": response_text})
                 
             except Exception as e:
                 logger.error(f"Cross-curricular generation error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e)
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
                         
     except WebSocketDisconnect:
         logger.info("Cross-curricular WebSocket disconnected")
@@ -1248,7 +1315,19 @@ async def health():
 async def shutdown():
     """Gracefully shutdown the backend and cleanup all processes"""
     cleanup_all_processes()
+    
+    # Schedule server shutdown after sending response
+    import asyncio
+    asyncio.create_task(_shutdown_server())
+    
     return {"status": "shutting down"}
+
+async def _shutdown_server():
+    """Shutdown the server after a brief delay"""
+    await asyncio.sleep(0.5)  # Allow response to be sent
+    os._exit(0)  # Force terminate the process
+
+
 
 @app.on_event("shutdown")
 async def on_shutdown():
@@ -1262,3 +1341,6 @@ async def on_shutdown():
             logger.error(f"Error cleaning up model: {e}")
     
     cleanup_all_processes()
+    
+    
+    

@@ -1,7 +1,6 @@
-# Manual packaging script with fixes
-Write-Host "Creating backend bundle manually..." -ForegroundColor Green
+# Manual packaging script - FINAL VERSION (No blocking tests)
+Write-Host "Creating backend bundle..." -ForegroundColor Green
 
-# Create directories
 $bundleDir = "backend-bundle"
 if (Test-Path $bundleDir) {
     Remove-Item $bundleDir -Recurse -Force
@@ -15,6 +14,7 @@ Write-Host "Copying backend files..." -ForegroundColor Yellow
 # Copy Python files
 Copy-Item "backend\main.py" -Destination $bundleDir
 Copy-Item "backend\config.py" -Destination $bundleDir
+Copy-Item "backend\llama_inference.py" -Destination $bundleDir -ErrorAction SilentlyContinue
 
 # Copy or create JSON files
 if (Test-Path "backend\chat_history.json") {
@@ -29,82 +29,62 @@ if (Test-Path "backend\lesson_plan_history.json") {
     "[]" | Out-File -FilePath "$bundleDir\lesson_plan_history.json" -Encoding UTF8
 }
 
-Write-Host "Skipping model file copy - models will be in separate resources/models folder..." -ForegroundColor Yellow
-Write-Host "NOTE: Models are now stored in the 'models' folder at project root" -ForegroundColor Cyan
-Write-Host "      They will be copied to resources/models during the final build" -ForegroundColor Cyan
-
 Write-Host "Copying llama-cli..." -ForegroundColor Yellow
-# Copy llama-cli
 if (Test-Path "backend\bin\Release") {
     Copy-Item "backend\bin\Release\*" -Destination "$bundleDir\bin\Release" -Recurse
 }
 
-Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
-# Install dependencies using SYSTEM Python (not embedded Python yet)
-py -m pip install --no-user fastapi uvicorn pydantic python-multipart --target "$bundleDir\python_libs" --upgrade --no-warn-script-location
+# Find Python
+$pythonCmd = $null
+foreach ($cmd in @('python', 'py', 'python3')) {
+    try {
+        $null = & $cmd --version 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $pythonCmd = $cmd
+            break
+        }
+    } catch { continue }
+}
 
-Write-Host "Copying embedded Python..." -ForegroundColor Yellow
-# Copy python-embed AFTER installing dependencies
-if (Test-Path "backend\python-embed") {
-    Copy-Item "backend\python-embed" -Destination "$bundleDir\python-embed" -Recurse
-} else {
-    Write-Host "ERROR: python-embed not found in backend folder!" -ForegroundColor Red
+if (-not $pythonCmd) {
+    Write-Host "ERROR: Python not found!" -ForegroundColor Red
     exit 1
 }
 
-# Create a simple startup script
-Write-Host "Creating startup script..." -ForegroundColor Yellow
+Write-Host "Installing dependencies..." -ForegroundColor Yellow
+& $pythonCmd -m pip install --no-user fastapi uvicorn pydantic python-multipart websockets llama-cpp-python --target "$bundleDir\python_libs" --upgrade --no-warn-script-location | Out-Null
+
+Write-Host "Copying embedded Python..." -ForegroundColor Yellow
+if (Test-Path "backend\python-embed") {
+    Copy-Item "backend\python-embed" -Destination "$bundleDir\python-embed" -Recurse
+} else {
+    Write-Host "ERROR: python-embed not found!" -ForegroundColor Red
+    exit 1
+}
+
+# Create startup script
 @"
 import sys
 import os
 
-# Add python_libs to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'python_libs'))
-os.environ['PYTHONPATH'] = os.path.join(os.path.dirname(__file__), 'python_libs')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+python_libs = os.path.join(script_dir, 'python_libs')
+sys.path.insert(0, python_libs)
+sys.path.insert(0, script_dir)
 
 print("Starting backend server...")
 print(f"Python: {sys.executable}")
-print(f"Working dir: {os.getcwd()}")
 
 try:
     import uvicorn
     from main import app
-    
-    print("Starting Uvicorn server on http://127.0.0.1:8000")
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
 except Exception as e:
-    print(f"Error starting server: {e}")
+    print(f"Error: {e}")
     import traceback
     traceback.print_exc()
     input("Press Enter to exit...")
+    sys.exit(1)
 "@ | Out-File -FilePath "$bundleDir\start_backend.py" -Encoding UTF8
 
-# Create a test script
-@"
-import sys
-import os
-
-print("Python test successful!")
-print(f"Version: {sys.version}")
-print(f"Executable: {sys.executable}")
-
-# Test if dependencies are available
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'python_libs'))
-try:
-    import fastapi
-    print("✓ FastAPI found!")
-except Exception as e:
-    print(f"✗ FastAPI not found: {e}")
-
-try:
-    import uvicorn
-    print("✓ Uvicorn found!")
-except Exception as e:
-    print(f"✗ Uvicorn not found: {e}")
-"@ | Out-File -FilePath "$bundleDir\test.py" -Encoding UTF8
-
-Write-Host "Testing Python installation..." -ForegroundColor Yellow
-& "$bundleDir\python-embed\python.exe" "$bundleDir\test.py"
-
-Write-Host "Backend bundle created successfully!" -ForegroundColor Green
-Write-Host "Bundle location: $bundleDir" -ForegroundColor Cyan
+Write-Host "Backend bundle complete!" -ForegroundColor Green

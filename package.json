@@ -45,12 +45,12 @@
     "files": [
       "electron/**/*",
       "frontend/dist/**/*",
-      "frontend/src/curriculum/**/*",
       "backend-bundle/**/*",
       "!backend-bundle/*.gguf",
       "package.json",
       "!backend/**/*",
       "!frontend/src/**/*",
+      "!frontend/public/**/*",
       "!frontend/node_modules/**/*",
       "!build-scripts/**/*",
       "!**/*.ts",
@@ -97,7 +97,8 @@
     "compression": "normal",
     "asar": true,
     "asarUnpack": [
-      "**/backend-bundle/**/*"
+      "**/backend-bundle/**/*",
+      "frontend/dist/**/*"
     ]
   }
 }

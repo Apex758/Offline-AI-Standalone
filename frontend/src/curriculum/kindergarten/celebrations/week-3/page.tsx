@@ -447,7 +447,7 @@ export default function CelebrationsUnitWeek3() {
 
         <div className="md:col-span-2">
 
-          <img src="/children-celebrations.png" alt="Children’s crayon drawing with the word “CELEBRATION,” showing balloons, cake with candles, presents, a party hat, bunting, confetti, and smiling children, highlighting festive foods, decorations, and events." className="w-auto h-auto" />
+          <img src="./children-celebrations.png" alt="Children’s crayon drawing with the word “CELEBRATION,” showing balloons, cake with candles, presents, a party hat, bunting, confetti, and smiling children, highlighting festive foods, decorations, and events." className="w-auto h-auto" />
 
         </div>
 

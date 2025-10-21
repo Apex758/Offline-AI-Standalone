@@ -140,7 +140,7 @@ export default function BelongingUnitWeek5() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="/kindergarten-global-diversity.png" alt="Children’s crayon drawings with the words “GLOBAL DIVERSITY,” showing kids of different ethnicities holding hands, a globe, and the words “WORLD” and “TOGETHER,” celebrating unity and diversity." className="w-full h-full object-cover" />
+                <img src="./kindergarten-global-diversity.png" alt="Children’s crayon drawings with the words “GLOBAL DIVERSITY,” showing kids of different ethnicities holding hands, a globe, and the words “WORLD” and “TOGETHER,” celebrating unity and diversity." className="w-full h-full object-cover" />
 
               </div>
 

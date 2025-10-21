@@ -164,7 +164,7 @@ export default function BelongingUnitWeek4() {
 
             <div className="absolute inset-0 flex items-center justify-center p-2">
 
-              <img src="/kindergarten-community.png" alt="Children’s crayon drawings with the word “COMMUNITY,” showing police, doctor, firefighter, store, houses, and kids holding hands, highlighting helpers, places, and working together." className="w-full h-full object-cover" />
+              <img src="./kindergarten-community.png" alt="Children’s crayon drawings with the word “COMMUNITY,” showing police, doctor, firefighter, store, houses, and kids holding hands, highlighting helpers, places, and working together." className="w-full h-full object-cover" />
 
             </div>
 

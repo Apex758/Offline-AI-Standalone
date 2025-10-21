@@ -185,7 +185,7 @@ export default function PlantsAndAnimalsWeek1() {
 
         <div className="md:col-span-2">
 
-          <img src="/kindergarten-living-things.png" alt="Children’s crayon drawing with the title “LIVING & NON-LIVING,” showing kids, a dog, plants, butterfly, cloud, house, and rock to illustrate living and non-living things, and that humans are animals too." className="w-auto h-auto" />
+          <img src="./kindergarten-living-things.png" alt="Children’s crayon drawing with the title “LIVING & NON-LIVING,” showing kids, a dog, plants, butterfly, cloud, house, and rock to illustrate living and non-living things, and that humans are animals too." className="w-auto h-auto" />
 
         </div>
 

@@ -5,7 +5,6 @@ export interface TabColors {
   analytics: string;
   chat: string;
   curriculum: string;
-  grader: string;
   'lesson-planner': string;
   'kindergarten-planner': string;
   'multigrade-planner': string;
@@ -52,7 +51,6 @@ export const DEFAULT_SETTINGS: Settings = {
     'analytics': '#3b82f6',
     'chat': '#3b82f6',
     'curriculum': '#8b5cf6',
-    'grader': '#10b981',
     'lesson-planner': '#f59e0b',
     'kindergarten-planner': '#ec4899',
     'multigrade-planner': '#06b6d4',
