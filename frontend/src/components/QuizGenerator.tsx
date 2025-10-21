@@ -201,9 +201,21 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       if (!shouldReconnectRef.current) return;
 
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        const ws = new WebSocket(`${protocol}//${host}/ws/quiz`);
+        // Detect if running in Electron
+        const isElectron = typeof window !== 'undefined' && window.electronAPI;
+
+        let wsUrl: string;
+        if (isElectron) {
+          // Electron/Production: direct connection to backend
+          wsUrl = 'ws://127.0.0.1:8000/ws/quiz';
+        } else {
+          // Vite/Development: use proxy through dev server
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const host = window.location.host;
+          wsUrl = `${protocol}//${host}/ws/quiz`;
+        }
+
+        const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
           console.log('Quiz WebSocket connected');

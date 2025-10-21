@@ -86,9 +86,9 @@ class LlamaInference:
                 self.model = Llama(
                     model_path=model_path,
                     n_ctx=n_ctx,
-                    verbose=False,  # Always silent
+                    verbose=False,  
                     n_threads=4,
-                    n_batch=512
+                    n_batch=8
                 )
             self.is_loaded = True
         except Exception as e:
