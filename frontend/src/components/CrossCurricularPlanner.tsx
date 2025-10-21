@@ -595,7 +595,9 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       if (!shouldReconnectRef.current) return;
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/cross-curricular');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/cross-curricular`);
         
         ws.onopen = () => {
           console.log('Cross-curricular WebSocket connected');

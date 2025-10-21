@@ -50,31 +50,33 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 
       try {
         // Determine WebSocket route depending on mode and content type
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
         let route = '';
         if (mode === 'chat') {
-          route = 'ws://localhost:8000/ws/chat';
+          route = `${protocol}//${host}/ws/chat`;
         } else {
           switch (contentType) {
             case 'lesson':
-              route = 'ws://localhost:8000/ws/lesson-plan';
+              route = `${protocol}//${host}/ws/lesson-plan`;
               break;
             case 'quiz':
-              route = 'ws://localhost:8000/ws/quiz';
+              route = `${protocol}//${host}/ws/quiz`;
               break;
             case 'rubric':
-              route = 'ws://localhost:8000/ws/rubric';
+              route = `${protocol}//${host}/ws/rubric`;
               break;
             case 'kindergarten':
-              route = 'ws://localhost:8000/ws/kindergarten';
+              route = `${protocol}//${host}/ws/kindergarten`;
               break;
             case 'multigrade':
-              route = 'ws://localhost:8000/ws/multigrade';
+              route = `${protocol}//${host}/ws/multigrade`;
               break;
             case 'cross-curricular':
-              route = 'ws://localhost:8000/ws/cross-curricular';
+              route = `${protocol}//${host}/ws/cross-curricular`;
               break;
             default:
-              route = 'ws://localhost:8000/ws/chat';
+              route = `${protocol}//${host}/ws/chat`;
           }
         }
 

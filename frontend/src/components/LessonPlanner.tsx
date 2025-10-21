@@ -608,7 +608,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       }
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/lesson-plan');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/lesson-plan`);
         
         ws.onopen = () => {
           console.log('Lesson Plan WebSocket connected');

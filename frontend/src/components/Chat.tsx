@@ -234,7 +234,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/chat');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/chat`);
         
         ws.onopen = () => {
           console.log('WebSocket connected');

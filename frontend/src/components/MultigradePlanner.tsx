@@ -539,7 +539,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       if (!shouldReconnectRef.current) return;
 
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/multigrade');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/multigrade`);
         
         ws.onopen = () => {
           console.log('Multigrade WebSocket connected');
