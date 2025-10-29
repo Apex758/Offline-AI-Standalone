@@ -658,28 +658,55 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       // Get active tab color for pane highlight
       const activeTabInPane = splitView.activePaneId === 'left' ? leftTab : rightTab;
       const activePaneColor = settings.tabColors[activeTabInPane.type as keyof typeof settings.tabColors] || '#60a5fa';
+      
+      // Convert hex to RGB for CSS variable
+      const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result
+          ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+          : '96, 165, 250'; // fallback blue-400 RGB
+      };
 
       return (
-        <div className="flex h-full divide-x divide-gray-200" data-tutorial="split-view-demo">
+        <div className="flex h-full gap-1 bg-gray-200 p-1" data-tutorial="split-view-demo">
+          {/* Left Pane */}
           <div
-            className="flex-1 overflow-hidden relative"
-            onClick={() => setSplitView(prev => ({ ...prev, activePaneId: 'left' }))}
+            className={`flex-1 overflow-hidden relative bg-white ${
+              splitView.activePaneId === 'left' ? 'active-pane-glow' : ''
+            }`}
+            onMouseDown={() => setSplitView(prev => ({ ...prev, activePaneId: 'left' }))}
             style={splitView.activePaneId === 'left' ? {
-              boxShadow: `inset 0 0 0 3px ${activePaneColor}`,
+              '--glow-color': activePaneColor,
+              '--glow-rgb': hexToRgb(activePaneColor),
               border: `3px solid ${activePaneColor}`,
-              borderRadius: '4px'
-            } : {}}
+              borderRadius: '4px',
+              zIndex: 10
+            } as React.CSSProperties : {
+              border: '3px solid transparent',
+              borderRadius: '4px',
+              zIndex: 1
+            }}
           >
             {renderSingleTabContent(leftTab)}
           </div>
+          
+          {/* Right Pane */}
           <div
-            className="flex-1 overflow-hidden relative"
-            onClick={() => setSplitView(prev => ({ ...prev, activePaneId: 'right' }))}
+            className={`flex-1 overflow-hidden relative bg-white ${
+              splitView.activePaneId === 'right' ? 'active-pane-glow' : ''
+            }`}
+            onMouseDown={() => setSplitView(prev => ({ ...prev, activePaneId: 'right' }))}
             style={splitView.activePaneId === 'right' ? {
-              boxShadow: `inset 0 0 0 3px ${activePaneColor}`,
+              '--glow-color': activePaneColor,
+              '--glow-rgb': hexToRgb(activePaneColor),
               border: `3px solid ${activePaneColor}`,
-              borderRadius: '4px'
-            } : {}}
+              borderRadius: '4px',
+              zIndex: 10
+            } as React.CSSProperties : {
+              border: '3px solid transparent',
+              borderRadius: '4px',
+              zIndex: 1
+            }}
           >
             {renderSingleTabContent(rightTab)}
           </div>
