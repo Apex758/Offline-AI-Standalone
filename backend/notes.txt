@@ -47,6 +47,8 @@ Next steps:
 -read up on the email ashley sent
 
 
+add timer to show estimated time of completetion based on pc specs
+ensure timing allocation is right for all gener
  
 
 

@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": "chat_1761749146391",
+    "title": "hello",
+    "timestamp": "2025-10-29T14:45:56.676Z",
+    "messages": [
+      {
+        "id": "1761749146379",
+        "role": "user",
+        "content": "hello",
+        "timestamp": "2025-10-29T14:45:46.379Z"
+      },
+      {
+        "id": "1761749156668",
+        "role": "assistant",
+        "content": "Hello! How can I assist you today?",
+        "timestamp": "2025-10-29T14:45:56.668Z"
+      }
+    ]
+  }
+]

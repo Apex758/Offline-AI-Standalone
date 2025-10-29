@@ -98,19 +98,6 @@ class LlamaInference:
     
     @classmethod
     def get_instance(cls, model_path: Optional[str] = None, n_ctx: int = 4096) -> 'LlamaInference':
-        """
-        Get the singleton instance of LlamaInference.
-        
-        Args:
-            model_path: Path to the model (required on first call)
-            n_ctx: Context window size
-        
-        Returns:
-            The singleton LlamaInference instance
-        
-        Raises:
-            ValueError: If model_path is not provided on first call
-        """
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
