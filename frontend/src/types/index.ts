@@ -13,13 +13,20 @@ export interface Message {
   timestamp: string;
 }
 
+export interface SplitViewState {
+  isActive: boolean;
+  leftTabId: string | null;
+  rightTabId: string | null;
+  activePaneId: 'left' | 'right';
+}
+
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'split' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings';
   active: boolean;
   data?: any;
-  splitTabs?: [string, string];
+  lastActiveTime?: number;
 }
 
 export interface Tool {

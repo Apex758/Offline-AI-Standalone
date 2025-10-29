@@ -21,7 +21,7 @@ import {
   Settings as SettingsIcon
 } from 'lucide-react';
 
-import { User, Tab, Tool } from '../types';
+import { User, Tab, Tool, SplitViewState } from '../types';
 import Chat from './Chat';
 import LessonPlanner from './LessonPlanner';
 import CurriculumViewer from './CurriculumViewer';
@@ -163,9 +163,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       colors[type] = variants;
     });
     
-    // Add default colors for settings and split tabs
+    // Add default color for settings
     colors['settings'] = generateColorVariants('#64748b'); // slate-500
-    colors['split'] = generateColorVariants('#9ca3af'); // gray-400
     
     return colors;
   }, [settings.tabColors]);
@@ -175,6 +174,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [splitView, setSplitView] = useState<SplitViewState>({
+    isActive: false,
+    leftTabId: null,
+    rightTabId: null,
+    activePaneId: 'left'
+  });
   const [contextMenu, setContextMenu] = useState<{ tabId?: string; groupType?: string; x: number; y: number } | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
@@ -223,8 +228,41 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, [activeTabId, tabs, settings, isTutorialCompleted]);
 
 
+  const migrateLegacySplitTabs = (savedTabs: Tab[]): Tab[] => {
+    const splitTabs = savedTabs.filter((t: any) => t.type === 'split');
+    const regularTabs = savedTabs.filter((t: any) => t.type !== 'split');
+    
+    if (splitTabs.length > 0) {
+      const firstSplit: any = splitTabs[0];
+      
+      if (firstSplit.splitTabs && firstSplit.splitTabs.length === 2) {
+        const [leftId, rightId] = firstSplit.splitTabs;
+        const leftExists = regularTabs.find(t => t.id === leftId);
+        const rightExists = regularTabs.find(t => t.id === rightId);
+        
+        if (leftExists && rightExists) {
+          setSplitView({
+            isActive: true,
+            leftTabId: leftId,
+            rightTabId: rightId,
+            activePaneId: 'left'
+          });
+          
+          localStorage.setItem('dashboard-split-view', JSON.stringify({
+            isActive: true,
+            leftTabId: leftId,
+            rightTabId: rightId,
+            activePaneId: 'left'
+          }));
+        }
+      }
+    }
+    
+    return regularTabs;
+  };
+
   const getTabCountByType = (type: string) => {
-    return tabs.filter(tab => tab.type === type && tab.type !== 'split').length;
+    return tabs.filter(tab => tab.type === type).length;
   };
 
   const openTool = (tool: Tool) => {
@@ -261,21 +299,59 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setActiveTabId(newTab.id);
   };
 
-  const closeTab = (tabId: string) => {
-    const tabToClose = tabs.find(tab => tab.id === tabId);
-    
-    if (tabToClose?.type === 'split' && tabToClose.splitTabs) {
-      const [leftTabId, rightTabId] = tabToClose.splitTabs;
-      const updatedTabs = tabs.filter(tab => tab.id !== tabId);
-      setTabs(updatedTabs);
+  const toggleSplitView = () => {
+    if (splitView.isActive) {
+      setSplitView({
+        isActive: false,
+        leftTabId: null,
+        rightTabId: null,
+        activePaneId: 'left'
+      });
+    } else {
+      if (tabs.length < 2) return;
       
-      if (leftTabId) {
-        setActiveTabId(leftTabId);
+      const sortedTabs = [...tabs].sort((a, b) =>
+        (b.lastActiveTime || 0) - (a.lastActiveTime || 0)
+      );
+      
+      setSplitView({
+        isActive: true,
+        leftTabId: sortedTabs[0].id,
+        rightTabId: sortedTabs[1].id,
+        activePaneId: 'left'
+      });
+    }
+  };
+
+  const closeTab = (tabId: string) => {
+    const updatedTabs = tabs.filter(tab => tab.id !== tabId);
+    setTabs(updatedTabs);
+    
+    if (splitView.isActive && (tabId === splitView.leftTabId || tabId === splitView.rightTabId)) {
+      if (updatedTabs.length < 2) {
+        setSplitView({
+          isActive: false,
+          leftTabId: null,
+          rightTabId: null,
+          activePaneId: 'left'
+        });
+        if (updatedTabs.length > 0) {
+          setActiveTabId(updatedTabs[0].id);
+        }
+      } else {
+        const availableTab = updatedTabs.find(t =>
+          t.id !== splitView.leftTabId && t.id !== splitView.rightTabId
+        );
+        
+        if (availableTab) {
+          if (tabId === splitView.leftTabId) {
+            setSplitView(prev => ({ ...prev, leftTabId: availableTab.id }));
+          } else {
+            setSplitView(prev => ({ ...prev, rightTabId: availableTab.id }));
+          }
+        }
       }
     } else {
-      const updatedTabs = tabs.filter(tab => tab.id !== tabId);
-      setTabs(updatedTabs);
-      
       if (activeTabId === tabId && updatedTabs.length > 0) {
         setActiveTabId(updatedTabs[updatedTabs.length - 1].id);
       } else if (updatedTabs.length === 0) {
@@ -287,19 +363,41 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   useEffect(() => {
     const savedTabs = localStorage.getItem('dashboard-tabs');
     const savedActiveTabId = localStorage.getItem('dashboard-active-tab');
+    const savedSplitView = localStorage.getItem('dashboard-split-view');
     
     if (savedTabs) {
       try {
         const parsedTabs = JSON.parse(savedTabs);
-        setTabs(parsedTabs);
+        const migratedTabs = migrateLegacySplitTabs(parsedTabs);
+        setTabs(migratedTabs);
+        
         if (savedActiveTabId) {
           setActiveTabId(savedActiveTabId);
+        }
+        
+        // Load split view state
+        if (savedSplitView) {
+          const parsed = JSON.parse(savedSplitView);
+          const leftExists = migratedTabs.find(t => t.id === parsed.leftTabId);
+          const rightExists = migratedTabs.find(t => t.id === parsed.rightTabId);
+          
+          if (leftExists && rightExists) {
+            setSplitView(parsed);
+          }
         }
       } catch (error) {
         console.error('Error loading saved tabs:', error);
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (splitView.isActive) {
+      localStorage.setItem('dashboard-split-view', JSON.stringify(splitView));
+    } else {
+      localStorage.removeItem('dashboard-split-view');
+    }
+  }, [splitView]);
 
   useEffect(() => {
     if (tabs.length > 0) {
@@ -327,44 +425,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     };
   }, [settings.autoCloseTabsOnExit]);
 
-  const createSplitTab = (leftTabId: string, rightTabId: string) => {
-    const leftTab = tabs.find(t => t.id === leftTabId);
-    const rightTab = tabs.find(t => t.id === rightTabId);
-    
-    if (!leftTab || !rightTab) return;
-
-    const splitTab: Tab = {
-      id: `split-${Date.now()}`,
-      title: `${leftTab.title} | ${rightTab.title}`,
-      type: 'split',
-      active: true,
-      splitTabs: [leftTabId, rightTabId],
-      data: {}
-    };
-
-    setTabs([...tabs, splitTab]);
-    setActiveTabId(splitTab.id);
-    setContextMenu(null);
-  };
-
-  const handleTabContextMenu = (e: React.MouseEvent, tabId: string) => {
-    e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setContextMenu({ 
-      tabId, 
-      x: rect.left, 
-      y: rect.bottom + 8 // 8px below the tab
-    });
-  };
-
-  const handleSplitWithTab = (targetTabId: string) => {
-    if (contextMenu) {
-      createSplitTab(contextMenu.tabId!, targetTabId);
-    }
-  };
-
   const updateTabData = (tabId: string, data: any) => {
-    setTabs(tabs.map(tab => 
+    setTabs(tabs.map(tab =>
       tab.id === tabId ? { ...tab, data: { ...tab.data, ...data } } : tab
     ));
   };
@@ -578,41 +640,54 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  const renderTabContent = (tab: Tab) => {
-    if (tab.type === 'split' && tab.splitTabs) {
-      const [leftTabId, rightTabId] = tab.splitTabs;
-      const leftTab = tabs.find(t => t.id === leftTabId);
-      const rightTab = tabs.find(t => t.id === rightTabId);
+  const renderTabContent = () => {
+    if (splitView.isActive && splitView.leftTabId && splitView.rightTabId) {
+      const leftTab = tabs.find(t => t.id === splitView.leftTabId);
+      const rightTab = tabs.find(t => t.id === splitView.rightTabId);
+
+      if (!leftTab || !rightTab) {
+        setSplitView({
+          isActive: false,
+          leftTabId: null,
+          rightTabId: null,
+          activePaneId: 'left'
+        });
+        return null;
+      }
 
       return (
         <div className="flex h-full divide-x divide-gray-200" data-tutorial="split-view-demo">
-          <div className="flex-1 overflow-hidden">
-            {leftTab && renderSingleTabContent(leftTab)}
+          <div
+            className={`flex-1 overflow-hidden ${
+              splitView.activePaneId === 'left' ? 'ring-2 ring-inset ring-blue-400' : ''
+            }`}
+            onClick={() => setSplitView(prev => ({ ...prev, activePaneId: 'left' }))}
+          >
+            {renderSingleTabContent(leftTab)}
           </div>
-          <div className="flex-1 overflow-hidden">
-            {rightTab && renderSingleTabContent(rightTab)}
+          <div
+            className={`flex-1 overflow-hidden ${
+              splitView.activePaneId === 'right' ? 'ring-2 ring-inset ring-blue-400' : ''
+            }`}
+            onClick={() => setSplitView(prev => ({ ...prev, activePaneId: 'right' }))}
+          >
+            {renderSingleTabContent(rightTab)}
           </div>
         </div>
       );
     }
 
-    return renderSingleTabContent(tab);
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    if (!activeTab) return null;
+    
+    return renderSingleTabContent(activeTab);
   };
 
   const groupedTabs = tabs.reduce((acc, tab) => {
-    if (tab.type === 'split') {
-      if (!acc['split']) acc['split'] = [];
-      acc['split'].push(tab);
-    } else {
-      if (!acc[tab.type]) acc[tab.type] = [];
-      acc[tab.type].push(tab);
-    }
+    if (!acc[tab.type]) acc[tab.type] = [];
+    acc[tab.type].push(tab);
     return acc;
   }, {} as { [key: string]: Tab[] });
-
-  const availableTabsForSplit = tabs.filter(t => 
-    t.type !== 'split' && t.id !== contextMenu?.tabId
-  );
 
   // Group tools by category
   const regularTools = tools.filter(t => !t.group && t.type !== 'settings');
@@ -627,43 +702,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       style={{ fontSize: `${settings.fontSize}%` }}
     >
       {/* Context Menu */}
-      {contextMenu && (
+      {contextMenu && contextMenu.groupType && (
         <div
-          data-tutorial="split-context-menu"
           className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
-          {contextMenu.groupType ? (
-            <>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Group Actions</div>
-              <button
-                onClick={() => closeGroupTabs(contextMenu.groupType!)}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 flex items-center space-x-2"
-              >
-                <X className="w-4 h-4" />
-                <span>Close all {tools.find(t => t.type === contextMenu.groupType)?.name} tabs</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Split with...</div>
-              {availableTabsForSplit.length === 0 ? (
-                <div className="px-4 py-2 text-sm text-gray-400">No other tabs available</div>
-              ) : (
-                availableTabsForSplit.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleSplitWithTab(tab.id)}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center space-x-2"
-                  >
-                    <Columns className="w-4 h-4" />
-                    <span>{tab.title}</span>
-                  </button>
-                ))
-              )}
-            </>
-          )}
+          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Group Actions</div>
+          <button
+            onClick={() => closeGroupTabs(contextMenu.groupType!)}
+            className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 flex items-center space-x-2"
+          >
+            <X className="w-4 h-4" />
+            <span>Close all {tools.find(t => t.type === contextMenu.groupType)?.name} tabs</span>
+          </button>
         </div>
       )}
 
@@ -1090,11 +1142,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       borderLeftColor: colors.border,
                       backgroundColor: isActive ? colors.activeBg : colors.bg
                     }}
-                    onClick={() => setActiveTabId(tab.id)}
-                    onContextMenu={(e) => tab.type !== 'split' && handleTabContextMenu(e, tab.id)}
-                    title="Right-click to split"
+                    onClick={() => {
+                      if (!splitView.isActive) {
+                        setActiveTabId(tab.id);
+                      } else {
+                        if (splitView.activePaneId === 'left') {
+                          setSplitView(prev => ({ ...prev, leftTabId: tab.id }));
+                        } else {
+                          setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
+                        }
+                      }
+                      
+                      setTabs(prev => prev.map(t => ({
+                        ...t,
+                        lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
+                      })));
+                    }}
                   >
-                    {tab.type === 'split' && <Columns className="w-3 h-3" />}
                     <span className="text-sm font-medium whitespace-nowrap">{tab.title}</span>
                     <button
                       onClick={(e) => {
@@ -1145,8 +1209,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           backgroundColor: isTabActive ? colors.activeBg : colors.bg,
                           maxWidth: '200px'
                         }}
-                        onClick={() => setActiveTabId(tab.id)}
-                        onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
+                        onClick={() => {
+                          if (!splitView.isActive) {
+                            setActiveTabId(tab.id);
+                          } else {
+                            if (splitView.activePaneId === 'left') {
+                              setSplitView(prev => ({ ...prev, leftTabId: tab.id }));
+                            } else {
+                              setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
+                            }
+                          }
+                          
+                          setTabs(prev => prev.map(t => ({
+                            ...t,
+                            lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
+                          })));
+                        }}
                       >
                         <span
                           className="text-sm whitespace-nowrap overflow-hidden relative"
@@ -1174,22 +1252,45 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             })}
           </div>
 
-          {/* Close All Tabs Button on the right */}
-          {tabs.length > 0 && (
-            <button
-              onClick={() => {
-                setTabs([]);
-                setActiveTabId(null);
-                localStorage.removeItem('dashboard-tabs');
-                localStorage.removeItem('dashboard-active-tab');
-              }}
-              data-tutorial="close-all-tabs"
-              className="p-2 rounded-lg hover:bg-red-50 transition group ml-4 flex-shrink-0"
-              title="Close All Tabs"
-            >
-              <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
-            </button>
-          )}
+          {/* Split Toggle and Close All Tabs Buttons on the right */}
+          <div className="flex items-center gap-2">
+            {tabs.length >= 2 && (
+              <button
+                onClick={toggleSplitView}
+                className={`p-2 rounded-lg transition group flex-shrink-0 ${
+                  splitView.isActive
+                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                    : 'hover:bg-gray-100 text-gray-600'
+                }`}
+                title={splitView.isActive ? 'Exit Split View' : 'Enter Split View'}
+              >
+                <Columns className="w-5 h-5" />
+              </button>
+            )}
+            
+            {tabs.length > 0 && (
+              <button
+                onClick={() => {
+                  setTabs([]);
+                  setActiveTabId(null);
+                  setSplitView({
+                    isActive: false,
+                    leftTabId: null,
+                    rightTabId: null,
+                    activePaneId: 'left'
+                  });
+                  localStorage.removeItem('dashboard-tabs');
+                  localStorage.removeItem('dashboard-active-tab');
+                  localStorage.removeItem('dashboard-split-view');
+                }}
+                data-tutorial="close-all-tabs"
+                className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0"
+                title="Close All Tabs"
+              >
+                <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Content Area */}
@@ -1200,19 +1301,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         >
           {tabs.length > 0 ? (
             <>
-              {tabs.map(tab => (
-                <div 
-                  key={tab.id}
-                  className="absolute inset-0"
-                  style={{
-                    zIndex: activeTabId === tab.id ? 10 : 0,
-                    visibility: activeTabId === tab.id ? 'visible' : 'hidden',
-                    pointerEvents: activeTabId === tab.id ? 'auto' : 'none'
-                  }}
-                >
-                  {renderTabContent(tab)}
-                </div>
-              ))}
+              <div className="absolute inset-0">
+                {renderTabContent()}
+              </div>
             </>
           ) : (
             <div className="h-full flex items-center justify-center bg-gray-50">

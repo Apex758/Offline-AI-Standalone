@@ -49,7 +49,11 @@ Next steps:
 
 add timer to show estimated time of completetion based on pc specs
 ensure timing allocation is right for all gener
- 
+ensure editors match
+ include marks for rubric gen
+ after logging in, create name/oak fields to enter
+
+ fix resource manager view and edit
 
 
 
