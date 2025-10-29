@@ -655,21 +655,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return null;
       }
 
+      // Get active tab color for pane highlight
+      const activeTabInPane = splitView.activePaneId === 'left' ? leftTab : rightTab;
+      const activePaneColor = settings.tabColors[activeTabInPane.type as keyof typeof settings.tabColors] || '#60a5fa';
+
       return (
         <div className="flex h-full divide-x divide-gray-200" data-tutorial="split-view-demo">
           <div
-            className={`flex-1 overflow-hidden ${
-              splitView.activePaneId === 'left' ? 'ring-2 ring-inset ring-blue-400' : ''
-            }`}
+            className="flex-1 overflow-hidden relative"
             onClick={() => setSplitView(prev => ({ ...prev, activePaneId: 'left' }))}
+            style={splitView.activePaneId === 'left' ? {
+              boxShadow: `inset 0 0 0 3px ${activePaneColor}`,
+              border: `3px solid ${activePaneColor}`,
+              borderRadius: '4px'
+            } : {}}
           >
             {renderSingleTabContent(leftTab)}
           </div>
           <div
-            className={`flex-1 overflow-hidden ${
-              splitView.activePaneId === 'right' ? 'ring-2 ring-inset ring-blue-400' : ''
-            }`}
+            className="flex-1 overflow-hidden relative"
             onClick={() => setSplitView(prev => ({ ...prev, activePaneId: 'right' }))}
+            style={splitView.activePaneId === 'right' ? {
+              boxShadow: `inset 0 0 0 3px ${activePaneColor}`,
+              border: `3px solid ${activePaneColor}`,
+              borderRadius: '4px'
+            } : {}}
           >
             {renderSingleTabContent(rightTab)}
           </div>
