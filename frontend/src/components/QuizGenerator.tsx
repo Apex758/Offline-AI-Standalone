@@ -146,22 +146,30 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Track initialization per tab to prevent state loss on tab switches
+  const hasInitializedRef = useRef(false);
+  const currentTabIdRef = useRef(tabId);
+
+  // Helper function to get default empty form data
+  const getDefaultFormData = (): FormData => ({
+    subject: '',
+    gradeLevel: '',
+    learningOutcomes: '',
+    questionTypes: [],
+    cognitiveLevels: [],
+    timeLimitPerQuestion: '',
+    randomizeQuestions: false,
+    numberOfQuestions: '10'
+  });
+
   // Form data
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    if (saved && Object.keys(saved).length > 0 && saved.subject) {
+    // Robust validation: check if saved data exists AND has meaningful content
+    if (saved && typeof saved === 'object' && saved.subject?.trim()) {
       return saved;
     }
-    return {
-      subject: '',
-      gradeLevel: '',
-      learningOutcomes: '',
-      questionTypes: [],
-      cognitiveLevels: [],
-      timeLimitPerQuestion: '',
-      randomizeQuestions: false,
-      numberOfQuestions: '10'
-    };
+    return getDefaultFormData();
   });
 
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
@@ -294,6 +302,34 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       wsRef.current = null;
     };
   }, []);
+
+  // FIXED: Properly handle tab switches without losing state
+  useEffect(() => {
+    const isNewTab = currentTabIdRef.current !== tabId;
+    currentTabIdRef.current = tabId;
+    
+    // Only update state when switching tabs OR on first initialization
+    if (isNewTab || !hasInitializedRef.current) {
+      const saved = savedData?.formData;
+      
+      // Robust validation: check if saved data has meaningful content
+      if (saved && typeof saved === 'object' && saved.subject?.trim()) {
+        // Restore all state for this tab
+        setFormData(saved);
+        setGeneratedQuiz(savedData?.generatedQuiz || '');
+        setStreamingQuiz(savedData?.streamingQuiz || '');
+        setParsedQuiz(savedData?.parsedQuiz || null);
+      } else {
+        // New tab or empty tab - set to default state
+        setFormData(getDefaultFormData());
+        setGeneratedQuiz('');
+        setStreamingQuiz('');
+        setParsedQuiz(null);
+      }
+      
+      hasInitializedRef.current = true;
+    }
+  }, [tabId, savedData]);
 
   // Enable structured editing mode
   const enableEditing = () => {

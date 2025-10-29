@@ -407,35 +407,41 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [parsedLesson, setParsedLesson] = useState<ParsedLesson | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  // Initialize with proper isolation - check if savedData has actual content
+  // Track initialization per tab to prevent state loss on tab switches
+  const hasInitializedRef = useRef(false);
+  const currentTabIdRef = useRef(tabId);
+
+  // Helper function to get default empty form data
+  const getDefaultFormData = (): FormData => ({
+    subject: '',
+    gradeLevel: '',
+    topic: '',
+    strand: '',
+    essentialOutcomes: '',
+    specificOutcomes: '',
+    studentCount: '',
+    duration: '',
+    pedagogicalStrategies: [],
+    learningStyles: [],
+    learningPreferences: [],
+    multipleIntelligences: [],
+    customLearningStyles: '',
+    materials: '',
+    prerequisiteSkills: '',
+    specialNeeds: false,
+    specialNeedsDetails: '',
+    additionalInstructions: '',
+    referenceUrl: ''
+  });
+
+  // Initialize with proper validation - check if savedData has actual meaningful content
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    // Only use saved data if it exists AND has actual content (not empty object)
-    if (saved && Object.keys(saved).length > 0 && saved.subject) {
+    // Robust validation: check if saved data exists AND has meaningful content
+    if (saved && typeof saved === 'object' && saved.subject?.trim()) {
       return saved;
     }
-    // Otherwise return fresh state
-    return {
-      subject: '',
-      gradeLevel: '',
-      topic: '',
-      strand: '',
-      essentialOutcomes: '',
-      specificOutcomes: '',
-      studentCount: '',
-      duration: '',
-      pedagogicalStrategies: [],
-      learningStyles: [],
-      learningPreferences: [],
-      multipleIntelligences: [],
-      customLearningStyles: '',
-      materials: '',
-      prerequisiteSkills: '',
-      specialNeeds: false,
-      specialNeedsDetails: '',
-      additionalInstructions: '',
-      referenceUrl: ''
-    };
+    return getDefaultFormData();
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
@@ -472,41 +478,35 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   };
 
 
-  // CRITICAL: Reset state when switching to a different tab (different tabId)
+  // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
-    const saved = savedData?.formData;
-    // If no saved data or it's empty, reset to fresh state
-    if (!saved || Object.keys(saved).length === 0 || !saved.subject) {
-      setFormData({
-        subject: '',
-        gradeLevel: '',
-        topic: '',
-        strand: '',
-        essentialOutcomes: '',
-        specificOutcomes: '',
-        studentCount: '',
-        duration: '',
-        pedagogicalStrategies: [],
-        learningStyles: [],
-        learningPreferences: [],
-        multipleIntelligences: [],
-        customLearningStyles: '',
-        materials: '',
-        prerequisiteSkills: '',
-        specialNeeds: false,
-        specialNeedsDetails: '',
-        additionalInstructions: '',
-        referenceUrl: ''
-      });
-      setGeneratedPlan('');
-      setStep(1);
-    } else {
-      // Load the saved data for this specific tab
-      setFormData(saved);
-      setGeneratedPlan(savedData?.generatedPlan || '');
-      setStep(savedData?.step || 1);
+    const isNewTab = currentTabIdRef.current !== tabId;
+    currentTabIdRef.current = tabId;
+    
+    // Only update state when switching tabs OR on first initialization
+    if (isNewTab || !hasInitializedRef.current) {
+      const saved = savedData?.formData;
+      
+      // Robust validation: check if saved data has meaningful content
+      if (saved && typeof saved === 'object' && saved.subject?.trim()) {
+        // Restore all state for this tab
+        setFormData(saved);
+        setGeneratedPlan(savedData?.generatedPlan || '');
+        setStreamingPlan(savedData?.streamingPlan || '');
+        setStep(savedData?.step || 1);
+        setParsedLesson(savedData?.parsedLesson || null);
+      } else {
+        // New tab or empty tab - set to default state
+        setFormData(getDefaultFormData());
+        setGeneratedPlan('');
+        setStreamingPlan('');
+        setStep(1);
+        setParsedLesson(null);
+      }
+      
+      hasInitializedRef.current = true;
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   const subjects = [
     'Mathematics',

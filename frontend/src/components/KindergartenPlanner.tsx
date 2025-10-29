@@ -366,26 +366,34 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Track initialization per tab to prevent state loss on tab switches
+  const hasInitializedRef = useRef(false);
+  const currentTabIdRef = useRef(tabId);
+
+  // Helper function to get default empty form data
+  const getDefaultFormData = (): FormData => ({
+    lessonTopic: '',
+    curriculumUnit: '',
+    week: '',
+    dayOfWeek: '',
+    date: new Date().toISOString().split('T')[0],
+    ageGroup: '',
+    students: '',
+    creativityLevel: 50,
+    learningDomains: [],
+    duration: '60',
+    additionalRequirements: '',
+    includeAssessments: true,
+    includeMaterials: true
+  });
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    if (saved && Object.keys(saved).length > 0 && saved.lessonTopic) {
+    // Robust validation: check if saved data exists AND has meaningful content
+    if (saved && typeof saved === 'object' && saved.lessonTopic?.trim()) {
       return saved;
     }
-    return {
-      lessonTopic: '',
-      curriculumUnit: '',
-      week: '',
-      dayOfWeek: '',
-      date: new Date().toISOString().split('T')[0],
-      ageGroup: '',
-      students: '',
-      creativityLevel: 50,
-      learningDomains: [],
-      duration: '60',
-      additionalRequirements: '',
-      includeAssessments: true,
-      includeMaterials: true
-    };
+    return getDefaultFormData();
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
@@ -434,32 +442,33 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     setShowTutorial(false);
   };
 
+  // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
-    const saved = savedData?.formData;
-    if (!saved || Object.keys(saved).length === 0 || !saved.lessonTopic) {
-      setFormData({
-        lessonTopic: '',
-        curriculumUnit: '',
-        week: '',
-        dayOfWeek: '',
-        date: new Date().toISOString().split('T')[0],
-        ageGroup: '',
-        students: '',
-        creativityLevel: 50,
-        learningDomains: [],
-        duration: '60',
-        additionalRequirements: '',
-        includeAssessments: true,
-        includeMaterials: true
-      });
-      setGeneratedPlan('');
-      setStreamingPlan('');
-    } else {
-      setFormData(saved);
-      setGeneratedPlan(savedData?.generatedPlan || '');
-      setStreamingPlan(savedData?.streamingPlan || '');
+    const isNewTab = currentTabIdRef.current !== tabId;
+    currentTabIdRef.current = tabId;
+    
+    // Only update state when switching tabs OR on first initialization
+    if (isNewTab || !hasInitializedRef.current) {
+      const saved = savedData?.formData;
+      
+      // Robust validation: check if saved data has meaningful content
+      if (saved && typeof saved === 'object' && saved.lessonTopic?.trim()) {
+        // Restore all state for this tab
+        setFormData(saved);
+        setGeneratedPlan(savedData?.generatedPlan || '');
+        setStreamingPlan(savedData?.streamingPlan || '');
+        setParsedPlan(savedData?.parsedPlan || null);
+      } else {
+        // New tab or empty tab - set to default state
+        setFormData(getDefaultFormData());
+        setGeneratedPlan('');
+        setStreamingPlan('');
+        setParsedPlan(null);
+      }
+      
+      hasInitializedRef.current = true;
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   useEffect(() => {
     onDataChange({ formData, generatedPlan, streamingPlan, parsedPlan });

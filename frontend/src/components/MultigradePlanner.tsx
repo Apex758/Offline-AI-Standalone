@@ -406,31 +406,39 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [parsedPlan, setParsedPlan] = useState<ParsedMultigradePlan | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Track initialization per tab to prevent state loss on tab switches
+  const hasInitializedRef = useRef(false);
+  const currentTabIdRef = useRef(tabId);
+
+  // Helper function to get default empty form data
+  const getDefaultFormData = (): FormData => ({
+    subject: '',
+    gradeRange: '',
+    topic: '',
+    essentialLearningOutcomes: '',
+    specificLearningObjectives: '',
+    totalStudents: '',
+    prerequisiteSkills: '',
+    duration: '',
+    materials: '',
+    learningStyles: [],
+    learningPreferences: [],
+    multipleIntelligences: [],
+    customLearningStyles: '',
+    pedagogicalStrategies: [],
+    multigradeStrategies: [],
+    specialNeeds: false,
+    specialNeedsDetails: '',
+    differentiationNotes: ''
+  });
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    if (saved && Object.keys(saved).length > 0 && saved.subject) {
+    // Robust validation: check if saved data exists AND has meaningful content
+    if (saved && typeof saved === 'object' && saved.subject?.trim()) {
       return saved;
     }
-    return {
-      subject: '',
-      gradeRange: '',
-      topic: '',
-      essentialLearningOutcomes: '',
-      specificLearningObjectives: '',
-      totalStudents: '',
-      prerequisiteSkills: '',
-      duration: '',
-      materials: '',
-      learningStyles: [],
-      learningPreferences: [],
-      multipleIntelligences: [],
-      customLearningStyles: '',
-      pedagogicalStrategies: [],
-      multigradeStrategies: [],
-      specialNeeds: false,
-      specialNeedsDetails: '',
-      differentiationNotes: ''
-    };
+    return getDefaultFormData();
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
@@ -494,39 +502,35 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     setShowTutorial(false);
   };
 
+  // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
-    const saved = savedData?.formData;
-    if (!saved || Object.keys(saved).length === 0 || !saved.subject) {
-      setFormData({
-        subject: '',
-        gradeRange: '',
-        topic: '',
-        essentialLearningOutcomes: '',
-        specificLearningObjectives: '',
-        totalStudents: '',
-        prerequisiteSkills: '',
-        duration: '',
-        materials: '',
-        learningStyles: [],
-        learningPreferences: [],
-        multipleIntelligences: [],
-        customLearningStyles: '',
-        pedagogicalStrategies: [],
-        multigradeStrategies: [],
-        specialNeeds: false,
-        specialNeedsDetails: '',
-        differentiationNotes: ''
-      });
-      setGeneratedPlan('');
-      setStreamingPlan('');
-      setStep(1);
-    } else {
-      setFormData(saved);
-      setGeneratedPlan(savedData?.generatedPlan || '');
-      setStreamingPlan(savedData?.streamingPlan || '');
-      setStep(savedData?.step || 1);
+    const isNewTab = currentTabIdRef.current !== tabId;
+    currentTabIdRef.current = tabId;
+    
+    // Only update state when switching tabs OR on first initialization
+    if (isNewTab || !hasInitializedRef.current) {
+      const saved = savedData?.formData;
+      
+      // Robust validation: check if saved data has meaningful content
+      if (saved && typeof saved === 'object' && saved.subject?.trim()) {
+        // Restore all state for this tab
+        setFormData(saved);
+        setGeneratedPlan(savedData?.generatedPlan || '');
+        setStreamingPlan(savedData?.streamingPlan || '');
+        setStep(savedData?.step || 1);
+        setParsedPlan(savedData?.parsedPlan || null);
+      } else {
+        // New tab or empty tab - set to default state
+        setFormData(getDefaultFormData());
+        setGeneratedPlan('');
+        setStreamingPlan('');
+        setStep(1);
+        setParsedPlan(null);
+      }
+      
+      hasInitializedRef.current = true;
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   useEffect(() => {
     onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });
