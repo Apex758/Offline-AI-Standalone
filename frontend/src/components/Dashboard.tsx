@@ -482,13 +482,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       return;
     }
 
-    // Create a new tab for the corresponding tool, pre-filled with the resource's form data
+    // Create a new tab for the corresponding tool, pre-filled with all resource data
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
-      title: `Editing: ${resource.title.substring(0, 20)}...`,
+      title: resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric
+        ? `Viewing: ${resource.title.substring(0, 20)}...`
+        : `Editing: ${resource.title.substring(0, 20)}...`,
       type: tool.type,
       active: true,
-      data: resource.formData || {} // Pass the saved form data to the new tab
+      data: {
+        formData: resource.formData,
+        generatedQuiz: resource.generatedQuiz,
+        generatedPlan: resource.generatedPlan,
+        generatedRubric: resource.generatedRubric,
+        parsedQuiz: resource.parsedQuiz,
+        streamingQuiz: resource.streamingQuiz
+      } // ✅ Pass all the data
     };
 
     setTabs([...tabs, newTab]);

@@ -427,14 +427,28 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
       </div>
 
       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
-        {/* "Edit" Button */}
+        {/* "View" Button - shows if there's generated content */}
+        {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric) && (
+          <button
+            onClick={onEdit}
+            className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+            title="View generated content"
+          >
+            <Eye className="w-4 h-4 mr-1" />
+            View
+          </button>
+        )}
+        
+        {/* "Edit" Button - always available */}
         <button
           onClick={onEdit}
-          className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+          className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
+          title="Edit or view this resource"
         >
           <Edit className="w-4 h-4 mr-1" />
           Edit
         </button>
+        
         <button
           onClick={onExport}
           className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
