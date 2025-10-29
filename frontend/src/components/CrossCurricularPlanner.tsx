@@ -533,6 +533,14 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   }, [generatedPlan]);
 
+  // Auto-enable editing mode if startInEditMode flag is set
+  useEffect(() => {
+    if (savedData?.startInEditMode && parsedPlan && !isEditing) {
+      console.log('Auto-enabling edit mode for cross-curricular plan');
+      setIsEditing(true);
+    }
+  }, [savedData?.startInEditMode, parsedPlan, isEditing]);
+
   const grades = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 
                   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
   

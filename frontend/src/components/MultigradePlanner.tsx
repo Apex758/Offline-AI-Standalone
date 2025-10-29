@@ -458,6 +458,14 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   }, [generatedPlan]);
 
+  // Auto-enable editing mode if startInEditMode flag is set
+  useEffect(() => {
+    if (savedData?.startInEditMode && parsedPlan && !isEditing) {
+      console.log('Auto-enabling edit mode for multigrade plan');
+      setIsEditing(true);
+    }
+  }, [savedData?.startInEditMode, parsedPlan, isEditing]);
+
   const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Art', 'Music', 'Physical Education'];
   
   const gradeRanges = [

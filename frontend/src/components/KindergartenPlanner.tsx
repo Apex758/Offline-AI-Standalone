@@ -427,6 +427,14 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     }
   }, [generatedPlan]);
 
+  // Auto-enable editing mode if startInEditMode flag is set
+  useEffect(() => {
+    if (savedData?.startInEditMode && parsedPlan && !isEditing) {
+      console.log('Auto-enabling edit mode for kindergarten plan');
+      setIsEditing(true);
+    }
+  }, [savedData?.startInEditMode, parsedPlan, isEditing]);
+
   // Tutorial auto-show logic
   useEffect(() => {
     if (
