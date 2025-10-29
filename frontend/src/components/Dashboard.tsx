@@ -460,6 +460,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
 
+  const handleViewResource = (type: string, resource: any) => {
+    const typeToToolType: { [key: string]: string } = {
+      'lesson': 'lesson-planner',
+      'quiz': 'quiz-generator',
+      'rubric': 'rubric-generator',
+      'kindergarten': 'kindergarten-planner',
+      'multigrade': 'multigrade-planner',
+      'cross-curricular': 'cross-curricular-planner'
+    };
+
+    const toolType = typeToToolType[type];
+    if (!toolType) {
+      console.error('Unknown resource type:', type);
+      return;
+    }
+
+    const tool = tools.find(t => t.type === toolType);
+    if (!tool) {
+      console.error('Could not find tool for type:', toolType);
+      return;
+    }
+
+    // Create a new tab for viewing the resource
+    const newTab: Tab = {
+      id: `${tool.type}-${Date.now()}`,
+      title: `Viewing: ${resource.title.substring(0, 20)}...`,
+      type: tool.type,
+      active: true,
+      data: {
+        formData: resource.formData,
+        generatedQuiz: resource.generatedQuiz,
+        generatedPlan: resource.generatedPlan,
+        generatedRubric: resource.generatedRubric,
+        parsedQuiz: resource.parsedQuiz,
+        streamingQuiz: resource.streamingQuiz,
+        startInEditMode: false // View mode
+      }
+    };
+
+    setTabs([...tabs, newTab]);
+    setActiveTabId(newTab.id);
+  };
+
   const handleEditResource = (type: string, resource: any) => {
     const typeToToolType: { [key: string]: string } = {
       'lesson': 'lesson-planner',
@@ -482,12 +525,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       return;
     }
 
-    // Create a new tab for the corresponding tool, pre-filled with all resource data
+    // Create a new tab for editing the resource
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
-      title: resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric
-        ? `Viewing: ${resource.title.substring(0, 20)}...`
-        : `Editing: ${resource.title.substring(0, 20)}...`,
+      title: `Editing: ${resource.title.substring(0, 20)}...`,
       type: tool.type,
       active: true,
       data: {
@@ -496,8 +537,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         generatedPlan: resource.generatedPlan,
         generatedRubric: resource.generatedRubric,
         parsedQuiz: resource.parsedQuiz,
-        streamingQuiz: resource.streamingQuiz
-      } // ✅ Pass all the data
+        streamingQuiz: resource.streamingQuiz,
+        startInEditMode: true // Edit mode
+      }
     };
 
     setTabs([...tabs, newTab]);
@@ -607,6 +649,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               tabId={tab.id}
               savedData={tab.data}
               onDataChange={(data) => updateTabData(tab.id, data)}
+              onViewResource={handleViewResource}
               onEditResource={handleEditResource}
             />
             

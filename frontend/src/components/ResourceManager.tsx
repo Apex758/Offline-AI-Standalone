@@ -26,11 +26,12 @@ interface Resource {
   favorite?: boolean;
 }
 
-const ResourceManager: React.FC<ResourceManagerProps> = ({ 
-  tabId, 
-  savedData, 
+const ResourceManager: React.FC<ResourceManagerProps> = ({
+  tabId,
+  savedData,
   onDataChange,
-  onEditResource 
+  onViewResource,
+  onEditResource
 }) => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -294,6 +295,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                   onToggleFavorite={() => toggleFavorite(resource)}
                   onDelete={() => setShowDeleteConfirm(resource.id)}
                   onExport={() => exportResource(resource)}
+                  onView={() => onViewResource?.(resource.type, resource)}
                   onEdit={() => onEditResource?.(resource.type, resource)}
                   getTypeIcon={getTypeIcon}
                   getTypeColor={getTypeColor}
@@ -326,6 +328,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                   onToggleFavorite={() => toggleFavorite(resource)}
                   onDelete={() => setShowDeleteConfirm(resource.id)}
                   onExport={() => exportResource(resource)}
+                  onView={() => onViewResource?.(resource.type, resource)}
                   onEdit={() => onEditResource?.(resource.type, resource)}
                   getTypeIcon={getTypeIcon}
                   getTypeColor={getTypeColor}
@@ -381,6 +384,7 @@ interface ResourceCardProps {
   onToggleFavorite: () => void;
   onDelete: () => void;
   onExport: () => void;
+  onView: () => void;
   onEdit: () => void;
   getTypeIcon: (type: string) => any;
   getTypeColor: (type: string) => string;
@@ -391,6 +395,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   onToggleFavorite,
   onDelete,
   onExport,
+  onView,
   onEdit,
   getTypeIcon,
   getTypeColor
@@ -430,7 +435,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         {/* "View" Button - shows if there's generated content */}
         {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric) && (
           <button
-            onClick={onEdit}
+            onClick={onView}
             className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
             title="View generated content"
           >
@@ -443,7 +448,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         <button
           onClick={onEdit}
           className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
-          title="Edit or view this resource"
+          title="Edit generated content"
         >
           <Edit className="w-4 h-4 mr-1" />
           Edit

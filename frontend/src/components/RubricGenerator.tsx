@@ -500,6 +500,14 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   }, [generatedRubric]);
 
+  // Auto-enable editing mode if startInEditMode flag is set
+  useEffect(() => {
+    if (savedData?.startInEditMode && parsedRubric && !isEditing) {
+      console.log('Auto-enabling edit mode for rubric');
+      setIsEditing(true);
+    }
+  }, [savedData?.startInEditMode, parsedRubric, isEditing]);
+
   // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
     const isNewTab = currentTabIdRef.current !== tabId;
