@@ -595,7 +595,7 @@ async def generate_lesson_plan(request: LessonPlanRequest):
             tool_name="lesson_plan",
             input_data=request.prompt,
             prompt_template=prompt_text,
-            max_tokens=3000,
+            max_tokens=6000,
             temperature=0.7
         )
         
@@ -635,7 +635,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     tool_name="lesson_plan",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    max_tokens=6000,
                     temperature=0.7
                 ):
                     if chunk.get("error"):
@@ -710,7 +710,7 @@ async def quiz_websocket(websocket: WebSocket):
                     tool_name="quiz",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=4000,
+                    max_tokens=6000,
                     temperature=0.7
                 ):
                     if chunk.get("error"):
@@ -792,7 +792,7 @@ async def rubric_websocket(websocket: WebSocket):
                     tool_name="rubric",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=4000,
+                    max_tokens=6000,
                     temperature=0.7
                 ):
                     if chunk.get("error"):
@@ -867,7 +867,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                     tool_name="kindergarten",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    max_tokens=6000,
                     temperature=0.7
                 ):
                     if chunk.get("error"):
@@ -939,7 +939,7 @@ async def multigrade_websocket(websocket: WebSocket):
                     tool_name="multigrade",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    max_tokens=6000,
                     temperature=0.7
                 ):
                     if chunk.get("error"):
@@ -1012,7 +1012,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     tool_name="cross_curricular",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=LLAMA_PARAMS["max_tokens"],
+                    max_tokens=6000,
                     temperature=0.7
                 ):
                     if chunk.get("error"):

@@ -376,7 +376,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       curriculumUnit: '',
       week: '',
       dayOfWeek: '',
-      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      date: new Date().toISOString().split('T')[0],
       ageGroup: '',
       students: '',
       creativityLevel: 50,
@@ -442,7 +442,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         curriculumUnit: '',
         week: '',
         dayOfWeek: '',
-        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        date: new Date().toISOString().split('T')[0],
         ageGroup: '',
         students: '',
         creativityLevel: 50,
@@ -669,8 +669,42 @@ ${contentToExport}`;
     loadKindergartenHistories();
   }, []);
 
+  // Helper function to calculate ISO week number
+  const getISOWeek = (date: Date): number => {
+    const target = new Date(date.valueOf());
+    const dayNr = (date.getDay() + 6) % 7;
+    target.setDate(target.getDate() - dayNr + 3);
+    const firstThursday = target.valueOf();
+    target.setMonth(0, 1);
+    if (target.getDay() !== 4) {
+      target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+    }
+    return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+  };
+
+  // Helper function to get day of week name
+  const getDayOfWeek = (date: Date): string => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[date.getDay()];
+  };
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handler for date change with automatic week/day calculation
+  const handleDateChange = (dateString: string) => {
+    handleInputChange('date', dateString);
+    
+    // Try to parse the date and calculate week/day
+    const date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+      const weekNumber = getISOWeek(date);
+      const dayName = getDayOfWeek(date);
+      
+      handleInputChange('week', weekNumber.toString());
+      handleInputChange('dayOfWeek', dayName);
+    }
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
@@ -714,7 +748,7 @@ ${contentToExport}`;
       curriculumUnit: '',
       week: '',
       dayOfWeek: '',
-      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      date: new Date().toISOString().split('T')[0],
       ageGroup: '',
       students: '',
       creativityLevel: 50,
@@ -1016,9 +1050,9 @@ ${contentToExport}`;
                       Date <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
+                      type="date"
                       value={formData.date}
-                      onChange={(e) => handleInputChange('date', e.target.value)}
+                      onChange={(e) => handleDateChange(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     />
