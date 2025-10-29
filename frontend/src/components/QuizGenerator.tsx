@@ -201,6 +201,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   }, [generatedQuiz]);
 
+  // Auto-enable editing mode if startInEditMode flag is set
+  useEffect(() => {
+    if (savedData?.startInEditMode && parsedQuiz && !isEditing) {
+      console.log('Auto-enabling edit mode for quiz');
+      setIsEditing(true);
+    }
+  }, [savedData?.startInEditMode, parsedQuiz, isEditing]);
+
   // WebSocket setup
   useEffect(() => {
     shouldReconnectRef.current = true;

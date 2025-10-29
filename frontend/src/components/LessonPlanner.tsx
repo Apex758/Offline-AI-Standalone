@@ -462,6 +462,14 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   }, [generatedPlan]);
 
+  // Auto-enable editing mode if startInEditMode flag is set
+  useEffect(() => {
+    if (savedData?.startInEditMode && parsedLesson && !isEditing) {
+      console.log('Auto-enabling edit mode for lesson plan');
+      setIsEditing(true);
+    }
+  }, [savedData?.startInEditMode, parsedLesson, isEditing]);
+
   // Tutorial auto-show logic
   useEffect(() => {
     if (
