@@ -459,7 +459,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       setGeneratedPlan(savedData?.generatedPlan || '');
       setStreamingPlan(savedData?.streamingPlan || '');
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   useEffect(() => {
     onDataChange({ formData, generatedPlan, streamingPlan, parsedPlan });

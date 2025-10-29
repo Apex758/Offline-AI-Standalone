@@ -526,7 +526,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       setStreamingPlan(savedData?.streamingPlan || '');
       setStep(savedData?.step || 1);
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   useEffect(() => {
     onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });

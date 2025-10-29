@@ -513,7 +513,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       setGeneratedRubric(savedData?.generatedRubric || '');
       setStreamingRubric(savedData?.streamingRubric || '');
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   // Auto-show tutorial on first use
   useEffect(() => {
