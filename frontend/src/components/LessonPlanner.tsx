@@ -506,7 +506,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       setGeneratedPlan(savedData?.generatedPlan || '');
       setStep(savedData?.step || 1);
     }
-  }, [tabId, savedData]);
+  }, [tabId]);
 
   const subjects = [
     'Mathematics',
