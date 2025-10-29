@@ -674,7 +674,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             className={`flex-1 overflow-hidden relative bg-white ${
               splitView.activePaneId === 'left' ? 'active-pane-glow' : ''
             }`}
-            onMouseDown={() => setSplitView(prev => ({ ...prev, activePaneId: 'left' }))}
+            onFocus={() => {
+              if (splitView.activePaneId !== 'left') {
+                setSplitView(prev => ({ ...prev, activePaneId: 'left' }));
+              }
+            }}
+            tabIndex={-1}
             style={splitView.activePaneId === 'left' ? {
               '--glow-color': activePaneColor,
               '--glow-rgb': hexToRgb(activePaneColor),
@@ -695,7 +700,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             className={`flex-1 overflow-hidden relative bg-white ${
               splitView.activePaneId === 'right' ? 'active-pane-glow' : ''
             }`}
-            onMouseDown={() => setSplitView(prev => ({ ...prev, activePaneId: 'right' }))}
+            onFocus={() => {
+              if (splitView.activePaneId !== 'right') {
+                setSplitView(prev => ({ ...prev, activePaneId: 'right' }));
+              }
+            }}
+            tabIndex={-1}
             style={splitView.activePaneId === 'right' ? {
               '--glow-color': activePaneColor,
               '--glow-rgb': hexToRgb(activePaneColor),
@@ -1307,22 +1317,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             
             {tabs.length > 0 && (
               <button
-                onClick={() => {
-                  setTabs([]);
-                  setActiveTabId(null);
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Force immediate state reset - close everything at once
                   setSplitView({
                     isActive: false,
                     leftTabId: null,
                     rightTabId: null,
                     activePaneId: 'left'
                   });
+                  setTabs([]);
+                  setActiveTabId(null);
                   localStorage.removeItem('dashboard-tabs');
                   localStorage.removeItem('dashboard-active-tab');
                   localStorage.removeItem('dashboard-split-view');
                 }}
                 data-tutorial="close-all-tabs"
-                className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0"
-                title="Close All Tabs"
+                className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0 border border-red-200"
+                title="Close All Tabs and Exit Split View"
               >
                 <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
               </button>
