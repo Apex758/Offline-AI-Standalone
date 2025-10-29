@@ -468,43 +468,51 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const [isEditing, setIsEditing] = useState(false);
   const [parsedPlan, setParsedPlan] = useState<ParsedCrossCurricularPlan | null>(null);
 
+  // Track initialization per tab to prevent state loss on tab switches
+  const hasInitializedRef = useRef(false);
+  const currentTabIdRef = useRef(tabId);
+
+  // Helper function to get default empty form data
+  const getDefaultFormData = (): FormData => ({
+    lessonTitle: '',
+    gradeLevel: '',
+    duration: '',
+    bigIdea: '',
+    integrationModel: '',
+    primarySubject: '',
+    supportingSubjects: '',
+    learningStandards: '',
+    primaryObjective: '',
+    secondaryObjectives: '',
+    studentsWillKnow: '',
+    studentsWillBeSkilled: '',
+    keyVocabulary: '',
+    introduction: '',
+    coreActivities: '',
+    closureActivities: '',
+    differentiationStrategies: '',
+    assessmentMethods: '',
+    mostChildren: '',
+    someNotProgressed: '',
+    someProgressedFurther: '',
+    reflectionPrompts: '',
+    teachingStrategies: [],
+    learningStyles: [],
+    learningPreferences: [],
+    multipleIntelligences: [],
+    customLearningStyles: '',
+    materials: '',
+    crossCurricularConnections: ''
+  });
+
   const [step, setStep] = useState(() => savedData?.step || 1);
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    if (saved && Object.keys(saved).length > 0 && saved.lessonTitle) {
+    // Robust validation: check if saved data exists AND has meaningful content
+    if (saved && typeof saved === 'object' && saved.lessonTitle?.trim()) {
       return saved;
     }
-    return {
-      lessonTitle: '',
-      gradeLevel: '',
-      duration: '',
-      bigIdea: '',
-      integrationModel: '',
-      primarySubject: '',
-      supportingSubjects: '',
-      learningStandards: '',
-      primaryObjective: '',
-      secondaryObjectives: '',
-      studentsWillKnow: '',
-      studentsWillBeSkilled: '',
-      keyVocabulary: '',
-      introduction: '',
-      coreActivities: '',
-      closureActivities: '',
-      differentiationStrategies: '',
-      assessmentMethods: '',
-      mostChildren: '',
-      someNotProgressed: '',
-      someProgressedFurther: '',
-      reflectionPrompts: '',
-      teachingStrategies: [],
-      learningStyles: [],
-      learningPreferences: [],
-      multipleIntelligences: [],
-      customLearningStyles: '',
-      materials: '',
-      crossCurricularConnections: ''
-    };
+    return getDefaultFormData();
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
@@ -561,28 +569,35 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     setShowTutorial(false);
   };
 
+  // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
-    const saved = savedData?.formData;
-    if (!saved || Object.keys(saved).length === 0 || !saved.lessonTitle) {
-      setFormData({
-        lessonTitle: '', gradeLevel: '', duration: '', bigIdea: '', integrationModel: '',
-        primarySubject: '', supportingSubjects: '', learningStandards: '',
-        primaryObjective: '', secondaryObjectives: '', studentsWillKnow: '', studentsWillBeSkilled: '', keyVocabulary: '',
-        introduction: '', coreActivities: '', closureActivities: '', differentiationStrategies: '',
-        assessmentMethods: '', mostChildren: '', someNotProgressed: '', someProgressedFurther: '', reflectionPrompts: '',
-        teachingStrategies: [], learningStyles: [], learningPreferences: [], multipleIntelligences: [],
-        customLearningStyles: '', materials: '', crossCurricularConnections: ''
-      });
-      setGeneratedPlan('');
-      setStreamingPlan('');
-      setStep(1);
-    } else {
-      setFormData(saved);
-      setGeneratedPlan(savedData?.generatedPlan || '');
-      setStreamingPlan(savedData?.streamingPlan || '');
-      setStep(savedData?.step || 1);
+    const isNewTab = currentTabIdRef.current !== tabId;
+    currentTabIdRef.current = tabId;
+    
+    // Only update state when switching tabs OR on first initialization
+    if (isNewTab || !hasInitializedRef.current) {
+      const saved = savedData?.formData;
+      
+      // Robust validation: check if saved data has meaningful content
+      if (saved && typeof saved === 'object' && saved.lessonTitle?.trim()) {
+        // Restore all state for this tab
+        setFormData(saved);
+        setGeneratedPlan(savedData?.generatedPlan || '');
+        setStreamingPlan(savedData?.streamingPlan || '');
+        setStep(savedData?.step || 1);
+        setParsedPlan(savedData?.parsedPlan || null);
+      } else {
+        // New tab or empty tab - set to default state
+        setFormData(getDefaultFormData());
+        setGeneratedPlan('');
+        setStreamingPlan('');
+        setStep(1);
+        setParsedPlan(null);
+      }
+      
+      hasInitializedRef.current = true;
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   useEffect(() => {
     onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });

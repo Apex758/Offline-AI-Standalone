@@ -436,22 +436,30 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [parsedRubric, setParsedRubric] = useState<ParsedRubric | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Track initialization per tab to prevent state loss on tab switches
+  const hasInitializedRef = useRef(false);
+  const currentTabIdRef = useRef(tabId);
+
+  // Helper function to get default empty form data
+  const getDefaultFormData = (): FormData => ({
+    assignmentTitle: '',
+    assignmentType: '',
+    subject: '',
+    gradeLevel: '',
+    learningObjectives: '',
+    specificRequirements: '',
+    performanceLevels: '4',
+    includePointValues: false,
+    focusAreas: []
+  });
+
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    if (saved && Object.keys(saved).length > 0 && saved.assignmentTitle) {
+    // Robust validation: check if saved data exists AND has meaningful content
+    if (saved && typeof saved === 'object' && saved.assignmentTitle?.trim()) {
       return saved;
     }
-    return {
-      assignmentTitle: '',
-      assignmentType: '',
-      subject: '',
-      gradeLevel: '',
-      learningObjectives: '',
-      specificRequirements: '',
-      performanceLevels: '4',
-      includePointValues: false,
-      focusAreas: []
-    };
+    return getDefaultFormData();
   });
 
   const [generatedRubric, setGeneratedRubric] = useState<string>(savedData?.generatedRubric || '');
@@ -492,28 +500,33 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   }, [generatedRubric]);
 
+  // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
-    const saved = savedData?.formData;
-    if (!saved || Object.keys(saved).length === 0 || !saved.assignmentTitle) {
-      setFormData({
-        assignmentTitle: '',
-        assignmentType: '',
-        subject: '',
-        gradeLevel: '',
-        learningObjectives: '',
-        specificRequirements: '',
-        performanceLevels: '4',
-        includePointValues: false,
-        focusAreas: []
-      });
-      setGeneratedRubric('');
-      setStreamingRubric('');
-    } else {
-      setFormData(saved);
-      setGeneratedRubric(savedData?.generatedRubric || '');
-      setStreamingRubric(savedData?.streamingRubric || '');
+    const isNewTab = currentTabIdRef.current !== tabId;
+    currentTabIdRef.current = tabId;
+    
+    // Only update state when switching tabs OR on first initialization
+    if (isNewTab || !hasInitializedRef.current) {
+      const saved = savedData?.formData;
+      
+      // Robust validation: check if saved data has meaningful content
+      if (saved && typeof saved === 'object' && saved.assignmentTitle?.trim()) {
+        // Restore all state for this tab
+        setFormData(saved);
+        setGeneratedRubric(savedData?.generatedRubric || '');
+        setStreamingRubric(savedData?.streamingRubric || '');
+        setParsedRubric(savedData?.parsedRubric || null);
+      } else {
+        // New tab or empty tab - set to default state
+        setFormData(getDefaultFormData());
+        setGeneratedRubric('');
+        setStreamingRubric('');
+        setParsedRubric(null);
+      }
+      
+      hasInitializedRef.current = true;
     }
-  }, [tabId]);
+  }, [tabId, savedData]);
 
   // Auto-show tutorial on first use
   useEffect(() => {
