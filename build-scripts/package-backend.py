@@ -147,6 +147,47 @@ def install_python_dependencies(bundle_dir):
         print_error(f"Error: {e.stderr}")
         return False
 
+def create_python_path_file(bundle_dir):
+    """Create .pth file to configure Python import paths BEFORE any imports."""
+    print_step("Creating Python path configuration...")
+    
+    # Create .pth file in bundle root for direct Python execution
+    pth_file = os.path.join(bundle_dir, "sitecustomize.pth")
+    with open(pth_file, 'w') as f:
+        f.write("python_libs\n")
+        f.write(".\n")
+    print_success("Created sitecustomize.pth in bundle")
+    
+    # Also create sitecustomize.py for embedded Python
+    sitecustomize_py = os.path.join(bundle_dir, "sitecustomize.py")
+    with open(sitecustomize_py, 'w') as f:
+        f.write("import sys\n")
+        f.write("import os\n")
+        f.write("\n")
+        f.write("# Add paths BEFORE any other imports\n")
+        f.write("script_dir = os.path.dirname(os.path.abspath(__file__))\n")
+        f.write("python_libs = os.path.join(script_dir, 'python_libs')\n")
+        f.write("\n")
+        f.write("if python_libs not in sys.path:\n")
+        f.write("    sys.path.insert(0, python_libs)\n")
+        f.write("if script_dir not in sys.path:\n")
+        f.write("    sys.path.insert(0, script_dir)\n")
+    print_success("Created sitecustomize.py for embedded Python")
+    
+    # Create .pth file in python-embed directory
+    python_embed_dir = os.path.join(bundle_dir, "python-embed")
+    if os.path.exists(python_embed_dir):
+        pth_embed = os.path.join(python_embed_dir, "backend_libs.pth")
+        with open(pth_embed, 'w') as f:
+            # Use absolute paths that will be resolved at runtime
+            f.write("import sys; import os\n")
+            f.write("bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n")
+            f.write("sys.path.insert(0, os.path.join(bundle_dir, 'python_libs'))\n")
+            f.write("sys.path.insert(0, bundle_dir)\n")
+        print_success("Created backend_libs.pth in python-embed")
+    else:
+        print_warning("python-embed directory not found, skipping .pth creation there")
+
 def create_startup_script(bundle_dir):
     """Create a startup script for the backend."""
     print_step("Creating startup script...")
@@ -154,23 +195,30 @@ def create_startup_script(bundle_dir):
     # Create Python startup script (for production)
     startup_script_py = os.path.join(bundle_dir, "start_backend.py")
     
-    with open(startup_script_py, 'w', encoding='utf-8') as f:  # Add encoding='utf-8'
+    with open(startup_script_py, 'w', encoding='utf-8') as f:
+        f.write('# CRITICAL: Import path setup MUST happen before any other imports\n')
         f.write('import sys\n')
         f.write('import os\n')
         f.write('\n')
         f.write('# Get the directory where this script is located\n')
         f.write('script_dir = os.path.dirname(os.path.abspath(__file__))\n')
+        f.write('python_libs = os.path.join(script_dir, "python_libs")\n')
         f.write('\n')
-        f.write('# Add both the script directory and python_libs to path\n')
-        f.write('sys.path.insert(0, script_dir)  # For main.py and config.py\n')
-        f.write('sys.path.insert(0, os.path.join(script_dir, "python_libs"))  # For dependencies\n')
-        f.write('os.environ["PYTHONPATH"] = script_dir\n')
+        f.write('# CRITICAL: Add paths FIRST, before any imports that might need them\n')
+        f.write('# This ensures llama_cpp can be found on first run\n')
+        f.write('if python_libs not in sys.path:\n')
+        f.write('    sys.path.insert(0, python_libs)\n')
+        f.write('if script_dir not in sys.path:\n')
+        f.write('    sys.path.insert(0, script_dir)\n')
+        f.write('\n')
+        f.write('# Set PYTHONPATH environment variable for subprocess compatibility\n')
+        f.write('os.environ["PYTHONPATH"] = f"{python_libs}{os.pathsep}{script_dir}"\n')
         f.write('\n')
         f.write('print("Starting backend server...")\n')
         f.write('print(f"Python: {sys.executable}")\n')
         f.write('print(f"Script dir: {script_dir}")\n')
+        f.write('print(f"Python libs: {python_libs}")\n')
         f.write('print(f"Working dir: {os.getcwd()}")\n')
-        f.write('print(f"sys.path: {sys.path[:3]}")  # Show first 3 paths\n')
         f.write('\n')
         f.write('# Verify main.py exists\n')
         f.write('main_path = os.path.join(script_dir, "main.py")\n')
@@ -286,6 +334,9 @@ def main():
         # Step 5: Install Python dependencies
         if not install_python_dependencies(bundle_dir):
             print_warning("Continuing despite dependency installation issues...")
+        
+        # Step 5.5: Create Python path configuration (CRITICAL for first-run imports)
+        create_python_path_file(bundle_dir)
         
         # Step 6: Create startup script
         create_startup_script(bundle_dir)
