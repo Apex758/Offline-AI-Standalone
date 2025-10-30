@@ -469,6 +469,7 @@ async def websocket_chat(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -476,6 +477,7 @@ async def websocket_chat(websocket: WebSocket):
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -486,6 +488,7 @@ async def websocket_chat(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
@@ -644,6 +647,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -651,6 +655,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -661,6 +666,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
@@ -719,6 +725,7 @@ async def quiz_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -726,6 +733,7 @@ async def quiz_websocket(websocket: WebSocket):
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -736,6 +744,7 @@ async def quiz_websocket(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
@@ -801,6 +810,7 @@ async def rubric_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -809,6 +819,7 @@ async def rubric_websocket(websocket: WebSocket):
                         logger.info("Rubric generation complete")
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -819,6 +830,7 @@ async def rubric_websocket(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
@@ -876,6 +888,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -883,6 +896,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -893,6 +907,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
@@ -948,6 +963,7 @@ async def multigrade_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -955,6 +971,7 @@ async def multigrade_websocket(websocket: WebSocket):
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -965,6 +982,7 @@ async def multigrade_websocket(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
@@ -1021,6 +1039,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                                 "type": "error",
                                 "message": chunk["error"]
                             })
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
@@ -1028,6 +1047,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
@@ -1038,6 +1058,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                             "type": "token",
                             "content": chunk["token"]
                         })
+                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
