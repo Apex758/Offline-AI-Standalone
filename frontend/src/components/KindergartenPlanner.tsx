@@ -1320,12 +1320,8 @@ ${contentToExport}`;
       />
 
 
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.KINDERGARTEN_PLANNER}
-        onStartTutorial={() => setShowTutorial(true)}
-        position="bottom-right"
-      />
-    
+      {/* Disable local TutorialButton (handled globally in Dashboard) */}
+      
     </div>
   );
 };

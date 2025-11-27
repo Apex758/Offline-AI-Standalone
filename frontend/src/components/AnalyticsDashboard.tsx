@@ -439,13 +439,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
       </div>
       {/* Tutorial Overlay */}
-      <TutorialOverlay steps={analyticsDashboardSteps} />
-      
-      {/* Tutorial Button */}
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.ANALYTICS}
-        onStartTutorial={() => {}}
-      />
+      <TutorialOverlay steps={analyticsDashboardSteps} showFloatingButton={false} />
     </div>
   );
 };
