@@ -3,17 +3,18 @@ import { Send, Loader2, History, X, Trash2, Plus } from 'lucide-react';
 import { Message } from '../types';
 import axios from 'axios';
 import { TutorialOverlay } from './TutorialOverlay';
-import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { CurriculumReference } from './CurriculumReferences';
+import { CurriculumReferences } from './CurriculumReferences';
 
 interface ChatProps {
   tabId: string;
   savedData?: {
     messages?: Message[];
   };
-  onDataChange: (data: any) => void;
+  onDataChange: (data: { messages: Message[]; streamingMessage: string }) => void;
   onTitleChange?: (title: string) => void;
   onPanelClick?: () => void;
 }
@@ -26,6 +27,8 @@ interface ChatHistory {
 }
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
+  // LocalStorage key for this chat tab
+  const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,11 +38,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [titleSet, setTitleSet] = useState(false);
   const [generatingTitle, setGeneratingTitle] = useState(false);
+  const [curriculumSuggestions, setCurriculumSuggestions] = useState<CurriculumReference[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const shouldReconnectRef = useRef(true);
-  
+
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
@@ -59,42 +63,61 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setShowTutorial(false);
   };
 
+  // Restore chat state from localStorage on mount or tabId change
   useEffect(() => {
-    const saved = savedData?.messages;
-    // If no saved data or it's empty, reset to fresh state
-    if (!saved || saved.length === 0) {
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setMessages(parsed.messages || []);
+        setStreamingMessage(parsed.streamingMessage || '');
+        setCurrentChatId(parsed.currentChatId || null);
+        setTitleSet(parsed.titleSet || false);
+        setInput(parsed.input || '');
+        if (onTitleChange && parsed.title) {
+          onTitleChange(parsed.title);
+        }
+      } catch (e) {
+        // fallback to default if parse fails
+        setMessages([]);
+        setStreamingMessage('');
+        setCurrentChatId(null);
+        setTitleSet(false);
+        setInput('');
+        if (onTitleChange) {
+          onTitleChange('Chat with AI');
+        }
+      }
+    } else {
       setMessages([]);
       setStreamingMessage('');
       setCurrentChatId(null);
       setTitleSet(false);
       setInput('');
-      
-      // Reset title if handler exists
       if (onTitleChange) {
         onTitleChange('Chat with AI');
       }
-    } else {
-      // Load the saved data for this specific tab
-      setMessages(saved);
-      setStreamingMessage('');
-      
-      // Optionally set the title from first message if available
-      if (saved.length > 0 && onTitleChange && !titleSet) {
-        const firstUserMessage = saved.find(m => m.role === 'user');
-        if (firstUserMessage) {
-          const title = firstUserMessage.content.length > 30 
-            ? firstUserMessage.content.substring(0, 30) + '...' 
-            : firstUserMessage.content;
-          onTitleChange(title);
-          setTitleSet(true);
-        }
-      }
     }
-  }, [tabId]); 
+  }, [tabId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingMessage]);
+
+  // Save chat state to localStorage on every relevant state update
+  useEffect(() => {
+    const stateToSave = {
+      messages,
+      streamingMessage,
+      currentChatId,
+      titleSet,
+      input,
+      title: messages.length > 0 && messages[0].role === 'user'
+        ? (messages[0].content.length > 30 ? messages[0].content.substring(0, 30) + '...' : messages[0].content)
+        : 'Chat with AI'
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [messages, streamingMessage, currentChatId, titleSet, input]);
 
   useEffect(() => {
     onDataChange({ messages, streamingMessage });
@@ -220,7 +243,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setStreamingMessage('');
     setHistoryOpen(false);
     setTitleSet(false);
-    
+    setInput('');
+    // Clear localStorage for this chat tab
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
     if (onTitleChange) {
       onTitleChange('Chat with AI');
     }
@@ -237,14 +262,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       try {
         const wsUrl = getWebSocketUrl('/ws/chat', isElectronEnvironment());
         const ws = new WebSocket(wsUrl);
-        
+
         ws.onopen = () => {
           console.log('WebSocket connected');
         };
-        
+
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
-          
+
           if (data.type === 'token') {
             setStreamingMessage(prev => prev + data.content);
           } else if (data.type === 'done') {
@@ -257,7 +282,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               };
               setMessages(prev => {
                 const newMessages = [...prev, finalMessage];
-                
+
                 // Generate title after first AI response
                 if (!titleSet && newMessages.length === 2 && onTitleChange) {
                   const userMsg = newMessages.find(m => m.role === 'user');
@@ -265,24 +290,27 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     generateAndSetTitle(userMsg.content, finalMessage.content);
                   }
                 }
-                
+
                 return newMessages;
               });
               setLoading(false);
               return '';
             });
+          } else if (data.type === 'curriculum_suggestions') {
+            // Expecting: { type: "curriculum_suggestions", suggestions: CurriculumReference[] }
+            setCurriculumSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
           }
         };
-        
+
         ws.onerror = (error) => {
           console.error('WebSocket error:', error);
           setLoading(false);
         };
-        
+
         ws.onclose = () => {
           console.log('WebSocket closed');
           wsRef.current = null;
-          
+
           if (shouldReconnectRef.current && !loading) {
             console.log('Reconnecting in 2 seconds...');
             reconnectTimeoutRef.current = setTimeout(() => {
@@ -290,11 +318,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             }, 2000);
           }
         };
-        
+
         wsRef.current = ws;
       } catch (error) {
         console.error('Failed to create WebSocket:', error);
-        
+
         if (shouldReconnectRef.current) {
           reconnectTimeoutRef.current = setTimeout(() => {
             connectWebSocket();
@@ -302,18 +330,18 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         }
       }
     };
-    
+
     connectWebSocket();
-    
+
     return () => {
       console.log('Cleaning up WebSocket connection');
       shouldReconnectRef.current = false;
-      
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      
+
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close();
       }
@@ -456,7 +484,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           <div>
             <h2 className="text-xl font-semibold text-gray-800">Chat with PEARL</h2>
             <p className="text-sm text-gray-500">
-              
               {wsRef.current?.readyState === WebSocket.OPEN ? (
                 <span className="ml-2 text-green-600">● Connected</span>
               ) : (
@@ -530,7 +557,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                   </div>
                 </div>
               ))}
-              
+
               {streamingMessage && (
                 <div className="flex justify-start">
                   <div className="max-w-3xl px-4 py-3 rounded-2xl bg-gray-100 text-gray-800">
@@ -541,7 +568,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                   </div>
                 </div>
               )}
-              
+
               {loading && !streamingMessage && (
                 <div className="flex justify-start">
                   <div className="bg-gray-100 px-4 py-3 rounded-2xl">
@@ -553,6 +580,18 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             </>
           )}
         </div>
+
+        {/* Curriculum Suggestions Section */}
+        {curriculumSuggestions && curriculumSuggestions.length > 0 && (
+          <div className="px-4 pb-2">
+            <CurriculumReferences
+              references={curriculumSuggestions}
+              heading="Curriculum Suggestions"
+              description="These curriculum activities are suggested based on your conversation. Click to view more."
+              className="mb-4"
+            />
+          </div>
+        )}
 
         <div className="border-t border-gray-200 p-4">
           <div className="flex space-x-2">

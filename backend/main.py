@@ -23,6 +23,7 @@ from config import (
 )
 from pathlib import Path
 from llama_inference import LlamaInference
+from curriculum_matcher import CurriculumMatcher
 sys.stdout.reconfigure(encoding='utf-8')
 
 # Set up logging
@@ -168,6 +169,15 @@ async def lifespan(app):
             logger.error("Failed to load Llama model")
     except Exception as e:
         logger.error(f"Model initialization failed: {e}")
+
+    # Initialize CurriculumMatcher singleton
+    global curriculum_matcher
+    try:
+        curriculum_matcher = CurriculumMatcher()
+        logger.info("CurriculumMatcher initialized successfully")
+    except Exception as e:
+        curriculum_matcher = None
+        logger.error(f"Failed to initialize CurriculumMatcher: {e}")
     
     logger.info("Server ready!")
     yield
@@ -710,25 +720,71 @@ async def generate_lesson_plan(request: LessonPlanRequest):
 @app.websocket("/ws/lesson-plan")
 async def websocket_lesson_plan(websocket: WebSocket):
     await websocket.accept()
-    
+    global curriculum_matcher
+
     try:
         while True:
             data = await websocket.receive_json()
             prompt = data.get("prompt", "")
-            
+            form_data = data.get("formData", {})  # Allow for future extensibility
+
             if not prompt:
                 continue
-            
+
+            # Use CurriculumMatcher to find relevant curriculum pages
+            curriculum_refs = []
+            curriculum_context = ""
+            if curriculum_matcher:
+                # Try to build a query from formData if available, else use prompt
+                query = ""
+                if isinstance(form_data, dict) and form_data:
+                    # Try to combine grade, subject, topic, etc. for better matching
+                    query = " ".join(str(v) for v in form_data.values() if v)
+                if not query:
+                    query = prompt
+                matches = curriculum_matcher.find_matching_pages(query, top_k=3)
+                curriculum_refs = [
+                    {
+                        "id": m.get("id"),
+                        "displayName": m.get("displayName"),
+                        "grade": m.get("grade"),
+                        "subject": m.get("subject"),
+                        "route": m.get("route"),
+                        "matchScore": m.get("matchScore"),
+                    }
+                    for m in matches
+                ]
+                # Build curriculum context string for the prompt
+                context_blocks = []
+                for m in matches:
+                    ctx = curriculum_matcher.get_curriculum_context(m.get("id"))
+                    if ctx:
+                        context_blocks.append(ctx)
+                if context_blocks:
+                    curriculum_context = "\n\n".join(context_blocks)
+
             system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
-            
+            if curriculum_context:
+                system_prompt += "\n\nCurriculum Alignment Context:\n" + curriculum_context
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            # Send curriculum references to frontend before generation
+            if curriculum_refs:
+                try:
+                    await websocket.send_json({
+                        "type": "curriculum_refs",
+                        "references": curriculum_refs
+                    })
+                except Exception as e:
+                    logger.error(f"Error sending curriculum references: {e}")
+
             try:
                 inference = LlamaInference.get_instance()
-                
+
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
                     tool_name="lesson_plan",
@@ -747,7 +803,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
+
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
@@ -755,7 +811,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
@@ -766,7 +822,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Lesson plan generation error: {e}")
                 try:
@@ -776,7 +832,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
-                        
+
     except WebSocketDisconnect:
         logger.info("Lesson Plan WebSocket disconnected")
     except Exception as e:
