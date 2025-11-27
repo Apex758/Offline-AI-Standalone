@@ -84,13 +84,16 @@ if not os.path.exists(LLAMA_CLI_PATH):
 
 # Improved Llama CLI parameters for better reliability and speed
 LLAMA_PARAMS = {
-    "max_tokens": 2500,
+    # Maximum tokens to generate in a single response
+    "max_tokens": 2000,
     "threads": 4,
-    "temperature": 0.6,
+    # Sampling temperature for generation
+    "temperature": 0.7,
     "top_p": 0.9,
     "context_size": 4096,
     "timeout": 400,
-    "conversation_history_length": 2,
+    # Number of user+assistant message pairs to keep in context window (sliding window)
+    "conversation_history_length": 4,
     "batch_size": 512,
     "repeat_penalty": 1.1,
 }

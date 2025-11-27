@@ -9,6 +9,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 interface RubricGeneratorProps {
   tabId: string;
@@ -568,20 +569,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       }
 
       try {
-        // Detect if running in Electron
-        const isElectron = typeof window !== 'undefined' && window.electronAPI;
-
-        let wsUrl: string;
-        if (isElectron) {
-          // Electron/Production: direct connection to backend
-          wsUrl = 'ws://127.0.0.1:8000/ws/rubric';
-        } else {
-          // Vite/Development: use proxy through dev server
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const host = window.location.host;
-          wsUrl = `${protocol}//${host}/ws/rubric`;
-        }
-
+        const wsUrl = getWebSocketUrl('/ws/rubric', isElectronEnvironment());
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {

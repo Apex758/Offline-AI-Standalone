@@ -9,6 +9,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 interface CrossCurricularPlannerProps {
   tabId: string;
@@ -618,20 +619,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       if (!shouldReconnectRef.current) return;
 
       try {
-        // Detect if running in Electron
-        const isElectron = typeof window !== 'undefined' && window.electronAPI;
-
-        let wsUrl: string;
-        if (isElectron) {
-          // Electron/Production: direct connection to backend
-          wsUrl = 'ws://127.0.0.1:8000/ws/cross-curricular';
-        } else {
-          // Vite/Development: use proxy through dev server
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const host = window.location.host;
-          wsUrl = `${protocol}//${host}/ws/cross-curricular`;
-        }
-
+        const wsUrl = getWebSocketUrl('/ws/cross-curricular', isElectronEnvironment());
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {

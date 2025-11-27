@@ -73,3 +73,22 @@ cd "dist-electron\win-unpacked\resources\backend-bundle"
 Use .\build-release.ps1 for production releases.
 
 Use npm run electron:build:win only for local Electron packaging tests.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tuning guide:
+
+Small model (2GB): max_turns=2 (remembers last 2 exchanges)
+Medium model (4GB): max_turns=4 (remembers last 4 exchanges)
+Large model (8GB+): max_turns=6 (remembers last 6 exchanges)
