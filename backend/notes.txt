@@ -11,7 +11,7 @@ python -m uvicorn main:app --reload --port 8000
 .\build-release.ps1
 
 
-
+.............................    use uvicorn main:app --reload to start backend
 
 
 Next steps:

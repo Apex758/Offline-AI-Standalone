@@ -142,8 +142,11 @@ app.add_middleware(
 # Path for chat history storage
 CHAT_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "chat_history.json")
 
-@app.on_event("startup")
-async def check_files():
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app):
+    # Startup logic
     logger.info("Checking for required files...")
     if not os.path.exists(get_model_path()):
         logger.warning(f"Model file not found at {get_model_path()}")
@@ -175,6 +178,18 @@ async def check_files():
         logger.error(f"Model initialization failed: {e}")
     
     logger.info("Server ready!")
+    yield
+    # Shutdown logic
+    if LlamaInference.is_initialized():
+        try:
+            llama = LlamaInference.get_instance()
+            llama.cleanup()
+            logger.info("Llama model cleaned up")
+        except Exception as e:
+            logger.error(f"Error cleaning up model: {e}")
+    cleanup_all_processes()
+
+app = FastAPI(lifespan=lifespan)
 
 class LoginRequest(BaseModel):
     username: str
@@ -435,26 +450,61 @@ async def generate_title(request: TitleGenerateRequest):
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
-    
+    from config import LLAMA_PARAMS
+    import os
+
+    def build_multi_turn_prompt(system_prompt, history, user_message):
+        prompt = "<|begin_of_text|>"
+        prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+        # Add previous turns
+        for msg in history:
+            if msg["role"] == "user":
+                prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
+            elif msg["role"] == "assistant":
+                prompt += f"<|start_header_id|>assistant<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
+        # Add current user message
+        prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
+        prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+        return prompt
+
     try:
         while True:
             data = await websocket.receive_text()
             message_data = json.loads(data)
             user_message = message_data.get("message", "")
-            
+            chat_id = message_data.get("chat_id", None)
+
             if not user_message:
                 continue
-            
+
             system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
-            
-            prompt = "<|begin_of_text|>"
-            prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-            prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
-            prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            # Default: stateless (old behavior)
+            history = []
+
+            # If chat_id is provided, try to load last N messages from chat history
+            if chat_id:
+                chat_history_file = os.path.join(os.path.dirname(__file__), "chat_history.json")
+                if os.path.exists(chat_history_file):
+                    try:
+                        with open(chat_history_file, "r", encoding="utf-8") as f:
+                            histories = json.load(f)
+                        chat = next((h for h in histories if h.get("id") == chat_id), None)
+                        if chat and "messages" in chat:
+                            # Only keep last N*2 messages (user+assistant pairs)
+                            N = LLAMA_PARAMS.get("conversation_history_length", 2)
+                            # Exclude the current user message (not yet in history)
+                            prev_msgs = [m for m in chat["messages"] if m["role"] in ("user", "assistant")]
+                            # Only keep the last N*2 messages
+                            history = prev_msgs[-N*2:]
+                    except Exception as e:
+                        logger.error(f"Error loading chat history for context: {e}")
+
+            prompt = build_multi_turn_prompt(system_prompt, history, user_message)
+
             try:
                 inference = LlamaInference.get_instance()
-                
+
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
                     tool_name="chat",
@@ -473,7 +523,7 @@ async def websocket_chat(websocket: WebSocket):
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
+
                     if chunk["finished"]:
                         try:
                             await websocket.send_json({"type": "done"})
@@ -481,7 +531,7 @@ async def websocket_chat(websocket: WebSocket):
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
@@ -492,7 +542,7 @@ async def websocket_chat(websocket: WebSocket):
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Chat generation error: {e}")
                 try:
@@ -503,7 +553,7 @@ async def websocket_chat(websocket: WebSocket):
                 except:
                     # Connection already closed, just log
                     logger.error("Could not send error message - connection closed")
-                        
+
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
     except Exception as e:
@@ -1349,19 +1399,7 @@ async def _shutdown_server():
     os._exit(0)  # Force terminate the process
 
 
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    """Cleanup on application shutdown"""
-    if LlamaInference.is_initialized():
-        try:
-            llama = LlamaInference.get_instance()
-            llama.cleanup()
-            logger.info("Llama model cleaned up")
-        except Exception as e:
-            logger.error(f"Error cleaning up model: {e}")
-    
-    cleanup_all_processes()
+# (Removed old shutdown event handler, now handled in lifespan)
     
     
     
