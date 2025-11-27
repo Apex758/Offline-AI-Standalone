@@ -39,6 +39,7 @@ import WelcomeModal from './WelcomeModal';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateColorVariants, isColorDark } from '../lib/utils';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { useTutorials } from '../contexts/TutorialContext';
 
 
 interface DashboardProps {
@@ -152,7 +153,9 @@ const MAX_TABS_PER_TYPE = 3;
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
-  
+  // Import the real tutorial context at the top level
+  const { startTutorial } = useTutorials();
+
   // Generate dynamic tab colors based on settings
   const tabColors = useMemo(() => {
     const colors: { [key: string]: { border: string; bg: string; activeBg: string } } = {};
@@ -550,78 +553,86 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     switch (tab.type) {
       case 'analytics':
         return (
-          <AnalyticsDashboard 
-            tabId={tab.id} 
-            savedData={tab.data} 
-            onDataChange={(data) => updateTabData(tab.id, data)}
-            onNavigate={(route) => {
-              // Handle navigation to curriculum
-              if (route.startsWith('/curriculum')) {
-                // Check if there's already an open curriculum tab
-                const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
-                
-                if (existingCurriculumTab) {
-                  // Update existing curriculum tab with new route
-                  updateTabData(existingCurriculumTab.id, { currentPath: route });
-                  setActiveTabId(existingCurriculumTab.id);
-                } else {
-                  // Check if there's any curriculum tab (even inactive)
-                  const anyCurriculumTab = tabs.find(t => t.type === 'curriculum');
+          <>
+            <AnalyticsDashboard
+              tabId={tab.id}
+              savedData={tab.data}
+              onDataChange={(data) => updateTabData(tab.id, data)}
+              onNavigate={(route) => {
+                // Handle navigation to curriculum
+                if (route.startsWith('/curriculum')) {
+                  // Check if there's already an open curriculum tab
+                  const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
                   
-                  if (anyCurriculumTab) {
-                    // Activate existing curriculum tab and update route
-                    setTabs(prev => prev.map(t => ({
-                      ...t,
-                      active: t.id === anyCurriculumTab.id
-                    })));
-                    updateTabData(anyCurriculumTab.id, { currentPath: route });
-                    setActiveTabId(anyCurriculumTab.id);
+                  if (existingCurriculumTab) {
+                    // Update existing curriculum tab with new route
+                    updateTabData(existingCurriculumTab.id, { currentPath: route });
+                    setActiveTabId(existingCurriculumTab.id);
                   } else {
-                    // Create new curriculum tab
-                    const curriculumTool = tools.find(t => t.type === 'curriculum');
-                    if (curriculumTool) {
-                      const newTab: Tab = {
-                        id: `tab-${Date.now()}`,
-                        title: curriculumTool.name,
-                        type: 'curriculum',
-                        active: true,
-                        data: { currentPath: route }
-                      };
-                      setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
-                      setActiveTabId(newTab.id);
+                    // Check if there's any curriculum tab (even inactive)
+                    const anyCurriculumTab = tabs.find(t => t.type === 'curriculum');
+                    
+                    if (anyCurriculumTab) {
+                      // Activate existing curriculum tab and update route
+                      setTabs(prev => prev.map(t => ({
+                        ...t,
+                        active: t.id === anyCurriculumTab.id
+                      })));
+                      updateTabData(anyCurriculumTab.id, { currentPath: route });
+                      setActiveTabId(anyCurriculumTab.id);
+                    } else {
+                      // Create new curriculum tab
+                      const curriculumTool = tools.find(t => t.type === 'curriculum');
+                      if (curriculumTool) {
+                        const newTab: Tab = {
+                          id: `tab-${Date.now()}`,
+                          title: curriculumTool.name,
+                          type: 'curriculum',
+                          active: true,
+                          data: { currentPath: route }
+                        };
+                        setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                        setActiveTabId(newTab.id);
+                      }
                     }
                   }
                 }
-              }
-            }}
-            onCreateTab={(toolType) => {
-              // Handle creating new tool tabs from action cards
-              const tool = tools.find(t => t.type === toolType);
-              if (tool) {
-                // Check if this tool type already has an open tab
-                const existingTab = tabs.find(t => t.type === toolType);
-                
-                if (existingTab) {
-                  // Just activate the existing tab
-                  setTabs(prev => prev.map(t => ({
-                    ...t,
-                    active: t.id === existingTab.id
-                  })));
-                  setActiveTabId(existingTab.id);
-                } else {
-                  // Create new tab for this tool
-                  const newTab: Tab = {
-                    id: `tab-${Date.now()}`,
-                    title: tool.name,
-                    type: toolType as any,
-                    active: true
-                  };
-                  setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
-                  setActiveTabId(newTab.id);
+              }}
+              onCreateTab={(toolType) => {
+                // Handle creating new tool tabs from action cards
+                const tool = tools.find(t => t.type === toolType);
+                if (tool) {
+                  // Check if this tool type already has an open tab
+                  const existingTab = tabs.find(t => t.type === toolType);
+                  
+                  if (existingTab) {
+                    // Just activate the existing tab
+                    setTabs(prev => prev.map(t => ({
+                      ...t,
+                      active: t.id === existingTab.id
+                    })));
+                    setActiveTabId(existingTab.id);
+                  } else {
+                    // Create new tab for this tool
+                    const newTab: Tab = {
+                      id: `tab-${Date.now()}`,
+                      title: tool.name,
+                      type: toolType as any,
+                      active: true
+                    };
+                    setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                    setActiveTabId(newTab.id);
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+            {/* Ensure only the centralized floating button is shown for analytics dashboard */}
+            <TutorialOverlay
+              steps={tutorials[TUTORIAL_IDS.ANALYTICS]?.steps || []}
+              showFloatingButton={false}
+              // Add any other required props as needed, e.g. onComplete, autoStart, etc.
+            />
+          </>
         );
       case 'chat':
         return (
@@ -1433,7 +1444,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         steps={dashboardWalkthroughSteps}
         onComplete={handleTutorialComplete}
         autoStart={showFirstTimeTutorial}
-        showFloatingButton={tabs.length === 0}
+        showFloatingButton={false}
         onStepChange={(step) => {
           // Step 6 is the lesson planner dropdown (0-indexed, so step 14 is the 15th step)
           if (step === 14) {
@@ -1441,6 +1452,60 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }
         }}
       />
+  {/* Global Tutorial Button (centralized) */}
+  {/* Rendered only when not in split view and tutorials are enabled */}
+  {(() => {
+    // Centralized floating TutorialButton using hook safely at component scope
+    const tutorialIdsByTabType: Record<string, string> = {
+      'lesson-planner': TUTORIAL_IDS.LESSON_PLANNER,
+      'quiz-generator': TUTORIAL_IDS.QUIZ_GENERATOR,
+      'rubric-generator': TUTORIAL_IDS.RUBRIC_GENERATOR,
+      'kindergarten-planner': TUTORIAL_IDS.KINDERGARTEN_PLANNER,
+      'resource-manager': TUTORIAL_IDS.RESOURCE_MANAGER,
+      'analytics': TUTORIAL_IDS.DASHBOARD_MAIN,
+      'chat': TUTORIAL_IDS.CHAT,
+      'curriculum': TUTORIAL_IDS.CURRICULUM,
+      'multigrade-planner': TUTORIAL_IDS.MULTIGRADE_PLANNER,
+      'cross-curricular-planner': TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER,
+      'settings': TUTORIAL_IDS.SETTINGS
+    };
+
+    if (splitView.isActive || !settings.tutorials.tutorialPreferences.showFloatingButtons) return null;
+
+    const activeTab = tabs.find((t) => t.id === activeTabId);
+
+    // If no tabs are open, show the welcome tutorial
+    if (!activeTab) {
+      return (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.DASHBOARD_MAIN}
+          onStartTutorial={() => startTutorial(TUTORIAL_IDS.DASHBOARD_MAIN)}
+          position="bottom-right"
+        />
+      );
+    }
+
+    // If the dashboard (analytics) tab is open, use the analytics dashboard tutorial
+    if (activeTab.type === "analytics") {
+      return (
+        <TutorialButton
+          tutorialId={TUTORIAL_IDS.ANALYTICS}
+          onStartTutorial={() => startTutorial(TUTORIAL_IDS.ANALYTICS)}
+          position="bottom-right"
+        />
+      );
+    }
+
+    // Otherwise, use the mapped tutorial for the tab type, or fallback to dashboard tutorial
+    const tutorialId = tutorialIdsByTabType[activeTab.type] || TUTORIAL_IDS.DASHBOARD_MAIN;
+    return (
+      <TutorialButton
+        tutorialId={tutorialId}
+        onStartTutorial={() => startTutorial(tutorialId)}
+        position="bottom-right"
+      />
+    );
+  })()}
     </div>
   );
 };

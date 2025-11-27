@@ -214,7 +214,7 @@ async function startBackend() {
           reject(new Error('Backend startup timeout'));
         });
       }
-    }, 15000);
+    }, 45000);
   });
 }
 

@@ -986,11 +986,7 @@ ${contentToExport}`;
         showFloatingButton={false}
       />
 
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.QUIZ_GENERATOR}
-        onStartTutorial={() => setShowTutorial(true)}
-        position="bottom-right"
-      />
+      {/* Disable local TutorialButton (handled globally in Dashboard) */}
       
     </div>
   );

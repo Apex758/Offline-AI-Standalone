@@ -38,9 +38,7 @@ Next steps:
 
 -settings for updates
 
--split tabs functionality
 
-- connect resource manager to edit/view modes of plans etc
 
 -use api key for powerful model while the user is connected to the internet
 
@@ -52,10 +50,6 @@ ensure timing allocation is right for all gener
 ensure editors match
  include marks for rubric gen
  after logging in, create name/oak fields to enter
-
- fix resource manager view and edit
-
-
 
 
 
@@ -74,3 +68,8 @@ Copy-Item -Path "models\*" -Destination "dist-electron\win-unpacked\resources\mo
 # 4. Test manually first
 cd "dist-electron\win-unpacked\resources\backend-bundle"
 .\python-embed\python.exe start_backend.py
+
+
+Use .\build-release.ps1 for production releases.
+
+Use npm run electron:build:win only for local Electron packaging tests.

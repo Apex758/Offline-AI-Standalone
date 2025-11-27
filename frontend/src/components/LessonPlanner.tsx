@@ -1591,12 +1591,8 @@ ${contentToExport}`;
       />
 
      
-      <TutorialButton
-        tutorialId={TUTORIAL_IDS.LESSON_PLANNER}
-        onStartTutorial={() => setShowTutorial(true)}
-        position="bottom-right"
-      />
-  
+      {/* Disable local TutorialButton (handled globally in Dashboard) */}
+
     </div>
   );
 };
