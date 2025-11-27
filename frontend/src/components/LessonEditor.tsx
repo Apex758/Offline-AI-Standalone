@@ -1,6 +1,7 @@
 // components/LessonEditor.tsx
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react';
+import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
 
 // Define lesson section structure
 export interface LessonSection {
@@ -30,6 +31,7 @@ export interface ParsedLesson {
   prerequisites?: string;
   specialNeeds?: string;
   additionalNotes?: string;
+  curriculumReferences?: CurriculumReference[];
 }
 
 interface LessonEditorProps {
@@ -566,6 +568,12 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             Save Changes
           </button>
         </div>
+      {/* Curriculum References */}
+      {lesson.curriculumReferences && lesson.curriculumReferences.length > 0 && (
+        <div className="mt-8">
+          <CurriculumReferences references={lesson.curriculumReferences} />
+        </div>
+      )}
       </div>
     </div>
   );

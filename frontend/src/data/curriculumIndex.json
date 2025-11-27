@@ -1,0 +1,323 @@
+{
+  "indexedPages": [
+    {
+      "id": "grade1-language-arts-sound-detectives",
+      "route": "/curriculum/grade1-subjects/activities/language-arts/sound-detectives",
+      "displayName": "Sound Detectives",
+      "grade": "1",
+      "subject": "Language Arts",
+      "strand": "Phonological Awareness",
+      "keywords": [
+        "phonological awareness",
+        "sound identification",
+        "rhyming",
+        "blending",
+        "segmenting",
+        "auditory discrimination",
+        "listening skills",
+        "phonemic awareness",
+        "detective game"
+      ],
+      "essentialOutcomes": [
+        "Use strategies and cueing systems to construct meaning when reading and listening.",
+        "Communicate and reflect on ideas, feelings, and experiences through speaking and listening."
+      ],
+      "specificOutcomes": [
+        "Apply strategies and cues to decode and understand spoken and written words.",
+        "Use phonics and structural analysis to identify and manipulate sounds.",
+        "Recognize meaning through semantic and syntactic cues.",
+        "Express and share information and ideas clearly.",
+        "Listen actively and respond thoughtfully to others."
+      ],
+      "summary": "In Sound Detectives, Grade 1 students become detectives to identify, isolate, and manipulate sounds in words. Through interactive games, they practice recognizing initial sounds, rhyming, blending, and segmenting words into phonemes. The detective theme makes foundational literacy skills engaging and memorable, supporting early reading development in a fun, student-centered way."
+    },
+    {
+      "id": "grade2-language-arts-storytelling-circle",
+      "route": "/curriculum/grade2-subjects/activities/language-arts/storytelling-circle",
+      "displayName": "Storytelling Circle",
+      "grade": "2",
+      "subject": "Language Arts",
+      "strand": "Listening and Speaking",
+      "keywords": [
+        "storytelling",
+        "oral language",
+        "narrative skills",
+        "active listening",
+        "speaking",
+        "personal stories"
+      ],
+      "essentialOutcomes": [
+        "Develop oral communication and narrative skills.",
+        "Practice active listening and understand story structure."
+      ],
+      "specificOutcomes": [
+        "Share personal experiences or retell familiar stories.",
+        "Demonstrate attentive listening and provide appropriate responses."
+      ],
+      "summary": "In Storytelling Circle, Grade 2 students take turns sharing personal stories or retelling familiar tales. This activity builds speaking confidence, narrative skills, and active listening, helping students organize their thoughts and connect with others through storytelling."
+    },
+    {
+      "id": "grade2-mathematics-place-value-partners",
+      "route": "/curriculum/grade2-subjects/activities/mathematics/place-value-partners",
+      "displayName": "Place Value Partners",
+      "grade": "2",
+      "subject": "Mathematics",
+      "strand": "Number Sense",
+      "keywords": [
+        "place value",
+        "base-10 system",
+        "number representation",
+        "partner activity",
+        "mathematics"
+      ],
+      "essentialOutcomes": [
+        "Understand place value for two-digit numbers.",
+        "Represent numbers using base-10 blocks and charts."
+      ],
+      "specificOutcomes": [
+        "Work in pairs to represent and compare numbers.",
+        "Demonstrate understanding of tens and ones using manipulatives."
+      ],
+      "summary": "Place Value Partners engages Grade 2 students in pairs to represent two-digit numbers using base-10 blocks and place value charts. This hands-on activity deepens understanding of the base-10 system and builds foundational number sense."
+    },
+    {
+      "id": "grade2-science-material-explorers",
+      "route": "/curriculum/grade2-subjects/activities/science/material-explorers",
+      "displayName": "Material Explorers",
+      "grade": "2",
+      "subject": "Science",
+      "strand": "Structure & Properties of Matter",
+      "keywords": [
+        "materials",
+        "material properties",
+        "classification",
+        "scientific observation",
+        "comparison"
+      ],
+      "essentialOutcomes": [
+        "Classify materials based on observable properties.",
+        "Develop observation and comparison skills."
+      ],
+      "specificOutcomes": [
+        "Investigate and sort materials by properties.",
+        "Describe characteristics such as texture, color, and hardness."
+      ],
+      "summary": "Material Explorers invites Grade 2 students to investigate and classify materials based on observable properties. Through hands-on sorting and discussion, students develop scientific observation and comparison skills."
+    },
+    {
+      "id": "grade2-social-studies-family-tree-explorer",
+      "route": "/curriculum/grade2-subjects/activities/social-studies/family-tree-explorer",
+      "displayName": "Family Tree Explorer",
+      "grade": "2",
+      "subject": "Social Studies",
+      "strand": "Historical and Cultural Thinking",
+      "keywords": [
+        "family tree",
+        "heritage",
+        "cultural identity",
+        "family history"
+      ],
+      "essentialOutcomes": [
+        "Understand family relationships and heritage.",
+        "Connect personal experiences to cultural identity."
+      ],
+      "specificOutcomes": [
+        "Create and present a family tree.",
+        "Share family traditions, stories, and cultural backgrounds."
+      ],
+      "summary": "Family Tree Explorer helps Grade 2 students understand family relationships and heritage by creating and sharing family trees. This activity fosters cultural identity and appreciation of diverse backgrounds."
+    },
+    {
+      "id": "grade3-language-arts-storytelling-circle",
+      "route": "/curriculum/grade3-subjects/activities/language-arts/storytelling-circle",
+      "displayName": "Storytelling Circle",
+      "grade": "3",
+      "subject": "Language Arts",
+      "strand": "Listening & Speaking",
+      "keywords": [
+        "storytelling",
+        "oral language",
+        "public speaking",
+        "cultural tales",
+        "active listening"
+      ],
+      "essentialOutcomes": [
+        "Develop oral language and public speaking skills.",
+        "Build confidence and cultural appreciation through storytelling."
+      ],
+      "specificOutcomes": [
+        "Share stories based on personal, cultural, or creative experiences.",
+        "Demonstrate attentive listening and provide constructive feedback."
+      ],
+      "summary": "In Grade 3 Storytelling Circle, students share stories from personal experiences, cultural backgrounds, or creative prompts. This interactive activity strengthens oral language, public speaking, and listening skills while fostering cultural appreciation."
+    },
+    {
+      "id": "grade3-mathematics-number-sense",
+      "route": "/curriculum/grade3-subjects/activities/mathematics/number-sense",
+      "displayName": "Number Sense",
+      "grade": "3",
+      "subject": "Mathematics",
+      "strand": "Number Sense",
+      "keywords": [
+        "number sense",
+        "place value",
+        "fractions",
+        "mathematics",
+        "number comparison"
+      ],
+      "essentialOutcomes": [
+        "Develop understanding of numbers, place value, and fractions.",
+        "Apply number sense in mathematical problem-solving."
+      ],
+      "specificOutcomes": [
+        "Represent and compare numbers up to 10,000.",
+        "Work with fractions and decimals in practical contexts."
+      ],
+      "summary": "Number Sense for Grade 3 deepens understanding of numbers, place value, and fractions through hands-on activities and games. Students practice representing, comparing, and working with numbers in real-world situations."
+    },
+    {
+      "id": "grade3-science-forces-interactions",
+      "route": "/curriculum/grade3-subjects/activities/science/forces-interactions",
+      "displayName": "Forces and Interactions",
+      "grade": "3",
+      "subject": "Science",
+      "strand": "Forces and Interactions",
+      "keywords": [
+        "forces",
+        "motion",
+        "magnetism",
+        "gravity",
+        "science"
+      ],
+      "essentialOutcomes": [
+        "Explore how objects interact through different types of forces.",
+        "Investigate motion, magnetism, and gravity in everyday life."
+      ],
+      "specificOutcomes": [
+        "Describe effects of balanced and unbalanced forces on objects.",
+        "Predict and observe patterns of motion."
+      ],
+      "summary": "Forces and Interactions introduces Grade 3 students to the concepts of force, motion, magnetism, and gravity. Through experiments and observation, students learn how objects interact and move in their environment."
+    },
+    {
+      "id": "grade3-social-studies-historical-cultural-thinking",
+      "route": "/curriculum/grade3-subjects/activities/social-studies/historical-cultural-thinking",
+      "displayName": "Historical and Cultural Thinking",
+      "grade": "3",
+      "subject": "Social Studies",
+      "strand": "Historical and Cultural Thinking",
+      "keywords": [
+        "history",
+        "culture",
+        "heritage",
+        "identity",
+        "Caribbean society"
+      ],
+      "essentialOutcomes": [
+        "Explore different ethnicities and cultures in Caribbean society.",
+        "Understand contributions to collective history and identity."
+      ],
+      "specificOutcomes": [
+        "Identify cultural groups and their traditions in the Caribbean.",
+        "Describe historical events and their impact on society."
+      ],
+      "summary": "Historical and Cultural Thinking for Grade 3 explores the diverse ethnicities and cultures that shape Caribbean society. Students learn about cultural traditions and historical events that contribute to collective identity."
+    },
+    {
+      "id": "grade4-language-arts-podcast-production",
+      "route": "/curriculum/grade4-subjects/activities/language-arts/podcast-production",
+      "displayName": "Podcast Production",
+      "grade": "4",
+      "subject": "Language Arts",
+      "strand": "Listening & Speaking",
+      "keywords": [
+        "podcast",
+        "oral expression",
+        "digital literacy",
+        "presentation skills",
+        "audio editing"
+      ],
+      "essentialOutcomes": [
+        "Develop clear and coherent oral expression.",
+        "Practice active listening and digital communication skills."
+      ],
+      "specificOutcomes": [
+        "Plan, script, and record podcast episodes.",
+        "Edit and present audio content to an audience."
+      ],
+      "summary": "Podcast Production engages Grade 4 students in creating their own podcast episodes on topics of interest. This project develops speaking, listening, and digital literacy skills, as students plan, record, and edit audio content for presentation."
+    },
+    {
+      "id": "grade4-mathematics-number-sense",
+      "route": "/curriculum/grade4-subjects/activities/mathematics/number-sense",
+      "displayName": "Number Sense",
+      "grade": "4",
+      "subject": "Mathematics",
+      "strand": "Number Sense",
+      "keywords": [
+        "number sense",
+        "place value",
+        "multi-digit numbers",
+        "fractions",
+        "decimals"
+      ],
+      "essentialOutcomes": [
+        "Develop understanding of numbers to 10,000, place value, fractions, and decimals.",
+        "Apply number sense in mathematical problem-solving."
+      ],
+      "specificOutcomes": [
+        "Represent and compare multi-digit numbers up to 10,000.",
+        "Work with fractions and decimals in various contexts."
+      ],
+      "summary": "Number Sense for Grade 4 builds understanding of numbers up to 10,000, place value, fractions, and decimals through hands-on activities and games. Students practice representing, comparing, and using numbers in real-life scenarios."
+    },
+    {
+      "id": "grade4-science-energy",
+      "route": "/curriculum/grade4-subjects/activities/science/energy",
+      "displayName": "Energy",
+      "grade": "4",
+      "subject": "Science",
+      "strand": "Energy",
+      "keywords": [
+        "energy",
+        "energy transfer",
+        "energy resources",
+        "environmental impact",
+        "science"
+      ],
+      "essentialOutcomes": [
+        "Explore different forms of energy and how energy is transferred.",
+        "Understand the impact of energy use on the environment."
+      ],
+      "specificOutcomes": [
+        "Investigate sources and uses of energy.",
+        "Describe effects and examples of energy transfer."
+      ],
+      "summary": "In the Energy unit, Grade 4 students explore different forms of energy, how energy is transferred, and the impact of energy use on the environment. Activities include investigating energy sources and discussing environmental responsibility."
+    },
+    {
+      "id": "grade4-social-studies-historical-cultural-thinking",
+      "route": "/curriculum/grade4-subjects/activities/social-studies/historical-cultural-thinking",
+      "displayName": "Historical and Cultural Thinking",
+      "grade": "4",
+      "subject": "Social Studies",
+      "strand": "Historical and Cultural Thinking",
+      "keywords": [
+        "indigenous peoples",
+        "colonization",
+        "culture",
+        "Caribbean history",
+        "heritage"
+      ],
+      "essentialOutcomes": [
+        "Explore Indigenous peoples and European colonization in the Caribbean.",
+        "Understand the evolution and contributions of Indigenous cultures."
+      ],
+      "specificOutcomes": [
+        "Identify Indigenous groups and their cultural contributions.",
+        "Describe the impacts of colonization on Caribbean societies."
+      ],
+      "summary": "This unit guides Grade 4 students in exploring the Indigenous peoples of the Caribbean, the effects of European colonization, and the evolution of Indigenous culture in modern times. Students learn to appreciate cultural heritage and historical change."
+    }
+  ]
+}

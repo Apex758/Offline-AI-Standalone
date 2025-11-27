@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
 import LessonEditor from './LessonEditor';
 import type { ParsedLesson } from './LessonEditor';
 import axios from 'axios';
@@ -1043,6 +1044,10 @@ ${contentToExport}`;
                       </span>
                     )}
                   </div>
+                  {/* Curriculum References */}
+                  {parsedLesson?.curriculumReferences && parsedLesson.curriculumReferences.length > 0 && (
+                    <CurriculumReferences references={parsedLesson.curriculumReferences} />
+                  )}
                 </div>
 
               {/* Loading progress at bottom */}

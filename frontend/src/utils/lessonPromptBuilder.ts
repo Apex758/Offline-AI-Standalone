@@ -144,7 +144,9 @@ REQUIRED LESSON PLAN STRUCTURE:
    - Teacher reflection prompts
    - Modifications for next time
 
-Generate the complete lesson plan now:`;
+Generate the complete lesson plan now:
+
+IMPORTANT: At the end of the lesson plan, include a section titled 'Curriculum References' that acknowledges alignment with official curriculum standards. The specific curriculum pages will be provided separately.`;
 
   return prompt;
 }
