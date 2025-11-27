@@ -1,6 +1,6 @@
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -129,15 +129,7 @@ def save_json_data(filename: str, data):
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)
         
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# (Create app only once, after defining lifespan)
 
 # Path for chat history storage
 CHAT_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "chat_history.json")
@@ -191,6 +183,19 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
+# Add CORS middleware AFTER creating app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],  # This allows OPTIONS, POST, DELETE, etc.
+    allow_headers=["*"],
+)
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -221,6 +226,10 @@ class TitleGenerateResponse(BaseModel):
     fallback: bool
     generationTime: float
 
+
+# (Removed redundant OPTIONS handler; CORS middleware handles preflight)
+    
+    
 @app.post("/api/login")
 async def login(credentials: dict):
     username = credentials.get("username")
@@ -467,6 +476,29 @@ async def websocket_chat(websocket: WebSocket):
         prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
         return prompt
 
+    def get_last_n_message_pairs(messages, n_pairs):
+        """
+        Extract the last N user+assistant message pairs from the message list.
+        Only complete pairs are included. If the last message is a user message without a following assistant,
+        it is not included in the window.
+        TODO: In the future, consider implementing token-based windowing for more precise context control.
+        """
+        # Filter only user/assistant messages
+        filtered = [m for m in messages if m["role"] in ("user", "assistant")]
+        # Group into pairs: (user, assistant)
+        pairs = []
+        i = 0
+        while i < len(filtered) - 1:
+            if filtered[i]["role"] == "user" and filtered[i+1]["role"] == "assistant":
+                pairs.append([filtered[i], filtered[i+1]])
+                i += 2
+            else:
+                i += 1  # skip to next, looking for a user/assistant pair
+        # Take the last n_pairs
+        last_pairs = pairs[-n_pairs:] if n_pairs > 0 else []
+        # Flatten back to a list of messages
+        return [msg for pair in last_pairs for msg in pair]
+
     try:
         while True:
             data = await websocket.receive_text()
@@ -482,7 +514,7 @@ async def websocket_chat(websocket: WebSocket):
             # Default: stateless (old behavior)
             history = []
 
-            # If chat_id is provided, try to load last N messages from chat history
+            # If chat_id is provided, try to load last N message pairs from chat history
             if chat_id:
                 chat_history_file = os.path.join(os.path.dirname(__file__), "chat_history.json")
                 if os.path.exists(chat_history_file):
@@ -491,16 +523,30 @@ async def websocket_chat(websocket: WebSocket):
                             histories = json.load(f)
                         chat = next((h for h in histories if h.get("id") == chat_id), None)
                         if chat and "messages" in chat:
-                            # Only keep last N*2 messages (user+assistant pairs)
-                            N = LLAMA_PARAMS.get("conversation_history_length", 2)
+                            # Use sliding window: keep only the most recent N user+assistant pairs
+                            N = LLAMA_PARAMS.get("conversation_history_length", 4)
                             # Exclude the current user message (not yet in history)
                             prev_msgs = [m for m in chat["messages"] if m["role"] in ("user", "assistant")]
-                            # Only keep the last N*2 messages
-                            history = prev_msgs[-N*2:]
+                            history = get_last_n_message_pairs(prev_msgs, N)
+                            # Note: This is message-pair based windowing. For future: implement token-based windowing.
                     except Exception as e:
                         logger.error(f"Error loading chat history for context: {e}")
 
             prompt = build_multi_turn_prompt(system_prompt, history, user_message)
+
+            # === TEMP DEBUG LOGGING FOR CONTEXT WINDOW TEST ===
+            try:
+                logger.info("=== CONTEXT WINDOW DEBUG ===")
+                logger.info(f"chat_id: {chat_id}")
+                logger.info(f"conversation_history_length: {LLAMA_PARAMS.get('conversation_history_length', 4)}")
+                logger.info(f"Number of messages in context: {len(history)}")
+                logger.info("Message roles in context: " + str([m['role'] for m in history]))
+                logger.info("Message contents in context: " + str([m['content'][:60] for m in history]))
+                logger.info(f"Current user message: {user_message[:60]}")
+                logger.info(f"Prompt preview: {prompt[:500]}")
+            except Exception as e:
+                logger.error(f"Error in context window debug logging: {e}")
+            # === END TEMP DEBUG LOGGING ===
 
             try:
                 inference = LlamaInference.get_instance()

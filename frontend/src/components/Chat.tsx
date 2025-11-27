@@ -6,6 +6,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
+import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 interface ChatProps {
   tabId: string;
@@ -234,20 +235,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }
 
       try {
-        // Detect if running in Electron
-        const isElectron = typeof window !== 'undefined' && window.electronAPI;
-
-        let wsUrl: string;
-        if (isElectron) {
-          // Electron/Production: direct connection to backend
-          wsUrl = 'ws://127.0.0.1:8000/ws/chat';
-        } else {
-          // Vite/Development: use proxy through dev server
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const host = window.location.host;
-          wsUrl = `${protocol}//${host}/ws/chat`;
-        }
-
+        const wsUrl = getWebSocketUrl('/ws/chat', isElectronEnvironment());
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
@@ -361,8 +349,18 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setStreamingMessage('');
 
     try {
+      // Send full conversation history for backend's smart context window management (sliding window logic).
+      // This ensures the backend can manage context efficiently and avoids context loss.
       wsRef.current.send(JSON.stringify({
-        message: input
+        message: input,
+        chat_id: currentChatId,
+        conversation_history: [
+          ...messages.map(m => ({
+            role: m.role,
+            content: m.content
+          })),
+          { role: 'user', content: input }
+        ]
       }));
     } catch (error) {
       console.error('Failed to send message:', error);

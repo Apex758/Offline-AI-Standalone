@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MessageSquare, Wand2, Send, Loader2, Sparkles } from 'lucide-react';
+import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 interface AIAssistantPanelProps {
   isOpen: boolean;
@@ -49,9 +50,6 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       if (!shouldReconnectRef.current) return;
 
       try {
-        // Detect if running in Electron
-        const isElectron = typeof window !== 'undefined' && window.electronAPI;
-
         // Determine WebSocket endpoint based on mode and content type
         let endpoint = '';
         if (mode === 'chat') {
@@ -81,17 +79,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
           }
         }
 
-        let wsUrl: string;
-        if (isElectron) {
-          // Electron/Production: direct connection to backend
-          wsUrl = `ws://127.0.0.1:8000${endpoint}`;
-        } else {
-          // Vite/Development: use proxy through dev server
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const host = window.location.host;
-          wsUrl = `${protocol}//${host}${endpoint}`;
-        }
-
+        const wsUrl = getWebSocketUrl(endpoint, isElectronEnvironment());
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
@@ -100,7 +88,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
-
+  
           // Stream each token in real time
           if (data.type === 'token') {
             setStreamingMessage(prev => prev + data.content);
