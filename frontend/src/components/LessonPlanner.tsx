@@ -916,7 +916,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       </button>
                       <ExportButton
                         dataType="plan"
-                        data={{ content: parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan }}
+                        data={{ 
+                          content: parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan,
+                          formData: formData,
+                          accentColor: tabColor
+                        }}
                         filename={`lesson-plan-${formData.topic.replace(/\s+/g, '-').toLowerCase()}`}
                         className="ml-2"
                       />
