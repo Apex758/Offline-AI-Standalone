@@ -916,7 +916,11 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                       </button>
                       <ExportButton
                         dataType="plan"
-                        data={parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan}
+                        data={{
+                          content: parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan,
+                          formData: formData,
+                          accentColor: tabColor
+                        }}
                         filename={`cross-curricular-${formData.lessonTitle.toLowerCase().replace(/\s+/g, '-')}`}
                         className="ml-2"
                       />
