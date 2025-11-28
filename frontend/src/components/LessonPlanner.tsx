@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import AIAssistantPanel from './AIAssistantPanel';
+import curriculumIndex from '../data/curriculumIndex.json';
 import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
 import LessonEditor from './LessonEditor';
 import type { ParsedLesson } from './LessonEditor';
@@ -526,11 +527,23 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
   const grades = ['K', '1', '2', '3', '4', '5', '6'];
 
-  const strandsBySubject: { [key: string]: string[] } = {
-    'Mathematics': ['Number Sense', 'Patterns and Relations', 'Shape and Space', 'Statistics and Probability'],
-    'Language Arts': ['Reading', 'Writing', 'Listening and Speaking', 'Viewing and Representing'],
-    'Science': ['Life Science', 'Physical Science', 'Earth and Space Science', 'Scientific Inquiry'],
-    'Social Studies': ['History', 'Geography', 'Economics', 'Civics and Citizenship']
+  // Dynamically generate strands based on subject and grade using curriculumIndex
+  const getStrands = (subject: string, grade: string): string[] => {
+    if (!subject || !grade) return [];
+    const pages = (curriculumIndex as any).indexedPages || [];
+    const strandsSet = new Set<string>();
+    pages.forEach((page: any) => {
+      if (
+        page.subject &&
+        page.grade &&
+        page.strand &&
+        page.subject.toLowerCase() === subject.toLowerCase() &&
+        page.grade.toString() === grade.toString()
+      ) {
+        strandsSet.add(page.strand);
+      }
+    });
+    return Array.from(strandsSet);
   };
 
   const pedagogicalStrategiesOptions = [
@@ -1155,7 +1168,7 @@ ${contentToExport}`;
                       </select>
                     </div>
 
-                    {formData.subject && (
+                    {formData.subject && formData.gradeLevel && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Strand <span className="text-red-500">*</span>
@@ -1167,7 +1180,7 @@ ${contentToExport}`;
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
                           <option value="">Select a strand</option>
-                          {strandsBySubject[formData.subject]?.map(strand => (
+                          {getStrands(formData.subject, formData.gradeLevel).map(strand => (
                             <option key={strand} value={strand}>{strand}</option>
                           ))}
                         </select>
