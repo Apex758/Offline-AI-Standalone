@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
+import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
 import axios from 'axios';
@@ -391,27 +392,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  const exportQuiz = () => {
-    const contentToExport = parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz;
-    if (!contentToExport) return;
-
-    const content = `QUIZ
-${formData.subject} - Grade ${formData.gradeLevel}
-${formData.numberOfQuestions} Questions
-Generated: ${new Date().toLocaleDateString()}
-
-${contentToExport}`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  // Removed old exportQuiz logic; now handled by ExportButton
 
   useEffect(() => {
     loadQuizHistories();
@@ -580,17 +561,12 @@ ${contentToExport}`;
                           </>
                         )}
                       </button>
-                      <button
-                        onClick={exportQuiz}
-                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
-                        data-tutorial="quiz-generator-export"
-                        style={{ backgroundColor: tabColor }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                      </button>
+                      <ExportButton
+                        dataType="quiz"
+                        data={parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz}
+                        filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
+                        className="ml-2"
+                      />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="p-2 rounded-lg hover:bg-gray-100 transition"
