@@ -3,7 +3,7 @@ import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, H
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
-import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
+import CurriculumReferences from "./CurriculumReferences";
 import LessonEditor from './LessonEditor';
 import type { ParsedLesson } from './LessonEditor';
 import axios from 'axios';
@@ -28,6 +28,19 @@ interface LessonPlanHistory {
   parsedLesson?: ParsedLesson;
 }
 
+// Add this new interface near the top of the file with other interfaces
+interface CurriculumReference {
+  id: string;
+  displayName: string;
+  grade: string;
+  subject: string;
+  strand: string;
+  route: string;
+  keywords: string[];
+  essentialOutcomes: string[];
+  specificOutcomes: string[];
+}
+
 interface FormData {
   subject: string;
   gradeLevel: string;
@@ -48,6 +61,7 @@ interface FormData {
   specialNeedsDetails: string;
   additionalInstructions: string;
   referenceUrl: string;
+  selectedCurriculum: string[]; // Add this new field
 }
 
 const formatLessonText = (text: string, accentColor: string) => {
@@ -410,6 +424,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [parsedLesson, setParsedLesson] = useState<ParsedLesson | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // State for curriculum matches
+  const [curriculumMatches, setCurriculumMatches] = useState<CurriculumReference[]>([]);
+  const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
   // Track initialization per tab to prevent state loss on tab switches
   const hasInitializedRef = useRef(false);
   const currentTabIdRef = useRef(tabId);
@@ -434,7 +452,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     specialNeeds: false,
     specialNeedsDetails: '',
     additionalInstructions: '',
-    referenceUrl: ''
+    referenceUrl: '',
+    selectedCurriculum: [] // Add this
   });
 
   // Initialize with proper validation - check if savedData has actual meaningful content
@@ -452,6 +471,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [step, setStep] = useState(() => savedData?.step || 1);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
+  // Parse lesson when generated (for restored/loaded lessons)
   useEffect(() => {
     if (generatedPlan && !parsedLesson) {
       console.log('Attempting to parse loaded/restored lesson...');
@@ -465,6 +485,39 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   }, [generatedPlan]);
 
+  // Auto-fetch curriculum matches when subject, grade, or strand changes
+  useEffect(() => {
+    const fetchMatchingCurriculum = async () => {
+      // Only search if we have subject, grade, and strand
+      if (!formData.subject || !formData.gradeLevel || !formData.strand) {
+        setCurriculumMatches([]);
+        return;
+      }
+
+      setLoadingCurriculum(true);
+      try {
+        // Use the curriculum index to find matches
+        const pages = (curriculumIndex as any).indexedPages || [];
+        const matches = pages.filter((page: any) => {
+          return (
+            page.subject?.toLowerCase() === formData.subject.toLowerCase() &&
+            page.grade === formData.gradeLevel &&
+            page.strand?.toLowerCase().includes(formData.strand.toLowerCase())
+          );
+        });
+
+        setCurriculumMatches(matches.slice(0, 10)); // Limit to 10 results
+      } catch (error) {
+        console.error('Error fetching curriculum matches:', error);
+        setCurriculumMatches([]);
+      } finally {
+        setLoadingCurriculum(false);
+      }
+    };
+
+    fetchMatchingCurriculum();
+  }, [formData.subject, formData.gradeLevel, formData.strand]);
+
   // Auto-enable editing mode if startInEditMode flag is set
   useEffect(() => {
     if (savedData?.startInEditMode && parsedLesson && !isEditing) {
@@ -472,6 +525,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       setIsEditing(true);
     }
   }, [savedData?.startInEditMode, parsedLesson, isEditing]);
+
+  // Auto-fetch curriculum matches when subject, grade, or strand changes
 
   // Tutorial auto-show logic
   useEffect(() => {
@@ -596,6 +651,24 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     } else {
       handleInputChange(field, [...currentArray, value]);
     }
+  };
+
+  // Handler for curriculum checkbox toggle
+  const handleCurriculumToggle = (curriculumId: string) => {
+    setFormData(prev => {
+      const selected = prev.selectedCurriculum || [];
+      if (selected.includes(curriculumId)) {
+        return {
+          ...prev,
+          selectedCurriculum: selected.filter(id => id !== curriculumId)
+        };
+      } else {
+        return {
+          ...prev,
+          selectedCurriculum: [...selected, curriculumId]
+        };
+      }
+    });
   };
 
   const validateStep = () => {
@@ -842,7 +915,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       specialNeeds: false,
       specialNeedsDetails: '',
       additionalInstructions: '',
-      referenceUrl: ''
+      referenceUrl: '',
+      selectedCurriculum: []
     });
     setGeneratedPlan('');
     setStreamingPlan('');
@@ -1111,62 +1185,145 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
 
-                    <div data-tutorial="lesson-planner-basic-info">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Subject <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={formData.subject}
-                        onChange={(e) => {
-                          handleInputChange('subject', e.target.value);
-                          handleInputChange('strand', '');
-                        }}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                      >
-                        <option value="">Select a subject</option>
-                        {subjects.map(subject => (
-                          <option key={subject} value={subject}>{subject}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* Two-column layout for dropdowns and curriculum box */}
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Left column - Form fields */}
+                      <div className="space-y-4">
+                        <div data-tutorial="lesson-planner-basic-info">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Subject <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={formData.subject}
+                            onChange={(e) => {
+                              handleInputChange('subject', e.target.value);
+                              handleInputChange('strand', '');
+                              handleInputChange('selectedCurriculum', []);
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          >
+                            <option value="">Select a subject</option>
+                            {subjects.map(subject => (
+                              <option key={subject} value={subject}>{subject}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Grade Level <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={formData.gradeLevel}
-                        onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                      >
-                        <option value="">Select a grade</option>
-                        {grades.map(grade => (
-                          <option key={grade} value={grade}>Grade {grade}</option>
-                        ))}
-                      </select>
-                    </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Grade Level <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={formData.gradeLevel}
+                            onChange={(e) => {
+                              handleInputChange('gradeLevel', e.target.value);
+                              handleInputChange('selectedCurriculum', []);
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          >
+                            <option value="">Select a grade</option>
+                            {grades.map(grade => (
+                              <option key={grade} value={grade}>Grade {grade}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                    {formData.subject && formData.gradeLevel && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Strand <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={formData.strand}
-                          onChange={(e) => handleInputChange('strand', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        >
-                          <option value="">Select a strand</option>
-                          {getStrands(formData.subject, formData.gradeLevel).map(strand => (
-                            <option key={strand} value={strand}>{strand}</option>
-                          ))}
-                        </select>
+                        {formData.subject && formData.gradeLevel && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Strand <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              value={formData.strand}
+                              onChange={(e) => {
+                                handleInputChange('strand', e.target.value);
+                                handleInputChange('selectedCurriculum', []);
+                              }}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                              style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                            >
+                              <option value="">Select a strand</option>
+                              {getStrands(formData.subject, formData.gradeLevel).map(strand => (
+                                <option key={strand} value={strand}>{strand}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                       </div>
-                    )}
 
+                      {/* Right column - Related Curriculum Box */}
+                      <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                        <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center">
+                          <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          Related Curriculum
+                        </h4>
+                        
+                        <div className="max-h-96 overflow-y-auto space-y-2">
+                          {!formData.subject || !formData.gradeLevel || !formData.strand ? (
+                            <p className="text-sm text-gray-500 italic">
+                              Select subject, grade level, and strand to see related curriculum
+                            </p>
+                          ) : loadingCurriculum ? (
+                            <div className="flex items-center justify-center py-8">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                            </div>
+                          ) : curriculumMatches.length === 0 ? (
+                            <p className="text-sm text-gray-500 italic">
+                              No matching curriculum found
+                            </p>
+                          ) : (
+                            curriculumMatches.map((curriculum) => (
+                              <label
+                                key={curriculum.id}
+                                className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white cursor-pointer transition-colors border border-gray-200"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={(formData.selectedCurriculum || []).includes(curriculum.id)}
+                                  onChange={() => handleCurriculumToggle(curriculum.id)}
+                                  className="mt-1 w-4 h-4 rounded focus:ring-2"
+                                  style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {curriculum.displayName}
+                                  </p>
+                                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                    {curriculum.essentialOutcomes?.[0] || 'No description available'}
+                                  </p>
+                                  <a
+                                    href={curriculum.route}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    View curriculum →
+                                  </a>
+                                </div>
+                              </label>
+                            ))
+                          )}
+                        </div>
+
+                        {curriculumMatches.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-gray-300">
+                            <p className="text-xs text-gray-600">
+                              <span className="font-semibold">
+                                {(formData.selectedCurriculum || []).length}
+                              </span>{' '}
+                              of {curriculumMatches.length} selected
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Rest of the form fields below (full width) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Topic <span className="text-red-500">*</span>
@@ -1181,6 +1338,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       />
                     </div>
 
+                    {/* Continue with remaining fields... */}
+                    {/* Restore missing fields below the grid */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Essential Learning Outcome <span className="text-red-500">*</span>
