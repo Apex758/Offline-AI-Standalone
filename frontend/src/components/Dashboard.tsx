@@ -685,7 +685,46 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
         );
       case 'lesson-planner':
-        return <LessonPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return (
+          <LessonPlanner
+            tabId={tab.id}
+            savedData={tab.data}
+            onDataChange={(data) => updateTabData(tab.id, data)}
+            onOpenCurriculumTab={(route: string) => {
+              // Smart curriculum tab management (same logic as analytics onNavigate)
+              const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
+              if (existingCurriculumTab) {
+                updateTabData(existingCurriculumTab.id, { currentPath: route });
+                setActiveTabId(existingCurriculumTab.id);
+              } else {
+                // Check if there's any curriculum tab (even inactive)
+                const anyCurriculumTab = tabs.find(t => t.type === 'curriculum');
+                if (anyCurriculumTab) {
+                  setTabs(prev => prev.map(t => ({
+                    ...t,
+                    active: t.id === anyCurriculumTab.id
+                  })));
+                  updateTabData(anyCurriculumTab.id, { currentPath: route });
+                  setActiveTabId(anyCurriculumTab.id);
+                } else {
+                  // Create new curriculum tab
+                  const curriculumTool = tools.find(t => t.type === 'curriculum');
+                  if (curriculumTool) {
+                    const newTab: Tab = {
+                      id: `tab-${Date.now()}`,
+                      title: curriculumTool.name,
+                      type: 'curriculum',
+                      active: true,
+                      data: { currentPath: route }
+                    };
+                    setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                    setActiveTabId(newTab.id);
+                  }
+                }
+              }
+            }}
+          />
+        );
       case 'kindergarten-planner':
         return <KindergartenPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'multigrade-planner':
