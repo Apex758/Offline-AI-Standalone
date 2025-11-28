@@ -820,7 +820,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       </button>
                       <ExportButton
                         dataType="plan"
-                        data={parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan}
+                        data={{
+                          content: parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan,
+                          formData: formData,
+                          accentColor: tabColor
+                        }}
                         filename={`kindergarten-${formData.lessonTopic.toLowerCase().replace(/\s+/g, '-')}`}
                         className="ml-2"
                       />

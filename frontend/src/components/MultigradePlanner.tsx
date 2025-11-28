@@ -854,7 +854,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       </button>
                       <ExportButton
                         dataType="plan"
-                        data={parsedPlan ? multigradePlanToDisplayText(parsedPlan) : generatedPlan}
+                        data={{
+                          content: parsedPlan ? multigradePlanToDisplayText(parsedPlan) : generatedPlan,
+                          formData: formData,
+                          accentColor: tabColor
+                        }}
                         filename={`multigrade-${formData.topic.replace(/\s+/g, '-').toLowerCase()}`}
                         className="ml-2"
                       />

@@ -563,7 +563,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       </button>
                       <ExportButton
                         dataType="quiz"
-                        data={parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz}
+                        data={{
+                          content: parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz,
+                          formData: formData,
+                          accentColor: tabColor
+                        }}
                         filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
                         className="ml-2"
                       />

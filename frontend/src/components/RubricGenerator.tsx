@@ -860,7 +860,11 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       </button>
                       <ExportButton
                         dataType="rubric"
-                        data={parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric}
+                        data={{
+                          content: parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric,
+                          formData: formData,
+                          accentColor: tabColor
+                        }}
                         filename={`rubric-${formData.assignmentTitle.toLowerCase().replace(/\s+/g, '-')}`}
                         className="ml-2"
                       />
