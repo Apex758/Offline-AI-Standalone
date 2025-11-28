@@ -76,10 +76,10 @@ const GRADE_SPECS = {
   }
 };
 
-export function buildLessonPrompt(formData: LessonFormData): string {
+export function buildLessonPrompt(formData: any): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   
-  const prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students.
+  let prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students.
 
 SUBJECT: ${formData.subject}
 TOPIC: ${formData.topic}
