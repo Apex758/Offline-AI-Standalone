@@ -1504,4 +1504,84 @@ async def _shutdown_server():
 # (Removed old shutdown event handler, now handled in lifespan)
     
     
+# =========================
+# Export Endpoint
+# =========================
+
+from fastapi import Body
+from fastapi.responses import StreamingResponse
+# NOTE: This file must be run as a module/package (e.g., `python -m backend.main` or `uvicorn backend.main:app`)
+from export_utils import EXPORT_FORMATTERS
+
+EXPORT_TYPE_FORMATS = {
+    "plan": {"pdf", "docx"},
+    "quiz": {"pdf", "docx"},
+    "rubric": {"pdf", "docx"},
+    "curriculum": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "chat_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "lesson_plan_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "quiz_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "rubric_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "kindergarten_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "multigrade_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "cross_curricular_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+}
+
+CONTENT_TYPES = {
+    "pdf": "application/pdf",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "csv": "text/csv",
+    "json": "application/json",
+    "md": "text/markdown",
+    "markdown": "text/markdown",
+}
+
+@app.post("/api/export")
+async def export_data(
+    data_type: str = Body(..., embed=True),
+    format: str = Body(..., embed=True),
+    data: dict = Body(..., embed=True),
+    title: str = Body("Export", embed=True)
+):
+    """
+    Export endpoint for various data types and formats.
+    """
+    # Validate data_type
+    if data_type not in EXPORT_TYPE_FORMATS:
+        return JSONResponse(
+            status_code=400,
+            content={"error": f"Invalid data_type '{data_type}'. Allowed: {list(EXPORT_TYPE_FORMATS.keys())}"}
+        )
+    # Validate format
+    allowed_formats = EXPORT_TYPE_FORMATS[data_type]
+    if format not in allowed_formats:
+        return JSONResponse(
+            status_code=400,
+            content={"error": f"Format '{format}' not allowed for data_type '{data_type}'. Allowed: {sorted(allowed_formats)}"}
+        )
+    # Validate formatter
+    formatter = EXPORT_FORMATTERS.get(format)
+    if not formatter:
+        return JSONResponse(
+            status_code=400,
+            content={"error": f"Export format '{format}' is not supported."}
+        )
+    # Export
+    try:
+        exported_bytes = formatter(data, title=title)
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Export failed: {str(e)}"}
+        )
+    # Prepare response
+    ext = "md" if format == "markdown" else format
+    filename = f"{data_type}_{title.replace(' ', '_')}.{ext}"
+    content_type = CONTENT_TYPES.get(format, "application/octet-stream")
+    return StreamingResponse(
+        io.BytesIO(exported_bytes),
+        media_type=content_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
     

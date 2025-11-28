@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
+import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import KindergartenEditor from './KindergartenEditor';
 import type { ParsedKindergartenPlan } from './KindergartenEditor';
@@ -647,28 +648,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     }
   };
 
-  const exportPlan = () => {
-    const contentToExport = parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan;
-    if (!contentToExport) return;
-
-    const content = `KINDERGARTEN LESSON PLAN
-${formData.lessonTopic}
-${formData.curriculumUnit} - ${formData.ageGroup}
-Week ${formData.week}, ${formData.dayOfWeek}
-Generated: ${new Date().toLocaleDateString()}
-
-${contentToExport}`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kindergarten-${formData.lessonTopic.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  // Removed old exportPlan logic; now handled by ExportButton
 
   useEffect(() => {
     loadKindergartenHistories();
@@ -838,17 +818,12 @@ ${contentToExport}`;
                           </>
                         )}
                       </button>
-                      <button
-                        onClick={exportPlan}
-                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
-                        style={{ backgroundColor: tabColor }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                        data-tutorial="kinder-planner-export"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                      </button>
+                      <ExportButton
+                        dataType="plan"
+                        data={parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan}
+                        filename={`kindergarten-${formData.lessonTopic.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="ml-2"
+                      />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="p-2 rounded-lg hover:bg-gray-100 transition"

@@ -3,3 +3,5 @@ uvicorn[standard]
 pydantic
 python-multipart
 llama-cpp-python
+python-docx
+weasyprint

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
+import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import RubricEditor from './RubricEditor';
 import type { ParsedRubric, CriteriaRow } from './RubricEditor';
@@ -734,28 +735,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   };
 
-  const exportRubric = () => {
-    const contentToExport = parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric;
-    if (!contentToExport) return;
-
-    const content = `GRADING RUBRIC
-${formData.assignmentTitle}
-${formData.subject} - ${formData.gradeLevel}
-${formData.assignmentType}
-Generated: ${new Date().toLocaleDateString()}
-
-${contentToExport}`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rubric-${formData.assignmentTitle.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  // Removed old exportRubric logic; now handled by ExportButton
 
   useEffect(() => {
     loadRubricHistories();
@@ -878,17 +858,12 @@ ${contentToExport}`;
                           </>
                         )}
                       </button>
-                      <button
-                        onClick={exportRubric}
-                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
-                        data-tutorial="rubric-generator-export"
-                        style={{ backgroundColor: tabColor }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                      </button>
+                      <ExportButton
+                        dataType="rubric"
+                        data={parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric}
+                        filename={`rubric-${formData.assignmentTitle.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="ml-2"
+                      />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="p-2 rounded-lg hover:bg-gray-100 transition"

@@ -25,7 +25,6 @@ class CurriculumMatcher:
             curriculum_index_path = base_dir / "frontend" / "src" / "data" / "curriculumIndex.json"
         self.curriculum_index_path = str(curriculum_index_path)
         self.pages = self._load_curriculum_index()
-        self._build_inverted_index()
 
     def _load_curriculum_index(self) -> List[Dict[str, Any]]:
         """

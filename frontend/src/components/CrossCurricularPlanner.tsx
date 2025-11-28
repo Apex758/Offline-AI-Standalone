@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, School, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
+import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import CrossCurricularEditor from './CrossCurricularEditor';
 import type { ParsedCrossCurricularPlan } from './CrossCurricularEditor';
@@ -776,28 +777,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   };
 
-  const exportPlan = () => {
-    const contentToExport = parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan;
-    if (!contentToExport) return;
-
-    const content = `CROSS-CURRICULAR LESSON PLAN
-${formData.lessonTitle}
-${formData.primarySubject} - ${formData.gradeLevel}
-Integration Model: ${formData.integrationModel}
-Generated: ${new Date().toLocaleDateString()}
-
-${contentToExport}`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cross-curricular-${formData.lessonTitle.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  // Removed old exportPlan logic; now handled by ExportButton
 
   useEffect(() => {
     loadCrossCurricularHistories();
@@ -934,17 +914,12 @@ ${contentToExport}`;
                           </>
                         )}
                       </button>
-                      <button
-                        onClick={exportPlan}
-                        className="flex items-center px-4 py-2 text-white rounded-lg transition"
-                        style={{ backgroundColor: tabColor }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                        data-tutorial="cross-curricular-planner-export"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                      </button>
+                      <ExportButton
+                        dataType="plan"
+                        data={parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan}
+                        filename={`cross-curricular-${formData.lessonTitle.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="ml-2"
+                      />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="p-2 rounded-lg hover:bg-gray-100 transition"
