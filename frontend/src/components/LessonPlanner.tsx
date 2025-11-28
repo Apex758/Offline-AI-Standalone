@@ -1138,6 +1138,23 @@ ${contentToExport}`;
                       </select>
                     </div>
 
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Grade Level <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.gradeLevel}
+                        onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      >
+                        <option value="">Select a grade</option>
+                        {grades.map(grade => (
+                          <option key={grade} value={grade}>Grade {grade}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     {formData.subject && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1156,23 +1173,6 @@ ${contentToExport}`;
                         </select>
                       </div>
                     )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Grade Level <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={formData.gradeLevel}
-                        onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                      >
-                        <option value="">Select a grade</option>
-                        {grades.map(grade => (
-                          <option key={grade} value={grade}>Grade {grade}</option>
-                        ))}
-                      </select>
-                    </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
