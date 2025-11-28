@@ -29,39 +29,6 @@ class CurriculumMatcher:
 
     def _load_curriculum_index(self) -> List[Dict[str, Any]]:
         """
-        Load and parse the curriculum index JSON.
-
-        Returns<write_to_file>
-<path>backend/curriculum_matcher.py</path>
-<content>
-import os
-import json
-import re
-from typing import List, Dict, Any, Optional, Tuple
-from pathlib import Path
-
-class CurriculumMatcher:
-    """
-    """
-
-    def __init__(self, curriculum_index_path: Optional[str] = None):
-        """
-        Initialize the matcher by loading the curriculum index JSON.
-
-        Args:
-            curriculum_index_path (str, optional): Path to curriculumIndex.json.
-                If None, will look for frontend/src/data/curriculumIndex.json
-                relative to the backend directory.
-        """
-        if curriculum_index_path is None:
-            # Default: look for curriculumIndex.json in frontend/src/data/
-            base_dir = Path(__file__).parent.parent
-            curriculum_index_path = base_dir / "frontend" / "src" / "data" / "curriculumIndex.json"
-        self.curriculum_index_path = str(curriculum_index_path)
-        self.pages = self._load_curriculum_index()
-
-    def _load_curriculum_index(self) -> List[Dict[str, Any]]:
-        """
         Load and parse the curriculum index JSON file.
 
         Returns:
@@ -69,21 +36,14 @@ class CurriculumMatcher:
         """
         if not os.path.exists(self.curriculum_index_path):
             raise FileNotFoundError(f"Curriculum index not found at {self.curriculum_index_path}")
+
         with open(self.curriculum_index_path, "r", encoding="utf-8") as f:
             data = json.load(f)
+
         return data.get("indexedPages", [])
 
     @staticmethod
     def _normalize(text: str) -> str:
-        """
-        Normalize text for comparison: lowercase, remove punctuation, collapse whitespace.
-
-        Args:
-            text (str): Input text.
-
-        Returns:
-            str: Normalized text.
-        """
         text = text.lower()
         text = re.sub(r"[^\w\s]", " ", text)
         text = re.sub(r"\s+", " ", text)
