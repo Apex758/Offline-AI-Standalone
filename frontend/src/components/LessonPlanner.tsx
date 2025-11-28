@@ -3,7 +3,6 @@ import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, H
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
-import CurriculumReferences from "./CurriculumReferences";
 import LessonEditor from './LessonEditor';
 import type { ParsedLesson } from './LessonEditor';
 import axios from 'axios';
@@ -17,6 +16,7 @@ interface LessonPlannerProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
+  onOpenCurriculumTab?: (route: string) => void;
 }
 
 interface LessonPlanHistory {
@@ -61,7 +61,7 @@ interface FormData {
   specialNeedsDetails: string;
   additionalInstructions: string;
   referenceUrl: string;
-  selectedCurriculum: string[]; // Add this new field
+  // selectedCurriculum removed
 }
 
 const formatLessonText = (text: string, accentColor: string) => {
@@ -406,7 +406,7 @@ const lessonToDisplayText = (lesson: ParsedLesson): string => {
   return output;
 };
 
-const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
@@ -452,8 +452,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     specialNeeds: false,
     specialNeedsDetails: '',
     additionalInstructions: '',
-    referenceUrl: '',
-    selectedCurriculum: [] // Add this
+    referenceUrl: ''
   });
 
   // Initialize with proper validation - check if savedData has actual meaningful content
@@ -653,22 +652,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  // Handler for curriculum checkbox toggle
-  const handleCurriculumToggle = (curriculumId: string) => {
-    setFormData(prev => {
-      const selected = prev.selectedCurriculum || [];
-      if (selected.includes(curriculumId)) {
-        return {
-          ...prev,
-          selectedCurriculum: selected.filter(id => id !== curriculumId)
-        };
-      } else {
-        return {
-          ...prev,
-          selectedCurriculum: [...selected, curriculumId]
-        };
-      }
-    });
+  // Handler for opening a curriculum card
+  const handleOpenCurriculum = (route: string) => {
+    if (onOpenCurriculumTab) {
+      onOpenCurriculumTab(route);
+    } else {
+      window.open(route, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const validateStep = () => {
@@ -915,8 +905,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       specialNeeds: false,
       specialNeedsDetails: '',
       additionalInstructions: '',
-      referenceUrl: '',
-      selectedCurriculum: []
+      referenceUrl: ''
     });
     setGeneratedPlan('');
     setStreamingPlan('');
@@ -1198,7 +1187,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             onChange={(e) => {
                               handleInputChange('subject', e.target.value);
                               handleInputChange('strand', '');
-                              handleInputChange('selectedCurriculum', []);
                             }}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1218,7 +1206,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             value={formData.gradeLevel}
                             onChange={(e) => {
                               handleInputChange('gradeLevel', e.target.value);
-                              handleInputChange('selectedCurriculum', []);
                             }}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1239,7 +1226,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               value={formData.strand}
                               onChange={(e) => {
                                 handleInputChange('strand', e.target.value);
-                                handleInputChange('selectedCurriculum', []);
                               }}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
                               style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1276,50 +1262,50 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               No matching curriculum found
                             </p>
                           ) : (
-                            curriculumMatches.map((curriculum) => (
-                              <label
-                                key={curriculum.id}
-                                className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white cursor-pointer transition-colors border border-gray-200"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={(formData.selectedCurriculum || []).includes(curriculum.id)}
-                                  onChange={() => handleCurriculumToggle(curriculum.id)}
-                                  className="mt-1 w-4 h-4 rounded focus:ring-2"
-                                  style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {curriculum.displayName}
-                                  </p>
-                                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                    {curriculum.essentialOutcomes?.[0] || 'No description available'}
-                                  </p>
-                                  <a
-                                    href={curriculum.route}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-600 hover:underline mt-1 inline-block"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    View curriculum →
-                                  </a>
+                            <div className="grid grid-cols-1 gap-2">
+                              {curriculumMatches.map((curriculum) => (
+                                <div
+                                  key={curriculum.id}
+                                  className="flex flex-col p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md cursor-pointer transition group"
+                                  tabIndex={0}
+                                  role="button"
+                                  onClick={() => handleOpenCurriculum(curriculum.route)}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter' || e.key === ' ') handleOpenCurriculum(curriculum.route);
+                                  }}
+                                  style={{ outline: 'none' }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-900">
+                                        {curriculum.displayName}
+                                      </p>
+                                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                        {curriculum.essentialOutcomes?.[0] || 'No description available'}
+                                      </p>
+                                    </div>
+                                    <button
+                                      className="ml-4 px-3 py-1 text-xs rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        handleOpenCurriculum(curriculum.route);
+                                      }}
+                                    >
+                                      Open
+                                    </button>
+                                  </div>
+                                  <div className="mt-2">
+                                    <span className="inline-block text-xs text-gray-500">
+                                      Grade: {curriculum.grade} | Strand: {curriculum.strand}
+                                    </span>
+                                  </div>
                                 </div>
-                              </label>
-                            ))
+                              ))}
+                            </div>
                           )}
                         </div>
 
-                        {curriculumMatches.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-gray-300">
-                            <p className="text-xs text-gray-600">
-                              <span className="font-semibold">
-                                {(formData.selectedCurriculum || []).length}
-                              </span>{' '}
-                              of {curriculumMatches.length} selected
-                            </p>
-                          </div>
-                        )}
+                        {/* Selection count removed */}
                       </div>
                     </div>
 
