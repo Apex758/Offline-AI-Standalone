@@ -470,11 +470,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [step, setStep] = useState(() => savedData?.step || 1);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
-  // Parse lesson when generated (for restored/loaded lessons)
   useEffect(() => {
     if (generatedPlan && !parsedLesson) {
       console.log('Attempting to parse loaded/restored lesson...');
-      const parsed = parseLessonContent(generatedPlan, formData);
+      // Use empty array for curriculumRefs when loading saved lessons
+      const parsed = parseLessonContent(generatedPlan, formData, curriculumReferences || []);
       if (parsed) {
         console.log('Loaded lesson parsed successfully');
         setParsedLesson(parsed);
@@ -482,7 +482,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         console.log('Loaded lesson parsing failed');
       }
     }
-  }, [generatedPlan]);
+  }, [generatedPlan, curriculumReferences]);  // Also add curriculumReferences to dependenciesX
 
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
@@ -918,7 +918,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         data={{ 
                           content: parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan,
                           formData: formData,
-                          accentColor: tabColor
+                          accentColor: tabColor,
+                          curriculumReferences: parsedLesson?.curriculumReferences || []
                         }}
                         filename={`lesson-plan-${formData.topic.replace(/\s+/g, '-').toLowerCase()}`}
                         className="ml-2"

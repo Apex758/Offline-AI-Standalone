@@ -255,6 +255,55 @@ def export_to_docx(data: Union[str, Dict, List], title: str = "Export") -> bytes
         if not sections and content:
             doc.add_paragraph(content)
         
+        # Add curriculum references if they exist
+        if isinstance(data, dict) and 'curriculumReferences' in data and data['curriculumReferences']:
+            refs = data['curriculumReferences']
+            
+            # Add section heading
+            doc.add_paragraph()  # Spacing
+            heading = doc.add_heading('Curriculum References', level=1)
+            heading_run = heading.runs[0]
+            heading_run.font.color.rgb = RGBColor(*rgb)
+            heading_run.font.size = Pt(18)
+            
+            # Add description
+            desc_para = doc.add_paragraph('These curriculum activities and pages are relevant to this lesson.')
+            desc_para.paragraph_format.space_after = Pt(12)
+            
+            # Add each reference
+            for ref in refs:
+                ref_para = doc.add_paragraph()
+                ref_para.paragraph_format.left_indent = Inches(0.25)
+                ref_para.paragraph_format.space_after = Pt(8)
+                
+                # Add icon (bullet point)
+                bullet_run = ref_para.add_run('📚 ')
+                bullet_run.font.size = Pt(12)
+                
+                # Add display name (bold)
+                name_run = ref_para.add_run(ref.get('displayName', 'Curriculum Resource'))
+                name_run.font.bold = True
+                name_run.font.size = Pt(11)
+                name_run.font.color.rgb = RGBColor(30, 58, 138)
+                
+                # Add grade and strand
+                meta_para = doc.add_paragraph()
+                meta_para.paragraph_format.left_indent = Inches(0.5)
+                meta_para.paragraph_format.space_after = Pt(4)
+                meta_run = meta_para.add_run(f"Grade: {ref.get('grade', '')} | Strand: {ref.get('strand', '')}")
+                meta_run.font.size = Pt(9)
+                meta_run.font.color.rgb = RGBColor(107, 114, 128)
+                
+                # Add essential outcome if available
+                if ref.get('essentialOutcomes') and len(ref['essentialOutcomes']) > 0:
+                    outcome_para = doc.add_paragraph()
+                    outcome_para.paragraph_format.left_indent = Inches(0.5)
+                    outcome_para.paragraph_format.space_after = Pt(12)
+                    outcome_run = outcome_para.add_run(ref['essentialOutcomes'][0])
+                    outcome_run.font.size = Pt(10)
+                    outcome_run.font.color.rgb = RGBColor(55, 65, 81)
+
+   
         buf = io.BytesIO()
         doc.save(buf)
         return buf.getvalue()
@@ -545,6 +594,48 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
         if not sections and content:
             html += f'<pre style="white-space: pre-wrap; font-family: inherit;">{content}</pre>'
         
+        if isinstance(data, dict) and 'curriculumReferences' in data and data['curriculumReferences']:
+            refs = data['curriculumReferences']
+            html += '''
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 2px solid rgba(59, 130, 246, 0.2); border-radius: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <svg style="width: 1.25rem; height: 1.25rem; color: #2563eb;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <h3 style="font-size: 1.125rem; font-weight: bold; color: #1e40af; margin: 0;">Curriculum References</h3>
+                </div>
+                <p style="font-size: 0.875rem; color: #1e40af; margin-bottom: 1rem;">
+                    These curriculum activities and pages are relevant to this lesson.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            '''
+            
+            for ref in refs:
+                display_name = ref.get('displayName', 'Curriculum Resource')
+                grade = ref.get('grade', '')
+                strand = ref.get('strand', '')
+                essential = ref.get('essentialOutcomes', [''])[0] if ref.get('essentialOutcomes') else ''
+                
+                html += f'''
+                <div style="padding: 1rem; background: white; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <svg style="width: 1rem; height: 1rem; color: #2563eb;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <span style="font-weight: 600; color: #1e3a8a;">{display_name}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem;">
+                        Grade: {grade} | Strand: {strand}
+                    </div>
+                    {f'<p style="font-size: 0.875rem; color: #374151; margin: 0;">{essential}</p>' if essential else ''}
+                </div>
+                '''
+            
+            html += '''
+                </div>
+            </div>
+            '''
+            
         html += '</div>'
         
         # Add footer
