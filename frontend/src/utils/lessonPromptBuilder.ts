@@ -9,6 +9,19 @@ interface LessonFormData {
   specialNeeds?: string;
 }
 
+interface CurriculumReference {
+  id: string;
+  displayName: string;
+  grade: string;
+  subject: string;
+  strand: string;
+  route: string;
+  keywords: string[];
+  essentialOutcomes: string[];
+  specificOutcomes: string[];
+}
+
+
 // Grade-specific pedagogical guidance
 const GRADE_SPECS = {
   'K': {
@@ -76,7 +89,8 @@ const GRADE_SPECS = {
   }
 };
 
-export function buildLessonPrompt(formData: any): string {
+
+export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumReference[]): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   
   let prompt = `Create a complete, detailed lesson plan for Grade ${formData.gradeLevel} students.
@@ -86,7 +100,27 @@ TOPIC: ${formData.topic}
 STRAND: ${formData.strand}
 DURATION: ${formData.duration}
 CLASS SIZE: ${formData.studentCount} students
-${formData.learningStyles ? `LEARNING STYLES: ${formData.learningStyles}\n` : ''}${formData.specialNeeds ? `SPECIAL NEEDS/ACCOMMODATIONS: ${formData.specialNeeds}\n` : ''}
+${formData.learningStyles ? `LEARNING STYLES: ${formData.learningStyles}\n` : ''}${formData.specialNeeds ? `SPECIAL NEEDS/ACCOMMODATIONS: ${formData.specialNeeds}\n` : ''}`;
+
+
+  if (curriculumRefs && curriculumRefs.length > 0) {
+    prompt += `\nCURRICULUM REFERENCES TO USE (IMPORTANT - USE ONLY THESE):
+`;
+    curriculumRefs.forEach((ref, index) => {
+      prompt += `${index + 1}. ${ref.displayName}
+   Grade: ${ref.grade} | Subject: ${ref.subject} | Strand: ${ref.strand}
+`;
+      if (ref.essentialOutcomes && ref.essentialOutcomes.length > 0) {
+        prompt += `   Essential Outcome: ${ref.essentialOutcomes[0]}
+`;
+      }
+    });
+    prompt += `
+CRITICAL: In the "Curriculum References" section at the end, list ONLY these ${curriculumRefs.length} curriculum reference(s). Do NOT add any other curriculum standards, frameworks, or references.
+`;
+  }
+
+  prompt += `
 GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Activity Types: ${gradeSpec.activityTypes}
@@ -144,9 +178,11 @@ REQUIRED LESSON PLAN STRUCTURE:
    - Teacher reflection prompts
    - Modifications for next time
 
-Generate the complete lesson plan now:
+7. CURRICULUM REFERENCES
+   - List the specific curriculum standards this lesson aligns with
+   ${curriculumRefs && curriculumRefs.length > 0 ? `- Use ONLY the ${curriculumRefs.length} curriculum reference(s) provided above` : '- Reference official curriculum frameworks'}
 
-IMPORTANT: At the end of the lesson plan, include a section titled 'Curriculum References' that acknowledges alignment with official curriculum standards. The specific curriculum pages will be provided separately.`;
+Generate the complete lesson plan now.`;
 
   return prompt;
 }

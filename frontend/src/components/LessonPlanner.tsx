@@ -3,6 +3,7 @@ import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, H
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
+import CurriculumReferences from './CurriculumReferences';
 import LessonEditor from './LessonEditor';
 import type { ParsedLesson } from './LessonEditor';
 import axios from 'axios';
@@ -190,7 +191,7 @@ const formatLessonText = (text: string, accentColor: string) => {
 };
 
 // Parse lesson plan text content into structured ParsedLesson format
-const parseLessonContent = (text: string, formData: FormData): ParsedLesson | null => {
+const parseLessonContent = (text: string, formData: FormData, curriculumRefs: CurriculumReference[]): ParsedLesson | null => {
   if (!text) return null;
 
   try {
@@ -326,7 +327,8 @@ const parseLessonContent = (text: string, formData: FormData): ParsedLesson | nu
       learningStyles,
       prerequisites,
       specialNeeds,
-      additionalNotes
+      additionalNotes,
+      curriculumReferences: curriculumRefs.length > 0 ? curriculumRefs : undefined
     };
   } catch (error) {
     console.error('Failed to parse lesson plan:', error);
@@ -427,6 +429,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // State for curriculum matches
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumReference[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
+  const [curriculumReferences, setCurriculumReferences] = useState<CurriculumReference[]>([]);
 
   // Track initialization per tab to prevent state loss on tab switches
   const hasInitializedRef = useRef(false);
@@ -728,7 +732,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
               console.log('Lesson plan generation complete, parsing...');
               
               // Try to parse immediately
-              const parsed = parseLessonContent(finalMessage, formData);
+              const parsed = parseLessonContent(finalMessage, formData, curriculumReferences);
               if (parsed) {
                 console.log('Lesson plan parsed successfully:', parsed.sections.length, 'sections');
                 setParsedLesson(parsed);
@@ -799,7 +803,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setLoading(true);
     setStreamingPlan('');
 
-    const prompt = buildLessonPrompt(formData);
+    setCurriculumReferences(curriculumMatches);
+
+    // PASS curriculumMatches as second parameter
+    const prompt = buildLessonPrompt(formData, curriculumMatches);
 
     try {
       wsRef.current.send(JSON.stringify({
@@ -877,9 +884,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       console.error('Failed to delete lesson plan:', error);
     }
   };
-
-  // Update exportLessonPlan to use parsed lesson if available
-  // Removed old exportLessonPlan logic; now handled by ExportButton
 
   useEffect(() => {
     loadLessonPlanHistories();
@@ -1101,10 +1105,15 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     )}
                   </div>
                   {/* Curriculum References */}
-                  {parsedLesson?.curriculumReferences && parsedLesson.curriculumReferences.length > 0 && (
-                    <CurriculumReferences references={parsedLesson.curriculumReferences} />
+                  {parsedLesson?.curriculumReferences && (
+                    <CurriculumReferences 
+                      references={parsedLesson.curriculumReferences}
+                      onOpenCurriculum={handleOpenCurriculum}
+                    />
                   )}
                 </div>
+                  
+
 
               {/* Loading progress at bottom */}
               {loading && (
