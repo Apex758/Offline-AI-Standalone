@@ -179,10 +179,11 @@ REQUIRED LESSON PLAN STRUCTURE:
    - Modifications for next time
 
 7. CURRICULUM REFERENCES
-   - List the specific curriculum standards this lesson aligns with
-   ${curriculumRefs && curriculumRefs.length > 0 ? `- Use ONLY the ${curriculumRefs.length} curriculum reference(s) provided above` : '- Reference official curriculum frameworks'}
+   - DO NOT write a "Curriculum References" section in the lesson plan text
+   - The curriculum references will be displayed automatically from the data you were provided
+   ${curriculumRefs && curriculumRefs.length > 0 ? `- The ${curriculumRefs.length} curriculum reference(s) provided will be shown as clickable links` : ''}
 
-Generate the complete lesson plan now.`;
+Generate the complete lesson plan now. Remember: Do NOT include a "Curriculum References" section in your output - it will be added automatically.`;
 
   return prompt;
 }
