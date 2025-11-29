@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
@@ -413,24 +414,19 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
-  const shouldReconnectRef = useRef(true);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { getConnection, appendStreamingContent, clearStreaming, closeConnection } = useWebSocket();
   const wsRef = useRef<WebSocket | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [lessonPlanHistories, setLessonPlanHistories] = useState<LessonPlanHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-
-  // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
   const [parsedLesson, setParsedLesson] = useState<ParsedLesson | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
-
-  // State for curriculum matches
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumReference[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
-
   const [curriculumReferences, setCurriculumReferences] = useState<CurriculumReference[]>([]);
+  
 
   // Track initialization per tab to prevent state loss on tab switches
   const hasInitializedRef = useRef(false);
@@ -689,110 +685,48 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     });
   }, [formData, generatedPlan, streamingPlan, step, parsedLesson]);
 
+  // --- WebSocket logic replaced with context-based approach ---
   useEffect(() => {
-    shouldReconnectRef.current = true;
+    const ws = getConnection(tabId, '/ws/lesson-plan');
+    wsRef.current = ws;
 
-    const connectWebSocket = () => {
-      if (!shouldReconnectRef.current) {
-        return;
-      }
+    ws.onopen = () => {
+      console.log(`[LessonPlanner ${tabId}] WebSocket connected`);
+    };
 
-      try {
-        // Detect if running in Electron
-        const isElectron = typeof window !== 'undefined' && window.electronAPI;
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
 
-        let wsUrl: string;
-        if (isElectron) {
-          // Electron/Production: direct connection to backend
-          wsUrl = 'ws://127.0.0.1:8000/ws/lesson-plan';
-        } else {
-          // Vite/Development: use proxy through dev server
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const host = window.location.host;
-          wsUrl = `${protocol}//${host}/ws/lesson-plan`;
-        }
+      if (data.type === 'token') {
+        appendStreamingContent(tabId, data.content);
+        setStreamingPlan(prev => prev + data.content);
+      } else if (data.type === 'done') {
+        const finalContent = data.full_response || streamingPlan;
+        setGeneratedPlan(finalContent);
 
-        const ws = new WebSocket(wsUrl);
-        
-        ws.onopen = () => {
-          console.log('Lesson Plan WebSocket connected');
-        };
-        
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          
-          // Same message handling as chat
-          if (data.type === 'token') {
-            setStreamingPlan(prev => prev + data.content);
-          } else if (data.type === 'done') {
-            setStreamingPlan(current => {
-              const finalMessage = current || data.full_response;
-              setGeneratedPlan(finalMessage);
-              
-              console.log('Lesson plan generation complete, parsing...');
-              
-              // Try to parse immediately
-              const parsed = parseLessonContent(finalMessage, formData, curriculumReferences);
-              if (parsed) {
-                console.log('Lesson plan parsed successfully:', parsed.sections.length, 'sections');
-                setParsedLesson(parsed);
-              } else {
-                console.warn('Lesson plan parsing failed');
-              }
-              
-              setLoading(false);
-              return '';
-            });
-          }
-        };
-        
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setLoading(false);
-        };
-        
-        ws.onclose = () => {
-          console.log('WebSocket closed');
-          wsRef.current = null;
-          
-          // Reconnect after a delay if still mounted
-          if (shouldReconnectRef.current) {
-            console.log('Reconnecting in 2 seconds...');
-            reconnectTimeoutRef.current = setTimeout(() => {
-              connectWebSocket();
-            }, 2000);
-          }
-        };
-        
-        wsRef.current = ws;
-      } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-        
-        if (shouldReconnectRef.current) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connectWebSocket();
-          }, 2000);
-        }
+        const parsed = parseLessonContent(finalContent, formData, curriculumReferences);
+        if (parsed) setParsedLesson(parsed);
+
+        setLoading(false);
+        clearStreaming(tabId);
       }
     };
-    
-    connectWebSocket();
-    
-    return () => {
-      console.log('Cleaning up WebSocket connection');
-      shouldReconnectRef.current = false;
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
+
+    ws.onerror = (error) => {
+      console.error(`[LessonPlanner ${tabId}] WebSocket error:`, error);
+      setLoading(false);
+    };
+
+    ws.onclose = () => {
+      console.log(`[LessonPlanner ${tabId}] WebSocket closed`);
       wsRef.current = null;
     };
-  }, []);  
+
+    // ✅ NO cleanup - let Dashboard handle closing
+    return () => {
+      console.log(`[LessonPlanner ${tabId}] Component unmounting (but keeping WebSocket alive)`);
+    };
+  }, [tabId]);
 
   const generateLessonPlan = () => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -802,16 +736,14 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
     setLoading(true);
     setStreamingPlan('');
+    clearStreaming(tabId);
 
     setCurriculumReferences(curriculumMatches);
 
-    // PASS curriculumMatches as second parameter
     const prompt = buildLessonPrompt(formData, curriculumMatches);
 
     try {
-      wsRef.current.send(JSON.stringify({
-        prompt: prompt
-      }));
+      wsRef.current.send(JSON.stringify({ prompt }));
     } catch (error) {
       console.error('Failed to send lesson plan request:', error);
       setLoading(false);

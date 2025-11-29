@@ -40,6 +40,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { generateColorVariants, isColorDark } from '../lib/utils';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useTutorials } from '../contexts/TutorialContext';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 
 interface DashboardProps {
@@ -155,6 +156,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
+  const { closeConnection } = useWebSocket();
 
   // Generate dynamic tab colors based on settings
   const tabColors = useMemo(() => {
@@ -329,7 +331,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const closeTab = (tabId: string) => {
     const updatedTabs = tabs.filter(tab => tab.id !== tabId);
     setTabs(updatedTabs);
-    
+
+    // ✅ Close WebSocket for this tab
+    closeConnection(tabId);
+
     if (splitView.isActive && (tabId === splitView.leftTabId || tabId === splitView.rightTabId)) {
       if (updatedTabs.length < 2) {
         setSplitView({

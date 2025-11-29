@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { User } from './types';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { WebSocketProvider } from './contexts/WebSocketContext';
 import { useTheme } from './hooks/useTheme';
 
 function AppContent() {
@@ -62,7 +63,9 @@ function AppContent() {
 function App() {
   return (
     <SettingsProvider>
-      <AppContent />
+      <WebSocketProvider>
+        <AppContent />
+      </WebSocketProvider>
     </SettingsProvider>
   );
 }
