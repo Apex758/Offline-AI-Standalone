@@ -317,7 +317,13 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
     Export data to PDF format with rich formatting matching the webpage.
     """
     try:
-        # Get formatting data
+        # If rawHtml is provided, use it directly for PDF export
+        if isinstance(data, dict) and data.get("rawHtml"):
+            html = data["rawHtml"]
+            pdf_bytes = HTML(string=html).write_pdf()
+            return pdf_bytes
+
+        # Get formatting data (legacy/structured export)
         if isinstance(data, dict):
             content = data.get('content', '')
             form_data = data.get('formData', {})
@@ -326,8 +332,8 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
             content = str(data)
             form_data = {}
             accent_color = '#3B82F6'
-        
-        # Build HTML with inline CSS
+
+        # Build HTML with inline CSS (legacy)
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -338,7 +344,6 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     size: A4;
                     margin: 1.5cm;
                 }}
-                
                 body {{
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                     line-height: 1.6;
@@ -346,7 +351,6 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     margin: 0;
                     padding: 0;
                 }}
-                
                 .header {{
                     background: linear-gradient(to bottom right, {accent_color}, {accent_color}dd, {accent_color}bb);
                     color: white;
@@ -356,7 +360,6 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     position: relative;
                     overflow: hidden;
                 }}
-                
                 .header::before {{
                     content: '';
                     position: absolute;
@@ -368,7 +371,6 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     border-radius: 50%;
                     transform: translate(50%, -50%);
                 }}
-                
                 .subject-badge {{
                     display: inline-block;
                     padding: 0.25rem 0.75rem;
@@ -379,13 +381,11 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     font-weight: 500;
                     margin-bottom: 1rem;
                 }}
-                
                 .main-title {{
                     font-size: 2rem;
                     font-weight: bold;
                     margin: 0.5rem 0;
                 }}
-                
                 .subtitle {{
                     display: flex;
                     flex-wrap: wrap;
@@ -394,18 +394,15 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     color: rgba(255, 255, 255, 0.9);
                     font-size: 0.875rem;
                 }}
-                
                 .subtitle-item {{
                     display: flex;
                     align-items: center;
                 }}
-                
                 .subtitle-item::before {{
                     content: '•';
                     margin-right: 0.5rem;
                     color: rgba(255, 255, 255, 0.7);
                 }}
-                
                 .details-grid {{
                     display: grid;
                     grid-template-columns: repeat(3, 1fr);
@@ -415,21 +412,17 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     border-radius: 0.5rem;
                     margin-bottom: 2rem;
                 }}
-                
                 .detail-item {{
                     font-size: 0.875rem;
                 }}
-                
                 .detail-label {{
                     font-weight: 600;
                     color: #6b7280;
                 }}
-                
                 .detail-value {{
                     color: #1f2937;
                     margin-left: 0.5rem;
                 }}
-                
                 .section-heading {{
                     font-size: 1.5rem;
                     font-weight: bold;
@@ -439,7 +432,6 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     padding-bottom: 0.5rem;
                     border-bottom: 2px solid {accent_color}33;
                 }}
-                
                 .field-heading {{
                     font-size: 1.125rem;
                     font-weight: 600;
@@ -447,24 +439,20 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     margin-top: 1.5rem;
                     margin-bottom: 0.75rem;
                 }}
-                
                 .content p {{
                     margin: 0.75rem 0;
                     line-height: 1.7;
                 }}
-                
                 .bullet-list {{
                     margin: 0.5rem 0;
                     padding-left: 0;
                     list-style: none;
                 }}
-                
                 .bullet-list li {{
                     display: flex;
                     margin-bottom: 0.5rem;
                     line-height: 1.6;
                 }}
-                
                 .bullet-list li::before {{
                     content: '•';
                     color: {accent_color}99;
@@ -473,30 +461,25 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     margin-right: 0.75rem;
                     flex-shrink: 0;
                 }}
-                
                 .nested-bullet {{
                     margin-left: 2rem;
                 }}
-                
                 .nested-bullet::before {{
                     content: '▸';
                     color: {accent_color}66;
                     font-size: 0.8em;
                 }}
-                
                 .numbered-list {{
                     margin: 0.5rem 0;
                     padding-left: 0;
                     counter-reset: item;
                     list-style: none;
                 }}
-                
                 .numbered-list li {{
                     display: flex;
                     margin-bottom: 0.75rem;
                     line-height: 1.6;
                 }}
-                
                 .numbered-list li::before {{
                     counter-increment: item;
                     content: counter(item) ".";
@@ -510,7 +493,6 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     text-align: center;
                     flex-shrink: 0;
                 }}
-                
                 .footer {{
                     margin-top: 3rem;
                     padding-top: 1rem;
@@ -523,7 +505,7 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
         </head>
         <body>
         """
-        
+
         # Add header if form data exists
         if form_data:
             subject = form_data.get('subject', 'Mathematics')
@@ -532,7 +514,7 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
             strand = form_data.get('strand', '')
             duration = form_data.get('duration', '')
             student_count = form_data.get('studentCount', '')
-            
+
             html += f"""
             <div class="header">
                 <div class="subject-badge">{subject}</div>
@@ -544,7 +526,7 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     <span class="subtitle-item">{student_count} students</span>
                 </div>
             </div>
-            
+
             <div class="details-grid">
                 <div class="detail-item">
                     <span class="detail-label">Grade Level:</span>
@@ -572,28 +554,28 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                 </div>
             </div>
             """
-        
+
         # Parse and add content
         html += '<div class="content">'
-        
+
         sections = parse_lesson_content_for_export(content)
-        
+
         for section in sections:
             if section['type'] == 'details_grid':
                 continue  # Already handled above
-            
+
             elif section['type'] == 'section':
                 html += f'<h2 class="section-heading">{section["title"]}</h2>'
                 html += format_section_content_html(section.get('content', []))
-            
+
             elif section['type'] == 'field':
                 html += f'<h3 class="field-heading">{section["title"]}:</h3>'
                 html += format_section_content_html(section.get('content', []))
-        
+
         # If no structured sections found, just add plain text
         if not sections and content:
             html += f'<pre style="white-space: pre-wrap; font-family: inherit;">{content}</pre>'
-        
+
         if isinstance(data, dict) and 'curriculumReferences' in data and data['curriculumReferences']:
             refs = data['curriculumReferences']
             html += '''
@@ -609,13 +591,13 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                 </p>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
             '''
-            
+
             for ref in refs:
                 display_name = ref.get('displayName', 'Curriculum Resource')
                 grade = ref.get('grade', '')
                 strand = ref.get('strand', '')
                 essential = ref.get('essentialOutcomes', [''])[0] if ref.get('essentialOutcomes') else ''
-                
+
                 html += f'''
                 <div style="padding: 1rem; background: white; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -630,14 +612,14 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     {f'<p style="font-size: 0.875rem; color: #374151; margin: 0;">{essential}</p>' if essential else ''}
                 </div>
                 '''
-            
+
             html += '''
                 </div>
             </div>
             '''
-            
+
         html += '</div>'
-        
+
         # Add footer
         from datetime import datetime
         html += f"""
@@ -647,10 +629,10 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
         </body>
         </html>
         """
-        
+
         pdf_bytes = HTML(string=html).write_pdf()
         return pdf_bytes
-        
+
     except Exception as e:
         raise RuntimeError(f"Failed to export PDF: {e}")
 
