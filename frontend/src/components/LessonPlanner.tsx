@@ -913,17 +913,30 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           </>
                         )}
                       </button>
+                      {/* --- HTML Export Enhancement Start --- */}
                       <ExportButton
                         dataType="plan"
-                        data={{ 
+                        data={{
                           content: parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan,
                           formData: formData,
                           accentColor: tabColor,
-                          curriculumReferences: parsedLesson?.curriculumReferences || []
+                          curriculumReferences: parsedLesson?.curriculumReferences || [],
+                          // Add rawHtml for PDF export
+                          rawHtml: (() => {
+                            // Try to get the lesson plan area HTML
+                            const el = document.getElementById('lesson-plan-html-export');
+                            if (!el) return '';
+                            // Clone node to avoid React artifacts
+                            const clone = el.cloneNode(true);
+                            // Inline styles (optional: for more accurate rendering)
+                            // For now, just outerHTML
+                            return (clone as HTMLElement).outerHTML;
+                          })()
                         }}
                         filename={`lesson-plan-${formData.topic.replace(/\s+/g, '-').toLowerCase()}`}
                         className="ml-2"
                       />
+                      {/* --- HTML Export Enhancement End --- */}
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
                         className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -1028,7 +1041,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
               )}
 
                 {/* Formatted content */}
-                <div className="prose prose-lg max-w-none">
+                {/* Add an id for HTML export */}
+                <div id="lesson-plan-html-export" className="prose prose-lg max-w-none">
                   <div className="space-y-1">
                     {formatLessonText(streamingPlan || generatedPlan, tabColor)}
                     {loading && streamingPlan && (
@@ -1039,7 +1053,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   </div>
                   {/* Curriculum References */}
                   {parsedLesson?.curriculumReferences && (
-                    <CurriculumReferences 
+                    <CurriculumReferences
                       references={parsedLesson.curriculumReferences}
                       onOpenCurriculum={handleOpenCurriculum}
                     />
