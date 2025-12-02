@@ -39,13 +39,18 @@ interface CalendarModalProps {
   onClose: () => void;
   onViewResource?: (type: string, resource: Resource) => void;
   onEditResource?: (type: string, resource: Resource) => void;
+  // Task support
+  tasksByDate?: { [date: string]: any[] };
+  onAddTask?: (date: string, task: any) => void;
 }
 
 const CalendarModal: React.FC<CalendarModalProps> = ({
   resourcesByDate,
   onClose,
   onViewResource,
-  onEditResource
+  onEditResource,
+  tasksByDate,
+  onAddTask
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -590,6 +595,34 @@ const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null
 
             {/* Resources List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Tasks for this date */}
+              {tasksByDate && tasksByDate[selectedDateKey] && (
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">Tasks</h3>
+                  {tasksByDate[selectedDateKey].map((task, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-2"
+                    >
+                      <span className="font-semibold text-yellow-700">{task.title}</span>
+                      {task.description && (
+                        <p className="text-sm text-gray-600">{task.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  const title = prompt("Task title:");
+                  if (!title) return;
+                  const description = prompt("Description (optional):");
+                  onAddTask?.(selectedDateKey, { title, description });
+                }}
+                className="w-full mb-4 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
+              >
+                + Add Task
+              </button>
               {selectedResources.length === 0 ? (
                 <div className="text-center py-16">
                   <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />

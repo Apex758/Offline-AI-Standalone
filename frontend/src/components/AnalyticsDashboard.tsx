@@ -27,9 +27,9 @@ interface Stats {
   crossCurricularPlans: number;
 }
 
-const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ 
-  tabId, 
-  savedData, 
+const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
+  tabId,
+  savedData,
   onDataChange,
   onNavigate,
   onCreateTab
@@ -46,6 +46,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [userName, setUserName] = useState('Teacher');
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [allResourcesData, setAllResourcesData] = useState<any[]>([]);
+  // Global task state
+  const [tasks, setTasks] = useState<any[]>([]);
+
+  // Add task handler (must be inside component to access setTasks)
+  const handleAddTask = (dateString: string, task: any) => {
+    setTasks(prev => [...prev, { ...task, date: dateString }]);
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -118,6 +125,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
     return grouped;
   }, [allResourcesData]);
+
+  // Group tasks by date
+  const tasksByDate = useMemo(() => {
+    const grouped: { [date: string]: any[] } = {};
+    tasks.forEach(task => {
+      const dateKey = new Date(task.date).toISOString().split("T")[0];
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(task);
+    });
+    return grouped;
+  }, [tasks]);
 
   const totalPlans = stats.lessonPlans + stats.kindergartenPlans + stats.multigradePlans + stats.crossCurricularPlans;
   const totalResources = totalPlans + stats.rubrics + stats.quizzes;
@@ -376,15 +394,35 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white transition-all duration-300 hover:shadow-xl hover:scale-105 text-left w-full"
               data-tutorial="quick-stats"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <Calendar className="w-8 h-8" />
-                <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
-                  View Timeline
+                <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
+                  {new Date().toLocaleDateString()}
                 </span>
               </div>
-              <div className="text-4xl font-bold mb-2">{totalResources}</div>
-              <p className="text-green-100">Resources Created</p>
-              <p className="text-xs text-green-200 mt-2">Click to view calendar</p>
+
+              <div className="text-4xl font-bold mb-1">{totalResources}</div>
+
+              <p className="text-green-100">
+                Resources Created
+              </p>
+
+              {/* Show tasks for today */}
+              {tasksByDate[new Date().toISOString().split("T")[0]] &&
+                tasksByDate[new Date().toISOString().split("T")[0]].length > 0 && (
+                  <div className="mt-3 bg-white/10 rounded-lg p-3">
+                    <p className="text-sm font-semibold text-white mb-1">Today's Tasks</p>
+                    {tasksByDate[new Date().toISOString().split("T")[0]].map((t, i) => (
+                      <p key={i} className="text-xs text-green-100">
+                        - {t.title}
+                      </p>
+                    ))}
+                  </div>
+              )}
+
+              <p className="text-xs text-green-200 mt-3">
+                Click to view full calendar
+              </p>
             </button>
 
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
@@ -475,6 +513,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           onClose={() => setShowCalendarModal(false)}
           onViewResource={handleViewResource}
           onEditResource={handleEditResource}
+          tasksByDate={tasksByDate}
+          onAddTask={handleAddTask}
         />
       )}
 
