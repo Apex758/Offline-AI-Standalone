@@ -55,10 +55,28 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
-const [showMonthPicker, setShowMonthPicker] = useState(false);
-const [pickerYear, setPickerYear] = useState(getYear(new Date()));
-const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [pickerYear, setPickerYear] = useState(getYear(new Date()));
+  const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null);
 
+  // All Tasks Panel state
+  const [showTaskPanel, setShowTaskPanel] = useState(false);
+
+  // Group all tasks by date for slide-over
+  const allTasksByDate = useMemo(() => {
+    if (!tasksByDate) return [];
+    return Object.entries(tasksByDate)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dateKey, tasks]) => {
+        const safeDate = new Date(dateKey + 'T00:00:00');
+        return {
+          dateKey,
+          dateLabel: format(safeDate, 'EEEE, d MMM yyyy'),
+          tasks,
+        };
+      });
+  }, [tasksByDate]);
+  const hasAnyTasks = allTasksByDate.length > 0;
 
   // Get resources for selected date
   const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -566,9 +584,9 @@ const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null
           </div>
 
           {/* Details Panel - 25% */}
-          <div className="flex-1 bg-white border-l border-gray-200 flex flex-col">
+          <div className="flex-1 bg-white border-l border-gray-200 flex flex-col relative overflow-hidden">
             {/* Selected Date Header */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200 p-6 relative">
               <div className="text-center">
                 <div className="text-5xl font-bold bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-1">
                   {format(selectedDate, 'd')}
@@ -580,6 +598,17 @@ const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null
                   {format(selectedDate, 'MMMM yyyy')}
                 </div>
               </div>
+
+              {hasAnyTasks && (
+                <button
+                  type="button"
+                  onClick={() => setShowTaskPanel(true)}
+                  className="absolute top-4 right-4 inline-flex items-center px-3 py-1.5 rounded-full bg-white shadow-sm text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                >
+                  <ListChecks className="w-3.5 h-3.5 mr-1.5" />
+                  All Tasks
+                </button>
+              )}
 
               {selectedResources.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -684,6 +713,65 @@ const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null
                 })
               )}
             </div>
+            {/* Slide-over All Tasks Panel */}
+            {showTaskPanel && (
+              <div className="fixed inset-0 z-50 flex">
+                <div
+                  className="fixed inset-0 bg-black/30 transition-opacity"
+                  onClick={() => setShowTaskPanel(false)}
+                  aria-hidden="true"
+                />
+                <div className="ml-auto w-full max-w-md h-full bg-white shadow-2xl flex flex-col relative animate-slide-in-right">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900">All Tasks</h3>
+                    <button
+                      onClick={() => setShowTaskPanel(false)}
+                      className="p-2 rounded-full hover:bg-gray-100"
+                      aria-label="Close"
+                    >
+                      <X className="w-5 h-5 text-gray-600" />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    {allTasksByDate.length === 0 ? (
+                      <div className="text-center text-gray-500 py-16">
+                        <ListChecks className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="font-semibold">No tasks found</p>
+                        <p className="text-sm mt-2">No tasks have been added yet.</p>
+                      </div>
+                    ) : (
+                      allTasksByDate.map(({ dateKey, dateLabel, tasks }) => (
+                        <div key={dateKey}>
+                          <div className="text-xs font-semibold text-gray-500 mb-2">{dateLabel}</div>
+                          <div className="space-y-2">
+                            {tasks.map((task, idx) => (
+                              <div
+                                key={idx}
+                                className="bg-yellow-50 border border-yellow-200 rounded-xl p-3"
+                              >
+                                <span className="font-semibold text-yellow-700">{task.title}</span>
+                                {task.description && (
+                                  <p className="text-sm text-gray-600">{task.description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <style>{`
+                  @keyframes slide-in-right {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                  }
+                  .animate-slide-in-right {
+                    animation: slide-in-right 0.25s cubic-bezier(0.4,0,0.2,1);
+                  }
+                `}</style>
+              </div>
+            )}
           </div>
         </div>
       </div>
