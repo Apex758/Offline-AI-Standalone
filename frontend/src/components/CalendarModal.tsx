@@ -52,19 +52,22 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   const calendarRef = useRef<HTMLDivElement>(null);
 const [showMonthPicker, setShowMonthPicker] = useState(false);
 const [pickerYear, setPickerYear] = useState(getYear(new Date()));
+const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null);
+
 
   // Get resources for selected date
   const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
   const selectedResources = resourcesByDate[selectedDateKey] || [];
 
-  // Generate 3 months: previous, current, next
-  const months = useMemo(() => {
+  const [monthList, setMonthList] = useState<Date[]>(() => {
+    const current = startOfMonth(new Date());
     return [
-      subMonths(currentMonth, 1),
-      currentMonth,
-      addMonths(currentMonth, 1)
+      subMonths(current, 1),
+      current,
+      addMonths(current, 1)
     ];
-  }, [currentMonth]);
+  });
+
 
   // Calculate statistics for current month
   const monthStats = useMemo(() => {
@@ -120,12 +123,26 @@ const [pickerYear, setPickerYear] = useState(getYear(new Date()));
 
   // Handle month navigation
   const goToPreviousMonth = () => {
-    setCurrentMonth(prev => subMonths(prev, 1));
+    setCurrentMonth(prev => {
+      const newDate = subMonths(prev, 1);
+      rebuildMonthListAround(newDate);
+      setPendingScrollTarget(newDate);
+
+      return newDate;
+    });
   };
 
   const goToNextMonth = () => {
-    setCurrentMonth(prev => addMonths(prev, 1));
+    setCurrentMonth(prev => {
+      const newDate = addMonths(prev, 1);
+      rebuildMonthListAround(newDate);
+      setPendingScrollTarget(newDate);
+
+      return newDate;
+    });
   };
+
+
 
   // Handle date selection
   const handleDateClick = (date: Date) => {
@@ -135,14 +152,17 @@ const [pickerYear, setPickerYear] = useState(getYear(new Date()));
   // Move these handlers to component scope
   const handleMonthSelect = (monthIndex: number) => {
     const newDate = setMonth(setYear(new Date(), pickerYear), monthIndex);
-    setCurrentMonth(newDate);
-    setShowMonthPicker(false);
 
-    // Scroll to top smoothly
-    if (calendarRef.current) {
-      calendarRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    const isFuture = newDate > currentMonth;
+    const isPast = newDate < currentMonth;
+
+    setCurrentMonth(newDate);
+    rebuildMonthListAround(newDate);
+    setPendingScrollTarget(newDate);
+    setShowMonthPicker(false);
   };
+
+
 
   const handleYearChange = (direction: 'prev' | 'next') => {
     if (direction === 'prev') {
@@ -179,6 +199,110 @@ const [pickerYear, setPickerYear] = useState(getYear(new Date()));
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMonthPicker]);
+
+  // Infinite Scroll Listener
+  useEffect(() => {
+    const el = calendarRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      const scrollTop = el.scrollTop;
+      const scrollHeight = el.scrollHeight;
+      const offsetHeight = el.offsetHeight;
+
+      const nearTop = scrollTop < 200;
+      const nearBottom = scrollTop + offsetHeight > scrollHeight - 200;
+
+      if (nearTop) prependMonths();
+      if (nearBottom) appendMonths();
+    };
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Add previous month to top
+  const prependMonths = () => {
+    const el = calendarRef.current;
+    if (!el) return;
+
+    // Record height BEFORE adding new month
+    const oldHeight = el.scrollHeight;
+
+    setMonthList(prev => {
+      const first = prev[0];
+      const newMonth = subMonths(first, 1);
+
+      // Avoid duplicates
+      if (prev.some(m => isSameMonth(m, newMonth))) return prev;
+
+      return [newMonth, ...prev];
+    });
+
+    // After the DOM updates
+    setTimeout(() => {
+      const newHeight = el.scrollHeight;
+      // Push scroll down by the added height
+      el.scrollTop += newHeight - oldHeight;
+    }, 0);
+  };
+
+
+  // Add next month to bottom
+  const appendMonths = () => {
+    setMonthList(prev => {
+      const last = prev[prev.length - 1];
+      const newMonth = addMonths(last, 1);
+
+      if (prev.some(m => isSameMonth(m, newMonth))) return prev;
+      return [...prev, newMonth];
+    });
+  };
+
+  useEffect(() => {
+    if (!pendingScrollTarget) return;
+
+    scrollToMonth(pendingScrollTarget);
+
+    // Clear state after scroll
+    setPendingScrollTarget(null);
+  }, [monthList]);
+
+
+  const rebuildMonthListAround = (center: Date) => {
+    const base = startOfMonth(center);
+    setMonthList([
+      subMonths(base, 1),
+      base,
+      addMonths(base, 1),
+    ]);
+  };
+
+
+
+  const scrollToMonth = (targetMonth: Date) => {
+    const el = calendarRef.current;
+    if (!el) return;
+
+    // Find the index of the target month in monthList
+    const index = monthList.findIndex(m =>
+      isSameMonth(m, targetMonth)
+    );
+
+    if (index === -1) return;
+
+    // Find the actual month-section DOM element
+    const monthSections = el.querySelectorAll('.month-section');
+
+    const section = monthSections[index] as HTMLElement;
+    if (!section) return;
+
+    // Scroll so the section is aligned nicely
+    el.scrollTo({
+      top: section.offsetTop - 20,
+      behavior: 'smooth'
+    });
+  };
 
   return (
     <div
@@ -360,7 +484,7 @@ const [pickerYear, setPickerYear] = useState(getYear(new Date()));
 
                 {/* Months */}
                 <div className="months-container">
-                  {months.map((month, monthIndex) => {
+                  {monthList.map((month, monthIndex) => {
                     const days = getMonthDays(month);
                     
                     return (
