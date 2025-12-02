@@ -1279,9 +1279,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         placeholder="e.g., Water Cycle"
                       />
                     </div>
-
-                    {/* Continue with remaining fields... */}
-                    {/* Restore missing fields below the grid */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Essential Learning Outcome <span className="text-red-500">*</span>
