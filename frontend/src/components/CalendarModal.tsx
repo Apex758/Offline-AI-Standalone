@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
   isSameDay,
   addMonths,
   subMonths,
@@ -11,10 +11,14 @@ import {
   endOfWeek,
   isToday,
   isSameMonth,
-  getDay
+  getDay,
+  setMonth,
+  setYear,
+  getMonth,
+  getYear
 } from 'date-fns';
 import {
-  X, ChevronLeft, ChevronRight, Calendar as CalendarIcon,
+  X, ChevronLeft, ChevronRight, ChevronDown, Calendar as CalendarIcon,
   BookMarked, ListChecks, FileText, GraduationCap, Users, School,
   Eye, Edit, TrendingUp, Activity
 } from 'lucide-react';
@@ -46,6 +50,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
+const [showMonthPicker, setShowMonthPicker] = useState(false);
+const [pickerYear, setPickerYear] = useState(getYear(new Date()));
 
   // Get resources for selected date
   const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -126,6 +132,26 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     setSelectedDate(date);
   };
 
+  // Move these handlers to component scope
+  const handleMonthSelect = (monthIndex: number) => {
+    const newDate = setMonth(setYear(new Date(), pickerYear), monthIndex);
+    setCurrentMonth(newDate);
+    setShowMonthPicker(false);
+
+    // Scroll to top smoothly
+    if (calendarRef.current) {
+      calendarRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleYearChange = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setPickerYear(prev => prev - 1);
+    } else {
+      setPickerYear(prev => prev + 1);
+    }
+  };
+
   // Get resource count for a date
   const getResourceCount = (date: Date) => {
     const dateKey = format(date, 'yyyy-MM-dd');
@@ -135,10 +161,24 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   // Get activity color based on resource count
   const getActivityColor = (count: number) => {
     if (count === 0) return '';
-    if (count >= 6) return 'bg-blue-600';
-    if (count >= 3) return 'bg-blue-500';
-    return 'bg-blue-400';
+    if (count >= 6) return 'bg-green-700';
+    if (count >= 3) return 'bg-green-500';
+    return 'bg-green-200';
   };
+  // Click outside handler for month picker
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showMonthPicker) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.month-picker-container')) {
+          setShowMonthPicker(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMonthPicker]);
 
   return (
     <div
@@ -146,11 +186,11 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-8xl h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white px-6 py-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white px-6 py-2 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CalendarIcon className="w-8 h-8" />
             <div>
@@ -219,21 +259,88 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
           {/* Calendar Section - 75% */}
           <div className="flex-[3] flex flex-col bg-gray-50">
             {/* Month Navigation */}
+            {/* Month Navigation Header - replaced with clickable header and dropdown */}
             <div className="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between">
               <button
                 onClick={goToPreviousMonth}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Previous Month"
               >
                 <ChevronLeft className="w-6 h-6 text-gray-600" />
               </button>
-              
-              <h3 className="text-xl font-bold text-gray-900">
-                {format(currentMonth, 'MMMM yyyy')}
-              </h3>
-              
+
+              {/* Clickable Month/Year Header */}
+              <div className="relative">
+                <button
+                  className="text-xl font-bold text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center"
+                  onClick={() => {
+                    setPickerYear(currentMonth.getFullYear());
+                    setShowMonthPicker((prev) => !prev);
+                  }}
+                  aria-haspopup="listbox"
+                  aria-expanded={showMonthPicker}
+                  aria-label="Select Month and Year"
+                  type="button"
+                >
+                  {format(currentMonth, 'MMMM yyyy')}
+                  <svg
+                    className={`ml-2 w-4 h-4 transition-transform ${showMonthPicker ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showMonthPicker && (
+                  <div
+                    className="month-picker-container absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-xl w-64 p-4 dropdown-click-outside"
+                    tabIndex={-1}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <button
+                        onClick={() => handleYearChange('prev')}
+                        className="p-1.5 rounded hover:bg-gray-100"
+                        aria-label="Previous Year"
+                        type="button"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <span className="font-semibold text-gray-800">{pickerYear}</span>
+                      <button
+                        onClick={() => handleYearChange('next')}
+                        className="p-1.5 rounded hover:bg-gray-100"
+                        aria-label="Next Year"
+                        type="button"
+                      >
+                        <ChevronRight className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {Array.from({ length: 12 }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleMonthSelect(idx)}
+                          className={`py-1.5 rounded-lg font-medium ${
+                            currentMonth.getMonth() === idx && currentMonth.getFullYear() === pickerYear
+                              ? 'bg-blue-600 text-white'
+                              : 'hover:bg-gray-100 text-gray-800'
+                          }`}
+                          type="button"
+                        >
+                          {format(new Date(pickerYear, idx, 1), 'MMM')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={goToNextMonth}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Next Month"
               >
                 <ChevronRight className="w-6 h-6 text-gray-600" />
               </button>
@@ -303,20 +410,22 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 </div>
               </div>
 
+
+            </div>
               {/* Legend */}
-              <div className="max-w-5xl mx-auto mt-6 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-800 mb-4">Activity Legend</h3>
-                <div className="flex items-center space-x-8 text-sm">
+              <div className="max-w-5xl mx-auto mt-6 bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3">Activity Legend</h3>
+                <div className="flex items-center space-x-12 text-sm">
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-blue-400 rounded-full" />
+                    <div className="w-4 h-4 bg-green-200 rounded-full" />
                     <span className="text-gray-600 font-medium">1-2 resources</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded-full" />
+                    <div className="w-4 h-4 bg-green-500 rounded-full" />
                     <span className="text-gray-600 font-medium">3-5 resources</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-blue-600 rounded-full" />
+                    <div className="w-4 h-4 bg-green-700 rounded-full" />
                     <span className="text-gray-600 font-medium">6+ resources</span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -325,7 +434,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
           </div>
 
           {/* Details Panel - 25% */}
@@ -423,7 +531,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         /* Continuous Calendar Styling */
         .continuous-calendar {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
