@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   BarChart3, TrendingUp, FileText, ListChecks, BookMarked,
   School, Users, GraduationCap, Calendar, Clock, ArrowRight,
@@ -8,13 +8,14 @@ import axios from 'axios';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { TUTORIAL_IDS } from '../data/tutorialSteps';
+import CalendarModal from './CalendarModal';
 
 interface AnalyticsDashboardProps {
   tabId: string;
   savedData?: any;
   onDataChange: (data: any) => void;
   onNavigate?: (route: string) => void;
-  onCreateTab?: (type: string) => void; // Add this prop
+  onCreateTab?: (type: string) => void;
 }
 
 interface Stats {
@@ -31,7 +32,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   savedData, 
   onDataChange,
   onNavigate,
-  onCreateTab // Add this
+  onCreateTab
 }) => {
   const [stats, setStats] = useState<Stats>({
     lessonPlans: 0,
@@ -43,11 +44,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   });
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [allResourcesData, setAllResourcesData] = useState<any[]>([]);
 
   useEffect(() => {
-    // Load user name from context/props instead of localStorage
-    // This assumes user data is passed from parent component
-    const storedUser = localStorage.getItem('user'); // Only for user name - not for app state
+    const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
@@ -80,12 +81,43 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         multigradePlans: multigrade.data.length,
         crossCurricularPlans: crossCurricular.data.length
       });
+
+      // Store all resources with type labels
+      const allResources = [
+        ...lessonPlans.data.map((r: any) => ({ ...r, type: 'lesson' })),
+        ...rubrics.data.map((r: any) => ({ ...r, type: 'rubric' })),
+        ...quizzes.data.map((r: any) => ({ ...r, type: 'quiz' })),
+        ...kindergarten.data.map((r: any) => ({ ...r, type: 'kindergarten' })),
+        ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
+        ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' }))
+      ];
+      
+      setAllResourcesData(allResources);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Compute resourcesByDate from allResourcesData
+  const resourcesByDate = useMemo(() => {
+    const grouped: { [date: string]: any[] } = {};
+    
+    allResourcesData.forEach(resource => {
+      try {
+        const dateKey = new Date(resource.timestamp).toISOString().split('T')[0];
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(resource);
+      } catch (error) {
+        console.error('Error parsing date for resource:', resource, error);
+      }
+    });
+
+    return grouped;
+  }, [allResourcesData]);
 
   const totalPlans = stats.lessonPlans + stats.kindergartenPlans + stats.multigradePlans + stats.crossCurricularPlans;
   const totalResources = totalPlans + stats.rubrics + stats.quizzes;
@@ -184,7 +216,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     { label: 'Cross-Curricular', value: stats.crossCurricularPlans, color: 'bg-teal-500' }
   ];
 
-  // Action card handlers
   const actionCards = [
     {
       title: 'Create Lesson Plan',
@@ -223,6 +254,24 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const handleActionCardClick = (toolType: string) => {
     if (onCreateTab) {
       onCreateTab(toolType);
+    }
+  };
+
+  const handleViewResource = (type: string, resource: any) => {
+    if (onCreateTab) {
+      // Close modal first
+      setShowCalendarModal(false);
+      // Then create the tab with resource data
+      onCreateTab(type);
+    }
+  };
+
+  const handleEditResource = (type: string, resource: any) => {
+    if (onCreateTab) {
+      // Close modal first
+      setShowCalendarModal(false);
+      // Then create the tab with resource data in edit mode
+      onCreateTab(type);
     }
   };
 
@@ -320,18 +369,23 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </div>
           </div>
 
-          {/* Quick Stats */}
+          {/* Quick Stats - Calendar Card */}
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white" data-tutorial="quick-stats">
+            <button
+              onClick={() => setShowCalendarModal(true)}
+              className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white transition-all duration-300 hover:shadow-xl hover:scale-105 text-left w-full"
+              data-tutorial="quick-stats"
+            >
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-8 h-8" />
                 <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
-                  All Time
+                  View Timeline
                 </span>
               </div>
               <div className="text-4xl font-bold mb-2">{totalResources}</div>
               <p className="text-green-100">Resources Created</p>
-            </div>
+              <p className="text-xs text-green-200 mt-2">Click to view calendar</p>
+            </button>
 
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center">
@@ -398,46 +452,32 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
         </div>
 
-
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8" data-tutorial="action-cards">
-        <button
-            onClick={() => handleActionCardClick('lesson-planner')}
-            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
-        >
-            <BookMarked className="w-8 h-8 mb-3" />
-            <h3 className="font-bold text-lg mb-2">Create Lesson Plan</h3>
-            <p className="text-purple-100 text-sm">Start a new lesson plan</p>
-        </button>
-
-        <button
-            onClick={() => handleActionCardClick('rubric-generator')}
-            className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
-        >
-            <FileText className="w-8 h-8 mb-3" />
-            <h3 className="font-bold text-lg mb-2">Generate Rubric</h3>
-            <p className="text-amber-100 text-sm">Create grading criteria</p>
-        </button>
-
-        <button
-            onClick={() => handleActionCardClick('quiz-generator')}
-            className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
-        >
-            <ListChecks className="w-8 h-8 mb-3" />
-            <h3 className="font-bold text-lg mb-2">Build Quiz</h3>
-            <p className="text-green-100 text-sm">Generate assessments</p>
-        </button>
-
-        <button
-            onClick={() => handleActionCardClick('curriculum')}
-            className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
-        >
-            <School className="w-8 h-8 mb-3" />
-            <h3 className="font-bold text-lg mb-2">Browse Curriculum</h3>
-            <p className="text-pink-100 text-sm">Explore OECS content</p>
-        </button>
+          {actionCards.map((card, index) => (
+            <button
+              key={index}
+              onClick={() => handleActionCardClick(card.toolType)}
+              className={`bg-gradient-to-br ${card.color} rounded-xl p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left`}
+            >
+              <card.icon className="w-8 h-8 mb-3" />
+              <h3 className="font-bold text-lg mb-2">{card.title}</h3>
+              <p className={`${card.textColor} text-sm`}>{card.description}</p>
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* Calendar Modal */}
+      {showCalendarModal && (
+        <CalendarModal
+          resourcesByDate={resourcesByDate}
+          onClose={() => setShowCalendarModal(false)}
+          onViewResource={handleViewResource}
+          onEditResource={handleEditResource}
+        />
+      )}
+
       {/* Tutorial Overlay */}
       <TutorialOverlay steps={analyticsDashboardSteps} showFloatingButton={false} />
     </div>

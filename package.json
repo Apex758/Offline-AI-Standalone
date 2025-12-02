@@ -23,8 +23,10 @@
     "postinstall": "cd frontend && npm install"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "electron-log": "^5.0.1",
     "electron-updater": "^6.1.7",
+    "react-calendar": "^6.0.0",
     "react-router-dom": "^7.9.4"
   },
   "devDependencies": {
@@ -66,7 +68,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "${productName} Setup ${version}.${ext}",
@@ -91,7 +95,10 @@
       {
         "from": "backend-bundle",
         "to": "backend-bundle",
-        "filter": ["**/*", "!*.gguf"]
+        "filter": [
+          "**/*",
+          "!*.gguf"
+        ]
       }
     ],
     "compression": "normal",
