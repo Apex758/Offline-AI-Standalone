@@ -59,18 +59,18 @@ const tools: Tool[] = [
     description: 'View your teaching analytics and quick access'
   },
   {
-    id: 'resource-manager',
-    name: 'Resource Manager',
-    icon: 'Library',
-    type: 'resource-manager',
-    description: 'View, edit, and manage all your saved resources'
-  },
-  {
     id: 'curriculum-tracker',
     name: 'Curriculum Tracker',
     icon: 'Target',
     type: 'curriculum-tracker',
     description: 'Monitor your curriculum progress'
+  },
+  {
+    id: 'resource-manager',
+    name: 'Resource Manager',
+    icon: 'Library',
+    type: 'resource-manager',
+    description: 'View, edit, and manage all your saved resources'
   },
   {
     id: 'chat',
@@ -293,6 +293,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       const existingSettingsTab = tabs.find(tab => tab.type === 'settings');
       if (existingSettingsTab) {
         setActiveTabId(existingSettingsTab.id);
+        return;
+      }
+    }
+
+    if (tool.type === 'curriculum-tracker') {
+      const existingTrackerTab = tabs.find(tab => tab.type === 'curriculum-tracker');
+      if (existingTrackerTab) {
+        setActiveTabId(existingTrackerTab.id);
         return;
       }
     }
@@ -994,7 +1002,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 />
                 {sidebarOpen && (
                   <div className="flex-1 text-left overflow-hidden">
-                    <p 
+                    <p
                       className="text-sm font-medium whitespace-nowrap overflow-hidden"
                       style={{
                         maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
@@ -1003,7 +1011,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     >
                       {tool.name}
                     </p>
-                    {tool.type !== 'analytics' && (
+                    {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && (
                       <p
                         className="text-xs whitespace-nowrap"
                         style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}

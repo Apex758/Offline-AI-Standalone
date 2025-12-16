@@ -358,7 +358,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8" data-tutorial="stat-cards">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-8" data-tutorial="stat-cards">
             {statCards.map((card, index) => (
               <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div className="flex items-center justify-between">
@@ -526,7 +526,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8" data-tutorial="action-cards">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 mt-8" data-tutorial="action-cards">
           {actionCards.map((card, index) => (
             <button
               key={index}
