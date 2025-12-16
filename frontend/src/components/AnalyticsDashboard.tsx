@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   BarChart3, TrendingUp, FileText, ListChecks, BookMarked,
   School, Users, GraduationCap, Calendar, Clock, ArrowRight,
-  BookOpen, Sparkles
+  BookOpen, Sparkles, Target
 } from 'lucide-react';
 import axios from 'axios';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
@@ -10,6 +10,8 @@ import { TutorialButton } from './TutorialButton';
 import { TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useNavigate } from 'react-router-dom';
 import CalendarModal from './CalendarModal';
+import { milestoneApi } from '../lib/milestoneApi';
+import type { MilestoneStats } from '../types/milestone';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -51,6 +53,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [allResourcesData, setAllResourcesData] = useState<any[]>([]);
   // Global task state
   const [tasks, setTasks] = useState<any[]>([]);
+  // Milestone stats state
+  const [milestoneStats, setMilestoneStats] = useState<MilestoneStats | null>(null);
 
   // Add task handler (must be inside component to access setTasks)
   const handleAddTask = (dateString: string, task: any) => {
@@ -59,16 +63,30 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
+    let teacherId: string | null = null;
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         setUserName(user.name || user.username || 'Teacher');
+        teacherId = user.username || user.id || null;
       } catch (e) {
         console.error('Error parsing user:', e);
       }
     }
     
     loadStats();
+
+    // Load milestone stats if teacherId is available
+    if (teacherId) {
+      (async () => {
+        try {
+          const stats = await milestoneApi.getStats(teacherId as string);
+          setMilestoneStats(stats);
+        } catch (e) {
+          setMilestoneStats(null);
+        }
+      })();
+    }
   }, []);
 
   const loadStats = async () => {
@@ -175,6 +193,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       color: 'from-green-500 to-emerald-500',
       textColor: 'text-green-600',
       bgColor: 'bg-green-50'
+    },
+    {
+      title: 'Curriculum Progress',
+      value: milestoneStats?.completionPercentage || 0,
+      suffix: '%',
+      icon: Target,
+      color: 'from-indigo-500 to-purple-500',
+      textColor: 'text-indigo-600',
+      bgColor: 'bg-indigo-50'
     }
   ];
 
@@ -269,6 +296,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       color: 'from-pink-500 to-rose-600',
       textColor: 'text-pink-100',
       toolType: 'curriculum'
+    },
+    {
+      title: 'Track Curriculum',
+      description: 'Monitor your progress',
+      icon: Target,
+      color: 'from-indigo-500 to-purple-600',
+      textColor: 'text-indigo-100',
+      toolType: 'curriculum-tracker'
     }
   ];
 

@@ -34,6 +34,9 @@ interface Resource {
   generatedRubric?: string;
 }
 
+import type { Milestone } from '../types/milestone';
+import { milestoneApi } from '../lib/milestoneApi';
+
 interface CalendarModalProps {
   resourcesByDate: { [date: string]: Resource[] };
   onClose: () => void;
@@ -42,6 +45,8 @@ interface CalendarModalProps {
   // Task support
   tasksByDate?: { [date: string]: any[] };
   onAddTask?: (date: string, task: any) => void;
+  // Milestone support
+  milestonesByDate?: { [date: string]: Milestone[] };
 }
 
 const CalendarModal: React.FC<CalendarModalProps> = ({
@@ -61,6 +66,33 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
 
   // All Tasks Panel state
   const [showTaskPanel, setShowTaskPanel] = useState(false);
+
+  // Milestone state
+  const [upcomingMilestones, setUpcomingMilestones] = useState<Milestone[]>([]);
+
+  useEffect(() => {
+    const loadMilestones = async () => {
+      const teacherId = JSON.parse(localStorage.getItem('user') || '{}').username;
+      if (teacherId) {
+        const milestones = await milestoneApi.getUpcoming(teacherId, 30);
+        setUpcomingMilestones(milestones);
+      }
+    };
+    loadMilestones();
+  }, []);
+
+  // Group milestones by date
+  const milestonesByDate = useMemo(() => {
+    const grouped: { [date: string]: Milestone[] } = {};
+    upcomingMilestones.forEach(m => {
+      if (m.due_date) {
+        const dateKey = m.due_date.split('T')[0];
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push(m);
+      }
+    });
+    return grouped;
+  }, [upcomingMilestones]);
 
   // Group all tasks by date for slide-over
   const allTasksByDate = useMemo(() => {
@@ -637,6 +669,21 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                       {task.description && (
                         <p className="text-sm text-gray-600">{task.description}</p>
                       )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Milestones for this date */}
+              {milestonesByDate && milestonesByDate[selectedDateKey]?.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-indigo-800 mb-2">Milestones</h3>
+                  {milestonesByDate[selectedDateKey].map(milestone => (
+                    <div key={milestone.id} className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-indigo-700">{milestone.topic_title}</span>
+                        <span className="text-xs text-indigo-600">{milestone.subject}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{milestone.grade}</p>
                     </div>
                   ))}
                 </div>
