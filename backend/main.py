@@ -578,7 +578,7 @@ async def websocket_chat(websocket: WebSocket):
                 inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
-                for chunk in inference.generate_stream(
+                async for chunk in inference.generate_stream(
                     tool_name="chat",
                     input_data=user_message,
                     prompt_template=prompt,
@@ -735,6 +735,7 @@ async def generate_lesson_plan(request: LessonPlanRequest):
         logger.error(f"Error generating lesson plan: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.websocket("/ws/lesson-plan")
 async def websocket_lesson_plan(websocket: WebSocket):
     await websocket.accept()
@@ -753,7 +754,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 continue
 
             prompt = data.get("prompt", "")
-            form_data = data.get("formData", {})  # Allow for future extensibility
+            form_data = data.get("formData", {})
             job_id = data.get("jobId") or data.get("id") or "lesson-plan"
             generation_mode = data.get("generationMode", "queued")
 
@@ -764,10 +765,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
             curriculum_refs = []
             curriculum_context = ""
             if curriculum_matcher:
-                # Try to build a query from formData if available, else use prompt
                 query = ""
                 if isinstance(form_data, dict) and form_data:
-                    # Try to combine grade, subject, topic, etc. for better matching
                     query = " ".join(str(v) for v in form_data.values() if v)
                 if not query:
                     query = prompt
@@ -783,7 +782,6 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     }
                     for m in matches
                 ]
-                # Build curriculum context string for the prompt
                 context_blocks = []
                 for m in matches:
                     ctx = curriculum_matcher.get_curriculum_context(m.get("id"))
@@ -815,38 +813,57 @@ async def websocket_lesson_plan(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                settings = {
-                    "model_path": get_model_path(),
-                    "n_ctx": MODEL_N_CTX,
-                    "max_tokens": 6000,
-                    "temperature": 0.7,
-                    "tool_name": "lesson_plan",
-                    "prompt_template": full_prompt,
-                }
-                future = submit_task(run_llama_inference, prompt, settings)
-                result = await asyncio.wrap_future(future)
+                
+                # ✅ FIX: Use inference factory instead of process pool
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
 
-                # Check for cancellation before sending result
-                if job_id in cancelled_job_ids:
-                    await websocket.send_json({"type": "cancelled", "jobId": job_id})
-                    continue
+                # Stream tokens in real-time (works with both Gemma API and local models)
+                async for chunk in inference.generate_stream(
+                    tool_name="lesson_plan",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=6000,
+                    temperature=0.7
+                ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
 
-                if result["metadata"]["status"] == "error":
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": result["metadata"].get("error_message", "Generation failed")
-                    })
-                    continue
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
 
-                # Send the entire result as a single message (no streaming)
-                await websocket.send_json({
-                    "type": "result",
-                    "content": result["result"]
-                })
-                await websocket.send_json({"type": "done"})
+                    if chunk.get("finished"):
+                        try:
+                            await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+
+                    # Send each token as it's generated
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": chunk["token"]
+                        })
+                        await asyncio.sleep(0)  # Force immediate flush
+                    except Exception as e:
+                        logger.error(f"Error sending token: {e}")
+                        break
 
             except Exception as e:
                 logger.error(f"Lesson plan generation error: {e}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
                 try:
                     await websocket.send_json({
                         "type": "error",
@@ -864,6 +881,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
         logger.info("Lesson Plan WebSocket disconnected")
     except Exception as e:
         logger.error(f"Lesson Plan WebSocket error: {str(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
  
  
 
@@ -906,7 +925,7 @@ async def quiz_websocket(websocket: WebSocket):
                 inference = get_inference_instance()
 
                 # Stream tokens as they are generated
-                for chunk in inference.generate_stream(
+                async for chunk in inference.generate_stream(
                     tool_name="quiz",
                     input_data=prompt,
                     prompt_template=full_prompt,
@@ -1016,7 +1035,7 @@ async def rubric_websocket(websocket: WebSocket):
                 logger.info("Starting rubric generation...")
 
                 # Use streaming method for real-time generation
-                for chunk in inference.generate_stream(
+                async for chunk in inference.generate_stream(
                     tool_name="rubric",
                     input_data=prompt,
                     prompt_template=full_prompt,
@@ -1118,7 +1137,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                 inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
-                for chunk in inference.generate_stream(
+                async for chunk in inference.generate_stream(
                     tool_name="kindergarten",
                     input_data=prompt,
                     prompt_template=full_prompt,
@@ -1217,7 +1236,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
-                for chunk in inference.generate_stream(
+                async for chunk in inference.generate_stream(
                     tool_name="multigrade",
                     input_data=prompt,
                     prompt_template=full_prompt,
@@ -1317,7 +1336,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
-                for chunk in inference.generate_stream(
+                async for chunk in inference.generate_stream(
                     tool_name="cross_curricular",
                     input_data=prompt,
                     prompt_template=full_prompt,

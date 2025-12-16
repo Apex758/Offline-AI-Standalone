@@ -1,21 +1,18 @@
 import logging
-import threading
+import asyncio
 import sys
 import os
-from typing import Optional, Dict, Any, Iterator
+import queue
+from typing import Optional, Dict, Any
 from llama_cpp import Llama
 
-# Configure logging - ERROR level only
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
-
 
 class SilenceOutput:
-    """Context manager to suppress all stdout/stderr output from llama.cpp."""
-
+    """Suppress llama.cpp console noise."""
     def __enter__(self):
-        self._original_stdout = sys.stdout
-        self._original_stderr = sys.stderr
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
         sys.stdout = open(os.devnull, "w")
         sys.stderr = open(os.devnull, "w")
         return self
@@ -23,62 +20,26 @@ class SilenceOutput:
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
             sys.stdout.close()
-        except Exception:
-            pass
-        try:
             sys.stderr.close()
-        except Exception:
+        except:
             pass
-        sys.stdout = self._original_stdout
-        sys.stderr = self._original_stderr
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
 
 
 class LlamaInference:
     """
-    Manages a single Llama model instance for inference.
-
-    Singleton access:
-        Use LlamaInference.get_instance() to obtain a shared instance.
-
-    Notes:
-      - This class loads a Llama model silently (suppresses llama.cpp stdout/stderr).
-      - Calls to the underlying model are guarded by a lock to avoid concurrent
-        access issues in multi-threaded scenarios.
+    TRUE REAL-TIME STREAMING - Tokens appear AS they're generated!
+    
+    Key: Use a queue to get tokens from llama-cpp thread immediately.
     """
-
-    _instance = None
-    _instance_lock = threading.Lock()
-
-    @classmethod
-    def get_instance(
-        cls,
-        model_path: str = "models/llama-2-7b-chat.Q4_K_M.gguf",
-        n_ctx: int = 4096,
-        verbose: bool = False,  # kept for API compatibility; ignored for silent operation
-    ):
-        """Return singleton instance (thread-safe)."""
-        if cls._instance is None:
-            with cls._instance_lock:
-                if cls._instance is None:
-                    cls._instance = cls(model_path=model_path, n_ctx=n_ctx, verbose=verbose)
-        return cls._instance
-
+    
     def __init__(self, model_path: str, n_ctx: int = 4096, verbose: bool = False):
-        """
-        Initialize the Llama model.
-
-        Args:
-            model_path: Path to the GGUF model file
-            n_ctx: Context window size (default: 4096)
-            verbose: Ignored; model is always loaded with verbose=False to keep silent.
-        """
+        """Load the model."""
         self.model_path = model_path
         self.model: Optional[Llama] = None
         self.is_loaded = False
-
-        # Guard model calls (llama_cpp wrapper is not reliably thread-safe).
-        self._gen_lock = threading.Lock()
-
+        
         try:
             with SilenceOutput():
                 self.model = Llama(
@@ -89,12 +50,12 @@ class LlamaInference:
                     n_batch=8,
                 )
             self.is_loaded = True
+            logger.info(f"✅ Local model loaded: {model_path}")
         except Exception as e:
-            logger.error(f"Failed to load model from {model_path}: {e}")
-            self.is_loaded = False
+            logger.error(f"❌ Failed to load model: {e}")
             raise
 
-    def generate(
+    async def generate(
         self,
         tool_name: str,
         input_data: str,
@@ -104,24 +65,23 @@ class LlamaInference:
         top_p: float = 0.9,
         stop: Optional[list] = None,
     ) -> Dict[str, Any]:
-        """Generate a full completion (non-streaming)."""
-        if not self.is_loaded or self.model is None:
+        """Generate complete response (non-streaming)."""
+        if not self.is_loaded or not self.model:
             return {
                 "tool_name": tool_name,
                 "result": None,
                 "metadata": {"status": "error", "error_message": "Model not loaded"},
             }
-
+        
         try:
             prompt = prompt_template if prompt_template else input_data
-            input_summary = input_data[:100] + "..." if len(input_data) > 100 else input_data
-
             if stop is None:
                 stop = ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]
-
-            with self._gen_lock:
+            
+            # Run in thread pool (blocking call)
+            def blocking_generate():
                 with SilenceOutput():
-                    response = self.model(
+                    return self.model(
                         prompt,
                         max_tokens=max_tokens,
                         temperature=temperature,
@@ -129,37 +89,36 @@ class LlamaInference:
                         stop=stop,
                         echo=False,
                     )
-
-            generated_text = response["choices"][0]["text"]
-
+            
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(None, blocking_generate)
+            
+            generated = response["choices"][0]["text"]
             usage = response.get("usage", {})
-            prompt_tokens = usage.get("prompt_tokens", 0)
-            completion_tokens = usage.get("completion_tokens", 0)
-            total_tokens = usage.get("total_tokens", 0)
-
+            
             return {
                 "tool_name": tool_name,
-                "input_summary": input_summary,
-                "result": generated_text.strip(),
+                "input_summary": input_data[:100] + "..." if len(input_data) > 100 else input_data,
+                "result": generated.strip(),
                 "metadata": {
                     "status": "success",
                     "tokens_used": {
-                        "prompt_tokens": prompt_tokens,
-                        "completion_tokens": completion_tokens,
-                        "total_tokens": total_tokens,
+                        "prompt_tokens": usage.get("prompt_tokens", 0),
+                        "completion_tokens": usage.get("completion_tokens", 0),
+                        "total_tokens": usage.get("total_tokens", 0),
                     },
                 },
             }
-
+        
         except Exception as e:
-            logger.error(f"Generation error for {tool_name}: {e}")
+            logger.error(f"❌ Generation error: {e}")
             return {
                 "tool_name": tool_name,
                 "result": None,
                 "metadata": {"status": "error", "error_message": str(e)},
             }
 
-    def generate_stream(
+    async def generate_stream(
         self,
         tool_name: str,
         input_data: str,
@@ -168,127 +127,145 @@ class LlamaInference:
         temperature: float = 0.7,
         top_p: float = 0.9,
         stop: Optional[list] = None,
-    ) -> Iterator[Dict[str, Any]]:
+    ):
         """
-        Generate using streaming (yields tokens as they're generated).
-
-        Yields:
-            {"token": str, "finished": bool} or {"error": str, "finished": True}
+        TRUE REAL-TIME STREAMING!
+        
+        Tokens appear IMMEDIATELY as llama-cpp generates them.
+        Uses a queue to communicate between thread and async generator.
         """
-        if not self.is_loaded or self.model is None:
+        if not self.is_loaded or not self.model:
             yield {"token": None, "finished": True, "error": "Model not loaded"}
             return
-
-        prompt = prompt_template if prompt_template else input_data
-
-        if stop is None:
-            stop = ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]
-
+        
         try:
-            # IMPORTANT: lock held for the whole stream to prevent concurrent model access.
-            with self._gen_lock:
-                with SilenceOutput():
-                    stream = self.model(
-                        prompt,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        top_p=top_p,
-                        stop=stop,
-                        echo=False,
-                        stream=True,
+            prompt = prompt_template if prompt_template else input_data
+            if stop is None:
+                stop = ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]
+            
+            # ✅ Queue for real-time communication (thread -> async)
+            token_queue = queue.Queue(maxsize=100)
+            DONE = object()  # Sentinel value
+            
+            def stream_in_thread():
+                """Runs in thread - puts tokens in queue AS they're generated."""
+                try:
+                    with SilenceOutput():
+                        stream = self.model(
+                            prompt,
+                            max_tokens=max_tokens,
+                            temperature=temperature,
+                            top_p=top_p,
+                            stop=stop,
+                            echo=False,
+                            stream=True,
+                        )
+                        for output in stream:
+                            token = output["choices"][0]["text"]
+                            token_queue.put(token)  # Put immediately!
+                except Exception as e:
+                    token_queue.put(("ERROR", str(e)))
+                finally:
+                    token_queue.put(DONE)  # Signal completion
+            
+            # ✅ Start streaming in background thread
+            loop = asyncio.get_event_loop()
+            stream_task = loop.run_in_executor(None, stream_in_thread)
+            
+            # ✅ Yield tokens as they arrive in queue
+            while True:
+                # Get next token (non-blocking with timeout)
+                try:
+                    item = await loop.run_in_executor(
+                        None,
+                        lambda: token_queue.get(timeout=0.1)
                     )
-
-                    for output in stream:
-                        token = output["choices"][0]["text"]
-                        yield {"token": token, "finished": False}
-
+                except queue.Empty:
+                    await asyncio.sleep(0)
+                    continue
+                
+                # Check if done
+                if item is DONE:
+                    break
+                
+                # Check for error
+                if isinstance(item, tuple) and item[0] == "ERROR":
+                    yield {"token": None, "finished": True, "error": item[1]}
+                    return
+                
+                # Yield token IMMEDIATELY
+                yield {"token": item, "finished": False}
+                await asyncio.sleep(0)  # Let other tasks run
+            
+            # All done!
             yield {"token": "", "finished": True}
-
+            
+            # Wait for thread to finish
+            await stream_task
+        
         except Exception as e:
-            logger.error(f"Streaming error for {tool_name}: {e}")
+            logger.error(f"❌ Streaming error: {e}")
             yield {"token": None, "finished": True, "error": str(e)}
 
-    def cleanup(self):
-        """Cleanup model resources (call on application shutdown)."""
-        if self.model is not None:
+    async def cleanup(self):
+        """Cleanup model."""
+        if self.model:
             try:
-                with self._gen_lock:
-                    with SilenceOutput():
-                        del self.model
+                with SilenceOutput():
+                    del self.model
                 self.model = None
                 self.is_loaded = False
+                logger.info("✅ Local model cleaned up")
             except Exception as e:
-                logger.error(f"Error during cleanup: {e}")
+                logger.error(f"❌ Cleanup error: {e}")
 
 
-# Standalone, picklable inference function for process pool use
+# Process pool function (if needed for old code)
 def run_llama_inference(prompt: str, settings: dict) -> dict:
-    """
-    Standalone function to run Llama inference for use in process pools.
-    NOTE: This loads a fresh model each call (expensive). Prefer LlamaInference singleton for normal use.
-    """
+    """Standalone function for process pools (not recommended)."""
     model_path = settings.get("model_path")
     if not model_path:
         return {
             "tool_name": settings.get("tool_name", "llama_pool"),
             "result": None,
-            "metadata": {"status": "error", "error_message": "settings.model_path is required"},
+            "metadata": {"status": "error", "error_message": "model_path required"},
         }
-
-    n_ctx = settings.get("n_ctx", 4096)
-    max_tokens = settings.get("max_tokens", 2000)
-    temperature = settings.get("temperature", 0.7)
-    top_p = settings.get("top_p", 0.9)
-    stop = settings.get("stop", ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"])
-    tool_name = settings.get("tool_name", "llama_pool")
-    prompt_template = settings.get("prompt_template", None)
-
+    
     try:
         with SilenceOutput():
             model = Llama(
                 model_path=model_path,
-                n_ctx=n_ctx,
+                n_ctx=settings.get("n_ctx", 4096),
                 verbose=False,
                 n_threads=4,
                 n_batch=8,
             )
-
-        prompt_text = prompt_template if prompt_template else prompt
-        input_summary = prompt[:100] + "..." if len(prompt) > 100 else prompt
-
+        
+        prompt_text = settings.get("prompt_template") or prompt
+        stop = settings.get("stop", ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"])
+        
         with SilenceOutput():
             response = model(
                 prompt_text,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
+                max_tokens=settings.get("max_tokens", 2000),
+                temperature=settings.get("temperature", 0.7),
+                top_p=settings.get("top_p", 0.9),
                 stop=stop,
                 echo=False,
             )
-
-        generated_text = response["choices"][0]["text"]
-        usage = response.get("usage", {})
-        prompt_tokens = usage.get("prompt_tokens", 0)
-        completion_tokens = usage.get("completion_tokens", 0)
-        total_tokens = usage.get("total_tokens", 0)
-
+        
         return {
-            "tool_name": tool_name,
-            "input_summary": input_summary,
-            "result": generated_text.strip(),
+            "tool_name": settings.get("tool_name", "llama_pool"),
+            "input_summary": prompt[:100] + "..." if len(prompt) > 100 else prompt,
+            "result": response["choices"][0]["text"].strip(),
             "metadata": {
                 "status": "success",
-                "tokens_used": {
-                    "prompt_tokens": prompt_tokens,
-                    "completion_tokens": completion_tokens,
-                    "total_tokens": total_tokens,
-                },
+                "tokens_used": response.get("usage", {}),
             },
         }
-
     except Exception as e:
         return {
-            "tool_name": tool_name,
+            "tool_name": settings.get("tool_name", "llama_pool"),
             "result": None,
             "metadata": {"status": "error", "error_message": str(e)},
         }
