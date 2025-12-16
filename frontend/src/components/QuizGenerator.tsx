@@ -11,6 +11,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -130,10 +131,11 @@ const formatQuizText = (text: string, accentColor: string) => {
   return elements;
 };
 
+const ENDPOINT = '/ws/quiz';
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const tabColor = settings.tabColors['quiz-generator'];
-  const [loading, setLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -175,7 +177,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   });
 
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
-  const [streamingQuiz, setStreamingQuiz] = useState<string>(savedData?.streamingQuiz || '');
+  const streamingQuiz = getStreamingContent(tabId, ENDPOINT);
+  const loading = getIsStreaming(tabId, ENDPOINT);
 
   const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Music', 'Physical Education'];
   const grades = ['K', '1', '2', '3', '4', '5', '6'];
@@ -211,94 +214,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   }, [savedData?.startInEditMode, parsedQuiz, isEditing]);
 
-  // WebSocket setup
+  // WebSocketContext API: connect on tabId change
   useEffect(() => {
-    shouldReconnectRef.current = true;
-
-    const connectWebSocket = () => {
-      if (!shouldReconnectRef.current) return;
-
-      try {
-        const wsUrl = getWebSocketUrl('/ws/quiz', isElectronEnvironment());
-        const ws = new WebSocket(wsUrl);
-        
-        ws.onopen = () => {
-          console.log('Quiz WebSocket connected');
-        };
-        
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'token') {
-            setStreamingQuiz(prev => prev + data.content);
-          } else if (data.type === 'done') {
-            setStreamingQuiz(current => {
-              const finalMessage = current || data.full_response;
-              setGeneratedQuiz(finalMessage);
-              
-              console.log('Quiz generation complete, parsing...');
-              
-              // Try to parse immediately
-              const parsed = parseQuizFromAI(finalMessage);
-              if (parsed) {
-                console.log('Quiz parsed successfully:', parsed.questions.length, 'questions');
-                setParsedQuiz(parsed);
-              } else {
-                console.warn('Quiz parsing failed, creating fallback structure');
-                // Create a fallback parsed quiz so editing still works
-                setParsedQuiz(displayTextToQuiz(finalMessage, {
-                  title: `${formData.subject} Quiz`,
-                  subject: formData.subject,
-                  gradeLevel: formData.gradeLevel,
-                  totalQuestions: parseInt(formData.numberOfQuestions)
-                }));
-              }
-              
-              setLoading(false);
-              return '';
-            });
-          } else if (data.type === 'error') {
-            console.error('Quiz generation error:', data.message);
-            alert('Quiz generation failed: ' + data.message);
-            setLoading(false);
-          }
-        };
-        
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setLoading(false);
-        };
-        
-        ws.onclose = () => {
-          console.log('WebSocket closed');
-          wsRef.current = null;
-          if (shouldReconnectRef.current) {
-            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
-          }
-        };
-        
-        wsRef.current = ws;
-      } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-        if (shouldReconnectRef.current) {
-          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
-        }
-      }
-    };
-    
-    connectWebSocket();
-    
-    return () => {
-      shouldReconnectRef.current = false;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
-      wsRef.current = null;
-    };
-  }, []);
+    getConnection(tabId, ENDPOINT);
+  }, [tabId]);
 
   // FIXED: Properly handle tab switches without losing state
   useEffect(() => {
@@ -435,26 +354,21 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const generateQuiz = () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    const ws = getConnection(tabId, ENDPOINT);
+    if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
 
-    setLoading(true);
-    setStreamingQuiz('');
-    setParsedQuiz(null);
-
-    // Use the new prompt builder
     const prompt = buildQuizPrompt(formData);
 
     try {
-      wsRef.current.send(JSON.stringify({
+      ws.send(JSON.stringify({
         prompt,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
       console.error('Failed to send quiz request:', error);
-      setLoading(false);
     }
   };
 
@@ -501,6 +415,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     onDataChange({ formData, generatedQuiz, streamingQuiz, parsedQuiz });
   }, [formData, generatedQuiz, streamingQuiz, parsedQuiz]);
 
+
+  // Finalization logic for streaming state
+  useEffect(() => {
+    if (streamingQuiz && !loading) {
+      setGeneratedQuiz(streamingQuiz);
+      const parsed = parseQuizFromAI(streamingQuiz);
+      if (parsed) {
+        setParsedQuiz(parsed);
+      } else {
+        setParsedQuiz(displayTextToQuiz(streamingQuiz, {
+          title: `${formData.subject} Quiz`,
+          subject: formData.subject,
+          gradeLevel: formData.gradeLevel,
+          totalQuestions: parseInt(formData.numberOfQuestions)
+        }));
+      }
+      clearStreaming(tabId, ENDPOINT);
+    }
+  }, [streamingQuiz, loading]);
 
   return (
     <div className="flex h-full bg-white relative" data-tutorial="quiz-generator-welcome">

@@ -6,6 +6,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { CurriculumReference } from './CurriculumReferences';
 import { CurriculumReferences } from './CurriculumReferences';
 
@@ -27,12 +28,12 @@ interface ChatHistory {
 }
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
+  // DEBUG: Log re-render and key state
+  console.log('[Chat] Render', { tabId });
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -40,9 +41,22 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [generatingTitle, setGeneratingTitle] = useState(false);
   const [curriculumSuggestions, setCurriculumSuggestions] = useState<CurriculumReference[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const shouldReconnectRef = useRef(true);
+
+  // WebSocketContext API
+  const ENDPOINT = '/ws/chat';
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+
+  // Streaming state from context
+  const streamingMessage = getStreamingContent(tabId, ENDPOINT);
+  const loading = getIsStreaming(tabId, ENDPOINT);
+
+  // DEBUG: Log streaming and loading state
+  useEffect(() => {
+    console.log('[Chat] streamingMessage updated:', streamingMessage);
+  }, [streamingMessage]);
+  useEffect(() => {
+    console.log('[Chat] loading state updated:', loading);
+  }, [loading]);
 
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
@@ -70,7 +84,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       try {
         const parsed = JSON.parse(savedState);
         setMessages(parsed.messages || []);
-        setStreamingMessage(parsed.streamingMessage || '');
+        // setStreamingMessage(parsed.streamingMessage || '');
         setCurrentChatId(parsed.currentChatId || null);
         setTitleSet(parsed.titleSet || false);
         setInput(parsed.input || '');
@@ -80,7 +94,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       } catch (e) {
         // fallback to default if parse fails
         setMessages([]);
-        setStreamingMessage('');
+        // setStreamingMessage('');
         setCurrentChatId(null);
         setTitleSet(false);
         setInput('');
@@ -90,7 +104,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }
     } else {
       setMessages([]);
-      setStreamingMessage('');
+      // setStreamingMessage('');
       setCurrentChatId(null);
       setTitleSet(false);
       setInput('');
@@ -240,7 +254,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const startNewChat = () => {
     setMessages([]);
     setCurrentChatId(null);
-    setStreamingMessage('');
+    // setStreamingMessage('');
     setHistoryOpen(false);
     setTitleSet(false);
     setInput('');
@@ -251,111 +265,43 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
   };
 
+  // Setup WebSocket connection via context
   useEffect(() => {
-    shouldReconnectRef.current = true;
+    getConnection(tabId, ENDPOINT);
+  }, [tabId]);
 
-    const connectWebSocket = () => {
-      if (!shouldReconnectRef.current) {
-        return;
-      }
+  // Subscribe to streaming updates for re-render
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      // This triggers re-render when streaming updates
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
 
-      try {
-        const wsUrl = getWebSocketUrl('/ws/chat', isElectronEnvironment());
-        const ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          console.log('WebSocket connected');
+  // Finalization logic for streaming message
+  useEffect(() => {
+    if (streamingMessage && !loading && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        const finalMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: streamingMessage,
+          timestamp: new Date().toISOString()
         };
+        console.log('[Chat] Finalizing streaming message:', finalMessage);
+        setMessages(prev => [...prev, finalMessage]);
+        clearStreaming(tabId, ENDPOINT);
 
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-
-          if (data.type === 'token') {
-            setStreamingMessage(prev => prev + data.content);
-          } else if (data.type === 'done') {
-            setStreamingMessage(current => {
-              const finalMessage: Message = {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: current || data.full_response,
-                timestamp: new Date().toISOString()
-              };
-              setMessages(prev => {
-                const newMessages = [...prev, finalMessage];
-
-                // Generate title after first AI response
-                if (!titleSet && newMessages.length === 2 && onTitleChange) {
-                  const userMsg = newMessages.find(m => m.role === 'user');
-                  if (userMsg) {
-                    generateAndSetTitle(userMsg.content, finalMessage.content);
-                  }
-                }
-
-                return newMessages;
-              });
-              setLoading(false);
-              return '';
-            });
-          } else if (data.type === 'curriculum_suggestions') {
-            // Expecting: { type: "curriculum_suggestions", suggestions: CurriculumReference[] }
-            setCurriculumSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setLoading(false);
-        };
-
-        ws.onclose = () => {
-          console.log('WebSocket closed');
-          wsRef.current = null;
-
-          if (shouldReconnectRef.current && !loading) {
-            console.log('Reconnecting in 2 seconds...');
-            reconnectTimeoutRef.current = setTimeout(() => {
-              connectWebSocket();
-            }, 2000);
-          }
-        };
-
-        wsRef.current = ws;
-      } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-
-        if (shouldReconnectRef.current) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connectWebSocket();
-          }, 2000);
+        if (!titleSet && messages.length === 1) {
+          generateAndSetTitle(messages[0].content, streamingMessage);
         }
       }
-    };
-
-    connectWebSocket();
-
-    return () => {
-      console.log('Cleaning up WebSocket connection');
-      shouldReconnectRef.current = false;
-
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
-      wsRef.current = null;
-    };
-  }, []);
+    }
+  }, [streamingMessage, loading, messages]);
 
   const handleSend = () => {
-    if (!input.trim() || loading || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-      }
-      return;
-    }
+    if (!input.trim() || loading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -365,34 +311,15 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     };
 
     setMessages(prev => [...prev, userMessage]);
-    
-    if (!titleSet && onTitleChange) {
-      const title = input.length > 30 ? input.substring(0, 30) + '...' : input;
-      onTitleChange(title);
-      setTitleSet(true);
-    }
-    
     setInput('');
-    setLoading(true);
-    setStreamingMessage('');
 
-    try {
-      // Send full conversation history for backend's smart context window management (sliding window logic).
-      // This ensures the backend can manage context efficiently and avoids context loss.
-      wsRef.current.send(JSON.stringify({
+    // Send via WebSocket
+    const ws = getConnection(tabId, ENDPOINT);
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
         message: input,
         chat_id: currentChatId,
-        conversation_history: [
-          ...messages.map(m => ({
-            role: m.role,
-            content: m.content
-          })),
-          { role: 'user', content: input }
-        ]
       }));
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      setLoading(false);
     }
   };
 
@@ -484,11 +411,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           <div>
             <h2 className="text-xl font-semibold text-gray-800">Chat with PEARL</h2>
             <p className="text-sm text-gray-500">
-              {wsRef.current?.readyState === WebSocket.OPEN ? (
-                <span className="ml-2 text-green-600">● Connected</span>
-              ) : (
-                <span className="ml-2 text-red-600">● Disconnected</span>
-              )}
+              {/* WebSocket connection status is not available via context API, so this is omitted or needs a new prop */}
             </p>
           </div>
           <div className="flex gap-2">
@@ -608,7 +531,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             />
             <button
               onClick={handleSend}
-              disabled={loading || !input.trim() || wsRef.current?.readyState !== WebSocket.OPEN}
+              disabled={loading || !input.trim()}
               className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
               data-tutorial="chat-send"
             >

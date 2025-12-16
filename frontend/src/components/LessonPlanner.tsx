@@ -413,9 +413,16 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { getConnection, appendStreamingContent, clearStreaming, closeConnection } = useWebSocket();
-  const wsRef = useRef<WebSocket | null>(null);
+  // --- WebSocketContext API and streaming state logic ---
+  const ENDPOINT = '/ws/lesson-plan';
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+
+  // const [streamingPlan, setStreamingPlan] = useState('');
+  // const [loading, setLoading] = useState(false);
+
+  const streamingPlan = getStreamingContent(tabId, ENDPOINT);
+  const loading = getIsStreaming(tabId, ENDPOINT);
+
   const [historyOpen, setHistoryOpen] = useState(false);
   const [lessonPlanHistories, setLessonPlanHistories] = useState<LessonPlanHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -466,7 +473,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
-  const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [step, setStep] = useState(() => savedData?.step || 1);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
@@ -685,71 +691,39 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     });
   }, [formData, generatedPlan, streamingPlan, step, parsedLesson]);
 
-  // --- WebSocket logic replaced with context-based approach ---
+  // --- WebSocketContext API: establish connection on tabId change ---
   useEffect(() => {
-    const ws = getConnection(tabId, '/ws/lesson-plan');
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log(`[LessonPlanner ${tabId}] WebSocket connected`);
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.type === 'token') {
-        appendStreamingContent(tabId, data.content);
-        setStreamingPlan(prev => prev + data.content);
-      } else if (data.type === 'done') {
-        const finalContent = data.full_response || streamingPlan;
-        setGeneratedPlan(finalContent);
-
-        const parsed = parseLessonContent(finalContent, formData, curriculumReferences);
-        if (parsed) setParsedLesson(parsed);
-
-        setLoading(false);
-        clearStreaming(tabId);
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error(`[LessonPlanner ${tabId}] WebSocket error:`, error);
-      setLoading(false);
-    };
-
-    ws.onclose = () => {
-      console.log(`[LessonPlanner ${tabId}] WebSocket closed`);
-      wsRef.current = null;
-    };
-
-    // ✅ NO cleanup - let Dashboard handle closing
-    return () => {
-      console.log(`[LessonPlanner ${tabId}] Component unmounting (but keeping WebSocket alive)`);
-    };
+    getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
+  // --- Streaming finalization logic ---
+  useEffect(() => {
+    if (streamingPlan && !loading) {
+      setGeneratedPlan(streamingPlan);
+      const parsed = parseLessonContent(streamingPlan, formData, curriculumReferences);
+      if (parsed) setParsedLesson(parsed);
+      clearStreaming(tabId, ENDPOINT);
+    }
+  }, [streamingPlan, loading]);
+
   const generateLessonPlan = () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    const ws = getConnection(tabId, ENDPOINT);
+    if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
-
-    setLoading(true);
-    setStreamingPlan('');
-    clearStreaming(tabId);
 
     setCurriculumReferences(curriculumMatches);
 
     const prompt = buildLessonPrompt(formData, curriculumMatches);
 
     try {
-      wsRef.current.send(JSON.stringify({
+      ws.send(JSON.stringify({
         prompt,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
       console.error('Failed to send lesson plan request:', error);
-      setLoading(false);
     }
   };
 
