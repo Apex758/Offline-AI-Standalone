@@ -20,6 +20,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   timeframe,
   onTimeframeChange
 }) => {
+  const views: Array<'trend' | 'distribution'> = ['trend', 'distribution'];
   const [currentView, setCurrentView] = useState<'trend' | 'distribution'>('trend');
   const [isAutoRotating, setIsAutoRotating] = useState(true);
 
@@ -28,19 +29,31 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
     if (!isAutoRotating) return;
 
     const interval = setInterval(() => {
-      setCurrentView(prev => (prev === 'trend' ? 'distribution' : 'trend'));
-    }, 5000); // Rotate every 10 seconds
+      setCurrentView(prev => {
+        const currentIndex = views.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % views.length;
+        return views[nextIndex];
+      });
+    }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(interval);
   }, [isAutoRotating]);
 
   const handlePrevious = () => {
-    setCurrentView('trend');
+    setCurrentView(prev => {
+      const currentIndex = views.indexOf(prev);
+      const prevIndex = (currentIndex - 1 + views.length) % views.length;
+      return views[prevIndex];
+    });
     setIsAutoRotating(false);
   };
 
   const handleNext = () => {
-    setCurrentView('distribution');
+    setCurrentView(prev => {
+      const currentIndex = views.indexOf(prev);
+      const nextIndex = (currentIndex + 1) % views.length;
+      return views[nextIndex];
+    });
     setIsAutoRotating(false);
   };
 
@@ -86,7 +99,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
       </div>
 
       {/* Navigation Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+      <div className="absolute bottom-4 right-4 flex items-center gap-2 z-10">
         {/* View Indicator */}
         <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm">
           <button
@@ -122,7 +135,6 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         <button
           onClick={handlePrevious}
           className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors disabled:opacity-50"
-          disabled={currentView === 'trend'}
           aria-label="Previous View"
         >
           <ChevronLeft className="w-4 h-4 text-gray-700" />
@@ -132,7 +144,6 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         <button
           onClick={handleNext}
           className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors disabled:opacity-50"
-          disabled={currentView === 'distribution'}
           aria-label="Next View"
         >
           <ChevronRight className="w-4 h-4 text-gray-700" />

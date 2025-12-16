@@ -349,8 +349,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </div>
 
       {/* Main Content - Two Column Layout */}
-      <div className="px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="px-8 py-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
           {/* Left Column (70%) - Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Chart Carousel - Rotating Charts */}
@@ -370,18 +370,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               onViewChange={setCurriculumView}
             />
 
-            {/* Most Used Tools */}
-            <MostUsedTools
-              toolUsage={toolUsage}
-              onToolClick={handleToolClick}
-            />
-
             {/* Recent Activity Timeline */}
             <RecentActivityTimeline activities={activityFeed} limit={7} />
           </div>
 
           {/* Right Column (30%) - Sidebar */}
-          <div className="space-y-6">
+          <div className="h-full flex flex-col">
             {/* Compact Calendar */}
             <CompactCalendar
               selectedDate={selectedDate}
@@ -391,14 +385,24 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               resourcesByDate={resourcesByDate}
             />
 
-            {/* Task List */}
-            <TaskListWidget
-              tasks={tasks}
-              selectedDate={selectedDate}
-              onTaskEdit={handleEditTask}
-              onTaskToggle={handleToggleTask}
-              onAddTask={handleAddTask}
-            />
+            {/* Grouped Task List and Most Used Tools */}
+            <div className="flex flex-col flex-grow min-h-0 mt-6">
+              <div className="flex-grow flex flex-col min-h-0">
+                <TaskListWidget
+                  tasks={tasks}
+                  selectedDate={selectedDate}
+                  onTaskEdit={handleEditTask}
+                  onTaskToggle={handleToggleTask}
+                  onAddTask={handleAddTask}
+                />
+              </div>
+              <div className="mt-6">
+                <MostUsedTools
+                  toolUsage={toolUsage}
+                  onToolClick={handleToolClick}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
