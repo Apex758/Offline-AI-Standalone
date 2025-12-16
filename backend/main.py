@@ -24,6 +24,8 @@ from config import (
 from pathlib import Path
 from routes import milestones as milestone_routes
 from llama_inference import LlamaInference
+from process_pool import submit_task, shutdown_executor
+from llama_inference import run_llama_inference
 from curriculum_matcher import CurriculumMatcher
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -199,6 +201,7 @@ async def lifespan(app):
         except Exception as e:
             logger.error(f"Error cleaning up model: {e}")
     cleanup_all_processes()
+    shutdown_executor()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -708,24 +711,26 @@ async def delete_lesson_plan_history(plan_id: str):
     
 @app.post("/api/generate-lesson-plan")
 async def generate_lesson_plan(request: LessonPlanRequest):
-    """Generate a lesson plan using the LLM"""
+    """Generate a lesson plan using the LLM (via process pool)"""
     try:
         prompt_text = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{request.prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
-        
-        inference = LlamaInference.get_instance()
-        result = inference.generate(
-            tool_name="lesson_plan",
-            input_data=request.prompt,
-            prompt_template=prompt_text,
-            max_tokens=6000,
-            temperature=0.7
-        )
-        
+
+        settings = {
+            "model_path": get_model_path(),
+            "n_ctx": MODEL_N_CTX,
+            "max_tokens": 6000,
+            "temperature": 0.7,
+            "tool_name": "lesson_plan",
+            "prompt_template": prompt_text,
+        }
+        future = submit_task(run_llama_inference, request.prompt, settings)
+        result = await asyncio.wrap_future(future)
+
         if result["metadata"]["status"] == "error":
             raise HTTPException(status_code=500, detail=result["metadata"].get("error_message", "Generation failed"))
-        
+
         return {"lessonPlan": result["result"]}
-        
+
     except Exception as e:
         logger.error(f"Error generating lesson plan: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -734,12 +739,23 @@ async def generate_lesson_plan(request: LessonPlanRequest):
 async def websocket_lesson_plan(websocket: WebSocket):
     await websocket.accept()
     global curriculum_matcher
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
 
     try:
         while True:
             data = await websocket.receive_json()
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
             prompt = data.get("prompt", "")
             form_data = data.get("formData", {})  # Allow for future extensibility
+            job_id = data.get("jobId") or data.get("id") or "lesson-plan"
+            generation_mode = data.get("generationMode", "queued")
 
             if not prompt:
                 continue
@@ -795,46 +811,39 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 except Exception as e:
                     logger.error(f"Error sending curriculum references: {e}")
 
+            slot_mode = None
             try:
-                inference = LlamaInference.get_instance()
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+                settings = {
+                    "model_path": get_model_path(),
+                    "n_ctx": MODEL_N_CTX,
+                    "max_tokens": 6000,
+                    "temperature": 0.7,
+                    "tool_name": "lesson_plan",
+                    "prompt_template": full_prompt,
+                }
+                future = submit_task(run_llama_inference, prompt, settings)
+                result = await asyncio.wrap_future(future)
 
-                # Use streaming method for real-time generation
-                for chunk in inference.generate_stream(
-                    tool_name="lesson_plan",
-                    input_data=prompt,
-                    prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
-                ):
-                    if chunk.get("error"):
-                        try:
-                            await websocket.send_json({
-                                "type": "error",
-                                "message": chunk["error"]
-                            })
-                            await asyncio.sleep(0)  # Force flush
-                        except:
-                            logger.error("Could not send error message - connection closed")
-                        break
+                # Check for cancellation before sending result
+                if job_id in cancelled_job_ids:
+                    await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                    continue
 
-                    if chunk["finished"]:
-                        try:
-                            await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
-                        except:
-                            logger.error("Could not send done message - connection closed")
-                        break
+                if result["metadata"]["status"] == "error":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": result["metadata"].get("error_message", "Generation failed")
+                    })
+                    continue
 
-                    # Send each token as it's generated in real-time
-                    try:
-                        await websocket.send_json({
-                            "type": "token",
-                            "content": chunk["token"]
-                        })
-                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
-                    except Exception as e:
-                        logger.error(f"Error sending token: {e}")
-                        break
+                # Send the entire result as a single message (no streaming)
+                await websocket.send_json({
+                    "type": "result",
+                    "content": result["result"]
+                })
+                await websocket.send_json({"type": "done"})
 
             except Exception as e:
                 logger.error(f"Lesson plan generation error: {e}")
@@ -845,6 +854,11 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
 
     except WebSocketDisconnect:
         logger.info("Lesson Plan WebSocket disconnected")
@@ -856,27 +870,41 @@ async def websocket_lesson_plan(websocket: WebSocket):
 @app.websocket("/ws/quiz")
 async def quiz_websocket(websocket: WebSocket):
     await websocket.accept()
-    
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
     try:
         while True:
             data = await websocket.receive_json()
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
             prompt = data.get("prompt", "")
+            job_id = data.get("jobId") or data.get("id") or "quiz"
+            generation_mode = data.get("generationMode", "queued")
             
             if not prompt:
                 logger.error("Empty quiz prompt received")
                 continue
-            
+
             system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
-            
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            slot_mode = None
             try:
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 inference = LlamaInference.get_instance()
-                
-                # Use streaming method for real-time generation
+
+                # Stream tokens as they are generated
                 for chunk in inference.generate_stream(
                     tool_name="quiz",
                     input_data=prompt,
@@ -884,36 +912,40 @@ async def quiz_websocket(websocket: WebSocket):
                     max_tokens=6000,
                     temperature=0.7
                 ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
                     if chunk.get("error"):
                         try:
                             await websocket.send_json({
                                 "type": "error",
                                 "message": chunk["error"]
                             })
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
-                    if chunk["finished"]:
+
+                    if chunk.get("finished"):
                         try:
                             await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)  # Force flush
+                            await asyncio.sleep(0)
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
                             "type": "token",
                             "content": chunk["token"]
                         })
-                        await asyncio.sleep(0)  # Force immediate flush - critical for Electron
+                        await asyncio.sleep(0)
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Quiz generation error: {e}")
                 try:
@@ -923,7 +955,13 @@ async def quiz_websocket(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
-                        
+            finally:
+                # Always release the slot
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
     except WebSocketDisconnect:
         logger.info("Quiz WebSocket disconnected")
     except Exception as e:
@@ -935,32 +973,46 @@ async def quiz_websocket(websocket: WebSocket):
 async def rubric_websocket(websocket: WebSocket):
     await websocket.accept()
     logger.info("Rubric WebSocket connection accepted")
-    
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
     try:
         while True:
             logger.info("Waiting for rubric request...")
             data = await websocket.receive_json()
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
             logger.info(f"Received rubric request, prompt length: {len(data.get('prompt', ''))}")
-            
+
             prompt = data.get("prompt", "")
-            
+            job_id = data.get("jobId") or data.get("id") or "rubric"
+            generation_mode = data.get("generationMode", "queued")
+
             if not prompt:
                 logger.error("Empty rubric prompt received")
                 continue
-            
+
             logger.info("Building rubric prompt...")
             system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
-            
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            slot_mode = None
             try:
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 logger.info("Getting LlamaInference instance...")
                 inference = LlamaInference.get_instance()
                 logger.info("Starting rubric generation...")
-                
+
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
                     tool_name="rubric",
@@ -969,6 +1021,10 @@ async def rubric_websocket(websocket: WebSocket):
                     max_tokens=6000,
                     temperature=0.7
                 ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
                     if chunk.get("error"):
                         try:
                             await websocket.send_json({
@@ -979,8 +1035,8 @@ async def rubric_websocket(websocket: WebSocket):
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
-                    if chunk["finished"]:
+
+                    if chunk.get("finished"):
                         logger.info("Rubric generation complete")
                         try:
                             await websocket.send_json({"type": "done"})
@@ -988,7 +1044,7 @@ async def rubric_websocket(websocket: WebSocket):
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
@@ -999,7 +1055,7 @@ async def rubric_websocket(websocket: WebSocket):
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Rubric generation error: {e}")
                 try:
@@ -1009,7 +1065,12 @@ async def rubric_websocket(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
-                        
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
     except WebSocketDisconnect:
         logger.info("Rubric WebSocket disconnected")
     except Exception as e:
@@ -1020,25 +1081,39 @@ async def rubric_websocket(websocket: WebSocket):
 @app.websocket("/ws/kindergarten")
 async def kindergarten_websocket(websocket: WebSocket):
     await websocket.accept()
-    
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
     try:
         while True:
             data = await websocket.receive_json()
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
             prompt = data.get("prompt", "")
-            
+            job_id = data.get("jobId") or data.get("id") or "kindergarten"
+            generation_mode = data.get("generationMode", "queued")
+
             if not prompt:
                 continue
-            
+
             system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
-            
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            slot_mode = None
             try:
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 inference = LlamaInference.get_instance()
-                
+
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
                     tool_name="kindergarten",
@@ -1047,6 +1122,10 @@ async def kindergarten_websocket(websocket: WebSocket):
                     max_tokens=6000,
                     temperature=0.7
                 ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
                     if chunk.get("error"):
                         try:
                             await websocket.send_json({
@@ -1057,15 +1136,15 @@ async def kindergarten_websocket(websocket: WebSocket):
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
-                    if chunk["finished"]:
+
+                    if chunk.get("finished"):
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
@@ -1076,7 +1155,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Kindergarten generation error: {e}")
                 try:
@@ -1086,7 +1165,12 @@ async def kindergarten_websocket(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
-                        
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
     except WebSocketDisconnect:
         logger.info("Kindergarten WebSocket disconnected")
     except Exception as e:
@@ -1095,25 +1179,39 @@ async def kindergarten_websocket(websocket: WebSocket):
 @app.websocket("/ws/multigrade")
 async def multigrade_websocket(websocket: WebSocket):
     await websocket.accept()
-    
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
     try:
         while True:
             data = await websocket.receive_json()
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
             prompt = data.get("prompt", "")
-            
+            job_id = data.get("jobId") or data.get("id") or "multigrade"
+            generation_mode = data.get("generationMode", "queued")
+
             if not prompt:
                 continue
-            
+
             system_prompt = "You are an expert educator specializing in multigrade and multi-age classroom instruction. Create comprehensive lesson plans that address multiple grade levels simultaneously with differentiated activities and flexible grouping strategies."
-            
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            slot_mode = None
             try:
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 inference = LlamaInference.get_instance()
-                
+
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
                     tool_name="multigrade",
@@ -1122,6 +1220,10 @@ async def multigrade_websocket(websocket: WebSocket):
                     max_tokens=6000,
                     temperature=0.7
                 ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
                     if chunk.get("error"):
                         try:
                             await websocket.send_json({
@@ -1132,15 +1234,15 @@ async def multigrade_websocket(websocket: WebSocket):
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
-                    if chunk["finished"]:
+
+                    if chunk.get("finished"):
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
@@ -1151,7 +1253,7 @@ async def multigrade_websocket(websocket: WebSocket):
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Multigrade generation error: {e}")
                 try:
@@ -1161,7 +1263,12 @@ async def multigrade_websocket(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
-                        
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
     except WebSocketDisconnect:
         logger.info("Multigrade WebSocket disconnected")
     except Exception as e:
@@ -1171,25 +1278,39 @@ async def multigrade_websocket(websocket: WebSocket):
 @app.websocket("/ws/cross-curricular")
 async def cross_curricular_websocket(websocket: WebSocket):
     await websocket.accept()
-    
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
     try:
         while True:
             data = await websocket.receive_json()
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
             prompt = data.get("prompt", "")
-            
+            job_id = data.get("jobId") or data.get("id") or "cross-curricular"
+            generation_mode = data.get("generationMode", "queued")
+
             if not prompt:
                 continue
-            
+
             system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
-            
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-            
+
+            slot_mode = None
             try:
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 inference = LlamaInference.get_instance()
-                
+
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
                     tool_name="cross_curricular",
@@ -1198,6 +1319,10 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     max_tokens=6000,
                     temperature=0.7
                 ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
                     if chunk.get("error"):
                         try:
                             await websocket.send_json({
@@ -1208,15 +1333,15 @@ async def cross_curricular_websocket(websocket: WebSocket):
                         except:
                             logger.error("Could not send error message - connection closed")
                         break
-                    
-                    if chunk["finished"]:
+
+                    if chunk.get("finished"):
                         try:
                             await websocket.send_json({"type": "done"})
                             await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
                         break
-                    
+
                     # Send each token as it's generated in real-time
                     try:
                         await websocket.send_json({
@@ -1227,7 +1352,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     except Exception as e:
                         logger.error(f"Error sending token: {e}")
                         break
-                
+
             except Exception as e:
                 logger.error(f"Cross-curricular generation error: {e}")
                 try:
@@ -1237,7 +1362,12 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     })
                 except:
                     logger.error("Could not send error message - connection closed")
-                        
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
     except WebSocketDisconnect:
         logger.info("Cross-curricular WebSocket disconnected")
     except Exception as e:

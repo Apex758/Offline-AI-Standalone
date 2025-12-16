@@ -825,7 +825,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     const prompt = buildCrossCurricularPrompt(mappedData);
 
     try {
-      wsRef.current.send(JSON.stringify({ prompt }));
+      wsRef.current.send(JSON.stringify({
+        prompt,
+        generationMode: settings.generationMode,
+      }));
     } catch (error) {
       console.error('Failed to send cross-curricular plan request:', error);
       setLoading(false);

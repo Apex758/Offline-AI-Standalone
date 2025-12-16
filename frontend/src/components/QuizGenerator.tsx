@@ -448,7 +448,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     const prompt = buildQuizPrompt(formData);
 
     try {
-      wsRef.current.send(JSON.stringify({ prompt }));
+      wsRef.current.send(JSON.stringify({
+        prompt,
+        generationMode: settings.generationMode,
+      }));
     } catch (error) {
       console.error('Failed to send quiz request:', error);
       setLoading(false);

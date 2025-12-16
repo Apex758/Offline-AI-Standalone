@@ -591,6 +591,42 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>
 
+          {/* Generation Behavior Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Generation Behavior</CardTitle>
+              <CardDescription>
+                Control how AI generations are processed. "Queued" is recommended for stability; "Simultaneous" is experimental and may cause issues.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="generationMode"
+                    value="queued"
+                    checked={settings.generationMode === 'queued'}
+                    onChange={() => updateSettings({ generationMode: 'queued' })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Queued (recommended)</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="generationMode"
+                    value="simultaneous"
+                    checked={settings.generationMode === 'simultaneous'}
+                    onChange={() => updateSettings({ generationMode: 'simultaneous' })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Simultaneous (experimental)</span>
+                </label>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Theme Section */}
           <Card className="mb-6" data-tutorial="settings-appearance">
             <CardHeader>

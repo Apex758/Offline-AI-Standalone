@@ -743,7 +743,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     const prompt = buildLessonPrompt(formData, curriculumMatches);
 
     try {
-      wsRef.current.send(JSON.stringify({ prompt }));
+      wsRef.current.send(JSON.stringify({
+        prompt,
+        generationMode: settings.generationMode,
+      }));
     } catch (error) {
       console.error('Failed to send lesson plan request:', error);
       setLoading(false);

@@ -766,7 +766,10 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     const prompt = buildRubricPrompt(formData);
 
     try {
-      wsRef.current.send(JSON.stringify({ prompt }));
+      wsRef.current.send(JSON.stringify({
+        prompt,
+        generationMode: settings.generationMode,
+      }));
     } catch (error) {
       console.error('Failed to send rubric request:', error);
       setLoading(false);
