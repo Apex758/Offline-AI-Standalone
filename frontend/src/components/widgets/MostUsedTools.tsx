@@ -84,7 +84,7 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
                     className="relative mb-2 p-3 rounded-lg"
                     style={{ backgroundColor: `${color}20` }}
                   >
-                    <Icon className="w-6 h-6" style={{ color }} />
+                    <Icon className="w-10 h-10" style={{ color }} />
                     
                     {/* Rank Badge */}
                     <div
@@ -100,10 +100,6 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
                     {tool.name}
                   </p>
 
-                  {/* Usage Count */}
-                  <div className="px-2 py-0.5 bg-gray-100 rounded-full">
-                    <span className="text-xs font-bold text-gray-700">{tool.count}</span>
-                  </div>
                 </button>
               );
             })}
