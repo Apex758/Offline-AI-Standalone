@@ -8,6 +8,7 @@ import axios from 'axios';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { TUTORIAL_IDS } from '../data/tutorialSteps';
+import { useNavigate } from 'react-router-dom';
 import CalendarModal from './CalendarModal';
 
 interface AnalyticsDashboardProps {
@@ -34,6 +35,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   onNavigate,
   onCreateTab
 }) => {
+  const navigate = useNavigate();
+
   const [stats, setStats] = useState<Stats>({
     lessonPlans: 0,
     rubrics: 0,
@@ -275,22 +278,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     }
   };
 
+  // Updated: Use navigation for CalendarModal resource actions
   const handleViewResource = (type: string, resource: any) => {
-    if (onCreateTab) {
-      // Close modal first
-      setShowCalendarModal(false);
-      // Then create the tab with resource data
-      onCreateTab(type);
-    }
+    setShowCalendarModal(false);
+    setTimeout(() => {
+      navigate(`/resources/${resource.id}`);
+    }, 100); // Small delay to allow modal to close smoothly
   };
 
   const handleEditResource = (type: string, resource: any) => {
-    if (onCreateTab) {
-      // Close modal first
-      setShowCalendarModal(false);
-      // Then create the tab with resource data in edit mode
-      onCreateTab(type);
-    }
+    setShowCalendarModal(false);
+    setTimeout(() => {
+      navigate(`/resources/${resource.id}/edit`);
+    }, 100);
   };
 
   if (loading) {
