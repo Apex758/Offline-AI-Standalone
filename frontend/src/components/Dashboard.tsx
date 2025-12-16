@@ -18,7 +18,8 @@ import {
   Users,
   BarChart3,
   Library,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Target
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState } from '../types';
@@ -155,7 +156,8 @@ const iconMap: { [key: string]: any } = {
   Users,
   BarChart3,
   Library,
-  Settings: SettingsIcon
+  Settings: SettingsIcon,
+  Target
 };
 
 const MAX_TABS_PER_TYPE = 3;
