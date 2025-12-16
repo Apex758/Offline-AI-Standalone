@@ -125,3 +125,22 @@ MODEL_VERBOSE = False
 MODEL_N_CTX = 4096
 MODEL_MAX_TOKENS = 2000
 MODEL_TEMPERATURE = 0.7
+
+
+
+# ============================================================================
+# INFERENCE BACKEND CONFIGURATION
+# ============================================================================
+
+# Choose inference backend: "local" or "gemma_api"
+INFERENCE_BACKEND = os.environ.get("INFERENCE_BACKEND", "local")
+
+# Gemma API configuration (only used if INFERENCE_BACKEND="gemma_api")
+GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY", "")
+
+print(f"✓ [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
+if INFERENCE_BACKEND == "gemma_api":
+    if GEMMA_API_KEY:
+        print(f"✓ [CONFIG] Gemma API key configured", flush=True)
+    else:
+        print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'gemma_api' but GEMMA_API_KEY not set!", flush=True)
