@@ -161,17 +161,15 @@ async def lifespan(app):
     
     # Initialize Llama model singleton
     try:
-        logger.info("Initializing Llama model...")
-        llama = LlamaInference.get_instance(
-            model_path=get_model_path(),
-            n_ctx=MODEL_N_CTX
-        )
-        if llama.is_loaded:
-            logger.info(f"Llama model loaded successfully")
+        from inference_factory import get_inference_instance
+        logger.info("Initializing inference backend...")
+        inference = get_inference_instance()
+        if inference.is_loaded:
+            logger.info(f"Inference backend loaded successfully")
         else:
-            logger.error("Failed to load Llama model")
+            logger.error("Failed to load inference backend")
     except Exception as e:
-        logger.error(f"Model initialization failed: {e}")
+        logger.error(f"Inference backend initialization failed: {e}")
 
     # Initialize CurriculumMatcher singleton
     global curriculum_matcher
@@ -193,13 +191,13 @@ async def lifespan(app):
     logger.info("Server ready!")
     yield
     # Shutdown logic
-    if LlamaInference.is_initialized():
-        try:
-            llama = LlamaInference.get_instance()
-            llama.cleanup()
-            logger.info("Llama model cleaned up")
-        except Exception as e:
-            logger.error(f"Error cleaning up model: {e}")
+    try:
+        from inference_factory import get_inference_instance
+        inference = get_inference_instance()
+        inference.cleanup()
+        logger.info("Inference backend cleaned up")
+    except Exception as e:
+        logger.error(f"Error cleaning up inference backend: {e}")
     cleanup_all_processes()
     shutdown_executor()
 
@@ -443,7 +441,8 @@ async def generate_title(request: TitleGenerateRequest):
     try:
         prompt = build_title_prompt(request.user_message, request.assistant_message)
         
-        inference = LlamaInference.get_instance()
+        from inference_factory import get_inference_instance
+        inference = get_inference_instance()
         result = inference.generate(
             tool_name="title_generation",
             input_data=request.user_message,
@@ -575,7 +574,8 @@ async def websocket_chat(websocket: WebSocket):
             # === END TEMP DEBUG LOGGING ===
 
             try:
-                inference = LlamaInference.get_instance()
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
@@ -902,7 +902,8 @@ async def quiz_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                inference = LlamaInference.get_instance()
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
 
                 # Stream tokens as they are generated
                 for chunk in inference.generate_stream(
@@ -1010,7 +1011,8 @@ async def rubric_websocket(websocket: WebSocket):
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 logger.info("Getting LlamaInference instance...")
-                inference = LlamaInference.get_instance()
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
                 logger.info("Starting rubric generation...")
 
                 # Use streaming method for real-time generation
@@ -1112,7 +1114,8 @@ async def kindergarten_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                inference = LlamaInference.get_instance()
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
@@ -1210,7 +1213,8 @@ async def multigrade_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                inference = LlamaInference.get_instance()
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
@@ -1309,7 +1313,8 @@ async def cross_curricular_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                inference = LlamaInference.get_instance()
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
 
                 # Use streaming method for real-time generation
                 for chunk in inference.generate_stream(
