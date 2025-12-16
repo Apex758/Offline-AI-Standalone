@@ -33,6 +33,7 @@ export interface Settings {
   theme: 'light' | 'dark' | 'system';
   sidebarColor: string;
   tutorials: TutorialState;
+  generationMode: 'queued' | 'simultaneous';
 }
 
 export interface SettingsContextValue {
@@ -73,7 +74,8 @@ export const DEFAULT_SETTINGS: Settings = {
       autoShowOnFirstUse: true,
       showFloatingButtons: true
     }
-  }
+  },
+  generationMode: 'queued',
 };
 
 // localStorage key

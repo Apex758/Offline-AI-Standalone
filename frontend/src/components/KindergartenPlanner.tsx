@@ -720,7 +720,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     const prompt = buildKindergartenPrompt(mappedData);
 
     try {
-      wsRef.current.send(JSON.stringify({ prompt }));
+      wsRef.current.send(JSON.stringify({
+        prompt,
+        generationMode: settings.generationMode,
+      }));
     } catch (error) {
       console.error('Failed to send kindergarten plan request:', error);
       setLoading(false);
