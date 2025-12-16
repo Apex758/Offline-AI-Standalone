@@ -22,6 +22,7 @@ from config import (
     MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE
 )
 from pathlib import Path
+from routes import milestones as milestone_routes
 from llama_inference import LlamaInference
 from curriculum_matcher import CurriculumMatcher
 sys.stdout.reconfigure(encoding='utf-8')
@@ -178,6 +179,14 @@ async def lifespan(app):
     except Exception as e:
         curriculum_matcher = None
         logger.error(f"Failed to initialize CurriculumMatcher: {e}")
+
+    # Initialize MilestoneDB
+    from models.milestone_db import get_milestone_db
+    try:
+        milestone_db = get_milestone_db()
+        logger.info("Milestone database initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize milestone database: {e}")
     
     logger.info("Server ready!")
     yield
@@ -193,6 +202,9 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
+# Include milestone routes
+app.include_router(milestone_routes.router)
+
 # Add CORS middleware AFTER creating app
 app.add_middleware(
     CORSMiddleware,
@@ -205,6 +217,7 @@ app.add_middleware(
     allow_methods=["*"],  # This allows OPTIONS, POST, DELETE, etc.
     allow_headers=["*"],
 )
+
 
 class LoginRequest(BaseModel):
     username: str

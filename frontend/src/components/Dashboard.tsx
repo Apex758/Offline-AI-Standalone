@@ -33,6 +33,7 @@ import CrossCurricularPlanner from './CrossCurricularPlanner';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import ResourceManager from './ResourceManager';
 import Settings from './Settings';
+import CurriculumTracker from './CurriculumTracker';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -56,12 +57,19 @@ const tools: Tool[] = [
     type: 'analytics',
     description: 'View your teaching analytics and quick access'
   },
-  { 
+  {
     id: 'resource-manager',
     name: 'Resource Manager',
     icon: 'Library',
     type: 'resource-manager',
     description: 'View, edit, and manage all your saved resources'
+  },
+  {
+    id: 'curriculum-tracker',
+    name: 'Curriculum Tracker',
+    icon: 'Target',
+    type: 'curriculum-tracker',
+    description: 'Monitor your curriculum progress'
   },
   {
     id: 'chat',
@@ -639,6 +647,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             />
           </>
         );
+      case 'curriculum-tracker':
+        // Lazy import to avoid circular dependency if any
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        // const CurriculumTracker = require('./CurriculumTracker').default;
+        // But since it's already imported in the project, just use it:
+        // @ts-ignore
+        // eslint-disable-next-line
+        return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'chat':
         return (
           <Chat 
