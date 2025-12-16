@@ -350,8 +350,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const updatedTabs = tabs.filter(tab => tab.id !== tabId);
     setTabs(updatedTabs);
 
-    // ✅ Close WebSocket for this tab
+    // Close all possible WebSocket connections for this tab
+    const { closeConnection } = useWebSocket();
+    const endpoints = [
+      '/ws/chat',
+      '/ws/lesson-plan',
+      '/ws/quiz',
+      '/ws/rubric',
+      '/ws/kindergarten',
+      '/ws/multigrade',
+      '/ws/cross-curricular'
+    ];
+    endpoints.forEach(endpoint => {
+      closeConnection(tabId, endpoint);
+    });
+
+    // ✅ Close WebSocket for this tab (legacy/extra)
     closeConnection(tabId);
+
+    // Debug: Log all open WebSocket keys after closing
+    if (window && (window as any).wsDebugListConnections) {
+      (window as any).wsDebugListConnections(tabId);
+    }
 
     if (splitView.isActive && (tabId === splitView.leftTabId || tabId === splitView.rightTabId)) {
       if (updatedTabs.length < 2) {
