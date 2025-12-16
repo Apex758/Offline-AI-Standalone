@@ -12,6 +12,7 @@ export interface TabColors {
   'quiz-generator': string;
   'rubric-generator': string;
   'resource-manager': string;
+  'curriculum-tracker': string;
 }
 
 export interface TutorialState {
@@ -57,7 +58,8 @@ export const DEFAULT_SETTINGS: Settings = {
     'cross-curricular-planner': '#6366f1',
     'quiz-generator': '#14b8a6',
     'rubric-generator': '#f97316',
-    'resource-manager': '#84cc16'
+    'resource-manager': '#84cc16',
+    'curriculum-tracker': '#22c55e'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',
