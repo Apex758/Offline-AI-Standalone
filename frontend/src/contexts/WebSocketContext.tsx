@@ -1,235 +1,170 @@
-import React, { createContext, useContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
 
 interface WebSocketConnection {
   ws: WebSocket;
   isStreaming: boolean;
   streamingContent: string;
-  listeners?: Set<() => void>;
+  listeners: Set<() => void>;
 }
 
 interface WebSocketContextValue {
   getConnection: (tabId: string, endpoint: string) => WebSocket;
-  setStreaming: (tabId: string, endpoint: string, isStreaming: boolean) => void;
   getStreamingContent: (tabId: string, endpoint: string) => string;
-  setStreamingContent: (tabId: string, endpoint: string, content: string) => void;
-  appendStreamingContent: (tabId: string, endpoint: string, content: string) => void;
+  getIsStreaming: (tabId: string, endpoint: string) => boolean;
   clearStreaming: (tabId: string, endpoint: string) => void;
   closeConnection: (tabId: string, endpoint: string) => void;
-  getIsStreaming: (tabId: string, endpoint: string) => boolean;
   subscribe: (tabId: string, endpoint: string, listener: () => void) => () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextValue | undefined>(undefined);
 
+// ✅ Helper to create unique keys per (tabId + endpoint)
+const getConnectionKey = (tabId: string, endpoint: string): string => {
+  return `${tabId}::${endpoint}`;
+};
+
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // ✅ CRITICAL: This must be inside the component
   const connectionsRef = useRef<Map<string, WebSocketConnection>>(new Map());
   const [, forceUpdate] = useState({});
 
-  const getConnectionKey = (tabId: string, endpoint: string): string => {
-    return `${tabId}::${endpoint}`;
-  };
+  const notifyListeners = useCallback((key: string) => {
+    const conn = connectionsRef.current.get(key);
+    if (conn) {
+      conn.listeners.forEach(listener => listener());
+    }
+  }, []);
 
-  // Helper to notify listeners if present (no-op for now)
-  const notifyListeners = (_key: string) => {};
-
-  const getConnection = React.useCallback((tabId: string, endpoint: string): WebSocket => {
+  const getConnection = useCallback((tabId: string, endpoint: string): WebSocket => {
     const key = getConnectionKey(tabId, endpoint);
     let conn = connectionsRef.current.get(key);
-
+    
     if (!conn || conn.ws.readyState === WebSocket.CLOSED) {
       const isElectron = typeof window !== 'undefined' && 'electronAPI' in window;
       const wsUrl = isElectron
         ? `ws://127.0.0.1:8000${endpoint}`
         : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${endpoint}`;
-
-      console.log(`[WebSocketContext] Creating new WebSocket connection: ${wsUrl} (key=${key})`);
+      
       const ws = new WebSocket(wsUrl);
-      conn = { ws, isStreaming: false, streamingContent: '', listeners: new Set() };
+      
+      conn = {
+        ws,
+        isStreaming: false,
+        streamingContent: '',
+        listeners: new Set()
+      };
       connectionsRef.current.set(key, conn);
+      
+      // ✅ CRITICAL: Message handlers live HERE in context, not in components
+      ws.onopen = () => {
+        console.log(`[WebSocket ${key}] Connected`);
+      };
 
-      // Message handlers here in context
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         const conn = connectionsRef.current.get(key);
         if (!conn) return;
 
         if (data.type === 'token') {
+          // ✅ Accumulate content - works even when tab is inactive
           conn.streamingContent += data.content;
           conn.isStreaming = true;
-          console.log(`[WebSocketContext] Received token for key=${key}:`, data.content);
           notifyListeners(key);
           forceUpdate({});
         } else if (data.type === 'done') {
+          // ✅ Mark streaming as complete
           conn.isStreaming = false;
-          console.log(`[WebSocketContext] Received done for key=${key}`);
+          notifyListeners(key);
+          forceUpdate({});
+        } else if (data.type === 'error') {
+          console.error(`[WebSocket ${key}] Error:`, data.message);
+          conn.isStreaming = false;
           notifyListeners(key);
           forceUpdate({});
         }
       };
 
-      ws.onopen = () => {
-        console.log(`[WebSocketContext] WebSocket connection opened for key=${key}`);
+      ws.onerror = (error) => {
+        console.error(`[WebSocket ${key}] Connection error:`, error);
+        const conn = connectionsRef.current.get(key);
+        if (conn) {
+          conn.isStreaming = false;
+          notifyListeners(key);
+          forceUpdate({});
+        }
       };
+
       ws.onclose = () => {
-        console.log(`[WebSocketContext] WebSocket connection closed for key=${key}`);
+        console.log(`[WebSocket ${key}] Connection closed`);
+        const conn = connectionsRef.current.get(key);
+        if (conn) {
+          conn.isStreaming = false;
+          notifyListeners(key);
+        }
       };
-      ws.onerror = (err) => {
-        console.error(`[WebSocketContext] WebSocket error for key=${key}:`, err);
-      };
+      
+      console.log(`[WebSocket] Created new connection for ${key}`);
     }
-    // Fallback: if conn is still undefined, throw error (should not happen)
-    if (!conn) {
-      throw new Error('WebSocket connection could not be established');
-    }
+    
     return conn.ws;
-  }, []);
+  }, [notifyListeners]);
 
-  const setStreaming = (tabId: string, endpoint: string, isStreaming: boolean) => {
-    const key = getConnectionKey(tabId, endpoint);
-    console.log(`[WebSocketContext] setStreaming key=${key}`);
-    const conn = connectionsRef.current.get(key);
-    if (conn) {
-      conn.isStreaming = isStreaming;
-      forceUpdate({});
-    } else {
-      console.warn(`[WebSocketContext] setStreaming: No connection found for key=${key}`);
-    }
-  };
-
-  const getStreamingContent = (tabId: string, endpoint: string): string => {
+  const getStreamingContent = useCallback((tabId: string, endpoint: string): string => {
     const key = getConnectionKey(tabId, endpoint);
     return connectionsRef.current.get(key)?.streamingContent || '';
-  };
+  }, []);
 
-  const setStreamingContent = (tabId: string, endpoint: string, content: string) => {
+  const getIsStreaming = useCallback((tabId: string, endpoint: string): boolean => {
     const key = getConnectionKey(tabId, endpoint);
-    console.log(`[WebSocketContext] setStreamingContent key=${key}`);
-    const conn = connectionsRef.current.get(key);
-    if (conn) {
-      conn.streamingContent = content;
-      forceUpdate({});
-    } else {
-      console.warn(`[WebSocketContext] setStreamingContent: No connection found for key=${key}`);
-    }
-  };
+    return connectionsRef.current.get(key)?.isStreaming || false;
+  }, []);
 
-  const appendStreamingContent = (tabId: string, endpoint: string, content: string) => {
-    const key = getConnectionKey(tabId, endpoint);
-    console.log(`[WebSocketContext] appendStreamingContent key=${key}`);
-    const conn = connectionsRef.current.get(key);
-    if (conn) {
-      conn.streamingContent += content;
-      forceUpdate({});
-    } else {
-      console.warn(`[WebSocketContext] appendStreamingContent: No connection found for key=${key}`);
-    }
-  };
-
-  const clearStreaming = (tabId: string, endpoint: string) => {
+  const clearStreaming = useCallback((tabId: string, endpoint: string) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
     if (conn) {
       conn.streamingContent = '';
       conn.isStreaming = false;
+      notifyListeners(key);
       forceUpdate({});
     }
-  };
+  }, [notifyListeners]);
 
-  const closeConnection = (tabId: string, endpoint: string) => {
+  const closeConnection = useCallback((tabId: string, endpoint: string) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
     if (conn && conn.ws.readyState === WebSocket.OPEN) {
       conn.ws.close();
       connectionsRef.current.delete(key);
-      console.log(`[WebSocketContext] Closed connection for key=${key}`);
+      console.log(`[WebSocket] Closed connection for ${key}`);
     }
-  };
+  }, []);
 
-  const getIsStreaming = (tabId: string, endpoint: string): boolean => {
+  const subscribe = useCallback((tabId: string, endpoint: string, listener: () => void): (() => void) => {
     const key = getConnectionKey(tabId, endpoint);
-    return connectionsRef.current.get(key)?.isStreaming || false;
-  };
-
-  const subscribe = (tabId: string, endpoint: string, listener: () => void): (() => void) => {
-    const key = getConnectionKey(tabId, endpoint);
-    let conn = connectionsRef.current.get(key);
-    if (!conn) {
-      // Create a dummy connection to hold listeners if not present
-      conn = { ws: {} as WebSocket, isStreaming: false, streamingContent: '', listeners: new Set() };
-      connectionsRef.current.set(key, conn);
+    const conn = connectionsRef.current.get(key);
+    if (conn) {
+      conn.listeners.add(listener);
+      return () => {
+        conn.listeners.delete(listener);
+      };
     }
-    if (!conn.listeners) {
-      conn.listeners = new Set();
-    }
-    conn.listeners.add(listener);
-    return () => {
-      conn?.listeners?.delete(listener);
-    };
-  };
+    return () => {};
+  }, []);
 
   return (
     <WebSocketContext.Provider value={{
       getConnection,
-      setStreaming,
       getStreamingContent,
-      setStreamingContent,
-      appendStreamingContent,
+      getIsStreaming,
       clearStreaming,
       closeConnection,
-      getIsStreaming,
       subscribe
     }}>
       {children}
     </WebSocketContext.Provider>
   );
 };
-
-// Debug utility: expose a function to list all open WebSocket connections for a tab
-if (typeof window !== "undefined") {
-  (window as any).wsDebugListConnections = (tabId: string) => {
-    // @ts-ignore
-    const connectionsRef = (window as any).wsDebugConnectionsRef || undefined;
-    let ref = connectionsRef;
-    // Try to get the actual ref if not set
-    if (!ref && window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-      // Try to find the ref in React context (best effort, not always possible)
-      // This is a fallback for debugging only
-    }
-    // Use the ref from this module if possible
-    if (!ref && typeof require !== "undefined") {
-      try {
-        // @ts-ignore
-        ref = require("./WebSocketContext").connectionsRef;
-      } catch {}
-    }
-    // Fallback: use a global variable if set
-    if (!ref && (window as any).wsDebugConnectionsRef) {
-      ref = (window as any).wsDebugConnectionsRef;
-    }
-    // If still not found, try to access from closure (will work in this file)
-    if (!ref && typeof connectionsRef !== "undefined") {
-      ref = connectionsRef;
-    }
-    if (!ref) {
-      console.warn("[wsDebugListConnections] Could not access connectionsRef");
-      return;
-    }
-    const map = ref.current as Map<string, any>;
-    const keys = Array.from(map.keys());
-    const matches = keys.filter(k => k.startsWith(tabId + "::"));
-    if (matches.length === 0) {
-      console.log(`[wsDebugListConnections] No open WebSocket connections for tabId=${tabId}`);
-    } else {
-      console.log(`[wsDebugListConnections] Open WebSocket connections for tabId=${tabId}:`);
-      matches.forEach(k => {
-        const conn = map.get(k);
-        console.log(`  key=${k}, readyState=${conn?.ws?.readyState}`);
-      });
-    }
-  };
-  // Expose the ref for debugging
-  (window as any).wsDebugConnectionsRef = connectionsRef;
-}
 
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);

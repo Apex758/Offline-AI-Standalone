@@ -1,4 +1,17 @@
 
+# Enforce UTF-8 encoding for all std streams and environment
+import os
+import sys
+
+# Set environment variable for all subprocesses
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
+# Reconfigure stdout/stderr if possible (Python 3.7+)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware

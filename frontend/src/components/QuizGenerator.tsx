@@ -25,7 +25,7 @@ interface QuizHistory {
   timestamp: string;
   formData: FormData;
   generatedQuiz: string;
-  parsedQuiz?: ParsedQuiz; // Add parsed quiz to history
+  parsedQuiz?: ParsedQuiz;
 }
 
 interface FormData {
@@ -137,9 +137,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const tabColor = settings.tabColors['quiz-generator'];
   const [showTutorial, setShowTutorial] = useState(false);
-  const shouldReconnectRef = useRef(true);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [quizHistories, setQuizHistories] = useState<QuizHistory[]>([]);
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
@@ -169,7 +166,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   // Form data
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
-    // Robust validation: check if saved data exists AND has meaningful content
     if (saved && typeof saved === 'object' && saved.subject?.trim()) {
       return saved;
     }
@@ -177,6 +173,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   });
 
   const [generatedQuiz, setGeneratedQuiz] = useState<string>(savedData?.generatedQuiz || '');
+  
+  // ✅ Read streaming content from context (read-only, no setter!)
   const streamingQuiz = getStreamingContent(tabId, ENDPOINT);
   const loading = getIsStreaming(tabId, ENDPOINT);
 
@@ -195,7 +193,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setParsedQuiz(parsed);
       } else {
         console.log('Loaded quiz parsing failed, creating fallback');
-        // Fallback: convert text to parsed format
         setParsedQuiz(displayTextToQuiz(generatedQuiz, {
           title: `${formData.subject} Quiz`,
           subject: formData.subject,
@@ -214,33 +211,29 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   }, [savedData?.startInEditMode, parsedQuiz, isEditing]);
 
-  // WebSocketContext API: connect on tabId change
+  // ✅ Connect WebSocket on mount
   useEffect(() => {
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // FIXED: Properly handle tab switches without losing state
+  // ✅ FIXED: Handle tab switches without losing state
   useEffect(() => {
     const isNewTab = currentTabIdRef.current !== tabId;
     currentTabIdRef.current = tabId;
     
-    // Only update state when switching tabs OR on first initialization
     if (isNewTab || !hasInitializedRef.current) {
       const saved = savedData?.formData;
       
-      // Robust validation: check if saved data has meaningful content
       if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-        // Restore all state for this tab
         setFormData(saved);
         setGeneratedQuiz(savedData?.generatedQuiz || '');
-        setStreamingQuiz(savedData?.streamingQuiz || '');
         setParsedQuiz(savedData?.parsedQuiz || null);
+        // ✅ No need to set streamingQuiz - it's managed by context
       } else {
-        // New tab or empty tab - set to default state
         setFormData(getDefaultFormData());
         setGeneratedQuiz('');
-        setStreamingQuiz('');
         setParsedQuiz(null);
+        // ✅ No need to clear streamingQuiz - it's managed by context
       }
       
       hasInitializedRef.current = true;
@@ -311,8 +304,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  // Removed old exportQuiz logic; now handled by ExportButton
-
   useEffect(() => {
     loadQuizHistories();
   }, []);
@@ -373,18 +364,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const clearForm = () => {
-    setFormData({
-      subject: '',
-      gradeLevel: '',
-      learningOutcomes: '',
-      questionTypes: [],
-      cognitiveLevels: [],
-      timeLimitPerQuestion: '',
-      randomizeQuestions: false,
-      numberOfQuestions: '10'
-    });
+    setFormData(getDefaultFormData());
     setGeneratedQuiz('');
-    setStreamingQuiz('');
+    // ✅ Clear streaming content in context
+    clearStreaming(tabId, ENDPOINT);
     setParsedQuiz(null);
     setCurrentQuizId(null);
     setIsEditing(false);
@@ -410,13 +393,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     setShowTutorial(false);
   };
 
-  // Save data whenever it changes
+  // ✅ Save data whenever it changes (no streamingQuiz in saved data)
   useEffect(() => {
-    onDataChange({ formData, generatedQuiz, streamingQuiz, parsedQuiz });
-  }, [formData, generatedQuiz, streamingQuiz, parsedQuiz]);
+    onDataChange({ formData, generatedQuiz, parsedQuiz });
+  }, [formData, generatedQuiz, parsedQuiz]);
 
-
-  // Finalization logic for streaming state
+  // ✅ Finalization logic - when streaming completes, update generatedQuiz
   useEffect(() => {
     if (streamingQuiz && !loading) {
       setGeneratedQuiz(streamingQuiz);
@@ -517,7 +499,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       <button
                         onClick={() => {
                           setGeneratedQuiz('');
-                          setStreamingQuiz('');
+                          clearStreaming(tabId, ENDPOINT);
                           setParsedQuiz(null);
                           setIsEditing(false);
                         }}
@@ -889,9 +871,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         autoStart={showTutorial}
         showFloatingButton={false}
       />
-
-      {/* Disable local TutorialButton (handled globally in Dashboard) */}
-      
     </div>
   );
 };
