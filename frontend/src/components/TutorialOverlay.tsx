@@ -5,28 +5,34 @@ export interface TutorialStep {
   target: string;
   title: string;
   description: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   interactive?: boolean;
   waitForAction?: string;
   actionHint?: string;
   clickTarget?: string;
   className?: string;
 }
+
 interface TutorialOverlayProps {
   steps: TutorialStep[];
   onComplete?: () => void;
-  autoStart?: boolean; 
-  onStepChange?: (step: number) => void; 
-  showFloatingButton?: boolean; 
+  autoStart?: boolean;
+  onStepChange?: (step: number) => void;
+  showFloatingButton?: boolean;
+  isSplitViewActive?: boolean;
 }
 
-export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ 
-  steps, 
-  onComplete, 
+
+export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
+  steps,
+  onComplete,
   autoStart = false,
-  onStepChange, 
-  showFloatingButton = true
+  onStepChange,
+  showFloatingButton = true,
+  isSplitViewActive = false
 }) => {
+
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(autoStart);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
@@ -65,21 +71,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             element.addEventListener('click', clickHandler, { once: true });
             
             return () => element.removeEventListener('click', clickHandler);
-          }
-
-         
-          if (step.waitForAction === 'contextmenu') {
-            const contextMenuHandler = () => {
-              // Don't prevent default - let the menu open naturally
-              
-              setTimeout(() => {
-                setWaitingForAction(false);
-                handleNext();
-              }, 500); // Shorter delay, just advance to next step
-            };
-            element.addEventListener('contextmenu', contextMenuHandler, { once: true });
-            
-            return () => element.removeEventListener('contextmenu', contextMenuHandler);
           }
         }
         
@@ -167,6 +158,20 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     tooltipWidth: number,
     tooltipHeight: number
   ): { position: string; style: React.CSSProperties } => {
+    const step = steps[currentStep];
+
+    // ⬇️ HARD OVERRIDE: center tooltip on the spotlight cutout
+    if (step.position === 'center') {
+      return {
+        position: 'center',
+        style: {
+          top: `${highlightRect.top + highlightRect.height / 2}px`,
+          left: `${highlightRect.left + highlightRect.width / 2}px`,
+          transform: 'translate(-50%, -50%)',
+        },
+      };
+    }
+
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const spacing = 24; // Consistent spacing from highlighted element
@@ -219,7 +224,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     ];
 
     // Check if preferred position from step configuration fits
-    const step = steps[currentStep];
     const preferredPosition = step.position || 'bottom';
     const preferred = positions.find(p => p.name === preferredPosition);
     
@@ -250,7 +254,19 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   // Separate effect for tooltip positioning to avoid jitter
   useEffect(() => {
-    if (!highlightRect || !tooltipRef.current) return;
+    if (!tooltipRef.current) return;
+
+    // ✅ CENTER TOOLTIP WHEN SPLIT VIEW IS ACTIVE
+    if (isSplitViewActive) {
+      setTooltipPosition({
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      });
+      return;
+    }
+
+    if (!highlightRect) return;
 
     const calculatePosition = () => {
       const tooltip = tooltipRef.current;
@@ -266,14 +282,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       setTooltipPosition(style);
     };
 
-    // Calculate immediately
     calculatePosition();
-    
-    // Recalculate after a brief delay (for render completion)
     const timeoutId = setTimeout(calculatePosition, 100);
-
     return () => clearTimeout(timeoutId);
-  }, [highlightRect, currentStep, steps]);
+  }, [highlightRect, currentStep, steps, isSplitViewActive]);
+
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -351,7 +364,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           <defs>
             <mask id="spotlight-mask">
               <rect x="0" y="0" width="100%" height="100%" fill="white" />
-              {highlightRect && (
+              {highlightRect && !isSplitViewActive && (
                 <rect
                   x={highlightRect.left - 8}
                   y={highlightRect.top - 8}
@@ -361,6 +374,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                   fill="black"
                 />
               )}
+
             </mask>
           </defs>
           <rect
@@ -414,22 +428,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                   clickElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
                 }
               }}
-              onContextMenu={(e) => {
-                const step = steps[currentStep];
-                if (step.waitForAction === 'contextmenu') {
-                  e.preventDefault(); // Prevent default briefly
-                  let clickElement = highlightedElementRef.current;
-
-                  if (step.clickTarget) {
-                    const specificTarget = document.querySelector(step.clickTarget);
-                    if (specificTarget) {
-                      clickElement = specificTarget;
-                    }
-                  }
-
-                  clickElement?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-                }
-              }}
             />
           )}
         </>
@@ -453,7 +451,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       {highlightRect && (
       <div
         ref={tooltipRef}
-        className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-10 transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
+        className={`absolute bg-white rounded-xl shadow-2xl p-6 max-w-md w-full sm:w-96 z-[10002] transition-all duration-200 max-h-[80vh] overflow-y-auto animate-fadeIn ${steps[currentStep]?.className || ''}`}
         style={tooltipPosition}
         >
           <button
@@ -648,29 +646,21 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     clickTarget: '[data-tab-type="analytics"]', 
   },
   {
-    target: '[data-tutorial="single-tab-demo"]',
-    title: 'Split View Feature 🔀',
-    description: 'Right-click this tab to open the context menu and see split options. This lets you view two tools side-by-side!',
+    target: '[data-tutorial="split-toggle"]',
+    title: 'Split View 🔀',
+    description:
+      'Click this Split View button to work with two tools side-by-side. This is perfect for referencing content while creating lessons.',
     position: 'bottom',
     interactive: true,
-    waitForAction: 'contextmenu',
-    actionHint: '👆 Right-click here!',
-  },
-  {
-    target: '[data-tutorial="split-context-menu"]',
-    title: 'Choose a Tab to Split With',
-    description: 'Click on any of the available tabs to create a split view. Let\'s click the first one to see it in action!',
-    position: 'right',
-    interactive: true,
     waitForAction: 'click',
-    actionHint: '👆 Click to split!',
-    clickTarget: '[data-tutorial="split-context-menu"] button:first-of-type',
+    actionHint: '👆 Click Split View',
   },
   {
   target: '[data-tutorial="split-view-demo"]',
-  title: 'Split View in Action! 🎉',
-  description: 'Perfect! Now you can see two tools side-by-side. The left panel shows your Dashboard, and the right panel shows Chat. You can work with both simultaneously - perfect for referencing curriculum while planning lessons!',
-  position: 'bottom',
+  title: 'Split View in Action 🎉',
+  description:
+    'Great! You are now in Split View. Each panel shows a different tool so you can work side-by-side.',
+  position: 'center',
   },
   {
     target: '[data-tutorial="lesson-planners-group"]',
@@ -707,7 +697,7 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     target: '[data-tutorial="main-content"]',
     title: 'Your Workspace',
     description: 'This is your main workspace where your active tool or split view will appear. You\'re all set to create amazing teaching resources!',
-    position: 'top',
+    position: 'center',
   },
 
 ];

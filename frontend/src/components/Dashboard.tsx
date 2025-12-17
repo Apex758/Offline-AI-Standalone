@@ -1456,6 +1456,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <div className="flex items-center gap-2">
             {tabs.length >= 2 && (
               <button
+                data-tutorial="split-toggle"
                 onClick={toggleSplitView}
                 className={`p-2 rounded-lg transition group flex-shrink-0 ${
                   splitView.isActive
@@ -1466,6 +1467,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               >
                 <Columns className="w-5 h-5" />
               </button>
+
             )}
             
             {tabs.length > 0 && (
@@ -1535,6 +1537,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         onComplete={handleTutorialComplete}
         autoStart={showFirstTimeTutorial}
         showFloatingButton={false}
+        isSplitViewActive={splitView.isActive}
         onStepChange={(step) => {
           // Step 6 is the lesson planner dropdown (0-indexed, so step 14 is the 15th step)
           if (step === 14) {
