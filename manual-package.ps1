@@ -16,6 +16,12 @@ Copy-Item "backend\main.py" -Destination $bundleDir
 Copy-Item "backend\config.py" -Destination $bundleDir
 Copy-Item "backend\llama_inference.py" -Destination $bundleDir -ErrorAction SilentlyContinue
 
+# Copy routes folder
+if (Test-Path "backend\routes") {
+    Copy-Item "backend\routes" -Destination "$bundleDir\routes" -Recurse -Force
+    Write-Host "Copied routes folder" -ForegroundColor Green
+}
+
 # Copy or create JSON files
 if (Test-Path "backend\chat_history.json") {
     Copy-Item "backend\chat_history.json" -Destination $bundleDir
