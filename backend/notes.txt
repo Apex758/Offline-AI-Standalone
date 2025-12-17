@@ -1,94 +1,75 @@
+Here’s a clean, developer-friendly reorg you can paste into your project README / TODO.
+
+## Run commands
+
+### Start backend (dev)
+
+```bash
 python -m uvicorn main:app --reload --port 8000
+```
 
+### Setup embedded Python
 
-
+```powershell
 .\setup-embedded-python.bat
+```
 
+### Package backend (embedded build step)
 
+```powershell
 .\python-embed\python.exe build-scripts/package-backend.py
+```
 
+### Build release
 
+```powershell
 .\build-release.ps1
+```
 
+---
 
-.............................    use uvicorn main:app --reload to start backend
+## Product roadmap
 
+### A) UX + editor flow
 
-Next steps:
+* Rich text editor **after generation** (post-processing step)
+* Ensure editors match across modules (Quiz / Lesson Plan / Chat output editing)
+* Add walkthrough / guided tour element
+* Update tab names to match current content
+* After login: create user profile fields (Name / “OAK” fields)
 
+### B) Curriculum intelligence
 
--Implement  rich text editor after generation 
--Convert curriculum to vectors in FAISS
--Connect the curriculum with the lesson planners.
--Connect AI Assistant
+* Better organize curriculum pages + build a “curriculum map” for AI ingestion
+* Convert curriculum to vectors in **FAISS**
+* Connect curriculum vectors to lesson planners (retrieval → planning)
+* Connect AI Assistant to curriculum + planners (same retrieval layer)
 
--Better organize curriculum pages and develop map to feed into ai
+### C) Model + prompting
 
--Create options for LLM
+* Create options for LLM (model picker + capability tiers)
+* Apply LoRA patches (where relevant)
+* FIX PROMPTS (centralize + version prompts; stop prompt drift)
 
--Apply LoRA patches 
+### D) Reliability + settings
 
--Update Tab Names with current content
+* Settings for updates (app update channel / model updates / content updates)
+* Use API key for a “power model” when the user is online (local-first, cloud-boost)
+* Read up on the email Ashley sent (capture requirements + decisions)
 
--Clean up code
+### E) Generation timing + performance signals
 
--Add walkthrough element
+* Add timer: estimated completion time based on PC specs
+* Ensure timing allocation is correct for **all** generators/streams
+* Include marks/score fields for rubric generation
 
--FIX PROMPTS
+Add queue feature for generations
+---
 
--settings for updates
+## Tuning guide (conversation memory window)
 
+* Small model (~2GB): `max_turns = 2` (last 2 exchanges)
+* Medium model (~4GB): `max_turns = 4`
+* Large model (8GB+): `max_turns = 6`
 
-
--use api key for powerful model while the user is connected to the internet
-
--read up on the email ashley sent
-
-
-add timer to show estimated time of completetion based on pc specs
-ensure timing allocation is right for all gener
-ensure editors match
- include marks for rubric gen
- after logging in, create name/oak fields to enter
-
-
-
-
- cd "C:\Users\LG\Desktop\Offline AI Standalone"
-
-# 1. Run the fixed packaging script
-.\manual-package.ps1
-
-# 2. Rebuild Electron
-npm run electron:build:win
-
-# 3. Copy models
-Copy-Item -Path "models\*" -Destination "dist-electron\win-unpacked\resources\models" -Recurse -Force
-
-# 4. Test manually first
-cd "dist-electron\win-unpacked\resources\backend-bundle"
-.\python-embed\python.exe start_backend.py
-
-
-Use .\build-release.ps1 for production releases.
-
-Use npm run electron:build:win only for local Electron packaging tests.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Tuning guide:
-
-Small model (2GB): max_turns=2 (remembers last 2 exchanges)
-Medium model (4GB): max_turns=4 (remembers last 4 exchanges)
-Large model (8GB+): max_turns=6 (remembers last 6 exchanges)
+---
