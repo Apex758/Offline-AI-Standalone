@@ -2,6 +2,9 @@
 # Enforce UTF-8 encoding for all std streams and environment
 import os
 import sys
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 # Set environment variable for all subprocesses
 os.environ["PYTHONIOENCODING"] = "utf-8"
@@ -35,7 +38,7 @@ from config import (
     MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE
 )
 from pathlib import Path
-from routes import milestones as milestone_routes
+from routes import milestones
 from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
 from llama_inference import run_llama_inference
@@ -217,7 +220,7 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 
 # Include milestone routes
-app.include_router(milestone_routes.router)
+app.include_router(milestones.router)
 
 # Add CORS middleware AFTER creating app
 app.add_middleware(
