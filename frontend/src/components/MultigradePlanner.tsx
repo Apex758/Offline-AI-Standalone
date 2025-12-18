@@ -10,7 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -390,27 +390,31 @@ const multigradePlanToDisplayText = (plan: ParsedMultigradePlan): string => {
 };
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  // Per-tab localStorage key
+  const LOCAL_STORAGE_KEY = `multigrade_state_${tabId}`;
+  const ENDPOINT = '/ws/multigrade';
+
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['multigrade-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const shouldReconnectRef = useRef(true);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
+
+  // WebSocketContext integration
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+
+  // Get streaming state from context
+  const streamingPlan = getStreamingContent(tabId, ENDPOINT);
+  const loading = getIsStreaming(tabId, ENDPOINT);
+
   const [historyOpen, setHistoryOpen] = useState(false);
   const [multigradeHistories, setMultigradeHistories] = useState<MultigradeHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-  const [step, setStep] = useState(savedData?.step || 1);
+  const [step, setStep] = useState<number>(1);
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
   const [parsedPlan, setParsedPlan] = useState<ParsedMultigradePlan | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
-
-  // Track initialization per tab to prevent state loss on tab switches
-  const hasInitializedRef = useRef(false);
-  const currentTabIdRef = useRef(tabId);
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -434,16 +438,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     differentiationNotes: ''
   });
 
-  const [formData, setFormData] = useState<FormData>(() => {
-    const saved = savedData?.formData;
-    // Robust validation: check if saved data exists AND has meaningful content
-    if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-      return saved;
-    }
-    return getDefaultFormData();
-  });
-
-  const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
+  // Start with defaults - will be restored from localStorage
+  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
+  const [generatedPlan, setGeneratedPlan] = useState<string>('');
 
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {
@@ -458,6 +455,26 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       }
     }
   }, [generatedPlan]);
+
+  // Finalization effect - runs when streaming completes
+  useEffect(() => {
+    if (streamingPlan && !loading) {
+      console.log('Multigrade plan generation complete, parsing...');
+      setGeneratedPlan(streamingPlan);
+
+      // Try to parse the completed plan
+      const parsed = parseMultigradeContent(streamingPlan, formData);
+      if (parsed) {
+        console.log('Multigrade plan parsed successfully');
+        setParsedPlan(parsed);
+      } else {
+        console.warn('Multigrade plan parsing failed');
+      }
+
+      // Clear streaming state in context
+      clearStreaming(tabId, ENDPOINT);
+    }
+  }, [streamingPlan, loading]);
 
   // Auto-enable editing mode if startInEditMode flag is set
   useEffect(() => {
@@ -511,114 +528,66 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     setShowTutorial(false);
   };
 
-  // FIXED: Properly handle tab switches without losing state
+  // Restore state from localStorage on tab change
   useEffect(() => {
-    const isNewTab = currentTabIdRef.current !== tabId;
-    currentTabIdRef.current = tabId;
-    
-    // Only update state when switching tabs OR on first initialization
-    if (isNewTab || !hasInitializedRef.current) {
-      const saved = savedData?.formData;
-      
-      // Robust validation: check if saved data has meaningful content
-      if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-        // Restore all state for this tab
-        setFormData(saved);
-        setGeneratedPlan(savedData?.generatedPlan || '');
-        setStep(savedData?.step || 1);
-        setParsedPlan(savedData?.parsedPlan || null);
-      } else {
-        // New tab or empty tab - set to default state
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedPlan(parsed.generatedPlan || '');
+        setParsedPlan(parsed.parsedPlan || null);
+        setCurrentPlanId(parsed.currentPlanId || null);
+        setStep(parsed.step || 1);
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
+        // Reset to defaults on parse error
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
-        setStep(1);
         setParsedPlan(null);
+        setCurrentPlanId(null);
+        setStep(1);
       }
-      
-      hasInitializedRef.current = true;
+    } else {
+      // No saved state - use defaults
+      setFormData(getDefaultFormData());
+      setGeneratedPlan('');
+      setParsedPlan(null);
+      setCurrentPlanId(null);
+      setStep(1);
     }
-  }, [tabId, savedData]);
+  }, [tabId]);
 
+  // Persist to localStorage on every change
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, step, parsedPlan });
-  }, [formData, generatedPlan, step, parsedPlan]);
+    const stateToSave = {
+      formData,
+      generatedPlan,
+      parsedPlan,
+      currentPlanId,
+      step
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [formData, generatedPlan, parsedPlan, currentPlanId, step]);
 
+  // Also notify parent (for backward compatibility)
   useEffect(() => {
-    shouldReconnectRef.current = true;
+    onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });
+  }, [formData, generatedPlan, streamingPlan, step, parsedPlan]);
 
-    const connectWebSocket = () => {
-      if (!shouldReconnectRef.current) return;
-  
-      try {
-        const wsUrl = getWebSocketUrl('/ws/multigrade', isElectronEnvironment());
-        const ws = new WebSocket(wsUrl);
-        
-        ws.onopen = () => {
-          console.log('Multigrade WebSocket connected');
-        };
-        
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'token') {
-            setStreamingPlan(prev => prev + data.content);
-          } else if (data.type === 'done') {
-            setStreamingPlan(current => {
-              const finalMessage = current || data.full_response;
-              setGeneratedPlan(finalMessage);
-              
-              console.log('Multigrade plan generation complete, parsing...');
-              
-              // Try to parse immediately
-              const parsed = parseMultigradeContent(finalMessage, formData);
-              if (parsed) {
-                console.log('Multigrade plan parsed successfully');
-                setParsedPlan(parsed);
-              } else {
-                console.warn('Multigrade plan parsing failed');
-              }
-              
-              setLoading(false);
-              return '';
-            });
-          }
-        };
-        
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setLoading(false);
-        };
-        
-        ws.onclose = () => {
-          console.log('WebSocket closed');
-          wsRef.current = null;
-          if (shouldReconnectRef.current && !loading) {
-            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
-          }
-        };
-        
-        wsRef.current = ws;
-      } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-        if (shouldReconnectRef.current) {
-          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
-        }
-      }
-    };
-    
-    connectWebSocket();
-    
-    return () => {
-      shouldReconnectRef.current = false;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
-      wsRef.current = null;
-    };
-  }, []);
+  // Establish WebSocket connection on mount
+  useEffect(() => {
+    getConnection(tabId, ENDPOINT);
+  }, [tabId]);
+
+  // Subscribe to streaming updates for re-renders
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      // This triggers re-render when streaming updates
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
 
   // Enable structured editing mode
   const enableEditing = () => {
@@ -740,54 +709,38 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   const generatePlan = () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    // Get connection from context
+    const ws = getConnection(tabId, ENDPOINT);
+
+    if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
 
-    setLoading(true);
-    setStreamingPlan('');
-
+    // No manual state management - context handles it
     const prompt = buildMultigradePrompt(formData);
 
     try {
-      wsRef.current.send(JSON.stringify({
+      ws.send(JSON.stringify({
         prompt,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
       console.error('Failed to send multigrade plan request:', error);
-      setLoading(false);
+      // Context handles error state
     }
   };
 
   const clearForm = () => {
-    setFormData({
-      subject: '',
-      gradeRange: '',
-      topic: '',
-      essentialLearningOutcomes: '',
-      specificLearningObjectives: '',
-      totalStudents: '',
-      prerequisiteSkills: '',
-      duration: '',
-      materials: '',
-      learningStyles: [],
-      learningPreferences: [],
-      multipleIntelligences: [],
-      customLearningStyles: '',
-      pedagogicalStrategies: [],
-      multigradeStrategies: [],
-      specialNeeds: false,
-      specialNeedsDetails: '',
-      differentiationNotes: ''
-    });
+    setFormData(getDefaultFormData());
     setGeneratedPlan('');
-    setStreamingPlan('');
     setParsedPlan(null);
     setCurrentPlanId(null);
     setStep(1);
     setIsEditing(false);
+
+    // Clear localStorage for this tab
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
   return (

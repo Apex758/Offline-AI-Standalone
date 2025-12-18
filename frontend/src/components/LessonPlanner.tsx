@@ -410,15 +410,16 @@ const lessonToDisplayText = (lesson: ParsedLesson): string => {
 };
 
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
+  // Per-tab localStorage key
+  const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
+
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
-  // --- WebSocketContext API and streaming state logic ---
-  const ENDPOINT = '/ws/lesson-plan';
-  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
 
-  // const [streamingPlan, setStreamingPlan] = useState('');
-  // const [loading, setLoading] = useState(false);
+  // WebSocketContext API and streaming state logic
+  const ENDPOINT = '/ws/lesson-plan';
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
 
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
   const loading = getIsStreaming(tabId, ENDPOINT);
@@ -433,11 +434,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumReference[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
   const [curriculumReferences, setCurriculumReferences] = useState<CurriculumReference[]>([]);
-  
-
-  // Track initialization per tab to prevent state loss on tab switches
-  const hasInitializedRef = useRef(false);
-  const currentTabIdRef = useRef(tabId);
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -462,24 +458,15 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     referenceUrl: ''
   });
 
-  // Initialize with proper validation - check if savedData has actual meaningful content
-  const [formData, setFormData] = useState<FormData>(() => {
-    const saved = savedData?.formData;
-    // Robust validation: check if saved data exists AND has meaningful content
-    if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-      return saved;
-    }
-    return getDefaultFormData();
-  });
-
-  const [generatedPlan, setGeneratedPlan] = useState<string>(() => savedData?.generatedPlan || '');
-  const [step, setStep] = useState(() => savedData?.step || 1);
+  // Start with defaults - will be restored from localStorage
+  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
+  const [generatedPlan, setGeneratedPlan] = useState<string>('');
+  const [step, setStep] = useState<number>(1);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
   useEffect(() => {
     if (generatedPlan && !parsedLesson) {
       console.log('Attempting to parse loaded/restored lesson...');
-      // Use empty array for curriculumRefs when loading saved lessons
       const parsed = parseLessonContent(generatedPlan, formData, curriculumReferences || []);
       if (parsed) {
         console.log('Loaded lesson parsed successfully');
@@ -488,7 +475,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         console.log('Loaded lesson parsing failed');
       }
     }
-  }, [generatedPlan, curriculumReferences]);  // Also add curriculumReferences to dependenciesX
+  }, [generatedPlan, curriculumReferences]);
 
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
@@ -549,33 +536,39 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   };
 
 
-  // FIXED: Properly handle tab switches without losing state
+  // Restore state from localStorage on tab change
   useEffect(() => {
-    const isNewTab = currentTabIdRef.current !== tabId;
-    currentTabIdRef.current = tabId;
-    
-    // Only update state when switching tabs OR on first initialization
-    if (isNewTab || !hasInitializedRef.current) {
-      const saved = savedData?.formData;
-      
-      // Robust validation: check if saved data has meaningful content
-      if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-        // Restore all state for this tab
-        setFormData(saved);
-        setGeneratedPlan(savedData?.generatedPlan || '');
-        setStep(savedData?.step || 1);
-        setParsedLesson(savedData?.parsedLesson || null);
-      } else {
-        // New tab or empty tab - set to default state
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedPlan(parsed.generatedPlan || '');
+        setParsedLesson(parsed.parsedLesson || null);
+        setCurrentPlanId(parsed.currentPlanId || null);
+        setStep(parsed.step || 1);
+        setCurriculumReferences(parsed.curriculumReferences || []);
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
+        // Reset to defaults on parse error
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
-        setStep(1);
         setParsedLesson(null);
+        setCurrentPlanId(null);
+        setStep(1);
+        setCurriculumReferences([]);
       }
-      
-      hasInitializedRef.current = true;
+    } else {
+      // No saved state - use defaults
+      setFormData(getDefaultFormData());
+      setGeneratedPlan('');
+      setParsedLesson(null);
+      setCurrentPlanId(null);
+      setStep(1);
+      setCurriculumReferences([]);
     }
-  }, [tabId, savedData]);
+  }, [tabId]);
 
   const subjects = [
     'Mathematics',
@@ -678,30 +671,62 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     return true;
   };
 
-  // Save data whenever it changes
+  // Persist to localStorage on every change
+  useEffect(() => {
+    const stateToSave = {
+      formData,
+      generatedPlan,
+      parsedLesson,
+      currentPlanId,
+      step,
+      curriculumReferences
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [formData, generatedPlan, parsedLesson, currentPlanId, step, curriculumReferences]);
+
+  // Also notify parent (for backward compatibility)
   useEffect(() => {
     onDataChange({
       formData,
       generatedPlan,
+      streamingPlan,
       step,
       parsedLesson
     });
-  }, [formData, generatedPlan, step, parsedLesson]);
+  }, [formData, generatedPlan, streamingPlan, step, parsedLesson]);
 
-  // --- WebSocketContext API: establish connection on tabId change ---
+  // Establish WebSocket connection on mount
   useEffect(() => {
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // --- Streaming finalization logic ---
+  // Subscribe to streaming updates for re-renders
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      // This triggers re-render when streaming updates
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
+
+  // Finalization effect - runs when streaming completes
   useEffect(() => {
     if (streamingPlan && !loading) {
+      console.log('Lesson plan generation complete, parsing...');
       setGeneratedPlan(streamingPlan);
+
+      // Parse the completed plan with curriculum references
       const parsed = parseLessonContent(streamingPlan, formData, curriculumReferences);
-      if (parsed) setParsedLesson(parsed);
+      if (parsed) {
+        console.log('Lesson plan parsed successfully');
+        setParsedLesson(parsed);
+      } else {
+        console.warn('Lesson plan parsing failed');
+      }
+
+      // Clear streaming state in context
       clearStreaming(tabId, ENDPOINT);
     }
-  }, [streamingPlan, loading]);
+  }, [streamingPlan, loading, curriculumReferences]);
 
   const generateLessonPlan = () => {
     const ws = getConnection(tabId, ENDPOINT);
@@ -796,32 +821,16 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   }, []);
 
   const clearForm = () => {
-    setFormData({
-      subject: '',
-      gradeLevel: '',
-      topic: '',
-      strand: '',
-      essentialOutcomes: '',
-      specificOutcomes: '',
-      studentCount: '',
-      duration: '',
-      pedagogicalStrategies: [],
-      learningStyles: [],
-      learningPreferences: [],
-      multipleIntelligences: [],
-      customLearningStyles: '',
-      materials: '',
-      prerequisiteSkills: '',
-      specialNeeds: false,
-      specialNeedsDetails: '',
-      additionalInstructions: '',
-      referenceUrl: ''
-    });
+    setFormData(getDefaultFormData());
     setGeneratedPlan('');
-    setStreamingPlan('');
     setParsedLesson(null);
+    setCurrentPlanId(null);
     setStep(1);
     setIsEditing(false);
+    setCurriculumReferences([]);
+
+    // Clear localStorage for this tab
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
  
