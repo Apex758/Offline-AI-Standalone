@@ -15,6 +15,11 @@ backend/venv/
 backend-bundle/bin
 backend-bundle/python_libs
 backend-bundle/python-embed
+backend-bundle/data
+backend-bundle/etc
+backend-bundle/lib
+backend-bundle/ssl
+backend-bundle/share
 
 
 # Build artifacts and distributions
