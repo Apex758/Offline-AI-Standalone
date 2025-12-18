@@ -399,7 +399,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
-  const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
 
   const curriculumUnits = ['Belonging', 'Weather', 'Celebrations', 'Plants and animals', 'Games'];
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -466,13 +465,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         // Restore all state for this tab
         setFormData(saved);
         setGeneratedPlan(savedData?.generatedPlan || '');
-        setStreamingPlan(savedData?.streamingPlan || '');
         setParsedPlan(savedData?.parsedPlan || null);
       } else {
         // New tab or empty tab - set to default state
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
-        setStreamingPlan('');
         setParsedPlan(null);
       }
       
@@ -481,8 +478,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   }, [tabId, savedData]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, streamingPlan, parsedPlan });
-  }, [formData, generatedPlan, streamingPlan, parsedPlan]);
+    onDataChange({ formData, generatedPlan, parsedPlan });
+  }, [formData, generatedPlan, parsedPlan]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;

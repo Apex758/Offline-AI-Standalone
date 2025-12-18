@@ -93,6 +93,10 @@
     },
     "extraResources": [
       {
+        "from": "resources/frontend/src/data/curriculumIndex.json",
+        "to": "frontend/src/data/curriculumIndex.json"
+      },
+      {
         "from": "backend-bundle",
         "to": "backend-bundle",
         "filter": [
