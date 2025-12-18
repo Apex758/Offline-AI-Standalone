@@ -108,6 +108,28 @@ if (Test-Path "backend\python-embed") {
     exit 1
 }
 
+
+# Copy entire GTK runtime folders (bin, etc, lib, share, ssl) into backend-bundle
+# (Old DLL-by-DLL copy loop is now commented out)
+# $gtkDllSource = "C:\Program Files\GTK3-Runtime Win64\bin"
+# $gtkDlls = @( ... )
+# foreach ($dll in $gtkDlls) { ... }
+# Write-Host "Copied GTK DLLs for WeasyPrint" -ForegroundColor Green
+
+$gtkBase = "C:\Program Files\GTK3-Runtime Win64"  # Update this path if your GTK install is elsewhere
+$gtkFolders = @("bin", "etc", "lib", "share", "ssl")
+foreach ($folder in $gtkFolders) {
+    $src = Join-Path $gtkBase $folder
+    $dst = Join-Path $bundleDir $folder
+    if (Test-Path $src) {
+        Write-Host "Copying GTK folder: $folder" -ForegroundColor Yellow
+        Copy-Item $src -Destination $dst -Recurse -Force
+    } else {
+        Write-Host "Warning: GTK folder $folder not found in $gtkBase" -ForegroundColor Yellow
+    }
+}
+Write-Host "Copied GTK runtime folders (bin, etc, lib, share, ssl) to backend-bundle" -ForegroundColor Green
+
 # Create startup script
 @"
 import sys
