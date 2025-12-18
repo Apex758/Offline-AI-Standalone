@@ -403,8 +403,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const [localLoading, setLocalLoading] = useState(false);
-  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
+  // Per-tab local loading state
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [multigradeHistories, setMultigradeHistories] = useState<MultigradeHistory[]>([]);
@@ -464,7 +465,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       const parsed = parseMultigradeContent(streamingPlan, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
-      setLocalLoading(false);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
     }
   }, [streamingPlan]);
 
@@ -707,7 +708,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       return;
     }
 
-    setLocalLoading(true);
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
 
     const prompt = buildMultigradePrompt(formData);
 

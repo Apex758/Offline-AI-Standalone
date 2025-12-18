@@ -19,15 +19,11 @@ class CurriculumMatcher:
             curriculum_index_path (str, optional): Path to curriculumIndex.json.
                 If not provided, will look for it in the default frontend location.
         """
-        import os
         if curriculum_index_path is None:
             # Default: look for frontend/src/data/curriculumIndex.json relative to backend
             base_dir = Path(__file__).parent.parent
             curriculum_index_path = base_dir / "frontend" / "src" / "data" / "curriculumIndex.json"
         self.curriculum_index_path = str(curriculum_index_path)
-        # Log the resolved path and current working directory for debugging
-        print(f"CurriculumMatcher: Looking for curriculumIndex.json at {self.curriculum_index_path}")
-        print(f"CurriculumMatcher: Current working directory is {os.getcwd()}")
         self.pages = self._load_curriculum_index()
 
     def _load_curriculum_index(self) -> List[Dict[str, Any]]:
