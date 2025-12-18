@@ -10,7 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 interface RubricGeneratorProps {
   tabId: string;
@@ -423,7 +423,9 @@ const rubricToDisplayText = (rubric: ParsedRubric): string => {
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['rubric-generator'];
-  const [loading, setLoading] = useState(false);
+  // Per-tab local loading state
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const loading = !!localLoadingMap[tabId] || contextLoading;
   const [showTutorial, setShowTutorial] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -591,7 +593,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
             setStreamingRubric(current => {
               const finalMessage = current || data.full_response;
               setGeneratedRubric(finalMessage);
-              setLoading(false);
+              setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
               return '';
             });
           }
@@ -599,7 +601,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         
         ws.onerror = (error) => {
           console.error('WebSocket error:', error);
-          setLoading(false);
+          setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
         };
         
         ws.onclose = () => {
@@ -760,7 +762,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       return;
     }
 
-    setLoading(true);
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
     setStreamingRubric('');
 
     const prompt = buildRubricPrompt(formData);

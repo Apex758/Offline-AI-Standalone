@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
@@ -147,9 +147,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  // Track initialization per tab to prevent state loss on tab switches
-  const hasInitializedRef = useRef(false);
-  const currentTabIdRef = useRef(tabId);
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -176,7 +173,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   
   // ✅ Read streaming content from context (read-only, no setter!)
   const streamingQuiz = getStreamingContent(tabId, ENDPOINT);
-  const loading = getIsStreaming(tabId, ENDPOINT);
+  const contextLoading = getIsStreaming(tabId, ENDPOINT);
+  // Per-tab local loading state
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const loading = !!localLoadingMap[tabId] || contextLoading;
 
   const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Music', 'Physical Education'];
   const grades = ['K', '1', '2', '3', '4', '5', '6'];
@@ -218,27 +218,42 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   // ✅ FIXED: Handle tab switches without losing state
   useEffect(() => {
-    const isNewTab = currentTabIdRef.current !== tabId;
-    currentTabIdRef.current = tabId;
-    
-    if (isNewTab || !hasInitializedRef.current) {
-      const saved = savedData?.formData;
-      
-      if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-        setFormData(saved);
-        setGeneratedQuiz(savedData?.generatedQuiz || '');
-        setParsedQuiz(savedData?.parsedQuiz || null);
-        // ✅ No need to set streamingQuiz - it's managed by context
-      } else {
+    const LOCAL_STORAGE_KEY = `quiz_state_${tabId}`;
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedQuiz(parsed.generatedQuiz || '');
+        setParsedQuiz(parsed.parsedQuiz || null);
+        setCurrentQuizId(parsed.currentQuizId || null);
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
         setFormData(getDefaultFormData());
         setGeneratedQuiz('');
         setParsedQuiz(null);
-        // ✅ No need to clear streamingQuiz - it's managed by context
+        setCurrentQuizId(null);
       }
-      
-      hasInitializedRef.current = true;
+    } else {
+      setFormData(getDefaultFormData());
+      setGeneratedQuiz('');
+      setParsedQuiz(null);
+      setCurrentQuizId(null);
     }
-  }, [tabId, savedData]);
+  }, [tabId]);
+
+  // Persist state to localStorage
+  useEffect(() => {
+    localStorage.setItem(`quiz_state_${tabId}`, JSON.stringify({
+      formData,
+      generatedQuiz,
+      parsedQuiz,
+      currentQuizId
+    }));
+  }, [formData, generatedQuiz, parsedQuiz, currentQuizId]);
+
+  // Subscribe effect
+  // NOTE: subscribe is not defined, so this effect is removed or needs correct import/context
 
   // Enable structured editing mode
   const enableEditing = () => {
@@ -350,7 +365,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       alert('Connection not established. Please wait and try again.');
       return;
     }
-
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
     const prompt = buildQuizPrompt(formData);
 
     try {
@@ -371,6 +386,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     setParsedQuiz(null);
     setCurrentQuizId(null);
     setIsEditing(false);
+    localStorage.removeItem(`quiz_state_${tabId}`);
   };
 
   const validateForm = () => {
@@ -400,7 +416,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   // ✅ Finalization logic - when streaming completes, update generatedQuiz
   useEffect(() => {
-    if (streamingQuiz && !loading) {
+    if (streamingQuiz && !contextLoading) {
       setGeneratedQuiz(streamingQuiz);
       const parsed = parseQuizFromAI(streamingQuiz);
       if (parsed) {
@@ -414,8 +430,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         }));
       }
       clearStreaming(tabId, ENDPOINT);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
     }
-  }, [streamingQuiz, loading]);
+  }, [streamingQuiz, contextLoading]);
 
   return (
     <div className="flex h-full bg-white relative" data-tutorial="quiz-generator-welcome">
@@ -875,4 +892,4 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   );
 };
 
-export default QuizGenerator;
+export default QuizGenerator; 

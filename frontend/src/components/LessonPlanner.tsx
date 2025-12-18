@@ -422,8 +422,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
 
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const [localLoading, setLocalLoading] = useState(false);
-  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
+  // Per-tab local loading state
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [lessonPlanHistories, setLessonPlanHistories] = useState<LessonPlanHistory[]>([]);
@@ -716,7 +717,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       const parsed = parseLessonContent(streamingPlan, formData, curriculumReferences);
       if (parsed) setParsedLesson(parsed);
       clearStreaming(tabId, ENDPOINT);
-      setLocalLoading(false);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
     }
   }, [streamingPlan, curriculumReferences]);
 
@@ -727,7 +728,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       return;
     }
 
-    setLocalLoading(true);
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
     setCurriculumReferences(curriculumMatches);
 
     const prompt = buildLessonPrompt(formData, curriculumMatches);
@@ -923,7 +924,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <button
                         onClick={() => {
                           setGeneratedPlan('');
-                          setStreamingPlan('');
+                          clearStreaming(tabId, ENDPOINT);
                           setParsedLesson(null);
                           setIsEditing(false);
                         }}

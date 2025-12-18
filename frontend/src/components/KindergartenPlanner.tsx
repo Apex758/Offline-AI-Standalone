@@ -366,8 +366,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   // ✅ Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const [localLoading, setLocalLoading] = useState(false);
-  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
+  // Per-tab local loading state
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [kindergartenHistories, setKindergartenHistories] = useState<KindergartenHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -523,7 +524,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       const parsed = parseKindergartenContent(streamingPlan, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
-      setLocalLoading(false);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
     }
   }, [streamingPlan]);
 
@@ -674,7 +675,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       return;
     }
 
-    setLocalLoading(true);
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
 
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
