@@ -467,7 +467,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   // Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const loading = getIsStreaming(tabId, ENDPOINT);
+  const [localLoading, setLocalLoading] = useState(false);
+  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [crossCurricularHistories, setCrossCurricularHistories] = useState<CrossCurricularHistory[]>([]);
@@ -533,23 +534,14 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   // Finalization effect - runs when streaming completes
   useEffect(() => {
-    if (streamingPlan && !loading) {
-      console.log('Cross-curricular plan generation complete, parsing...');
+    if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       setGeneratedPlan(streamingPlan);
-
-      // Try to parse the completed plan
       const parsed = parseCrossCurricularContent(streamingPlan, formData);
-      if (parsed) {
-        console.log('Cross-curricular plan parsed successfully');
-        setParsedPlan(parsed);
-      } else {
-        console.warn('Cross-curricular plan parsing failed');
-      }
-
-      // Clear streaming state in context
+      if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
+      setLocalLoading(false);
     }
-  }, [streamingPlan, loading]);
+  }, [streamingPlan]);
 
   // Auto-enable editing mode if startInEditMode flag is set
   useEffect(() => {
@@ -773,13 +765,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   };
 
   const generatePlan = () => {
-    // Get connection from context
     const ws = getConnection(tabId, ENDPOINT);
-
     if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
+
+    setLocalLoading(true);
 
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
@@ -797,7 +789,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       }));
     } catch (error) {
       console.error('Failed to send cross-curricular plan request:', error);
-      // Context handles error state
     }
   };
 

@@ -422,7 +422,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
 
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const loading = getIsStreaming(tabId, ENDPOINT);
+  const [localLoading, setLocalLoading] = useState(false);
+  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [lessonPlanHistories, setLessonPlanHistories] = useState<LessonPlanHistory[]>([]);
@@ -710,23 +711,14 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
   // Finalization effect - runs when streaming completes
   useEffect(() => {
-    if (streamingPlan && !loading) {
-      console.log('Lesson plan generation complete, parsing...');
+    if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       setGeneratedPlan(streamingPlan);
-
-      // Parse the completed plan with curriculum references
       const parsed = parseLessonContent(streamingPlan, formData, curriculumReferences);
-      if (parsed) {
-        console.log('Lesson plan parsed successfully');
-        setParsedLesson(parsed);
-      } else {
-        console.warn('Lesson plan parsing failed');
-      }
-
-      // Clear streaming state in context
+      if (parsed) setParsedLesson(parsed);
       clearStreaming(tabId, ENDPOINT);
+      setLocalLoading(false);
     }
-  }, [streamingPlan, loading, curriculumReferences]);
+  }, [streamingPlan, curriculumReferences]);
 
   const generateLessonPlan = () => {
     const ws = getConnection(tabId, ENDPOINT);
@@ -735,6 +727,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       return;
     }
 
+    setLocalLoading(true);
     setCurriculumReferences(curriculumMatches);
 
     const prompt = buildLessonPrompt(formData, curriculumMatches);
