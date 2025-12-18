@@ -10,7 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -351,13 +351,22 @@ const kindergartenPlanToDisplayText = (plan: ParsedKindergartenPlan): string => 
 };
 
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  // ✅ Per-tab localStorage key
+  const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;
+  
+  // ✅ WebSocket endpoint
+  const ENDPOINT = '/ws/kindergarten';
+  
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['kindergarten-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const shouldReconnectRef = useRef(true);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
+
+  // ✅ WebSocketContext integration
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+
+  // ✅ Get streaming state from context
+  const streamingPlan = getStreamingContent(tabId, ENDPOINT);
+  const loading = getIsStreaming(tabId, ENDPOINT);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [kindergartenHistories, setKindergartenHistories] = useState<KindergartenHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -368,9 +377,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  // Track initialization per tab to prevent state loss on tab switches
-  const hasInitializedRef = useRef(false);
-  const currentTabIdRef = useRef(tabId);
+  // (Removed manual refs for initialization tracking)
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -451,112 +458,82 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     setShowTutorial(false);
   };
 
-  // FIXED: Properly handle tab switches without losing state
+  // ✅ Simple localStorage restoration on tab change
   useEffect(() => {
-    const isNewTab = currentTabIdRef.current !== tabId;
-    currentTabIdRef.current = tabId;
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
     
-    // Only update state when switching tabs OR on first initialization
-    if (isNewTab || !hasInitializedRef.current) {
-      const saved = savedData?.formData;
-      
-      // Robust validation: check if saved data has meaningful content
-      if (saved && typeof saved === 'object' && saved.lessonTopic?.trim()) {
-        // Restore all state for this tab
-        setFormData(saved);
-        setGeneratedPlan(savedData?.generatedPlan || '');
-        setParsedPlan(savedData?.parsedPlan || null);
-      } else {
-        // New tab or empty tab - set to default state
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedPlan(parsed.generatedPlan || '');
+        setParsedPlan(parsed.parsedPlan || null);
+        setCurrentPlanId(parsed.currentPlanId || null);
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
+        // Reset to defaults on parse error
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
         setParsedPlan(null);
+        setCurrentPlanId(null);
+      }
+    } else {
+      // No saved state - use defaults
+      setFormData(getDefaultFormData());
+      setGeneratedPlan('');
+      setParsedPlan(null);
+      setCurrentPlanId(null);
+    }
+  }, [tabId]);
+
+  // ✅ Persist to localStorage on every change
+  useEffect(() => {
+    const stateToSave = {
+      formData,
+      generatedPlan,
+      parsedPlan,
+      currentPlanId
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [formData, generatedPlan, parsedPlan, currentPlanId]);
+
+  // ✅ Also notify parent (for backward compatibility)
+  useEffect(() => {
+    onDataChange({ formData, generatedPlan, streamingPlan, parsedPlan });
+  }, [formData, generatedPlan, streamingPlan, parsedPlan]);
+
+  // ✅ Establish connection when tab mounts
+  useEffect(() => {
+    getConnection(tabId, ENDPOINT);
+  }, [tabId]);
+
+  // ✅ Subscribe to streaming updates for re-renders
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      // This triggers re-render when streaming updates
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
+
+  // ✅ Finalization effect - runs when streaming completes
+  useEffect(() => {
+    if (streamingPlan && !loading) {
+      console.log('Kindergarten plan generation complete, parsing...');
+      setGeneratedPlan(streamingPlan);
+      
+      // Try to parse the completed plan
+      const parsed = parseKindergartenContent(streamingPlan, formData);
+      if (parsed) {
+        console.log('Kindergarten plan parsed successfully');
+        setParsedPlan(parsed);
+      } else {
+        console.warn('Kindergarten plan parsing failed');
       }
       
-      hasInitializedRef.current = true;
+      // Clear streaming state in context
+      clearStreaming(tabId, ENDPOINT);
     }
-  }, [tabId, savedData]);
-
-  useEffect(() => {
-    onDataChange({ formData, generatedPlan, parsedPlan });
-  }, [formData, generatedPlan, parsedPlan]);
-
-  useEffect(() => {
-    shouldReconnectRef.current = true;
-
-    const connectWebSocket = () => {
-      if (!shouldReconnectRef.current) return;
-  
-      try {
-        const wsUrl = getWebSocketUrl('/ws/kindergarten', isElectronEnvironment());
-        const ws = new WebSocket(wsUrl);
-        
-        ws.onopen = () => {
-          console.log('Kindergarten WebSocket connected');
-        };
-        
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'token') {
-            setStreamingPlan(prev => prev + data.content);
-          } else if (data.type === 'done') {
-            setStreamingPlan(current => {
-              const finalMessage = current || data.full_response;
-              setGeneratedPlan(finalMessage);
-              
-              console.log('Kindergarten plan generation complete, parsing...');
-              
-              // Try to parse immediately
-              const parsed = parseKindergartenContent(finalMessage, formData);
-              if (parsed) {
-                console.log('Kindergarten plan parsed successfully');
-                setParsedPlan(parsed);
-              } else {
-                console.warn('Kindergarten plan parsing failed');
-              }
-              
-              setLoading(false);
-              return '';
-            });
-          }
-        };
-        
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setLoading(false);
-        };
-        
-        ws.onclose = () => {
-          console.log('WebSocket closed');
-          wsRef.current = null;
-          if (shouldReconnectRef.current && !loading) {
-            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
-          }
-        };
-        
-        wsRef.current = ws;
-      } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-        if (shouldReconnectRef.current) {
-          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 2000);
-        }
-      }
-    };
-    
-    connectWebSocket();
-    
-    return () => {
-      shouldReconnectRef.current = false;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
-      wsRef.current = null;
-    };
-  }, []);
+  }, [streamingPlan, loading]);
 
   // Enable structured editing mode
   const enableEditing = () => {
@@ -699,14 +676,15 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   const generatePlan = () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    // ✅ Get connection from context
+    const ws = getConnection(tabId, ENDPOINT);
+    
+    if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
 
-    setLoading(true);
-    setStreamingPlan('');
-
+    // ✅ No manual state management - context handles it
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -717,37 +695,25 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     const prompt = buildKindergartenPrompt(mappedData);
 
     try {
-      wsRef.current.send(JSON.stringify({
+      ws.send(JSON.stringify({
         prompt,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
       console.error('Failed to send kindergarten plan request:', error);
-      setLoading(false);
+      // ✅ Context handles error state
     }
   };
 
   const clearForm = () => {
-    setFormData({
-      lessonTopic: '',
-      curriculumUnit: '',
-      week: '',
-      dayOfWeek: '',
-      date: new Date().toISOString().split('T')[0],
-      ageGroup: '',
-      students: '',
-      creativityLevel: 50,
-      learningDomains: [],
-      duration: '60',
-      additionalRequirements: '',
-      includeAssessments: true,
-      includeMaterials: true
-    });
+    setFormData(getDefaultFormData());
     setGeneratedPlan('');
-    setStreamingPlan('');
     setCurrentPlanId(null);
     setIsEditing(false);
     setParsedPlan(null);
+    
+    // ✅ Clear localStorage for this tab
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
   const validateForm = () => {
