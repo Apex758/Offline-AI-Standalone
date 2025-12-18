@@ -444,7 +444,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
-  const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
 
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {
@@ -526,14 +525,12 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         // Restore all state for this tab
         setFormData(saved);
         setGeneratedPlan(savedData?.generatedPlan || '');
-        setStreamingPlan(savedData?.streamingPlan || '');
         setStep(savedData?.step || 1);
         setParsedPlan(savedData?.parsedPlan || null);
       } else {
         // New tab or empty tab - set to default state
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
-        setStreamingPlan('');
         setStep(1);
         setParsedPlan(null);
       }
@@ -543,8 +540,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   }, [tabId, savedData]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });
-  }, [formData, generatedPlan, streamingPlan, step, parsedPlan]);
+    onDataChange({ formData, generatedPlan, step, parsedPlan });
+  }, [formData, generatedPlan, step, parsedPlan]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;

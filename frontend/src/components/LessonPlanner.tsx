@@ -563,14 +563,12 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         // Restore all state for this tab
         setFormData(saved);
         setGeneratedPlan(savedData?.generatedPlan || '');
-        setStreamingPlan(savedData?.streamingPlan || '');
         setStep(savedData?.step || 1);
         setParsedLesson(savedData?.parsedLesson || null);
       } else {
         // New tab or empty tab - set to default state
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
-        setStreamingPlan('');
         setStep(1);
         setParsedLesson(null);
       }
@@ -685,11 +683,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     onDataChange({
       formData,
       generatedPlan,
-      streamingPlan,
       step,
       parsedLesson
     });
-  }, [formData, generatedPlan, streamingPlan, step, parsedLesson]);
+  }, [formData, generatedPlan, step, parsedLesson]);
 
   // --- WebSocketContext API: establish connection on tabId change ---
   useEffect(() => {

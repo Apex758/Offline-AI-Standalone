@@ -518,7 +518,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
-  const [streamingPlan, setStreamingPlan] = useState<string>(savedData?.streamingPlan || '');
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   // Try to parse plan when generated (for restored/loaded plans)
@@ -593,14 +592,12 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         // Restore all state for this tab
         setFormData(saved);
         setGeneratedPlan(savedData?.generatedPlan || '');
-        setStreamingPlan(savedData?.streamingPlan || '');
         setStep(savedData?.step || 1);
         setParsedPlan(savedData?.parsedPlan || null);
       } else {
         // New tab or empty tab - set to default state
         setFormData(getDefaultFormData());
         setGeneratedPlan('');
-        setStreamingPlan('');
         setStep(1);
         setParsedPlan(null);
       }
@@ -610,8 +607,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   }, [tabId, savedData]);
 
   useEffect(() => {
-    onDataChange({ formData, generatedPlan, streamingPlan, step, parsedPlan });
-  }, [formData, generatedPlan, streamingPlan, step, parsedPlan]);
+    onDataChange({ formData, generatedPlan, step, parsedPlan });
+  }, [formData, generatedPlan, step, parsedPlan]);
 
   useEffect(() => {
     shouldReconnectRef.current = true;
