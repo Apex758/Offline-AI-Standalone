@@ -133,6 +133,11 @@ async function startBackend() {
       const modelsPath = path.join(process.resourcesPath, 'models');
       env.MODELS_DIR = modelsPath;
       log.info(`Set MODELS_DIR environment variable: ${modelsPath}`);
+
+      // Prepend backend-bundle/bin to PATH for GTK DLLs (WeasyPrint)
+      const gtkBinPath = path.join(process.resourcesPath, 'backend-bundle', 'bin');
+      env.PATH = `${gtkBinPath};${env.PATH}`;
+      log.info(`Prepended GTK bin to PATH: ${gtkBinPath}`);
     }
     
     // Use the startup script in production
