@@ -403,7 +403,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const loading = getIsStreaming(tabId, ENDPOINT);
+  const [localLoading, setLocalLoading] = useState(false);
+  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [multigradeHistories, setMultigradeHistories] = useState<MultigradeHistory[]>([]);
@@ -458,23 +459,14 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // Finalization effect - runs when streaming completes
   useEffect(() => {
-    if (streamingPlan && !loading) {
-      console.log('Multigrade plan generation complete, parsing...');
+    if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       setGeneratedPlan(streamingPlan);
-
-      // Try to parse the completed plan
       const parsed = parseMultigradeContent(streamingPlan, formData);
-      if (parsed) {
-        console.log('Multigrade plan parsed successfully');
-        setParsedPlan(parsed);
-      } else {
-        console.warn('Multigrade plan parsing failed');
-      }
-
-      // Clear streaming state in context
+      if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
+      setLocalLoading(false);
     }
-  }, [streamingPlan, loading]);
+  }, [streamingPlan]);
 
   // Auto-enable editing mode if startInEditMode flag is set
   useEffect(() => {
@@ -709,15 +701,14 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   const generatePlan = () => {
-    // Get connection from context
     const ws = getConnection(tabId, ENDPOINT);
-
     if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
 
-    // No manual state management - context handles it
+    setLocalLoading(true);
+
     const prompt = buildMultigradePrompt(formData);
 
     try {
@@ -727,7 +718,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       }));
     } catch (error) {
       console.error('Failed to send multigrade plan request:', error);
-      // Context handles error state
     }
   };
 

@@ -366,7 +366,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   // ✅ Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
-  const loading = getIsStreaming(tabId, ENDPOINT);
+  const [localLoading, setLocalLoading] = useState(false);
+  const loading = localLoading || getIsStreaming(tabId, ENDPOINT);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [kindergartenHistories, setKindergartenHistories] = useState<KindergartenHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -517,23 +518,14 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   // ✅ Finalization effect - runs when streaming completes
   useEffect(() => {
-    if (streamingPlan && !loading) {
-      console.log('Kindergarten plan generation complete, parsing...');
+    if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       setGeneratedPlan(streamingPlan);
-      
-      // Try to parse the completed plan
       const parsed = parseKindergartenContent(streamingPlan, formData);
-      if (parsed) {
-        console.log('Kindergarten plan parsed successfully');
-        setParsedPlan(parsed);
-      } else {
-        console.warn('Kindergarten plan parsing failed');
-      }
-      
-      // Clear streaming state in context
+      if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
+      setLocalLoading(false);
     }
-  }, [streamingPlan, loading]);
+  }, [streamingPlan]);
 
   // Enable structured editing mode
   const enableEditing = () => {
@@ -676,15 +668,14 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   const generatePlan = () => {
-    // ✅ Get connection from context
     const ws = getConnection(tabId, ENDPOINT);
-    
     if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
 
-    // ✅ No manual state management - context handles it
+    setLocalLoading(true);
+
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -701,7 +692,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       }));
     } catch (error) {
       console.error('Failed to send kindergarten plan request:', error);
-      // ✅ Context handles error state
     }
   };
 
