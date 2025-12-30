@@ -238,6 +238,8 @@ ${formData.gradeLevels.map(grade => `
    - Cross-grade collaboration opportunities
    - Flexible pacing options
 
+IMPORTANT: Do not include any introductory text, headers, or explanations before the lesson plan. Start directly with the lesson plan content.
+
 Generate the complete multigrade lesson plan now:`;
 
   return prompt;

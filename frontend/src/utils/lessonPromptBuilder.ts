@@ -183,6 +183,8 @@ REQUIRED LESSON PLAN STRUCTURE:
    - The curriculum references will be displayed automatically from the data you were provided
    ${curriculumRefs && curriculumRefs.length > 0 ? `- The ${curriculumRefs.length} curriculum reference(s) provided will be shown as clickable links` : ''}
 
+IMPORTANT: Do not include any introductory text, headers, or explanations before the lesson plan. Start directly with the lesson plan content.
+
 Generate the complete lesson plan now. Remember: Do NOT include a "Curriculum References" section in your output - it will be added automatically.`;
 
   return prompt;

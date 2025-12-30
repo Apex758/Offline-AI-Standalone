@@ -105,6 +105,8 @@ KINDERGARTEN ESSENTIALS:
 - Play-based approach with child choice
 - Process over product, celebrate effort
 
+IMPORTANT: Do not include any introductory text, headers, or explanations before the lesson plan. Start directly with the lesson plan content.
+
 Generate the complete plan now:`;
 
   return prompt;
