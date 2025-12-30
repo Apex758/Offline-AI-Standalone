@@ -206,6 +206,8 @@ INTEGRATION AUTHENTICITY:
 - Avoid surface-level "theme days" - create true integration
 - Build on ${gradeSpec.integrationStrategy}
 
+Do not include any introductory text, explanations, or meta-comments. Start directly with the cross-curricular lesson plan content.
+
 Generate the complete cross-curricular lesson plan now:`;
 
   return prompt;

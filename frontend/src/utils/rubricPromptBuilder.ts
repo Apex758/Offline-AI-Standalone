@@ -92,6 +92,7 @@ ${formData.includePointValues ? `- Point System: ${gradeSpec.pointSystem}` : ''}
 **CRITICAL: OUTPUT FORMAT**
 
 You MUST create a markdown table using the pipe character (|). This format is REQUIRED and NON-NEGOTIABLE.
+- Do not include any introductory text, headers, or explanations before the rubric. Start directly with the rubric content.
 
 Example table structure:
 ${tableHeader}

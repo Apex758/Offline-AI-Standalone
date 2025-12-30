@@ -158,6 +158,7 @@ ${formatInstructions}IMPORTANT:
 - Use the appropriate format for each question type
 - Include the correct answer for each question
 - Add an explanation for each answer
+- Do not include any introductory text, headers, or explanations before the questions. Start directly with Question 1.
 ${hasMultipleChoice ? '- Each multiple choice question must have all 4 options (A, B, C, D)\n' : ''}${hasFillBlank ? '- For fill-in-the-blank, use _____ to mark where the answer goes\n' : ''}${hasOpenEnded ? '- For open-ended questions, provide sample answers and key points students should cover\n' : ''}
 Start generating all ${formData.numberOfQuestions} questions now:`;
 

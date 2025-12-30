@@ -425,7 +425,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const tabColor = settings.tabColors['rubric-generator'];
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
-  const loading = !!localLoadingMap[tabId] || contextLoading;
+  const loading = !!localLoadingMap[tabId];
   const [showTutorial, setShowTutorial] = useState(false);
   const shouldReconnectRef = useRef(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
