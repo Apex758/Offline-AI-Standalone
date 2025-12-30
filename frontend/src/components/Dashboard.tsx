@@ -351,8 +351,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const updatedTabs = tabs.filter(tab => tab.id !== tabId);
     setTabs(updatedTabs);
 
-    // Close all possible WebSocket connections for this tab
-    const { closeConnection } = useWebSocket();
     const endpoints = [
       '/ws/chat',
       '/ws/lesson-plan',
