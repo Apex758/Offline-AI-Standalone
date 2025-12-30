@@ -11,6 +11,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 interface RubricGeneratorProps {
   tabId: string;
