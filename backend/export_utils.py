@@ -312,6 +312,32 @@ def export_to_docx(data: Union[str, Dict, List], title: str = "Export") -> bytes
 
 
 def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
+    # Ensure DLL directory is set before importing weasyprint
+    import os
+    import sys
+    if sys.platform == "win32":
+        # Try to find the bin directory with GTK DLLs
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Check if we're in backend-bundle (has bin folder)
+        gtk_bin = os.path.join(script_dir, "bin")
+        if not os.path.isdir(gtk_bin):
+            # We're in backend, check if backend-bundle exists
+            parent_dir = os.path.dirname(script_dir)
+            backend_bundle_bin = os.path.join(parent_dir, "backend-bundle", "bin")
+            if os.path.isdir(backend_bundle_bin):
+                gtk_bin = backend_bundle_bin
+        
+        if os.path.isdir(gtk_bin):
+            os.environ["WEASYPRINT_DLL_DIRECTORIES"] = gtk_bin
+            if hasattr(os, "add_dll_directory"):
+                try:
+                    os.add_dll_directory(gtk_bin)
+                except:
+                    pass
+            # Prepend to PATH
+            os.environ["PATH"] = gtk_bin + os.pathsep + os.environ.get("PATH", "")
+    
     from weasyprint import HTML
     try:
         # If rawHtml is provided, use it directly for PDF export

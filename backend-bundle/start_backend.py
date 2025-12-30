@@ -10,8 +10,13 @@ sys.path.insert(0, script_dir)
 if sys.platform == "win32":
     gtk_bin = os.path.join(script_dir, "bin")
     if os.path.isdir(gtk_bin):
+        # Set WeasyPrint DLL directory FIRST to override system paths
+        os.environ["WEASYPRINT_DLL_DIRECTORIES"] = gtk_bin
+        
         if hasattr(os, "add_dll_directory"):
             os.add_dll_directory(gtk_bin)
+        
+        # Prepend to PATH to ensure bundled DLLs are found first
         os.environ["PATH"] = gtk_bin + os.pathsep + os.environ.get("PATH", "")
         os.environ.setdefault("GTK_BASEPATH", script_dir)
         os.environ.setdefault("GTK_DATA_PREFIX", script_dir)
