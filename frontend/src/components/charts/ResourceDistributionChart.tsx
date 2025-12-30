@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { PieChart as PieChartIcon } from 'lucide-react';
 import type { DistributionData } from '../../types/analytics';
 
@@ -10,16 +10,31 @@ interface ResourceDistributionChartProps {
 const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data }) => {
   const total = data.reduce((sum, item) => sum + item.count, 0);
 
+  // Natural color palette
+  const naturalColors = ['#1D362D', '#F2A631', '#552A01', '#F8E59D', '#A8AFA3'];
+  
+  const dataWithColors = data.map((item, index) => ({
+    ...item,
+    color: naturalColors[index % naturalColors.length]
+  }));
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-          <p className="font-semibold text-gray-900 mb-1">{data.label}</p>
-          <p className="text-sm text-gray-700">
+        <div 
+          className="rounded-lg p-3"
+          style={{
+            backgroundColor: 'white',
+            border: '1px solid #E8EAE3',
+            boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
+          }}
+        >
+          <p className="font-semibold mb-1" style={{ color: '#020D03' }}>{data.label}</p>
+          <p className="text-sm" style={{ color: '#552A01' }}>
             Count: <span className="font-semibold">{data.count}</span>
           </p>
-          <p className="text-sm text-gray-700">
+          <p className="text-sm" style={{ color: '#552A01' }}>
             Percentage: <span className="font-semibold">{data.percentage}%</span>
           </p>
         </div>
@@ -33,11 +48,17 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div 
+      className="rounded-2xl p-6"
+      style={{
+        backgroundColor: 'white',
+        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
+      }}
+    >
       {/* Header */}
       <div className="flex items-center space-x-2 mb-6">
-        <PieChartIcon className="w-5 h-5 text-purple-600" />
-        <h3 className="font-bold text-gray-900">Resource Type Distribution</h3>
+        <PieChartIcon className="w-5 h-5" style={{ color: '#1D362D' }} />
+        <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Type Distribution</h3>
       </div>
 
       {/* Chart */}
@@ -45,7 +66,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
-              data={data}
+              data={dataWithColors}
               cx="50%"
               cy="50%"
               labelLine={false}
@@ -56,7 +77,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
               dataKey="count"
               paddingAngle={2}
             >
-              {data.map((entry, index) => (
+              {dataWithColors.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
@@ -67,22 +88,22 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
         {/* Center Label */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900">{total}</div>
-            <div className="text-xs text-gray-500 font-medium">Total</div>
+            <div className="text-3xl font-bold" style={{ color: '#020D03' }}>{total}</div>
+            <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
           </div>
         </div>
       </div>
 
       {/* Legend */}
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {data.map((entry, index) => (
+        {dataWithColors.map((entry, index) => (
           <div key={index} className="flex items-center space-x-2">
             <div
               className="w-3 h-3 rounded-full flex-shrink-0"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-xs text-gray-700 truncate">{entry.label}</span>
-            <span className="text-xs font-semibold text-gray-900 ml-auto">{entry.count}</span>
+            <span className="text-xs truncate" style={{ color: '#552A01' }}>{entry.label}</span>
+            <span className="text-xs font-semibold ml-auto" style={{ color: '#020D03' }}>{entry.count}</span>
           </div>
         ))}
       </div>

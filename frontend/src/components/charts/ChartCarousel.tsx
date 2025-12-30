@@ -1,4 +1,4 @@
-    import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import ResourceTrendChart from './ResourceTrendChart';
 import ResourceDistributionChart from './ResourceDistributionChart';
@@ -88,7 +88,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ResourceDistributionChart data={distributionData} />
             
             {lessonPlanComparison.length > 0 && (
@@ -101,19 +101,30 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
       {/* Navigation Controls */}
       <div className="absolute bottom-4 right-4 flex items-center gap-2 z-10">
         {/* View Indicator */}
-        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm">
+        <div 
+          className="flex items-center gap-1 rounded-lg px-2 py-1"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 2px 8px rgba(29, 54, 45, 0.1)'
+          }}
+        >
           <button
             onClick={() => setCurrentView('trend')}
-            className={`w-2 h-2 rounded-full transition-all ${
-              currentView === 'trend' ? 'bg-blue-600 w-6' : 'bg-gray-300'
-            }`}
+            className="w-2 h-2 rounded-full transition-all"
+            style={{
+              backgroundColor: currentView === 'trend' ? '#1D362D' : '#E8EAE3',
+              width: currentView === 'trend' ? '1.5rem' : '0.5rem'
+            }}
             aria-label="View Trend Chart"
           />
           <button
             onClick={() => setCurrentView('distribution')}
-            className={`w-2 h-2 rounded-full transition-all ${
-              currentView === 'distribution' ? 'bg-blue-600 w-6' : 'bg-gray-300'
-            }`}
+            className="w-2 h-2 rounded-full transition-all"
+            style={{
+              backgroundColor: currentView === 'distribution' ? '#1D362D' : '#E8EAE3',
+              width: currentView === 'distribution' ? '1.5rem' : '0.5rem'
+            }}
             aria-label="View Distribution Charts"
           />
         </div>
@@ -121,38 +132,60 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         {/* Auto-rotate Toggle */}
         <button
           onClick={toggleAutoRotate}
-          className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"
+          className="p-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 2px 8px rgba(29, 54, 45, 0.1)'
+          }}
           title={isAutoRotating ? 'Pause auto-rotation' : 'Resume auto-rotation'}
         >
           {isAutoRotating ? (
-            <Pause className="w-4 h-4 text-gray-700" />
+            <Pause className="w-4 h-4" style={{ color: '#552A01' }} />
           ) : (
-            <Play className="w-4 h-4 text-gray-700" />
+            <Play className="w-4 h-4" style={{ color: '#552A01' }} />
           )}
         </button>
 
         {/* Previous Button */}
         <button
           onClick={handlePrevious}
-          className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 2px 8px rgba(29, 54, 45, 0.1)'
+          }}
           aria-label="Previous View"
         >
-          <ChevronLeft className="w-4 h-4 text-gray-700" />
+          <ChevronLeft className="w-4 h-4" style={{ color: '#552A01' }} />
         </button>
 
         {/* Next Button */}
         <button
           onClick={handleNext}
-          className="p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 2px 8px rgba(29, 54, 45, 0.1)'
+          }}
           aria-label="Next View"
         >
-          <ChevronRight className="w-4 h-4 text-gray-700" />
+          <ChevronRight className="w-4 h-4" style={{ color: '#552A01' }} />
         </button>
       </div>
 
       {/* View Label */}
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm">
-        <span className="text-xs font-semibold text-gray-700">
+      <div 
+        className="absolute bottom-4 left-4 rounded-lg px-3 py-1.5"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 8px rgba(29, 54, 45, 0.1)'
+        }}
+      >
+        <span className="text-xs font-semibold" style={{ color: '#552A01' }}>
           {currentView === 'trend' ? 'Resource Creation Trend' : 'Resource Breakdown'}
         </span>
       </div>

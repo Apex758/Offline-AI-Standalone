@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  BarChart3, TrendingUp, Activity, Calendar as CalendarIcon, Zap, Target as TargetIcon
-} from 'lucide-react';
+import { User, Camera } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
@@ -21,8 +19,8 @@ import {
 } from '../lib/analyticsHelpers';
 
 // Import new components
-import QuickStatsCard from './widgets/QuickStatsCard';
 import TaskEditModal from './modals/TaskEditModal';
+import CalendarModal from './CalendarModal';
 import TaskListWidget from './widgets/TaskListWidget';
 import CompactCalendar from './widgets/CompactCalendar';
 import ChartCarousel from './charts/ChartCarousel';
@@ -48,6 +46,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   // State management
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
+  const [userImage, setUserImage] = useState<string | null>(null);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [allResourcesData, setAllResourcesData] = useState<any[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [milestoneStats, setMilestoneStats] = useState<MilestoneStats | null>(null);
@@ -57,10 +57,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [curriculumView, setCurriculumView] = useState<CurriculumView>('overall');
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
 
-  // Load data on mount
+  // Load user profile
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
+    const storedImage = localStorage.getItem('user-profile-image');
     let teacherId: string | null = null;
     
     if (storedUser) {
@@ -71,6 +73,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       } catch (e) {
         console.error('Error parsing user:', e);
       }
+    }
+    
+    if (storedImage) {
+      setUserImage(storedImage);
     }
     
     loadAllData(teacherId);
@@ -265,95 +271,131 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     }
   };
 
+  const handleProfileSave = (name: string, image: string | null) => {
+    setUserName(name);
+    setUserImage(image);
+    
+    // Update localStorage
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.name = name;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+      
+      if (image) {
+        localStorage.setItem('user-profile-image', image);
+      } else {
+        localStorage.removeItem('user-profile-image');
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
+    
+    setShowProfileEdit(false);
+  };
+
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="h-full flex items-center justify-center" style={{ backgroundColor: '#FDFDF8' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#F2A631' }}></div>
+          <p style={{ color: '#552A01' }}>Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Header Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-32 -translate-y-32"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full translate-x-48 translate-y-48"></div>
-        </div>
-        
-        <div className="relative px-8 py-8">
-          <div className="flex items-center mb-6">
-            <BarChart3 className="w-12 h-12 mr-4" />
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: '#FDFDF8' }}>
+      {/* Header */}
+      <header className="sticky top-0 z-20 backdrop-blur-sm" style={{ 
+        backgroundColor: 'rgba(253, 253, 248, 0.9)',
+        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.06)'
+      }}>
+        <div className="px-8 py-5 flex items-center justify-between">
+          {/* Profile Section */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowProfileEdit(true)}
+              className="relative group"
+            >
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-105"
+                style={{
+                  backgroundColor: '#1D362D',
+                  boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
+                }}
+              >
+                {userImage ? (
+                  <img src={userImage} alt={userName} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <User className="w-7 h-7" style={{ color: '#F8E59D' }} />
+                )}
+              </div>
+              <div 
+                className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ backgroundColor: '#F2A631' }}
+              >
+                <Camera className="w-3 h-3 text-white" />
+              </div>
+            </button>
+            
             <div>
-              <h1 className="text-4xl font-bold">Welcome Back, {userName}!</h1>
-              <p className="text-blue-100 mt-2">Your Teaching Analytics Hub</p>
+              <h1 className="text-2xl font-bold" style={{ color: '#020D03' }}>
+                {userName}
+              </h1>
+              <p className="text-sm" style={{ color: '#552A01' }}>
+                Your Teaching Hub
+              </p>
             </div>
           </div>
-          
-          {/* Quick Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm font-medium">Total Resources</p>
-                  <p className="text-3xl font-bold mt-1">{quickStats.totalResources}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-                  <Activity className="w-6 h-6" />
-                </div>
+
+          {/* Quick Stats - Minimal */}
+          <div className="flex items-center space-x-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold" style={{ color: '#1D362D' }}>
+                {quickStats.totalResources}
+              </div>
+              <div className="text-xs" style={{ color: '#552A01' }}>
+                Resources
               </div>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm font-medium">Active Days</p>
-                  <p className="text-3xl font-bold mt-1">{quickStats.activeDays}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500">
-                  <CalendarIcon className="w-6 h-6" />
-                </div>
+            <div 
+              className="w-px h-10" 
+              style={{ backgroundColor: '#E8EAE3' }}
+            />
+            <div className="text-center">
+              <div className="text-2xl font-bold" style={{ color: '#1D362D' }}>
+                {quickStats.activeDays}
+              </div>
+              <div className="text-xs" style={{ color: '#552A01' }}>
+                Active Days
               </div>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm font-medium">Avg/Week</p>
-                  <p className="text-3xl font-bold mt-1">{quickStats.avgPerWeek}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-                  <TrendingUp className="w-6 h-6" />
-                </div>
+            <div 
+              className="w-px h-10" 
+              style={{ backgroundColor: '#E8EAE3' }}
+            />
+            <div className="text-center">
+              <div className="text-2xl font-bold" style={{ color: '#F2A631' }}>
+                {quickStats.completionRate}%
               </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm font-medium">Task Completion</p>
-                  <p className="text-3xl font-bold mt-1">{quickStats.completionRate}%</p>
-                </div>
-                <div className="p-3 rounded-lg bg-gradient-to-br from-orange-500 to-red-500">
-                  <TargetIcon className="w-6 h-6" />
-                </div>
+              <div className="text-xs" style={{ color: '#552A01' }}>
+                Tasks Done
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content - Two Column Layout */}
-      <div className="px-8 py-8 mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-          {/* Left Column (70%) - Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Chart Carousel - Rotating Charts */}
+      {/* Main Content - 3/5 + 2/5 Grid */}
+      <div className="px-8 py-8">
+        <div className="grid grid-cols-5 gap-6">
+          {/* Left Column - 3/5 */}
+          <div className="col-span-3 space-y-6">
+            {/* Resource Trends Chart */}
             <ChartCarousel
               trendData={trendData}
               distributionData={distributionData}
@@ -374,8 +416,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <RecentActivityTimeline activities={activityFeed} limit={7} />
           </div>
 
-          {/* Right Column (30%) - Sidebar */}
-          <div className="h-full flex flex-col">
+          {/* Right Column - 2/5 */}
+          <div className="col-span-2 space-y-6">
             {/* Compact Calendar */}
             <CompactCalendar
               selectedDate={selectedDate}
@@ -383,31 +425,28 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               activityByDate={activityByDate}
               tasksByDate={tasksByDate}
               resourcesByDate={resourcesByDate}
+              onExpandClick={() => setShowCalendarModal(true)}
             />
 
-            {/* Grouped Task List and Most Used Tools */}
-            <div className="flex flex-col flex-grow min-h-0 mt-6">
-              <div className="flex-grow flex flex-col min-h-0">
-                <TaskListWidget
-                  tasks={tasks}
-                  selectedDate={selectedDate}
-                  onTaskEdit={handleEditTask}
-                  onTaskToggle={handleToggleTask}
-                  onAddTask={handleAddTask}
-                />
-              </div>
-              <div className="mt-6">
-                <MostUsedTools
-                  toolUsage={toolUsage}
-                  onToolClick={handleToolClick}
-                />
-              </div>
-            </div>
+            {/* Task List */}
+            <TaskListWidget
+              tasks={tasks}
+              selectedDate={selectedDate}
+              onTaskEdit={handleEditTask}
+              onTaskToggle={handleToggleTask}
+              onAddTask={handleAddTask}
+            />
+
+            {/* Most Used Tools */}
+            <MostUsedTools
+              toolUsage={toolUsage}
+              onToolClick={handleToolClick}
+            />
           </div>
         </div>
       </div>
 
-      {/* Task Edit Modal */}
+      {/* Modals */}
       {showTaskModal && (
         <TaskEditModal
           task={editingTask}
@@ -418,8 +457,166 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         />
       )}
 
+      {showCalendarModal && (
+        <CalendarModal
+          resourcesByDate={resourcesByDate}
+          tasksByDate={tasksByDate}
+          initialDate={selectedDate}
+          onDateSelect={setSelectedDate}
+          onClose={() => setShowCalendarModal(false)}
+        />
+      )}
+
+      {showProfileEdit && (
+        <ProfileEditModal
+          currentName={userName}
+          currentImage={userImage}
+          onSave={handleProfileSave}
+          onClose={() => setShowProfileEdit(false)}
+        />
+      )}
+
       {/* Tutorial Overlay */}
       <TutorialOverlay steps={analyticsDashboardSteps} showFloatingButton={false} />
+    </div>
+  );
+};
+
+// Profile Edit Modal Component
+interface ProfileEditModalProps {
+  currentName: string;
+  currentImage: string | null;
+  onSave: (name: string, image: string | null) => void;
+  onClose: () => void;
+}
+
+const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
+  currentName,
+  currentImage,
+  onSave,
+  onClose
+}) => {
+  const [name, setName] = useState(currentName);
+  const [image, setImage] = useState<string | null>(currentImage);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = () => {
+    if (name.trim()) {
+      onSave(name.trim(), image);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(2, 13, 3, 0.5)' }}
+      onClick={onClose}
+    >
+      <div
+        className="rounded-2xl p-8 max-w-md w-full"
+        style={{
+          backgroundColor: 'rgba(253, 253, 248, 0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 60px rgba(29, 54, 45, 0.2)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-2xl font-bold mb-6" style={{ color: '#020D03' }}>
+          Edit Profile
+        </h2>
+
+        {/* Image Upload */}
+        <div className="flex flex-col items-center mb-6">
+          <div 
+            className="w-24 h-24 rounded-full flex items-center justify-center mb-3"
+            style={{
+              backgroundColor: '#1D362D',
+              boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
+            }}
+          >
+            {image ? (
+              <img src={image} alt="Profile" className="w-full h-full rounded-full object-cover" />
+            ) : (
+              <User className="w-12 h-12" style={{ color: '#F8E59D' }} />
+            )}
+          </div>
+          
+          <label 
+            className="px-4 py-2 rounded-lg cursor-pointer transition-all hover:scale-105"
+            style={{
+              backgroundColor: '#F2A631',
+              color: 'white',
+              boxShadow: '0 2px 8px rgba(242, 166, 49, 0.3)'
+            }}
+          >
+            <Camera className="w-4 h-4 inline mr-2" />
+            Upload Photo
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </label>
+        </div>
+
+        {/* Name Input */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
+            Display Name
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl outline-none transition-all"
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid #E8EAE3',
+              color: '#020D03',
+              boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+            }}
+            placeholder="Enter your name"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex space-x-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 rounded-xl transition-all hover:scale-105"
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid #E8EAE3',
+              color: '#552A01',
+              boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex-1 px-4 py-3 rounded-xl transition-all hover:scale-105"
+            style={{
+              backgroundColor: '#1D362D',
+              color: '#F8E59D',
+              boxShadow: '0 4px 12px rgba(29, 54, 45, 0.2)'
+            }}
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -11,14 +11,13 @@ import {
   endOfWeek,
   isToday,
   isSameMonth,
-  getDay,
   setMonth,
   setYear,
   getMonth,
   getYear
 } from 'date-fns';
 import {
-  X, ChevronLeft, ChevronRight, ChevronDown, Calendar as CalendarIcon,
+  X, ChevronLeft, ChevronRight, Calendar as CalendarIcon,
   BookMarked, ListChecks, FileText, GraduationCap, Users, School,
   Eye, Edit, TrendingUp, Activity
 } from 'lucide-react';
@@ -42,11 +41,10 @@ interface CalendarModalProps {
   onClose: () => void;
   onViewResource?: (type: string, resource: Resource) => void;
   onEditResource?: (type: string, resource: Resource) => void;
-  // Task support
   tasksByDate?: { [date: string]: any[] };
   onAddTask?: (date: string, task: any) => void;
-  // Milestone support
-  milestonesByDate?: { [date: string]: Milestone[] };
+  initialDate?: Date;
+  onDateSelect?: (date: Date) => void;
 }
 
 const CalendarModal: React.FC<CalendarModalProps> = ({
@@ -55,17 +53,16 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   onViewResource,
   onEditResource,
   tasksByDate,
-  onAddTask
+  onAddTask,
+  initialDate,
+  onDateSelect: onDateSelectCallback
 }) => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(initialDate || new Date());
   const calendarRef = useRef<HTMLDivElement>(null);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [pickerYear, setPickerYear] = useState(getYear(new Date()));
+  const [pickerYear, setPickerYear] = useState(getYear(initialDate || new Date()));
   const [pendingScrollTarget, setPendingScrollTarget] = useState<Date | null>(null);
-
-  // All Tasks Panel state
-  const [showTaskPanel, setShowTaskPanel] = useState(false);
 
   // Milestone state
   const [upcomingMilestones, setUpcomingMilestones] = useState<Milestone[]>([]);
@@ -94,35 +91,14 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     return grouped;
   }, [upcomingMilestones]);
 
-  // Group all tasks by date for slide-over
-  const allTasksByDate = useMemo(() => {
-    if (!tasksByDate) return [];
-    return Object.entries(tasksByDate)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([dateKey, tasks]) => {
-        const safeDate = new Date(dateKey + 'T00:00:00');
-        return {
-          dateKey,
-          dateLabel: format(safeDate, 'EEEE, d MMM yyyy'),
-          tasks,
-        };
-      });
-  }, [tasksByDate]);
-  const hasAnyTasks = allTasksByDate.length > 0;
-
-  // Get resources for selected date
-  const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
-  const selectedResources = resourcesByDate[selectedDateKey] || [];
-
   const [monthList, setMonthList] = useState<Date[]>(() => {
-    const current = startOfMonth(new Date());
+    const current = startOfMonth(initialDate || new Date());
     return [
       subMonths(current, 1),
       current,
       addMonths(current, 1)
     ];
   });
-
 
   // Calculate statistics for current month
   const monthStats = useMemo(() => {
@@ -156,12 +132,12 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     const configs: {
       [key: string]: { icon: any; color: string; bg: string; label: string };
     } = {
-      lesson: { icon: BookMarked, color: 'text-purple-600', bg: 'bg-purple-100', label: 'Lesson' },
-      quiz: { icon: ListChecks, color: 'text-cyan-600', bg: 'bg-cyan-100', label: 'Quiz' },
-      rubric: { icon: FileText, color: 'text-amber-600', bg: 'bg-amber-100', label: 'Rubric' },
-      kindergarten: { icon: GraduationCap, color: 'text-pink-600', bg: 'bg-pink-100', label: 'Kindergarten' },
-      multigrade: { icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-100', label: 'Multigrade' },
-      'cross-curricular': { icon: School, color: 'text-teal-600', bg: 'bg-teal-100', label: 'Cross-Curricular' }
+      lesson: { icon: BookMarked, color: '#1D362D', bg: '#1D362D20', label: 'Lesson' },
+      quiz: { icon: ListChecks, color: '#F2A631', bg: '#F2A63120', label: 'Quiz' },
+      rubric: { icon: FileText, color: '#552A01', bg: '#552A0120', label: 'Rubric' },
+      kindergarten: { icon: GraduationCap, color: '#1D362D', bg: '#1D362D20', label: 'Kindergarten' },
+      multigrade: { icon: Users, color: '#552A01', bg: '#552A0120', label: 'Multigrade' },
+      'cross-curricular': { icon: School, color: '#F2A631', bg: '#F2A63120', label: 'Cross-Curricular' }
     };
     return configs[type] || configs.lesson;
   };
@@ -182,7 +158,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
       const newDate = subMonths(prev, 1);
       rebuildMonthListAround(newDate);
       setPendingScrollTarget(newDate);
-
       return newDate;
     });
   };
@@ -192,32 +167,25 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
       const newDate = addMonths(prev, 1);
       rebuildMonthListAround(newDate);
       setPendingScrollTarget(newDate);
-
       return newDate;
     });
   };
 
-
-
   // Handle date selection
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
+    if (onDateSelectCallback) {
+      onDateSelectCallback(date);
+    }
   };
 
-  // Move these handlers to component scope
   const handleMonthSelect = (monthIndex: number) => {
     const newDate = setMonth(setYear(new Date(), pickerYear), monthIndex);
-
-    const isFuture = newDate > currentMonth;
-    const isPast = newDate < currentMonth;
-
     setCurrentMonth(newDate);
     rebuildMonthListAround(newDate);
     setPendingScrollTarget(newDate);
     setShowMonthPicker(false);
   };
-
-
 
   const handleYearChange = (direction: 'prev' | 'next') => {
     if (direction === 'prev') {
@@ -236,10 +204,11 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   // Get activity color based on resource count
   const getActivityColor = (count: number) => {
     if (count === 0) return '';
-    if (count >= 6) return 'bg-green-700';
-    if (count >= 3) return 'bg-green-500';
-    return 'bg-green-200';
+    if (count >= 6) return '#1D362D';
+    if (count >= 3) return '#552A01';
+    return '#F8E59D';
   };
+
   // Click outside handler for month picker
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -276,34 +245,27 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Add previous month to top
   const prependMonths = () => {
     const el = calendarRef.current;
     if (!el) return;
 
-    // Record height BEFORE adding new month
     const oldHeight = el.scrollHeight;
 
     setMonthList(prev => {
       const first = prev[0];
       const newMonth = subMonths(first, 1);
 
-      // Avoid duplicates
       if (prev.some(m => isSameMonth(m, newMonth))) return prev;
 
       return [newMonth, ...prev];
     });
 
-    // After the DOM updates
     setTimeout(() => {
       const newHeight = el.scrollHeight;
-      // Push scroll down by the added height
       el.scrollTop += newHeight - oldHeight;
     }, 0);
   };
 
-
-  // Add next month to bottom
   const appendMonths = () => {
     setMonthList(prev => {
       const last = prev[prev.length - 1];
@@ -318,11 +280,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     if (!pendingScrollTarget) return;
 
     scrollToMonth(pendingScrollTarget);
-
-    // Clear state after scroll
     setPendingScrollTarget(null);
   }, [monthList]);
-
 
   const rebuildMonthListAround = (center: Date) => {
     const base = startOfMonth(center);
@@ -333,132 +292,144 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     ]);
   };
 
-
-
   const scrollToMonth = (targetMonth: Date) => {
     const el = calendarRef.current;
     if (!el) return;
 
-    // Find the index of the target month in monthList
-    const index = monthList.findIndex(m =>
-      isSameMonth(m, targetMonth)
-    );
+    const index = monthList.findIndex(m => isSameMonth(m, targetMonth));
 
     if (index === -1) return;
 
-    // Find the actual month-section DOM element
     const monthSections = el.querySelectorAll('.month-section');
-
     const section = monthSections[index] as HTMLElement;
     if (!section) return;
 
-    // Scroll so the section is aligned nicely
     el.scrollTo({
       top: section.offsetTop - 20,
       behavior: 'smooth'
     });
   };
 
+  // Get resources for selected date
+  const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+  const selectedResources = resourcesByDate[selectedDateKey] || [];
+
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(2, 13, 3, 0.6)', backdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-8xl h-[90vh] flex flex-col overflow-hidden"
+        className="rounded-3xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden"
+        style={{
+          backgroundColor: '#FDFDF8',
+          boxShadow: '0 20px 60px rgba(29, 54, 45, 0.25)'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white px-6 py-2 flex items-center justify-between">
+        <div 
+          className="px-6 py-4 flex items-center justify-between"
+          style={{ backgroundColor: '#1D362D' }}
+        >
           <div className="flex items-center space-x-3">
-            <CalendarIcon className="w-8 h-8" />
+            <CalendarIcon className="w-8 h-8" style={{ color: '#F8E59D' }} />
             <div>
-              <h2 className="text-2xl font-bold">Resource Calendar</h2>
-              <p className="text-blue-100 text-sm">
-                Track your teaching resource creation timeline
+              <h2 className="text-2xl font-bold" style={{ color: '#F8E59D' }}>
+                Resource Calendar
+              </h2>
+              <p className="text-sm" style={{ color: '#F8E59D', opacity: 0.8 }}>
+                Track your teaching resource timeline
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200"
+            className="p-2 rounded-xl transition-all hover:bg-white/10"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" style={{ color: '#F8E59D' }} />
           </button>
         </div>
 
         {/* Stats Bar */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <Activity className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-semibold text-gray-700">
-                  {format(currentMonth, 'MMMM yyyy')} Activity
+        <div 
+          className="px-6 py-4 flex items-center justify-between"
+          style={{ 
+            backgroundColor: '#F8E59D40',
+            borderBottom: '1px solid #E8EAE3'
+          }}
+        >
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <Activity className="w-5 h-5" style={{ color: '#1D362D' }} />
+              <span className="text-sm font-semibold" style={{ color: '#020D03' }}>
+                {format(currentMonth, 'MMMM yyyy')} Activity
+              </span>
+            </div>
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#1D362D' }} />
+                <span style={{ color: '#552A01' }}>
+                  <strong style={{ color: '#020D03' }}>{monthStats.activeDays}</strong> Active Days
                 </span>
               </div>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className="text-gray-600">
-                    <strong className="text-gray-900">{monthStats.activeDays}</strong> Active Days
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
-                  <span className="text-gray-600">
-                    <strong className="text-gray-900">{monthStats.totalResources}</strong> Resources
-                  </span>
-                </div>
+              <div className="flex items-center space-x-1">
+                <TrendingUp className="w-4 h-4" style={{ color: '#F2A631' }} />
+                <span style={{ color: '#552A01' }}>
+                  <strong style={{ color: '#020D03' }}>{monthStats.totalResources}</strong> Resources
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* Type breakdown */}
-            <div className="flex items-center space-x-2">
-              {Object.entries(monthStats.typeCount).map(([type, count]) => {
-                const config = getTypeConfig(type);
-                const Icon = config.icon;
-                return (
-                  <div
-                    key={type}
-                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg ${config.bg}`}
-                    title={`${config.label}: ${count}`}
-                  >
-                    <Icon className={`w-3.5 h-3.5 ${config.color}`} />
-                    <span className="text-sm font-semibold text-gray-700">{count}</span>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Type breakdown */}
+          <div className="flex items-center space-x-2">
+            {Object.entries(monthStats.typeCount).map(([type, count]) => {
+              const config = getTypeConfig(type);
+              const Icon = config.icon;
+              return (
+                <div
+                  key={type}
+                  className="flex items-center space-x-1 px-3 py-1.5 rounded-lg"
+                  style={{ backgroundColor: config.bg }}
+                  title={`${config.label}: ${count}`}
+                >
+                  <Icon className="w-3.5 h-3.5" style={{ color: config.color }} />
+                  <span className="text-sm font-semibold" style={{ color: '#020D03' }}>
+                    {count}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Calendar Section - 75% */}
-          <div className="flex-[3] flex flex-col bg-gray-50">
+          <div className="flex-[3] flex flex-col" style={{ backgroundColor: '#FDFDF8' }}>
             {/* Month Navigation */}
-            {/* Month Navigation Header - replaced with clickable header and dropdown */}
-            <div className="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between">
+            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #E8EAE3' }}>
               <button
                 onClick={goToPreviousMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Previous Month"
+                className="p-2 rounded-lg transition-colors hover:bg-gray-100"
               >
-                <ChevronLeft className="w-6 h-6 text-gray-600" />
+                <ChevronLeft className="w-6 h-6" style={{ color: '#552A01' }} />
               </button>
 
               {/* Clickable Month/Year Header */}
               <div className="relative">
                 <button
-                  className="text-xl font-bold text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center"
+                  className="text-xl font-bold px-4 py-2 rounded-lg transition-colors flex items-center"
                   onClick={() => {
                     setPickerYear(currentMonth.getFullYear());
                     setShowMonthPicker((prev) => !prev);
                   }}
-                  aria-haspopup="listbox"
-                  aria-expanded={showMonthPicker}
-                  aria-label="Select Month and Year"
+                  style={{ 
+                    color: '#020D03',
+                    backgroundColor: showMonthPicker ? '#F8E59D40' : 'transparent'
+                  }}
                   type="button"
                 >
                   {format(currentMonth, 'MMMM yyyy')}
@@ -474,26 +445,28 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 </button>
                 {showMonthPicker && (
                   <div
-                    className="month-picker-container absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-xl w-64 p-4 dropdown-click-outside"
-                    tabIndex={-1}
+                    className="month-picker-container absolute z-30 mt-2 left-1/2 -translate-x-1/2 rounded-xl p-4 w-64"
+                    style={{
+                      backgroundColor: 'white',
+                      border: '1px solid #E8EAE3',
+                      boxShadow: '0 8px 24px rgba(29, 54, 45, 0.15)'
+                    }}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <button
                         onClick={() => handleYearChange('prev')}
                         className="p-1.5 rounded hover:bg-gray-100"
-                        aria-label="Previous Year"
                         type="button"
                       >
-                        <ChevronLeft className="w-5 h-5 text-gray-600" />
+                        <ChevronLeft className="w-5 h-5" style={{ color: '#552A01' }} />
                       </button>
-                      <span className="font-semibold text-gray-800">{pickerYear}</span>
+                      <span className="font-semibold" style={{ color: '#020D03' }}>{pickerYear}</span>
                       <button
                         onClick={() => handleYearChange('next')}
                         className="p-1.5 rounded hover:bg-gray-100"
-                        aria-label="Next Year"
                         type="button"
                       >
-                        <ChevronRight className="w-5 h-5 text-gray-600" />
+                        <ChevronRight className="w-5 h-5" style={{ color: '#552A01' }} />
                       </button>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -501,11 +474,15 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                         <button
                           key={idx}
                           onClick={() => handleMonthSelect(idx)}
-                          className={`py-1.5 rounded-lg font-medium ${
-                            currentMonth.getMonth() === idx && currentMonth.getFullYear() === pickerYear
-                              ? 'bg-blue-600 text-white'
-                              : 'hover:bg-gray-100 text-gray-800'
-                          }`}
+                          className="py-1.5 rounded-lg font-medium"
+                          style={{
+                            backgroundColor: currentMonth.getMonth() === idx && currentMonth.getFullYear() === pickerYear
+                              ? '#1D362D'
+                              : 'transparent',
+                            color: currentMonth.getMonth() === idx && currentMonth.getFullYear() === pickerYear
+                              ? '#F8E59D'
+                              : '#020D03'
+                          }}
                           type="button"
                         >
                           {format(new Date(pickerYear, idx, 1), 'MMM')}
@@ -518,10 +495,9 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
 
               <button
                 onClick={goToNextMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Next Month"
+                className="p-2 rounded-lg transition-colors hover:bg-gray-100"
               >
-                <ChevronRight className="w-6 h-6 text-gray-600" />
+                <ChevronRight className="w-6 h-6" style={{ color: '#552A01' }} />
               </button>
             </div>
 
@@ -531,7 +507,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 {/* Weekday Headers */}
                 <div className="weekday-header">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div key={day} className="weekday-cell">
+                    <div key={day} className="weekday-cell" style={{ color: '#552A01' }}>
                       {day}
                     </div>
                   ))}
@@ -544,7 +520,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     
                     return (
                       <div key={monthIndex} className="month-section">
-                        <h4 className="month-title">
+                        <h4 className="month-title" style={{ color: '#020D03', borderBottomColor: '#E8EAE3' }}>
                           {format(month, 'MMMM yyyy')}
                         </h4>
                         
@@ -561,21 +537,41 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                               <button
                                 key={dayIndex}
                                 onClick={() => handleDateClick(day)}
-                                className={`
-                                  day-cell
-                                  ${!isCurrentMonth ? 'other-month' : ''}
-                                  ${isSelected ? 'selected' : ''}
-                                  ${isTodayDate ? 'today' : ''}
-                                  ${resourceCount > 0 ? 'has-activity' : ''}
-                                `}
+                                className="day-cell"
+                                style={{
+                                  backgroundColor: isSelected
+                                    ? '#1D362D'
+                                    : isTodayDate
+                                    ? '#F2A631'
+                                    : resourceCount > 0 && isCurrentMonth
+                                    ? '#F8E59D40'
+                                    : '#FDFDF8',
+                                  color: isSelected || isTodayDate
+                                    ? isSelected ? '#F8E59D' : '#020D03'
+                                    : !isCurrentMonth
+                                    ? '#E8EAE3'
+                                    : '#020D03',
+                                  boxShadow: isSelected
+                                    ? '0 4px 12px rgba(29, 54, 45, 0.2)'
+                                    : isTodayDate
+                                    ? '0 2px 8px rgba(242, 166, 49, 0.3)'
+                                    : 'none',
+                                  cursor: isCurrentMonth ? 'pointer' : 'default',
+                                  opacity: isCurrentMonth ? 1 : 0.25
+                                }}
                                 disabled={!isCurrentMonth}
                               >
                                 <span className="day-number">{format(day, 'd')}</span>
-                                {resourceCount > 0 && (
+                                {resourceCount > 0 && isCurrentMonth && (
                                   <div className="activity-indicator">
-                                    <div className={`activity-dot ${activityColor}`} />
+                                    <div 
+                                      className="activity-dot" 
+                                      style={{ backgroundColor: activityColor }}
+                                    />
                                     {resourceCount > 1 && (
-                                      <span className="activity-count">{resourceCount}</span>
+                                      <span className="activity-count" style={{ color: isSelected ? '#F8E59D' : '#552A01' }}>
+                                        {resourceCount}
+                                      </span>
                                     )}
                                   </div>
                                 )}
@@ -588,65 +584,53 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                   })}
                 </div>
               </div>
-
-
             </div>
-              {/* Legend */}
-              <div className="max-w-5xl mx-auto mt-6 bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-800 mb-3">Activity Legend</h3>
-                <div className="flex items-center space-x-12 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-green-200 rounded-full" />
-                    <span className="text-gray-600 font-medium">1-2 resources</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-green-500 rounded-full" />
-                    <span className="text-gray-600 font-medium">3-5 resources</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-green-700 rounded-full" />
-                    <span className="text-gray-600 font-medium">6+ resources</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-amber-400 rounded-full border-2 border-amber-600" />
-                    <span className="text-gray-600 font-medium">Today</span>
-                  </div>
+
+            {/* Legend */}
+            <div className="max-w-5xl mx-auto mt-6 rounded-2xl p-4" style={{ backgroundColor: 'white', border: '1px solid #E8EAE3', boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)' }}>
+              <h3 className="text-sm font-bold mb-3" style={{ color: '#020D03' }}>Activity Legend</h3>
+              <div className="flex items-center space-x-12 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#F8E59D' }} />
+                  <span className="font-medium" style={{ color: '#552A01' }}>1-2 resources</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#552A01' }} />
+                  <span className="font-medium" style={{ color: '#552A01' }}>3-5 resources</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1D362D' }} />
+                  <span className="font-medium" style={{ color: '#552A01' }}>6+ resources</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#F2A631', boxShadow: '0 0 0 2px #552A01' }} />
+                  <span className="font-medium" style={{ color: '#552A01' }}>Today</span>
                 </div>
               </div>
+            </div>
           </div>
 
           {/* Details Panel - 25% */}
-          <div className="flex-1 bg-white border-l border-gray-200 flex flex-col relative overflow-hidden">
+          <div className="flex-1 flex flex-col relative overflow-hidden" style={{ backgroundColor: 'white', borderLeft: '1px solid #E8EAE3' }}>
             {/* Selected Date Header */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200 p-6 relative">
+            <div className="p-6 relative" style={{ backgroundColor: '#F8E59D40', borderBottom: '1px solid #E8EAE3' }}>
               <div className="text-center">
-                <div className="text-5xl font-bold bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-1">
+                <div className="text-5xl font-bold mb-1" style={{ color: '#1D362D' }}>
                   {format(selectedDate, 'd')}
                 </div>
-                <div className="text-base text-gray-700 font-semibold">
+                <div className="text-base font-semibold" style={{ color: '#552A01' }}>
                   {format(selectedDate, 'EEEE')}
                 </div>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-sm font-medium" style={{ color: '#552A01', opacity: 0.7 }}>
                   {format(selectedDate, 'MMMM yyyy')}
                 </div>
               </div>
 
-              {hasAnyTasks && (
-                <button
-                  type="button"
-                  onClick={() => setShowTaskPanel(true)}
-                  className="absolute top-4 right-4 inline-flex items-center px-3 py-1.5 rounded-full bg-white shadow-sm text-xs font-semibold text-blue-700 hover:bg-blue-50"
-                >
-                  <ListChecks className="w-3.5 h-3.5 mr-1.5" />
-                  All Tasks
-                </button>
-              )}
-
               {selectedResources.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4" style={{ borderTop: '1px solid #E8EAE3' }}>
                   <div className="flex items-center justify-center space-x-2">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                    <span className="text-sm font-bold text-gray-800">
+                    <TrendingUp className="w-5 h-5" style={{ color: '#1D362D' }} />
+                    <span className="text-sm font-bold" style={{ color: '#020D03' }}>
                       {selectedResources.length} {selectedResources.length === 1 ? 'Resource' : 'Resources'}
                     </span>
                   </div>
@@ -656,54 +640,11 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
 
             {/* Resources List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {/* Tasks for this date */}
-              {tasksByDate && tasksByDate[selectedDateKey] && (
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">Tasks</h3>
-                  {tasksByDate[selectedDateKey].map((task, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-2"
-                    >
-                      <span className="font-semibold text-yellow-700">{task.title}</span>
-                      {task.description && (
-                        <p className="text-sm text-gray-600">{task.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* Milestones for this date */}
-              {milestonesByDate && milestonesByDate[selectedDateKey]?.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold text-indigo-800 mb-2">Milestones</h3>
-                  {milestonesByDate[selectedDateKey].map(milestone => (
-                    <div key={milestone.id} className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-indigo-700">{milestone.topic_title}</span>
-                        <span className="text-xs text-indigo-600">{milestone.subject}</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{milestone.grade}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button
-                onClick={() => {
-                  const title = prompt("Task title:");
-                  if (!title) return;
-                  const description = prompt("Description (optional):");
-                  onAddTask?.(selectedDateKey, { title, description });
-                }}
-                className="w-full mb-4 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
-              >
-                + Add Task
-              </button>
               {selectedResources.length === 0 ? (
                 <div className="text-center py-16">
-                  <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-base text-gray-600 font-semibold">No resources</p>
-                  <p className="text-sm text-gray-400 mt-2">
+                  <CalendarIcon className="w-16 h-16 mx-auto mb-4" style={{ color: '#E8EAE3' }} />
+                  <p className="text-base font-semibold" style={{ color: '#552A01' }}>No resources</p>
+                  <p className="text-sm mt-2" style={{ color: '#A8AFA3' }}>
                     Nothing created on this day
                   </p>
                 </div>
@@ -716,32 +657,46 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                   return (
                     <div
                       key={resource.id}
-                      className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all duration-200 group hover:border-blue-300"
+                      className="rounded-xl p-4 hover:shadow-lg transition-all duration-200 group"
+                      style={{
+                        backgroundColor: '#FDFDF8',
+                        border: '1px solid #E8EAE3'
+                      }}
                     >
                       <div className="flex items-start space-x-3">
-                        <div className={`p-2.5 rounded-xl ${config.bg} flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                          <Icon className={`w-5 h-5 ${config.color}`} />
+                        <div 
+                          className="p-2.5 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform"
+                          style={{ backgroundColor: config.bg }}
+                        >
+                          <Icon className="w-5 h-5" style={{ color: config.color }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2">
+                          <h4 className="text-sm font-bold line-clamp-2 mb-2" style={{ color: '#020D03' }}>
                             {resource.title}
                           </h4>
                           <div className="flex items-center space-x-2 text-xs">
-                            <span className={`px-2.5 py-1 rounded-lg ${config.bg} ${config.color} font-semibold`}>
+                            <span 
+                              className="px-2.5 py-1 rounded-lg font-semibold"
+                              style={{ backgroundColor: config.bg, color: config.color }}
+                            >
                               {config.label}
                             </span>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-500 font-medium">{timeStr}</span>
+                            <span style={{ color: '#A8AFA3' }}>•</span>
+                            <span className="font-medium" style={{ color: '#552A01' }}>{timeStr}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="mt-3 pt-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderTop: '1px solid #E8EAE3' }}>
                         {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric) && (
                           <button
                             onClick={() => onViewResource?.(resource.type, resource)}
-                            className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex-1 flex items-center justify-center px-3 py-2 text-xs font-semibold rounded-lg transition-colors"
+                            style={{
+                              backgroundColor: '#1D362D',
+                              color: '#F8E59D'
+                            }}
                           >
                             <Eye className="w-3.5 h-3.5 mr-1.5" />
                             View
@@ -749,7 +704,11 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                         )}
                         <button
                           onClick={() => onEditResource?.(resource.type, resource)}
-                          className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+                          className="flex-1 flex items-center justify-center px-3 py-2 text-xs font-semibold rounded-lg transition-colors"
+                          style={{
+                            backgroundColor: '#F2A631',
+                            color: 'white'
+                          }}
                         >
                           <Edit className="w-3.5 h-3.5 mr-1.5" />
                           Edit
@@ -760,65 +719,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 })
               )}
             </div>
-            {/* Slide-over All Tasks Panel */}
-            {showTaskPanel && (
-              <div className="fixed inset-0 z-50 flex">
-                <div
-                  className="fixed inset-0 bg-black/30 transition-opacity"
-                  onClick={() => setShowTaskPanel(false)}
-                  aria-hidden="true"
-                />
-                <div className="ml-auto w-full max-w-md h-full bg-white shadow-2xl flex flex-col relative animate-slide-in-right">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-900">All Tasks</h3>
-                    <button
-                      onClick={() => setShowTaskPanel(false)}
-                      className="p-2 rounded-full hover:bg-gray-100"
-                      aria-label="Close"
-                    >
-                      <X className="w-5 h-5 text-gray-600" />
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {allTasksByDate.length === 0 ? (
-                      <div className="text-center text-gray-500 py-16">
-                        <ListChecks className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                        <p className="font-semibold">No tasks found</p>
-                        <p className="text-sm mt-2">No tasks have been added yet.</p>
-                      </div>
-                    ) : (
-                      allTasksByDate.map(({ dateKey, dateLabel, tasks }) => (
-                        <div key={dateKey}>
-                          <div className="text-xs font-semibold text-gray-500 mb-2">{dateLabel}</div>
-                          <div className="space-y-2">
-                            {tasks.map((task, idx) => (
-                              <div
-                                key={idx}
-                                className="bg-yellow-50 border border-yellow-200 rounded-xl p-3"
-                              >
-                                <span className="font-semibold text-yellow-700">{task.title}</span>
-                                {task.description && (
-                                  <p className="text-sm text-gray-600">{task.description}</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                <style>{`
-                  @keyframes slide-in-right {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                  }
-                  .animate-slide-in-right {
-                    animation: slide-in-right 0.25s cubic-bezier(0.4,0,0.2,1);
-                  }
-                `}</style>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -836,7 +736,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
           margin-bottom: 8px;
           position: sticky;
           top: 0;
-          background: #f9fafb;
+          background: #FDFDF8;
           z-index: 10;
           padding: 12px 0;
         }
@@ -845,7 +745,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
           text-align: center;
           font-size: 0.875rem;
           font-weight: 700;
-          color: #6b7280;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
@@ -860,17 +759,16 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
           background: white;
           border-radius: 20px;
           padding: 24px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-          border: 1px solid #e5e7eb;
+          box-shadow: 0 4px 12px rgba(29, 54, 45, 0.05);
+          border: 1px solid #E8EAE3;
         }
 
         .month-title {
           font-size: 1.25rem;
           font-weight: 700;
-          color: #111827;
           margin-bottom: 16px;
           padding-bottom: 12px;
-          border-bottom: 2px solid #e5e7eb;
+          border-bottom: 2px solid;
         }
 
         .days-grid {
@@ -887,52 +785,15 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
           align-items: center;
           justify-content: center;
           padding: 8px;
-          background: #f9fafb;
-          border: 2px solid transparent;
+          border: none;
           border-radius: 14px;
           font-weight: 600;
-          color: #1f2937;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          cursor: pointer;
           min-height: 70px;
         }
 
         .day-cell:hover:not(:disabled) {
-          background: #eff6ff;
-          border-color: #3b82f6;
           transform: scale(1.05);
-          box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
-        }
-
-        .day-cell.selected {
-          background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-          border-color: #3b82f6;
-          color: white;
-          transform: scale(1.08);
-          box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
-        }
-
-        .day-cell.today {
-          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-          border-color: #f59e0b;
-          color: #92400e;
-          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-        }
-
-        .day-cell.has-activity {
-          background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-          border-color: #bfdbfe;
-        }
-
-        .day-cell.has-activity:hover {
-          background: linear-gradient(135deg, #bfdbfe 0%, #c7d2fe 100%);
-          border-color: #3b82f6;
-        }
-
-        .day-cell.other-month {
-          opacity: 0.25;
-          pointer-events: none;
-          background: #f3f4f6;
         }
 
         .day-cell:disabled {
@@ -961,11 +822,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         .activity-count {
           font-size: 0.625rem;
           font-weight: 700;
-          color: #4b5563;
-        }
-
-        .day-cell.selected .activity-count {
-          color: white;
         }
 
         /* Smooth scrollbar */
@@ -974,17 +830,17 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
         }
 
         .overflow-y-auto::-webkit-scrollbar-track {
-          background: #f9fafb;
+          background: #FDFDF8;
           border-radius: 4px;
         }
 
         .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: #d1d5db;
+          background: #E8EAE3;
           border-radius: 4px;
         }
 
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: #9ca3af;
+          background: #A8AFA3;
         }
       `}</style>
     </div>

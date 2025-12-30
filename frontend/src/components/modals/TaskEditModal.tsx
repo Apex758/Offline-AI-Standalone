@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Calendar, Flag, AlignLeft, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Task, TaskFormData, TaskPriority } from '../../types/task';
@@ -27,6 +27,14 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Natural priority colors
+  const priorityStyles: { [key in TaskPriority]: { bg: string; border: string; text: string } } = {
+    urgent: { bg: '#552A0120', border: '#552A01', text: '#552A01' },
+    high: { bg: '#F2A63120', border: '#F2A631', text: '#F2A631' },
+    medium: { bg: '#1D362D20', border: '#1D362D', text: '#1D362D' },
+    low: { bg: '#E8EAE340', border: '#A8AFA3', text: '#552A01' }
+  };
 
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -76,23 +84,35 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ 
+        backgroundColor: 'rgba(2, 13, 3, 0.6)',
+        backdropFilter: 'blur(8px)'
+      }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+        className="rounded-2xl w-full max-w-md"
+        style={{
+          backgroundColor: 'rgba(253, 253, 248, 0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 60px rgba(29, 54, 45, 0.25)'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
+        <div 
+          className="flex items-center justify-between p-6"
+          style={{ borderBottom: '1px solid #E8EAE3' }}
+        >
+          <h2 className="text-2xl font-bold" style={{ color: '#020D03' }}>
             {task ? 'Edit Task' : 'New Task'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-colors hover:bg-gray-100"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5" style={{ color: '#552A01' }} />
           </button>
         </div>
 
@@ -100,34 +120,44 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
               Title *
             </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.title ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className="w-full px-4 py-2 rounded-lg outline-none transition-all"
+              style={{
+                backgroundColor: 'white',
+                border: errors.title ? '1px solid #F2A631' : '1px solid #E8EAE3',
+                color: '#020D03',
+                boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+              }}
               placeholder="Enter task title"
               autoFocus
             />
             {errors.title && (
-              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+              <p className="mt-1 text-sm" style={{ color: '#F2A631' }}>{errors.title}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
               <AlignLeft className="w-4 h-4 mr-1" />
               Description
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 rounded-lg outline-none resize-none transition-all"
+              style={{
+                backgroundColor: 'white',
+                border: '1px solid #E8EAE3',
+                color: '#020D03',
+                boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+              }}
               placeholder="Add details about this task (optional)"
               rows={3}
             />
@@ -135,7 +165,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
           {/* Date */}
           <div>
-            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
               <Calendar className="w-4 h-4 mr-1" />
               Due Date *
             </label>
@@ -143,24 +173,28 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.date ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className="w-full px-4 py-2 rounded-lg outline-none transition-all"
+              style={{
+                backgroundColor: 'white',
+                border: errors.date ? '1px solid #F2A631' : '1px solid #E8EAE3',
+                color: '#020D03',
+                boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+              }}
             />
             {errors.date && (
-              <p className="mt-1 text-sm text-red-600">{errors.date}</p>
+              <p className="mt-1 text-sm" style={{ color: '#F2A631' }}>{errors.date}</p>
             )}
           </div>
 
           {/* Priority */}
           <div>
-            <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
               <Flag className="w-4 h-4 mr-1" />
               Priority
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {(Object.keys(PRIORITY_CONFIG) as TaskPriority[]).map((priority) => {
-                const config = PRIORITY_CONFIG[priority];
+              {(Object.keys(priorityStyles) as TaskPriority[]).map((priority) => {
+                const style = priorityStyles[priority];
                 const isSelected = formData.priority === priority;
                 
                 return (
@@ -168,13 +202,15 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                     key={priority}
                     type="button"
                     onClick={() => setFormData({ ...formData, priority })}
-                    className={`px-3 py-2 rounded-lg border-2 font-medium text-sm transition-all ${
-                      isSelected
-                        ? `${config.bgClass} ${config.borderClass} ${config.textClass} scale-105`
-                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className="px-3 py-2 rounded-lg font-medium text-sm transition-all"
+                    style={{
+                      backgroundColor: isSelected ? style.bg : 'white',
+                      border: `2px solid ${isSelected ? style.border : '#E8EAE3'}`,
+                      color: isSelected ? style.text : '#552A01',
+                      transform: isSelected ? 'scale(1.05)' : 'scale(1)'
+                    }}
                   >
-                    {config.label}
+                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
                   </button>
                 );
               })}
@@ -187,7 +223,11 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
+                style={{
+                  color: '#F2A631',
+                  backgroundColor: '#F2A63120'
+                }}
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="font-medium">Delete</span>
@@ -200,13 +240,24 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="px-6 py-2 rounded-lg transition-all hover:scale-105 font-medium"
+                style={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E8EAE3',
+                  color: '#552A01',
+                  boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+                }}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="px-6 py-2 rounded-lg transition-all hover:scale-105 font-medium"
+                style={{
+                  backgroundColor: '#1D362D',
+                  color: '#F8E59D',
+                  boxShadow: '0 4px 12px rgba(29, 54, 45, 0.2)'
+                }}
               >
                 {task ? 'Save Changes' : 'Create Task'}
               </button>

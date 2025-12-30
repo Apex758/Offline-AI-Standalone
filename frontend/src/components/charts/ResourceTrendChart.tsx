@@ -18,10 +18,10 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   // Filter data to only include entries from June 2025 onward
   const minDate = new Date('2025-06-01');
   const filteredData = data.filter(d => {
-    // Defensive: handle both string and Date for d.date
     const entryDate = typeof d.date === 'string' ? new Date(d.date) : d.date;
     return entryDate >= minDate;
   });
+
   const timeframeButtons: { value: Timeframe; label: string }[] = [
     { value: 'week', label: '1 Week' },
     { value: '2weeks', label: '2 Weeks' },
@@ -45,8 +45,15 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-          <p className="font-semibold text-gray-900 mb-2">
+        <div 
+          className="rounded-lg p-3"
+          style={{
+            backgroundColor: 'white',
+            border: '1px solid #E8EAE3',
+            boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
+          }}
+        >
+          <p className="font-semibold mb-2" style={{ color: '#020D03' }}>
             {format(parseISO(label), 'MMM d, yyyy')}
           </p>
           {payload.map((entry: any, index: number) => (
@@ -55,8 +62,8 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="text-gray-700">{entry.name}:</span>
-              <span className="font-semibold text-gray-900">{entry.value}</span>
+              <span style={{ color: '#552A01' }}>{entry.name}:</span>
+              <span className="font-semibold" style={{ color: '#020D03' }}>{entry.value}</span>
             </div>
           ))}
         </div>
@@ -66,25 +73,35 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div 
+      className="rounded-2xl p-6"
+      style={{
+        backgroundColor: 'white',
+        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
-          <h3 className="font-bold text-gray-900">Resource Creation Trends</h3>
+          <TrendingUp className="w-5 h-5" style={{ color: '#1D362D' }} />
+          <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Creation Trends</h3>
         </div>
 
         {/* Timeframe Toggle */}
-        <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+        <div 
+          className="flex items-center space-x-1 rounded-lg p-1"
+          style={{ backgroundColor: '#F8E59D40' }}
+        >
           {timeframeButtons.map((btn) => (
             <button
               key={btn.value}
               onClick={() => onTimeframeChange(btn.value)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                timeframe === btn.value
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className="px-3 py-1.5 rounded-md text-sm font-medium transition-all"
+              style={{
+                backgroundColor: timeframe === btn.value ? '#1D362D' : 'transparent',
+                color: timeframe === btn.value ? '#F8E59D' : '#552A01',
+                boxShadow: timeframe === btn.value ? '0 2px 4px rgba(29, 54, 45, 0.2)' : 'none'
+              }}
             >
               {btn.label}
             </button>
@@ -95,16 +112,16 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
       {/* Chart */}
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={filteredData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#E8EAE3" />
           <XAxis
             dataKey="date"
             tickFormatter={formatXAxis}
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-            stroke="#9ca3af"
+            tick={{ fontSize: 12, fill: '#552A01' }}
+            stroke="#E8EAE3"
           />
           <YAxis
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-            stroke="#9ca3af"
+            tick={{ fontSize: 12, fill: '#552A01' }}
+            stroke="#E8EAE3"
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
@@ -114,35 +131,35 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
           <Line
             type="monotone"
             dataKey="total"
-            stroke="#3b82f6"
+            stroke="#F2A631"
             strokeWidth={3}
             name="Total"
-            dot={{ r: 4 }}
+            dot={{ r: 4, fill: '#F2A631' }}
             activeDot={{ r: 6 }}
           />
           <Line
             type="monotone"
             dataKey="lessonPlans"
-            stroke="#8b5cf6"
+            stroke="#1D362D"
             strokeWidth={2}
             name="Lesson Plans"
-            dot={{ r: 3 }}
+            dot={{ r: 3, fill: '#1D362D' }}
           />
           <Line
             type="monotone"
             dataKey="quizzes"
-            stroke="#10b981"
+            stroke="#552A01"
             strokeWidth={2}
             name="Quizzes"
-            dot={{ r: 3 }}
+            dot={{ r: 3, fill: '#552A01' }}
           />
           <Line
             type="monotone"
             dataKey="rubrics"
-            stroke="#f59e0b"
+            stroke="#F8E59D"
             strokeWidth={2}
             name="Rubrics"
-            dot={{ r: 3 }}
+            dot={{ r: 3, fill: '#F8E59D' }}
           />
         </LineChart>
       </ResponsiveContainer>
