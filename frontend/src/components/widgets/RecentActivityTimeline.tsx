@@ -17,51 +17,57 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       case 'resource_created':
         switch (activity.resourceType) {
           case 'lesson':
-            return { Icon: BookMarked, color: '#8b5cf6' };
+            return { Icon: BookMarked, color: '#1D362D' };
           case 'quiz':
-            return { Icon: ListChecks, color: '#10b981' };
+            return { Icon: ListChecks, color: '#F2A631' };
           case 'rubric':
-            return { Icon: FileText, color: '#f59e0b' };
+            return { Icon: FileText, color: '#552A01' };
           case 'kindergarten':
-            return { Icon: GraduationCap, color: '#ec4899' };
+            return { Icon: GraduationCap, color: '#1D362D' };
           case 'multigrade':
-            return { Icon: Users, color: '#6366f1' };
+            return { Icon: Users, color: '#552A01' };
           case 'cross-curricular':
-            return { Icon: School, color: '#14b8a6' };
+            return { Icon: School, color: '#F2A631' };
           default:
-            return { Icon: BookMarked, color: '#8b5cf6' };
+            return { Icon: BookMarked, color: '#1D362D' };
         }
       case 'task_completed':
-        return { Icon: CheckCircle2, color: '#10b981' };
+        return { Icon: CheckCircle2, color: '#1D362D' };
       case 'milestone_reached':
-        return { Icon: Target, color: '#3b82f6' };
+        return { Icon: Target, color: '#F2A631' };
       default:
-        return { Icon: Clock, color: '#6b7280' };
+        return { Icon: Clock, color: '#552A01' };
     }
   };
 
-  const getActivityColor = (activity: Activity) => {
+  const getActivityBg = (activity: Activity) => {
     switch (activity.type) {
       case 'resource_created':
-        return 'bg-purple-50 border-purple-200';
+        return { bg: '#1D362D20', border: '#1D362D40' };
       case 'task_completed':
-        return 'bg-green-50 border-green-200';
+        return { bg: '#1D362D20', border: '#1D362D40' };
       case 'milestone_reached':
-        return 'bg-blue-50 border-blue-200';
+        return { bg: '#F2A63120', border: '#F2A63140' };
       default:
-        return 'bg-gray-50 border-gray-200';
+        return { bg: '#E8EAE340', border: '#E8EAE3' };
     }
   };
 
   const displayedActivities = activities.slice(0, limit);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div 
+      className="rounded-2xl overflow-hidden"
+      style={{
+        backgroundColor: 'white',
+        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
+      }}
+    >
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4" style={{ borderBottom: '1px solid #E8EAE3' }}>
         <div className="flex items-center space-x-2">
-          <Clock className="w-5 h-5 text-gray-600" />
-          <h3 className="font-bold text-gray-900">Recent Activity</h3>
+          <Clock className="w-5 h-5" style={{ color: '#552A01' }} />
+          <h3 className="font-bold" style={{ color: '#020D03' }}>Recent Activity</h3>
         </div>
       </div>
 
@@ -69,38 +75,45 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       <div className="p-4">
         {displayedActivities.length === 0 ? (
           <div className="text-center py-8">
-            <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-600">No recent activity</p>
-            <p className="text-xs text-gray-400 mt-1">Create resources to see your activity</p>
+            <Clock className="w-12 h-12 mx-auto mb-3" style={{ color: '#E8EAE3' }} />
+            <p className="text-sm font-medium" style={{ color: '#552A01' }}>No recent activity</p>
+            <p className="text-xs mt-1" style={{ color: '#A8AFA3' }}>Create resources to see your activity</p>
           </div>
         ) : (
           <div className="space-y-3">
             {displayedActivities.map((activity, index) => {
               const { Icon, color } = getActivityIcon(activity);
-              const bgColor = getActivityColor(activity);
+              const { bg, border } = getActivityBg(activity);
               const isLast = index === displayedActivities.length - 1;
 
               return (
                 <div key={activity.id} className="relative">
                   {/* Timeline Line */}
                   {!isLast && (
-                    <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-gray-200" />
+                    <div 
+                      className="absolute left-4 top-10 bottom-0 w-0.5" 
+                      style={{ backgroundColor: '#E8EAE3' }}
+                    />
                   )}
 
                   <div className="flex items-start space-x-3">
                     {/* Icon */}
                     <div
-                      className={`relative z-10 flex-shrink-0 p-2 rounded-lg border ${bgColor}`}
+                      className="relative z-10 flex-shrink-0 p-2 rounded-lg"
+                      style={{ 
+                        backgroundColor: bg,
+                        border: `1px solid ${border}`
+                      }}
                     >
                       <Icon className="w-4 h-4" style={{ color }} />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0 pt-1">
-                      <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                      <p className="text-sm font-medium line-clamp-2" style={{ color: '#020D03' }}>
                         {activity.description}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs mt-1" style={{ color: '#552A01' }}>
                         {formatDistanceToNow(parseISO(activity.timestamp), { addSuffix: true })}
                       </p>
                     </div>
@@ -115,7 +128,7 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       {/* View All Link */}
       {activities.length > limit && (
         <div className="px-4 pb-4">
-          <button className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium">
+          <button className="w-full text-sm font-medium" style={{ color: '#F2A631' }}>
             View all {activities.length} activities
           </button>
         </div>
