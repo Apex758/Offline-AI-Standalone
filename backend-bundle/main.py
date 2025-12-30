@@ -219,6 +219,23 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
+# Add global exception handler
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    error_trace = traceback.format_exc()
+    print(f"[GLOBAL ERROR] Unhandled exception on {request.url.path}")
+    print(f"[GLOBAL ERROR] {str(exc)}")
+    print(f"[GLOBAL ERROR] Traceback:\n{error_trace}")
+    sys.stdout.flush()
+    return JSONResponse(
+        status_code=500,
+        content={"error": str(exc), "traceback": error_trace}
+    )
+
 # Include milestone routes
 app.include_router(milestones.router)
 
@@ -1729,6 +1746,9 @@ async def export_data(
     """
     Export endpoint for various data types and formats.
     """
+    print(f"[EXPORT] Received request - data_type: {data_type}, format: {format}, title: {title}")
+    import sys
+    sys.stdout.flush()
     # Validate data_type
     if data_type not in EXPORT_TYPE_FORMATS:
         return JSONResponse(
@@ -1751,11 +1771,19 @@ async def export_data(
         )
     # Export
     try:
+        print(f"[EXPORT DEBUG] Starting export with format: {format}, data_type: {data_type}")
         exported_bytes = formatter(data, title=title)
+        print(f"[EXPORT DEBUG] Export successful, bytes length: {len(exported_bytes)}")
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"[EXPORT ERROR] Export failed for format '{format}': {str(e)}")
+        print(f"[EXPORT ERROR] Full traceback:\n{error_details}")
+        logger.error(f"Export failed for format '{format}': {str(e)}")
+        logger.error(f"Full traceback:\n{error_details}")
         return JSONResponse(
             status_code=500,
-            content={"error": f"Export failed: {str(e)}"}
+            content={"error": f"Export failed: {str(e)}", "details": error_details}
         )
     # Prepare response
     ext = "md" if format == "markdown" else format
