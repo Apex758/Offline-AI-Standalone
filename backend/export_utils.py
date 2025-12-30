@@ -8,7 +8,6 @@ from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from weasyprint import HTML
 import re
 
 
@@ -313,9 +312,7 @@ def export_to_docx(data: Union[str, Dict, List], title: str = "Export") -> bytes
 
 
 def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
-    """
-    Export data to PDF format with rich formatting matching the webpage.
-    """
+    from weasyprint import HTML
     try:
         # If rawHtml is provided, use it directly for PDF export
         if isinstance(data, dict) and data.get("rawHtml"):
