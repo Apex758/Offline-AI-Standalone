@@ -1,0 +1,200 @@
+/* One-Sided Trapezoid Tabs */
+
+.edge-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 12px;
+  min-width: 120px;
+  max-width: 240px;
+  height: 36px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--tab-bg, #f3f4f6);
+  opacity: var(--tab-opacity, 0.7);
+  margin-right: -8px;  /* Overlap tabs */
+  user-select: none;
+  z-index: var(--tab-z-index, 1);  /* Stacking order */
+  
+/* Parallelogram: slanted on both sides */
+  clip-path: polygon(
+    12px 0%,              /* Top-left */
+    100% 0%,              /* Top-right */
+    calc(100% - 12px) 100%, /* Bottom-right */
+    0% 100%               /* Bottom-left */
+  );
+}
+
+.edge-tab:hover {
+  opacity: 0.9;
+}
+
+.edge-tab[data-active="true"] {
+  opacity: 1 !important;
+  z-index: 100 !important;  /* Always on top */
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+  background: var(--tab-color, #3b82f6) !important;
+  
+  /* Slightly larger for active state emphasis */
+  transform: translateY(-1px);
+}
+
+/* Grouped tabs indicator line */
+.edge-tab[data-grouped="true"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--tab-color, #3b82f6);
+  opacity: 0.6;
+  /* Match the one-sided trapezoid shape */
+  clip-path: polygon(
+    6px 0,
+    0% 6px,
+    0% 3px,
+    calc(100% - 6px) 3px,
+    calc(100% - 6px) 0
+  );
+}
+
+.edge-tab[data-active="true"][data-grouped="true"]::before {
+  opacity: 0.9;
+}
+
+/* Active tab text should be white for contrast */
+.edge-tab[data-active="true"] .tab-text,
+.edge-tab[data-active="true"] .edge-tab-close {
+  color: white !important;
+}
+
+.edge-tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.edge-tab-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.edge-tab[data-active="true"] .edge-tab-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Group button styling */
+.edge-tab-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 8px 10px;
+  height: 36px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--group-bg, #f3f4f6);
+  opacity: var(--group-opacity, 0.7);
+  margin-right: -8px;  /* Overlap with next item */
+  border: none;
+  user-select: none;
+  z-index: var(--group-z-index, 1);  /* Stacking order */
+  
+  /* Parallelogram matching tabs */
+  clip-path: polygon(
+    12px 0%,
+    100% 0%,
+    calc(100% - 12px) 100%,
+    0% 100%
+  );
+}
+
+.edge-tab-group:hover {
+  opacity: 0.9;
+}
+
+.edge-tab-group[data-active="true"] {
+  opacity: 1 !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+  background: var(--group-color, #3b82f6) !important;
+  transform: translateY(-1px);
+  z-index: 100 !important;  /* Active group on top */
+}
+
+/* Active group button text should be white */
+.edge-tab-group[data-active="true"] .tab-text,
+.edge-tab-group[data-active="true"] svg {
+  color: white !important;
+  stroke: white;
+}
+
+.edge-tab-group[data-collapsed="true"] {
+  margin-right: 6px;
+}
+
+/* Container for grouped tabs with top line */
+.edge-tab-group-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  z-index: 50;  /* Group container above regular tabs */
+}
+
+.edge-tab-group-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--group-line-color, #3b82f6);
+  border-radius: 3px;
+  z-index: 5;
+}
+
+/* Smooth transitions */
+.edge-tab,
+.edge-tab-group,
+.edge-tab-close {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for accessibility */
+.edge-tab:focus-visible,
+.edge-tab-group:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+/* Scrollbar styling for tab bar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Text fade effect for long tab titles */
+.edge-tab span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tab bar background */
+.edge-tab-bar {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
