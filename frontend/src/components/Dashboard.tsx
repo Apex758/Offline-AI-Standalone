@@ -43,6 +43,7 @@ import { generateColorVariants, isColorDark } from '../lib/utils';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useTutorials } from '../contexts/TutorialContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import '../styles/edge-tabs.css';
 
 
 interface DashboardProps {
@@ -1319,11 +1320,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="bg-white border-b border-gray-200 px-2 py-0 flex items-center justify-between edge-tab-bar" style={{ minHeight: '40px' }}>
           {/* Tabs on the left */}
-          <div className="flex-1 flex items-center space-x-2 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar">
-            {Object.entries(groupedTabs).map(([type, groupTabs]) => {
+          <div className="flex-1 flex items-center gap-0 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar" style={{ marginTop: '0px' }}>
+            {Object.entries(groupedTabs).map(([type, groupTabs], groupIndex) => {
               const isCollapsed = collapsedGroups.has(type);
+              const totalGroups = Object.entries(groupedTabs).length;
+              const baseZIndex = (totalGroups - groupIndex) * 10;  // Left = higher z-index
               const activeInGroup = groupTabs.find(t => t.id === activeTabId);
               const colors = tabColors[type] || tabColors['split'];
               
@@ -1335,13 +1338,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     key={tab.id}
                     data-tutorial={isActive ? "single-tab-demo" : undefined}
                     data-tab-type={tab.type}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition border-l-4 ${
-                      isActive ? 'text-white' : 'text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className="edge-tab group"
+                    data-active={isActive}
                     style={{
-                      borderLeftColor: colors.border,
-                      backgroundColor: isActive ? colors.activeBg : colors.bg
-                    }}
+                      '--tab-color': colors.border,
+                      '--tab-bg': isActive ? colors.border : colors.bg,
+                      '--tab-opacity': isActive ? '1' : '0.7',
+                      '--tab-z-index': baseZIndex
+                    } as React.CSSProperties}
                     onClick={() => {
                       if (!splitView.isActive) {
                         setActiveTabId(tab.id);
@@ -1359,22 +1363,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       })));
                     }}
                   >
-                    <span className="text-sm font-medium whitespace-nowrap">{tab.title}</span>
+                    <span className={`text-sm font-medium whitespace-nowrap ${isActive ? 'text-white' : 'text-gray-600'}`}>
+                      {tab.title}
+                    </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         closeTab(tab.id);
                       }}
-                      className="hover:bg-white/50 rounded p-1"
+                      className="edge-tab-close opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 );
               }
 
               return (
-                <div key={type} className="flex items-center gap-1" data-tutorial="tab-groups">
+                <div key={type} className="flex items-center" data-tutorial="tab-groups">
                   <button
                     onClick={() => toggleGroupCollapse(type)}
                     onContextMenu={(e) => {
@@ -1382,71 +1388,81 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       e.stopPropagation();
                       setContextMenu({ groupType: type, x: e.clientX, y: e.clientY });
                     }}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition border-l-4 ${
-                      activeInGroup ? 'text-white' : 'text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className="edge-tab-group group"
+                    data-active={!!activeInGroup}
+                    data-collapsed={isCollapsed}
                     style={{
-                      borderLeftColor: colors.border,
-                      backgroundColor: activeInGroup ? colors.activeBg : colors.bg
-                    }}
+                      '--group-color': colors.border,
+                      '--group-bg': activeInGroup ? colors.border : colors.bg,
+                      '--group-opacity': activeInGroup ? '1' : '0.7',
+                      '--group-z-index': baseZIndex
+                    } as React.CSSProperties}
                     title="Right-click for options"
                   >
-                    {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    <span className="text-sm font-medium whitespace-nowrap">
+                    {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    <span className={`text-sm font-medium whitespace-nowrap ${activeInGroup ? 'text-white' : 'text-gray-600'}`}>
                       {tools.find(t => t.type === type)?.name}
                     </span>
                   </button>
 
-                  {!isCollapsed && groupTabs.map(tab => {
-                    const isTabActive = activeTabId === tab.id;
-                    return (
-                      <div
-                        key={tab.id}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg cursor-pointer transition relative ${
-                          isTabActive ? 'text-white' : 'text-gray-700 hover:bg-gray-200'
-                        }`}
-                        style={{
-                          backgroundColor: isTabActive ? colors.activeBg : colors.bg,
-                          maxWidth: '200px'
-                        }}
-                        onClick={() => {
-                          if (!splitView.isActive) {
-                            setActiveTabId(tab.id);
-                          } else {
-                            if (splitView.activePaneId === 'left') {
-                              setSplitView(prev => ({ ...prev, leftTabId: tab.id }));
-                            } else {
-                              setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
-                            }
-                          }
-                          
-                          setTabs(prev => prev.map(t => ({
-                            ...t,
-                            lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
-                          })));
-                        }}
-                      >
-                        <span
-                          className="text-sm whitespace-nowrap overflow-hidden relative"
-                          style={{
-                            maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                            WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                          }}
-                        >
-                          {tab.title}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            closeTab(tab.id);
-                          }}
-                          className="hover:bg-white/20 rounded p-1 flex-shrink-0"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    );
-                  })}
+                  {!isCollapsed && (
+                    <div className="edge-tab-group-container" style={{ '--group-line-color': colors.border } as React.CSSProperties}>
+                      {groupTabs.map((tab, index) => {
+                        const isTabActive = activeTabId === tab.id;
+                        const tabZIndex = baseZIndex + (groupTabs.length - index);  // Left tabs higher
+                        return (
+                          <div
+                            key={tab.id}
+                            className="edge-tab group"
+                            data-active={isTabActive}
+                            data-grouped="true"
+                            style={{
+                              '--tab-color': colors.border,
+                              '--tab-bg': isTabActive ? colors.border : colors.bg,
+                              '--tab-opacity': isTabActive ? '1' : '0.7',
+                              '--tab-z-index': tabZIndex,
+                              maxWidth: '200px'
+                            } as React.CSSProperties}
+                            onClick={() => {
+                              if (!splitView.isActive) {
+                                setActiveTabId(tab.id);
+                              } else {
+                                if (splitView.activePaneId === 'left') {
+                                  setSplitView(prev => ({ ...prev, leftTabId: tab.id }));
+                                } else {
+                                  setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
+                                }
+                              }
+                              
+                              setTabs(prev => prev.map(t => ({
+                                ...t,
+                                lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
+                              })));
+                            }}
+                          >
+                            <span
+                              className={`text-sm whitespace-nowrap overflow-hidden ${isTabActive ? 'text-white' : 'text-gray-600'}`}
+                              style={{
+                                maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+                                WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
+                              }}
+                            >
+                              {tab.title}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                closeTab(tab.id);
+                              }}
+                              className="edge-tab-close opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -1496,6 +1512,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             )}
           </div>
         </div>
+
 
         {/* Content Area */}
         <div
