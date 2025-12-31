@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Menu,
   X,
   MessageSquare,
   ClipboardCheck,
@@ -22,7 +21,7 @@ import {
   Target
 } from 'lucide-react';
 
-import { User, Tab, Tool, SplitViewState } from '../types';
+import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 import Chat from './Chat';
 import LessonPlanner from './LessonPlanner';
 import CurriculumViewer from './CurriculumViewer';
@@ -145,7 +144,7 @@ const tools: Tool[] = [
   }
 ];
 
-const iconMap: { [key: string]: any } = {
+const iconMap: { [key: string]: React.ElementType } = {
   MessageSquare,
   ClipboardCheck,
   BookOpen,
@@ -245,11 +244,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
 
   const migrateLegacySplitTabs = (savedTabs: Tab[]): Tab[] => {
-    const splitTabs = savedTabs.filter((t: any) => t.type === 'split');
-    const regularTabs = savedTabs.filter((t: any) => t.type !== 'split');
+    const splitTabs = savedTabs.filter(t => t.type === 'split' as any);
+    const regularTabs = savedTabs.filter(t => t.type !== 'split' as any);
     
     if (splitTabs.length > 0) {
-      const firstSplit: any = splitTabs[0];
+      const firstSplit = splitTabs[0] as Tab & { splitTabs?: string[] };
       
       if (firstSplit.splitTabs && firstSplit.splitTabs.length === 2) {
         const [leftId, rightId] = firstSplit.splitTabs;
@@ -348,7 +347,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const closeTab = (tabId: string) => {
-    const updatedTabs = tabs.filter(tab => tab.id !== tabId);
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab) return;
+
+    const updatedTabs = tabs.filter(t => t.id !== tabId);
     setTabs(updatedTabs);
 
     const endpoints = [
@@ -360,12 +362,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       '/ws/multigrade',
       '/ws/cross-curricular'
     ];
+
     endpoints.forEach(endpoint => {
       closeConnection(tabId, endpoint);
     });
-
-    // ✅ Close WebSocket for this tab (legacy/extra)
-    closeConnection(tabId);
 
     // Debug: Log all open WebSocket keys after closing
     if (window && (window as any).wsDebugListConnections) {
@@ -470,7 +470,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     };
   }, [settings.autoCloseTabsOnExit]);
 
-  const updateTabData = (tabId: string, data: any) => {
+  const updateTabData = (tabId: string, data: Partial<Tab['data']>) => {
     setTabs(tabs.map(tab =>
       tab.id === tabId ? { ...tab, data: { ...tab.data, ...data } } : tab
     ));
@@ -505,7 +505,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
 
-  const handleViewResource = (type: string, resource: any) => {
+  const handleViewResource = (type: string, resource: Resource) => {
     const typeToToolType: { [key: string]: string } = {
       'lesson': 'lesson-planner',
       'quiz': 'quiz-generator',
@@ -548,7 +548,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setActiveTabId(newTab.id);
   };
 
-  const handleEditResource = (type: string, resource: any) => {
+  const handleEditResource = (type: string, resource: Resource) => {
     const typeToToolType: { [key: string]: string } = {
       'lesson': 'lesson-planner',
       'quiz': 'quiz-generator',
@@ -659,7 +659,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     const newTab: Tab = {
                       id: `tab-${Date.now()}`,
                       title: tool.name,
-                      type: toolType as any,
+                      type: tool.type as Tool['type'],
                       active: true
                     };
                     setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
@@ -681,7 +681,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         // const CurriculumTracker = require('./CurriculumTracker').default;
         // But since it's already imported in the project, just use it:
-        // @ts-ignore
+        
         // eslint-disable-next-line
         return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'chat':
@@ -896,21 +896,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   return (
     <div
-      className="flex h-screen bg-gray-50"
+      className="flex h-screen bg-gray-50 dark:bg-gray-900"
       onClick={() => setContextMenu(null)}
       style={{ fontSize: `${settings.fontSize}%` }}
     >
       {/* Context Menu */}
       {contextMenu && contextMenu.groupType && (
         <div
-          className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+          className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 dark:bg-gray-800 dark:border-gray-700"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Group Actions</div>
+          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Group Actions</div>
           <button
             onClick={() => closeGroupTabs(contextMenu.groupType!)}
-            className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 flex items-center space-x-2"
+            className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 flex items-center space-x-2 dark:text-gray-300 dark:hover:bg-red-900 dark:hover:text-red-400"
           >
             <X className="w-4 h-4" />
             <span>Close all {tools.find(t => t.type === contextMenu.groupType)?.name} tabs</span>
@@ -1318,7 +1318,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-white border-b border-gray-200 px-2 py-0 flex items-center justify-between edge-tab-bar" style={{ minHeight: '40px' }}>
+        <div className="bg-white border-b border-gray-200 px-2 py-0 flex items-center justify-between edge-tab-bar dark:bg-gray-800 dark:border-gray-700" style={{ minHeight: '40px' }}>
           {/* Tabs on the left */}
           <div className="flex-1 flex items-center gap-0 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar" style={{ marginTop: '0px' }}>
             {Object.entries(groupedTabs).map(([type, groupTabs], groupIndex) => {
@@ -1361,7 +1361,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       })));
                     }}
                   >
-                    <span className={`text-sm font-medium whitespace-nowrap ${isActive ? 'text-white' : 'text-gray-600'}`}>
+                    <span className={`text-sm font-medium whitespace-nowrap ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>
                       {tab.title}
                     </span>
                     <button
@@ -1398,7 +1398,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     title="Right-click for options"
                   >
                     {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    <span className={`text-sm font-medium whitespace-nowrap ${activeInGroup ? 'text-white' : 'text-gray-600'}`}>
+                    <span className={`text-sm font-medium whitespace-nowrap ${activeInGroup ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>
                       {tools.find(t => t.type === type)?.name}
                     </span>
                   </button>
@@ -1439,7 +1439,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                             }}
                           >
                             <span
-                              className={`text-sm whitespace-nowrap overflow-hidden ${isTabActive ? 'text-white' : 'text-gray-600'}`}
+                              className={`text-sm whitespace-nowrap overflow-hidden ${isTabActive ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}
                               style={{
                                 maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                                 WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
@@ -1474,8 +1474,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 onClick={toggleSplitView}
                 className={`p-2 rounded-lg transition group flex-shrink-0 ${
                   splitView.isActive
-                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                    : 'hover:bg-gray-100 text-gray-600'
+                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800'
+                    : 'hover:bg-gray-100 text-gray-600 dark:hover:bg-gray-700 dark:text-gray-400'
                 }`}
                 title={splitView.isActive ? 'Exit Split View' : 'Enter Split View'}
               >
@@ -1502,10 +1502,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   localStorage.removeItem('dashboard-split-view');
                 }}
                 data-tutorial="close-all-tabs"
-                className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0 border border-red-200"
+                className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0 border border-red-200 dark:border-red-800 dark:hover:bg-red-900"
                 title="Close All Tabs and Exit Split View"
               >
-                <X className="w-5 h-5 text-red-600 group-hover:text-red-700" />
+                <X className="w-5 h-5 text-red-600 group-hover:text-red-700 dark:text-red-500 dark:group-hover:text-red-400" />
               </button>
             )}
           </div>
@@ -1525,12 +1525,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </>
           ) : (
-            <div className="h-full flex items-center justify-center bg-gray-50">
+            <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800">
               <div className="text-center">
-                <Plus className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No tools open</h3>
-                <p className="text-gray-500">Select a tool from the sidebar to get started</p>
-                <p className="text-sm text-gray-400 mt-2">Tip: Right-click on tabs to split them side-by-side</p>
+                <Plus className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No tools open</h3>
+                <p className="text-gray-500 dark:text-gray-500">Select a tool from the sidebar to get started</p>
+                <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">Tip: Right-click on tabs to split them side-by-side</p>
               </div>
             </div>
           )}
