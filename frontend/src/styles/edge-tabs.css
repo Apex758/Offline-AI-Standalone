@@ -50,18 +50,22 @@
   height: 3px;
   background: var(--tab-color, #3b82f6);
   opacity: 0.6;
+  z-index: 200;
   /* Match the one-sided trapezoid shape */
   clip-path: polygon(
-    6px 0,
-    0% 6px,
-    0% 3px,
-    calc(100% - 6px) 3px,
-    calc(100% - 6px) 0
+    12px 0%,
+    100% 0%,
+    calc(100% - 12px) 100%,
+    0% 100%
   );
 }
 
 .edge-tab[data-active="true"][data-grouped="true"]::before {
   opacity: 0.9;
+}
+
+.edge-tab[data-grouped="true"] {
+  background: transparent;
 }
 
 /* Active tab text should be white for contrast */
@@ -152,8 +156,8 @@
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 6px;
+  right: -8px;
   height: 3px;
   background: var(--group-line-color, #3b82f6);
   border-radius: 3px;
