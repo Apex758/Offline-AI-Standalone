@@ -195,6 +195,6 @@
 
 /* Tab bar background */
 .edge-tab-bar {
-  background: #f9fafb;
+  background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
   border-bottom: 1px solid #e5e7eb;
 }
