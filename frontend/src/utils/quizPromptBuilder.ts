@@ -139,30 +139,33 @@ Explanation: [Additional context or rubric guidance]
     }
   }
   
-  const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students. YOU MUST GENERATE ALL ${formData.numberOfQuestions} QUESTIONS.
 
-SUBJECT: ${formData.subject}
+  const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students.
 
-LEARNING OUTCOMES:
-${formData.learningOutcomes}
+  SUBJECT: ${formData.subject}
 
-QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
+  LEARNING OUTCOMES:
+  ${formData.learningOutcomes}
 
-GRADE LEVEL REQUIREMENTS:
-- Use ${gradeSpec.vocabulary}
-- ${gradeSpec.sentenceStructure}
-- Focus on: ${gradeSpec.examples}
+  QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
 
-${formatInstructions}IMPORTANT:
-- Generate ALL ${formData.numberOfQuestions} questions
-- Use the appropriate format for each question type
-- Include the correct answer for each question
-- Add an explanation for each answer
-- Do not include any introductory text, headers, or explanations before the questions. Start directly with Question 1.
-${hasMultipleChoice ? '- Each multiple choice question must have all 4 options (A, B, C, D)\n' : ''}${hasFillBlank ? '- For fill-in-the-blank, use _____ to mark where the answer goes\n' : ''}${hasOpenEnded ? '- For open-ended questions, provide sample answers and key points students should cover\n' : ''}
-Start generating all ${formData.numberOfQuestions} questions now:`;
+  GRADE LEVEL REQUIREMENTS:
+  - Use ${gradeSpec.vocabulary}
+  - ${gradeSpec.sentenceStructure}
+  - Focus on: ${gradeSpec.examples}
 
-  return prompt;
+  ${formatInstructions}
+
+  CRITICAL REQUIREMENTS:
+  - Generate EXACTLY ${formData.numberOfQuestions} questions
+  - Number questions from 1 to ${formData.numberOfQuestions}
+  - Stop after Question ${formData.numberOfQuestions}
+  - Include correct answer and explanation for each question
+  - Do not add extra questions beyond ${formData.numberOfQuestions}
+
+  Generate questions 1-${formData.numberOfQuestions} now:`;
+
+    return prompt;
 }
 
 // Helper to map frontend question types to backend format

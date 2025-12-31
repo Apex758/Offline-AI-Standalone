@@ -26,24 +26,35 @@ export interface ParsedQuiz {
 
 // Helper function to parse multiple choice questions
 function parseMultipleChoiceQuestion(questionText: string, questionBody: string, index: number): QuizQuestion | null {
-  // Extract options (A), B), C), D))
-  const optionRegex = /([A-D])\)\s*([^\n]+)/g;
-  const options: string[] = [];
+  // Extract options with deduplication
+  const optionRegex = /([A-E])\)\s*([^\n]+)/g;
+  const optionsMap = new Map<number, string>();
   let optionMatch;
   
   while ((optionMatch = optionRegex.exec(questionBody)) !== null) {
-    options.push(optionMatch[2].trim());
+    const letter = optionMatch[1];
+    const optionIndex = letter.charCodeAt(0) - 65;
+    const optionText = optionMatch[2].trim();
+    
+    // Only keep first occurrence (ignore duplicates)
+    if (!optionsMap.has(optionIndex) && optionIndex < 4) { // Only A-D
+      optionsMap.set(optionIndex, optionText);
+    }
   }
   
-  // Extract correct answer
-  const answerMatch = questionBody.match(/Correct\s+Answer:\s*([A-D])/i);
-  const correctAnswer = answerMatch ? answerMatch[1].charCodeAt(0) - 65 : 0; // Convert A=0, B=1, etc.
+  const options = Array.from(optionsMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([_, text]) => text);
   
-  // Extract explanation (handle multi-line explanations)
+  // Extract correct answer
+  const answerMatch = questionBody.match(/Correct\s+Answer:\s*([A-D])\)|Correct\s+Answer:\s*([A-D])/i);
+  const correctAnswer = answerMatch ? (answerMatch[1] || answerMatch[2]).charCodeAt(0) - 65 : 0;
+  
+  // Extract explanation
   const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
   const explanation = explanationMatch ? explanationMatch[1].trim() : undefined;
   
-  // Extract points if specified
+  // Extract points
   const pointsMatch = questionBody.match(/Points:\s*(\d+)/i);
   const points = pointsMatch ? parseInt(pointsMatch[1]) : 1;
   
@@ -177,7 +188,7 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
   try {
     const questions: QuizQuestion[] = [];
     
-    // Clean the text first - remove any remaining initialization logs
+    // Clean the text first
     let cleanText = text;
     const initPatterns = [
       /llama_model_loader[^\n]*/g,
@@ -185,60 +196,72 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
       /system_info[^\n]*/g,
       /Not using system message[^\n]*/g,
       /To change it, set a different value via -sys PROMPT[^\n]*/g,
-      // Remove format headers that duplicate question labels
-      /^(MULTIPLE CHOICE|TRUE\/FALSE|FILL-IN-THE-BLANK|OPEN-ENDED)\s+FORMAT:\s*$/gmi,
     ];
     
     initPatterns.forEach(pattern => {
       cleanText = cleanText.replace(pattern, '');
     });
     
-    // Match questions in format: Question 1: ... [question content] ... (until next Question or end)
-    // This regex handles both inline and next-line question text
-    const questionRegex = /Question\s+(\d+):\s*\n?([^]*?)(?=(?:\n\s*)?Question\s+\d+:|$)/gi;
+    // NEW REGEX: Capture optional format label before "Question X:"
+    const questionRegex = /(?:([^\n]*Format)\s*\n)?Question\s+(\d+):\s*\n?([^]*?)(?=(?:\n\s*)?(?:[^\n]*Format\s*\n)?Question\s+\d+:|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];
     
     if (matches.length === 0) {
       console.error('No questions found in text format');
-      console.log('Text being parsed:', cleanText.substring(0, 500));
       return null;
     }
     
     console.log(`Found ${matches.length} questions in text format`);
     
-    matches.forEach((match, index) => {
-      const fullQuestionContent = match[2].trim();
+    matches.forEach((match) => {
+      const formatLabel = match[1]; // "Multiple Choice Format", "True/False Format", etc.
+      const questionNumber = match[2]; // "1", "2", etc.
+      const fullQuestionContent = match[3].trim();
       
-      // Extract question text (first line(s) before "Correct Answer:", "Answer:", etc.)
-      const questionTextMatch = fullQuestionContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:))/s);
+      // Determine type from format label
+      let questionType: QuizQuestion['type'];
+      if (formatLabel) {
+        if (/Multiple\s+Choice/i.test(formatLabel)) {
+          questionType = 'multiple-choice';
+        } else if (/True\s*\/\s*False/i.test(formatLabel)) {
+          questionType = 'true-false';
+        } else if (/Fill-in-the-Blank/i.test(formatLabel)) {
+          questionType = 'fill-blank';
+        } else if (/Open-Ended/i.test(formatLabel)) {
+          questionType = 'open-ended';
+        } else {
+          questionType = detectQuestionType(fullQuestionContent);
+        }
+      } else {
+        questionType = detectQuestionType(fullQuestionContent);
+      }
+      
+      // Extract question text
+      const questionTextMatch = fullQuestionContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
       const questionText = questionTextMatch ? questionTextMatch[1].trim() : fullQuestionContent.split('\n')[0].trim();
-      const questionBody = fullQuestionContent;
       
-      // Detect question type
-      const questionType = detectQuestionType(questionBody);
-      
-      // Parse based on detected type
+      const index = parseInt(questionNumber) - 1;
       let parsedQuestion: QuizQuestion | null = null;
       
       switch (questionType) {
         case 'multiple-choice':
-          parsedQuestion = parseMultipleChoiceQuestion(questionText, questionBody, index);
+          parsedQuestion = parseMultipleChoiceQuestion(questionText, fullQuestionContent, index);
           break;
         case 'true-false':
-          parsedQuestion = parseTrueFalseQuestion(questionText, questionBody, index);
+          parsedQuestion = parseTrueFalseQuestion(questionText, fullQuestionContent, index);
           break;
         case 'fill-blank':
-          parsedQuestion = parseFillBlankQuestion(questionText, questionBody, index);
+          parsedQuestion = parseFillBlankQuestion(questionText, fullQuestionContent, index);
           break;
         case 'open-ended':
-          parsedQuestion = parseOpenEndedQuestion(questionText, questionBody, index);
+          parsedQuestion = parseOpenEndedQuestion(questionText, fullQuestionContent, index);
           break;
       }
       
       if (parsedQuestion) {
         questions.push(parsedQuestion);
       } else {
-        console.warn(`Failed to parse question ${index + 1} of type ${questionType}`);
+        console.warn(`Failed to parse question ${questionNumber} of type ${questionType}`);
       }
     });
     
@@ -249,7 +272,6 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
     
     console.log(`Successfully parsed ${questions.length} questions`);
     
-    // Create metadata from parsed questions
     return {
       metadata: {
         title: 'Generated Quiz',
