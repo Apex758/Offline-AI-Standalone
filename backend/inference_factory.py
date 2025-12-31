@@ -1,17 +1,22 @@
 """
 Inference Factory - Unified interface for different LLM backends.
 
-CRITICAL FIX: Removed singleton pattern to prevent deadlocks!
-
-Why this approach?
-- Creates fresh instances per request (no shared state)
-- Works with concurrent WebSocket handlers
-- Lets asyncio properly schedule multiple requests
+DESIGN PATTERN: Factory Pattern
+WHY: Allows switching between different AI providers without changing
+the rest of the codebase. The factory creates the right instance based
+on configuration.
 """
 
 import logging
 from typing import Union
-from config import INFERENCE_BACKEND, GEMMA_API_KEY, MODEL_PATH, MODEL_N_CTX
+from config import (
+    INFERENCE_BACKEND, 
+    GEMMA_API_KEY, 
+    OPENROUTER_API_KEY,
+    OPENROUTER_MODEL,
+    MODEL_PATH, 
+    MODEL_N_CTX
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,18 +24,29 @@ def get_inference_instance():
     """
     Get a NEW inference instance for each request.
     
-    ✅ CRITICAL CHANGE: No longer uses singleton pattern!
+    ✅ NO SINGLETON: Creates fresh instances to prevent deadlocks.
     
-    This creates a fresh instance each time, which means:
-    - No shared locks between requests
-    - No shared state that can cause deadlocks
-    - Proper concurrent execution
-    
-    For Gemma API: Creating new client instances is cheap (just a wrapper)
-    For Local: Loading models is expensive, but we can optimize later with pooling
+    REASONING:
+    - API clients are cheap to create (just wrappers around HTTP)
+    - Local models are expensive, but that's a separate optimization
+    - Fresh instances = no shared state = no race conditions
     """
     
-    if INFERENCE_BACKEND == "gemma_api":
+    if INFERENCE_BACKEND == "openrouter":
+        logger.info("Creating new OpenRouter API instance...")
+        from openrouter_inference import OpenRouterInference
+        
+        if not OPENROUTER_API_KEY:
+            raise ValueError(
+                "OPENROUTER_API_KEY environment variable must be set when using openrouter backend"
+            )
+        
+        return OpenRouterInference(
+            api_key=OPENROUTER_API_KEY,
+            model_id=OPENROUTER_MODEL
+        )
+    
+    elif INFERENCE_BACKEND == "gemma_api":
         logger.info("Creating new Gemma API instance...")
         from gemma_inference import GemmaInference
         
@@ -39,14 +55,12 @@ def get_inference_instance():
                 "GEMMA_API_KEY environment variable must be set when using gemma_api backend"
             )
         
-        # ✅ Create NEW instance (not singleton!)
         return GemmaInference(api_key=GEMMA_API_KEY)
     
     elif INFERENCE_BACKEND == "local":
         logger.info("Creating new local Llama instance...")
         from llama_inference import LlamaInference
         
-        # ✅ Create NEW instance (not singleton!)
         return LlamaInference(
             model_path=MODEL_PATH,
             n_ctx=MODEL_N_CTX
@@ -55,7 +69,7 @@ def get_inference_instance():
     else:
         raise ValueError(
             f"Unknown INFERENCE_BACKEND: {INFERENCE_BACKEND}. "
-            f"Must be 'local' or 'gemma_api'"
+            f"Must be 'local', 'gemma_api', or 'openrouter'"
         )
 
 

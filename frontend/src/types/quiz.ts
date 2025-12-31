@@ -202,8 +202,8 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
       cleanText = cleanText.replace(pattern, '');
     });
     
-    // NEW REGEX: Capture optional format label before "Question X:"
-    const questionRegex = /(?:([^\n]*Format)\s*\n)?Question\s+(\d+):\s*\n?([^]*?)(?=(?:\n\s*)?(?:[^\n]*Format\s*\n)?Question\s+\d+:|$)/gi;
+    // Match questions
+    const questionRegex = /Question\s+(\d+):\s*([^\n]*)\n([^]*?)(?=Question\s+\d+:|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];
     
     if (matches.length === 0) {
@@ -214,47 +214,72 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
     console.log(`Found ${matches.length} questions in text format`);
     
     matches.forEach((match) => {
-      const formatLabel = match[1]; // "Multiple Choice Format", "True/False Format", etc.
-      const questionNumber = match[2]; // "1", "2", etc.
-      const fullQuestionContent = match[3].trim();
+      const questionNumber = match[1];
+      const firstLine = match[2].trim();
+      const questionContent = match[3].trim();
       
-      // Determine type from format label
+      // Detect type from first line
       let questionType: QuizQuestion['type'];
-      if (formatLabel) {
-        if (/Multiple\s+Choice/i.test(formatLabel)) {
-          questionType = 'multiple-choice';
-        } else if (/True\s*\/\s*False/i.test(formatLabel)) {
-          questionType = 'true-false';
-        } else if (/Fill-in-the-Blank/i.test(formatLabel)) {
-          questionType = 'fill-blank';
-        } else if (/Open-Ended/i.test(formatLabel)) {
-          questionType = 'open-ended';
-        } else {
-          questionType = detectQuestionType(fullQuestionContent);
-        }
+      let cleanedContent = questionContent;
+      
+      if (/Multiple\s*Choice/i.test(firstLine)) {
+        questionType = 'multiple-choice';
+      } else if (/True\s*\/\s*False/i.test(firstLine)) {
+        questionType = 'true-false';
+      } else if (/Fill-in-the-Blank/i.test(firstLine)) {
+        questionType = 'fill-blank';
+      } else if (/Open-Ended/i.test(firstLine)) {
+        questionType = 'open-ended';
       } else {
-        questionType = detectQuestionType(fullQuestionContent);
+        // Type label might be at start of questionContent
+        cleanedContent = firstLine + '\n' + questionContent;
+        
+        // Check for type labels at start of content
+        if (/^Multiple\s*Choice\**/i.test(cleanedContent)) {
+          questionType = 'multiple-choice';
+          cleanedContent = cleanedContent.replace(/^Multiple\s*Choice\**\s*/i, '');
+        } else if (/^True\s*\/\s*False\**/i.test(cleanedContent)) {
+          questionType = 'true-false';
+          cleanedContent = cleanedContent.replace(/^True\s*\/\s*False\**\s*/i, '');
+        } else if (/^Fill-in-the-Blank\**/i.test(cleanedContent)) {
+          questionType = 'fill-blank';
+          cleanedContent = cleanedContent.replace(/^Fill-in-the-Blank\**\s*/i, '');
+        } else if (/^Open-Ended\**/i.test(cleanedContent)) {
+          questionType = 'open-ended';
+          cleanedContent = cleanedContent.replace(/^Open-Ended\**\s*/i, '');
+        } else {
+          // Fallback to content detection
+          questionType = detectQuestionType(cleanedContent);
+        }
       }
       
-      // Extract question text
-      const questionTextMatch = fullQuestionContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
-      const questionText = questionTextMatch ? questionTextMatch[1].trim() : fullQuestionContent.split('\n')[0].trim();
+      // Extract clean question text (first line before options/answers)
+      const questionTextMatch = cleanedContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
+      let questionText = questionTextMatch ? questionTextMatch[1].trim() : cleanedContent.split('\n')[0].trim();
+      
+      // CRITICAL: Remove any remaining type labels from question text
+      questionText = questionText
+        .replace(/^Multiple\s*Choice\**\s*/i, '')
+        .replace(/^True\s*\/\s*False\**\s*/i, '')
+        .replace(/^Fill-in-the-Blank\**\s*/i, '')
+        .replace(/^Open-Ended\**\s*/i, '')
+        .trim();
       
       const index = parseInt(questionNumber) - 1;
       let parsedQuestion: QuizQuestion | null = null;
       
       switch (questionType) {
         case 'multiple-choice':
-          parsedQuestion = parseMultipleChoiceQuestion(questionText, fullQuestionContent, index);
+          parsedQuestion = parseMultipleChoiceQuestion(questionText, cleanedContent, index);
           break;
         case 'true-false':
-          parsedQuestion = parseTrueFalseQuestion(questionText, fullQuestionContent, index);
+          parsedQuestion = parseTrueFalseQuestion(questionText, cleanedContent, index);
           break;
         case 'fill-blank':
-          parsedQuestion = parseFillBlankQuestion(questionText, fullQuestionContent, index);
+          parsedQuestion = parseFillBlankQuestion(questionText, cleanedContent, index);
           break;
         case 'open-ended':
-          parsedQuestion = parseOpenEndedQuestion(questionText, fullQuestionContent, index);
+          parsedQuestion = parseOpenEndedQuestion(questionText, cleanedContent, index);
           break;
       }
       
