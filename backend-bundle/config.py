@@ -144,3 +144,32 @@ if INFERENCE_BACKEND == "gemma_api":
         print(f"✓ [CONFIG] Gemma API key configured", flush=True)
     else:
         print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'gemma_api' but GEMMA_API_KEY not set!", flush=True)
+        
+        
+
+# ============================================================================
+# INFERENCE BACKEND CONFIGURATION
+# ============================================================================
+
+# Choose inference backend: "local", "gemma_api", or "openrouter"
+INFERENCE_BACKEND = os.environ.get("INFERENCE_BACKEND", "local")
+
+# Gemma API configuration (only used if INFERENCE_BACKEND="gemma_api")
+GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY", "")
+
+# OpenRouter API configuration (only used if INFERENCE_BACKEND="openrouter")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-30b-a3b:free")
+
+print(f"✓ [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
+if INFERENCE_BACKEND == "gemma_api":
+    if GEMMA_API_KEY:
+        print(f"✓ [CONFIG] Gemma API key configured", flush=True)
+    else:
+        print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'gemma_api' but GEMMA_API_KEY not set!", flush=True)
+elif INFERENCE_BACKEND == "openrouter":
+    if OPENROUTER_API_KEY:
+        print(f"✓ [CONFIG] OpenRouter API key configured", flush=True)
+        print(f"✓ [CONFIG] OpenRouter model: {OPENROUTER_MODEL}", flush=True)
+    else:
+        print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'openrouter' but OPENROUTER_API_KEY not set!", flush=True)
