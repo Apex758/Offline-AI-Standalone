@@ -546,8 +546,8 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>
 
-          {/* Export Data Section */}
-          <Card className="mb-6" data-tutorial="settings-export">
+          {/* Export Data Section - Hidden */}
+          {false && <Card className="mb-6" data-tutorial="settings-export">
             <CardHeader>
               <CardTitle>Export Data</CardTitle>
               <CardDescription>Export your data for backup or transfer</CardDescription>
@@ -568,7 +568,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* App Behavior Section */}
           <Card className="mb-6" data-tutorial="settings-notifications">
@@ -591,8 +591,8 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>
 
-          {/* Generation Behavior Section */}
-          <Card className="mb-6">
+          {/* Generation Behavior Section - Hidden */}
+          {false && <Card className="mb-6">
             <CardHeader>
               <CardTitle>Generation Behavior</CardTitle>
               <CardDescription>
@@ -625,7 +625,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 </label>
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* Theme Section */}
           <Card className="mb-6" data-tutorial="settings-appearance">
