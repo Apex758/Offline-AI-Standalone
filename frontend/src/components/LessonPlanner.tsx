@@ -6,7 +6,7 @@ import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
 import CurriculumReferences from './CurriculumReferences';
 import LessonEditor from './LessonEditor';
-import type { ParsedLesson } from './LessonEditor';
+import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/lesson';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
@@ -30,7 +30,6 @@ interface LessonPlanHistory {
   parsedLesson?: ParsedLesson;
 }
 
-// Add this new interface near the top of the file with other interfaces
 interface CurriculumReference {
   id: string;
   displayName: string;
@@ -191,224 +190,6 @@ const formatLessonText = (text: string, accentColor: string) => {
   return elements;
 };
 
-// Parse lesson plan text content into structured ParsedLesson format
-const parseLessonContent = (text: string, formData: FormData, curriculumRefs: CurriculumReference[]): ParsedLesson | null => {
-  if (!text) return null;
-
-  try {
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
-    // Extract metadata from form data and generated content
-    const metadata = {
-      title: formData.topic || 'Lesson Plan',
-      subject: formData.subject,
-      gradeLevel: formData.gradeLevel,
-      strand: formData.strand,
-      topic: formData.topic,
-      duration: formData.duration,
-      studentCount: formData.studentCount,
-      date: new Date().toLocaleDateString()
-    };
-
-    // Parse learning objectives
-    const learningObjectives: string[] = [];
-    const objectivesSection = text.match(/\*\*Learning Objectives:\*\*(.*?)(?=\*\*|$)/s);
-    if (objectivesSection) {
-      const objText = objectivesSection[1];
-      const objMatches = objText.match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-      if (objMatches) {
-        objMatches.forEach(match => {
-          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
-          if (cleaned) learningObjectives.push(cleaned);
-        });
-      }
-    }
-    
-    // Fallback: use specific outcomes from form if no objectives found
-    if (learningObjectives.length === 0 && formData.specificOutcomes) {
-      formData.specificOutcomes.split('\n').forEach(line => {
-        const trimmed = line.trim();
-        if (trimmed) learningObjectives.push(trimmed);
-      });
-    }
-
-    // Parse materials needed
-    const materials: string[] = [];
-    const materialsSection = text.match(/\*\*Materials(?:\s+Needed)?:\*\*(.*?)(?=\*\*|$)/s);
-    if (materialsSection) {
-      const matText = materialsSection[1];
-      const matMatches = matText.match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-      if (matMatches) {
-        matMatches.forEach(match => {
-          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
-          if (cleaned) materials.push(cleaned);
-        });
-      }
-    }
-    
-    // Fallback: use materials from form
-    if (materials.length === 0 && formData.materials) {
-      formData.materials.split('\n').forEach(line => {
-        const trimmed = line.trim();
-        if (trimmed) materials.push(trimmed);
-      });
-    }
-
-    // Parse lesson sections
-    const sections: Array<{ id: string; name: string; content: string }> = [];
-    const sectionPatterns = [
-      'Introduction',
-      'Main Activity',
-      'Guided Practice',
-      'Independent Practice',
-      'Conclusion',
-      'Assessment',
-      'Warm-up',
-      'Development',
-      'Closure',
-      'Extension Activities',
-      'Differentiation'
-    ];
-
-    sectionPatterns.forEach((sectionName, index) => {
-      const regex = new RegExp(`\\*\\*${sectionName}:?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:${sectionPatterns.join('|')})|$)`, 'i');
-      const match = text.match(regex);
-      if (match && match[1]) {
-        const content = match[1].trim();
-        if (content) {
-          sections.push({
-            id: `section_${index}`,
-            name: sectionName,
-            content: content
-          });
-        }
-      }
-    });
-
-    // Parse assessment methods
-    const assessmentMethods: string[] = [];
-    const assessmentSection = text.match(/\*\*Assessment(?:\s+Methods)?:\*\*(.*?)(?=\*\*|$)/s);
-    if (assessmentSection) {
-      const assessText = assessmentSection[1];
-      const assessMatches = assessText.match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-      if (assessMatches) {
-        assessMatches.forEach(match => {
-          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
-          if (cleaned) assessmentMethods.push(cleaned);
-        });
-      }
-    }
-
-    // Parse optional fields
-    const pedagogicalStrategies = formData.pedagogicalStrategies.length > 0
-      ? formData.pedagogicalStrategies
-      : undefined;
-    
-    const learningStyles = formData.learningStyles.length > 0
-      ? formData.learningStyles
-      : undefined;
-
-    const prerequisites = formData.prerequisiteSkills || undefined;
-    const specialNeeds = formData.specialNeeds && formData.specialNeedsDetails
-      ? formData.specialNeedsDetails
-      : undefined;
-    const additionalNotes = formData.additionalInstructions || undefined;
-
-    return {
-      metadata,
-      learningObjectives: learningObjectives.length > 0 ? learningObjectives : ['No objectives found'],
-      materials: materials.length > 0 ? materials : ['No materials specified'],
-      sections: sections.length > 0 ? sections : [{
-        id: 'section_0',
-        name: 'Lesson Content',
-        content: text.substring(0, 500) + '...'
-      }],
-      assessmentMethods: assessmentMethods.length > 0 ? assessmentMethods : ['Observation', 'Q&A'],
-      pedagogicalStrategies,
-      learningStyles,
-      prerequisites,
-      specialNeeds,
-      additionalNotes,
-      curriculumReferences: curriculumRefs.length > 0 ? curriculumRefs : undefined
-    };
-  } catch (error) {
-    console.error('Failed to parse lesson plan:', error);
-    return null;
-  }
-};
-
-// Convert ParsedLesson back to display text format
-const lessonToDisplayText = (lesson: ParsedLesson): string => {
-  let output = '';
-  
-  // Add metadata header
-  output += `**Lesson Plan: ${lesson.metadata.title}**\n\n`;
-  output += `**Grade Level:** ${lesson.metadata.gradeLevel}\n`;
-  output += `**Subject:** ${lesson.metadata.subject}\n`;
-  output += `**Strand:** ${lesson.metadata.strand}\n`;
-  output += `**Topic:** ${lesson.metadata.topic}\n`;
-  output += `**Duration:** ${lesson.metadata.duration} minutes\n`;
-  output += `**Date:** ${lesson.metadata.date}\n\n`;
-  
-  // Learning Objectives
-  output += `**Learning Objectives:**\n`;
-  lesson.learningObjectives.forEach(obj => {
-    output += `* ${obj}\n`;
-  });
-  output += '\n';
-  
-  // Materials
-  output += `**Materials Needed:**\n`;
-  lesson.materials.forEach(mat => {
-    output += `* ${mat}\n`;
-  });
-  output += '\n';
-  
-  // Prerequisites if present
-  if (lesson.prerequisites) {
-    output += `**Prerequisites:**\n${lesson.prerequisites}\n\n`;
-  }
-  
-  // Lesson Sections
-  lesson.sections.forEach(section => {
-    output += `**${section.name}:**\n`;
-    output += `${section.content}\n\n`;
-  });
-  
-  // Assessment Methods
-  if (lesson.assessmentMethods.length > 0) {
-    output += `**Assessment:**\n`;
-    lesson.assessmentMethods.forEach(method => {
-      output += `* ${method}\n`;
-    });
-    output += '\n';
-  }
-  
-  // Pedagogical Strategies if present
-  if (lesson.pedagogicalStrategies && lesson.pedagogicalStrategies.length > 0) {
-    output += `**Pedagogical Strategies:**\n`;
-    output += lesson.pedagogicalStrategies.join(', ') + '\n\n';
-  }
-  
-  // Learning Styles if present
-  if (lesson.learningStyles && lesson.learningStyles.length > 0) {
-    output += `**Learning Styles:**\n`;
-    output += lesson.learningStyles.join(', ') + '\n\n';
-  }
-  
-  // Special Needs if present
-  if (lesson.specialNeeds) {
-    output += `**Special Needs Accommodations:**\n${lesson.specialNeeds}\n\n`;
-  }
-  
-  // Additional Notes if present
-  if (lesson.additionalNotes) {
-    output += `**Additional Notes:**\n${lesson.additionalNotes}\n`;
-  }
-  
-  return output;
-};
-
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
@@ -469,7 +250,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   useEffect(() => {
     if (generatedPlan && !parsedLesson) {
       console.log('Attempting to parse loaded/restored lesson...');
-      const parsed = parseLessonContent(generatedPlan, formData, curriculumReferences || []);
+      const parsed = parseLessonFromAI(generatedPlan, formData, curriculumReferences || []);
       if (parsed) {
         console.log('Loaded lesson parsed successfully');
         setParsedLesson(parsed);
@@ -714,7 +495,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   useEffect(() => {
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       setGeneratedPlan(streamingPlan);
-      const parsed = parseLessonContent(streamingPlan, formData, curriculumReferences);
+      const parsed = parseLessonFromAI(streamingPlan, formData, curriculumReferences);
       if (parsed) setParsedLesson(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
@@ -1650,7 +1431,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         contentType="lesson"
         onContentUpdate={(newContent) => {
           setGeneratedPlan(newContent);
-          const parsed = parseLessonContent(newContent, formData);
+          const parsed = parseLessonFromAI(newContent, formData, curriculumReferences || []);
           if (parsed) setParsedLesson(parsed);
         }}
       />

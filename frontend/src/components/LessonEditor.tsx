@@ -2,37 +2,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react';
 import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
-
-// Define lesson section structure
-export interface LessonSection {
-  id: string;
-  name: string;
-  content: string;
-}
-
-// Define the parsed lesson data structure
-export interface ParsedLesson {
-  metadata: {
-    title: string;
-    subject: string;
-    gradeLevel: string;
-    strand: string;
-    topic: string;
-    duration: string;
-    studentCount: string;
-    date?: string;
-  };
-  learningObjectives: string[];
-  materials: string[];
-  sections: LessonSection[];
-  assessmentMethods: string[];
-  pedagogicalStrategies?: string[];
-  learningStyles?: string[];
-  prerequisites?: string;
-  specialNeeds?: string;
-  additionalNotes?: string;
-  curriculumReferences?: CurriculumReference[];
-}
+import { ParsedLesson, LessonSection } from '../types/lesson';
 
 interface LessonEditorProps {
   lesson: ParsedLesson;
@@ -190,74 +160,81 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
   return (
     <div className="bg-white rounded-lg shadow-lg max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-cyan-50 to-blue-50">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Lesson Plan</h2>
+      {/* COMPACT Header */}
+      <div className="border-b border-gray-200 p-4 bg-gradient-to-r from-cyan-50 to-blue-50">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold text-gray-800">Edit Lesson Plan</h2>
+          <button
+            onClick={onCancel}
+            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition"
+            title="Close editor"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
         
-        {/* Metadata Editing */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* COMPACT Metadata - 3 columns instead of 2 */}
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Lesson Title/Topic</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Topic</label>
             <input
               type="text"
               value={lesson.metadata.title}
               onChange={(e) => updateMetadata('title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              placeholder="Enter lesson title or topic"
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Subject</label>
             <input
               type="text"
               value={lesson.metadata.subject}
               onChange={(e) => updateMetadata('subject', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Grade</label>
             <input
               type="text"
               value={lesson.metadata.gradeLevel}
               onChange={(e) => updateMetadata('gradeLevel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Strand</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Strand</label>
             <input
               type="text"
               value={lesson.metadata.strand}
               onChange={(e) => updateMetadata('strand', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Duration</label>
             <input
               type="text"
               value={lesson.metadata.duration}
               onChange={(e) => updateMetadata('duration', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              placeholder="e.g., 45 minutes"
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
+              placeholder="mins"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Student Count</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Students</label>
             <input
               type="text"
               value={lesson.metadata.studentCount}
               onChange={(e) => updateMetadata('studentCount', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              placeholder="e.g., 25 students"
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-6 max-h-[60vh] overflow-y-auto">
+      <div className="p-6 max-h-[65vh] overflow-y-auto">
         {/* Learning Objectives */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">Learning Objectives</h3>
@@ -568,13 +545,14 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
             Save Changes
           </button>
         </div>
+      </div>
+
       {/* Curriculum References */}
       {lesson.curriculumReferences && lesson.curriculumReferences.length > 0 && (
-        <div className="mt-8">
+        <div className="border-t border-gray-200 p-6">
           <CurriculumReferences references={lesson.curriculumReferences} />
         </div>
       )}
-      </div>
     </div>
   );
 };
