@@ -201,6 +201,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
+  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
 
   // Check if user has seen welcome modal on mount
   useEffect(() => {
@@ -469,6 +470,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [settings.autoCloseTabsOnExit]);
+
+  // Load user profile image from localStorage
+  useEffect(() => {
+    const storedImage = localStorage.getItem('user-profile-image');
+    if (storedImage) {
+      setUserProfileImage(storedImage);
+    }
+  }, []);
+
+  // Listen for profile image changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedImage = localStorage.getItem('user-profile-image');
+      setUserProfileImage(storedImage);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check periodically since storage event doesn't fire in same tab
+    const interval = setInterval(() => {
+      const storedImage = localStorage.getItem('user-profile-image');
+      if (storedImage !== userProfileImage) {
+        setUserProfileImage(storedImage);
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [userProfileImage]);
 
   const updateTabData = (tabId: string, data: Partial<Tab['data']>) => {
     setTabs(tabs.map(tab =>
@@ -947,8 +979,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 </p>
               </div>
             ) : (
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {user.name.charAt(0)}
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                {userProfileImage ? (
+                  <img
+                    src={userProfileImage}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user.name.charAt(0)
+                )}
               </div>
             )}
           </div>
