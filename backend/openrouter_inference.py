@@ -160,43 +160,33 @@ class OpenRouterInference:
         stop: Optional[list] = None,
     ):
         """
-        TRUE REAL-TIME STREAMING with Server-Sent Events (SSE).
-        
-        STREAMING EXPLAINED:
-        Instead of waiting for the entire response, the server sends
-        tokens as they're generated. Think of it like a live broadcast
-        vs. a recorded video.
-        
-        OpenRouter uses SSE (Server-Sent Events) format:
-        - Each line starts with "data: "
-        - Lines containing "[DONE]" signal completion
-        - We parse each chunk and yield tokens immediately
+        OPTIMIZED REAL-TIME STREAMING with proper SSE chunk handling.
         """
         if not self.is_loaded:
             yield {"token": None, "finished": True, "error": "API not initialized"}
             return
-        
+
         try:
             prompt = prompt_template if prompt_template else input_data
             messages = self._clean_prompt(prompt)
-            
+
             payload = {
                 "model": self.model_id,
                 "messages": messages,
                 "max_tokens": max_tokens,
                 "temperature": temperature,
                 "top_p": top_p,
-                "stream": True,  # ← KEY: Enable streaming
+                "stream": True,
             }
-            
+
             headers = {
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "https://your-app.com",
                 "X-Title": "OECS Learning Hub",
             }
-            
-            # Stream response
+
+            # ✅ FIX: Use chunked reading with proper SSE parsing
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     f"{self.base_url}/chat/completions",
@@ -207,40 +197,50 @@ class OpenRouterInference:
                         error_text = await response.text()
                         yield {"token": None, "finished": True, "error": f"API error {response.status}: {error_text}"}
                         return
-                    
-                    # Read stream line by line
-                    async for line in response.content:
-                        line = line.decode('utf-8').strip()
-                        
-                        # Skip empty lines and non-data lines
-                        if not line or not line.startswith('data: '):
-                            continue
-                        
-                        # Remove "data: " prefix
-                        data_str = line[6:]
-                        
-                        # Check for stream end
-                        if data_str == '[DONE]':
-                            break
-                        
-                        # Parse JSON chunk
-                        try:
-                            import json
-                            chunk_data = json.loads(data_str)
-                            delta = chunk_data["choices"][0]["delta"]
-                            
-                            # Extract token if present
-                            if "content" in delta:
-                                token = delta["content"]
-                                yield {"token": token, "finished": False}
-                                await asyncio.sleep(0)  # Let other tasks run
-                        
-                        except json.JSONDecodeError:
-                            continue  # Skip malformed chunks
-            
-            # All done!
-            yield {"token": "", "finished": True}
-        
+
+                    # ✅ Critical: Read in smaller chunks (1KB instead of line-by-line)
+                    buffer = ""
+                    async for chunk in response.content.iter_chunked(1024):  # 1KB chunks
+                        chunk_str = chunk.decode('utf-8')
+                        buffer += chunk_str
+
+                        # Process all complete lines in buffer
+                        while '\n' in buffer:
+                            line, buffer = buffer.split('\n', 1)
+                            line = line.strip()
+
+                            # Skip empty lines
+                            if not line or not line.startswith('data: '):
+                                continue
+
+                            # Remove "data: " prefix
+                            data_str = line[6:]
+
+                            # Check for stream end
+                            if data_str == '[DONE]':
+                                yield {"token": "", "finished": True}
+                                return
+
+                            # Parse JSON chunk
+                            try:
+                                import json
+                                chunk_data = json.loads(data_str)
+                                delta = chunk_data["choices"][0]["delta"]
+
+                                # Extract token if present
+                                if "content" in delta and delta["content"]:
+                                    token = delta["content"]
+                                    yield {"token": token, "finished": False}
+                                    # ✅ Yield control immediately for real-time feel
+                                    await asyncio.sleep(0)
+
+                            except (json.JSONDecodeError, KeyError, IndexError):
+                                # Skip malformed chunks
+                                continue
+
+                    # Stream complete
+                    yield {"token": "", "finished": True}
+
         except Exception as e:
             logger.error(f"❌ Streaming error: {e}")
             yield {"token": None, "finished": True, "error": str(e)}
