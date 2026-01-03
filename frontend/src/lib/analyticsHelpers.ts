@@ -324,37 +324,41 @@ export function generateActivityFeed(
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 10);
 }
-
 /**
  * Calculate quick stats for header
  */
 export function calculateQuickStats(resources: any[], tasks: Task[], timeframe: Timeframe = 'month') {
   const { start, end } = getDateRange(timeframe);
   
-  // Filter resources in timeframe
+  // Filter resources in timeframe FOR ACTIVITY METRICS ONLY
   const resourcesInRange = resources.filter(r => {
-    const date = new Date(r.timestamp);
-    return date >= start && date <= end;
+    try {
+      const date = new Date(r.timestamp);
+      return date >= start && date <= end;
+    } catch (error) {
+      console.error('Error parsing resource timestamp:', error);
+      return false;
+    }
   });
 
-  // Calculate active days (days with at least 1 resource)
+  // Calculate active days (days with at least 1 resource) in timeframe
   const activeDays = new Set(
     resourcesInRange.map(r => format(new Date(r.timestamp), 'yyyy-MM-dd'))
   ).size;
 
-  // Calculate average per week
+  // Calculate average per week in timeframe
   const daysDiff = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
   const weeks = Math.max(1, daysDiff / 7);
   const avgPerWeek = Math.round(resourcesInRange.length / weeks);
 
-  // Tasks completion rate
+  // Tasks completion rate (overall, not filtered by timeframe)
   const completedTasks = tasks.filter(t => t.completed).length;
   const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   return {
-    totalResources: resourcesInRange.length,
-    activeDays,
-    avgPerWeek,
-    completionRate
+    totalResources: resources.length, // ✅ FIXED - show ALL resources ever created
+    activeDays, // Days active in selected timeframe
+    avgPerWeek, // Average for selected timeframe
+    completionRate // Overall task completion
   };
 }
