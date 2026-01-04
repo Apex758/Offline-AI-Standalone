@@ -11,6 +11,7 @@ interface ChartCarouselProps {
   lessonPlanComparison: { type: string; count: number }[];
   timeframe: Timeframe;
   onTimeframeChange: (timeframe: Timeframe) => void;
+  forcePaused?: boolean;
 }
 
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
@@ -18,7 +19,8 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   distributionData,
   lessonPlanComparison,
   timeframe,
-  onTimeframeChange
+  onTimeframeChange,
+  forcePaused = false
 }) => {
   const views: Array<'trend' | 'distribution'> = ['trend', 'distribution'];
   const [currentView, setCurrentView] = useState<'trend' | 'distribution'>('trend');
@@ -26,7 +28,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
 
   // Auto-rotation effect
   useEffect(() => {
-    if (!isAutoRotating) return;
+    if (!isAutoRotating || forcePaused) return;
 
     const interval = setInterval(() => {
       setCurrentView(prev => {
@@ -64,10 +66,10 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   return (
     <div className="relative" data-tutorial="analytics-chart-carousel">
       {/* Chart Container */}
-      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display">
+      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display" style={{ height: '400px' }}>
         {/* Trend Chart View */}
         <div
-          className={`transition-all duration-500 ${
+          className={`transition-all duration-500 h-full ${
             currentView === 'trend'
               ? 'opacity-100 translate-x-0'
               : 'opacity-0 translate-x-full absolute inset-0 pointer-events-none'
@@ -82,7 +84,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
 
         {/* Distribution & Comparison Charts View */}
         <div
-          className={`transition-all duration-500 ${
+          className={`transition-all duration-500 h-full ${
             currentView === 'distribution'
               ? 'opacity-100 translate-x-0'
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'

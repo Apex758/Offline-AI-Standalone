@@ -642,12 +642,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="analytics-layout"]',
-        title: 'Dashboard Layout',
-        description: 'The dashboard is organized with detailed charts on the left (3/5 width) and quick-access widgets on the right (2/5 width) for optimal workflow.',
-        position: 'center'
-      },
-      {
         target: '[data-tutorial="analytics-chart-carousel"]',
         title: 'Interactive Chart Carousel',
         description: 'Your main analytics hub! This carousel automatically rotates through different chart views every 5 seconds, or you can navigate manually.',

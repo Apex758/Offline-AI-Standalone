@@ -58,6 +58,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
 
   // Load user profile
   useEffect(() => {
@@ -403,6 +404,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               lessonPlanComparison={lessonPlanComparison}
               timeframe={timeframe}
               onTimeframeChange={setTimeframe}
+              forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}
             />
 
             {/* Curriculum Progress */}
@@ -478,7 +480,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       )}
 
       {/* Tutorial Overlay */}
-      <TutorialOverlay steps={analyticsDashboardSteps} showFloatingButton={false} />
+      <TutorialOverlay
+        steps={analyticsDashboardSteps}
+        showFloatingButton={false}
+        onStepChange={setCurrentTutorialStep}
+      />
     </div>
   );
 };
