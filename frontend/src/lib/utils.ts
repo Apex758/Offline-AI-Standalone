@@ -99,15 +99,22 @@ export function generateColorVariants(baseColor: string): {
   activeBg: string;
 } {
   const hsl = hexToHSL(baseColor);
-  
-  // Create a lighter background color (increase lightness by ~40%)
-  const bgLightness = Math.min(95, hsl.l + 40);
-  const bgColor = hslToHex(hsl.h, hsl.s, bgLightness);
-  
+
+  // Create a richer background color with canvas-like texture
+  // Increase saturation slightly and adjust lightness more subtly for vibrancy
+  const bgSaturation = Math.min(100, hsl.s + 10); // Boost saturation for richness
+  const bgLightness = Math.min(92, hsl.l + 25); // More subtle lightness increase for depth
+  const bgColor = hslToHex(hsl.h, bgSaturation, bgLightness);
+
+  // Create a slightly darker, more saturated active color for pop
+  const activeSaturation = Math.min(100, hsl.s + 15);
+  const activeLightness = Math.max(15, hsl.l - 8); // Slightly darker for contrast
+  const activeColor = hslToHex(hsl.h, activeSaturation, activeLightness);
+
   return {
-    border: baseColor,     // Use the base color for border
-    bg: bgColor,           // Lighter version for background
-    activeBg: baseColor    // Use the base color for active background
+    border: activeColor,   // Use enhanced active color for border
+    bg: bgColor,           // Richer background with canvas-like depth
+    activeBg: activeColor  // More vibrant active state
   };
 }
 

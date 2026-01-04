@@ -202,6 +202,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+  const [bouncingTabId, setBouncingTabId] = useState<string | null>(null);
+  const [animatingGroups, setAnimatingGroups] = useState<Set<string>>(new Set());
 
   // Check if user has seen welcome modal on mount
   useEffect(() => {
@@ -509,19 +511,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const updateTabTitle = (tabId: string, title: string) => {
-    setTabs(tabs.map(tab => 
+    setTabs(tabs.map(tab =>
       tab.id === tabId ? { ...tab, title } : tab
     ));
   };
 
+  const triggerTabBounce = (tabId: string) => {
+    setBouncingTabId(tabId);
+    setTimeout(() => setBouncingTabId(null), 300); // Remove bounce class after animation
+  };
+
   const toggleGroupCollapse = (type: string) => {
     const newCollapsed = new Set(collapsedGroups);
-    if (newCollapsed.has(type)) {
-      newCollapsed.delete(type);
+    const wasCollapsed = newCollapsed.has(type);
+
+    if (wasCollapsed) {
+      // Expanding - start with slide-out state, then transition to slide-in
+      setAnimatingGroups(prev => new Set(prev).add(type));
+      setTimeout(() => {
+        newCollapsed.delete(type);
+        setCollapsedGroups(newCollapsed);
+        // Keep animating state for the expand transition
+        setTimeout(() => {
+          setAnimatingGroups(prev => {
+            const next = new Set(prev);
+            next.delete(type);
+            return next;
+          });
+        }, 300);
+      }, 10); // Small delay to ensure slide-out state is applied first
     } else {
+      // Collapsing - transition to slide-out state
       newCollapsed.add(type);
+      setCollapsedGroups(newCollapsed);
+      setAnimatingGroups(prev => new Set(prev).add(type));
+      // Remove animation class after transition
+      setTimeout(() => {
+        setAnimatingGroups(prev => {
+          const next = new Set(prev);
+          next.delete(type);
+          return next;
+        });
+      }, 300);
     }
-    setCollapsedGroups(newCollapsed);
   };
 
   const closeGroupTabs = (type: string) => {
@@ -1376,7 +1408,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     key={tab.id}
                     data-tutorial={isActive ? "single-tab-demo" : undefined}
                     data-tab-type={tab.type}
-                    className="edge-tab group"
+                    className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''}`}
                     data-active={isActive}
                     style={{
                       '--tab-color': colors.border,
@@ -1385,6 +1417,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       '--tab-z-index': baseZIndex
                     } as React.CSSProperties}
                     onClick={() => {
+                      triggerTabBounce(tab.id);
                       if (!splitView.isActive) {
                         setActiveTabId(tab.id);
                       } else {
@@ -1394,14 +1427,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
                         }
                       }
-                      
+
                       setTabs(prev => prev.map(t => ({
                         ...t,
                         lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
                       })));
                     }}
                   >
-                    <span className={`text-sm font-medium whitespace-nowrap ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                    <span
+                      className={`text-sm font-medium whitespace-nowrap overflow-hidden ${isActive ? 'text-white' : 'text-black'}`}
+                      style={{
+                        maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
+                      }}
+                    >
                       {tab.title}
                     </span>
                     <button
@@ -1420,13 +1459,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               return (
                 <div key={type} className="flex items-center" data-tutorial="tab-groups">
                   <button
-                    onClick={() => toggleGroupCollapse(type)}
+                    onClick={() => {
+                      triggerTabBounce(`${type}-group`);
+                      toggleGroupCollapse(type);
+                    }}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       setContextMenu({ groupType: type, x: e.clientX, y: e.clientY });
                     }}
-                    className="edge-tab-group group"
+                    className={`edge-tab-group group ${bouncingTabId === `${type}-group` ? 'edge-tab-group-bounce' : ''}`}
                     data-active={!!activeInGroup}
                     data-collapsed={isCollapsed}
                     style={{
@@ -1437,70 +1479,83 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     } as React.CSSProperties}
                     title="Right-click for options"
                   >
-                    {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    <span className={`text-sm font-medium whitespace-nowrap ${activeInGroup ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                    <ChevronRight className="w-3.5 h-3.5 chevron-icon" />
+                    <span
+                      className={`text-sm font-medium whitespace-nowrap overflow-hidden ${activeInGroup ? 'text-white' : 'text-black'}`}
+                      style={{
+                        maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
+                      }}
+                    >
                       {tools.find(t => t.type === type)?.name}
                     </span>
                   </button>
 
-                  {!isCollapsed && (
-                    <div className="edge-tab-group-container" style={{ '--group-line-color': colors.border } as React.CSSProperties}>
-                      {groupTabs.map((tab, index) => {
-                        const isTabActive = activeTabId === tab.id;
-                        const tabZIndex = baseZIndex + (groupTabs.length - index);  // Left tabs higher
-                        return (
-                          <div
-                            key={tab.id}
-                            className="edge-tab group"
-                            data-active={isTabActive}
-                            data-grouped="true"
-                            style={{
-                              '--tab-color': colors.border,
-                              '--tab-bg': isTabActive ? colors.border : colors.bg,
-                              '--tab-opacity': isTabActive ? '1' : '0.7',
-                              '--tab-z-index': tabZIndex,
-                              maxWidth: '200px'
-                            } as React.CSSProperties}
-                            onClick={() => {
-                              if (!splitView.isActive) {
-                                setActiveTabId(tab.id);
+                  <div
+                    className={`edge-tab-group-container ${
+                      isCollapsed ? 'slide-out' : 'slide-in'
+                    }`}
+                    style={{
+                      '--group-line-color': colors.border,
+                      display: isCollapsed && !animatingGroups.has(type) ? 'none' : 'flex'
+                    } as React.CSSProperties}
+                  >
+                    {groupTabs.map((tab, index) => {
+                      const isTabActive = activeTabId === tab.id;
+                      const tabZIndex = baseZIndex + (groupTabs.length - index);  // Left tabs higher
+                      return (
+                        <div
+                          key={tab.id}
+                          className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''}`}
+                          data-active={isTabActive}
+                          data-grouped="true"
+                          style={{
+                            '--tab-color': colors.border,
+                            '--tab-bg': isTabActive ? colors.border : colors.bg,
+                            '--tab-opacity': isTabActive ? '1' : '0.7',
+                            '--tab-z-index': tabZIndex,
+                            maxWidth: '200px'
+                          } as React.CSSProperties}
+                          onClick={() => {
+                            triggerTabBounce(tab.id);
+                            if (!splitView.isActive) {
+                              setActiveTabId(tab.id);
+                            } else {
+                              if (splitView.activePaneId === 'left') {
+                                setSplitView(prev => ({ ...prev, leftTabId: tab.id }));
                               } else {
-                                if (splitView.activePaneId === 'left') {
-                                  setSplitView(prev => ({ ...prev, leftTabId: tab.id }));
-                                } else {
-                                  setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
-                                }
+                                setSplitView(prev => ({ ...prev, rightTabId: tab.id }));
                               }
-                              
-                              setTabs(prev => prev.map(t => ({
-                                ...t,
-                                lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
-                              })));
+                            }
+
+                            setTabs(prev => prev.map(t => ({
+                              ...t,
+                              lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
+                            })));
+                          }}
+                        >
+                          <span
+                            className={`text-sm whitespace-nowrap overflow-hidden ${isTabActive ? 'text-white' : 'text-black'}`}
+                            style={{
+                              maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+                              WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                             }}
                           >
-                            <span
-                              className={`text-sm whitespace-nowrap overflow-hidden ${isTabActive ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}
-                              style={{
-                                maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
-                                WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
-                              }}
-                            >
-                              {tab.title}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                closeTab(tab.id);
-                              }}
-                              className="edge-tab-close opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                            {tab.title}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              closeTab(tab.id);
+                            }}
+                            className="edge-tab-close opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}

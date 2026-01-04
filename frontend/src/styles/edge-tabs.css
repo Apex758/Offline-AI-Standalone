@@ -140,7 +140,7 @@
 }
 
 .edge-tab-group[data-collapsed="true"] {
-  margin-right: 6px;
+  margin-right: -8px;
 }
 
 /* Container for grouped tabs with top line */
@@ -150,6 +150,21 @@
   align-items: center;
   gap: 0;
   z-index: 50;  /* Group container above regular tabs */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left center;
+}
+
+/* Slide animation for grouped tabs */
+.edge-tab-group-container.slide-out {
+  opacity: 0;
+  transform: translateX(-20px) scaleX(0.95);
+  pointer-events: none;
+}
+
+.edge-tab-group-container.slide-in {
+  opacity: 1;
+  transform: translateX(0) scaleX(1);
+  pointer-events: auto;
 }
 
 .edge-tab-group-container::before {
@@ -201,4 +216,32 @@
 .edge-tab-bar {
   background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
   border-bottom: 1px solid #e5e7eb;
+}
+
+/* Bounce animation for tab clicks */
+@keyframes tab-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.edge-tab-bounce {
+  animation: tab-bounce 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edge-tab-group-bounce {
+  animation: tab-bounce 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth chevron rotation animation */
+.chevron-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edge-tab-group[data-collapsed="true"] .chevron-icon {
+  transform: rotate(0deg);
+}
+
+.edge-tab-group[data-collapsed="false"] .chevron-icon {
+  transform: rotate(90deg);
 }
