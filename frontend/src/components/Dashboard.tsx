@@ -1760,6 +1760,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     // Otherwise, use the mapped tutorial for the tab type, or fallback to dashboard tutorial
     const tutorialId = tutorialIdsByTabType[activeTab.type] || TUTORIAL_IDS.DASHBOARD_MAIN;
+  
+    // Don't show tutorial button for chat tab
+    if (activeTab.type === 'chat') {
+      return null;
+    }
+  
     return (
       <TutorialButton
         tutorialId={tutorialId}
