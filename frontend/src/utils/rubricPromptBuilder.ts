@@ -77,7 +77,7 @@ export function buildRubricPrompt(formData: RubricFormData): string {
   const tableHeader = `| Criteria | ${levels.join(' | ')} |`;
   const tableSeparator = `| --- | ${levels.map(() => '---').join(' | ')} |`;
   
-  const prompt = `Create an assessment rubric for Grade ${formData.gradeLevel} students.
+  const prompt = `Create an assessment rubric for Grade ${formData.gradeLevel} students following this criteria:
 
 ASSIGNMENT: ${formData.assignmentType}
 SUBJECT: ${formData.subject}

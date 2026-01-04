@@ -476,13 +476,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   ];
 
   const subjects = [
-    'Language Arts', 'Mathematics', 'Science', 'Social Studies', 
-    'Art', 'Music', 'Physical Education', 'Technology', 'Other'
+    'Language Arts', 'Mathematics', 'Science', 'Social Studies'
   ];
 
   const grades = [
     'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 
-    'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'
+    'Grade 6'
   ];
 
   const focusAreasOptions = [

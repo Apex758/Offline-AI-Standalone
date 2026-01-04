@@ -140,12 +140,9 @@ Explanation: [Additional context or rubric guidance]
   }
   
 
-  const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students.
+  const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students, specifically focusing on these learning outcomes: ${formData.learningOutcomes}.
 
   SUBJECT: ${formData.subject}
-
-  LEARNING OUTCOMES:
-  ${formData.learningOutcomes}
 
   QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
 
