@@ -657,16 +657,16 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         actionHint: '👆 Try the controls!'
       },
       {
-        target: '[data-tutorial="analytics-timeframe-selector"]',
-        title: 'Timeframe Selector',
-        description: 'Switch between 1 Week, 2 Weeks, Month, or All Time views to analyze your productivity patterns over different periods.',
-        position: 'bottom'
-      },
-      {
         target: '[data-tutorial="analytics-chart-display"]',
         title: 'Multiple Chart Views',
         description: 'View 1 shows Resource Creation Trends over time. View 2 shows Resource Type Distribution and Lesson Plan Comparison side-by-side.',
         position: 'top'
+      },
+      {
+        target: '[data-tutorial="analytics-timeframe-selector"]',
+        title: 'Timeframe Selector',
+        description: 'Switch between 1 Week, 2 Weeks, Month, or All Time views to analyze your productivity patterns over different periods.',
+        position: 'bottom'
       },
       {
         target: '[data-tutorial="analytics-curriculum-progress"]',
@@ -688,18 +688,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         title: 'Completion Percentage',
         description: 'This visual ring shows your overall curriculum completion percentage, with detailed stats for completed, in-progress, and not-started milestones below.',
         position: 'right'
-      },
-      {
-        target: '[data-tutorial="analytics-upcoming-milestones"]',
-        title: 'Upcoming Milestones',
-        description: 'Stay on track with upcoming curriculum milestones and due dates. Click any milestone to view details or mark as complete.',
-        position: 'top'
-      },
-      {
-        target: '[data-tutorial="analytics-widgets-section"]',
-        title: 'Quick Access Widgets',
-        description: 'The right sidebar contains compact widgets for calendar, tasks, and tool usage - everything you need at your fingertips.',
-        position: 'left'
       },
       {
         target: '[data-tutorial="analytics-calendar-widget"]',
