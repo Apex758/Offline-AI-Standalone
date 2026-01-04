@@ -748,7 +748,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'top'
       },
       {
-        target: '[data-tutorial="analytics-chart-carousel"]',
+        target: '[data-tutorial="main-content"]',
         title: 'You\'re All Set! 🎉',
         description: 'Your Analytics Dashboard is your command center for tracking teaching progress, managing tasks, and optimizing your workflow. Explore each section to discover more features!',
         position: 'center'
