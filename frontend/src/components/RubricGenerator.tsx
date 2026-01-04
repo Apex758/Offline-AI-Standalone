@@ -13,6 +13,8 @@ import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
+const ENDPOINT = '/ws/rubric';
+
 interface RubricGeneratorProps {
   tabId: string;
   savedData?: any;
@@ -422,15 +424,18 @@ const rubricToDisplayText = (rubric: ParsedRubric): string => {
 };
 
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  const LOCAL_STORAGE_KEY = `rubric_state_${tabId}`;
+  
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
   const tabColor = settings.tabColors['rubric-generator'];
-  // Per-tab local loading state
+  
+  const streamingRubric = getStreamingContent(tabId, ENDPOINT);
+  const contextLoading = getIsStreaming(tabId, ENDPOINT);
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
-  const loading = !!localLoadingMap[tabId];
+  const loading = !!localLoadingMap[tabId] || contextLoading;
+  
   const [showTutorial, setShowTutorial] = useState(false);
-  const shouldReconnectRef = useRef(true);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [rubricHistories, setRubricHistories] = useState<RubricHistory[]>([]);
   const [currentRubricId, setCurrentRubricId] = useState<string | null>(null);
@@ -441,9 +446,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [parsedRubric, setParsedRubric] = useState<ParsedRubric | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  // Track initialization per tab to prevent state loss on tab switches
-  const hasInitializedRef = useRef(false);
-  const currentTabIdRef = useRef(tabId);
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -458,17 +460,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     focusAreas: []
   });
 
-  const [formData, setFormData] = useState<FormData>(() => {
-    const saved = savedData?.formData;
-    // Robust validation: check if saved data exists AND has meaningful content
-    if (saved && typeof saved === 'object' && saved.assignmentTitle?.trim()) {
-      return saved;
-    }
-    return getDefaultFormData();
-  });
-
-  const [generatedRubric, setGeneratedRubric] = useState<string>(savedData?.generatedRubric || '');
-  const [streamingRubric, setStreamingRubric] = useState<string>(savedData?.streamingRubric || '');
+  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
+  const [generatedRubric, setGeneratedRubric] = useState<string>('');
 
   const assignmentTypes = [
     'Essay', 'Presentation', 'Project', 'Lab Report', 'Creative Writing', 
@@ -512,33 +505,40 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
   }, [savedData?.startInEditMode, parsedRubric, isEditing]);
 
-  // FIXED: Properly handle tab switches without losing state
+  // Restore state from localStorage on tab change
   useEffect(() => {
-    const isNewTab = currentTabIdRef.current !== tabId;
-    currentTabIdRef.current = tabId;
-    
-    // Only update state when switching tabs OR on first initialization
-    if (isNewTab || !hasInitializedRef.current) {
-      const saved = savedData?.formData;
-      
-      // Robust validation: check if saved data has meaningful content
-      if (saved && typeof saved === 'object' && saved.assignmentTitle?.trim()) {
-        // Restore all state for this tab
-        setFormData(saved);
-        setGeneratedRubric(savedData?.generatedRubric || '');
-        setStreamingRubric(savedData?.streamingRubric || '');
-        setParsedRubric(savedData?.parsedRubric || null);
-      } else {
-        // New tab or empty tab - set to default state
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedRubric(parsed.generatedRubric || '');
+        setParsedRubric(parsed.parsedRubric || null);
+        setCurrentRubricId(parsed.currentRubricId || null);
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
         setFormData(getDefaultFormData());
         setGeneratedRubric('');
-        setStreamingRubric('');
         setParsedRubric(null);
+        setCurrentRubricId(null);
       }
-      
-      hasInitializedRef.current = true;
+    } else {
+      setFormData(getDefaultFormData());
+      setGeneratedRubric('');
+      setParsedRubric(null);
+      setCurrentRubricId(null);
     }
-  }, [tabId, savedData]);
+  }, [tabId]);
+
+  // Persist state to localStorage
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+      formData,
+      generatedRubric,
+      parsedRubric,
+      currentRubricId
+    }));
+  }, [formData, generatedRubric, parsedRubric, currentRubricId]);
 
   // Auto-show tutorial on first use
   useEffect(() => {
@@ -556,99 +556,33 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   useEffect(() => {
-    onDataChange({ formData, generatedRubric, streamingRubric, parsedRubric });
-  }, [formData, generatedRubric, streamingRubric, parsedRubric]);
+    onDataChange({ formData, generatedRubric, parsedRubric });
+  }, [formData, generatedRubric, parsedRubric]);
 
+  // Connect WebSocket
   useEffect(() => {
-    shouldReconnectRef.current = true;
+    getConnection(tabId, ENDPOINT);
+  }, [tabId]);
 
-    const connectWebSocket = () => {
-      if (!shouldReconnectRef.current) return;
-      
-      // Prevent multiple simultaneous connections
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        console.log('WebSocket already connected, skipping');
-        return;
-      }
+  // Subscribe to streaming updates
+  useEffect(() => {
+    const unsubscribe = subscribe(tabId, ENDPOINT, () => {
+      // Triggers re-render on streaming updates
+    });
+    return unsubscribe;
+  }, [tabId, subscribe]);
 
-      try {
-        const wsUrl = getWebSocketUrl('/ws/rubric', isElectronEnvironment());
-        const ws = new WebSocket(wsUrl);
-        
-        ws.onopen = () => {
-          console.log('Rubric WebSocket connected');
-          // Clear any pending reconnection attempts
-          if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current);
-            reconnectTimeoutRef.current = null;
-          }
-        };
-        
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'token') {
-            setStreamingRubric(prev => prev + data.content);
-          } else if (data.type === 'done') {
-            setStreamingRubric(current => {
-              const finalMessage = current || data.full_response;
-              setGeneratedRubric(finalMessage);
-              setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
-              return '';
-            });
-          }
-        };
-        
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
-        };
-        
-        ws.onclose = () => {
-          console.log('WebSocket closed');
-          wsRef.current = null;
-          
-          // Only reconnect if not intentional close and not already reconnecting
-          if (shouldReconnectRef.current && !reconnectTimeoutRef.current) {
-            console.log('Reconnecting in 2 seconds...');
-            reconnectTimeoutRef.current = setTimeout(() => {
-              reconnectTimeoutRef.current = null;
-              connectWebSocket();
-            }, 2000);
-          }
-        };
-        
-        wsRef.current = ws;
-      } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-        if (shouldReconnectRef.current && !reconnectTimeoutRef.current) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            reconnectTimeoutRef.current = null;
-            connectWebSocket();
-          }, 2000);
-        }
-      }
-    };
-    
-    connectWebSocket();
-    
-    return () => {
-      console.log('Cleaning up WebSocket connection');
-      shouldReconnectRef.current = false;
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      
-      if (wsRef.current) {
-        if (wsRef.current.readyState === WebSocket.OPEN) {
-          wsRef.current.close();
-        }
-        wsRef.current = null;
-      }
-    };
-  }, []);  
+  // Finalization effect - when streaming completes
+  useEffect(() => {
+    if (streamingRubric && !contextLoading) {
+      setGeneratedRubric(streamingRubric);
+      const parsed = parseRubricContent(streamingRubric, formData);
+      if (parsed) setParsedRubric(parsed);
+      clearStreaming(tabId, ENDPOINT);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+    }
+  }, [streamingRubric, contextLoading]);
+
 
   // Enable structured editing mode
   const enableEditing = () => {
@@ -755,46 +689,37 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       handleInputChange(field, [...currentArray, value]);
     }
   };
-
+  
   const generateRubric = () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    const ws = getConnection(tabId, ENDPOINT);
+    if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
       return;
     }
 
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-    setStreamingRubric('');
 
     const prompt = buildRubricPrompt(formData);
 
     try {
-      wsRef.current.send(JSON.stringify({
+      ws.send(JSON.stringify({
         prompt,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
       console.error('Failed to send rubric request:', error);
-      setLoading(false);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
     }
   };
 
   const clearForm = () => {
-    setFormData({
-      assignmentTitle: '',
-      assignmentType: '',
-      subject: '',
-      gradeLevel: '',
-      learningObjectives: '',
-      specificRequirements: '',
-      performanceLevels: '4',
-      includePointValues: false,
-      focusAreas: []
-    });
+    setFormData(getDefaultFormData());
     setGeneratedRubric('');
-    setStreamingRubric('');
+    clearStreaming(tabId, ENDPOINT);
     setParsedRubric(null);
     setCurrentRubricId(null);
     setIsEditing(false);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
   const validateForm = () => {
