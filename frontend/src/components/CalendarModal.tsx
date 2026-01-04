@@ -19,7 +19,7 @@ import {
 import {
   X, ChevronLeft, ChevronRight, Calendar as CalendarIcon,
   BookMarked, ListChecks, FileText, GraduationCap, Users, School,
-  Eye, Edit, TrendingUp, Activity
+  Eye, Edit, TrendingUp, Activity, Plus, CheckCircle2, Circle
 } from 'lucide-react';
 
 interface Resource {
@@ -42,9 +42,12 @@ interface CalendarModalProps {
   onViewResource?: (type: string, resource: Resource) => void;
   onEditResource?: (type: string, resource: Resource) => void;
   tasksByDate?: { [date: string]: any[] };
-  onAddTask?: (date: string, task: any) => void;
   initialDate?: Date;
   onDateSelect?: (date: Date) => void;
+  // Task management callbacks
+  onTaskAdd?: () => void;
+  onTaskEdit?: (task: any) => void;
+  onTaskToggle?: (taskId: string) => void;
 }
 
 const CalendarModal: React.FC<CalendarModalProps> = ({
@@ -52,10 +55,12 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   onClose,
   onViewResource,
   onEditResource,
-  tasksByDate,
-  onAddTask,
+  tasksByDate = {},
   initialDate,
-  onDateSelect: onDateSelectCallback
+  onDateSelect: onDateSelectCallback,
+  onTaskAdd,
+  onTaskEdit,
+  onTaskToggle
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate || new Date());
@@ -737,6 +742,76 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     </div>
                   );
                 })
+              )}
+
+              {/* Tasks Section */}
+              {tasksByDate[selectedDateKey] && tasksByDate[selectedDateKey].length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold uppercase tracking-wide" style={{ color: '#552A01' }}>
+                      Tasks ({tasksByDate[selectedDateKey].length})
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    {tasksByDate[selectedDateKey].map((task) => (
+                      <div
+                        key={task.id}
+                        className="rounded-lg p-3 cursor-pointer hover:shadow-md transition-all"
+                        style={{
+                          backgroundColor: task.completed ? '#FDFDF8' : 'white',
+                          border: '1px solid #E8EAE3',
+                          opacity: task.completed ? 0.6 : 1
+                        }}
+                        onClick={() => onTaskEdit?.(task)}
+                      >
+                        <div className="flex items-start space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTaskToggle?.(task.id);
+                            }}
+                            className="flex-shrink-0 mt-0.5"
+                          >
+                            {task.completed ? (
+                              <CheckCircle2 className="w-4 h-4" style={{ color: '#1D362D' }} />
+                            ) : (
+                              <Circle className="w-4 h-4" style={{ color: '#E8EAE3' }} />
+                            )}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-medium ${task.completed ? 'line-through' : ''}`}
+                              style={{ color: task.completed ? '#A8AFA3' : '#020D03' }}
+                            >
+                              {task.title}
+                            </p>
+                            {task.description && (
+                              <p className="text-xs mt-1 line-clamp-1" style={{ color: '#552A01' }}>
+                                {task.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add Task Button */}
+              {onTaskAdd && (
+                <button
+                  onClick={onTaskAdd}
+                  className="w-full mt-4 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all hover:scale-105 font-medium"
+                  style={{
+                    backgroundColor: '#F2A631',
+                    color: 'white',
+                    boxShadow: '0 2px 8px rgba(242, 166, 49, 0.3)'
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Task</span>
+                </button>
               )}
             </div>
           </div>

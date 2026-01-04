@@ -36,7 +36,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         const nextIndex = (currentIndex + 1) % views.length;
         return views[nextIndex];
       });
-    }, 5000); // Rotate every 5 seconds
+    }, 10000); // Rotate every 10 seconds
 
     return () => clearInterval(interval);
   }, [isAutoRotating]);

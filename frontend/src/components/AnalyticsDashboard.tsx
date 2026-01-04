@@ -469,6 +469,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           initialDate={selectedDate}
           onDateSelect={setSelectedDate}
           onClose={() => setShowCalendarModal(false)}
+          onTaskAdd={handleAddTask}
+          onTaskEdit={handleEditTask}
+          onTaskToggle={handleToggleTask}
         />
       )}
 

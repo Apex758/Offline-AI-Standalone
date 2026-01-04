@@ -83,8 +83,8 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ 
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      style={{
         backgroundColor: 'rgba(2, 13, 3, 0.6)',
         backdropFilter: 'blur(8px)'
       }}
