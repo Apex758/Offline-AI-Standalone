@@ -90,24 +90,48 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     loadAllData(teacherId);
   }, []);
 
-  // Load tasks from localStorage
+  // Load tasks from file storage
   useEffect(() => {
-    try {
-      const storedTasks = localStorage.getItem('dashboard-tasks');
-      if (storedTasks) {
-        setTasks(JSON.parse(storedTasks));
+    const loadTasks = async () => {
+      try {
+        if (window.electronAPI && window.electronAPI.getTasksData) {
+          const storedTasks = await window.electronAPI.getTasksData();
+          if (storedTasks && Array.isArray(storedTasks)) {
+            setTasks(storedTasks);
+          }
+        } else {
+          // Fallback to localStorage for web version
+          const storedTasks = localStorage.getItem('dashboard-tasks');
+          if (storedTasks) {
+            setTasks(JSON.parse(storedTasks));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading tasks:', error);
       }
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-    }
+    };
+
+    loadTasks();
   }, []);
 
-  // Save tasks to localStorage
+  // Save tasks to file storage
   useEffect(() => {
-    try {
-      localStorage.setItem('dashboard-tasks', JSON.stringify(tasks));
-    } catch (error) {
-      console.error('Error saving tasks:', error);
+    const saveTasks = async () => {
+      try {
+        if (window.electronAPI && window.electronAPI.saveTasksData) {
+          await window.electronAPI.saveTasksData(tasks);
+        } else {
+          // Fallback to localStorage for web version
+          localStorage.setItem('dashboard-tasks', JSON.stringify(tasks));
+        }
+      } catch (error) {
+        console.error('Error saving tasks:', error);
+      }
+    };
+
+    // Only save if tasks have been loaded (avoid saving empty array on mount)
+    if (tasks.length > 0 || (window.electronAPI && window.electronAPI.getTasksData)) {
+      saveTasks();
     }
   }, [tasks]);
 

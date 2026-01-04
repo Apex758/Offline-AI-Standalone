@@ -367,6 +367,42 @@ ipcMain.on('splashscreen-complete', () => {
   loadMainContent();
 });
 
+// IPC handlers for task data persistence
+ipcMain.handle('get-tasks-data', async () => {
+  try {
+    const userDataPath = app.getPath('userData');
+    const tasksFilePath = path.join(userDataPath, 'tasks.json');
+
+    if (fs.existsSync(tasksFilePath)) {
+      const data = fs.readFileSync(tasksFilePath, 'utf8');
+      return JSON.parse(data);
+    } else {
+      return [];
+    }
+  } catch (error) {
+    log.error('Error reading tasks data:', error);
+    return [];
+  }
+});
+
+ipcMain.handle('save-tasks-data', async (event, tasks) => {
+  try {
+    const userDataPath = app.getPath('userData');
+    const tasksFilePath = path.join(userDataPath, 'tasks.json');
+
+    // Ensure user data directory exists
+    if (!fs.existsSync(userDataPath)) {
+      fs.mkdirSync(userDataPath, { recursive: true });
+    }
+
+    fs.writeFileSync(tasksFilePath, JSON.stringify(tasks, null, 2));
+    return true;
+  } catch (error) {
+    log.error('Error saving tasks data:', error);
+    return false;
+  }
+});
+
 // App lifecycle
 app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');

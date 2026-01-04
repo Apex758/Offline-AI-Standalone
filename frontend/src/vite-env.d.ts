@@ -1,18 +1,17 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+/// <reference types="vite/client" />
 
-export default defineConfig({
-  plugins: [react()],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-    },
-  },
-});
+declare global {
+  interface Window {
+    electronAPI?: {
+      getAppInfo: () => Promise<any>;
+      getTasksData: () => Promise<any[]>;
+      saveTasksData: (tasks: any[]) => Promise<boolean>;
+      platform: string;
+      versions: {
+        node: string;
+        chrome: string;
+        electron: string;
+      };
+    };
+  }
+}

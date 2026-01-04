@@ -12,10 +12,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
       });
     });
   },
-  
+
+  // Task data persistence
+  getTasksData: () => ipcRenderer.invoke('get-tasks-data'),
+  saveTasksData: (tasks) => ipcRenderer.invoke('save-tasks-data', tasks),
+
   // Platform information
   platform: process.platform,
-  
+
   // Versions
   versions: {
     node: process.versions.node,
