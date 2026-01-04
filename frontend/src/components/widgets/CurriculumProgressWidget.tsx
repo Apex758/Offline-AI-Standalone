@@ -8,6 +8,13 @@ import type { CurriculumView } from '../../types/analytics';
 interface CurriculumProgressWidgetProps {
   stats: MilestoneStats | null;
   upcomingMilestones: Milestone[];
+  progressBreakdown?: Array<{
+    grade: string;
+    subject: string;
+    total: number;
+    completed: number;
+    in_progress: number;
+  }>;
   view: CurriculumView;
   onViewChange: (view: CurriculumView) => void;
 }
@@ -15,6 +22,7 @@ interface CurriculumProgressWidgetProps {
 const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
   stats,
   upcomingMilestones,
+  progressBreakdown = [],
   view,
   onViewChange
 }) => {
@@ -113,21 +121,151 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
   };
 
   const renderGradeView = () => {
+    if (!progressBreakdown || progressBreakdown.length === 0) {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-center py-8" style={{ color: '#552A01' }}>
+            No milestone data available
+          </p>
+        </div>
+      );
+    }
+
+    // Group by grade
+    const gradeGroups = progressBreakdown.reduce((acc, item) => {
+      if (!acc[item.grade]) {
+        acc[item.grade] = { total: 0, completed: 0, in_progress: 0 };
+      }
+      acc[item.grade].total += item.total;
+      acc[item.grade].completed += item.completed;
+      acc[item.grade].in_progress += item.in_progress;
+      return acc;
+    }, {} as Record<string, { total: number; completed: number; in_progress: number }>);
+
+    const sortedGrades = Object.entries(gradeGroups)
+      .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-center py-8" style={{ color: '#552A01' }}>
-          Grade-level breakdown coming soon!
-        </p>
+      <div className="space-y-4">
+        {sortedGrades.map(([grade, stats]) => {
+          const percentage = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+          const notStarted = stats.total - stats.completed - stats.in_progress;
+
+          return (
+            <div key={grade} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold" style={{ color: '#020D03' }}>
+                  Grade {grade}
+                </h4>
+                <span className="text-xs font-medium" style={{ color: '#552A01' }}>
+                  {percentage}%
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: percentage === 100 ? '#1D362D' : percentage > 50 ? '#F2A631' : '#552A01'
+                  }}
+                />
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="text-center">
+                  <div className="font-semibold" style={{ color: '#1D362D' }}>{stats.completed}</div>
+                  <div style={{ color: '#552A01' }}>Done</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold" style={{ color: '#F2A631' }}>{stats.in_progress}</div>
+                  <div style={{ color: '#552A01' }}>In Progress</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold" style={{ color: '#A8AFA3' }}>{notStarted}</div>
+                  <div style={{ color: '#552A01' }}>Not Started</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
 
   const renderSubjectView = () => {
+    if (!progressBreakdown || progressBreakdown.length === 0) {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-center py-8" style={{ color: '#552A01' }}>
+            No milestone data available
+          </p>
+        </div>
+      );
+    }
+
+    // Group by subject
+    const subjectGroups = progressBreakdown.reduce((acc, item) => {
+      if (!acc[item.subject]) {
+        acc[item.subject] = { total: 0, completed: 0, in_progress: 0 };
+      }
+      acc[item.subject].total += item.total;
+      acc[item.subject].completed += item.completed;
+      acc[item.subject].in_progress += item.in_progress;
+      return acc;
+    }, {} as Record<string, { total: number; completed: number; in_progress: number }>);
+
+    const sortedSubjects = Object.entries(subjectGroups)
+      .sort(([a], [b]) => a.localeCompare(b));
+
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-center py-8" style={{ color: '#552A01' }}>
-          Subject breakdown coming soon!
-        </p>
+      <div className="space-y-4">
+        {sortedSubjects.map(([subject, stats]) => {
+          const percentage = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+          const notStarted = stats.total - stats.completed - stats.in_progress;
+
+          return (
+            <div key={subject} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold" style={{ color: '#020D03' }}>
+                  {subject}
+                </h4>
+                <span className="text-xs font-medium" style={{ color: '#552A01' }}>
+                  {percentage}%
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: percentage === 100 ? '#1D362D' : percentage > 50 ? '#F2A631' : '#552A01'
+                  }}
+                />
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="text-center">
+                  <div className="font-semibold" style={{ color: '#1D362D' }}>{stats.completed}</div>
+                  <div style={{ color: '#552A01' }}>Done</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold" style={{ color: '#F2A631' }}>{stats.in_progress}</div>
+                  <div style={{ color: '#552A01' }}>In Progress</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold" style={{ color: '#A8AFA3' }}>{notStarted}</div>
+                  <div style={{ color: '#552A01' }}>Not Started</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };

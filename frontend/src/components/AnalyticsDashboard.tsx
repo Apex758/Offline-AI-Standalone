@@ -52,6 +52,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [milestoneStats, setMilestoneStats] = useState<MilestoneStats | null>(null);
   const [upcomingMilestones, setUpcomingMilestones] = useState<Milestone[]>([]);
+  const [progressBreakdown, setProgressBreakdown] = useState<Array<{
+    grade: string;
+    subject: string;
+    total: number;
+    completed: number;
+    in_progress: number;
+  }>>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [timeframe, setTimeframe] = useState<Timeframe>('month');
   const [curriculumView, setCurriculumView] = useState<CurriculumView>('overall');
@@ -134,12 +141,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         try {
           const stats = await milestoneApi.getStats(teacherId);
           setMilestoneStats(stats);
-          
+
           const milestones = await milestoneApi.getUpcoming(teacherId, 30);
           setUpcomingMilestones(milestones);
+
+          // Load progress breakdown for grade/subject views
+          const progressData = await milestoneApi.getProgress(teacherId);
+          setProgressBreakdown(progressData.byGradeSubject || []);
         } catch (e) {
           console.error('Error loading milestones:', e);
           setMilestoneStats(null);
+          setProgressBreakdown([]);
         }
       }
     } catch (error) {
@@ -411,6 +423,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <CurriculumProgressWidget
               stats={milestoneStats}
               upcomingMilestones={upcomingMilestones}
+              progressBreakdown={progressBreakdown}
               view={curriculumView}
               onViewChange={setCurriculumView}
             />
