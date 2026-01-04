@@ -56,16 +56,18 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
   const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
   return (
-    <div 
+    <div
       className="rounded-2xl overflow-hidden"
+      data-tutorial="analytics-calendar-widget"
       style={{
         backgroundColor: 'white',
         boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
       }}
     >
       {/* Header */}
-      <div 
+      <div
         className="px-4 py-3 flex items-center justify-between"
+        data-tutorial="analytics-calendar-navigation"
         style={{
           backgroundColor: '#1D362D'
         }}
@@ -188,7 +190,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
         </div>
 
         {/* Legend */}
-        <div className="mt-4 pt-3" style={{ borderTop: '1px solid #E8EAE3' }}>
+        <div className="mt-4 pt-3" data-tutorial="analytics-calendar-legend" style={{ borderTop: '1px solid #E8EAE3' }}>
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1D362D' }} />

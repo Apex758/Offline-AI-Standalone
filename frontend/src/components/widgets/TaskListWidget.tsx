@@ -117,8 +117,9 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
   const hasAnyTasks = tasks.length > 0;
 
   return (
-    <div 
+    <div
       className="rounded-2xl overflow-hidden flex flex-col"
+      data-tutorial="analytics-task-widget"
       style={{
         backgroundColor: 'white',
         boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
@@ -135,6 +136,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
         </h3>
         <button
           onClick={onAddTask}
+          data-tutorial="analytics-add-task"
           className="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all hover:scale-105 text-sm font-medium"
           style={{
             backgroundColor: '#F2A631',
@@ -148,7 +150,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
       </div>
 
       {/* Task List - Scrollable */}
-      <div className="overflow-y-auto p-4 space-y-4" style={{ maxHeight: '400px' }}>
+      <div className="overflow-y-auto p-4 space-y-4" data-tutorial="analytics-task-list" style={{ maxHeight: '400px' }}>
         {!hasAnyTasks ? (
           <div className="text-center py-12">
             <Flag className="w-12 h-12 mx-auto mb-3" style={{ color: '#E8EAE3' }} />

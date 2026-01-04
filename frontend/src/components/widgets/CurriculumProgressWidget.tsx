@@ -28,9 +28,9 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
     if (!stats) return null;
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" data-tutorial="analytics-curriculum-stats">
         {/* Completion Ring */}
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center" data-tutorial="analytics-completion-ring">
           <div className="relative w-32 h-32">
             <svg className="w-full h-full transform -rotate-90">
               <circle
@@ -133,8 +133,9 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="rounded-2xl overflow-hidden"
+      data-tutorial="analytics-curriculum-progress"
       style={{
         backgroundColor: 'white',
         boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
@@ -148,8 +149,9 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
         </div>
 
         {/* View Toggle */}
-        <div 
+        <div
           className="flex items-center space-x-1 rounded-lg p-1"
+          data-tutorial="analytics-curriculum-views"
           style={{ backgroundColor: '#F8E59D40' }}
         >
           {viewButtons.map((btn) => (
@@ -178,7 +180,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
 
       {/* Upcoming Milestones */}
       {upcomingMilestones.length > 0 && (
-        <div className="p-4" style={{ borderTop: '1px solid #E8EAE3' }}>
+        <div className="p-4" data-tutorial="analytics-upcoming-milestones" style={{ borderTop: '1px solid #E8EAE3' }}>
           <h4 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: '#552A01' }}>
             Upcoming Milestones
           </h4>

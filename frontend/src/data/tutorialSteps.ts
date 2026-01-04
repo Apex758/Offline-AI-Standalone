@@ -618,53 +618,154 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       }
     ]
   },
-  
   [TUTORIAL_IDS.ANALYTICS]: {
     id: TUTORIAL_IDS.ANALYTICS,
     name: 'Analytics Dashboard',
-    description: 'Explore your teaching analytics and statistics',
+    description: 'Explore your teaching analytics, track progress, and manage tasks',
     steps: [
       {
-        target: '[data-tutorial="analytics-welcome"]',
-        title: 'Welcome to Analytics',
-        description: 'Track your teaching activity, resource usage, and productivity. Gain insights into your teaching patterns.',
+        target: '[data-tutorial="analytics-profile"]',
+        title: 'Welcome to Your Analytics Dashboard! 📊',
+        description: 'This is your personal teaching hub where you can track all your resources, monitor curriculum progress, manage tasks, and see your productivity patterns at a glance.',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="analytics-overview"]',
-        title: 'Overview Stats',
-        description: 'See total resources created, most-used tools, and recent activity at a glance.',
+        target: '[data-tutorial="analytics-profile-edit"]',
+        title: 'Your Profile',
+        description: 'Click here to edit your profile photo and display name. Personalize your dashboard to make it yours!',
         position: 'right'
       },
       {
-        target: '[data-tutorial="analytics-charts"]',
-        title: 'Usage Charts',
-        description: 'Visual charts show your tool usage over time and resource creation trends.',
-        position: 'left'
+        target: '[data-tutorial="analytics-quick-stats"]',
+        title: 'Quick Stats Overview',
+        description: 'Get instant insights: total resources created, active teaching days, and task completion rate. These update in real-time as you work.',
+        position: 'bottom'
       },
       {
-        target: '[data-tutorial="analytics-breakdown"]',
-        title: 'Resource Breakdown',
-        description: 'See what types of resources you create most: lesson plans, quizzes, rubrics, etc.',
-        position: 'left'
+        target: '[data-tutorial="analytics-layout"]',
+        title: 'Dashboard Layout',
+        description: 'The dashboard is organized with detailed charts on the left (3/5 width) and quick-access widgets on the right (2/5 width) for optimal workflow.',
+        position: 'center'
       },
       {
-        target: '[data-tutorial="analytics-subjects"]',
-        title: 'Subject Distribution',
-        description: 'View which subjects you plan for most frequently.',
-        position: 'left'
+        target: '[data-tutorial="analytics-chart-carousel"]',
+        title: 'Interactive Chart Carousel',
+        description: 'Your main analytics hub! This carousel automatically rotates through different chart views every 5 seconds, or you can navigate manually.',
+        position: 'bottom'
       },
       {
-        target: '[data-tutorial="analytics-timeline"]',
-        title: 'Activity Timeline',
-        description: 'See when you\'re most productive and track your teaching preparation patterns.',
-        position: 'left'
+        target: '[data-tutorial="analytics-chart-navigation"]',
+        title: 'Chart Navigation Controls',
+        description: 'Use these controls to navigate between charts, pause auto-rotation, or jump directly to a specific view using the indicator dots.',
+        position: 'left',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Try the controls!'
       },
       {
-        target: '[data-tutorial="analytics-export"]',
-        title: 'Export Analytics',
-        description: 'Download your analytics data for reports or professional development documentation.',
+        target: '[data-tutorial="analytics-timeframe-selector"]',
+        title: 'Timeframe Selector',
+        description: 'Switch between 1 Week, 2 Weeks, Month, or All Time views to analyze your productivity patterns over different periods.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="analytics-chart-display"]',
+        title: 'Multiple Chart Views',
+        description: 'View 1 shows Resource Creation Trends over time. View 2 shows Resource Type Distribution and Lesson Plan Comparison side-by-side.',
         position: 'top'
+      },
+      {
+        target: '[data-tutorial="analytics-curriculum-progress"]',
+        title: 'Curriculum Progress Tracking',
+        description: 'Track your progress through the OECS curriculum with completion stats, milestone tracking, and upcoming deadlines.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="analytics-curriculum-views"]',
+        title: 'Progress View Modes',
+        description: 'Toggle between Overall, By Grade, or By Subject views to see your curriculum coverage from different perspectives.',
+        position: 'bottom',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Switch views!'
+      },
+      {
+        target: '[data-tutorial="analytics-completion-ring"]',
+        title: 'Completion Percentage',
+        description: 'This visual ring shows your overall curriculum completion percentage, with detailed stats for completed, in-progress, and not-started milestones below.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="analytics-upcoming-milestones"]',
+        title: 'Upcoming Milestones',
+        description: 'Stay on track with upcoming curriculum milestones and due dates. Click any milestone to view details or mark as complete.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="analytics-widgets-section"]',
+        title: 'Quick Access Widgets',
+        description: 'The right sidebar contains compact widgets for calendar, tasks, and tool usage - everything you need at your fingertips.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="analytics-calendar-widget"]',
+        title: 'Compact Calendar',
+        description: 'View your teaching activity at a glance. Color-coded dots show resources created, tasks scheduled, and milestones on each day.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="analytics-calendar-navigation"]',
+        title: 'Calendar Navigation',
+        description: 'Navigate months with arrow buttons or click the expand icon to open a full-screen calendar view with detailed daily information.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="analytics-calendar-legend"]',
+        title: 'Activity Indicators',
+        description: 'The legend shows what each colored dot means: green for resources, orange for tasks, and brown for milestones.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="analytics-task-widget"]',
+        title: 'Task Management',
+        description: 'Manage your teaching tasks directly from the dashboard. Tasks are organized by status: Overdue, Today, Upcoming, and Completed.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="analytics-add-task"]',
+        title: 'Create New Tasks',
+        description: 'Click here to quickly add new tasks with titles, descriptions, due dates, and priority levels.',
+        position: 'left',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Add a task!'
+      },
+      {
+        target: '[data-tutorial="analytics-task-list"]',
+        title: 'Task Organization',
+        description: 'Tasks are automatically grouped by urgency. Overdue tasks appear first with alerts, followed by today\'s tasks, then upcoming ones.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="analytics-most-used-tools"]',
+        title: 'Most Used Tools',
+        description: 'See which teaching tools you use most frequently. This helps you understand your teaching workflow and favorite resources.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="analytics-tools-grid"]',
+        title: 'Quick Tool Access',
+        description: 'Click any tool icon to quickly open it in a new tab. Tools are ranked by usage with badges showing their position.',
+        position: 'top',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Click a tool!'
+      },
+      {
+        target: '[data-tutorial="analytics-chart-carousel"]',
+        title: 'You\'re All Set! 🎉',
+        description: 'Your Analytics Dashboard is your command center for tracking teaching progress, managing tasks, and optimizing your workflow. Explore each section to discover more features!',
+        position: 'center'
       }
     ]
   },

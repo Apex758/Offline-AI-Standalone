@@ -62,9 +62,9 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" data-tutorial="analytics-chart-carousel">
       {/* Chart Container */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display">
         {/* Trend Chart View */}
         <div
           className={`transition-all duration-500 ${
@@ -99,10 +99,11 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
       </div>
 
       {/* Navigation Controls */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2 z-10">
+      <div className="absolute bottom-4 right-4 flex items-center gap-2 z-10" data-tutorial="analytics-chart-navigation">
         {/* View Indicator */}
-        <div 
+        <div
           className="flex items-center gap-1 rounded-lg px-2 py-1"
+          data-tutorial="analytics-chart-indicators"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             backdropFilter: 'blur(10px)',

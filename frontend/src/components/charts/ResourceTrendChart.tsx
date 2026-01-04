@@ -88,8 +88,9 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
         </div>
 
         {/* Timeframe Toggle */}
-        <div 
+        <div
           className="flex items-center space-x-1 rounded-lg p-1"
+          data-tutorial="analytics-timeframe-selector"
           style={{ backgroundColor: '#F8E59D40' }}
         >
           {timeframeButtons.map((btn) => (

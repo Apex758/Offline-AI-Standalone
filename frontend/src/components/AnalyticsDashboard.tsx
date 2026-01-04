@@ -316,10 +316,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       }}>
         <div className="px-8 py-5 flex items-center justify-between">
           {/* Profile Section */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4" data-tutorial="analytics-profile">
             <button
               onClick={() => setShowProfileEdit(true)}
               className="relative group"
+              data-tutorial="analytics-profile-edit"
             >
               <div 
                 className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-105"
@@ -353,7 +354,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
 
           {/* Quick Stats - Minimal */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-6" data-tutorial="analytics-quick-stats">
             <div className="text-center">
               <div className="text-2xl font-bold" style={{ color: '#1D362D' }}>
                 {quickStats.totalResources}
@@ -392,9 +393,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
       {/* Main Content - 3/5 + 2/5 Grid */}
       <div className="px-8 py-8">
-        <div className="grid grid-cols-5 gap-6">
+        <div className="grid grid-cols-5 gap-6" data-tutorial="analytics-layout">
           {/* Left Column - 3/5 */}
-          <div className="col-span-3 space-y-6">
+          <div className="col-span-3 space-y-6" data-tutorial="analytics-charts-section">
             {/* Resource Trends Chart */}
             <ChartCarousel
               trendData={trendData}
@@ -417,7 +418,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
 
           {/* Right Column - 2/5 */}
-          <div className="col-span-2 space-y-6">
+          <div className="col-span-2 space-y-6" data-tutorial="analytics-widgets-section">
             {/* Compact Calendar */}
             <CompactCalendar
               selectedDate={selectedDate}

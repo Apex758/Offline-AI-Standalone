@@ -44,8 +44,9 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
   const limitedToolUsage = toolUsage.slice(0, 5);
 
   return (
-    <div 
+    <div
       className="rounded-2xl overflow-hidden"
+      data-tutorial="analytics-most-used-tools"
       style={{
         backgroundColor: 'white',
         boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
@@ -71,7 +72,7 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
             <p className="text-xs mt-1" style={{ color: '#A8AFA3' }}>Start using tools to see stats</p>
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-5 gap-3" data-tutorial="analytics-tools-grid">
             {limitedToolUsage.map((tool, index) => {
               const Icon = getIcon(tool.icon);
               const { bg, color, shadow } = getToolColor(index);
