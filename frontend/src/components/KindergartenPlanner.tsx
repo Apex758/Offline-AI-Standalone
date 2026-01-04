@@ -644,8 +644,42 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     return days[date.getDay()];
   };
 
+  // Helper function to get date from ISO week and day of week
+  const getDateFromWeekAndDay = (week: number, dayOfWeek: string, year?: number): string => {
+    const targetYear = year || new Date().getFullYear();
+    // Find the first Thursday of the year (ISO week 1)
+    const jan4 = new Date(targetYear, 0, 4);
+    const dayOfWeekJan4 = jan4.getDay() || 7; // 1=Monday, 7=Sunday
+    const firstThursday = new Date(jan4);
+    firstThursday.setDate(jan4.getDate() - dayOfWeekJan4 + 4); // Thursday is 4
+    // First Monday of ISO week 1
+    const firstMonday = new Date(firstThursday);
+    firstMonday.setDate(firstThursday.getDate() - 3); // Monday is 3 days before Thursday
+    // Start of the target week
+    const weekStart = new Date(firstMonday);
+    weekStart.setDate(firstMonday.getDate() + (week - 1) * 7);
+    // Add days for the specific day
+    const dayIndex = daysOfWeek.indexOf(dayOfWeek);
+    if (dayIndex === -1) return '';
+    const targetDate = new Date(weekStart);
+    targetDate.setDate(weekStart.getDate() + dayIndex);
+    return targetDate.toISOString().split('T')[0];
+  };
+
   const handleInputChange = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      if (field === 'week' || field === 'dayOfWeek') {
+        if (newData.week && newData.dayOfWeek) {
+          const year = newData.date ? new Date(newData.date).getFullYear() : new Date().getFullYear();
+          const calculatedDate = getDateFromWeekAndDay(parseInt(newData.week), newData.dayOfWeek, year);
+          if (calculatedDate) {
+            newData.date = calculatedDate;
+          }
+        }
+      }
+      return newData;
+    });
   };
 
   // Handler for date change with automatic week/day calculation
