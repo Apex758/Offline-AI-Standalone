@@ -7,7 +7,6 @@ export const TUTORIAL_IDS = {
   
   // Tool-specific tutorials
   ANALYTICS: 'analytics-dashboard',
-  CHAT: 'chat-assistant',
   CURRICULUM: 'curriculum-viewer',
   LESSON_PLANNER: 'lesson-planner',
   KINDERGARTEN_PLANNER: 'kindergarten-planner',
@@ -90,55 +89,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     ]
   },
   
-  [TUTORIAL_IDS.CHAT]: {
-    id: TUTORIAL_IDS.CHAT,
-    name: 'Chat Assistant',
-    description: 'Learn how to use the AI chat assistant',
-    steps: [
-      {
-        target: '[data-tutorial="chat-welcome"]',
-        title: 'Welcome to AI Chat',
-        description: 'Chat with PEARL AI to get instant help with teaching tasks, ask questions, brainstorm ideas, or get teaching strategies.',
-        position: 'bottom'
-      },
-      {
-        target: '[data-tutorial="chat-input"]',
-        title: 'Type Your Message',
-        description: 'Enter your question or request here. Try asking about lesson ideas, curriculum questions, teaching strategies, or classroom management tips!',
-        position: 'top'
-      },
-      {
-        target: '[data-tutorial="chat-send"]',
-        title: 'Send Your Message',
-        description: 'Click here or press Enter to send your message to PEARL AI.',
-        position: 'left',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="chat-history"]',
-        title: 'Chat History',
-        description: 'Your conversation is saved here. Scroll up to review previous messages and AI responses.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="chat-sidebar"]',
-        title: 'Conversation List',
-        description: 'View all your past conversations. Click any conversation to continue where you left off.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="chat-new"]',
-        title: 'Start New Chat',
-        description: 'Begin a fresh conversation for a new topic or task. Previous chats are always saved for reference.',
-        position: 'bottom',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      }
-    ]
-  },
   
   [TUTORIAL_IDS.CURRICULUM]: {
     id: TUTORIAL_IDS.CURRICULUM,

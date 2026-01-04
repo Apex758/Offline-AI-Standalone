@@ -1726,7 +1726,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'kindergarten-planner': TUTORIAL_IDS.KINDERGARTEN_PLANNER,
       'resource-manager': TUTORIAL_IDS.RESOURCE_MANAGER,
       'analytics': TUTORIAL_IDS.DASHBOARD_MAIN,
-      'chat': TUTORIAL_IDS.CHAT,
       'curriculum': TUTORIAL_IDS.CURRICULUM,
       'multigrade-planner': TUTORIAL_IDS.MULTIGRADE_PLANNER,
       'cross-curricular-planner': TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER,

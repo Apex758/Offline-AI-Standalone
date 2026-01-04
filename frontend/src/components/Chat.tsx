@@ -2,10 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Loader2, History, X, Trash2, Plus } from 'lucide-react';
 import { Message } from '../types';
 import axios from 'axios';
-import { TutorialOverlay } from './TutorialOverlay';
-import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import { useSettings } from '../contexts/SettingsContext';
-import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { CurriculumReference } from './CurriculumReferences';
 import { CurriculumReferences } from './CurriculumReferences';
@@ -58,24 +54,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     console.log('[Chat] loading state updated:', loading);
   }, [loading]);
 
-  // Tutorial integration
-  const [showTutorial, setShowTutorial] = useState(false);
-  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
-
-  // Auto-show tutorial on first use
-  useEffect(() => {
-    if (
-      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
-      !isTutorialCompleted(TUTORIAL_IDS.CHAT)
-    ) {
-      setShowTutorial(true);
-    }
-  }, [settings, isTutorialCompleted]);
-
-  const handleTutorialComplete = () => {
-    markTutorialComplete(TUTORIAL_IDS.CHAT);
-    setShowTutorial(false);
-  };
 
   // Restore chat state from localStorage on mount or tabId change
   useEffect(() => {
@@ -606,13 +584,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         </div>
       </div>
 
-      {/* Tutorial Components */}
-      <TutorialOverlay
-        steps={tutorials[TUTORIAL_IDS.CHAT].steps}
-        onComplete={handleTutorialComplete}
-        autoStart={showTutorial}
-        showFloatingButton={false}
-      />
  
     </div>
   );
