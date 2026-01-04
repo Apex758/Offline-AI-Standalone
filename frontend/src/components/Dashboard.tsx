@@ -984,10 +984,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       {/* Sidebar */}
       <div
-        className={`transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
+        className={`${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
         style={{
           backgroundColor: settings.sidebarColor,
-          color: sidebarIsDark ? '#ffffff' : '#1f2937'
+          color: sidebarIsDark ? '#ffffff' : '#1f2937',
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         data-tutorial="main-sidebar"
         onMouseEnter={() => setSidebarOpen(true)}
@@ -1000,8 +1001,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }}
         >
           <div className="flex items-center justify-center">
-            {sidebarOpen ? (
-              <div>
+            <div className="relative">
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{
+                  opacity: sidebarOpen ? 0 : 1,
+                  transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  pointerEvents: sidebarOpen ? 'none' : 'auto'
+                }}
+              >
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                  {userProfileImage ? (
+                    <img
+                      src={userProfileImage}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user.name.charAt(0)
+                  )}
+                </div>
+              </div>
+              <div
+                style={{
+                  opacity: sidebarOpen ? 1 : 0,
+                  transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  pointerEvents: sidebarOpen ? 'auto' : 'none'
+                }}
+              >
                 <h2 className="text-xl font-bold whitespace-nowrap">OECS Learning Hub</h2>
                 <p
                   className="text-sm whitespace-nowrap"
@@ -1010,19 +1037,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   {user.name}
                 </p>
               </div>
-            ) : (
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-                {userProfileImage ? (
-                  <img
-                    src={userProfileImage}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  user.name.charAt(0)
-                )}
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -1091,27 +1106,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
                   }
                 />
-                {sidebarOpen && (
-                  <div className="flex-1 text-left overflow-hidden">
+                <div
+                  className="flex-1 text-left overflow-hidden"
+                  style={{
+                    opacity: sidebarOpen ? 1 : 0,
+                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    pointerEvents: sidebarOpen ? 'auto' : 'none'
+                  }}
+                >
+                  <p
+                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                    style={{
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    }}
+                  >
+                    {tool.name}
+                  </p>
+                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && (
                     <p
-                      className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                      style={{
-                        maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                        WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                      }}
+                      className="text-xs whitespace-nowrap"
+                      style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
                     >
-                      {tool.name}
+                      {count}/{MAX_TABS_PER_TYPE} open
                     </p>
-                    {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && (
-                      <p
-                        className="text-xs whitespace-nowrap"
-                        style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
-                      >
-                        {count}/{MAX_TABS_PER_TYPE} open
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </button>
             );
           })}
@@ -1169,25 +1189,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
                   }
                 />
-                {sidebarOpen && (
-                  <div className="flex-1 text-left overflow-hidden">
-                    <p 
-                      className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                      style={{
-                        maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                        WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                      }}
-                    >
-                      {tool.name}
-                    </p>
-                    <p
-                      className="text-xs whitespace-nowrap"
-                      style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
-                    >
-                      {count}/{MAX_TABS_PER_TYPE} open
-                    </p>
-                  </div>
-                )}
+                <div
+                  className="flex-1 text-left overflow-hidden"
+                  style={{
+                    opacity: sidebarOpen ? 1 : 0,
+                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    pointerEvents: sidebarOpen ? 'auto' : 'none'
+                  }}
+                >
+                  <p
+                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                    style={{
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    }}
+                  >
+                    {tool.name}
+                  </p>
+                  <p
+                    className="text-xs whitespace-nowrap"
+                    style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                  >
+                    {count}/{MAX_TABS_PER_TYPE} open
+                  </p>
+                </div>
               </button>
             );
           })}
@@ -1212,28 +1237,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               }}
             >
               <BookOpen
-                className="w-5 h-5 flex-shrink-0"
+                className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'}`}
                 style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
               />
-              {sidebarOpen && (
-                <>
-                  <span className="flex-1 text-left text-sm font-medium">Lesson Planners</span>
-                  {lessonPlannerExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  )}
-                </>
-              )}
-            </button>
-
-            {lessonPlannerExpanded && sidebarOpen && (
               <div
-                className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
+                className="flex-1 text-left overflow-hidden"
                 style={{
-                  borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+                  opacity: sidebarOpen ? 1 : 0,
+                  transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  pointerEvents: sidebarOpen ? 'auto' : 'none'
                 }}
               >
+                <div className="flex items-center justify-between">
+                  <p
+                    className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1"
+                    style={{
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    }}
+                  >
+                    Lesson Planners
+                  </p>
+                  <ChevronDown
+                    className="w-4 h-4 text-gray-400 chevron-icon ml-2 flex-shrink-0"
+                    style={{
+                      transform: lessonPlannerExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  />
+                </div>
+              </div>
+            </button>
+
+            <div
+              className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
+              style={{
+                borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                opacity: lessonPlannerExpanded && sidebarOpen ? 1 : 0,
+                transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                pointerEvents: lessonPlannerExpanded && sidebarOpen ? 'auto' : 'none',
+                maxHeight: lessonPlannerExpanded && sidebarOpen ? '500px' : '0',
+                overflow: 'hidden'
+              }}
+            >
                 {lessonPlannerTools.map((tool) => {
                   const Icon = iconMap[tool.icon];
                   const count = getTabCountByType(tool.type);
@@ -1296,8 +1342,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </button>
                   );
                 })}
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Settings Tool */}
@@ -1336,19 +1381,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
                       }
                     />
-                    {sidebarOpen && (
-                      <div className="flex-1 text-left overflow-hidden">
-                        <p
-                          className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                          style={{
-                            maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                            WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                          }}
-                        >
-                          {settingsTool.name}
-                        </p>
-                      </div>
-                    )}
+                    <div
+                      className="flex-1 text-left overflow-hidden"
+                      style={{
+                        opacity: sidebarOpen ? 1 : 0,
+                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        pointerEvents: sidebarOpen ? 'auto' : 'none'
+                      }}
+                    >
+                      <p
+                        className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                        style={{
+                          maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                          WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                        }}
+                      >
+                        {settingsTool.name}
+                      </p>
+                    </div>
                   </button>
                 );
               })()}
@@ -1356,35 +1406,45 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           )}
         </div>
 
-        {sidebarOpen && (
-          <div
-            className="p-4 border-t"
+        <div
+          className="p-4 border-t"
+          style={{
+            borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+            opacity: sidebarOpen ? 1 : 0,
+            transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            pointerEvents: sidebarOpen ? 'auto' : 'none'
+          }}
+        >
+          <button
+            onClick={onLogout}
+            className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
+            title={!sidebarOpen ? 'Logout' : ''}
             style={{
-              borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+              backgroundColor: 'transparent',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = sidebarIsDark
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <button
-              onClick={onLogout}
-              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
-              title={!sidebarOpen ? 'Logout' : ''}
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span
+              className="text-sm font-medium"
               style={{
-                backgroundColor: 'transparent',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = sidebarIsDark
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
+                opacity: sidebarOpen ? 1 : 0,
+                transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                pointerEvents: sidebarOpen ? 'auto' : 'none'
               }}
             >
-              <LogOut className="w-5 h-5 flex-shrink-0" />
-              {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
-            </button>
-          </div>
-        )}
+              Logout
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
