@@ -690,6 +690,12 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'right'
       },
       {
+        target: '[data-tutorial="analytics-recent-activity"]',
+        title: 'Recent Activity',
+        description: 'View your latest created resources and teaching activities. This timeline shows what you\'ve been working on recently.',
+        position: 'left'
+      },
+      {
         target: '[data-tutorial="analytics-calendar-widget"]',
         title: 'Compact Calendar',
         description: 'View your teaching activity at a glance. Color-coded dots show resources created, tasks scheduled, and milestones on each day.',
@@ -723,6 +729,13 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         actionHint: '👆 Add a task!'
       },
       {
+        target: '[data-tutorial="task-edit-modal"]',
+        title: 'Create a Task',
+        description: 'To create a task:\n\n• Enter a task title (required)\n• Add optional description\n• Set due date\n• Choose priority: Low, Medium, High, or Urgent\n• Click "Create Task" to save',
+        position: 'right',
+        clickTarget: '[data-tutorial="task-modal-close"]'
+      },
+      {
         target: '[data-tutorial="analytics-task-list"]',
         title: 'Task Organization',
         description: 'Tasks are automatically grouped by urgency. Overdue tasks appear first with alerts, followed by today\'s tasks, then upcoming ones.',
@@ -731,17 +744,8 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="analytics-most-used-tools"]',
         title: 'Most Used Tools',
-        description: 'See which teaching tools you use most frequently. This helps you understand your teaching workflow and favorite resources.',
+        description: 'See which teaching tools you use most frequently. Tools are ranked by usage with badges showing their position. Click any tool icon to quickly open it in a new tab.',
         position: 'top'
-      },
-      {
-        target: '[data-tutorial="analytics-tools-grid"]',
-        title: 'Quick Tool Access',
-        description: 'Click any tool icon to quickly open it in a new tab. Tools are ranked by usage with badges showing their position.',
-        position: 'top',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click a tool!'
       },
       {
         target: '[data-tutorial="analytics-chart-carousel"]',

@@ -290,13 +290,20 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
+      // Check if current step has a clickTarget to trigger before moving
+      const step = steps[currentStep];
+      if (step.clickTarget) {
+        const targetElement = document.querySelector(step.clickTarget);
+        targetElement?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }
+
       setHighlightRect(null);
       setTooltipPosition({});
       setWaitingForAction(false);
       setTimeout(() => {
         const nextStep = currentStep + 1;
         setCurrentStep(nextStep);
-        onStepChange?.(nextStep); // Add this
+        onStepChange?.(nextStep);
       }, 100);
     } else {
       handleClose();
@@ -403,8 +410,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             }}
           />
           
-          {/* Interactive click area - only render for interactive steps */}
-          {steps[currentStep]?.interactive && (
+          {/* Interactive click area - only render when NO specific clickTarget */}
+          {steps[currentStep]?.interactive && !steps[currentStep]?.clickTarget && (
             <div
               className="absolute cursor-pointer z-[10000]"
               style={{

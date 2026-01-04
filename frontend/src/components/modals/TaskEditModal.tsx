@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { X, Calendar, Flag, AlignLeft, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Task, TaskFormData, TaskPriority } from '../../types/task';
-import { PRIORITY_CONFIG } from '../../types/task';
 
 interface TaskEditModalProps {
   task?: Task | null;
@@ -93,6 +92,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
     >
       <div
         className="rounded-2xl w-full max-w-md"
+        data-tutorial="task-edit-modal"
         style={{
           backgroundColor: 'rgba(253, 253, 248, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -110,6 +110,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
           </h2>
           <button
             onClick={onClose}
+            data-tutorial="task-modal-close"
             className="p-2 rounded-lg transition-colors hover:bg-gray-100"
           >
             <X className="w-5 h-5" style={{ color: '#552A01' }} />
@@ -252,6 +253,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
               </button>
               <button
                 type="submit"
+                data-tutorial="task-create-button"
                 className="px-6 py-2 rounded-lg transition-all hover:scale-105 font-medium"
                 style={{
                   backgroundColor: '#1D362D',
