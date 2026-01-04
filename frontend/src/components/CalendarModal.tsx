@@ -100,6 +100,26 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
     ];
   });
 
+  // Scroll to current month on initial render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const el = calendarRef.current;
+      if (!el) return;
+
+      const monthSections = el.querySelectorAll('.month-section');
+      const currentMonthSection = monthSections[1] as HTMLElement; // Index 1 is the current month
+
+      if (currentMonthSection) {
+        el.scrollTo({
+          top: currentMonthSection.offsetTop - 320,
+          behavior: 'auto' // Use 'auto' for instant scroll on mount
+        });
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, []); // Only run once on mount
+
   // Calculate statistics for current month
   const monthStats = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);

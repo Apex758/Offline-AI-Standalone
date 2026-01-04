@@ -412,8 +412,8 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>
 
-          {/* OECS Authentication Key Section */}
-          <Card className="mb-6" data-tutorial="settings-api">
+          {/* OECS Authentication Key Section - Hidden */}
+          {false && <Card className="mb-6" data-tutorial="settings-api">
             <CardHeader>
               <CardTitle>OECS Authentication Key (OAK)</CardTitle>
               <CardDescription>Used for app updates and accessing new models</CardDescription>
@@ -436,7 +436,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 </button>
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* Tutorial Management Section */}
           <Card className="mb-6" data-tutorial="settings-tutorials">

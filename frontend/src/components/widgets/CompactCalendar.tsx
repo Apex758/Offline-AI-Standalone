@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   format,
   startOfMonth,
@@ -33,7 +33,7 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
   selectedDate,
   onExpandClick
 }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(selectedDate);
 
   const monthDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -42,6 +42,13 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
     const endDate = endOfWeek(monthEnd);
     return eachDayOfInterval({ start: startDate, end: endDate });
   }, [currentMonth]);
+
+  // Sync month view when selectedDate changes
+  useEffect(() => {
+    if (!isSameMonth(currentMonth, selectedDate)) {
+      setCurrentMonth(selectedDate);
+    }
+  }, [selectedDate]);
 
   const getActivityIndicator = (date: Date) => {
     const dateKey = format(date, 'yyyy-MM-dd');
