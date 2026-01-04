@@ -533,28 +533,27 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  // Update saveLessonPlan to use parsed lesson if available
   const saveLessonPlan = async () => {
-    const contentToSave = parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan;
-    if (!contentToSave) {
+    if (!generatedPlan && !parsedLesson) {
       alert('No lesson plan to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
+      // Build a proper title with fallbacks
+      const title = formData.topic?.trim()
+        ? `${formData.subject || 'General'} - ${formData.topic} (Grade ${formData.gradeLevel || 'Unknown'})`
+        : `Lesson Plan - ${formData.subject || 'General'} (Grade ${formData.gradeLevel || 'Unknown'})`;
+      
       const planData = {
         id: currentPlanId || `plan_${Date.now()}`,
-        title: `${formData.subject} - ${formData.topic} (Grade ${formData.gradeLevel})`,
+        title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave,
+        generatedPlan: generatedPlan,  // ✅ Save original clean text
         parsedLesson: parsedLesson || undefined
       };
-
-      if (!currentPlanId) {
-        setCurrentPlanId(planData.id);
-      }
 
       await axios.post('http://localhost:8000/api/lesson-plan-history', planData);
       await loadLessonPlanHistories();

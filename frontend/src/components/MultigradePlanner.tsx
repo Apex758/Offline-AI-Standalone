@@ -614,20 +614,24 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   const savePlan = async () => {
-    const contentToSave = parsedPlan ? multigradePlanToDisplayText(parsedPlan) : generatedPlan;
-    if (!contentToSave) {
+    if (!generatedPlan && !parsedPlan) {
       alert('No plan to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
+      // Build a proper title with fallbacks
+      const title = formData.topic?.trim()
+        ? `${formData.subject || 'General'} - ${formData.topic} (${formData.gradeRange || 'All Grades'})`
+        : `Multigrade Plan - ${formData.subject || 'General'} (${formData.gradeRange || 'All Grades'})`;
+      
       const planData = {
         id: currentPlanId || `multigrade_${Date.now()}`,
-        title: `${formData.subject} - ${formData.topic} (${formData.gradeRange})`,
+        title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave,
+        generatedPlan: generatedPlan,  // ✅ Save original clean text
         parsedPlan: parsedPlan || undefined
       };
 
@@ -816,7 +820,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <button
                         onClick={() => {
                           setGeneratedPlan('');
-                          setStreamingPlan('');
+                          clearStreaming(tabId, ENDPOINT);
                           setParsedPlan(null);
                           setIsEditing(false);
                         }}

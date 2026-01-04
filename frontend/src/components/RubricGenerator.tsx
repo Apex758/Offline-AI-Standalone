@@ -616,20 +616,24 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   const saveRubric = async () => {
-    const contentToSave = parsedRubric ? rubricToDisplayText(parsedRubric) : generatedRubric;
-    if (!contentToSave) {
+    if (!generatedRubric && !parsedRubric) {
       alert('No rubric to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
+      // Build a proper title with fallbacks
+      const title = formData.assignmentTitle?.trim() 
+        ? `${formData.assignmentTitle} - ${formData.subject || 'General'} (${formData.gradeLevel || 'All Grades'})`
+        : `Rubric - ${formData.subject || 'General'} (${formData.gradeLevel || 'All Grades'})`;
+      
       const rubricData = {
         id: currentRubricId || `rubric_${Date.now()}`,
-        title: `${formData.assignmentTitle} - ${formData.subject} (${formData.gradeLevel})`,
+        title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedRubric: contentToSave,
+        generatedRubric: generatedRubric,
         parsedRubric: parsedRubric || undefined
       };
 
@@ -723,8 +727,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   const validateForm = () => {
-    return formData.assignmentTitle && formData.assignmentType && formData.subject && 
-           formData.gradeLevel && formData.learningObjectives;
+    return formData.assignmentTitle && 
+           formData.assignmentType && 
+           formData.subject && 
+           formData.gradeLevel && 
+           formData.learningObjectives &&
+           formData.focusAreas.length > 0;
   };
 
   return (
@@ -808,7 +816,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       <button
                         onClick={() => {
                           setGeneratedRubric('');
-                          setStreamingRubric('');
+                          clearStreaming(tabId, ENDPOINT);
                           setParsedRubric(null);
                           setIsEditing(false);
                         }}
@@ -1061,8 +1069,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Focus Areas (Optional)
+                    Focus Areas <span className="text-red-500">*</span>
                   </label>
+                  <p className="text-xs text-gray-500 mb-2">Select at least one focus area for your rubric criteria</p>
                   <div className="grid grid-cols-2 gap-2">
                     {focusAreasOptions.map(area => (
                       <label key={area} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">

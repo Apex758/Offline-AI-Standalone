@@ -681,20 +681,24 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   };
 
   const savePlan = async () => {
-    const contentToSave = parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan;
-    if (!contentToSave) {
+    if (!generatedPlan && !parsedPlan) {
       alert('No plan to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
+      // Build a proper title with fallbacks
+      const title = formData.lessonTitle?.trim()
+        ? `${formData.lessonTitle} - ${formData.primarySubject || 'General'} (${formData.gradeLevel || 'All Grades'})`
+        : `Cross-Curricular Plan - ${formData.primarySubject || 'General'} (${formData.gradeLevel || 'All Grades'})`;
+      
       const planData = {
         id: currentPlanId || `cross_curricular_${Date.now()}`,
-        title: `${formData.lessonTitle} - ${formData.primarySubject} (${formData.gradeLevel})`,
+        title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave,
+        generatedPlan: generatedPlan,  // ✅ Save original clean text
         parsedPlan: parsedPlan || undefined
       };
 
@@ -889,7 +893,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                       <button
                         onClick={() => {
                           setGeneratedPlan('');
-                          setStreamingPlan('');
+                          clearStreaming(tabId, ENDPOINT);
                           setParsedPlan(null);
                           setIsEditing(false);
                         }}

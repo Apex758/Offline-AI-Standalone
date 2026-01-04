@@ -560,20 +560,24 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   const savePlan = async () => {
-    const contentToSave = parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan;
-    if (!contentToSave) {
+    if (!generatedPlan && !parsedPlan) {
       alert('No plan to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
+      // Build a proper title with fallbacks
+      const title = formData.lessonTopic?.trim()
+        ? `${formData.lessonTopic} - ${formData.curriculumUnit || 'General'} (${formData.ageGroup || 'All Ages'})`
+        : `Kindergarten Plan - ${formData.curriculumUnit || 'General'} (${formData.ageGroup || 'All Ages'})`;
+      
       const planData = {
         id: currentPlanId || `kindergarten_${Date.now()}`,
-        title: `${formData.lessonTopic} - ${formData.curriculumUnit} (${formData.ageGroup})`,
+        title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: contentToSave,
+        generatedPlan: generatedPlan,  // ✅ Save original clean text
         parsedPlan: parsedPlan || undefined
       };
 
@@ -795,7 +799,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       <button
                         onClick={() => {
                           setGeneratedPlan('');
-                          setStreamingPlan('');
+                          clearStreaming(tabId, ENDPOINT); 
                           setParsedPlan(null);
                           setIsEditing(false);
                         }}

@@ -287,26 +287,26 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const saveQuiz = async () => {
-    const contentToSave = parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz;
-    if (!contentToSave) {
+    if (!generatedQuiz && !parsedQuiz) {
       alert('No quiz to save');
       return;
     }
 
     setSaveStatus('saving');
     try {
+      // Build a proper title with fallbacks
+      const title = formData.subject?.trim()
+        ? `${formData.subject} Quiz - Grade ${formData.gradeLevel || 'Unknown'} (${formData.numberOfQuestions || '10'} questions)`
+        : `Quiz - Grade ${formData.gradeLevel || 'Unknown'} (${formData.numberOfQuestions || '10'} questions)`;
+      
       const quizData = {
         id: currentQuizId || `quiz_${Date.now()}`,
-        title: `${formData.subject} Quiz - Grade ${formData.gradeLevel} (${formData.numberOfQuestions} questions)`,
+        title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedQuiz: contentToSave,
+        generatedQuiz: generatedQuiz,  // ✅ Save original clean text
         parsedQuiz: parsedQuiz || undefined
       };
-
-      if (!currentQuizId) {
-        setCurrentQuizId(quizData.id);
-      }
 
       await axios.post('http://localhost:8000/api/quiz-history', quizData);
       await loadQuizHistories();

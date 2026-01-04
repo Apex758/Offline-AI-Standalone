@@ -6,6 +6,14 @@ interface RubricFormData {
   includePointValues: boolean;
 }
 
+// Map number of levels to standard descriptive names
+const PERFORMANCE_LEVEL_NAMES: { [key: string]: string[] } = {
+  '3': ['Excellent', 'Proficient', 'Beginning'],
+  '4': ['Excellent', 'Proficient', 'Developing', 'Beginning'],
+  '5': ['Excellent', 'Proficient', 'Developing', 'Emerging', 'Beginning'],
+  '6': ['Advanced', 'Excellent', 'Proficient', 'Developing', 'Emerging', 'Beginning']
+};
+
 // Grade-specific rubric specifications (optimized - only 3 critical specs)
 const GRADE_SPECS = {
   'K': {
@@ -70,54 +78,55 @@ export function buildRubricPrompt(formData: RubricFormData): string {
   const gradeKey = normalizeGradeLevel(formData.gradeLevel);
   const gradeSpec = GRADE_SPECS[gradeKey];
   
-  // Parse performance levels
-  const levels = formData.performanceLevels.split(',').map(l => l.trim());
+  // Get descriptive performance level names based on count
+  const levelCount = formData.performanceLevels || '4';
+  const levels = PERFORMANCE_LEVEL_NAMES[levelCount] || PERFORMANCE_LEVEL_NAMES['4'];
   
   // Build example table header
   const tableHeader = `| Criteria | ${levels.join(' | ')} |`;
   const tableSeparator = `| --- | ${levels.map(() => '---').join(' | ')} |`;
   
-  const prompt = `Create an assessment rubric for Grade ${formData.gradeLevel} students following this criteria:
+  const prompt = `Create an assessment rubric for ${formData.gradeLevel} students.
 
-ASSIGNMENT: ${formData.assignmentType}
-SUBJECT: ${formData.subject}
-PERFORMANCE LEVELS: ${formData.performanceLevels}
-${formData.includePointValues ? 'INCLUDE POINT VALUES: Yes' : 'INCLUDE POINT VALUES: No'}
+ASSIGNMENT DETAILS:
+- Title: ${formData.assignmentTitle}
+- Type: ${formData.assignmentType}
+- Subject: ${formData.subject}
+- Learning Objectives: ${formData.learningObjectives}
+${formData.specificRequirements ? `- Requirements: ${formData.specificRequirements}` : ''}
+${formData.focusAreas.length > 0 ? `- Focus Areas: ${formData.focusAreas.join(', ')}` : ''}
 
-GRADE LEVEL REQUIREMENTS:
-- Criteria Count: ${gradeSpec.criteriaCount}
-- Performance Descriptors: ${gradeSpec.performanceDescriptors}
-${formData.includePointValues ? `- Point System: ${gradeSpec.pointSystem}` : ''}
+RUBRIC REQUIREMENTS:
+- Number of Criteria: ${gradeSpec.criteriaCount}
+- Performance Levels: ${levels.join(', ')}
+- Descriptors: ${gradeSpec.performanceDescriptors}
+${formData.includePointValues ? `- Point System: ${gradeSpec.pointSystem}\n- Points decrease from left (highest) to right (lowest)` : '- Do NOT include point values'}
 
-**CRITICAL: OUTPUT FORMAT**
+**CRITICAL OUTPUT FORMAT - FOLLOW EXACTLY:**
 
-You MUST create a markdown table using the pipe character (|). This format is REQUIRED and NON-NEGOTIABLE.
-- Do not include any introductory text, headers, or explanations before the rubric. Start directly with the rubric content.
+1. Start with a title line: "**${formData.assignmentTitle} - Assessment Rubric**"
 
-Example table structure:
+2. Then create a clean markdown table with this EXACT structure:
 ${tableHeader}
 ${tableSeparator}
-| [Criterion Name]${formData.includePointValues ? ' (X pts)' : ''} | [descriptor] | [descriptor] | [descriptor] | ${levels.length > 3 ? '[descriptor] |' : ''}
 
-RUBRIC STRUCTURE:
+3. For each criterion row:
+   - First column: Criterion name ONLY (no points)
+   - Each following column: Clear descriptor${formData.includePointValues ? ' with point value in parentheses at the END (e.g., "Description here (25 pts)")' : ''}
+   - Descriptors MUST show clear progression from ${levels[0]} (highest) to ${levels[levels.length - 1]} (lowest)
+   ${formData.includePointValues ? `- Point values MUST decrease from left to right (e.g., 25 pts, 20 pts, 15 pts, 10 pts)` : ''}
 
-1. **Title and Overview**
-   - Assignment title and brief description
-   - Grade level: ${formData.gradeLevel}, Subject: ${formData.subject}
+4. After the table, add a "**Scoring Summary**" section:
+${formData.includePointValues ? `   - Total possible points (sum of highest points per criterion)
+   - Grading scale with letter grades` : `   - Overall success criteria`}
 
-2. **Criteria Table** (${gradeSpec.criteriaCount})
-   Create a markdown table with ${levels.length} performance levels: ${levels.join(', ')}
-   
-   For each criterion row:
-   - First column: Criterion name${formData.includePointValues ? ' with points (e.g., "Organization (5 pts)")' : ''}
-   - Following columns: Clear performance descriptor for each level
-   - Descriptors must show clear progression from lowest to highest
-   ${formData.includePointValues ? `- Point values follow ${gradeSpec.pointSystem}` : ''}
+**EXAMPLE TABLE ROW (${formData.includePointValues ? 'WITH' : 'WITHOUT'} POINTS):**
+${formData.includePointValues 
+  ? '| Content Knowledge | Demonstrates comprehensive understanding of all key concepts with accurate details (25 pts) | Demonstrates good understanding of most key concepts with minor gaps (20 pts) | Shows basic understanding but with some misconceptions or gaps (15 pts) | Shows limited understanding with significant gaps or misconceptions (10 pts) |'
+  : '| Content Knowledge | Demonstrates comprehensive understanding of all key concepts with accurate details | Demonstrates good understanding of most key concepts with minor gaps | Shows basic understanding but with some misconceptions or gaps | Shows limited understanding with significant gaps or misconceptions |'
+}
 
-3. **Scoring Summary**
-   ${formData.includePointValues ? '- Total points possible\n   - Grading scale (optional)' : '- Success criteria for the assignment'}
-
-Generate the complete rubric using the markdown table format described above:`;
+Generate the complete rubric now. Start directly with the title - no preamble or explanation.`;
 
   return prompt;
 }
