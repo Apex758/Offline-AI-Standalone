@@ -454,7 +454,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
             {/* Recent Activity Timeline */}
             <div data-tutorial="analytics-recent-activity">
-              <RecentActivityTimeline activities={activityFeed} limit={7} />
+              <RecentActivityTimeline activities={activityFeed} limit={5} />
             </div>
           </div>
 

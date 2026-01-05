@@ -66,7 +66,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   return (
     <div className="relative" data-tutorial="analytics-chart-carousel">
       {/* Chart Container */}
-      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display" style={{ height: '400px' }}>
+      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display" style={{ height: '450px' }}>
         {/* Trend Chart View */}
         <div
           className={`transition-all duration-500 h-full ${
