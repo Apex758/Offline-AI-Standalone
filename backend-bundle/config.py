@@ -146,7 +146,6 @@ if INFERENCE_BACKEND == "gemma_api":
         print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'gemma_api' but GEMMA_API_KEY not set!", flush=True)
         
         
-
 # ============================================================================
 # INFERENCE BACKEND CONFIGURATION
 # ============================================================================

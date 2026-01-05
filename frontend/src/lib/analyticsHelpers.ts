@@ -17,6 +17,9 @@ export function getDateRange(timeframe: Timeframe): { start: Date; end: Date } {
     case '2weeks':
       start = subWeeks(end, 2);
       break;
+    case '4weeks':
+      start = subWeeks(end, 4);
+      break;
     case 'month':
       start = startOfMonth(end);
       break;

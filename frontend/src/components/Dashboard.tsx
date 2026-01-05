@@ -1163,6 +1163,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
                 style={{
+                 
                   backgroundColor: 'transparent',
                   transition: 'background-color 0.2s'
                 }}
@@ -1420,6 +1421,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition text-red-400 hover:text-red-300`}
             title={!sidebarOpen ? 'Logout' : ''}
             style={{
+              display: 'none',
               backgroundColor: 'transparent',
               transition: 'background-color 0.2s'
             }}

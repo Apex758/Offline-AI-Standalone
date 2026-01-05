@@ -25,6 +25,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   const timeframeButtons: { value: Timeframe; label: string }[] = [
     { value: 'week', label: '1 Week' },
     { value: '2weeks', label: '2 Weeks' },
+    { value: '4weeks', label: '4 Weeks' },
     { value: 'month', label: 'Month' },
     { value: 'all', label: 'All Time' }
   ];
