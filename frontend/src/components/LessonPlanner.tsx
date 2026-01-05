@@ -243,15 +243,45 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
   // Start with defaults - will be restored from localStorage
   const [formData, setFormData] = useState<FormData>(() => {
-    const saved = savedData?.formData;
-    if (saved && typeof saved === 'object' && saved.topic?.trim()) {
-      return saved;
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.formData && typeof parsed.formData === 'object') {
+          return parsed.formData;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore formData:', e);
     }
     return getDefaultFormData();
   });
 
-  const [generatedPlan, setGeneratedPlan] = useState<string>('');
-  const [step, setStep] = useState<number>(1);
+  const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.generatedPlan || '';
+      }
+    } catch (e) {
+      console.error('Failed to restore plan:', e);
+    }
+    return '';
+  });
+  
+  const [step, setStep] = useState<number>(() => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.step || 1;
+      }
+    } catch (e) {
+      console.error('Failed to restore step:', e);
+    }
+    return 1;
+  });
 
   // ✅ ADDED: Restore state from localStorage when switching tabs
   useEffect(() => {
@@ -372,40 +402,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setShowTutorial(false);
   };
 
-
-  // Restore state from localStorage on tab change
-  useEffect(() => {
-    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
-
-    if (savedState) {
-      try {
-        const parsed = JSON.parse(savedState);
-        setFormData(parsed.formData || getDefaultFormData());
-        setGeneratedPlan(parsed.generatedPlan || '');
-        setParsedLesson(parsed.parsedLesson || null);
-        setCurrentPlanId(parsed.currentPlanId || null);
-        setStep(parsed.step || 1);
-        setCurriculumReferences(parsed.curriculumReferences || []);
-      } catch (e) {
-        console.error('Failed to parse saved state:', e);
-        // Reset to defaults on parse error
-        setFormData(getDefaultFormData());
-        setGeneratedPlan('');
-        setParsedLesson(null);
-        setCurrentPlanId(null);
-        setStep(1);
-        setCurriculumReferences([]);
-      }
-    } else {
-      // No saved state - use defaults
-      setFormData(getDefaultFormData());
-      setGeneratedPlan('');
-      setParsedLesson(null);
-      setCurrentPlanId(null);
-      setStep(1);
-      setCurriculumReferences([]);
-    }
-  }, [tabId]);
 
   const subjects = [
     'Mathematics',
@@ -568,7 +564,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
 
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-    setStep(2);
     setCurriculumReferences(curriculumMatches);
 
     const prompt = buildLessonPrompt(formData, curriculumMatches);
