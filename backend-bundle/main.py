@@ -1861,8 +1861,11 @@ async def export_data(
     """
     Export endpoint for various data types and formats.
     """
+    logger.info(f"Export request: data_type={data_type}, format={format}, title={title}")
+
     # Validate data_type
     if data_type not in EXPORT_TYPE_FORMATS:
+        logger.error(f"Invalid data_type: {data_type}")
         return JSONResponse(
             status_code=400,
             content={"error": f"Invalid data_type '{data_type}'. Allowed: {list(EXPORT_TYPE_FORMATS.keys())}"}
@@ -1870,6 +1873,7 @@ async def export_data(
     # Validate format
     allowed_formats = EXPORT_TYPE_FORMATS[data_type]
     if format not in allowed_formats:
+        logger.error(f"Format '{format}' not allowed for data_type '{data_type}'")
         return JSONResponse(
             status_code=400,
             content={"error": f"Format '{format}' not allowed for data_type '{data_type}'. Allowed: {sorted(allowed_formats)}"}
@@ -1877,14 +1881,18 @@ async def export_data(
     # Validate formatter
     formatter = EXPORT_FORMATTERS.get(format)
     if not formatter:
+        logger.error(f"Export format '{format}' is not supported")
         return JSONResponse(
             status_code=400,
             content={"error": f"Export format '{format}' is not supported."}
         )
     # Export
     try:
+        logger.info(f"Starting export with formatter: {format}")
         exported_bytes = formatter(data, title=title)
+        logger.info(f"Export successful, size: {len(exported_bytes)} bytes")
     except Exception as e:
+        logger.error(f"Export failed: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=500,
             content={"error": f"Export failed: {str(e)}"}
@@ -1893,6 +1901,7 @@ async def export_data(
     ext = "md" if format == "markdown" else format
     filename = f"{data_type}_{title.replace(' ', '_')}.{ext}"
     content_type = CONTENT_TYPES.get(format, "application/octet-stream")
+    logger.info(f"Sending response: filename={filename}, content_type={content_type}")
     return StreamingResponse(
         io.BytesIO(exported_bytes),
         media_type=content_type,

@@ -138,6 +138,11 @@ async function startBackend() {
       const gtkBinPath = path.join(process.resourcesPath, 'backend-bundle', 'bin');
       env.PATH = `${gtkBinPath};${env.PATH}`;
       log.info(`Prepended GTK bin to PATH: ${gtkBinPath}`);
+
+      // Set FONTCONFIG_PATH for WeasyPrint fonts
+      const fontsPath = path.join(process.resourcesPath, 'backend-bundle', 'etc', 'fonts');
+      env.FONTCONFIG_PATH = fontsPath;
+      log.info(`Set FONTCONFIG_PATH environment variable: ${fontsPath}`);
     }
     
     // Use the startup script in production

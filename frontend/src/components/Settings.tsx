@@ -591,8 +591,7 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>}
 
-          {/* Theme Section - Commented Out */}
-          {/*
+          {/* Theme Section */}
           <Card className="mb-6" data-tutorial="settings-appearance">
             <CardHeader>
               <CardTitle>Theme</CardTitle>
@@ -636,7 +635,6 @@ const Settings: React.FC<SettingsProps> = () => {
               </div>
             </CardContent>
           </Card>
-          */}
 
           {/* Sidebar Color Section */}
           <Card className="mb-6">
