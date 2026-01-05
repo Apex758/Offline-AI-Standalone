@@ -1163,7 +1163,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
                 style={{
-                 T
                   backgroundColor: 'transparent',
                   transition: 'background-color 0.2s'
                 }}
