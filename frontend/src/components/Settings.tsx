@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, Play, FolderOpen, RefreshCw } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -490,43 +490,6 @@ const Settings: React.FC<SettingsProps> = () => {
                   />
                 </label>
 
-                {/* Tutorial list */}
-                <div className="mt-6">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Available Tutorials</h4>
-                  <div className="space-y-2">
-                    {Object.values(tutorials).map((tutorial) => {
-                      const isCompleted = isTutorialCompleted(tutorial.id);
-                      return (
-                        <div key={tutorial.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-gray-300">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-700">{tutorial.name}</p>
-                            <p className="text-xs text-gray-500">{tutorial.description}</p>
-                            {isCompleted && (
-                              <span className="text-xs text-green-600 mt-1 inline-block">✓ Completed</span>
-                            )}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              // Remove from completed list to allow replay
-                              updateSettings({
-                                tutorials: {
-                                  ...settings.tutorials,
-                                  completedTutorials: settings.tutorials.completedTutorials.filter(id => id !== tutorial.id)
-                                }
-                              });
-                            }}
-                            className="ml-3"
-                          >
-                            <Play className="w-3 h-3 mr-1" />
-                            Replay
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
 
                 {/* Reset all tutorials button */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
