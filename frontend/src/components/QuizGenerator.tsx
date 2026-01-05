@@ -47,6 +47,12 @@ const formatQuizText = (text: string, accentColor: string) => {
     cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
   }
 
+  // Remove introductory sentences like "Here are the X questions for the..."
+  cleanText = cleanText.replace(/^Here are (?:the )?\d+ questions? for (?:the )?.*?:\s*/i, '');
+  cleanText = cleanText.replace(/^Below (?:is|are) (?:the )?\d+ questions? for (?:the )?.*?:\s*/i, '');
+  cleanText = cleanText.replace(/^Here (?:is|are) (?:the )?\d+ questions? for (?:the )?.*?:\s*/i, '');
+  cleanText = cleanText.replace(/^The following (?:is|are|questions? )?.*?:\s*/i, '');
+
   const lines = cleanText.split('\n');
   const elements: JSX.Element[] = [];
   let currentIndex = 0;

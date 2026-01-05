@@ -150,7 +150,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
       </div>
 
       {/* Task List - Scrollable */}
-      <div className="overflow-y-auto p-4 space-y-4" data-tutorial="analytics-task-list" style={{ maxHeight: '450px' }}>
+      <div className="overflow-y-auto p-4 space-y-4" data-tutorial="analytics-task-list" style={{ maxHeight: '500px' }}>
         {!hasAnyTasks ? (
           <div className="text-center py-12">
             <Flag className="w-12 h-12 mx-auto mb-3" style={{ color: '#E8EAE3' }} />

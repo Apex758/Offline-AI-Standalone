@@ -10,7 +10,7 @@ interface RecentActivityTimelineProps {
 
 const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
   activities,
-  limit = 7
+  limit = 4
 }) => {
   const getActivityIcon = (activity: Activity) => {
     switch (activity.type) {
