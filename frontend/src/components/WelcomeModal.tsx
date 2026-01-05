@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X, Sparkles } from 'lucide-react';
 
 interface WelcomeModalProps {
@@ -7,15 +7,6 @@ interface WelcomeModalProps {
 }
 
 export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => {
-  const [dontShowAgain, setDontShowAgain] = useState(false);
-
-  const handleStartTour = () => {
-    onStartTour();
-    if (dontShowAgain) {
-      onClose();
-    }
-  };
-
   const handleSkip = () => {
     onClose();
   };
@@ -43,28 +34,25 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
         </button>
 
         {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
-          <div className="flex items-center justify-center mb-4">
-            <Sparkles className="w-12 h-12" />
-          </div>
-          <h1 className="text-3xl font-bold text-center mb-2">
-            Welcome to PEARL AI! 🎓
+        <div className="p-10 text-white" style={{ backgroundColor: '#1D362D' }}>
+          <h1 className="text-3xl font-bold text-center mb-3" style={{ color: '#F8E59D' }}>
+            Welcome to the OECS Learning Hub! 🎓
           </h1>
-          <p className="text-blue-100 text-center text-lg">
-            Your AI-Powered Educational Assistant
+          <p className="text-center text-lg" style={{ color: '#F2A631' }}>
+            Your Educational Assistant
           </p>
         </div>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-8" style={{ backgroundColor: '#FDFDF8' }}>
           <div className="space-y-4 mb-8">
-            <p className="text-gray-700 text-lg leading-relaxed">
-              PEARL AI is designed to help teachers create engaging lesson plans, quizzes, rubrics, and more - all tailored to the OECS curriculum.
+            <p className="text-lg leading-relaxed" style={{ color: '#020D03' }}>
+              The OECS Learning Hub is designed to help teachers create engaging lesson plans, quizzes, rubrics, and more - all tailored to the OECS curriculum.
             </p>
-            
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">Key Features:</h3>
-              <ul className="space-y-2 text-blue-800">
+
+            <div className="rounded-lg p-4" style={{ backgroundColor: '#F8E59D', border: '1px solid #E8EAE3' }}>
+              <h3 className="font-semibold mb-2" style={{ color: '#1D362D' }}>Key Features:</h3>
+              <ul className="space-y-2" style={{ color: '#552A01' }}>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
                   <span>AI-powered lesson planning for multiple grade levels</span>
@@ -84,40 +72,24 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
               </ul>
             </div>
 
-            <p className="text-gray-600 text-center italic">
-              Take a quick tour to learn how to use all the features, or explore on your own!
+            <p className="text-center italic" style={{ color: '#552A01' }}>
+              Click the tutorial button in the bottom-right corner to learn how to use all the features!
             </p>
           </div>
 
-          {/* Optional checkbox */}
-          <div className="mb-6">
-            <label className="flex items-center justify-center cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={dontShowAgain}
-                onChange={(e) => setDontShowAgain(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-              />
-              <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-800">
-                Don't show this welcome message again
-              </span>
-            </label>
-          </div>
 
           {/* Action buttons */}
-          <div className="flex gap-4 justify-center">
+          <div className="flex justify-center">
             <button
               onClick={handleSkip}
-              className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+              className="px-6 py-3 rounded-lg font-medium transition-all hover:scale-105"
+              style={{
+                backgroundColor: '#1D362D',
+                color: '#F8E59D',
+                boxShadow: '0 4px 12px rgba(29, 54, 45, 0.2)'
+              }}
             >
-              I'll Explore on My Own
-            </button>
-            <button
-              onClick={handleStartTour}
-              className="px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl flex items-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              Take the Tour
+              Get Started
             </button>
           </div>
         </div>
