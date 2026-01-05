@@ -376,7 +376,13 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(null);
+  const [parsedPlan, setParsedPlan] = useState<ParsedKindergartenPlan | null>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
+      return savedData.parsedPlan;
+    }
+    return null;
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   // (Removed manual refs for initialization tracking)

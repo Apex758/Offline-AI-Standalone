@@ -150,7 +150,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(null);
+  const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.parsedQuiz && typeof savedData.parsedQuiz === 'object') {
+      return savedData.parsedQuiz;
+    }
+    return null;
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
 

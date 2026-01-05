@@ -212,7 +212,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedLesson, setParsedLesson] = useState<ParsedLesson | null>(null);
+  const [parsedLesson, setParsedLesson] = useState<ParsedLesson | null>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.parsedLesson && typeof savedData.parsedLesson === 'object') {
+      return savedData.parsedLesson;
+    }
+    return null;
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumReference[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
@@ -241,8 +247,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     referenceUrl: ''
   });
 
-  // Start with defaults - will be restored from localStorage
+  // Start with defaults - will be restored from localStorage or savedData
   const [formData, setFormData] = useState<FormData>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.formData && typeof savedData.formData === 'object') {
+      return savedData.formData;
+    }
+    // Then check localStorage
     try {
       const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedState) {
@@ -258,6 +269,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   });
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.generatedPlan && typeof savedData.generatedPlan === 'string') {
+      return savedData.generatedPlan;
+    }
+    // Then check localStorage
     try {
       const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedState) {

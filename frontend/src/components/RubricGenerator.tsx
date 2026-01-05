@@ -443,7 +443,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedRubric, setParsedRubric] = useState<ParsedRubric | null>(null);
+  const [parsedRubric, setParsedRubric] = useState<ParsedRubric | null>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.parsedRubric && typeof savedData.parsedRubric === 'object') {
+      return savedData.parsedRubric;
+    }
+    return null;
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
 

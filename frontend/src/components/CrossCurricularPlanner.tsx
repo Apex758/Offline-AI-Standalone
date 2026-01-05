@@ -478,7 +478,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedPlan, setParsedPlan] = useState<ParsedCrossCurricularPlan | null>(null);
+  const [parsedPlan, setParsedPlan] = useState<ParsedCrossCurricularPlan | null>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
+      return savedData.parsedPlan;
+    }
+    return null;
+  });
 
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
@@ -513,10 +519,22 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     crossCurricularConnections: ''
   });
 
-  // Start with defaults - will be restored from localStorage
+  // Start with defaults - will be restored from localStorage or savedData
   const [step, setStep] = useState<number>(1);
-  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
-  const [generatedPlan, setGeneratedPlan] = useState<string>('');
+  const [formData, setFormData] = useState<FormData>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.formData && typeof savedData.formData === 'object') {
+      return savedData.formData;
+    }
+    return getDefaultFormData();
+  });
+  const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.generatedPlan && typeof savedData.generatedPlan === 'string') {
+      return savedData.generatedPlan;
+    }
+    return '';
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   // Try to parse plan when generated (for restored/loaded plans)

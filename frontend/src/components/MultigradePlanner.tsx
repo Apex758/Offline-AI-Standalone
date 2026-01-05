@@ -415,7 +415,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedPlan, setParsedPlan] = useState<ParsedMultigradePlan | null>(null);
+  const [parsedPlan, setParsedPlan] = useState<ParsedMultigradePlan | null>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
+      return savedData.parsedPlan;
+    }
+    return null;
+  });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   // Helper function to get default empty form data
@@ -440,9 +446,21 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     differentiationNotes: ''
   });
 
-  // Start with defaults - will be restored from localStorage
-  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
-  const [generatedPlan, setGeneratedPlan] = useState<string>('');
+  // Start with defaults - will be restored from localStorage or savedData
+  const [formData, setFormData] = useState<FormData>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.formData && typeof savedData.formData === 'object') {
+      return savedData.formData;
+    }
+    return getDefaultFormData();
+  });
+  const [generatedPlan, setGeneratedPlan] = useState<string>(() => {
+    // First check savedData (for resource manager view/edit)
+    if (savedData?.generatedPlan && typeof savedData.generatedPlan === 'string') {
+      return savedData.generatedPlan;
+    }
+    return '';
+  });
 
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {
