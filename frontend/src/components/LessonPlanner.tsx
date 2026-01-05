@@ -242,9 +242,63 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   });
 
   // Start with defaults - will be restored from localStorage
-  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
+  const [formData, setFormData] = useState<FormData>(() => {
+    const saved = savedData?.formData;
+    if (saved && typeof saved === 'object' && saved.topic?.trim()) {
+      return saved;
+    }
+    return getDefaultFormData();
+  });
+
   const [generatedPlan, setGeneratedPlan] = useState<string>('');
   const [step, setStep] = useState<number>(1);
+
+  // ✅ ADDED: Restore state from localStorage when switching tabs
+  useEffect(() => {
+    const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedPlan(parsed.generatedPlan || '');
+        setParsedLesson(parsed.parsedLesson || null);
+        setCurrentPlanId(parsed.currentPlanId || null);
+        setIsEditing(parsed.isEditing || false);
+        setCurriculumReferences(parsed.curriculumReferences || []);
+        setLocalLoadingMap(parsed.localLoadingMap || {});
+        setStep(parsed.step || 1);  // ✅ RESTORE STEP STATE
+        console.log('[LessonPlanner] State restored from localStorage for tab:', tabId);
+      } catch (e) {
+        console.error('[LessonPlanner] Failed to restore state:', e);
+        setFormData(getDefaultFormData());
+        setGeneratedPlan('');
+        setParsedLesson(null);
+        setCurrentPlanId(null);
+        setIsEditing(false);
+        setCurriculumReferences([]);
+        setLocalLoadingMap({});
+        setStep(1);
+      }
+    }
+  }, [tabId]);
+
+  // ✅ ADDED: Save state to localStorage whenever it changes
+  useEffect(() => {
+    const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
+    const stateToSave = {
+      formData,
+      generatedPlan,
+      parsedLesson,
+      currentPlanId,
+      isEditing,
+      curriculumReferences,
+      localLoadingMap,
+      step  // ✅ SAVE STEP STATE
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [tabId, formData, generatedPlan, parsedLesson, currentPlanId, isEditing, curriculumReferences, localLoadingMap, step]);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
   useEffect(() => {
@@ -498,7 +552,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       const parsed = parseLessonFromAI(streamingPlan, formData, curriculumReferences);
       if (parsed) setParsedLesson(parsed);
       clearStreaming(tabId, ENDPOINT);
-      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId];
+        return newMap;
+      });
     }
   }, [streamingPlan, curriculumReferences]);
 
@@ -510,6 +568,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
 
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
+    setStep(2);
     setCurriculumReferences(curriculumMatches);
 
     const prompt = buildLessonPrompt(formData, curriculumMatches);

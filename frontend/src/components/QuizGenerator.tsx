@@ -216,7 +216,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // ✅ FIXED: Handle tab switches without losing state
   useEffect(() => {
     const LOCAL_STORAGE_KEY = `quiz_state_${tabId}`;
     const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -227,18 +226,24 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setGeneratedQuiz(parsed.generatedQuiz || '');
         setParsedQuiz(parsed.parsedQuiz || null);
         setCurrentQuizId(parsed.currentQuizId || null);
+        setIsEditing(parsed.isEditing || false);
+        setLocalLoadingMap(parsed.localLoadingMap || {});  // ✅ RESTORE LOADING STATE
       } catch (e) {
         console.error('Failed to parse saved state:', e);
         setFormData(getDefaultFormData());
         setGeneratedQuiz('');
         setParsedQuiz(null);
         setCurrentQuizId(null);
+        setIsEditing(false);
+        setLocalLoadingMap({});
       }
     } else {
       setFormData(getDefaultFormData());
       setGeneratedQuiz('');
       setParsedQuiz(null);
       setCurrentQuizId(null);
+      setIsEditing(false);
+      setLocalLoadingMap({});
     }
   }, [tabId]);
 
@@ -248,12 +253,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       formData,
       generatedQuiz,
       parsedQuiz,
-      currentQuizId
+      currentQuizId,
+      isEditing,
+      localLoadingMap  // ✅ SAVE LOADING STATE
     }));
-  }, [formData, generatedQuiz, parsedQuiz, currentQuizId]);
+  }, [formData, generatedQuiz, parsedQuiz, currentQuizId, isEditing, localLoadingMap]);
 
-  // Subscribe effect
-  // NOTE: subscribe is not defined, so this effect is removed or needs correct import/context
 
   // Enable structured editing mode
   const enableEditing = () => {
@@ -430,7 +435,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         }));
       }
       clearStreaming(tabId, ENDPOINT);
-      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId];
+        return newMap;
+      });
     }
   }, [streamingQuiz, contextLoading]);
 

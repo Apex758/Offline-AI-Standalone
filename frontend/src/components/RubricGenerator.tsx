@@ -460,7 +460,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     focusAreas: []
   });
 
-  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
+  const [formData, setFormData] = useState<FormData>(() => {
+    const saved = savedData?.formData;
+    if (saved && typeof saved === 'object' && saved.assignmentTitle?.trim()) {
+      return saved;
+    }
+    return getDefaultFormData();
+  });
   const [generatedRubric, setGeneratedRubric] = useState<string>('');
 
   const assignmentTypes = [

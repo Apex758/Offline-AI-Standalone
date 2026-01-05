@@ -409,6 +409,47 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   const [generatedPlan, setGeneratedPlan] = useState<string>(savedData?.generatedPlan || '');
 
+  // ✅ ADDED: Restore state from localStorage when switching tabs
+  useEffect(() => {
+    const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;
+    const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        setFormData(parsed.formData || getDefaultFormData());
+        setGeneratedPlan(parsed.generatedPlan || '');
+        setParsedPlan(parsed.parsedPlan || null);
+        setCurrentPlanId(parsed.currentPlanId || null);
+        setIsEditing(parsed.isEditing || false);
+        setLocalLoadingMap(parsed.localLoadingMap || {});  // ✅ RESTORE LOADING STATE
+        console.log('[KindergartenPlanner] State restored from localStorage for tab:', tabId);
+      } catch (e) {
+        console.error('[KindergartenPlanner] Failed to restore state:', e);
+        setFormData(getDefaultFormData());
+        setGeneratedPlan('');
+        setParsedPlan(null);
+        setCurrentPlanId(null);
+        setIsEditing(false);
+        setLocalLoadingMap({});
+      }
+    }
+  }, [tabId]);
+
+  // ✅ ADDED: Save state to localStorage whenever it changes
+  useEffect(() => {
+    const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;
+    const stateToSave = {
+      formData,
+      generatedPlan,
+      parsedPlan,
+      currentPlanId,
+      isEditing,
+      localLoadingMap  // ✅ SAVE LOADING STATE
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [tabId, formData, generatedPlan, parsedPlan, currentPlanId, isEditing, localLoadingMap]);
+
   const curriculumUnits = ['Belonging', 'Weather', 'Celebrations', 'Plants and animals', 'Games'];
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const ageGroups = ['3-4 years', '4-5 years', '5-6 years'];
@@ -524,7 +565,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       const parsed = parseKindergartenContent(streamingPlan, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
-      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId];
+        return newMap;
+      });
     }
   }, [streamingPlan]);
 
@@ -757,12 +802,14 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         {(generatedPlan || streamingPlan) ? (
           <>
             {isEditing && parsedPlan ? (
-              // Show Structured Editor
-              <KindergartenEditor
-                plan={parsedPlan}
-                onSave={saveKindergartenEdit}
-                onCancel={cancelEditing}
-              />
+              // Show Structured Editor - wrap in a container with proper height
+              <div className="flex-1 overflow-y-auto p-6">
+                <KindergartenEditor
+                  plan={parsedPlan}
+                  onSave={saveKindergartenEdit}
+                  onCancel={cancelEditing}
+                />
+              </div>
             ) : (
               // Show generated plan (existing display code)
               <>
