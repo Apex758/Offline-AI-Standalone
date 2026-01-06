@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Loader2, Eye } from 'lucide-react';
 import curriculumIndex from '../data/curriculumIndex.json';
+import {
+  MultipleChoiceTemplate,
+  ComprehensionTemplate,
+  MatchingTemplate,
+  ListBasedTemplate
+} from './templates';
 
 interface CurriculumPage {
   subject: string;
@@ -29,6 +35,7 @@ interface WorksheetFormData {
   questionCount: string;
   questionType: string;
   selectedTemplate: string;
+  worksheetTitle: string;
   includeImages: boolean;
   imageStyle: string;
 }
@@ -59,32 +66,32 @@ const imageStyleOptions = [
 
 const worksheetTemplates: WorksheetTemplate[] = [
   {
-    id: 'standard',
-    name: 'Standard Worksheet',
-    description: 'Traditional worksheet layout with questions and answer spaces',
-    compatibleTypes: questionTypeOptions,
-    preview: 'Standard Layout Preview'
-  },
-  {
     id: 'multiple-choice',
-    name: 'Multiple Choice Focus',
-    description: 'Optimized for multiple choice questions with clear options',
+    name: 'Multiple Choice Template',
+    description: 'Layout for multiple-choice questions with A-D options',
     compatibleTypes: ['Multiple Choice'],
     preview: 'Multiple Choice Layout Preview'
   },
   {
     id: 'comprehension',
-    name: 'Reading Comprehension',
-    description: 'Includes passage area with comprehension questions',
-    compatibleTypes: ['Comprehension', 'Short Answer', 'True / False'],
+    name: 'Reading Comprehension Template',
+    description: 'Passage-based comprehension questions layout',
+    compatibleTypes: ['Comprehension', 'Short Answer', 'True / False', 'Multiple Choice'],
     preview: 'Comprehension Layout Preview'
   },
   {
-    id: 'interactive',
-    name: 'Interactive Worksheet',
-    description: 'Includes spaces for drawing and interactive elements',
-    compatibleTypes: ['Fill in the Blank', 'Short Answer', 'Word Bank'],
-    preview: 'Interactive Layout Preview'
+    id: 'matching',
+    name: 'Matching Template',
+    description: 'Two-column matching layout for prompts and answers',
+    compatibleTypes: ['Matching'],
+    preview: 'Matching Layout Preview'
+  },
+  {
+    id: 'list-based',
+    name: 'List-Based Template',
+    description: 'Simple vertical list for various question types',
+    compatibleTypes: ['Short Answer', 'Fill in the Blank', 'Word Bank', 'True / False'],
+    preview: 'List-Based Layout Preview'
   }
 ];
 
@@ -109,6 +116,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     questionCount: '',
     questionType: '',
     selectedTemplate: '',
+    worksheetTitle: '',
     includeImages: false,
     imageStyle: 'Cartoon'
   });
@@ -234,10 +242,37 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const compatibleTemplates = getCompatibleTemplates();
   const selectedTemplate = worksheetTemplates.find(t => t.id === formData.selectedTemplate);
 
+  const renderTemplatePreview = () => {
+    if (!selectedTemplate) return null;
+
+    const commonProps = {
+      subject: formData.subject,
+      gradeLevel: formData.gradeLevel,
+      topic: formData.topic,
+      questionCount: parseInt(formData.questionCount) || 10,
+      questionType: formData.questionType,
+      worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
+      includeImages: formData.includeImages
+    };
+
+    switch (selectedTemplate.id) {
+      case 'multiple-choice':
+        return <MultipleChoiceTemplate {...commonProps} />;
+      case 'comprehension':
+        return <ComprehensionTemplate {...commonProps} />;
+      case 'matching':
+        return <MatchingTemplate {...commonProps} />;
+      case 'list-based':
+        return <ListBasedTemplate {...commonProps} />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="h-full bg-white flex">
-      {/* Left Panel - Configuration (~80%) */}
-      <div className="flex-1 flex flex-col border-r border-gray-200">
+    <div className="h-full bg-white grid grid-cols-2">
+      {/* Left Panel - Configuration (50%) */}
+      <div className="flex flex-col border-r border-gray-200 overflow-y-auto">
         <div className="border-b border-gray-200 p-4">
           <h2 className="text-xl font-semibold text-gray-800">Worksheet Generator</h2>
           <p className="text-sm text-gray-500">Create customized worksheets with curriculum alignment</p>
@@ -319,6 +354,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       onChange={(e) => handleInputChange('topic', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="e.g., Water Cycle"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Worksheet Title <span className="text-gray-500">(optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.worksheetTitle}
+                      onChange={(e) => handleInputChange('worksheetTitle', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Leave blank to use template name"
                     />
                   </div>
                 </div>
@@ -412,14 +460,17 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Questions
+                    Number of Questions <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
+                    min="1"
+                    max="50"
                     value={formData.questionCount}
                     onChange={(e) => handleInputChange('questionCount', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 10"
+                    required
                   />
                 </div>
               </div>
@@ -517,7 +568,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           <div className="max-w-4xl mx-auto flex justify-end">
             <button
               onClick={handleGenerate}
-              disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionType || !formData.selectedTemplate}
+              disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate}
               className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {loading ? (
@@ -536,8 +587,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         </div>
       </div>
 
-      {/* Right Panel - Preview (~20%) */}
-      <div className="w-80 bg-gray-50 border-l border-gray-200 flex flex-col">
+      {/* Right Panel - Preview (50%) */}
+      <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto">
         <div className="p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center">
             <Eye className="w-5 h-5 mr-2" />
@@ -548,13 +599,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
         <div className="flex-1 p-4">
           {selectedTemplate ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 h-full">
-              <div className="text-center text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">{selectedTemplate.preview}</p>
-                <p className="text-xs mt-2 text-gray-400">
-                  Template: {selectedTemplate.name}
-                </p>
+            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+              <div className="transform scale-90 origin-top">
+                {renderTemplatePreview()}
               </div>
             </div>
           ) : (
