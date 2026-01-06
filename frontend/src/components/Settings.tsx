@@ -131,8 +131,10 @@ const Settings: React.FC<SettingsProps> = () => {
     { type: 'kindergarten-planner', label: 'Kindergarten', defaultColor: '#ec4899' },
     { type: 'multigrade-planner', label: 'Multigrade', defaultColor: '#06b6d4' },
     { type: 'cross-curricular-planner', label: 'Cross-Curricular', defaultColor: '#6366f1' },
-    { type: 'worksheet-generator', label: 'Worksheet Generator', defaultColor: '#8b5cf6' },
-    { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
+    ...(settings.visualStudioEnabled ? [
+      { type: 'worksheet-generator', label: 'Worksheet Generator', defaultColor: '#8b5cf6' },
+      { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
+    ] : [])
   ];
 
   const handleTabColorChange = (tabType: string, color: string) => {
