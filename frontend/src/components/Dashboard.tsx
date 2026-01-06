@@ -703,7 +703,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'rubric': 'rubric-generator',
       'kindergarten': 'kindergarten-planner',
       'multigrade': 'multigrade-planner',
-      'cross-curricular': 'cross-curricular-planner'
+      'cross-curricular': 'cross-curricular-planner',
+      'images': 'image-studio'
     };
 
     const toolType = typeToToolType[type];
@@ -731,7 +732,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         generatedRubric: resource.generatedRubric,
         parsedQuiz: resource.parsedQuiz,
         streamingQuiz: resource.streamingQuiz,
-        startInEditMode: true // Edit mode
+        startInEditMode: true, // Edit mode
+        ...(type === 'images' && { initialTab: 'editor', imageId: resource.id, imageUrl: resource.imageUrl })
       }
     };
 

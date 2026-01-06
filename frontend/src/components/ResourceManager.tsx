@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, Filter, Star, Trash2, Edit, Download, Calendar, Eye,  
-  FileText, ListChecks, BookMarked, GraduationCap, Users, 
-  Link2, RefreshCw, ArrowUpDown, X
+import {
+  Search, Filter, Star, Trash2, Edit, Download, Calendar, Eye,
+  FileText, ListChecks, BookMarked, GraduationCap, Users,
+  Link2, RefreshCw, ArrowUpDown, X, Image
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -24,6 +24,7 @@ interface Resource {
   generatedQuiz?: string;
   generatedRubric?: string;
   favorite?: boolean;
+  imageUrl?: string;
 }
 
 const ResourceManager: React.FC<ResourceManagerProps> = ({
@@ -40,6 +41,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'type'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImageResource, setSelectedImageResource] = useState<Resource | null>(null);
 
   const resourceTypes = [
     { key: 'all', label: 'All Resources', icon: FileText },
@@ -48,19 +51,21 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     { key: 'rubric', label: 'Rubrics', icon: FileText },
     { key: 'kindergarten', label: 'Kindergarten', icon: GraduationCap },
     { key: 'multigrade', label: 'Multigrade', icon: Users },
-    { key: 'cross-curricular', label: 'Cross-Curricular', icon: Link2 }
+    { key: 'cross-curricular', label: 'Cross-Curricular', icon: Link2 },
+    { key: 'images', label: 'Images', icon: Image }
   ];
 
   const loadAllResources = async () => {
     setLoading(true);
     try {
-      const [lessonPlans, quizzes, rubrics, kindergarten, multigrade, crossCurricular] = await Promise.all([
+      const [lessonPlans, quizzes, rubrics, kindergarten, multigrade, crossCurricular, images] = await Promise.all([
         axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/rubric-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/kindergarten-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
-        axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] }))
+        axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] }))
       ]);
 
       const allResources: Resource[] = [
@@ -69,7 +74,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         ...rubrics.data.map((r: any) => ({ ...r, type: 'rubric' })),
         ...kindergarten.data.map((r: any) => ({ ...r, type: 'kindergarten' })),
         ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
-        ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' }))
+        ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
+        ...images.data.map((r: any) => ({ ...r, type: 'images' }))
       ];
 
       setResources(allResources);
@@ -113,7 +119,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'rubric': 'http://localhost:8000/api/rubric-history',
       'kindergarten': 'http://localhost:8000/api/kindergarten-history',
       'multigrade': 'http://localhost:8000/api/multigrade-history',
-      'cross-curricular': 'http://localhost:8000/api/cross-curricular-history'
+      'cross-curricular': 'http://localhost:8000/api/cross-curricular-history',
+      'images': 'http://localhost:8000/api/images-history'
     };
     return endpoints[type];
   };
@@ -138,7 +145,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'rubric': FileText,
       'kindergarten': GraduationCap,
       'multigrade': Users,
-      'cross-curricular': Link2
+      'cross-curricular': Link2,
+      'images': Image
     };
     const Icon = icons[type] || FileText;
     return Icon;
@@ -151,7 +159,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'rubric': 'bg-amber-100 text-amber-700 border-amber-200',
       'kindergarten': 'bg-pink-100 text-pink-700 border-pink-200',
       'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200',
-      'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200'
+      'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200',
+      'images': 'bg-green-100 text-green-700 border-green-200'
     };
     return colors[type] || 'bg-gray-100 text-gray-700 border-gray-200';
   };
@@ -295,7 +304,14 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                   onToggleFavorite={() => toggleFavorite(resource)}
                   onDelete={() => setShowDeleteConfirm(resource.id)}
                   onExport={() => exportResource(resource)}
-                  onView={() => onViewResource?.(resource.type, resource)}
+                  onView={() => {
+                    if (resource.type === 'images') {
+                      setSelectedImageResource(resource);
+                      setShowImageModal(true);
+                    } else {
+                      onViewResource?.(resource.type, resource);
+                    }
+                  }}
                   onEdit={() => onEditResource?.(resource.type, resource)}
                   getTypeIcon={getTypeIcon}
                   getTypeColor={getTypeColor}
@@ -375,6 +391,26 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Image View Modal */}
+      {showImageModal && selectedImageResource && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowImageModal(false)}>
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">{selectedImageResource.title}</h3>
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="p-1 rounded hover:bg-gray-100 transition"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="flex justify-center">
+              <img src={selectedImageResource.imageUrl} alt={selectedImageResource.title} className="max-w-full max-h-96 object-contain" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -433,7 +469,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
 
       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
         {/* "View" Button - shows if there's generated content */}
-        {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric) && (
+        {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric || resource.type === 'images') && (
           <button
             onClick={onView}
             className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
