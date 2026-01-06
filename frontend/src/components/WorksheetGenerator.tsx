@@ -38,6 +38,8 @@ interface WorksheetFormData {
   worksheetTitle: string;
   includeImages: boolean;
   imageStyle: string;
+  imageMode: string;
+  imagePlacement: string;
 }
 
 interface WorksheetTemplate {
@@ -118,7 +120,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     selectedTemplate: '',
     worksheetTitle: '',
     includeImages: false,
-    imageStyle: 'Cartoon'
+    imageStyle: 'Cartoon',
+    imageMode: 'one-per-question',
+    imagePlacement: 'large-centered'
   });
 
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
@@ -252,7 +256,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       questionCount: parseInt(formData.questionCount) || 10,
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
-      includeImages: formData.includeImages
+      includeImages: formData.includeImages,
+      imageMode: formData.imageMode,
+      imagePlacement: formData.imagePlacement
     };
 
     switch (selectedTemplate.id) {
@@ -498,37 +504,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
 
-            {/* Templates */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800">Worksheet Template</h3>
-              <p className="text-sm text-gray-500">Choose a layout that works with your selected question types</p>
-
-              <div className="grid grid-cols-1 gap-3">
-                {compatibleTemplates.map(template => (
-                  <label key={template.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="template"
-                      value={template.id}
-                      checked={formData.selectedTemplate === template.id}
-                      onChange={(e) => handleInputChange('selectedTemplate', e.target.value)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{template.name}</div>
-                      <div className="text-sm text-gray-500">{template.description}</div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-
-              {formData.questionType && compatibleTemplates.length === 0 && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
-                  No templates are compatible with your selected question types. Please adjust your selection.
-                </div>
-              )}
-            </div>
-
             {/* Images */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">Image Integration</h3>
@@ -560,6 +535,73 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               )}
             </div>
+
+            {/* Templates */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800">Worksheet Template</h3>
+              <p className="text-sm text-gray-500">Choose a layout that works with your selected question types</p>
+
+              <div className="grid grid-cols-1 gap-3">
+                {compatibleTemplates.map(template => (
+                  <label key={template.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="template"
+                      value={template.id}
+                      checked={formData.selectedTemplate === template.id}
+                      onChange={(e) => handleInputChange('selectedTemplate', e.target.value)}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{template.name}</div>
+                      <div className="text-sm text-gray-500">{template.description}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {formData.questionType && compatibleTemplates.length === 0 && (
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                  No templates are compatible with your selected question types. Please adjust your selection.
+                </div>
+              )}
+            </div>
+
+            {/* Template Options */}
+            {formData.selectedTemplate && formData.includeImages && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800">Template-Specific Options</h3>
+                {formData.selectedTemplate === 'multiple-choice' || formData.selectedTemplate === 'list-based' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Image Mode
+                    </label>
+                    <select
+                      value={formData.imageMode}
+                      onChange={(e) => handleInputChange('imageMode', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="one-per-question">One image per question</option>
+                      <option value="shared">One shared image for the entire worksheet</option>
+                    </select>
+                  </div>
+                ) : formData.selectedTemplate === 'comprehension' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Image Placement
+                    </label>
+                    <select
+                      value={formData.imagePlacement}
+                      onChange={(e) => handleInputChange('imagePlacement', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="large-centered">Large centered image above or within the passage</option>
+                      <option value="small-corner">Small image in a corner with text wrapping around it</option>
+                    </select>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
 

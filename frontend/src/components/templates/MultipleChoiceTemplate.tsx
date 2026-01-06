@@ -8,6 +8,7 @@ interface MultipleChoiceTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
+  imageMode?: string;
 }
 
 const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
@@ -17,7 +18,8 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   questionCount = 10,
   questionType = 'Multiple Choice',
   worksheetTitle,
-  includeImages = false
+  includeImages = false,
+  imageMode = 'one-per-question'
 }) => {
   return (
     <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
@@ -48,6 +50,15 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
         </p>
       </div>
 
+      {/* Shared Image */}
+      {includeImages && imageMode === 'shared' && (
+        <div className="mb-6">
+          <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
+            [Shared Image Placeholder]
+          </div>
+        </div>
+      )}
+
       {/* Questions */}
       <div className="space-y-6">
         {Array.from({ length: questionCount }, (_, i) => (
@@ -61,7 +72,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                   <p className="text-gray-800 font-medium">
                     Sample multiple choice question {i + 1}: Which of the following is correct?
                   </p>
-                  {includeImages && i % 4 === 0 && (
+                  {includeImages && imageMode === 'one-per-question' && (
                     <div className="mt-2 mb-2">
                       <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
                         [Image Placeholder]

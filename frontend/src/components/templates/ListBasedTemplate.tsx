@@ -8,6 +8,7 @@ interface ListBasedTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
+  imageMode?: string;
 }
 
 const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
@@ -17,7 +18,8 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   questionCount = 10,
   questionType = 'Short Answer',
   worksheetTitle,
-  includeImages = false
+  includeImages = false,
+  imageMode = 'one-per-question'
 }) => {
   const getQuestionContent = (index: number) => {
     const questionNumber = index + 1;
@@ -106,6 +108,15 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
         </p>
       </div>
 
+      {/* Shared Image */}
+      {includeImages && imageMode === 'shared' && (
+        <div className="mb-6">
+          <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
+            [Shared Image Placeholder]
+          </div>
+        </div>
+      )}
+
       {/* Word Bank (if applicable) */}
       {questionType === 'Word Bank' && (
         <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
@@ -130,7 +141,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                   <p className="text-gray-800">
                     {questionContent.question}
                   </p>
-                  {includeImages && i % 3 === 0 && (
+                  {includeImages && imageMode === 'one-per-question' && (
                     <div className="mt-2 mb-2">
                       <div className="w-24 h-16 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
                         [Image Placeholder]

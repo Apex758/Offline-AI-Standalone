@@ -8,6 +8,7 @@ interface ComprehensionTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
+  imagePlacement?: string;
 }
 
 const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
@@ -17,7 +18,8 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
   questionCount = 8,
   questionType = 'Comprehension',
   worksheetTitle,
-  includeImages = false
+  includeImages = false,
+  imagePlacement = 'large-centered'
 }) => {
   return (
     <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
@@ -44,10 +46,17 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Reading Passage</h2>
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-          {includeImages && (
+          {includeImages && imagePlacement === 'large-centered' && (
+            <div className="mb-4">
+              <div className="w-64 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
+                [Large Centered Passage Image]
+              </div>
+            </div>
+          )}
+          {includeImages && imagePlacement === 'small-corner' && (
             <div className="mb-4 float-right ml-4">
-              <div className="w-40 h-24 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                [Passage Image]
+              <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
+                [Small Corner Image]
               </div>
             </div>
           )}
