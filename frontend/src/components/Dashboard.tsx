@@ -1549,12 +1549,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                            }}>
                           {tool.name}
                         </p>
-                        <p
-                          className="text-xs"
-                          style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
-                        >
-                          {count}/{MAX_TABS_PER_TYPE}
-                        </p>
                       </div>
                     </button>
                   );
