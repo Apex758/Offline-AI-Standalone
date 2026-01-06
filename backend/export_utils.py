@@ -116,213 +116,51 @@ def parse_lesson_content_for_export(text: str) -> List[Dict[str, Any]]:
 
 def export_to_docx(data: Union[str, Dict, List], title: str = "Export") -> bytes:
     """
-    Export data to DOCX format with rich formatting matching the webpage.
+    Export to DOCX format.
+    Uses rawHtml if provided for perfect visual consistency with PDF and screen.
     """
     try:
-        doc = Document()
-        
-        # Get formatting data
+        # Get data
         if isinstance(data, dict):
+            raw_html = data.get('rawHtml', '')
             content = data.get('content', '')
             form_data = data.get('formData', {})
             accent_color = data.get('accentColor', '#3B82F6')
         else:
+            raw_html = ''
             content = str(data)
             form_data = {}
             accent_color = '#3B82F6'
         
-        rgb = hex_to_rgb(accent_color)
+        # ✅ PRIORITY: Use HTML parser for perfect consistency
+        if raw_html:
+            return export_to_docx_from_html(raw_html, accent_color, form_data)
         
-        # Add modern header section
-        if form_data:
-            # Add header with gradient effect (simulated with shading)
-            header = doc.add_paragraph()
-            header.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
-            # Subject badge
-            subject_run = header.add_run(form_data.get('subject', 'Mathematics'))
-            subject_run.font.size = Pt(10)
-            subject_run.font.color.rgb = RGBColor(255, 255, 255)
-            subject_run.font.bold = True
-            
-            # Add spacing
-            doc.add_paragraph()
-            
-            # Main title
-            title_para = doc.add_paragraph()
-            title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            title_run = title_para.add_run(f"Exploring {form_data.get('topic', 'Lesson Plan')}")
-            title_run.font.size = Pt(24)
-            title_run.font.bold = True
-            title_run.font.color.rgb = RGBColor(*rgb)
-            
-            doc.add_paragraph()
-            
-            # Create details grid as table
-            table = doc.add_table(rows=3, cols=2)
-            table.style = 'Light Grid Accent 1'
-            
-            details = [
-                ('Grade Level', f"Grade {form_data.get('gradeLevel', '')}"),
-                ('Subject', form_data.get('subject', '')),
-                ('Strand', form_data.get('strand', '')),
-                ('Topic', form_data.get('topic', '')),
-                ('Duration', f"{form_data.get('duration', '')} minutes"),
-                ('Date', form_data.get('date', ''))
-            ]
-            
-            for idx, (label, value) in enumerate(details):
-                row = idx // 2
-                col = idx % 2
-                cell = table.rows[row].cells[col]
-                
-                # Add label
-                label_para = cell.paragraphs[0]
-                label_run = label_para.add_run(f"{label}: ")
-                label_run.font.bold = True
-                label_run.font.size = Pt(10)
-                label_run.font.color.rgb = RGBColor(100, 100, 100)
-                
-                # Add value
-                value_run = label_para.add_run(value)
-                value_run.font.size = Pt(10)
-                value_run.font.color.rgb = RGBColor(50, 50, 50)
-            
-            # Add spacing after table
-            doc.add_paragraph()
-            doc.add_paragraph()
+        # Fallback to simple text-based DOCX
+        doc = Document()
+        doc.add_heading(title, 0)
+        doc.add_paragraph(content)
         
-        # Parse and format content
-        sections = parse_lesson_content_for_export(content)
-        
-        for section in sections:
-            if section['type'] == 'details_grid':
-                # Already handled above
-                continue
-            
-            elif section['type'] == 'section':
-                # Section heading
-                heading = doc.add_heading(section['title'], level=1)
-                heading_run = heading.runs[0]
-                heading_run.font.color.rgb = RGBColor(*rgb)
-                heading_run.font.size = Pt(18)
-                
-                # Add content
-                for item in section.get('content', []):
-                    if item['type'] == 'bullet':
-                        para = doc.add_paragraph(item['text'], style='List Bullet')
-                        para.paragraph_format.left_indent = Inches(0.25)
-                        
-                    elif item['type'] == 'nested_bullet':
-                        para = doc.add_paragraph(item['text'], style='List Bullet 2')
-                        para.paragraph_format.left_indent = Inches(0.5)
-                        
-                    elif item['type'] == 'numbered':
-                        para = doc.add_paragraph(item['text'], style='List Number')
-                        para.paragraph_format.left_indent = Inches(0.25)
-                        
-                    elif item['type'] == 'paragraph':
-                        para = doc.add_paragraph(item['text'])
-                        para.paragraph_format.space_after = Pt(6)
-            
-            elif section['type'] == 'field':
-                # Field label
-                field_heading = doc.add_heading(section['title'] + ':', level=2)
-                field_run = field_heading.runs[0]
-                field_run.font.color.rgb = RGBColor(int(rgb[0]*0.8), int(rgb[1]*0.8), int(rgb[2]*0.8))
-                field_run.font.size = Pt(14)
-                
-                # Add content
-                for item in section.get('content', []):
-                    if item['type'] == 'bullet':
-                        para = doc.add_paragraph(item['text'], style='List Bullet')
-                        para.paragraph_format.left_indent = Inches(0.25)
-                        
-                    elif item['type'] == 'nested_bullet':
-                        para = doc.add_paragraph(item['text'], style='List Bullet 2')
-                        para.paragraph_format.left_indent = Inches(0.5)
-                        
-                    elif item['type'] == 'numbered':
-                        para = doc.add_paragraph(item['text'], style='List Number')
-                        para.paragraph_format.left_indent = Inches(0.25)
-                        
-                    elif item['type'] == 'paragraph':
-                        para = doc.add_paragraph(item['text'])
-                        para.paragraph_format.space_after = Pt(6)
-        
-        # If no structured sections found, just add the plain text
-        if not sections and content:
-            doc.add_paragraph(content)
-        
-        # Add curriculum references if they exist
-        if isinstance(data, dict) and 'curriculumReferences' in data and data['curriculumReferences']:
-            refs = data['curriculumReferences']
-            
-            # Add section heading
-            doc.add_paragraph()  # Spacing
-            heading = doc.add_heading('Curriculum References', level=1)
-            heading_run = heading.runs[0]
-            heading_run.font.color.rgb = RGBColor(*rgb)
-            heading_run.font.size = Pt(18)
-            
-            # Add description
-            desc_para = doc.add_paragraph('These curriculum activities and pages are relevant to this lesson.')
-            desc_para.paragraph_format.space_after = Pt(12)
-            
-            # Add each reference
-            for ref in refs:
-                ref_para = doc.add_paragraph()
-                ref_para.paragraph_format.left_indent = Inches(0.25)
-                ref_para.paragraph_format.space_after = Pt(8)
-                
-                # Add icon (bullet point)
-                bullet_run = ref_para.add_run('📚 ')
-                bullet_run.font.size = Pt(12)
-                
-                # Add display name (bold)
-                name_run = ref_para.add_run(ref.get('displayName', 'Curriculum Resource'))
-                name_run.font.bold = True
-                name_run.font.size = Pt(11)
-                name_run.font.color.rgb = RGBColor(30, 58, 138)
-                
-                # Add grade and strand
-                meta_para = doc.add_paragraph()
-                meta_para.paragraph_format.left_indent = Inches(0.5)
-                meta_para.paragraph_format.space_after = Pt(4)
-                meta_run = meta_para.add_run(f"Grade: {ref.get('grade', '')} | Strand: {ref.get('strand', '')}")
-                meta_run.font.size = Pt(9)
-                meta_run.font.color.rgb = RGBColor(107, 114, 128)
-                
-                # Add essential outcome if available
-                if ref.get('essentialOutcomes') and len(ref['essentialOutcomes']) > 0:
-                    outcome_para = doc.add_paragraph()
-                    outcome_para.paragraph_format.left_indent = Inches(0.5)
-                    outcome_para.paragraph_format.space_after = Pt(12)
-                    outcome_run = outcome_para.add_run(ref['essentialOutcomes'][0])
-                    outcome_run.font.size = Pt(10)
-                    outcome_run.font.color.rgb = RGBColor(55, 65, 81)
-
-   
         buf = io.BytesIO()
         doc.save(buf)
         return buf.getvalue()
-        
+         
     except Exception as e:
         raise RuntimeError(f"Failed to export DOCX: {e}")
 
 
+
 def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
-    # Ensure DLL directory is set before importing weasyprint
+    """
+    Export to PDF using HTML.
+    If rawHtml is provided, uses it directly for perfect consistency.
+    """
     import os
     import sys
     if sys.platform == "win32":
-        # Try to find the bin directory with GTK DLLs
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        
-        # Check if we're in backend-bundle (has bin folder)
         gtk_bin = os.path.join(script_dir, "bin")
         if not os.path.isdir(gtk_bin):
-            # We're in backend, check if backend-bundle exists
             parent_dir = os.path.dirname(script_dir)
             backend_bundle_bin = os.path.join(parent_dir, "backend-bundle", "bin")
             if os.path.isdir(backend_bundle_bin):
@@ -335,18 +173,17 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
                     os.add_dll_directory(gtk_bin)
                 except:
                     pass
-            # Prepend to PATH
             os.environ["PATH"] = gtk_bin + os.pathsep + os.environ.get("PATH", "")
     
     from weasyprint import HTML
     try:
-        # If rawHtml is provided, use it directly for PDF export
+        # ✅ PRIORITY: Use rawHtml if provided (perfect consistency)
         if isinstance(data, dict) and data.get("rawHtml"):
             html = data["rawHtml"]
             pdf_bytes = HTML(string=html).write_pdf()
             return pdf_bytes
 
-        # Get formatting data (legacy/structured export)
+        # Fallback to legacy HTML generation
         if isinstance(data, dict):
             content = data.get('content', '')
             form_data = data.get('formData', {})
@@ -356,299 +193,28 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
             form_data = {}
             accent_color = '#3B82F6'
 
-        # Build HTML with inline CSS (legacy)
+        # Build basic HTML (legacy fallback)
         html = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <style>
-                @page {{
-                    size: A4;
-                    margin: 1.5cm;
-                }}
                 body {{
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    font-family: 'Segoe UI', sans-serif;
                     line-height: 1.6;
                     color: #374151;
-                    margin: 0;
-                    padding: 0;
+                    margin: 2cm;
                 }}
-                .header {{
-                    background: linear-gradient(to bottom right, {accent_color}, {accent_color}dd, {accent_color}bb);
-                    color: white;
-                    padding: 2rem;
-                    border-radius: 0.5rem;
-                    margin-bottom: 2rem;
-                    position: relative;
-                    overflow: hidden;
-                }}
-                .header::before {{
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    width: 8rem;
-                    height: 8rem;
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 50%;
-                    transform: translate(50%, -50%);
-                }}
-                .subject-badge {{
-                    display: inline-block;
-                    padding: 0.25rem 0.75rem;
-                    background: rgba(255, 255, 255, 0.2);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    border-radius: 1rem;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    margin-bottom: 1rem;
-                }}
-                .main-title {{
-                    font-size: 2rem;
-                    font-weight: bold;
-                    margin: 0.5rem 0;
-                }}
-                .subtitle {{
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 1rem;
-                    margin-top: 1rem;
-                    color: rgba(255, 255, 255, 0.9);
-                    font-size: 0.875rem;
-                }}
-                .subtitle-item {{
-                    display: flex;
-                    align-items: center;
-                }}
-                .subtitle-item::before {{
-                    content: '•';
-                    margin-right: 0.5rem;
-                    color: rgba(255, 255, 255, 0.7);
-                }}
-                .details-grid {{
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 1rem;
-                    background: #f9fafb;
-                    padding: 1.5rem;
-                    border-radius: 0.5rem;
-                    margin-bottom: 2rem;
-                }}
-                .detail-item {{
-                    font-size: 0.875rem;
-                }}
-                .detail-label {{
-                    font-weight: 600;
-                    color: #6b7280;
-                }}
-                .detail-value {{
-                    color: #1f2937;
-                    margin-left: 0.5rem;
-                }}
-                .section-heading {{
-                    font-size: 1.5rem;
-                    font-weight: bold;
-                    color: {accent_color}dd;
-                    margin-top: 2rem;
-                    margin-bottom: 1rem;
-                    padding-bottom: 0.5rem;
-                    border-bottom: 2px solid {accent_color}33;
-                }}
-                .field-heading {{
-                    font-size: 1.125rem;
-                    font-weight: 600;
-                    color: {accent_color}cc;
-                    margin-top: 1.5rem;
-                    margin-bottom: 0.75rem;
-                }}
-                .content p {{
-                    margin: 0.75rem 0;
-                    line-height: 1.7;
-                }}
-                .bullet-list {{
-                    margin: 0.5rem 0;
-                    padding-left: 0;
-                    list-style: none;
-                }}
-                .bullet-list li {{
-                    display: flex;
-                    margin-bottom: 0.5rem;
-                    line-height: 1.6;
-                }}
-                .bullet-list li::before {{
-                    content: '•';
-                    color: {accent_color}99;
-                    font-weight: bold;
-                    font-size: 1.2em;
-                    margin-right: 0.75rem;
-                    flex-shrink: 0;
-                }}
-                .nested-bullet {{
-                    margin-left: 2rem;
-                }}
-                .nested-bullet::before {{
-                    content: '▸';
-                    color: {accent_color}66;
-                    font-size: 0.8em;
-                }}
-                .numbered-list {{
-                    margin: 0.5rem 0;
-                    padding-left: 0;
-                    counter-reset: item;
-                    list-style: none;
-                }}
-                .numbered-list li {{
-                    display: flex;
-                    margin-bottom: 0.75rem;
-                    line-height: 1.6;
-                }}
-                .numbered-list li::before {{
-                    counter-increment: item;
-                    content: counter(item) ".";
-                    color: {accent_color}cc;
-                    font-weight: 600;
-                    background: {accent_color}0d;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 0.25rem;
-                    margin-right: 0.75rem;
-                    min-width: 2rem;
-                    text-align: center;
-                    flex-shrink: 0;
-                }}
-                .footer {{
-                    margin-top: 3rem;
-                    padding-top: 1rem;
-                    border-top: 1px solid #e5e7eb;
-                    color: #9ca3af;
-                    font-size: 0.75rem;
-                    text-align: center;
+                pre {{
+                    white-space: pre-wrap;
+                    font-family: inherit;
                 }}
             </style>
         </head>
         <body>
-        """
-
-        # Add header if form data exists
-        if form_data:
-            subject = form_data.get('subject', 'Mathematics')
-            topic = form_data.get('topic', 'Lesson Plan')
-            grade = form_data.get('gradeLevel', '')
-            strand = form_data.get('strand', '')
-            duration = form_data.get('duration', '')
-            student_count = form_data.get('studentCount', '')
-
-            html += f"""
-            <div class="header">
-                <div class="subject-badge">{subject}</div>
-                <h1 class="main-title">Exploring {topic}</h1>
-                <div class="subtitle">
-                    <span class="subtitle-item">Grade {grade}</span>
-                    <span class="subtitle-item">{strand}</span>
-                    <span class="subtitle-item">{duration} minutes</span>
-                    <span class="subtitle-item">{student_count} students</span>
-                </div>
-            </div>
-
-            <div class="details-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Grade Level:</span>
-                    <span class="detail-value">Grade {grade}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Subject:</span>
-                    <span class="detail-value">{subject}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Strand:</span>
-                    <span class="detail-value">{strand}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Topic:</span>
-                    <span class="detail-value">{topic}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Duration:</span>
-                    <span class="detail-value">{duration} minutes</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Date:</span>
-                    <span class="detail-value">{form_data.get('date', 'N/A')}</span>
-                </div>
-            </div>
-            """
-
-        # Parse and add content
-        html += '<div class="content">'
-
-        sections = parse_lesson_content_for_export(content)
-
-        for section in sections:
-            if section['type'] == 'details_grid':
-                continue  # Already handled above
-
-            elif section['type'] == 'section':
-                html += f'<h2 class="section-heading">{section["title"]}</h2>'
-                html += format_section_content_html(section.get('content', []))
-
-            elif section['type'] == 'field':
-                html += f'<h3 class="field-heading">{section["title"]}:</h3>'
-                html += format_section_content_html(section.get('content', []))
-
-        # If no structured sections found, just add plain text
-        if not sections and content:
-            html += f'<pre style="white-space: pre-wrap; font-family: inherit;">{content}</pre>'
-
-        if isinstance(data, dict) and 'curriculumReferences' in data and data['curriculumReferences']:
-            refs = data['curriculumReferences']
-            html += '''
-            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(59, 130, 246, 0.05); border: 2px solid rgba(59, 130, 246, 0.2); border-radius: 0.5rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                    <svg style="width: 1.25rem; height: 1.25rem; color: #2563eb;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    <h3 style="font-size: 1.125rem; font-weight: bold; color: #1e40af; margin: 0;">Curriculum References</h3>
-                </div>
-                <p style="font-size: 0.875rem; color: #1e40af; margin-bottom: 1rem;">
-                    These curriculum activities and pages are relevant to this lesson.
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            '''
-
-            for ref in refs:
-                display_name = ref.get('displayName', 'Curriculum Resource')
-                grade = ref.get('grade', '')
-                strand = ref.get('strand', '')
-                essential = ref.get('essentialOutcomes', [''])[0] if ref.get('essentialOutcomes') else ''
-
-                html += f'''
-                <div style="padding: 1rem; background: white; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <svg style="width: 1rem; height: 1rem; color: #2563eb;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        <span style="font-weight: 600; color: #1e3a8a;">{display_name}</span>
-                    </div>
-                    <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem;">
-                        Grade: {grade} | Strand: {strand}
-                    </div>
-                    {f'<p style="font-size: 0.875rem; color: #374151; margin: 0;">{essential}</p>' if essential else ''}
-                </div>
-                '''
-
-            html += '''
-                </div>
-            </div>
-            '''
-
-        html += '</div>'
-
-        # Add footer
-        from datetime import datetime
-        html += f"""
-            <div class="footer">
-                Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
-            </div>
+            <h1 style="color: {accent_color};">{title}</h1>
+            <pre>{content}</pre>
         </body>
         </html>
         """
@@ -658,6 +224,132 @@ def export_to_pdf(data: Union[str, Dict, List], title: str = "Export") -> bytes:
 
     except Exception as e:
         raise RuntimeError(f"Failed to export PDF: {e}")
+
+
+def export_to_docx_from_html(html: str, accent_color: str, form_data: dict) -> bytes:
+    """
+    Convert HTML to DOCX while preserving formatting.
+    This ensures DOCX matches PDF and screen display exactly.
+    """
+    doc = Document()
+    soup = BeautifulSoup(html, 'html.parser')
+    rgb = hex_to_rgb(accent_color)
+    
+    # Parse header section (gradient banner)
+    # Find the header div by looking for the subject badge
+    header_section = soup.find('div', style=lambda x: x and 'gradient' in str(x) if x else False)
+    
+    if not header_section:
+        # Try finding by structure
+        for div in soup.find_all('div'):
+            if div.find('span') and div.find('h1'):
+                header_section = div
+                break
+    
+    if header_section:
+        # Add subject badge
+        badge = header_section.find('span')
+        if badge:
+            p = doc.add_paragraph()
+            run = p.add_run(badge.text)
+            run.font.size = Pt(10)
+            run.font.color.rgb = RGBColor(255, 255, 255)
+            run.font.bold = True
+            # Simulate badge background with shading
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()  # Spacing
+        
+        # Add main title
+        title_h1 = header_section.find('h1')
+        if title_h1:
+            p = doc.add_paragraph()
+            run = p.add_run(title_h1.text)
+            run.font.size = Pt(24)
+            run.font.color.rgb = RGBColor(*rgb)
+            run.font.bold = True
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()  # Spacing
+    
+    # Parse main content
+    # Get the content div (after header)
+    content_divs = soup.find_all('div', recursive=False)
+    
+    # Find content div (usually the one after header with margin-top)
+    content_div = None
+    for div in content_divs:
+        style = div.get('style', '')
+        if 'margin-top: 2rem' in style or div.find(['h2', 'h3', 'p']):
+            content_div = div
+            break
+    
+    if not content_div:
+        # Fallback: get body content
+        content_div = soup.find('body')
+    
+    if content_div:
+        # Process each element
+        for element in content_div.find_all(['h2', 'h3', 'div', 'p'], recursive=True):
+            style = element.get('style', '')
+            text = element.get_text(strip=True)
+            
+            if not text:
+                continue
+            
+            # Section headings (h2)
+            if element.name == 'h2':
+                heading = doc.add_heading(text, level=1)
+                heading.runs[0].font.color.rgb = RGBColor(*rgb)
+                heading.runs[0].font.size = Pt(18)
+                
+            # Question headings (h3)
+            elif element.name == 'h3':
+                heading = doc.add_heading(text, level=2)
+                heading.runs[0].font.color.rgb = RGBColor(
+                    int(rgb[0] * 0.8),
+                    int(rgb[1] * 0.8),
+                    int(rgb[2] * 0.8)
+                )
+                heading.runs[0].font.size = Pt(14)
+                
+            # Answer options (divs with A), B), etc.)
+            elif element.name == 'div' and re.match(r'^[A-D]\)', text):
+                p = doc.add_paragraph()
+                letter_run = p.add_run(text[:2] + ' ')
+                letter_run.font.bold = True
+                letter_run.font.color.rgb = RGBColor(*rgb)
+                content_run = p.add_run(text[2:].strip())
+                p.paragraph_format.left_indent = Inches(0.25)
+                
+            # Bullet points (divs with •)
+            elif element.name == 'div' and '•' in text[:2]:
+                content = text.replace('•', '').strip()
+                p = doc.add_paragraph(content, style='List Bullet')
+                p.paragraph_format.left_indent = Inches(0.25)
+                
+            # Numbered lists (divs with numbers)
+            elif element.name == 'div' and re.match(r'^\d+\.', text):
+                content = re.sub(r'^\d+\.\s*', '', text)
+                p = doc.add_paragraph(content, style='List Number')
+                p.paragraph_format.left_indent = Inches(0.25)
+                
+            # Regular paragraphs
+            elif element.name == 'p':
+                p = doc.add_paragraph(text)
+                p.paragraph_format.space_after = Pt(6)
+    
+    # Add footer
+    footer = doc.sections[0].footer
+    footer_p = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+    footer_p.text = f"Generated on {form_data.get('date', 'N/A')}"
+    footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    footer_run = footer_p.runs[0]
+    footer_run.font.size = Pt(9)
+    footer_run.font.color.rgb = RGBColor(156, 163, 175)
+    
+    # Save to bytes
+    buf = io.BytesIO()
+    doc.save(buf)
+    return buf.getvalue()
 
 
 def format_section_content_html(content: List[Dict]) -> str:

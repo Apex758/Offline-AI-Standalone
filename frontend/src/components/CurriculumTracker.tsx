@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ChevronRight, ChevronDown, Circle, CheckCircle2, PlayCircle, XCircle,
   Calendar, Edit2, Eye, Filter, RotateCcw, BookOpen, TrendingUp,
-  Target, Clock, AlertCircle
+  Target, Clock, AlertCircle, ChevronUp
 } from 'lucide-react';
 import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode } from '../types/milestone';
@@ -368,12 +368,22 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             <option value="skipped">Skipped</option>
           </select>
 
-          <button
-            onClick={() => setFilters({ grade: '', subject: '', status: '' })}
-            className="ml-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
-          >
-            Clear Filters
-          </button>
+          <div className="ml-auto flex items-center space-x-2">
+            <button
+              onClick={() => setFilters({ grade: '', subject: '', status: '' })}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+            >
+              Clear Filters
+            </button>
+            <button
+              onClick={() => setExpandedNodes(new Set())}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center space-x-2"
+              title="Collapse All"
+            >
+              <ChevronUp className="w-4 h-4" />
+              <span>Collapse All</span>
+            </button>
+          </div>
         </div>
       </div>
 

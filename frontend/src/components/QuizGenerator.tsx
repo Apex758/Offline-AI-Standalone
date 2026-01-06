@@ -619,11 +619,110 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1">
-                      {formatQuizText(streamingQuiz || generatedQuiz, tabColor)}
-                      {loading && streamingQuiz && (
-                        <span className="inline-flex items-center ml-1">
-                          <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
-                        </span>
+                      {parsedQuiz && !loading ? (
+                        // ✅ Render directly from structured format
+                        <div className="space-y-6">
+                          {parsedQuiz.questions.map((question, qIndex) => (
+                            <div key={question.id} className="space-y-3">
+                              <h3 className="text-lg font-semibold p-3 rounded-lg" style={{ color: `${tabColor}cc`, backgroundColor: `${tabColor}0d` }}>
+                                Question {qIndex + 1}: {question.question}
+                              </h3>
+                              
+                              {question.type === 'multiple-choice' && question.options && (
+                                <div className="ml-6 space-y-2">
+                                  {question.options.map((option, oIndex) => {
+                                    const letter = String.fromCharCode(65 + oIndex);
+                                    const isCorrect = question.correctAnswer === oIndex;
+                                    return (
+                                      <div key={oIndex} className="flex items-start">
+                                        <span className="mr-3 font-semibold" style={{ color: `${tabColor}cc` }}>
+                                          {letter})
+                                        </span>
+                                        <span className={`text-gray-700 ${isCorrect ? 'font-medium' : ''}`}>
+                                          {option}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                  <div className="mt-3 text-sm">
+                                    <span className="font-semibold text-green-700">
+                                      Correct Answer: {String.fromCharCode(65 + (question.correctAnswer as number))}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {question.type === 'true-false' && (
+                                <div className="ml-6 space-y-2">
+                                  <div className="flex items-start">
+                                    <span className="mr-3 font-semibold" style={{ color: `${tabColor}cc` }}>A)</span>
+                                    <span className={`text-gray-700 ${question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
+                                      True
+                                    </span>
+                                  </div>
+                                  <div className="flex items-start">
+                                    <span className="mr-3 font-semibold" style={{ color: `${tabColor}cc` }}>B)</span>
+                                    <span className={`text-gray-700 ${question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
+                                      False
+                                    </span>
+                                  </div>
+                                  <div className="mt-3 text-sm">
+                                    <span className="font-semibold text-green-700">
+                                      Correct Answer: {question.correctAnswer === 'true' ? 'True' : 'False'}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {question.type === 'fill-blank' && (
+                                <div className="ml-6 space-y-2">
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-green-700">
+                                      Answer: {question.correctAnswer}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {question.type === 'open-ended' && (
+                                <div className="ml-6 space-y-2">
+                                  <div className="text-sm">
+                                    <span className="font-semibold text-gray-700">Sample Answer:</span>
+                                    <p className="text-gray-600 mt-1 whitespace-pre-wrap">{question.correctAnswer}</p>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {question.explanation && (
+                                <div className="ml-6 mt-3 p-3 bg-blue-50 rounded-lg">
+                                  <span className="text-sm font-semibold text-blue-900">Explanation: </span>
+                                  <span className="text-sm text-blue-800">{question.explanation}</span>
+                                </div>
+                              )}
+                              
+                              {(question.cognitiveLevel || question.points) && (
+                                <div className="ml-6 mt-2 flex gap-4 text-xs text-gray-500">
+                                  {question.cognitiveLevel && (
+                                    <span>Cognitive Level: {question.cognitiveLevel}</span>
+                                  )}
+                                  {question.points && (
+                                    <span>Points: {question.points}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        // Fallback to text rendering for streaming or non-parsed content
+                        <>
+                          {formatQuizText(streamingQuiz || generatedQuiz, tabColor)}
+                          {loading && streamingQuiz && (
+                            <span className="inline-flex items-center ml-1">
+                              <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

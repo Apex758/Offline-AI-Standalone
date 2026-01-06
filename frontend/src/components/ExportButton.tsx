@@ -1,158 +1,132 @@
-import React, { useState } from "react";
-import { Download } from "lucide-react";
-import axios from "axios";
-import { API_CONFIG } from "../config/api.config";
-
-type ExportFormat = "pdf" | "docx" | "csv" | "json" | "md";
+// components/ExportButton.tsx - UPDATED VERSION
+import React, { useState } from 'react';
+import { Download, Loader2, FileText, FileDown } from 'lucide-react';
+import axios from 'axios';
+import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRenderer';
 
 interface ExportButtonProps {
-  dataType: "plan" | "quiz" | "rubric" | string;
-  data: any;
+  dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular';
+  data: {
+    content: string;
+    formData: any;
+    accentColor: string;
+    parsedQuiz?: any;
+  };
   filename?: string;
   className?: string;
 }
 
-const FORMAT_LABELS: Record<ExportFormat, string> = {
-  pdf: "PDF",
-  docx: "Word (DOCX)",
-  csv: "CSV",
-  json: "JSON",
-  md: "Markdown",
-};
-
-const getSupportedFormats = (dataType: string): ExportFormat[] => {
-  if (["plan", "quiz", "rubric"].includes(dataType)) {
-    return ["pdf", "docx"];
-  }
-  return ["pdf", "docx", "csv", "json", "md"];
-};
-
-const getMimeType = (format: ExportFormat) => {
-  switch (format) {
-    case "pdf":
-      return "application/pdf";
-    case "docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    case "csv":
-      return "text/csv";
-    case "json":
-      return "application/json";
-    case "md":
-      return "text/markdown";
-    default:
-      return "application/octet-stream";
-  }
-};
-
-export const ExportButton: React.FC<ExportButtonProps> = ({
+const ExportButton: React.FC<ExportButtonProps> = ({
   dataType,
   data,
-  filename = "export",
-  className = "",
+  filename = 'export',
+  className = ''
 }) => {
-  const [format, setFormat] = useState<ExportFormat>(getSupportedFormats(dataType)[0]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
-  const supportedFormats = getSupportedFormats(dataType);
+  const handleExport = async (format: 'pdf' | 'docx') => {
+    setIsExporting(true);
+    setShowMenu(false);
 
-  const handleExport = async () => {
-    setError(null);
-    setLoading(true);
     try {
-      if (!supportedFormats.includes(format)) {
-        setError("This format is not supported for this data type.");
-        setLoading(false);
-        return;
-      }
-      // Humanize filename for title (replace dashes/underscores with spaces, capitalize)
-      const humanTitle =
-        filename && filename.trim()
-          ? filename
-              .replace(/[-_]+/g, " ")
-              .replace(/\b\w/g, (c) => c.toUpperCase())
-          : "Lesson Plan Export";
+      // Generate HTML that matches the screen display exactly
+      const exportData = prepareQuizForExport(
+        data.content,
+        data.formData,
+        data.accentColor
+      );
 
+      // Add title for backend
+      const title = data.formData.subject
+        ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
+        : 'Quiz';
+
+      // Send to backend with rawHtml for perfect rendering
       const response = await axios.post(
-        `${API_CONFIG.BASE_URL}/api/export`,
+        'http://localhost:8000/api/export',
         {
           data_type: dataType,
-          format,
-          data,
-          title: humanTitle,
+          format: format,
+          data: exportData,  // This includes rawHtml, content, formData, accentColor
+          title: title
         },
         {
-          responseType: "arraybuffer",
+          responseType: 'blob'
         }
       );
 
-      // Check if running in Electron
-      if (window.electronAPI?.downloadFile) {
-        // Use Electron's download handler
-        const result = await window.electronAPI.downloadFile(
-          response.data,
-          `${filename}.${format}`
-        );
-
-        if (!result.success) {
-          setError(result.message || "Download failed");
-        }
-      } else {
-        // Fallback for browser (development mode)
-        const blob = new Blob([response.data], { type: getMimeType(format) });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${filename}.${format}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (err: any) {
-      if (err.response && err.response.data) {
-        // Try to read error message from backend
-        const reader = new FileReader();
-        reader.onload = () => {
-          setError(reader.result as string || "Export failed due to backend error.");
-        };
-        reader.readAsText(err.response.data);
-      } else {
-        setError("Export failed. Please try again.");
-      }
+      // Download the file
+      const blob = new Blob([response.data], {
+        type: format === 'pdf'
+          ? 'application/pdf'
+          : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${filename}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
     } finally {
-      setLoading(false);
+      setIsExporting(false);
     }
   };
 
   return (
-    <div className={`relative inline-block ${className}`}>
-      <div className="flex gap-2">
-        <select
-          value={format}
-          onChange={(e) => setFormat(e.target.value as ExportFormat)}
-          className="rounded-l-lg border border-gray-300 px-2 py-2 text-sm focus:outline-none"
-          disabled={loading}
-        >
-          {supportedFormats.map((fmt) => (
-            <option key={fmt} value={fmt}>
-              {FORMAT_LABELS[fmt]}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleExport}
-          disabled={loading}
-          className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition disabled:bg-gray-400`}
-        >
-          <Download className="w-4 h-4 mr-2" />
-          {loading ? "Exporting..." : "Export"}
-        </button>
-      </div>
-      {error && (
-        <div className="absolute left-0 mt-2 w-max bg-red-100 text-red-700 px-3 py-2 rounded shadow z-10 text-xs">
-          {error}
-        </div>
+    <div className="relative">
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        disabled={isExporting}
+        className={`flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 ${className}`}
+      >
+        {isExporting ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Exporting...
+          </>
+        ) : (
+          <>
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </>
+        )}
+      </button>
+
+      {showMenu && !isExporting && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setShowMenu(false)}
+          />
+          
+          {/* Menu */}
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+            <div className="py-1">
+              <button
+                onClick={() => handleExport('pdf')}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
+              >
+                <FileText className="w-4 h-4 mr-3 text-red-600" />
+                <span className="text-sm text-gray-700">Export as PDF</span>
+              </button>
+              <button
+                onClick={() => handleExport('docx')}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center transition"
+              >
+                <FileDown className="w-4 h-4 mr-3 text-blue-600" />
+                <span className="text-sm text-gray-700">Export as Word</span>
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -473,7 +473,24 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
     return getDefaultFormData();
   });
-  const [generatedRubric, setGeneratedRubric] = useState<string>('');
+
+  const [generatedRubric, setGeneratedRubric] = useState<string>(() => {
+    // ✅ First check savedData (for resource manager view/edit)
+    if (savedData?.generatedRubric && typeof savedData.generatedRubric === 'string') {
+      return savedData.generatedRubric;
+    }
+    // Then check localStorage
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.generatedRubric || '';
+      }
+    } catch (e) {
+      console.error('Failed to restore rubric:', e);
+    }
+    return '';
+  });
 
   const assignmentTypes = [
     'Essay', 'Presentation', 'Project', 'Lab Report', 'Creative Writing', 
