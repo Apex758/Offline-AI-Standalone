@@ -416,6 +416,36 @@ ipcMain.handle('save-tasks-data', async (event, tasks) => {
   }
 });
 
+// IPC handler for file downloads
+ipcMain.handle('download-file', async (event, { arrayBuffer, filename }) => {
+  const { dialog } = require('electron');
+
+  try {
+    // Show save dialog
+    const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
+      title: 'Save Export',
+      defaultPath: path.join(app.getPath('downloads'), filename),
+      filters: [
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    });
+
+    if (canceled || !filePath) {
+      return { success: false, message: 'Download canceled' };
+    }
+
+    // Convert ArrayBuffer to Buffer and write to file
+    const buffer = Buffer.from(arrayBuffer);
+    fs.writeFileSync(filePath, buffer);
+
+    log.info(`File saved successfully: ${filePath}`);
+    return { success: true, path: filePath };
+  } catch (error) {
+    log.error('Error saving file:', error);
+    return { success: false, message: error.message };
+  }
+});
+
 // App lifecycle
 app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');

@@ -1,7 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   // Get application info
   getAppInfo: () => {
@@ -16,6 +14,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Task data persistence
   getTasksData: () => ipcRenderer.invoke('get-tasks-data'),
   saveTasksData: (tasks) => ipcRenderer.invoke('save-tasks-data', tasks),
+
+  // File download
+  downloadFile: (arrayBuffer, filename) => ipcRenderer.invoke('download-file', { arrayBuffer, filename }),
+
+  // ✅ ADD: File download handler
+  downloadFile: (arrayBuffer, filename) => 
+    ipcRenderer.invoke('download-file', { arrayBuffer, filename }),
 
   // Platform information
   platform: process.platform,
@@ -40,5 +45,4 @@ contextBridge.exposeInMainWorld('electron', {
   }
 });
 
-// Log that preload script has loaded
 console.log('Preload script loaded successfully');

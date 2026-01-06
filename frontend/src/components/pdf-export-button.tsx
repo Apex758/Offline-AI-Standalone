@@ -9,17 +9,29 @@ interface PdfExportButtonProps {
 
 // Change from default export to named export
 export function PDFExportButton({ content, filename, className }: PdfExportButtonProps) {
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!content) return;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'export.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+
+    // Convert string to ArrayBuffer
+    const encoder = new TextEncoder();
+    const arrayBuffer = encoder.encode(content).buffer;
+
+    // Check if running in Electron
+    if (window.electronAPI?.downloadFile) {
+      // Use Electron's download handler
+      await window.electronAPI.downloadFile(arrayBuffer, filename || 'export.txt');
+    } else {
+      // Fallback for browser (development mode)
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'export.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (

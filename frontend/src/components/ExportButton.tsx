@@ -82,18 +82,33 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
           title: humanTitle,
         },
         {
-          responseType: "blob",
+          responseType: "arraybuffer",
         }
       );
-      const blob = new Blob([response.data], { type: getMimeType(format) });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${filename}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+
+      // Check if running in Electron
+      if (window.electronAPI?.downloadFile) {
+        // Use Electron's download handler
+        const result = await window.electronAPI.downloadFile(
+          response.data,
+          `${filename}.${format}`
+        );
+
+        if (!result.success) {
+          setError(result.message || "Download failed");
+        }
+      } else {
+        // Fallback for browser (development mode)
+        const blob = new Blob([response.data], { type: getMimeType(format) });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${filename}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
     } catch (err: any) {
       if (err.response && err.response.data) {
         // Try to read error message from backend

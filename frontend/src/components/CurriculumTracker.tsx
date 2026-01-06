@@ -262,7 +262,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           
           <BookOpen className="w-5 h-5 text-indigo-600" />
           
-          <span className="font-semibold text-gray-900 flex-1">{node.label}</span>
+          <span className="font-semibold text-gray-900 flex-1">  {node.type === 'grade' ? `Grade ${node.label}` : node.label}</span>
           
           {node.progress && (
             <div className="flex items-center space-x-2">
