@@ -11,6 +11,7 @@ interface ExportButtonProps {
     formData: any;
     accentColor: string;
     parsedQuiz?: any;
+    curriculumReferences?: any;
   };
   filename?: string;
   className?: string;
