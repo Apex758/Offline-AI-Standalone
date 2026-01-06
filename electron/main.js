@@ -285,7 +285,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      devTools: isDev, // Enable DevTools in development
+      devTools: true, // Enable DevTools for debugging
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: false // Allow local file access
     },
@@ -296,6 +296,14 @@ function createWindow() {
   // Remove menu
   mainWindow.setMenuBarVisibility(false);
   mainWindow.removeMenu();
+
+  // Enable DevTools shortcut for debugging (Ctrl+Shift+I)
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+      mainWindow.webContents.openDevTools();
+      event.preventDefault();
+    }
+  });
 
   // Load splashscreen first
   const splashPath = getSplashscreenPath();

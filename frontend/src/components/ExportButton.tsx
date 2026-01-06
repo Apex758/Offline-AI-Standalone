@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Download } from "lucide-react";
 import axios from "axios";
+import { API_CONFIG } from "../config/api.config";
 
 type ExportFormat = "pdf" | "docx" | "csv" | "json" | "md";
 
@@ -73,7 +74,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
           : "Lesson Plan Export";
 
       const response = await axios.post(
-        "/api/export",
+        `${API_CONFIG.BASE_URL}/api/export`,
         {
           data_type: dataType,
           format,
