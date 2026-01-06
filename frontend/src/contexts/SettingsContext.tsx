@@ -13,6 +13,8 @@ export interface TabColors {
   'rubric-generator': string;
   'resource-manager': string;
   'curriculum-tracker': string;
+  'worksheet-generator': string;
+  'image-studio': string;
 }
 
 export interface TutorialState {
@@ -34,6 +36,7 @@ export interface Settings {
   sidebarColor: string;
   tutorials: TutorialState;
   generationMode: 'queued' | 'simultaneous';
+  visualStudioEnabled: boolean;
 }
 
 export interface SettingsContextValue {
@@ -60,7 +63,9 @@ export const DEFAULT_SETTINGS: Settings = {
     'quiz-generator': '#14b8a6',
     'rubric-generator': '#f97316',
     'resource-manager': '#84cc16',
-    'curriculum-tracker': '#22c55e'
+    'curriculum-tracker': '#22c55e',
+    'worksheet-generator': '#8b5cf6',
+    'image-studio': '#ec4899'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',
@@ -76,6 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
     }
   },
   generationMode: 'queued',
+  visualStudioEnabled: false,
 };
 
 // localStorage key

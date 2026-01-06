@@ -131,6 +131,8 @@ const Settings: React.FC<SettingsProps> = () => {
     { type: 'kindergarten-planner', label: 'Kindergarten', defaultColor: '#ec4899' },
     { type: 'multigrade-planner', label: 'Multigrade', defaultColor: '#06b6d4' },
     { type: 'cross-curricular-planner', label: 'Cross-Curricular', defaultColor: '#6366f1' },
+    { type: 'worksheet-generator', label: 'Worksheet Generator', defaultColor: '#8b5cf6' },
+    { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
   ];
 
   const handleTabColorChange = (tabType: string, color: string) => {
@@ -658,6 +660,30 @@ const Settings: React.FC<SettingsProps> = () => {
                 </div>
                 <span className="text-sm text-gray-600 font-mono">{settings.sidebarColor}</span>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Visual Studio Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Visual Studio</CardTitle>
+              <CardDescription>Control access to Visual Studio tools</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.visualStudioEnabled}
+                  onChange={(e) => updateSettings({ visualStudioEnabled: e.target.checked })}
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Enable Visual Studio tools
+                </span>
+              </label>
+              <p className="text-xs text-gray-500 mt-2">
+                When disabled, Visual Studio tools are hidden from the sidebar and cannot be accessed.
+              </p>
             </CardContent>
           </Card>
 

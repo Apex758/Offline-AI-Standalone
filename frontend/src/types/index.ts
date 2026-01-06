@@ -23,7 +23,7 @@ export interface SplitViewState {
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio';
   active: boolean;
   data?: any;
   lastActiveTime?: number;
@@ -33,7 +33,7 @@ export interface Tool {
   id: string;
   name: string;
   icon: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio';
   description: string;
   group?: string;
 }

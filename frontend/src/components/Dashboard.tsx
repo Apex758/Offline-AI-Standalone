@@ -18,7 +18,9 @@ import {
   BarChart3,
   Library,
   Settings as SettingsIcon,
-  Target
+  Target,
+  FileSpreadsheet,
+  Palette
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
@@ -34,6 +36,8 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import ResourceManager from './ResourceManager';
 import Settings from './Settings';
 import CurriculumTracker from './CurriculumTracker';
+import WorksheetGenerator from './WorksheetGenerator';
+import ImageStudio from './ImageStudio';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -141,6 +145,23 @@ const tools: Tool[] = [
     icon: 'Settings',
     type: 'settings',
     description: 'Application settings'
+  },
+  // Visual Studio Group
+  {
+    id: 'worksheet-generator',
+    name: 'Worksheet Generator',
+    icon: 'FileSpreadsheet',
+    type: 'worksheet-generator',
+    description: 'Generate custom worksheets',
+    group: 'visual-studio'
+  },
+  {
+    id: 'image-studio',
+    name: 'Image Studio',
+    icon: 'Palette',
+    type: 'image-studio',
+    description: 'Create and edit images',
+    group: 'visual-studio'
   }
 ];
 
@@ -157,7 +178,9 @@ const iconMap: { [key: string]: React.ElementType } = {
   BarChart3,
   Library,
   Settings: SettingsIcon,
-  Target
+  Target,
+  FileSpreadsheet,
+  Palette
 };
 
 const MAX_TABS_PER_TYPE = 3;
@@ -198,6 +221,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [contextMenu, setContextMenu] = useState<{ tabId?: string; groupType?: string; x: number; y: number } | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [lessonPlannerExpanded, setLessonPlannerExpanded] = useState(false);
+  const [visualStudioExpanded, setVisualStudioExpanded] = useState(false);
   const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
@@ -244,6 +268,44 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       setShowResourceManagerTutorial(true);
     }
   }, [activeTabId, tabs, settings, isTutorialCompleted]);
+
+  // Close Visual Studio tabs when Visual Studio is disabled
+  useEffect(() => {
+    if (!settings.visualStudioEnabled) {
+      const visualStudioTabs = tabs.filter(tab =>
+        tab.type === 'worksheet-generator' || tab.type === 'image-studio'
+      );
+      if (visualStudioTabs.length > 0) {
+        const updatedTabs = tabs.filter(tab =>
+          tab.type !== 'worksheet-generator' && tab.type !== 'image-studio'
+        );
+        setTabs(updatedTabs);
+
+        // If the active tab was a Visual Studio tab, switch to another tab or null
+        const activeTab = tabs.find(t => t.id === activeTabId);
+        if (activeTab && (activeTab.type === 'worksheet-generator' || activeTab.type === 'image-studio')) {
+          setActiveTabId(updatedTabs.length > 0 ? updatedTabs[updatedTabs.length - 1].id : null);
+        }
+
+        // Close WebSocket connections for Visual Studio tabs
+        visualStudioTabs.forEach(tab => {
+          const endpoints = [
+            '/ws/chat',
+            '/ws/lesson-plan',
+            '/ws/quiz',
+            '/ws/rubric',
+            '/ws/kindergarten',
+            '/ws/multigrade',
+            '/ws/cross-curricular'
+          ];
+
+          endpoints.forEach(endpoint => {
+            closeConnection(tab.id, endpoint);
+          });
+        });
+      }
+    }
+  }, [settings.visualStudioEnabled, tabs, activeTabId, closeConnection]);
 
 
   const migrateLegacySplitTabs = (savedTabs: Tab[]): Tab[] => {
@@ -308,9 +370,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       }
     }
 
+    if (tool.type === 'worksheet-generator') {
+      const existingWorksheetTab = tabs.find(tab => tab.type === 'worksheet-generator');
+      if (existingWorksheetTab) {
+        setActiveTabId(existingWorksheetTab.id);
+        return;
+      }
+    }
+
+    if (tool.type === 'image-studio') {
+      const existingImageStudioTab = tabs.find(tab => tab.type === 'image-studio');
+      if (existingImageStudioTab) {
+        setActiveTabId(existingImageStudioTab.id);
+        return;
+      }
+    }
+
+    // Special handling for Visual Studio tools - only allow 1 instance each
+    const maxTabsForTool = (tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE;
+
     const currentCount = getTabCountByType(tool.type);
-    if (currentCount >= MAX_TABS_PER_TYPE) {
-      alert(`Maximum of ${MAX_TABS_PER_TYPE} ${tool.name} tabs allowed at once.`);
+    if (currentCount >= maxTabsForTool) {
+      // For Visual Studio tools, don't show alert - just silently don't open
+      if (tool.type !== 'worksheet-generator' && tool.type !== 'image-studio') {
+        alert(`Maximum of ${maxTabsForTool} ${tool.name} tab${maxTabsForTool === 1 ? '' : 's'} allowed at once.`);
+      }
       return;
     }
 
@@ -849,6 +933,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'rubric-generator':
         return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'worksheet-generator':
+        return <WorksheetGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'image-studio':
+        return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'settings':
         return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       default:
@@ -955,6 +1043,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Group tools by category
   const regularTools = tools.filter(t => !t.group && t.type !== 'settings');
   const lessonPlannerTools = tools.filter(t => t.group === 'lesson-planners');
+  const visualStudioTools = tools.filter(t => t.group === 'visual-studio');
   const otherGroupedTools = tools.filter(t => t.group === 'tools');
   const settingsTool = tools.find(t => t.type === 'settings');
 
@@ -1061,7 +1150,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <button
                 key={tool.id}
                 onClick={() => openTool(tool)}
-                disabled={count >= MAX_TABS_PER_TYPE}
+                disabled={count >= ((tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE)}
                 data-tutorial={
                   tool.type === 'analytics'
                     ? 'tool-analytics'
@@ -1336,7 +1425,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           className="text-xs"
                           style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
                         >
-                          {count}/{MAX_TABS_PER_TYPE}
+                          {count}/{(tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE}
                         </p>
                       </div>
                     </button>
@@ -1344,6 +1433,135 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 })}
             </div>
           </div>
+
+          {/* Visual Studio Dropdown */}
+          {settings.visualStudioEnabled && (
+            <div className="mt-4">
+              <button
+                onClick={() => setVisualStudioExpanded(!visualStudioExpanded)}
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition`}
+                style={{
+                  backgroundColor: 'transparent',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = sidebarIsDark
+                    ? 'rgba(255, 255, 255, 0.1)'
+                    : 'rgba(0, 0, 0, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <Palette
+                  className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'}`}
+                  style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                />
+                <div
+                  className="flex-1 text-left overflow-hidden"
+                  style={{
+                    opacity: sidebarOpen ? 1 : 0,
+                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    pointerEvents: sidebarOpen ? 'auto' : 'none'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <p
+                      className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1"
+                      style={{
+                        maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                      }}
+                    >
+                      Visual Studio
+                    </p>
+                    <ChevronDown
+                      className="w-4 h-4 text-gray-400 chevron-icon ml-2 flex-shrink-0"
+                      style={{
+                        transform: visualStudioExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    />
+                  </div>
+                </div>
+              </button>
+
+              <div
+                className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
+                style={{
+                  borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                  opacity: visualStudioExpanded && sidebarOpen ? 1 : 0,
+                  transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  pointerEvents: visualStudioExpanded && sidebarOpen ? 'auto' : 'none',
+                  maxHeight: visualStudioExpanded && sidebarOpen ? '500px' : '0',
+                  overflow: 'hidden'
+                }}
+              >
+                {visualStudioTools.map((tool) => {
+                  const Icon = iconMap[tool.icon];
+                  const count = getTabCountByType(tool.type);
+                  const activeTab = tabs.find(t => t.id === activeTabId);
+                  const isActiveToolType = activeTab?.type === tool.type;
+                  const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+
+                  return (
+                    <button
+                      key={tool.id}
+                      onClick={() => openTool(tool)}
+                      disabled={count >= MAX_TABS_PER_TYPE}
+                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm ${
+                        count >= MAX_TABS_PER_TYPE
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                      }`}
+                      style={{
+                        backgroundColor: 'transparent',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (count < MAX_TABS_PER_TYPE) {
+                          e.currentTarget.style.backgroundColor = sidebarIsDark
+                            ? 'rgba(255, 255, 255, 0.1)'
+                            : 'rgba(0, 0, 0, 0.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (count < MAX_TABS_PER_TYPE) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      <Icon
+                        className={`w-4 h-4 flex-shrink-0 ${
+                          isActiveToolType ? 'icon-glow' : ''
+                        }`}
+                        style={
+                          isActiveToolType && toolColor
+                            ? { color: toolColor }
+                            : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                        }
+                      />
+                      <div className="flex-1 text-left overflow-hidden">
+                        <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
+                           style={{
+                             maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                             WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                           }}>
+                          {tool.name}
+                        </p>
+                        <p
+                          className="text-xs"
+                          style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                        >
+                          {count}/{MAX_TABS_PER_TYPE}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Settings Tool */}
           {settingsTool && (
