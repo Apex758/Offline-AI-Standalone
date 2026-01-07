@@ -8,6 +8,9 @@ import {
   ListBasedTemplate
 } from './templates';
 
+import { imageApi } from '../lib/imageApi';
+import { Wand2, Download } from 'lucide-react';
+
 interface CurriculumPage {
   subject: string;
   grade: string;
@@ -60,11 +63,6 @@ const questionTypeOptions = [
   'Comprehension'
 ];
 
-const imageStyleOptions = [
-  'Cartoon',
-  'Black & White',
-  'Realistic'
-];
 
 const worksheetTemplates: WorksheetTemplate[] = [
   {
@@ -146,6 +144,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [loading, setLoading] = useState(false);
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumPage[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
+  // Image generation state
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [generatingImages, setGeneratingImages] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // Auto-fetch strands based on subject and grade
   const getStrands = (subject: string, grade: string): string[] => {
@@ -273,6 +277,47 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       default:
         return null;
     }
+  };
+
+  // Image generation handlers
+  const handleGenerateImage = async () => {
+    if (!imagePrompt.trim()) {
+      setImageError('Please enter a prompt');
+      return;
+    }
+
+    setGeneratingImages(true);
+    setImageError(null);
+
+    try {
+      const response = await imageApi.generateImageBase64({
+        prompt: imagePrompt,
+        negativePrompt: 'multiple people, group, crowd, deformed, distorted, blurry',
+        width: 512,
+        height: 512,
+        numInferenceSteps: 2
+      });
+
+      if (response.success && response.imageData) {
+        setGeneratedImages([response.imageData]);
+      } else {
+        throw new Error('Image generation failed');
+      }
+    } catch (err: unknown) {
+      console.error('Generation error:', err);
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
+      setImageError(error.response?.data?.error || error.message || 'Failed to generate image');
+    } finally {
+      setGeneratingImages(false);
+    }
+  };
+
+  const handleDownloadImage = (imageData: string) => {
+    // Assuming downloadImage is imported, but since it's not, perhaps use a simple download
+    const link = document.createElement('a');
+    link.href = imageData;
+    link.download = `generated-image-${Date.now()}.png`;
+    link.click();
   };
 
   return (
@@ -504,34 +549,66 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
 
-            {/* Images */}
+            {/* AI Image Generation */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800">Image Integration</h3>
+              <h3 className="text-lg font-semibold text-gray-800">AI Image Generation</h3>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={formData.includeImages}
-                  onChange={(e) => handleInputChange('includeImages', e.target.checked)}
-                  className="w-4 h-4 rounded focus:ring-2 focus:ring-blue-500"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Image Prompt <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Describe the image you want to generate..."
                 />
-                <label className="text-sm font-medium text-gray-700">Include Images</label>
               </div>
 
-              {formData.includeImages && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image Style
-                  </label>
-                  <select
-                    value={formData.imageStyle}
-                    onChange={(e) => handleInputChange('imageStyle', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {imageStyleOptions.map(style => (
-                      <option key={style} value={style}>{style}</option>
-                    ))}
-                  </select>
+              <button
+                onClick={handleGenerateImage}
+                disabled={generatingImages || !imagePrompt.trim()}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {generatingImages ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-5 h-5 mr-2" />
+                    Generate Image
+                  </>
+                )}
+              </button>
+
+              {imageError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {imageError}
+                </div>
+              )}
+
+              {generatedImages.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-md font-semibold text-gray-800">Generated Images</h4>
+                  {generatedImages.map((img, i) => (
+                    <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                      <img
+                        src={img}
+                        alt={`Generated ${i + 1}`}
+                        className="w-full max-h-64 object-contain rounded-lg mb-4"
+                      />
+                      <button
+                        onClick={() => handleDownloadImage(img)}
+                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Image
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

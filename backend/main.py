@@ -14,9 +14,11 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, File, UploadFile
 from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
+from image_service import get_image_service
+import base64
 from pydantic import BaseModel
 from typing import List, Optional
 import subprocess
@@ -205,6 +207,22 @@ async def lifespan(app):
     
     logger.info("Server ready!")
     yield
+    
+    # Initialize Image Service
+    try:
+        from image_service import get_image_service
+        image_service = get_image_service()
+        logger.info("Image service initialized")
+        
+        # Start IOPaint on startup 
+        # image_service.start_iopaint()  
+    except Exception as e:
+        logger.error(f"Failed to initialize image service: {e}")
+    
+    
+    logger.info("Server ready!")
+    yield    
+
     # Shutdown logic
     try:
         from inference_factory import get_inference_instance
@@ -213,6 +231,15 @@ async def lifespan(app):
         logger.info("Inference backend cleaned up")
     except Exception as e:
         logger.error(f"Error cleaning up inference backend: {e}")
+        
+    try:
+        from image_service import get_image_service
+        image_service = get_image_service()
+        image_service.cleanup()
+        logger.info("Image service cleaned up")
+    except Exception as e:
+        logger.error(f"Error cleaning up image service: {e}")
+        
     cleanup_all_processes()
     shutdown_executor()
 
@@ -1815,10 +1842,7 @@ async def _shutdown_server():
     await asyncio.sleep(0.5)  # Allow response to be sent
     os._exit(0)  # Force terminate the process
 
-
-# (Removed old shutdown event handler, now handled in lifespan)
-    
-    
+  
 # =========================
 # Export Endpoint
 # =========================
@@ -1909,3 +1933,457 @@ async def export_data(
     )
 
     
+
+
+# =========================
+# IMAGE GENERATION ENDPOINTS
+# =========================
+ 
+@app.post("/api/generate-image-prompt")
+async def generate_image_prompt(request: Request):
+    """
+    Generate an optimized image prompt using LLaMA model
+    """
+    try:
+        data = await request.json()
+        context = data.get('context', {})
+        
+        # Extract context information
+        subject = context.get('subject', '')
+        grade = context.get('grade', '')
+        topic = context.get('topic', '')
+        question_type = context.get('questionType', '')
+        additional = context.get('additionalContext', '')
+        
+        # Build LLaMA prompt for image generation
+        llama_prompt = f"""You are an expert at creating image prompts for educational materials.
+
+Generate a detailed, specific image prompt for SDXL image generation with these requirements:
+
+CONTEXT:
+- Subject: {subject}
+- Grade Level: {grade}
+- Topic: {topic}
+- Question Type: {question_type}
+- Additional Context: {additional}
+
+REQUIREMENTS:
+1. The image must be age-appropriate for Grade {grade}
+2. Style: Colorful, cartoon/illustration style, educational
+3. Content: Simple, clear, focused on the main concept
+4. Avoid: Text, words, numbers, multiple subjects, complex scenes
+5. Format: Single clear subject, suitable for worksheet inclusion
+
+Generate ONLY the image prompt (no explanation, no preamble). The prompt should be 1-2 sentences, specific and detailed.
+
+PROMPT:"""
+        
+        # Get inference instance
+        from inference_factory import get_inference_instance
+        inference = get_inference_instance()
+        
+        if not inference.is_loaded:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "AI model not loaded"}
+            )
+        
+        # Call LLaMA using the correct API (matches your llama_inference.py)
+        result = await inference.generate(
+            tool_name="image_prompt_generator",
+            input_data=llama_prompt,
+            prompt_template=None,  # Use input_data as-is
+            max_tokens=150,
+            temperature=0.7,
+            top_p=0.9
+        )
+        
+        # Extract generated text from result
+        if result.get("metadata", {}).get("status") != "success":
+            error_msg = result.get("metadata", {}).get("error_message", "Generation failed")
+            return JSONResponse(
+                status_code=500,
+                content={"error": error_msg}
+            )
+        
+        generated_prompt = result.get("result", "").strip()
+        
+        if not generated_prompt:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "No prompt generated"}
+            )
+        
+        # Generate negative prompt based on educational context
+        negative_prompt = "text, words, letters, numbers, multiple subjects, people, faces, complex scene, dark, scary, violent, inappropriate, blurry, distorted"
+        
+        if grade and grade.lower() in ['k', '1', '2', '3']:
+            negative_prompt += ", realistic, photographic, detailed background"
+        
+        logger.info(f"Generated image prompt: {generated_prompt[:100]}...")
+        
+        return JSONResponse(content={
+            "success": True,
+            "prompt": generated_prompt,
+            "negativePrompt": negative_prompt
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating image prompt: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+@app.post("/api/generate-image")
+async def generate_image(request: Request):
+    """
+    Generate image using SDXL-Turbo
+    
+    Request body:
+    {
+        "prompt": "image description",
+        "negativePrompt": "things to avoid",
+        "width": 1024,
+        "height": 512,
+        "numInferenceSteps": 2
+    }
+    
+    Returns:
+        PNG image as bytes
+    """
+    try:
+        data = await request.json()
+        
+        prompt = data.get('prompt', '')
+        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        width = data.get('width', 1024)
+        height = data.get('height', 512)
+        num_steps = data.get('numInferenceSteps', 2)
+        
+        if not prompt:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Prompt is required"}
+            )
+        
+        # Validate dimensions
+        if width < 256 or width > 2048 or height < 256 or height > 2048:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Width and height must be between 256 and 2048"}
+            )
+        
+        # Get image service
+        image_service = get_image_service()
+        
+        # Generate image
+        image_bytes = image_service.generate_image(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            num_inference_steps=num_steps
+        )
+        
+        if image_bytes is None:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Image generation failed"}
+            )
+        
+        # Return image as PNG
+        return Response(
+            content=image_bytes,
+            media_type="image/png"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating image: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/generate-image-base64")
+async def generate_image_base64(request: Request):
+    """
+    Generate image and return as base64 (easier for frontend embedding)
+    
+    Same request body as /api/generate-image
+    
+    Returns:
+    {
+        "success": true,
+        "imageData": "data:image/png;base64,..."
+    }
+    """
+    try:
+        data = await request.json()
+        
+        prompt = data.get('prompt', '')
+        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        width = data.get('width', 1024)
+        height = data.get('height', 512)
+        num_steps = data.get('numInferenceSteps', 2)
+        
+        if not prompt:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Prompt is required"}
+            )
+        
+        # Get image service
+        image_service = get_image_service()
+        
+        # Generate image
+        image_bytes = image_service.generate_image(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            num_inference_steps=num_steps
+        )
+        
+        if image_bytes is None:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Image generation failed"}
+            )
+        
+        # Convert to base64
+        image_b64 = base64.b64encode(image_bytes).decode('utf-8')
+        data_uri = f"data:image/png;base64,{image_b64}"
+        
+        return JSONResponse(content={
+            "success": True,
+            "imageData": data_uri
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating image: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/inpaint")
+async def inpaint_image(
+    image: UploadFile = File(...),
+    mask: UploadFile = File(...),
+    seed: Optional[int] = None
+):
+    """
+    Remove objects from image using IOPaint (LaMa model)
+    
+    Form data:
+    - image: Original image file
+    - mask: Mask image file (white = remove, black = keep)
+    - seed: Optional random seed
+    
+    Returns:
+        Inpainted image as PNG
+    """
+    try:
+        # Read uploaded files
+        image_data = await image.read()
+        mask_data = await mask.read()
+        
+        if not image_data or not mask_data:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Both image and mask are required"}
+            )
+        
+        # Get image service
+        image_service = get_image_service()
+        
+        # Perform inpainting
+        result_bytes = image_service.inpaint_image(
+            image_data=image_data,
+            mask_data=mask_data,
+            seed=seed
+        )
+        
+        if result_bytes is None:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Inpainting failed"}
+            )
+        
+        # Return result image
+        return Response(
+            content=result_bytes,
+            media_type="image/png"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in inpainting: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/inpaint-base64")
+async def inpaint_image_base64(request: Request):
+    """
+    Inpaint with base64 input/output (easier for frontend)
+    
+    Request body:
+    {
+        "image": "data:image/png;base64,...",
+        "mask": "data:image/png;base64,...",
+        "seed": 12345 (optional)
+    }
+    
+    Returns:
+    {
+        "success": true,
+        "imageData": "data:image/png;base64,..."
+    }
+    """
+    try:
+        data = await request.json()
+        
+        image_b64 = data.get('image', '')
+        mask_b64 = data.get('mask', '')
+        seed = data.get('seed')
+        
+        if not image_b64 or not mask_b64:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Both image and mask are required"}
+            )
+        
+        # Remove data URI prefix if present
+        if image_b64.startswith('data:'):
+            image_b64 = image_b64.split(',')[1]
+        if mask_b64.startswith('data:'):
+            mask_b64 = mask_b64.split(',')[1]
+        
+        # Decode base64
+        image_data = base64.b64decode(image_b64)
+        mask_data = base64.b64decode(mask_b64)
+        
+        # Get image service
+        image_service = get_image_service()
+        
+        # Perform inpainting
+        result_bytes = image_service.inpaint_image(
+            image_data=image_data,
+            mask_data=mask_data,
+            seed=seed
+        )
+        
+        if result_bytes is None:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Inpainting failed"}
+            )
+        
+        # Convert to base64
+        result_b64 = base64.b64encode(result_bytes).decode('utf-8')
+        data_uri = f"data:image/png;base64,{result_b64}"
+        
+        return JSONResponse(content={
+            "success": True,
+            "imageData": data_uri
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in inpainting: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.get("/api/image-service/status")
+async def get_image_service_status():
+    """
+    Check status of image generation services
+    
+    Returns:
+    {
+        "sdxl": {"initialized": true/false},
+        "iopaint": {"running": true/false, "port": 8080}
+    }
+    """
+    try:
+        image_service = get_image_service()
+        
+        return JSONResponse(content={
+            "sdxl": {
+                "initialized": image_service.sdxl_pipeline is not None
+            },
+            "iopaint": {
+                "running": image_service.is_iopaint_running(),
+                "port": image_service.iopaint_port
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error checking image service status: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/image-service/start-iopaint")
+async def start_iopaint_service():
+    """
+    Manually start IOPaint service
+    
+    Returns:
+    {
+        "success": true/false,
+        "message": "status message"
+    }
+    """
+    try:
+        image_service = get_image_service()
+        
+        if image_service.is_iopaint_running():
+            return JSONResponse(content={
+                "success": True,
+                "message": "IOPaint already running"
+            })
+        
+        success = image_service.start_iopaint()
+        
+        if success:
+            return JSONResponse(content={
+                "success": True,
+                "message": "IOPaint started successfully"
+            })
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "message": "Failed to start IOPaint"
+                }
+            )
+        
+    except Exception as e:
+        logger.error(f"Error starting IOPaint: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+
+
+
+
+
+
+
+
+
+

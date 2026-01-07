@@ -133,6 +133,9 @@ async function startBackend() {
       const modelsPath = path.join(process.resourcesPath, 'models');
       env.MODELS_DIR = modelsPath;
       log.info(`Set MODELS_DIR environment variable: ${modelsPath}`);
+      // Set ELECTRON_RESOURCE_PATH for image service
+      env.ELECTRON_RESOURCE_PATH = process.resourcesPath;
+      log.info(`Set ELECTRON_RESOURCE_PATH environment variable: ${process.resourcesPath}`);
 
       // Prepend backend-bundle/bin to PATH for GTK DLLs (WeasyPrint)
       const gtkBinPath = path.join(process.resourcesPath, 'backend-bundle', 'bin');
