@@ -76,6 +76,14 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     });
   }, [activeTab, prompt, results]);
 
+  // Redraw canvas when switching to editor tab
+  useEffect(() => {
+    if (activeTab === 'editor' && history.current) {
+      drawImageOnCanvas(history.current);
+      clearMaskCanvas();
+    }
+  }, [activeTab, history.current]);
+
   // ========================================
   // GENERATOR: Generate Image
   // ========================================
@@ -118,6 +126,43 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
   const handleDownloadGenerated = (imageData: string) => {
     downloadImage(imageData, `generated-${Date.now()}.png`);
+  };
+
+  const handleSaveGenerated = async (imageData: string) => {
+    try {
+      const imageId = `img-${Date.now()}`;
+      const imageRecord = {
+        id: imageId,
+        title: `Generated Image - ${new Date().toLocaleString()}`,
+        timestamp: new Date().toISOString(),
+        type: 'images',
+        imageUrl: imageData,
+        formData: {
+          prompt,
+          negativePrompt,
+          width,
+          height,
+          numInferenceSteps
+        }
+      };
+
+      const response = await fetch('http://localhost:8000/api/images-history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(imageRecord),
+      });
+
+      if (response.ok) {
+        alert('Image saved to Resource Manager!');
+      } else {
+        throw new Error('Failed to save image');
+      }
+    } catch (error) {
+      console.error('Error saving image:', error);
+      alert('Failed to save image');
+    }
   };
 
   // ========================================
@@ -556,7 +601,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </div>
 
                   <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100">
-                    <div className="relative" style={{ maxHeight: '600px', overflow: 'auto' }}>
+                    <div className="relative">
                       {showBeforeAfter && (
                         <img
                           src={history.original}
@@ -573,7 +618,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <canvas
                         ref={maskCanvasRef}
                         className="absolute top-0 left-0 max-w-full h-auto cursor-crosshair"
-                        style={{ mixBlendMode: 'multiply' }}
+                        style={{ mixBlendMode: 'normal' }}
                         onMouseDown={startDrawing}
                         onMouseMove={drawOnMask}
                         onMouseUp={stopDrawing}

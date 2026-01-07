@@ -1682,6 +1682,28 @@ async def delete_cross_curricular_history(plan_id: str):
     return {"success": True}
 
 
+@app.get("/api/images-history")
+async def get_images_history():
+    return load_json_data("images_history.json")
+
+@app.post("/api/images-history")
+async def save_images_history(data: dict):
+    histories = load_json_data("images_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("images_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/images-history/{image_id}")
+async def delete_images_history(image_id: str):
+    histories = load_json_data("images_history.json")
+    histories = [h for h in histories if h.get("id") != image_id]
+    save_json_data("images_history.json", histories)
+    return {"success": True}
+
+
 def scan_models_directory():
     """Scan the models directory for available AI model files"""
     models = []
