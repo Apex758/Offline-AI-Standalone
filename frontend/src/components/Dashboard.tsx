@@ -1895,6 +1895,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  console.log('Dashboard: close all tabs clicked, current tabs:', tabs);
                   // Force immediate state reset - close everything at once
                   setSplitView({
                     isActive: false,
@@ -1907,6 +1908,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   localStorage.removeItem('dashboard-tabs');
                   localStorage.removeItem('dashboard-active-tab');
                   localStorage.removeItem('dashboard-split-view');
+                  console.log('Dashboard: close all tabs completed');
                 }}
                 data-tutorial="close-all-tabs"
                 className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0 border border-red-200 dark:border-red-800 dark:hover:bg-red-900"

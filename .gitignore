@@ -62,3 +62,29 @@ backend/python-embed/
 *.zip
 *.exe
 *.asar
+
+# ML model files
+*.bin
+*.onnx
+*.pt
+*.h5
+*.pkl
+*.joblib
+*.safetensors
+
+# Large data files
+*.csv
+*.jsonl
+*.parquet
+
+# Large media files (if not needed)
+*.mp4
+*.avi
+*.mov
+*.wav
+*.mp3
+
+# Temporary files
+*.tmp
+*.temp
+*.bak

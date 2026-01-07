@@ -16,6 +16,8 @@ interface ImageHistory {
 }
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
+  const hasRestoredRef = useRef(false);
+
   // ========================================
   // Tab Management
   // ========================================
@@ -57,13 +59,14 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Restore saved state
   // ========================================
   useEffect(() => {
-    if (savedData) {
+    if (savedData && !hasRestoredRef.current) {
       if (savedData.initialTab) setActiveTab(savedData.initialTab);
       if (savedData.prompt) setPrompt(savedData.prompt);
       if (savedData.results) setResults(savedData.results);
+      hasRestoredRef.current = true;
     }
   }, [savedData]);
-
+  
   // Save state changes
   useEffect(() => {
     onDataChange({
@@ -71,7 +74,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       prompt,
       results
     });
-  }, [activeTab, prompt, results, onDataChange]);
+  }, [activeTab, prompt, results]);
 
   // ========================================
   // GENERATOR: Generate Image
