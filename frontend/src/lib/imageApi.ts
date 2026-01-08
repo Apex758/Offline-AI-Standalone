@@ -49,6 +49,15 @@ export interface ImageServiceStatus {
   };
 }
 
+export interface SavedImageRecord {
+  id: string;
+  title: string;
+  timestamp: string;
+  type: 'images';
+  imageUrl: string;
+  formData?: any;
+}
+
 // ========================================
 // API Client
 // ========================================
@@ -223,6 +232,49 @@ export const imageApi = {
       return response.data;
     } catch (error) {
       console.error('Error starting IOPaint:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Save image to backend storage
+   */
+  saveImage: async (imageRecord: SavedImageRecord): Promise<{ success: boolean }> => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/images-history`,
+        imageRecord
+      );
+      return { success: true };
+    } catch (error) {
+      console.error('Error saving image:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Load image from backend storage
+   */
+  loadImage: async (imageId: string): Promise<SavedImageRecord> => {
+    try {
+      const response = await axios.get<SavedImageRecord>(
+        `${API_URL}/images-history/${imageId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error loading image:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete image from backend storage
+   */
+  deleteImage: async (imageId: string): Promise<void> => {
+    try {
+      await axios.delete(`${API_URL}/images-history/${imageId}`);
+    } catch (error) {
+      console.error('Error deleting image:', error);
       throw error;
     }
   }

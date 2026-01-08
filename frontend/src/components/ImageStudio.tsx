@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles } from 'lucide-react';
-import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage } from '../lib/imageApi';
+import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 
 interface ImageStudioProps {
   tabId: string;
@@ -17,6 +17,8 @@ interface ImageHistory {
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
   const hasRestoredRef = useRef(false);
+
+  const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
 
   // ========================================
   // Tab Management
@@ -51,23 +53,68 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   });
   const [isInpainting, setIsInpainting] = useState(false);
 
+  // Add new state for tracking saved image
+  const [savedImageId, setSavedImageId] = useState<string | null>(null);
+
+  // ========================================
+  // Auto-save image to backend
+  // ========================================
+  const autoSaveImage = async (imageData: string, type: 'uploaded' | 'edited') => {
+    try {
+      const imageId = savedImageId || `img-${Date.now()}`;
+      const imageRecord: SavedImageRecord = {
+        id: imageId,
+        title: `${type === 'uploaded' ? 'Uploaded' : 'Edited'} Image - ${new Date().toLocaleString()}`,
+        timestamp: new Date().toISOString(),
+        type: 'images',
+        imageUrl: imageData,
+        formData: {
+          type,
+          tabId
+        }
+      };
+
+      await imageApi.saveImage(imageRecord);
+      setSavedImageId(imageId);
+      console.log(`Image auto-saved with ID: ${imageId}`);
+    } catch (error) {
+      console.error('Failed to auto-save image:', error);
+      // Don't block the UI - just log the error
+    }
+  };
+
   // Canvas refs
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // ========================================
-  // Restore saved state
+  // Modified: Restore saved state
   // ========================================
   useEffect(() => {
     if (savedData && !hasRestoredRef.current) {
       if (savedData.initialTab) setActiveTab(savedData.initialTab);
       if (savedData.prompt) setPrompt(savedData.prompt);
       if (savedData.results) setResults(savedData.results);
+      
+      // Restore from sessionStorage
+      try {
+        const storedImageData = sessionStorage.getItem(IMAGE_STORAGE_KEY);
+        if (storedImageData) {
+          const { uploadedImage, history } = JSON.parse(storedImageData);
+          if (uploadedImage) setUploadedImage(uploadedImage);
+          if (history) setHistory(history);
+        }
+      } catch (error) {
+        console.error('Failed to restore image from sessionStorage:', error);
+      }
+      
       hasRestoredRef.current = true;
     }
   }, [savedData]);
   
-  // Save state changes
+  // ========================================
+  // Save light data to parent
+  // ========================================
   useEffect(() => {
     onDataChange({
       initialTab: activeTab,
@@ -76,13 +123,55 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     });
   }, [activeTab, prompt, results]);
 
-  // Redraw canvas when switching to editor tab
+  // ========================================
+  // Save heavy image data to sessionStorage (larger quota, clears on browser close)
+  // ========================================
+  useEffect(() => {
+    try {
+      if (uploadedImage || history.current) {
+        sessionStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify({
+          uploadedImage,
+          history
+        }));
+      }
+    } catch (error) {
+      console.warn('Could not save image to sessionStorage:', error);
+    }
+  }, [uploadedImage, history]);
+
+  // ========================================
+  // Modified: Redraw canvas when switching to editor tab
+  // ========================================
   useEffect(() => {
     if (activeTab === 'editor' && history.current) {
-      drawImageOnCanvas(history.current);
-      clearMaskCanvas();
+      // Small delay to ensure canvas is mounted
+      setTimeout(() => {
+        drawImageOnCanvas(history.current);
+        clearMaskCanvas();
+      }, 100);
     }
   }, [activeTab, history.current]);
+
+  // ========================================
+  // NEW: Auto-save uploaded/edited images
+  // ========================================
+  // Auto-save when image is uploaded
+  useEffect(() => {
+    if (uploadedImage && history.original === uploadedImage) {
+      autoSaveImage(uploadedImage, 'uploaded');
+    }
+  }, [uploadedImage]);
+
+  // Auto-save when image is edited (debounced)
+  useEffect(() => {
+    if (history.current && history.current !== history.original) {
+      const timeoutId = setTimeout(() => {
+        autoSaveImage(history.current, 'edited');
+      }, 2000); // Save 2 seconds after last edit
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [history.current]);
 
   // ========================================
   // GENERATOR: Generate Image
@@ -175,6 +264,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
+
+      // Set state immediately
       setUploadedImage(dataUrl);
       setHistory({
         original: dataUrl,
@@ -182,8 +273,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         undoStack: [],
         redoStack: []
       });
-      
-      // Draw image on canvas
+
+      // Draw on canvas after a short delay to ensure state is updated
       setTimeout(() => {
         drawImageOnCanvas(dataUrl);
         clearMaskCanvas();
