@@ -98,3 +98,4 @@ backend/share/
 backend/lib/
 backend/etc/
 backend/ssl/
+backend/data/
