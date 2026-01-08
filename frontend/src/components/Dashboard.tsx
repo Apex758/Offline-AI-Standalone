@@ -533,7 +533,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   useEffect(() => {
     if (tabs.length > 0) {
-      localStorage.setItem('dashboard-tabs', JSON.stringify(tabs));
+      // Exclude tab data to prevent localStorage quota exceeded errors
+      const tabsToSave = tabs.map(tab => ({ ...tab, data: {} }));
+      localStorage.setItem('dashboard-tabs', JSON.stringify(tabsToSave));
     }
     if (activeTabId) {
       localStorage.setItem('dashboard-active-tab', activeTabId);
@@ -660,7 +662,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'rubric': 'rubric-generator',
       'kindergarten': 'kindergarten-planner',
       'multigrade': 'multigrade-planner',
-      'cross-curricular': 'cross-curricular-planner'
+      'cross-curricular': 'cross-curricular-planner',
+      'images': 'image-studio'
     };
 
     const toolType = typeToToolType[type];
@@ -688,7 +691,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         generatedRubric: resource.generatedRubric,
         parsedQuiz: resource.parsedQuiz,
         streamingQuiz: resource.streamingQuiz,
-        startInEditMode: false // View mode
+        startInEditMode: false, // View mode
+        ...(type === 'images' && { initialTab: 'editor', imageId: resource.id, imageUrl: resource.imageUrl })
       }
     };
 

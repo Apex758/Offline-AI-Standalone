@@ -215,7 +215,7 @@ async def lifespan(app):
         logger.info("Image service initialized")
         
         # Start IOPaint on startup 
-        # image_service.start_iopaint()  
+        image_service.start_iopaint()  
     except Exception as e:
         logger.error(f"Failed to initialize image service: {e}")
     

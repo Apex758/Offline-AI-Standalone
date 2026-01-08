@@ -107,7 +107,21 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       } catch (error) {
         console.error('Failed to restore image from sessionStorage:', error);
       }
-      
+
+      // Load image from savedData if initialTab is 'editor' and no image was loaded from sessionStorage
+      if (savedData.initialTab === 'editor' && savedData.imageUrl && !uploadedImage) {
+        setUploadedImage(savedData.imageUrl);
+        setHistory({
+          original: savedData.imageUrl,
+          current: savedData.imageUrl,
+          undoStack: [],
+          redoStack: []
+        });
+        if (savedData.imageId) {
+          setSavedImageId(savedData.imageId);
+        }
+      }
+
       hasRestoredRef.current = true;
     }
   }, [savedData]);

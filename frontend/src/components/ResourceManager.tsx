@@ -43,6 +43,9 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageResource, setSelectedImageResource] = useState<Resource | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedResources, setSelectedResources] = useState<Set<string>>(new Set());
 
   const resourceTypes = [
     { key: 'all', label: 'All Resources', icon: FileText },
@@ -89,6 +92,78 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   useEffect(() => {
     loadAllResources();
   }, []);
+
+  // ESC key handler for image modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showImageModal) {
+        closeImageModal();
+      }
+    };
+
+    if (showImageModal) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showImageModal]);
+
+  const closeImageModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowImageModal(false);
+      setSelectedImageResource(null);
+      setIsClosing(false);
+    }, 300); // Match animation duration
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedResources(new Set());
+  };
+
+  const toggleResourceSelection = (resourceId: string) => {
+    const newSelected = new Set(selectedResources);
+    if (newSelected.has(resourceId)) {
+      newSelected.delete(resourceId);
+    } else {
+      newSelected.add(resourceId);
+    }
+    setSelectedResources(newSelected);
+  };
+
+  const selectAllVisible = () => {
+    const visibleResourceIds = filteredAndSortedResources.map(r => r.id);
+    setSelectedResources(new Set(visibleResourceIds));
+  };
+
+  const clearSelection = () => {
+    setSelectedResources(new Set());
+  };
+
+  const bulkDelete = async () => {
+    if (selectedResources.size === 0) return;
+
+    try {
+      const deletePromises = Array.from(selectedResources).map(async (resourceId) => {
+        const resource = resources.find(r => r.id === resourceId);
+        if (resource) {
+          const endpoint = getEndpointForType(resource.type);
+          await axios.delete(`${endpoint}/${resourceId}`);
+        }
+      });
+
+      await Promise.all(deletePromises);
+      await loadAllResources();
+      setSelectedResources(new Set());
+      setSelectionMode(false);
+    } catch (error) {
+      console.error('Failed to bulk delete resources:', error);
+      alert('Failed to delete some resources');
+    }
+  };
 
   const toggleFavorite = async (resource: Resource) => {
     try {
@@ -209,13 +284,25 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
               Manage all your generated educational resources
             </p>
           </div>
-          <button
-            onClick={loadAllResources}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSelectionMode}
+              className={`flex items-center px-4 py-2 rounded-lg transition ${
+                selectionMode
+                  ? 'bg-gray-600 text-white hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {selectionMode ? 'Cancel' : 'Select'}
+            </button>
+            <button
+              onClick={loadAllResources}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -287,6 +374,41 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         </div>
       </div>
 
+      {/* Selection Controls */}
+      {selectionMode && (
+        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-blue-900">
+                {selectedResources.size} of {filteredAndSortedResources.length} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={selectAllVisible}
+                  className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={clearSelection}
+                  className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={bulkDelete}
+              disabled={selectedResources.size === 0}
+              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Selected ({selectedResources.size})
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Resources Grid */}
       <div className="flex-1 overflow-y-auto p-6">
         {/* Favorites Section */}
@@ -315,6 +437,9 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                   onEdit={() => onEditResource?.(resource.type, resource)}
                   getTypeIcon={getTypeIcon}
                   getTypeColor={getTypeColor}
+                  selectionMode={selectionMode}
+                  isSelected={selectedResources.has(resource.id)}
+                  onToggleSelection={() => toggleResourceSelection(resource.id)}
                 />
               ))}
             </div>
@@ -344,10 +469,20 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
                   onToggleFavorite={() => toggleFavorite(resource)}
                   onDelete={() => setShowDeleteConfirm(resource.id)}
                   onExport={() => exportResource(resource)}
-                  onView={() => onViewResource?.(resource.type, resource)}
+                  onView={() => {
+                    if (resource.type === 'images') {
+                      setSelectedImageResource(resource);
+                      setShowImageModal(true);
+                    } else {
+                      onViewResource?.(resource.type, resource);
+                    }
+                  }}
                   onEdit={() => onEditResource?.(resource.type, resource)}
                   getTypeIcon={getTypeIcon}
                   getTypeColor={getTypeColor}
+                  selectionMode={selectionMode}
+                  isSelected={selectedResources.has(resource.id)}
+                  onToggleSelection={() => toggleResourceSelection(resource.id)}
                 />
               ))}
             </div>
@@ -394,19 +529,28 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
       {/* Image View Modal */}
       {showImageModal && selectedImageResource && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowImageModal(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{selectedImageResource.title}</h3>
+        <div
+          className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-all duration-300 ${
+            isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+          onClick={closeImageModal}
+        >
+          <div
+            className={`bg-white rounded-xl p-4 max-w-4xl w-full mx-4 transition-all duration-300 ${
+              isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-end mb-2">
               <button
-                onClick={() => setShowImageModal(false)}
+                onClick={closeImageModal}
                 className="p-1 rounded hover:bg-gray-100 transition"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
             <div className="flex justify-center">
-              <img src={selectedImageResource.imageUrl} alt={selectedImageResource.title} className="max-w-full max-h-96 object-contain" />
+              <img src={selectedImageResource.imageUrl} alt="" className="max-w-full max-h-[80vh] object-contain rounded-lg" />
             </div>
           </div>
         </div>
@@ -424,6 +568,9 @@ interface ResourceCardProps {
   onEdit: () => void;
   getTypeIcon: (type: string) => any;
   getTypeColor: (type: string) => string;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
 }
 
 const ResourceCard: React.FC<ResourceCardProps> = ({
@@ -434,28 +581,56 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   onView,
   onEdit,
   getTypeIcon,
-  getTypeColor
+  getTypeColor,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelection
 }) => {
   const Icon = getTypeIcon(resource.type);
   
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition group" data-tutorial="resource-card">
+    <div
+      className={`rounded-xl border border-gray-200 p-4 hover:shadow-lg transition group ${
+        selectionMode ? 'cursor-pointer' : ''
+      } ${
+        isSelected ? 'bg-blue-100 border-blue-300' : 'bg-white'
+      }`}
+      data-tutorial="resource-card"
+      onClick={selectionMode ? onToggleSelection : undefined}
+    >
       <div className="flex items-start justify-between mb-3">
-        <div className={`p-2 rounded-lg ${getTypeColor(resource.type)} border`}>
-          <Icon className="w-5 h-5" />
+        <div className="flex items-center gap-3">
+          {resource.type === 'images' && resource.imageUrl ? (
+            <div className="w-12 h-12 rounded-lg border border-gray-200 overflow-hidden">
+              <img
+                src={resource.imageUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className={`p-2 rounded-lg ${getTypeColor(resource.type)} border`}>
+              <Icon className="w-5 h-5" />
+            </div>
+          )}
         </div>
-        <button
-          onClick={onToggleFavorite}
-          className="p-1 rounded hover:bg-gray-100 transition"
-        >
-          <Star
-            className={`w-5 h-5 ${
-              resource.favorite 
-                ? 'text-yellow-500 fill-yellow-500' 
-                : 'text-gray-400'
-            }`}
-          />
-        </button>
+        {!selectionMode && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            className="p-1 rounded hover:bg-gray-100 transition"
+          >
+            <Star
+              className={`w-5 h-5 ${
+                resource.favorite
+                  ? 'text-yellow-500 fill-yellow-500'
+                  : 'text-gray-400'
+              }`}
+            />
+          </button>
+        )}
       </div>
 
       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -467,44 +642,58 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         {new Date(resource.timestamp).toLocaleDateString()}
       </div>
 
-      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
-        {/* "View" Button - shows if there's generated content */}
-        {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric || resource.type === 'images') && (
+      {!selectionMode && (
+        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
+          {/* "View" Button - shows if there's generated content */}
+          {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric || resource.type === 'images') && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onView();
+              }}
+              className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+              title="View generated content"
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              View
+            </button>
+          )}
+
+          {/* "Edit" Button - always available */}
           <button
-            onClick={onView}
-            className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-            title="View generated content"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
+            title="Edit generated content"
           >
-            <Eye className="w-4 h-4 mr-1" />
-            View
+            <Edit className="w-4 h-4 mr-1" />
+            Edit
           </button>
-        )}
-        
-        {/* "Edit" Button - always available */}
-        <button
-          onClick={onEdit}
-          className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
-          title="Edit generated content"
-        >
-          <Edit className="w-4 h-4 mr-1" />
-          Edit
-        </button>
-        
-        <button
-          onClick={onExport}
-          className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-          title="Export"
-        >
-          <Download className="w-4 h-4 text-gray-600" />
-        </button>
-        <button
-          onClick={onDelete}
-          className="p-2 border border-red-300 rounded-lg hover:bg-red-50 transition"
-          title="Delete"
-        >
-          <Trash2 className="w-4 h-4 text-red-600" />
-        </button>
-      </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onExport();
+            }}
+            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            title="Export"
+          >
+            <Download className="w-4 h-4 text-gray-600" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-2 border border-red-300 rounded-lg hover:bg-red-50 transition"
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
