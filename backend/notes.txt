@@ -73,3 +73,7 @@ Add queue feature for generations
 * Large model (8GB+): `max_turns = 6`
 
 ---
+
+
+
+queue and notification system

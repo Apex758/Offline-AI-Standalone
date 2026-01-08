@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles } from 'lucide-react';
+import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save } from 'lucide-react';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 
 interface ImageStudioProps {
@@ -56,6 +56,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Add new state for tracking saved image
   const [savedImageId, setSavedImageId] = useState<string | null>(null);
 
+  // Track if image was newly uploaded (not restored)
+  const [isNewUpload, setIsNewUpload] = useState(false);
+
+  // Brush cursor state
+  const [mousePos, setMousePos] = useState({x: 0, y: 0});
+  const [showBrushCursor, setShowBrushCursor] = useState(false);
+
   // ========================================
   // Auto-save image to backend
   // ========================================
@@ -95,7 +102,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       if (savedData.initialTab) setActiveTab(savedData.initialTab);
       if (savedData.prompt) setPrompt(savedData.prompt);
       if (savedData.results) setResults(savedData.results);
-      
+      if (savedData.generationState) setGenerationState(savedData.generationState);
+      if (savedData.selectedImage) setSelectedImage(savedData.selectedImage);
+
       // Restore from sessionStorage
       try {
         const storedImageData = sessionStorage.getItem(IMAGE_STORAGE_KEY);
@@ -133,9 +142,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     onDataChange({
       initialTab: activeTab,
       prompt,
-      results
+      results,
+      generationState,
+      selectedImage
     });
-  }, [activeTab, prompt, results]);
+  }, [activeTab, prompt, results, generationState, selectedImage]);
 
   // ========================================
   // Save heavy image data to sessionStorage (larger quota, clears on browser close)
@@ -167,25 +178,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   }, [activeTab, history.current]);
 
   // ========================================
-  // NEW: Auto-save uploaded/edited images
+  // NEW: Auto-save uploaded images only
   // ========================================
-  // Auto-save when image is uploaded
+  // Auto-save when image is newly uploaded
   useEffect(() => {
-    if (uploadedImage && history.original === uploadedImage) {
+    if (uploadedImage && history.original === uploadedImage && isNewUpload) {
       autoSaveImage(uploadedImage, 'uploaded');
+      setIsNewUpload(false);
     }
-  }, [uploadedImage]);
-
-  // Auto-save when image is edited (debounced)
-  useEffect(() => {
-    if (history.current && history.current !== history.original) {
-      const timeoutId = setTimeout(() => {
-        autoSaveImage(history.current, 'edited');
-      }, 2000); // Save 2 seconds after last edit
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [history.current]);
+  }, [uploadedImage, isNewUpload]);
 
   // ========================================
   // GENERATOR: Generate Image
@@ -281,6 +282,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
       // Set state immediately
       setUploadedImage(dataUrl);
+      setIsNewUpload(true);
       setHistory({
         original: dataUrl,
         current: dataUrl,
@@ -328,7 +330,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     const canvas = maskCanvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -347,19 +349,22 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   };
 
   const drawOnMask = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-
     const canvas = maskCanvasRef.current;
     if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
+
+    // Update mouse position for cursor
+    setMousePos({x: e.clientX - rect.left, y: e.clientY - rect.top});
+
+    if (!isDrawing) return;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // White mask
     ctx.beginPath();
@@ -380,9 +385,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     }
 
     // Check if mask has any content
-    const maskCtx = maskCanvas.getContext('2d');
+    const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
     if (!maskCtx) return;
-    
+
     const maskData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
     const hasContent = maskData.data.some(pixel => pixel > 0);
     
@@ -472,6 +477,42 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const handleDownloadEdited = () => {
     if (history.current) {
       downloadImage(history.current, `edited-${Date.now()}.png`);
+    }
+  };
+
+  const handleSaveEdited = async () => {
+    if (!history.current) return;
+
+    try {
+      const imageId = `img-${Date.now()}`;
+      const imageRecord = {
+        id: imageId,
+        title: `Edited Image - ${new Date().toLocaleString()}`,
+        timestamp: new Date().toISOString(),
+        type: 'images',
+        imageUrl: history.current,
+        formData: {
+          type: 'edited',
+          tabId
+        }
+      };
+
+      const response = await fetch('http://localhost:8000/api/images-history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(imageRecord),
+      });
+
+      if (response.ok) {
+        alert('Image saved to Resource Manager!');
+      } else {
+        throw new Error('Failed to save image');
+      }
+    } catch (error) {
+      console.error('Error saving image:', error);
+      alert('Failed to save image');
     }
   };
 
@@ -641,13 +682,22 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         alt={`Generated ${i + 1}`}
                         className="w-full max-h-[600px] object-contain rounded-lg mb-4"
                       />
-                      <button
-                        onClick={() => handleDownloadGenerated(img)}
-                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Image
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDownloadGenerated(img)}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </button>
+                        <button
+                          onClick={() => handleSaveGenerated(img)}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -706,15 +756,21 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </div>
 
                   <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100">
-                    <div className="relative">
-                      {showBeforeAfter && (
-                        <img
-                          src={history.original}
-                          alt="Original"
-                          className="absolute top-0 left-0 w-1/2 h-full object-contain opacity-50"
-                          style={{ pointerEvents: 'none' }}
-                        />
-                      )}
+                    {/* Original image underneath */}
+                    <img
+                      src={history.original}
+                      alt="Original"
+                      className="absolute top-0 left-0 w-full h-full object-contain"
+                      style={{ pointerEvents: 'none', zIndex: 1 }}
+                    />
+                    {/* Edited image on top, slides horizontally */}
+                    <div
+                      className="relative transition-transform duration-500 ease-in-out"
+                      style={{
+                        transform: showBeforeAfter ? 'translateX(100%)' : 'translateX(0%)',
+                        zIndex: 2
+                      }}
+                    >
                       <canvas
                         ref={imageCanvasRef}
                         className="max-w-full h-auto"
@@ -722,13 +778,29 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       />
                       <canvas
                         ref={maskCanvasRef}
-                        className="absolute top-0 left-0 max-w-full h-auto cursor-crosshair"
-                        style={{ mixBlendMode: 'normal' }}
+                        className="absolute top-0 left-0 max-w-full h-auto"
+                        style={{ mixBlendMode: 'normal', cursor: 'none' }}
                         onMouseDown={startDrawing}
                         onMouseMove={drawOnMask}
                         onMouseUp={stopDrawing}
-                        onMouseLeave={stopDrawing}
+                        onMouseLeave={() => { stopDrawing(); setShowBrushCursor(false); }}
+                        onMouseEnter={() => setShowBrushCursor(true)}
                       />
+                      {showBrushCursor && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: mousePos.x - brushSize,
+                            top: mousePos.y - brushSize,
+                            width: brushSize * 2,
+                            height: brushSize * 2,
+                            border: '2px solid rgba(255, 255, 255, 0.8)',
+                            borderRadius: '50%',
+                            pointerEvents: 'none',
+                            zIndex: 10
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -810,6 +882,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   >
                     <Eraser className="w-4 h-4 mr-1" />
                     Clear Mask
+                  </button>
+
+                  {/* Save to Resource Manager */}
+                  <button
+                    onClick={handleSaveEdited}
+                    className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                  >
+                    <Save className="w-4 h-4 mr-1" />
+                    Save
                   </button>
 
                   {/* Instructions */}

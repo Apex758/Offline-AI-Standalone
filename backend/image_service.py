@@ -1,9 +1,3 @@
-"""
-Image Service - Production Ready with Electron Path Support
-Manages SDXL-Turbo generation and IOPaint subprocess
-Designed for offline Electron packaging with embedded Python
-"""
-
 import os
 import sys
 import subprocess
@@ -109,17 +103,19 @@ class ImageService:
     
     def _setup_iopaint_cache(self):
         """Setup IOPaint model cache in app data folder"""
-        # Copy LaMa model from resources to cache if not exists
-        lama_cache_file = self.iopaint_cache_dir / "big-lama.pt"
-        
+        # Copy LaMa model from resources to torch hub cache
+        torch_hub_dir = self.iopaint_cache_dir.parent / "hub" / "checkpoints"
+        torch_hub_dir.mkdir(parents=True, exist_ok=True)
+        lama_cache_file = torch_hub_dir / "big-lama.pt"
+
         if not lama_cache_file.exists():
             logger.info("Setting up IOPaint cache...")
-            
+
             # Try to copy from bundled resources
             bundled_lama = get_resource_path("models/image_generation/lama/big-lama.pt")
-            
+
             if bundled_lama.exists():
-                logger.info(f"Copying LaMa model to cache: {bundled_lama} -> {lama_cache_file}")
+                logger.info(f"Copying LaMa model to torch hub cache: {bundled_lama} -> {lama_cache_file}")
                 try:
                     import shutil
                     shutil.copy2(bundled_lama, lama_cache_file)
@@ -224,8 +220,20 @@ class ImageService:
                 if self.is_iopaint_running():
                     logger.info(f"IOPaint started successfully on port {self.iopaint_port}")
                     return True
-            
+
             logger.error("IOPaint failed to start within 30 seconds")
+            # Try to get error output from subprocess
+            if self.iopaint_process:
+                try:
+                    stdout, stderr = self.iopaint_process.communicate(timeout=5)
+                    logger.error(f"IOPaint stdout: {stdout.decode('utf-8', errors='ignore') if stdout else 'None'}")
+                    logger.error(f"IOPaint stderr: {stderr.decode('utf-8', errors='ignore') if stderr else 'None'}")
+                    if self.iopaint_process.poll() is None:
+                        logger.info("IOPaint process is still running")
+                    else:
+                        logger.info(f"IOPaint process exited with code: {self.iopaint_process.returncode}")
+                except Exception as e:
+                    logger.error(f"Error reading IOPaint output: {e}")
             return False
             
         except Exception as e:
@@ -234,6 +242,7 @@ class ImageService:
     
     def _find_iopaint_executable(self) -> Optional[str]:
         """Find iopaint executable in environment"""
+        logger.info(f"sys.prefix: {sys.prefix}")
         # Try to find iopaint in PATH
         if os.name == 'nt':
             # Windows - check Scripts folder in venv or embedded Python
@@ -249,12 +258,17 @@ class ImageService:
                 os.path.join(sys.prefix, 'bin', 'iopaint'),
                 'iopaint'
             ]
-        
+
+        logger.info(f"Checking possible iopaint paths: {possible_paths}")
         for path in possible_paths:
-            if os.path.exists(path) or self._command_exists(path):
+            exists = os.path.exists(path)
+            command_exists = self._command_exists(path)
+            logger.info(f"Checking path: {path} - exists: {exists}, command_exists: {command_exists}")
+            if exists or command_exists:
                 logger.info(f"Found iopaint at: {path}")
                 return path
-        
+
+        logger.error("IOPaint executable not found in any checked paths")
         return None
     
     def _command_exists(self, command: str) -> bool:
@@ -332,33 +346,44 @@ class ImageService:
             logger.error(f"Error generating image: {e}")
             return None
     
-    def inpaint_image(self, 
+    def inpaint_image(self,
                      image_data: bytes,
                      mask_data: bytes,
                      seed: Optional[int] = None) -> Optional[bytes]:
         """
         Remove objects from image using IOPaint (LaMa model)
-        
+
         Args:
             image_data: Original image as bytes
             mask_data: Mask image as bytes (white = remove, black = keep)
             seed: Random seed for reproducibility
-        
+
         Returns:
             bytes: Inpainted image as bytes or None if failed
         """
         try:
+            logger.info("=== STARTING INPAINT_IMAGE ===")
+            logger.info(f"Image data size: {len(image_data)} bytes")
+            logger.info(f"Mask data size: {len(mask_data)} bytes")
+            logger.info(f"Seed: {seed}")
+
             # Ensure IOPaint is running
+            logger.info("Checking if IOPaint is running...")
             if not self.is_iopaint_running():
                 logger.info("IOPaint not running, starting it...")
                 if not self.start_iopaint():
                     logger.error("Failed to start IOPaint")
                     return None
-            
+            else:
+                logger.info("IOPaint is already running")
+
             # Convert bytes to base64
+            logger.info("Converting image and mask to base64...")
             image_b64 = base64.b64encode(image_data).decode('utf-8')
             mask_b64 = base64.b64encode(mask_data).decode('utf-8')
-            
+            logger.info(f"Image b64 length: {len(image_b64)}")
+            logger.info(f"Mask b64 length: {len(mask_b64)}")
+
             # Prepare request
             payload = {
                 "image": f"data:image/png;base64,{image_b64}",
@@ -368,23 +393,33 @@ class ImageService:
                 "hdStrategy": "Original",
                 "seed": seed if seed else -1
             }
-            
+            logger.info(f"Payload prepared with seed: {payload['seed']}")
+
             # Send request to IOPaint
+            url = f"http://127.0.0.1:{self.iopaint_port}/api/v1/inpaint"
+            logger.info(f"Sending POST request to {url}")
             response = requests.post(
-                f"http://127.0.0.1:{self.iopaint_port}/api/v1/inpaint",
+                url,
                 json=payload,
                 timeout=60
             )
-            
+
+            logger.info(f"IOPaint response status: {response.status_code}")
+            logger.info(f"Response headers: {dict(response.headers)}")
+            logger.info(f"Response content length: {len(response.content)}")
+
             if response.status_code == 200:
                 logger.info("Inpainting completed successfully")
                 return response.content
             else:
                 logger.error(f"IOPaint error: {response.status_code}")
+                logger.error(f"Response text: {response.text}")
                 return None
-                
+
         except Exception as e:
             logger.error(f"Error in inpainting: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
     
     def cleanup(self):

@@ -2253,14 +2253,14 @@ async def inpaint_image(
 async def inpaint_image_base64(request: Request):
     """
     Inpaint with base64 input/output (easier for frontend)
-    
+
     Request body:
     {
         "image": "data:image/png;base64,...",
         "mask": "data:image/png;base64,...",
         "seed": 12345 (optional)
     }
-    
+
     Returns:
     {
         "success": true,
@@ -2268,55 +2268,93 @@ async def inpaint_image_base64(request: Request):
     }
     """
     try:
+        logger.info("=== INPAINT-BASE64 REQUEST RECEIVED ===")
         data = await request.json()
-        
+        logger.info(f"Request data keys: {list(data.keys())}")
+
         image_b64 = data.get('image', '')
         mask_b64 = data.get('mask', '')
         seed = data.get('seed')
-        
+
+        logger.info(f"Image b64 length: {len(image_b64) if image_b64 else 0}")
+        logger.info(f"Mask b64 length: {len(mask_b64) if mask_b64 else 0}")
+        logger.info(f"Seed: {seed}")
+
         if not image_b64 or not mask_b64:
+            logger.error("Missing image or mask data")
             return JSONResponse(
                 status_code=400,
                 content={"error": "Both image and mask are required"}
             )
-        
+
         # Remove data URI prefix if present
         if image_b64.startswith('data:'):
             image_b64 = image_b64.split(',')[1]
+            logger.info("Removed data URI prefix from image")
         if mask_b64.startswith('data:'):
             mask_b64 = mask_b64.split(',')[1]
-        
+            logger.info("Removed data URI prefix from mask")
+
+        logger.info(f"Cleaned image b64 length: {len(image_b64)}")
+        logger.info(f"Cleaned mask b64 length: {len(mask_b64)}")
+
         # Decode base64
-        image_data = base64.b64decode(image_b64)
-        mask_data = base64.b64decode(mask_b64)
-        
+        try:
+            image_data = base64.b64decode(image_b64)
+            logger.info(f"Decoded image data: {len(image_data)} bytes")
+        except Exception as e:
+            logger.error(f"Failed to decode image base64: {e}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": f"Invalid image base64: {str(e)}"}
+            )
+
+        try:
+            mask_data = base64.b64decode(mask_b64)
+            logger.info(f"Decoded mask data: {len(mask_data)} bytes")
+        except Exception as e:
+            logger.error(f"Failed to decode mask base64: {e}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": f"Invalid mask base64: {str(e)}"}
+            )
+
         # Get image service
+        logger.info("Getting image service...")
         image_service = get_image_service()
-        
+        logger.info("Image service obtained")
+
         # Perform inpainting
+        logger.info("Calling inpaint_image...")
         result_bytes = image_service.inpaint_image(
             image_data=image_data,
             mask_data=mask_data,
             seed=seed
         )
-        
+
         if result_bytes is None:
+            logger.error("inpaint_image returned None")
             return JSONResponse(
                 status_code=500,
                 content={"error": "Inpainting failed"}
             )
-        
+
+        logger.info(f"Inpainting successful, result size: {len(result_bytes)} bytes")
+
         # Convert to base64
         result_b64 = base64.b64encode(result_bytes).decode('utf-8')
         data_uri = f"data:image/png;base64,{result_b64}"
-        
+
+        logger.info(f"Returning result, data URI length: {len(data_uri)}")
         return JSONResponse(content={
             "success": True,
             "imageData": data_uri
         })
-        
+
     except Exception as e:
         logger.error(f"Error in inpainting: {e}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         return JSONResponse(
             status_code=500,
             content={"error": str(e)}
