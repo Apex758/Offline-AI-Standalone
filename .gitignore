@@ -88,3 +88,13 @@ backend/python-embed/
 *.tmp
 *.temp
 *.bak
+
+# Large ML model directories
+models/
+
+# Large backend asset directories
+backend/models/
+backend/share/
+backend/lib/
+backend/etc/
+backend/ssl/
