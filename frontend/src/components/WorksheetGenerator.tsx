@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Loader2, Eye } from 'lucide-react';
+import { FileText, Loader2, Eye, Trash2, RotateCcw } from 'lucide-react';
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,
@@ -228,6 +228,32 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   // Generation error state
   const [generationError, setGenerationError] = useState<string | null>(null);
 
+  // Clear/Restore state
+  const [clearedWorksheet, setClearedWorksheet] = useState<string | null>(() => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.clearedWorksheet || null;
+      }
+    } catch (e) {
+      console.error('Failed to restore clearedWorksheet:', e);
+    }
+    return null;
+  });
+  const [clearedParsedWorksheet, setClearedParsedWorksheet] = useState<ParsedWorksheet | null>(() => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.clearedParsedWorksheet || null;
+      }
+    } catch (e) {
+      console.error('Failed to restore clearedParsedWorksheet:', e);
+    }
+    return null;
+  });
+
 
   // ✅ Connect WebSocket on mount
   useEffect(() => {
@@ -327,15 +353,32 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     handleGenerate();
   };
 
+  const handleClearWorksheet = () => {
+    setClearedWorksheet(generatedWorksheet);
+    setClearedParsedWorksheet(parsedWorksheet);
+    setGeneratedWorksheet('');
+    setParsedWorksheet(null);
+    setGenerationError(null);
+  };
+
+  const handleRestoreWorksheet = () => {
+    if (clearedWorksheet) {
+      setGeneratedWorksheet(clearedWorksheet);
+      setParsedWorksheet(clearedParsedWorksheet);
+      setClearedWorksheet(null);
+      setClearedParsedWorksheet(null);
+    }
+  };
+
   // Persist to localStorage
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, localLoadingMap }));
-  }, [formData, generatedWorksheet, parsedWorksheet, localLoadingMap]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet }));
+  }, [formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet]);
 
   // Notify parent
   useEffect(() => {
-    onDataChange?.({ formData, generatedWorksheet, parsedWorksheet });
-  }, [formData, generatedWorksheet, parsedWorksheet]);
+    onDataChange?.({ formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet });
+  }, [formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet]);
 
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
@@ -874,11 +917,37 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       {/* Right Panel - Preview (50%) */}
       <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto">
         <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-            <Eye className="w-5 h-5 mr-2" />
-            Template Preview
-          </h3>
-          <p className="text-sm text-gray-500">Live layout preview</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <Eye className="w-5 h-5 mr-2" />
+                Template Preview
+              </h3>
+              <p className="text-sm text-gray-500">Live layout preview</p>
+            </div>
+            {(generatedWorksheet || parsedWorksheet) && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleClearWorksheet}
+                  className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
+                  title="Clear generated worksheet"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Clear
+                </button>
+                {clearedWorksheet && (
+                  <button
+                    onClick={handleRestoreWorksheet}
+                    className="flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
+                    title="Restore cleared worksheet"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Back
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 p-4">
