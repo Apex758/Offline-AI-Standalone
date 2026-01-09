@@ -9,6 +9,7 @@ interface ListBasedTemplateProps {
   worksheetTitle?: string;
   includeImages?: boolean;
   imageMode?: string;
+  generatedImage?: string | null;
 }
 
 const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
@@ -19,7 +20,8 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   questionType = 'Short Answer',
   worksheetTitle,
   includeImages = false,
-  imageMode = 'one-per-question'
+  imageMode = 'one-per-question',
+  generatedImage = null
 }) => {
   const getQuestionContent = (index: number) => {
     const questionNumber = index + 1;
@@ -111,9 +113,17 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
       {/* Shared Image */}
       {includeImages && imageMode === 'shared' && (
         <div className="mb-6">
-          <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
-            [Shared Image Placeholder]
-          </div>
+          {generatedImage ? (
+            <img
+              src={generatedImage}
+              alt="Generated worksheet image"
+              className="w-48 h-32 object-contain border border-gray-300 rounded mx-auto"
+            />
+          ) : (
+            <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
+              [Shared Image Placeholder]
+            </div>
+          )}
         </div>
       )}
 
@@ -143,9 +153,17 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                   </p>
                   {includeImages && imageMode === 'one-per-question' && (
                     <div className="mt-2 mb-2">
-                      <div className="w-24 h-16 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                        [Image Placeholder]
-                      </div>
+                      {generatedImage ? (
+                        <img
+                          src={generatedImage}
+                          alt="Generated worksheet image"
+                          className="w-24 h-16 object-contain border border-gray-300 rounded"
+                        />
+                      ) : (
+                        <div className="w-24 h-16 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
+                          [Image Placeholder]
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

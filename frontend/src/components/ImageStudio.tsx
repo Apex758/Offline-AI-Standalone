@@ -33,9 +33,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [width, setWidth] = useState(1024);
   const [height, setHeight] = useState(512);
   const [numInferenceSteps, setNumInferenceSteps] = useState(2);
+  const [numImages, setNumImages] = useState(1);
   const [generationState, setGenerationState] = useState<'input' | 'generating' | 'results'>('input');
-  const [results, setResults] = useState<string[]>([]);
+  const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}>>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ========================================
@@ -101,7 +103,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     if (savedData && !hasRestoredRef.current) {
       if (savedData.initialTab) setActiveTab(savedData.initialTab);
       if (savedData.prompt) setPrompt(savedData.prompt);
-      if (savedData.results) setResults(savedData.results);
+      if (savedData.imageSlots) setImageSlots(savedData.imageSlots);
       if (savedData.generationState) setGenerationState(savedData.generationState);
       if (savedData.selectedImage) setSelectedImage(savedData.selectedImage);
 
@@ -142,11 +144,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     onDataChange({
       initialTab: activeTab,
       prompt,
-      results,
+      imageSlots,
       generationState,
       selectedImage
     });
-  }, [activeTab, prompt, results, generationState, selectedImage]);
+  }, [activeTab, prompt, imageSlots, generationState, selectedImage]);
 
   // ========================================
   // Save heavy image data to sessionStorage (larger quota, clears on browser close)
@@ -189,7 +191,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   }, [uploadedImage, isNewUpload]);
 
   // ========================================
-  // GENERATOR: Generate Image
+  // GENERATOR: Generate Images (Batch)
   // ========================================
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -200,24 +202,67 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setGenerationState('generating');
     setError(null);
 
+    // Initialize image slots
+    const slots: Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}> = Array.from({ length: numImages }, () => ({
+      imageData: null,
+      seed: null,
+      status: 'pending'
+    }));
+    setImageSlots(slots);
+
     try {
-      const response = await imageApi.generateImageBase64({
-        prompt,
-        negativePrompt,
-        width,
-        height,
-        numInferenceSteps
+      // Start all generations in parallel
+      const generationPromises = slots.map(async (_, index) => {
+        // Update slot to generating
+        setImageSlots(prev => {
+          const newSlots = [...prev];
+          newSlots[index] = { ...newSlots[index], status: 'generating' };
+          return newSlots;
+        });
+
+        try {
+          const response = await imageApi.generateImageBase64({
+            prompt,
+            negativePrompt,
+            width,
+            height,
+            numInferenceSteps
+          });
+
+          if (response.success && response.imageData) {
+            setImageSlots(prev => {
+              const newSlots = [...prev];
+              newSlots[index] = {
+                imageData: response.imageData,
+                seed: Math.floor(Math.random() * 1000000), // Generate a random seed for display
+                status: 'completed'
+              };
+              return newSlots;
+            });
+          } else {
+            setImageSlots(prev => {
+              const newSlots = [...prev];
+              newSlots[index] = { ...newSlots[index], status: 'error' };
+              return newSlots;
+            });
+          }
+        } catch (genError) {
+          console.error(`Error generating image ${index + 1}:`, genError);
+          setImageSlots(prev => {
+            const newSlots = [...prev];
+            newSlots[index] = { ...newSlots[index], status: 'error' };
+            return newSlots;
+          });
+        }
       });
 
-      if (response.success && response.imageData) {
-        setResults([response.imageData]);
-        setGenerationState('results');
-      } else {
-        throw new Error('Image generation failed');
-      }
+      // Wait for all generations to complete
+      await Promise.allSettled(generationPromises);
+
+      setGenerationState('results');
     } catch (err: any) {
       console.error('Generation error:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to generate image');
+      setError(err.response?.data?.error || err.message || 'Failed to generate images');
       setGenerationState('input');
     }
   };
@@ -226,6 +271,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setGenerationState('input');
     setSelectedImage(null);
     setError(null);
+    setImageSlots([]);
   };
 
   const handleDownloadGenerated = (imageData: string) => {
@@ -268,6 +314,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       alert('Failed to save image');
     }
   };
+
 
   // ========================================
   // EDITOR: Upload Image
@@ -600,7 +647,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
                       <select
@@ -638,6 +685,20 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         <option value={4}>4 (Best Quality)</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Batch Size</label>
+                      <select
+                        value={numImages}
+                        onChange={(e) => setNumImages(Number(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value={1}>1 Image</option>
+                        <option value={2}>2 Images</option>
+                        <option value={3}>3 Images</option>
+                        <option value={4}>4 Images</option>
+                        <option value={5}>5 Images</option>
+                      </select>
+                    </div>
                   </div>
 
                   <button
@@ -653,11 +714,60 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             )}
 
             {generationState === 'generating' && (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin text-blue-600" />
-                  <h2 className="text-xl font-semibold mb-2">Generating Image...</h2>
-                  <p className="text-sm text-gray-500">This may take 5-15 seconds</p>
+              <div className="max-w-5xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-6">Generating Images...</h2>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {imageSlots.map((slot, i) => (
+                    <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                      <div className="relative">
+                        {slot.status === 'completed' && slot.imageData ? (
+                          <>
+                            <img
+                              src={slot.imageData}
+                              alt={`Generated ${i + 1}`}
+                              className="w-full max-h-[400px] object-contain rounded-lg mb-4 cursor-pointer"
+                              onClick={() => {
+                                setSelectedImage(slot.imageData);
+                                setShowImageModal(true);
+                              }}
+                            />
+                            <div className="text-xs text-gray-500 mb-2">
+                              Seed: {slot.seed}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleDownloadGenerated(slot.imageData!)}
+                                className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center text-sm"
+                              >
+                                <Download className="w-4 h-4 mr-1" />
+                                Download
+                              </button>
+                              <button
+                                onClick={() => handleSaveGenerated(slot.imageData!)}
+                                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center text-sm"
+                              >
+                                <Save className="w-4 h-4 mr-1" />
+                                Save
+                              </button>
+                            </div>
+                          </>
+                        ) : slot.status === 'generating' ? (
+                          <div className="flex flex-col items-center justify-center h-[300px]">
+                            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                            <p className="text-sm text-gray-500">Generating...</p>
+                          </div>
+                        ) : slot.status === 'error' ? (
+                          <div className="flex flex-col items-center justify-center h-[300px]">
+                            <p className="text-sm text-red-500">Generation failed</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-[300px]">
+                            <p className="text-sm text-gray-400">Pending...</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -674,29 +784,56 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </button>
                 </div>
 
-                <div className="grid gap-6">
-                  {results.map((img, i) => (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {imageSlots.map((slot, i) => (
                     <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                      <img
-                        src={img}
-                        alt={`Generated ${i + 1}`}
-                        className="w-full max-h-[600px] object-contain rounded-lg mb-4"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleDownloadGenerated(img)}
-                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </button>
-                        <button
-                          onClick={() => handleSaveGenerated(img)}
-                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
-                        >
-                          <Save className="w-4 h-4 mr-2" />
-                          Save
-                        </button>
+                      <div className="relative">
+                        {slot.status === 'completed' && slot.imageData ? (
+                          <>
+                            <img
+                              src={slot.imageData}
+                              alt={`Generated ${i + 1}`}
+                              className="w-full max-h-[400px] object-contain rounded-lg mb-4 cursor-pointer"
+                              onClick={() => {
+                                setSelectedImage(slot.imageData);
+                                setShowImageModal(true);
+                              }}
+                            />
+                            <div className="text-xs text-gray-500 mb-2">
+                              Seed: {slot.seed}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleDownloadGenerated(slot.imageData!)}
+                                className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center text-sm"
+                              >
+                                <Download className="w-4 h-4 mr-1" />
+                                Download
+                              </button>
+                              <button
+                                onClick={() => handleSaveGenerated(slot.imageData!)}
+                                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center text-sm"
+                              >
+                                <Save className="w-4 h-4 mr-1" />
+                                Save
+                              </button>
+                            </div>
+                          </>
+                        ) : slot.status === 'generating' ? (
+                          <div className="flex flex-col items-center justify-center h-[300px] cursor-pointer" onClick={() => setSelectedImage(null)}>
+                            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                            <p className="text-sm text-gray-500">Generating...</p>
+                            <p className="text-xs text-gray-400 mt-1">Click to view progress</p>
+                          </div>
+                        ) : slot.status === 'error' ? (
+                          <div className="flex flex-col items-center justify-center h-[300px]">
+                            <p className="text-sm text-red-500">Generation failed</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-[300px]">
+                            <p className="text-sm text-gray-400">Pending...</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -916,6 +1053,26 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           </div>
         )}
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={() => setShowImageModal(false)}>
+          <div className="max-w-4xl max-h-[90vh] p-4">
+            <img
+              src={selectedImage}
+              alt="Selected image"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 text-white text-2xl hover:text-gray-300"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

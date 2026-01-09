@@ -10,6 +10,7 @@ import {
 
 import { imageApi } from '../lib/imageApi';
 import { Wand2, Download } from 'lucide-react';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 interface CurriculumPage {
   subject: string;
@@ -104,7 +105,10 @@ const subjects = [
 
 const grades = ['K', '1', '2', '3', '4', '5', '6'];
 
+const ENDPOINT = '/ws/worksheet';
+
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
 
   const getDefaultFormData = (): WorksheetFormData => ({
@@ -141,15 +145,28 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     return getDefaultFormData();
   });
 
-  const [loading, setLoading] = useState(false);
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumPage[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
+  // ✅ Read streaming content from context (read-only, no setter!)
+  const streamingWorksheet = getStreamingContent(tabId || '', ENDPOINT);
+  const contextLoading = getIsStreaming(tabId || '', ENDPOINT);
+  // Per-tab local loading state
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const loading = !!localLoadingMap[tabId || ''] || contextLoading;
 
   // Image generation state
   const [imagePrompt, setImagePrompt] = useState('');
   const [generatingImages, setGeneratingImages] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
+
+  const [generatedWorksheet, setGeneratedWorksheet] = useState<string>((savedData?.generatedWorksheet as string) || '');
+
+  // ✅ Connect WebSocket on mount
+  useEffect(() => {
+    getConnection(tabId || '', ENDPOINT);
+  }, [tabId]);
 
   // Auto-fetch strands based on subject and grade
   const getStrands = (subject: string, grade: string): string[] => {
@@ -198,9 +215,51 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
 
   const handleGenerate = () => {
-    setLoading(true);
-    // TODO: Implement generation logic
-    setTimeout(() => setLoading(false), 2000); // Mock loading
+    console.log('handleGenerate called');
+    const ws = getConnection(tabId || '', ENDPOINT);
+    console.log('WebSocket readyState:', ws.readyState);
+    if (ws.readyState !== WebSocket.OPEN) {
+      alert('Connection not established. Please wait and try again.');
+      return;
+    }
+    console.log('Setting loading state');
+    setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
+
+    // Build prompt for worksheet generation
+    const prompt = `Create a worksheet with the following specifications:
+
+Subject: ${formData.subject}
+Grade Level: ${formData.gradeLevel}
+Strand: ${formData.strand}
+Topic: ${formData.topic}
+Question Type: ${formData.questionType}
+Number of Questions: ${formData.questionCount}
+Worksheet Title: ${formData.worksheetTitle || 'Worksheet'}
+
+Please generate a complete worksheet with appropriate questions and content for this grade level and subject. Include clear instructions and properly formatted questions.`;
+
+    const jobId = `worksheet-${Date.now()}`;
+    console.log('Built prompt, jobId:', jobId);
+
+    const message = {
+      prompt,
+      formData,
+      jobId,
+      generationMode: 'queued',
+    };
+    console.log('Sending message:', message);
+
+    try {
+      ws.send(JSON.stringify(message));
+      console.log('Message sent successfully');
+    } catch (error) {
+      console.error('Failed to send worksheet request:', error);
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId || ''];
+        return newMap;
+      });
+    }
   };
 
   // Persist to localStorage
@@ -262,7 +321,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
       includeImages: formData.includeImages,
       imageMode: formData.imageMode,
-      imagePlacement: formData.imagePlacement
+      imagePlacement: formData.imagePlacement,
+      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null
     };
 
     switch (selectedTemplate.id) {
@@ -549,8 +609,25 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
 
-            {/* AI Image Generation */}
+            {/* Include Images */}
             <div className="space-y-4">
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.includeImages}
+                    onChange={(e) => handleInputChange('includeImages', e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Include Images</span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1">Add relevant images to enhance the worksheet</p>
+              </div>
+            </div>
+
+            {/* AI Image Generation */}
+            {formData.includeImages && (
+              <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">AI Image Generation</h3>
 
               <div>
@@ -612,6 +689,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               )}
             </div>
+            )}
 
             {/* Templates */}
             <div className="space-y-4">

@@ -6,7 +6,7 @@ import requests
 import time
 import atexit
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import base64
 from io import BytesIO
 from PIL import Image
@@ -293,16 +293,19 @@ class ImageService:
         except requests.RequestException:
             return False
     
-    def generate_image(self, 
-                      prompt: str,
-                      negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
-                      width: int = 1024,
-                      height: int = 512,
-                      num_inference_steps: int = 2,
-                      guidance_scale: float = 0.0) -> Optional[bytes]:
+    def generate_image(self,
+                        prompt: str,
+                        negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
+                        width: int = 1024,
+                        height: int = 512,
+                        num_inference_steps: int = 2,
+                        guidance_scale: float = 0.0,
+                        seed: Optional[int] = None,
+                        init_image: Optional[bytes] = None,
+                        strength: float = 0.8) -> Optional[bytes]:
         """
         Generate image using SDXL-Turbo
-        
+
         Args:
             prompt: Text prompt for image generation
             negative_prompt: Negative prompt
@@ -310,7 +313,8 @@ class ImageService:
             height: Image height
             num_inference_steps: Number of inference steps (1-4 for Turbo)
             guidance_scale: CFG scale (0.0 for Turbo)
-        
+            seed: Random seed for reproducibility
+
         Returns:
             bytes: PNG image data or None if failed
         """
@@ -319,32 +323,124 @@ class ImageService:
             if not self.initialize_sdxl():
                 logger.error("SDXL pipeline not initialized")
                 return None
-            
+
             logger.info(f"Generating image: {prompt[:50]}...")
-            
-            # Generate image
-            result = self.sdxl_pipeline(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                num_inference_steps=num_inference_steps,
-                guidance_scale=guidance_scale,
-                width=width,
-                height=height
-            )
-            
+
+            # Set seed if provided
+            import torch
+            if seed is not None:
+                torch.manual_seed(seed)
+                logger.info(f"Using seed: {seed}")
+
+            # Handle img2img if init_image is provided
+            if init_image is not None:
+                logger.info("Using img2img mode")
+                # Convert init_image bytes to PIL Image
+                from PIL import Image
+                import io
+                init_pil = Image.open(io.BytesIO(init_image)).convert("RGB")
+
+                # Generate image using img2img
+                result = self.sdxl_pipeline(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    image=init_pil,
+                    strength=strength,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=width,
+                    height=height
+                )
+            else:
+                # Standard text-to-image generation
+                result = self.sdxl_pipeline(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=width,
+                    height=height
+                )
+
             image = result.images[0]
-            
+
             # Convert PIL Image to bytes
             buffer = BytesIO()
             image.save(buffer, format='PNG')
             image_bytes = buffer.getvalue()
-            
+
             logger.info(f"Image generated successfully ({len(image_bytes)} bytes)")
             return image_bytes
-            
+
         except Exception as e:
             logger.error(f"Error generating image: {e}")
             return None
+
+    def generate_batch_images(self,
+                             prompt: str,
+                             negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
+                             width: int = 1024,
+                             height: int = 512,
+                             num_inference_steps: int = 2,
+                             guidance_scale: float = 0.0,
+                             num_images: int = 1) -> List[Dict[str, Any]]:
+        """
+        Generate multiple images in batch using SDXL-Turbo
+
+        Args:
+            prompt: Text prompt for image generation
+            negative_prompt: Negative prompt
+            width: Image width
+            height: Image height
+            num_inference_steps: Number of inference steps (1-4 for Turbo)
+            guidance_scale: CFG scale (0.0 for Turbo)
+            num_images: Number of images to generate
+
+        Returns:
+            List of dicts with 'image_data' (bytes) and 'seed' (int)
+        """
+        try:
+            # Initialize SDXL if not already loaded
+            if not self.initialize_sdxl():
+                logger.error("SDXL pipeline not initialized")
+                return []
+
+            logger.info(f"Generating batch of {num_images} images: {prompt[:50]}...")
+
+            results = []
+
+            for i in range(num_images):
+                # Generate random seed for each image
+                import random
+                seed = random.randint(0, 2**32 - 1)
+
+                # Generate image with seed
+                image_bytes = self.generate_image(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    width=width,
+                    height=height,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    seed=seed
+                )
+
+                if image_bytes is not None:
+                    results.append({
+                        'image_data': image_bytes,
+                        'seed': seed
+                    })
+                    logger.info(f"Generated image {i+1}/{num_images} with seed {seed}")
+                else:
+                    logger.error(f"Failed to generate image {i+1}/{num_images}")
+                    # Continue with next image instead of failing the whole batch
+
+            logger.info(f"Batch generation completed: {len(results)}/{num_images} images generated")
+            return results
+
+        except Exception as e:
+            logger.error(f"Error generating batch images: {e}")
+            return []
     
     def inpaint_image(self,
                      image_data: bytes,

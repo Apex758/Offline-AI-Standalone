@@ -9,6 +9,7 @@ interface ComprehensionTemplateProps {
   worksheetTitle?: string;
   includeImages?: boolean;
   imagePlacement?: string;
+  generatedImage?: string | null;
 }
 
 const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
@@ -19,7 +20,8 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
   questionType = 'Comprehension',
   worksheetTitle,
   includeImages = false,
-  imagePlacement = 'large-centered'
+  imagePlacement = 'large-centered',
+  generatedImage = null
 }) => {
   return (
     <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
@@ -48,16 +50,32 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
           {includeImages && imagePlacement === 'large-centered' && (
             <div className="mb-4">
-              <div className="w-64 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
-                [Large Centered Passage Image]
-              </div>
+              {generatedImage ? (
+                <img
+                  src={generatedImage}
+                  alt="Generated worksheet image"
+                  className="w-64 h-32 object-contain border border-gray-300 rounded mx-auto"
+                />
+              ) : (
+                <div className="w-64 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
+                  [Large Centered Passage Image]
+                </div>
+              )}
             </div>
           )}
           {includeImages && imagePlacement === 'small-corner' && (
             <div className="mb-4 float-right ml-4">
-              <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                [Small Corner Image]
-              </div>
+              {generatedImage ? (
+                <img
+                  src={generatedImage}
+                  alt="Generated worksheet image"
+                  className="w-32 h-20 object-contain border border-gray-300 rounded"
+                />
+              ) : (
+                <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
+                  [Small Corner Image]
+                </div>
+              )}
             </div>
           )}
           <p className="text-gray-800 leading-relaxed">

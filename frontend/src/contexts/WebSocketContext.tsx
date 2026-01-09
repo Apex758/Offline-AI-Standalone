@@ -58,7 +58,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const isElectron = typeof window !== 'undefined' && 'electronAPI' in window;
       const wsUrl = isElectron
         ? `ws://127.0.0.1:8000${endpoint}`
-        : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${endpoint}`;
+        : `ws://localhost:8000${endpoint}`;
 
       const ws = new WebSocket(wsUrl);
 

@@ -9,6 +9,7 @@ interface MultipleChoiceTemplateProps {
   worksheetTitle?: string;
   includeImages?: boolean;
   imageMode?: string;
+  generatedImage?: string | null;
 }
 
 const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
@@ -19,7 +20,8 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   questionType = 'Multiple Choice',
   worksheetTitle,
   includeImages = false,
-  imageMode = 'one-per-question'
+  imageMode = 'one-per-question',
+  generatedImage = null
 }) => {
   return (
     <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
@@ -53,9 +55,17 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
       {/* Shared Image */}
       {includeImages && imageMode === 'shared' && (
         <div className="mb-6">
-          <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
-            [Shared Image Placeholder]
-          </div>
+          {generatedImage ? (
+            <img
+              src={generatedImage}
+              alt="Generated worksheet image"
+              className="w-48 h-32 object-contain border border-gray-300 rounded mx-auto"
+            />
+          ) : (
+            <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
+              [Shared Image Placeholder]
+            </div>
+          )}
         </div>
       )}
 
@@ -74,9 +84,17 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                   </p>
                   {includeImages && imageMode === 'one-per-question' && (
                     <div className="mt-2 mb-2">
-                      <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                        [Image Placeholder]
-                      </div>
+                      {generatedImage ? (
+                        <img
+                          src={generatedImage}
+                          alt="Generated worksheet image"
+                          className="w-32 h-20 object-contain border border-gray-300 rounded"
+                        />
+                      ) : (
+                        <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
+                          [Image Placeholder]
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

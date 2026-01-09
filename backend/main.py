@@ -1398,6 +1398,7 @@ async def multigrade_websocket(websocket: WebSocket):
                         break
 
                     if chunk.get("finished"):
+                        logger.info(f"Generation finished for job {job_id}, total chunks: {chunk_count}")
                         # Send any remaining tokens
                         if token_buffer:
                             try:
@@ -1571,6 +1572,158 @@ async def cross_curricular_websocket(websocket: WebSocket):
         logger.info("Cross-curricular WebSocket disconnected")
     except Exception as e:
         logger.error(f"Cross-curricular WebSocket error: {str(e)}")
+
+
+@app.websocket("/ws/worksheet")
+async def worksheet_websocket(websocket: WebSocket):
+    await websocket.accept()
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
+    try:
+        while True:
+            logger.info("Worksheet WebSocket waiting for message...")
+            data = await websocket.receive_json()
+            logger.info(f"Worksheet WebSocket received data: {data.keys() if isinstance(data, dict) else 'non-dict'}")
+
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
+            prompt = data.get("prompt", "")
+            form_data = data.get("formData", {})
+            job_id = data.get("jobId") or data.get("id") or "worksheet"
+            generation_mode = data.get("generationMode", "queued")
+
+            logger.info(f"Worksheet generation request - job_id: {job_id}, prompt length: {len(prompt)}")
+
+            if not prompt:
+                logger.warning("Empty prompt received, skipping")
+                continue
+
+            # Build worksheet-specific prompt
+            subject = form_data.get("subject", "")
+            grade_level = form_data.get("gradeLevel", "")
+            strand = form_data.get("strand", "")
+            topic = form_data.get("topic", "")
+            question_type = form_data.get("questionType", "")
+            question_count = form_data.get("questionCount", "")
+            worksheet_title = form_data.get("worksheetTitle", "")
+
+            system_prompt = f"You are an expert educational worksheet designer. Create comprehensive, well-structured worksheets that accurately assess student learning and align with curriculum standards. Focus on clear instructions, appropriate difficulty level, and educational value."
+
+            # Add curriculum context if available
+            curriculum_context = ""
+            if subject and grade_level and strand:
+                system_prompt += f"\n\nCurriculum Context: Subject: {subject}, Grade: {grade_level}, Strand: {strand}"
+                if topic:
+                    system_prompt += f", Topic: {topic}"
+
+            full_prompt = "<|begin_of_text|>"
+            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+            slot_mode = None
+            try:
+                logger.info(f"Acquiring generation slot for job {job_id}")
+                # Acquire generation slot (queue or parallel)
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+                logger.info(f"Generation slot acquired: {slot_mode}")
+
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
+                logger.info("Got inference instance, starting generation...")
+
+                # Use streaming method for real-time generation
+                token_buffer = []
+                last_send = time.time()
+                chunk_count = 0
+                async for chunk in inference.generate_stream(
+                    tool_name="worksheet",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=6000,
+                    temperature=0.7
+                ):
+                    chunk_count += 1
+                    if chunk_count <= 5:  # Log first few chunks
+                        logger.info(f"Received chunk {chunk_count}: {chunk}")
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": chunk["error"]
+                            })
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+
+                    if chunk.get("finished"):
+                        # Send any remaining tokens
+                        if token_buffer:
+                            try:
+                                await websocket.send_json({
+                                    "type": "token",
+                                    "content": "".join(token_buffer)
+                                })
+                                await asyncio.sleep(0)
+                            except Exception as e:
+                                logger.error(f"Error sending final tokens: {e}")
+                        try:
+                            await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)  # Force flush
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+
+                    # Batch tokens before sending
+                    if chunk.get("token"):
+                        token_buffer.append(chunk["token"])
+
+                        # Send every 50ms or 5 tokens (whichever comes first)
+                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                            try:
+                                await websocket.send_json({
+                                    "type": "token",
+                                    "content": "".join(token_buffer)
+                                })
+                                token_buffer = []
+                                last_send = time.time()
+                                await asyncio.sleep(0)
+                            except Exception as e:
+                                logger.error(f"Error sending token: {e}")
+                                break
+
+            except Exception as e:
+                logger.error(f"Worksheet generation error for job {job_id}: {e}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+                except:
+                    logger.error("Could not send error message - connection closed")
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
+    except WebSocketDisconnect:
+        logger.info("Worksheet WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Worksheet WebSocket error: {str(e)}")
 
 @app.get("/api/quiz-history")
 async def get_quiz_history():
@@ -2132,9 +2285,9 @@ async def generate_image(request: Request):
 async def generate_image_base64(request: Request):
     """
     Generate image and return as base64 (easier for frontend embedding)
-    
+
     Same request body as /api/generate-image
-    
+
     Returns:
     {
         "success": true,
@@ -2143,22 +2296,22 @@ async def generate_image_base64(request: Request):
     """
     try:
         data = await request.json()
-        
+
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
         num_steps = data.get('numInferenceSteps', 2)
-        
+
         if not prompt:
             return JSONResponse(
                 status_code=400,
                 content={"error": "Prompt is required"}
             )
-        
+
         # Get image service
         image_service = get_image_service()
-        
+
         # Generate image
         image_bytes = image_service.generate_image(
             prompt=prompt,
@@ -2167,24 +2320,214 @@ async def generate_image_base64(request: Request):
             height=height,
             num_inference_steps=num_steps
         )
-        
+
         if image_bytes is None:
             return JSONResponse(
                 status_code=500,
                 content={"error": "Image generation failed"}
             )
-        
+
         # Convert to base64
         image_b64 = base64.b64encode(image_bytes).decode('utf-8')
         data_uri = f"data:image/png;base64,{image_b64}"
-        
+
         return JSONResponse(content={
             "success": True,
             "imageData": data_uri
         })
-        
+
     except Exception as e:
         logger.error(f"Error generating image: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/generate-batch-images-base64")
+async def generate_batch_images_base64(request: Request):
+    """
+    Generate multiple images in batch and return as base64
+
+    Request body:
+    {
+        "prompt": "image description",
+        "negativePrompt": "things to avoid",
+        "width": 1024,
+        "height": 512,
+        "numInferenceSteps": 2,
+        "numImages": 4
+    }
+
+    Returns:
+    {
+        "success": true,
+        "images": [
+            {
+                "imageData": "data:image/png;base64,...",
+                "seed": 12345
+            },
+            ...
+        ]
+    }
+    """
+    try:
+        data = await request.json()
+
+        prompt = data.get('prompt', '')
+        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        width = data.get('width', 1024)
+        height = data.get('height', 512)
+        num_steps = data.get('numInferenceSteps', 2)
+        num_images = data.get('numImages', 1)
+
+        if not prompt:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Prompt is required"}
+            )
+
+        if num_images < 1 or num_images > 10:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "numImages must be between 1 and 10"}
+            )
+
+        # Get image service
+        image_service = get_image_service()
+
+        # Generate batch images
+        batch_results = image_service.generate_batch_images(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            num_inference_steps=num_steps,
+            num_images=num_images
+        )
+
+        if not batch_results:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Batch image generation failed"}
+            )
+
+        # Convert to base64
+        images = []
+        for result in batch_results:
+            image_b64 = base64.b64encode(result['image_data']).decode('utf-8')
+            data_uri = f"data:image/png;base64,{image_b64}"
+            images.append({
+                "imageData": data_uri,
+                "seed": result['seed']
+            })
+
+        return JSONResponse(content={
+            "success": True,
+            "images": images
+        })
+
+    except Exception as e:
+        logger.error(f"Error generating batch images: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/generate-image-from-seed")
+async def generate_image_from_seed(request: Request):
+    """
+    Generate image using a specific seed and init image (for AI Edit functionality)
+
+    Request body:
+    {
+        "prompt": "modified image description",
+        "negativePrompt": "things to avoid",
+        "width": 1024,
+        "height": 512,
+        "numInferenceSteps": 2,
+        "seed": 12345,
+        "initImage": "data:image/png;base64,..."  // optional, for img2img
+    }
+
+    Returns:
+    {
+        "success": true,
+        "imageData": "data:image/png;base64,...",
+        "seed": 12345
+    }
+    """
+    try:
+        data = await request.json()
+
+        prompt = data.get('prompt', '')
+        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        width = data.get('width', 1024)
+        height = data.get('height', 512)
+        num_steps = data.get('numInferenceSteps', 2)
+        seed = data.get('seed')
+        init_image_b64 = data.get('initImage')
+
+        if not prompt:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Prompt is required"}
+            )
+
+        if seed is None:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Seed is required"}
+            )
+
+        # Decode init_image if provided
+        init_image_bytes = None
+        if init_image_b64:
+            if init_image_b64.startswith('data:'):
+                init_image_b64 = init_image_b64.split(',')[1]
+            try:
+                init_image_bytes = base64.b64decode(init_image_b64)
+            except Exception as e:
+                logger.error(f"Failed to decode init image: {e}")
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "Invalid init image data"}
+                )
+
+        # Get image service
+        image_service = get_image_service()
+
+        # Generate image with seed and optional init image
+        image_bytes = image_service.generate_image(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            num_inference_steps=num_steps,
+            seed=seed,
+            init_image=init_image_bytes,
+            strength=0.85  # Higher strength to give prompt more influence over img2img
+        )
+
+        if image_bytes is None:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Image generation failed"}
+            )
+
+        # Convert to base64
+        image_b64 = base64.b64encode(image_bytes).decode('utf-8')
+        data_uri = f"data:image/png;base64,{image_b64}"
+
+        return JSONResponse(content={
+            "success": True,
+            "imageData": data_uri,
+            "seed": seed
+        })
+
+    except Exception as e:
+        logger.error(f"Error generating image from seed: {e}")
         return JSONResponse(
             status_code=500,
             content={"error": str(e)}

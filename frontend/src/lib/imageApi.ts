@@ -28,6 +28,39 @@ export interface ImageGenerationRequest {
   numInferenceSteps?: number;
 }
 
+export interface BatchImageGenerationRequest {
+  prompt: string;
+  negativePrompt?: string;
+  width?: number;
+  height?: number;
+  numInferenceSteps?: number;
+  numImages: number;
+}
+
+export interface SeedImageGenerationRequest {
+  prompt: string;
+  negativePrompt?: string;
+  width?: number;
+  height?: number;
+  numInferenceSteps?: number;
+  seed: number;
+  initImage?: string; // base64 data URI for img2img
+}
+
+export interface BatchImageResponse {
+  success: boolean;
+  images: Array<{
+    imageData: string; // data:image/png;base64,...
+    seed: number;
+  }>;
+}
+
+export interface SeedImageResponse {
+  success: boolean;
+  imageData: string; // data:image/png;base64,...
+  seed: number;
+}
+
 export interface ImageBase64Response {
   success: boolean;
   imageData: string; // data:image/png;base64,...
@@ -275,6 +308,57 @@ export const imageApi = {
       await axios.delete(`${API_URL}/images-history/${imageId}`);
     } catch (error) {
       console.error('Error deleting image:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Generate multiple images in batch
+   * @param request - Batch image generation parameters
+   * @returns Array of images with their seeds
+   */
+  generateBatchImagesBase64: async (request: BatchImageGenerationRequest): Promise<BatchImageResponse> => {
+    try {
+      const response = await axios.post<BatchImageResponse>(
+        `${API_URL}/generate-batch-images-base64`,
+        {
+          prompt: request.prompt,
+          negativePrompt: request.negativePrompt || 'blurry, distorted, low quality',
+          width: request.width || 1024,
+          height: request.height || 512,
+          numInferenceSteps: request.numInferenceSteps || 2,
+          numImages: request.numImages
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error generating batch images (base64):', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Generate image using a specific seed (for AI Edit)
+   * @param request - Image generation parameters with seed
+   * @returns Image with the same seed
+   */
+  generateImageFromSeed: async (request: SeedImageGenerationRequest): Promise<SeedImageResponse> => {
+    try {
+      const response = await axios.post<SeedImageResponse>(
+        `${API_URL}/generate-image-from-seed`,
+        {
+          prompt: request.prompt,
+          negativePrompt: request.negativePrompt || 'blurry, distorted, low quality',
+          width: request.width || 1024,
+          height: request.height || 512,
+          numInferenceSteps: request.numInferenceSteps || 2,
+          seed: request.seed,
+          initImage: request.initImage
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error generating image from seed:', error);
       throw error;
     }
   }
