@@ -11,6 +11,8 @@ import {
 import { imageApi } from '../lib/imageApi';
 import { Wand2, Download } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
+import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
 
 interface CurriculumPage {
   subject: string;
@@ -145,6 +147,38 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     return getDefaultFormData();
   });
 
+  const [generatedWorksheet, setGeneratedWorksheet] = useState<string>(() => {
+    if (savedData?.generatedWorksheet) {
+      return savedData.generatedWorksheet as string;
+    }
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.generatedWorksheet || '';
+      }
+    } catch (e) {
+      console.error('Failed to restore generatedWorksheet:', e);
+    }
+    return '';
+  });
+
+  const [parsedWorksheet, setParsedWorksheet] = useState<ParsedWorksheet | null>(() => {
+    if (savedData?.parsedWorksheet) {
+      return savedData.parsedWorksheet as ParsedWorksheet;
+    }
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.parsedWorksheet || null;
+      }
+    } catch (e) {
+      console.error('Failed to restore parsedWorksheet:', e);
+    }
+    return null;
+  });
+
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumPage[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
 
@@ -152,8 +186,38 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const streamingWorksheet = getStreamingContent(tabId || '', ENDPOINT);
   const contextLoading = getIsStreaming(tabId || '', ENDPOINT);
   // Per-tab local loading state
-  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>(() => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        return parsed.localLoadingMap || {};
+      }
+    } catch (e) {
+      console.error('Failed to restore localLoadingMap:', e);
+    }
+    return {};
+  });
   const loading = !!localLoadingMap[tabId || ''] || contextLoading;
+
+  // ✅ Finalization logic - when streaming completes, update generatedWorksheet
+  useEffect(() => {
+    if (streamingWorksheet && !contextLoading) {
+      setGeneratedWorksheet(streamingWorksheet);
+      const parsed = parseWorksheetFromAI(streamingWorksheet);
+      if (parsed) {
+        setParsedWorksheet(parsed);
+      } else {
+        setParsedWorksheet(null); // Fallback to raw text
+      }
+      clearStreaming(tabId || '', ENDPOINT);
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId || ''];
+        return newMap;
+      });
+    }
+  }, [streamingWorksheet, contextLoading, tabId, clearStreaming]);
 
   // Image generation state
   const [imagePrompt, setImagePrompt] = useState('');
@@ -161,7 +225,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
 
-  const [generatedWorksheet, setGeneratedWorksheet] = useState<string>((savedData?.generatedWorksheet as string) || '');
+  // Generation error state
+  const [generationError, setGenerationError] = useState<string | null>(null);
+
 
   // ✅ Connect WebSocket on mount
   useEffect(() => {
@@ -219,24 +285,17 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     const ws = getConnection(tabId || '', ENDPOINT);
     console.log('WebSocket readyState:', ws.readyState);
     if (ws.readyState !== WebSocket.OPEN) {
-      alert('Connection not established. Please wait and try again.');
+      setGenerationError('Connection not established. Please wait and try again.');
       return;
     }
+    // Clear any previous errors and streaming content
+    setGenerationError(null);
+    clearStreaming(tabId || '', ENDPOINT);
     console.log('Setting loading state');
     setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
 
     // Build prompt for worksheet generation
-    const prompt = `Create a worksheet with the following specifications:
-
-Subject: ${formData.subject}
-Grade Level: ${formData.gradeLevel}
-Strand: ${formData.strand}
-Topic: ${formData.topic}
-Question Type: ${formData.questionType}
-Number of Questions: ${formData.questionCount}
-Worksheet Title: ${formData.worksheetTitle || 'Worksheet'}
-
-Please generate a complete worksheet with appropriate questions and content for this grade level and subject. Include clear instructions and properly formatted questions.`;
+    const prompt = buildWorksheetPrompt(formData);
 
     const jobId = `worksheet-${Date.now()}`;
     console.log('Built prompt, jobId:', jobId);
@@ -254,6 +313,7 @@ Please generate a complete worksheet with appropriate questions and content for 
       console.log('Message sent successfully');
     } catch (error) {
       console.error('Failed to send worksheet request:', error);
+      setGenerationError('Failed to send worksheet request. Please try again.');
       setLocalLoadingMap(prev => {
         const newMap = { ...prev };
         delete newMap[tabId || ''];
@@ -262,15 +322,20 @@ Please generate a complete worksheet with appropriate questions and content for 
     }
   };
 
+  const handleRetry = () => {
+    setGenerationError(null);
+    handleGenerate();
+  };
+
   // Persist to localStorage
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData }));
-  }, [formData]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, localLoadingMap }));
+  }, [formData, generatedWorksheet, parsedWorksheet, localLoadingMap]);
 
   // Notify parent
   useEffect(() => {
-    onDataChange?.({ formData });
-  }, [formData]);
+    onDataChange?.({ formData, generatedWorksheet, parsedWorksheet });
+  }, [formData, generatedWorksheet, parsedWorksheet]);
 
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
@@ -662,8 +727,17 @@ Please generate a complete worksheet with appropriate questions and content for 
               </button>
 
               {imageError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  {imageError}
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
+                  <span>{imageError}</span>
+                  <button
+                    onClick={() => {
+                      setImageError(null);
+                      handleGenerateImage();
+                    }}
+                    className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
 
@@ -762,24 +836,37 @@ Please generate a complete worksheet with appropriate questions and content for 
 
         {/* Generate Button */}
         <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <div className="max-w-4xl mx-auto flex justify-end">
-            <button
-              onClick={handleGenerate}
-              disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate}
-              className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <FileText className="w-5 h-5 mr-2" />
-                  Generate Worksheet
-                </>
-              )}
-            </button>
+          <div className="max-w-4xl mx-auto">
+            {generationError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
+                <span>{generationError}</span>
+                <button
+                  onClick={handleRetry}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            <div className="flex justify-end">
+              <button
+                onClick={handleGenerate}
+                disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate}
+                className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-5 h-5 mr-2" />
+                    Generate Worksheet
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -795,21 +882,40 @@ Please generate a complete worksheet with appropriate questions and content for 
         </div>
 
         <div className="flex-1 p-4">
-          {selectedTemplate ? (
-            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
-              <div className="transform scale-90 origin-top">
-                {renderTemplatePreview()}
+           {generationError ? (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
+                <div className="text-center text-red-600">
+                  <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
+                  <p className="text-sm mb-4">{generationError}</p>
+                  <button
+                    onClick={handleRetry}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Retry Generation
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">Select a template to preview</p>
+            ) : (generatedWorksheet || streamingWorksheet) ? (
+              <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto p-4">
+                <pre className="whitespace-pre-wrap text-sm text-gray-800">
+                  {parsedWorksheet ? worksheetToDisplayText(parsedWorksheet) : (generatedWorksheet || streamingWorksheet)}
+                </pre>
               </div>
-            </div>
-          )}
-        </div>
+            ) : selectedTemplate ? (
+              <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+                <div className="transform scale-90 origin-top">
+                  {renderTemplatePreview()}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">Select a template to preview</p>
+                </div>
+              </div>
+            )}
+          </div>
       </div>
     </div>
   );
