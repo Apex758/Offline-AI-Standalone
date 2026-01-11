@@ -12,7 +12,7 @@ import { imageApi } from '../lib/imageApi';
 import { Wand2, Download } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
-import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
+import { parseWorksheetFromAI, ParsedWorksheet } from '../types/worksheet';
 
 interface CurriculumPage {
   subject: string;
@@ -965,10 +965,32 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               </div>
             ) : (generatedWorksheet || streamingWorksheet) ? (
-              <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto p-4">
-                <pre className="whitespace-pre-wrap text-sm text-gray-800">
-                  {parsedWorksheet ? worksheetToDisplayText(parsedWorksheet) : (generatedWorksheet || streamingWorksheet)}
-                </pre>
+              <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+                {parsedWorksheet ? (
+                  // ✅ Render the actual template with parsed data
+                  <div className="transform scale-90 origin-top">
+                    <ComprehensionTemplate
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      topic={formData.topic}
+                      questionCount={parsedWorksheet.questions.length}
+                      questionType={formData.questionType}
+                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                      includeImages={formData.includeImages}
+                      imagePlacement={formData.imagePlacement}
+                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                      passage={parsedWorksheet.passage}
+                      questions={parsedWorksheet.questions}
+                    />
+                  </div>
+                ) : (
+                  // ❌ Fallback to raw text if parsing failed
+                  <div className="p-4">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-800">
+                      {generatedWorksheet || streamingWorksheet}
+                    </pre>
+                  </div>
+                )}
               </div>
             ) : selectedTemplate ? (
               <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
