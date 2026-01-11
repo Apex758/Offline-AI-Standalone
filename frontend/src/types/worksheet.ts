@@ -185,32 +185,47 @@ function parseComprehensionQuestion(questionText: string, questionBody: string, 
   };
 }
 
-// Parse matching worksheet
+// Parse matching worksheet - IMPROVED VERSION
 function parseMatchingWorksheet(text: string): ParsedWorksheet | null {
   try {
-    // Extract title
-    const titleMatch = text.match(/Title:\s*(.+?)(?=\n|$)/i);
+    console.log('=== PARSING MATCHING WORKSHEET ===');
+    
+    // Extract title - handle both markdown and plain text
+    const titleMatch = text.match(/\*\*Title:\*\*\s*(.+?)(?=\n|$)/i) ||
+                       text.match(/Title:\s*(.+?)(?=\n|$)/i);
     const title = titleMatch ? titleMatch[1].trim() : 'Matching Worksheet';
 
-    // Extract instructions
-    const instructionsMatch = text.match(/Instructions?:\s*(.+?)(?=\n\n|$)/is);
+    // Extract instructions - handle both markdown and plain text
+    const instructionsMatch = text.match(/\*\*Instructions?:\*\*\s*(.+?)(?=\n\n|$)/is) ||
+                              text.match(/Instructions?:\s*(.+?)(?=\n\n|$)/is);
     const instructions = instructionsMatch ? instructionsMatch[1].trim() : undefined;
 
-    // Extract Column A
-    const columnAMatch = text.match(/Column A:\s*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
+    // Extract Column A - handle both markdown (**Column A:**) and plain text (Column A:)
+    let columnAMatch = text.match(/\*\*Column A:\*\*\s*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
+    if (!columnAMatch) {
+      columnAMatch = text.match(/Column A:\s*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
+    }
+    
     const columnA = columnAMatch ? columnAMatch[1].split('\n').map(line => {
       const match = line.match(/\d+\.\s*(.+)/);
       return match ? match[1].trim() : '';
     }).filter(item => item) : [];
 
-    // Extract Column B
-    const columnBMatch = text.match(/Column B:\s*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
+    // Extract Column B - handle both markdown (**Column B:**) and plain text (Column B:)
+    let columnBMatch = text.match(/\*\*Column B:\*\*\s*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
+    if (!columnBMatch) {
+      columnBMatch = text.match(/Column B:\s*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
+    }
+    
     const columnB = columnBMatch ? columnBMatch[1].split('\n').map(line => {
       const match = line.match(/[A-Z]\.\s*(.+)/);
       return match ? match[1].trim() : '';
     }).filter(item => item) : [];
 
+    console.log(`Found ${columnA.length} items in Column A, ${columnB.length} items in Column B`);
+
     if (columnA.length === 0 || columnB.length === 0) {
+      console.error('❌ Matching columns not found');
       return null;
     }
 
@@ -227,35 +242,71 @@ function parseMatchingWorksheet(text: string): ParsedWorksheet | null {
       matchingItems: { columnA, columnB }
     };
   } catch (error) {
-    console.error('Failed to parse matching worksheet:', error);
+    console.error('❌ Failed to parse matching worksheet:', error);
     return null;
   }
 }
 
-// Parse comprehension worksheet
 function parseComprehensionWorksheet(text: string): ParsedWorksheet | null {
   try {
-    // Extract passage
-    const passageMatch = text.match(/PASSAGE:\s*\n(.+?)(?=\n\nQUESTIONS:|\n\n\d+\.|$)/is);
+    console.log('=== PARSING COMPREHENSION WORKSHEET ===');
+    
+    // Extract passage - handle markdown **Passage:**
+    let passageMatch = text.match(/\*\*Passage:\*\*\s*\n+([\s\S]+?)(?=\n+\*\*Questions?:\*\*)/i);
+    if (!passageMatch) {
+      passageMatch = text.match(/PASSAGE:\s*\n+([\s\S]+?)(?=\n+QUESTIONS?:)/i);
+    }
     const passage = passageMatch ? passageMatch[1].trim() : '';
 
-    // Extract questions
+    console.log('✅ Passage found:', passage ? 'YES' : 'NO');
+
+    if (!passage) {
+      console.error('❌ No passage found');
+      return null;
+    }
+
+    // Extract questions by splitting on **1.**, **2.**, etc.
     const questions: WorksheetQuestion[] = [];
-    const questionRegex = /(\d+)\.\s*([^\n]+)\n([^]*?)(?=\n\d+\.|$)/g;
-    let match;
-
-    while ((match = questionRegex.exec(text)) !== null) {
-      const questionNumber = match[1];
-      const questionText = match[2].trim();
-      const questionBody = match[3].trim();
-
-      const parsedQuestion = parseComprehensionQuestion(questionText, questionBody, parseInt(questionNumber) - 1, passage);
-      if (parsedQuestion) {
-        questions.push(parsedQuestion);
+    const questionBlocks = text.split(/\*\*(\d+)\.\*\*/g).slice(1);
+    
+    console.log('Question blocks:', questionBlocks.length / 2);
+    
+    for (let i = 0; i < questionBlocks.length; i += 2) {
+      const questionNumber = questionBlocks[i];
+      const questionContent = questionBlocks[i + 1];
+      
+      if (!questionContent) continue;
+      
+      // Extract question text (after "Instructions:" and before "[Answer format:")
+      let questionText = questionContent;
+      
+      // Remove Instructions line
+      questionText = questionText.replace(/^\s*Instructions?:\s*[^\n]+\n+/i, '');
+      
+      // Remove Answer format hint
+      questionText = questionText.replace(/\[Answer [Ff]ormat:?[^\]]+\]/g, '');
+      
+      // Clean up whitespace
+      questionText = questionText.trim();
+      
+      if (questionText) {
+        console.log(`✅ Question ${questionNumber}:`, questionText.substring(0, 50) + '...');
+        
+        questions.push({
+          id: `q_${Date.now()}_${parseInt(questionNumber) - 1}`,
+          type: 'comprehension',
+          question: questionText,
+          correctAnswer: '',
+          points: 1,
+          passage
+        });
       }
     }
 
+    console.log(`✅ SUCCESS: Parsed ${questions.length} questions`);
+
     if (questions.length === 0) {
+      console.error('❌ No questions parsed');
       return null;
     }
 
@@ -272,7 +323,7 @@ function parseComprehensionWorksheet(text: string): ParsedWorksheet | null {
       passage
     };
   } catch (error) {
-    console.error('Failed to parse comprehension worksheet:', error);
+    console.error('❌ Parser error:', error);
     return null;
   }
 }
@@ -302,7 +353,8 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
     }
 
     // Check for comprehension format
-    if (cleanText.includes('PASSAGE:') && cleanText.includes('QUESTIONS:')) {
+    if ((cleanText.includes('**Passage:**') || cleanText.includes('PASSAGE:')) && 
+        (cleanText.includes('**Questions:**') || cleanText.includes('QUESTIONS:'))) {
       return parseComprehensionWorksheet(cleanText);
     }
 
@@ -383,6 +435,7 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
         .replace(/^Fill-in-the-Blank\**\s*/i, '')
         .replace(/^Short\s*Answer\**\s*/i, '')
         .replace(/^Comprehension\**\s*/i, '')
+        .replace(/\*\*/g, '')
         .trim();
 
       const index = parseInt(questionNumber) - 1;

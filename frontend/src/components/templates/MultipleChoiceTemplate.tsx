@@ -10,6 +10,12 @@ interface MultipleChoiceTemplateProps {
   includeImages?: boolean;
   imageMode?: string;
   generatedImage?: string | null;
+  questions?: Array<{  // ← ADD THIS
+    question: string;
+    options?: string[];
+    correctAnswer?: number;
+    id: string;
+  }>;
 }
 
 const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
@@ -21,8 +27,16 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   worksheetTitle,
   includeImages = false,
   imageMode = 'one-per-question',
-  generatedImage = null
+  generatedImage = null,
+  questions  // ← ADD THIS
 }) => {
+  // Use actual questions if provided, otherwise generate placeholders
+  const displayQuestions = questions || Array.from({ length: questionCount }, (_, i) => ({
+    id: `sample_${i}`,
+    question: `Sample multiple choice question ${i + 1}: Which of the following is correct?`,
+    options: ['Option A', 'Option B', 'Option C', 'Option D']
+  }));
+
   return (
     <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
       {/* Header */}
@@ -71,8 +85,8 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
 
       {/* Questions */}
       <div className="space-y-6">
-        {Array.from({ length: questionCount }, (_, i) => (
-          <div key={i} className="border border-gray-200 rounded-lg p-4">
+        {displayQuestions.map((q, i) => (
+          <div key={q.id} className="border border-gray-200 rounded-lg p-4">
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
                 {i + 1}
@@ -80,7 +94,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
               <div className="flex-1">
                 <div className="mb-3">
                   <p className="text-gray-800 font-medium">
-                    Sample multiple choice question {i + 1}: Which of the following is correct?
+                    {q.question}
                   </p>
                   {includeImages && imageMode === 'one-per-question' && (
                     <div className="mt-2 mb-2">
@@ -99,30 +113,14 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-blue-500">
-                      <span className="text-xs font-semibold">A</span>
+                  {q.options?.map((option, optIndex) => (
+                    <div key={optIndex} className="flex items-center space-x-2">
+                      <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-blue-500">
+                        <span className="text-xs font-semibold">{String.fromCharCode(65 + optIndex)}</span>
+                      </div>
+                      <span className="text-gray-700">{option}</span>
                     </div>
-                    <span className="text-gray-700">Option A</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-blue-500">
-                      <span className="text-xs font-semibold">B</span>
-                    </div>
-                    <span className="text-gray-700">Option B</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-blue-500">
-                      <span className="text-xs font-semibold">C</span>
-                    </div>
-                    <span className="text-gray-700">Option C</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-blue-500">
-                      <span className="text-xs font-semibold">D</span>
-                    </div>
-                    <span className="text-gray-700">Option D</span>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>

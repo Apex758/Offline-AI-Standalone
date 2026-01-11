@@ -8,6 +8,8 @@ interface MatchingTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
+  columnA?: string[];   
+  columnB?: string[];   
 }
 
 const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
@@ -17,8 +19,18 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
   questionCount = 10,
   questionType = 'Matching',
   worksheetTitle,
-  includeImages = false
+  includeImages = false,
+  columnA,
+  columnB
 }) => {
+  // Use actual data if provided, otherwise use placeholders
+  const displayColumnA = columnA || Array.from({ length: questionCount }, (_, i) =>
+    `Sample prompt ${i + 1}: Item ${String.fromCharCode(65 + i)}`
+  );
+
+  const displayColumnB = columnB || Array.from({ length: questionCount }, (_, i) =>
+    `Sample answer ${i + 1}: Definition ${String.fromCharCode(65 + i)}`
+  );
   return (
     <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
       {/* Header */}
@@ -55,15 +67,13 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Column A</h3>
             <div className="space-y-4">
-              {Array.from({ length: questionCount }, (_, i) => (
+              {displayColumnA.map((item, i) => (
                 <div key={i} className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
                     {i + 1}
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-800">
-                      Sample prompt {i + 1}: Item {String.fromCharCode(65 + i)}
-                    </p>
+                    <p className="text-gray-800">{item}</p>
                   </div>
                 </div>
               ))}
@@ -74,15 +84,13 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Column B</h3>
             <div className="space-y-4">
-              {Array.from({ length: questionCount }, (_, i) => (
+              {displayColumnB.map((item, i) => (
                 <div key={i} className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
                     {String.fromCharCode(65 + i)}
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-800">
-                      Sample answer {i + 1}: Definition {String.fromCharCode(65 + i)}
-                    </p>
+                    <p className="text-gray-800">{item}</p>
                   </div>
                 </div>
               ))}

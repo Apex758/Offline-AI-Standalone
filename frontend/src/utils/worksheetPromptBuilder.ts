@@ -108,34 +108,72 @@ Correct Answer: A
 
 `;
   } else if (formData.selectedTemplate === 'comprehension') {
-    templateInstructions = `COMPREHENSION FORMAT:
-Provide a reading passage appropriate for Grade ${formData.gradeLevel} students, followed by ${questionCount} questions.
+    // UPDATED - More explicit format instructions
+    templateInstructions = `COMPREHENSION FORMAT - FOLLOW EXACTLY:
 
-Format:
-PASSAGE:
-[reading passage text]
+Step 1: Write the passage header and passage
+**Passage:**
 
-QUESTIONS:
-1. [question based on passage]
-[answer format depending on question type]
+[Write a ${gradeSpec.readingLevel} reading passage here - 2-3 paragraphs about ${formData.topic}]
+
+Step 2: Write the questions header
+**Questions:**
+
+Step 3: Write each question in this EXACT format:
+
+**1.**
+
+Instructions: [Brief instruction telling students what to do - e.g., "Read the passage carefully and answer the question."]
+
+[The actual question text]
+
+[Answer format: Describe how students should format their answer - e.g., "Write your answer in complete sentences."]
+
+**2.**
+
+Instructions: [Different instruction for this question]
+
+[The actual question text for question 2]
+
+[Answer format: ...]
+
+CRITICAL FORMATTING RULES:
+- Use **1.**, **2.**, etc. for question numbers (with double asterisks)
+- Each question MUST have "Instructions:" on its own line
+- Each question MUST have the actual question text on a separate line after Instructions
+- Each question SHOULD have an [Answer format: ...] hint
+- Generate EXACTLY ${questionCount} questions
+- Use blank lines between sections
+- Do NOT add extra headers or explanations
 
 `;
   } else if (formData.selectedTemplate === 'matching') {
-    templateInstructions = `MATCHING FORMAT:
-Create ${questionCount} pairs of items to match.
+    // UPDATED - More explicit format
+    templateInstructions = `MATCHING FORMAT - FOLLOW EXACTLY:
 
-Format:
-MATCHING EXERCISE:
+**Title:** [Creative title related to ${formData.topic}]
 
-Column A:
-1. [item]
-2. [item]
+**Instructions:** Draw lines to match the items in Column A with the correct items in Column B.
+
+**Column A:**
+1. [First item]
+2. [Second item]
+3. [Third item]
 ...
+${questionCount}. [Last item]
 
-Column B:
-A. [matching item]
-B. [matching item]
+**Column B:**
+A. [First matching item]
+B. [Second matching item]
+C. [Third matching item]
 ...
+${String.fromCharCode(64 + questionCount)}. [Last matching item]
+
+CRITICAL:
+- Use **Column A:** and **Column B:** (with double asterisks)
+- Number Column A items as: 1. 2. 3. etc.
+- Letter Column B items as: A. B. C. etc.
+- Generate EXACTLY ${questionCount} pairs
 
 `;
   } else if (formData.selectedTemplate === 'list-based') {
@@ -162,36 +200,40 @@ IMAGE INSTRUCTIONS:
 
 ` : '';
 
-  const prompt = `Create a complete worksheet for Grade ${formData.gradeLevel} students with the following specifications:
+  const prompt = `You are creating an educational worksheet for Grade ${formData.gradeLevel} students.
 
 CURRICULUM CONTEXT:
 - Subject: ${formData.subject}
 - Strand: ${formData.strand}
 - Topic: ${formData.topic}
 
-GRADE LEVEL REQUIREMENTS:
-- Use ${gradeSpec.vocabulary}
-- ${gradeSpec.sentenceStructure}
-- Focus on: ${gradeSpec.examples}
-- ${gradeSpec.questionComplexity}
+GRADE LEVEL REQUIREMENTS (CRITICAL):
+Reading Level: ${gradeSpec.readingLevel}
+Sentence Structure: ${gradeSpec.sentenceStructure}
+Vocabulary: ${gradeSpec.vocabulary}
+Focus Areas: ${gradeSpec.examples}
+Question Complexity: ${gradeSpec.questionComplexity}
+Cognitive Depth: ${gradeSpec.cognitiveDepth}
 
 WORKSHEET DETAILS:
-- Title: ${formData.worksheetTitle || 'Worksheet'}
+- Title: ${formData.worksheetTitle || formData.topic + ' Worksheet'}
 - Question Type: ${formData.questionType}
 - Number of Questions: ${questionCount}
-- Number of Students: ${formData.studentCount || 'Not specified'}
 - Template: ${formData.selectedTemplate}
 
 ${templateInstructions}${imageInstructions}
 
-CRITICAL REQUIREMENTS:
-- Generate EXACTLY ${questionCount} questions
-- Ensure content is age-appropriate for Grade ${formData.gradeLevel}
-- Include clear instructions for students
-- Make questions engaging and educational
-- Align with curriculum strand: ${formData.strand}
+ABSOLUTE REQUIREMENTS:
+1. Generate EXACTLY ${questionCount} questions - no more, no less
+2. Content must be age-appropriate for Grade ${formData.gradeLevel}
+3. Follow the format EXACTLY as shown above
+4. Use the specified markdown formatting (**text:** for headers)
+5. Align all content with curriculum strand: ${formData.strand}
+6. Make questions engaging and educational
+7. Do NOT add extra explanations or preambles
+8. Do NOT deviate from the specified format
 
-Generate the complete worksheet content now:`;
+Begin generating the worksheet now:`;
 
   return prompt;
 }

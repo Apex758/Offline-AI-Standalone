@@ -79,7 +79,7 @@ const worksheetTemplates: WorksheetTemplate[] = [
     id: 'comprehension',
     name: 'Reading Comprehension Template',
     description: 'Passage-based comprehension questions layout',
-    compatibleTypes: ['Comprehension', 'Short Answer', 'True / False', 'Multiple Choice'],
+    compatibleTypes: ['Comprehension', 'Short Answer', 'Multiple Choice'],
     preview: 'Comprehension Layout Preview'
   },
   {
@@ -93,7 +93,7 @@ const worksheetTemplates: WorksheetTemplate[] = [
     id: 'list-based',
     name: 'List-Based Template',
     description: 'Simple vertical list for various question types',
-    compatibleTypes: ['Short Answer', 'Fill in the Blank', 'Word Bank', 'True / False'],
+    compatibleTypes: ['Short Answer', 'Fill in the Blank', 'Word Bank', 'True / False', 'Comprehension'],
     preview: 'List-Based Layout Preview'
   }
 ];
@@ -966,25 +966,78 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             ) : (generatedWorksheet || streamingWorksheet) ? (
               <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
-                {parsedWorksheet ? (
-                  // ✅ Render the actual template with parsed data
+                {loading ? (
+                  // Show loading state during streaming
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+                      <p className="text-gray-600 font-medium">Generating worksheet...</p>
+                      <p className="text-gray-500 text-sm mt-2">The content will appear in your template shortly</p>
+                    </div>
+                  </div>
+                ) : parsedWorksheet ? (
+                  // Show template after streaming completes
                   <div className="transform scale-90 origin-top">
-                    <ComprehensionTemplate
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeLevel}
-                      topic={formData.topic}
-                      questionCount={parsedWorksheet.questions.length}
-                      questionType={formData.questionType}
-                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.includeImages}
-                      imagePlacement={formData.imagePlacement}
-                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                      passage={parsedWorksheet.passage}
-                      questions={parsedWorksheet.questions}
-                    />
+                    {formData.selectedTemplate === 'multiple-choice' && (
+                      <MultipleChoiceTemplate
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeLevel}
+                        topic={formData.topic}
+                        questionCount={parsedWorksheet.questions.length}
+                        questionType={formData.questionType}
+                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                        includeImages={formData.includeImages}
+                        imageMode={formData.imageMode}
+                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                        questions={parsedWorksheet.questions}
+                      />
+                    )}
+                    {formData.selectedTemplate === 'comprehension' && (
+                      <ComprehensionTemplate
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeLevel}
+                        topic={formData.topic}
+                        questionCount={parsedWorksheet.questions.length}
+                        questionType={formData.questionType}
+                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                        includeImages={formData.includeImages}
+                        imagePlacement={formData.imagePlacement}
+                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                        passage={parsedWorksheet.passage}
+                        questions={parsedWorksheet.questions}
+                      />
+                    )}
+                    {formData.selectedTemplate === 'matching' && (
+                      <MatchingTemplate
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeLevel}
+                        topic={formData.topic}
+                        questionCount={parsedWorksheet.questions.length}
+                        questionType={formData.questionType}
+                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                        includeImages={formData.includeImages}
+                        columnA={parsedWorksheet.matchingItems?.columnA}
+                        columnB={parsedWorksheet.matchingItems?.columnB}
+                      />
+                    )}
+                    {formData.selectedTemplate === 'list-based' && (
+                      <ListBasedTemplate
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeLevel}
+                        topic={formData.topic}
+                        questionCount={parsedWorksheet.questions.length}
+                        questionType={formData.questionType}
+                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                        includeImages={formData.includeImages}
+                        imageMode={formData.imageMode}
+                        imagePlacement={formData.imagePlacement}
+                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                        questions={parsedWorksheet.questions}
+                      />
+                    )}
                   </div>
                 ) : (
-                  // ❌ Fallback to raw text if parsing failed
+                  // Fallback
                   <div className="p-4">
                     <pre className="whitespace-pre-wrap text-sm text-gray-800">
                       {generatedWorksheet || streamingWorksheet}
