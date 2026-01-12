@@ -203,6 +203,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   // ✅ Finalization logic - when streaming completes, update generatedWorksheet
   useEffect(() => {
     if (streamingWorksheet && !contextLoading) {
+      console.log('Raw AI response:', streamingWorksheet);
       setGeneratedWorksheet(streamingWorksheet);
       const parsed = parseWorksheetFromAI(streamingWorksheet);
       if (parsed) {
@@ -416,6 +417,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   const compatibleTemplates = getCompatibleTemplates();
   const selectedTemplate = worksheetTemplates.find(t => t.id === formData.selectedTemplate);
+
+  const generatedImage = generatedImages.length > 0 ? generatedImages[0] : null;
 
   const renderTemplatePreview = () => {
     if (!selectedTemplate) return null;
@@ -1030,8 +1033,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
                         includeImages={formData.includeImages}
                         imageMode={formData.imageMode}
-                        imagePlacement={formData.imagePlacement}
-                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                        generatedImage={generatedImage}
                         questions={parsedWorksheet.questions}
                       />
                     )}

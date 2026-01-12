@@ -185,6 +185,34 @@ function parseComprehensionQuestion(questionText: string, questionBody: string, 
   };
 }
 
+// Add this helper function before parseMatchingWorksheet
+function calculateMathExpression(expr: string): number | null {
+  try {
+    // Extract the math expression (e.g., "945 - 279 =" -> "945 - 279")
+    const cleanExpr = expr.replace(/=/g, '').trim();
+    
+    // Simple regex to extract numbers and operator
+    const match = cleanExpr.match(/(\d+)\s*([+\-×÷*/])\s*(\d+)/);
+    if (!match) return null;
+    
+    const num1 = parseInt(match[1]);
+    const operator = match[2];
+    const num2 = parseInt(match[3]);
+    
+    switch (operator) {
+      case '+': return num1 + num2;
+      case '-': return num1 - num2;
+      case '×':
+      case '*': return num1 * num2;
+      case '÷':
+      case '/': return Math.floor(num1 / num2);
+      default: return null;
+    }
+  } catch {
+    return null;
+  }
+}
+
 // Parse matching worksheet - IMPROVED VERSION
 function parseMatchingWorksheet(text: string): ParsedWorksheet | null {
   try {
@@ -201,9 +229,10 @@ function parseMatchingWorksheet(text: string): ParsedWorksheet | null {
     const instructions = instructionsMatch ? instructionsMatch[1].trim() : undefined;
 
     // Extract Column A - handle both markdown (**Column A:**) and plain text (Column A:)
-    let columnAMatch = text.match(/\*\*Column A:\*\*\s*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
+    // Also handle optional descriptive text after the colon (e.g., "**Column A:** Math problems")
+    let columnAMatch = text.match(/\*\*Column A:\*\*[^\n]*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
     if (!columnAMatch) {
-      columnAMatch = text.match(/Column A:\s*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
+      columnAMatch = text.match(/Column A:[^\n]*\n((?:\d+\.\s*[^\n]+\n?)+)/i);
     }
     
     const columnA = columnAMatch ? columnAMatch[1].split('\n').map(line => {
@@ -211,16 +240,29 @@ function parseMatchingWorksheet(text: string): ParsedWorksheet | null {
       return match ? match[1].trim() : '';
     }).filter(item => item) : [];
 
+    // Calculate correct answers if Column A contains math problems
+    const calculatedAnswers = columnA.map(item => calculateMathExpression(item));
+    const hasMathProblems = calculatedAnswers.some(ans => ans !== null);
+
     // Extract Column B - handle both markdown (**Column B:**) and plain text (Column B:)
-    let columnBMatch = text.match(/\*\*Column B:\*\*\s*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
+    // Also handle optional descriptive text after the colon (e.g., "**Column B:** Numerical answers")
+    let columnBMatch = text.match(/\*\*Column B:\*\*[^\n]*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
     if (!columnBMatch) {
-      columnBMatch = text.match(/Column B:\s*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
+      columnBMatch = text.match(/Column B:[^\n]*\n((?:[A-Z]\.\s*[^\n]+\n?)+)/i);
     }
-    
-    const columnB = columnBMatch ? columnBMatch[1].split('\n').map(line => {
+
+    let columnB = columnBMatch ? columnBMatch[1].split('\n').map(line => {
       const match = line.match(/[A-Z]\.\s*(.+)/);
       return match ? match[1].trim() : '';
     }).filter(item => item) : [];
+
+    // If we detected math problems and calculated answers, replace Column B
+    if (hasMathProblems && calculatedAnswers.every(ans => ans !== null)) {
+      console.log('✅ Replacing AI-generated answers with calculated correct answers');
+      columnB = calculatedAnswers.map(ans => ans!.toString());
+      // Shuffle to make it a challenge
+      columnB = columnB.sort(() => Math.random() - 0.5);
+    }
 
     console.log(`Found ${columnA.length} items in Column A, ${columnB.length} items in Column B`);
 
@@ -359,7 +401,8 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
     }
 
     // Match questions
-    const questionRegex = /Question\s+(\d+):\s*([^\n]*)\n([^]*?)(?=Question\s+\d+:|$)/gi;
+    // Match: "**Question 1: Type**", "Question 1: Type", or "**Question 1**"
+    const questionRegex = /(?:\*\*Question\s+(\d+):\s*([^\*\n]+)\*\*|\*\*Question\s+(\d+)\*\*|Question\s+(\d+):\s*([^\n]*))\s*\n([^]*?)(?=(?:\*\*Question\s+\d+:|Question\s+\d+:)|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];
 
     if (matches.length === 0) {
@@ -370,9 +413,10 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
     console.log(`Found ${matches.length} questions in text format`);
 
     matches.forEach((match) => {
-      const questionNumber = match[1];
-      const firstLine = match[2].trim();
-      const questionContent = match[3].trim();
+      // Group 1&2: **Question X: Type**, Group 3: **Question X**, Group 4&5: Question X: Type
+      const questionNumber = match[1] || match[3] || match[4];
+      const firstLine = match[2] || match[5] || ''; // Type label
+      const questionContent = match[6].trim(); // Actual content
 
       // Detect type from first line
       let questionType: WorksheetQuestion['type'];
@@ -425,8 +469,17 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
       }
 
       // Extract clean question text
-      const questionTextMatch = cleanedContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
-      let questionText = questionTextMatch ? questionTextMatch[1].trim() : cleanedContent.split('\n')[0].trim();
+      let questionText = '';
+
+      // For Word Bank and Fill in the Blank, the question is usually the full sentence
+      // Skip the type label line and get the actual content
+      if (/Word Bank|Fill in the Blank/i.test(firstLine)) {
+        // The actual question is on the line(s) after the type label
+        questionText = cleanedContent.trim();
+      } else {
+        const questionTextMatch = cleanedContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
+        questionText = questionTextMatch ? questionTextMatch[1].trim() : cleanedContent.split('\n')[0].trim();
+      }
 
       // Remove type labels from question text
       questionText = questionText
@@ -435,6 +488,7 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
         .replace(/^Fill-in-the-Blank\**\s*/i, '')
         .replace(/^Short\s*Answer\**\s*/i, '')
         .replace(/^Comprehension\**\s*/i, '')
+        .replace(/^Word\s*Bank\**\s*/i, '')  // Add this line
         .replace(/\*\*/g, '')
         .trim();
 

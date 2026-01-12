@@ -148,42 +148,153 @@ CRITICAL FORMATTING RULES:
 
 `;
   } else if (formData.selectedTemplate === 'matching') {
-    // UPDATED - More explicit format
+    // UPDATED - Topic-specific matching guidance
+    const isMathTopic = formData.subject.toLowerCase().includes('math');
+    
+    const matchingGuidance = isMathTopic ? `
+FOR MATH TOPICS:
+- Column A: Math problems (e.g., "457 + 325 = ?", "18 × 3 = ?", "144 ÷ 12 = ?")
+- Column B: Numerical answers (e.g., "782", "54", "12")
+- SHUFFLE Column B so answers don't match the order in Column A
+` : `
+FOR NON-MATH TOPICS:
+- Column A: Terms, concepts, or items to define/identify
+- Column B: Definitions, descriptions, or matching items
+- SHUFFLE Column B so matches don't align with Column A order
+`;
+
     templateInstructions = `MATCHING FORMAT - FOLLOW EXACTLY:
 
 **Title:** [Creative title related to ${formData.topic}]
 
 **Instructions:** Draw lines to match the items in Column A with the correct items in Column B.
 
+${matchingGuidance}
+
 **Column A:**
 1. [First item]
 2. [Second item]
-3. [Third item]
-...
+${questionCount > 2 ? `3. [Third item]\n...` : ''}
 ${questionCount}. [Last item]
 
 **Column B:**
 A. [First matching item]
 B. [Second matching item]
-C. [Third matching item]
-...
+${questionCount > 2 ? `C. [Third matching item]\n...` : ''}
 ${String.fromCharCode(64 + questionCount)}. [Last matching item]
 
-CRITICAL:
+CRITICAL REQUIREMENTS:
 - Use **Column A:** and **Column B:** (with double asterisks)
 - Number Column A items as: 1. 2. 3. etc.
 - Letter Column B items as: A. B. C. etc.
-- Generate EXACTLY ${questionCount} pairs
+- Generate EXACTLY ${questionCount} pairs (not ${questionCount + 1}, not ${questionCount - 1}, EXACTLY ${questionCount})
+- Items in Column B must be SHUFFLED/randomized so they don't match the order of Column A
+- For math: Column A = problems, Column B = answers
 
 `;
   } else if (formData.selectedTemplate === 'list-based') {
-    templateInstructions = `LIST-BASED FORMAT:
-Create a vertical list of ${questionCount} questions.
+    // Question-type-specific instructions
+    let listFormat = '';
 
-Format:
-1. [question]
-2. [question]
-...
+    if (formData.questionType === 'Word Bank') {
+      listFormat = `WORD BANK FORMAT:
+
+Step 1: Create a word bank with 6-8 words/terms related to "${formData.topic}".
+
+**Word Bank:** [list the words separated by commas]
+
+Step 2: Create ${questionCount} fill-in-the-blank sentences using this EXACT format:
+
+Question 1: Word Bank
+When we have 45 pencils and we add 27 more, we now have _______ pencils.
+
+Question 2: Word Bank
+If we have 54 crayons and we subtract 17, we have _______ crayons left.
+
+Question 3: Word Bank
+If we have 24 books and we multiply by 4, we have a total of _______ books.
+
+CRITICAL FORMAT RULES:
+- Line 1: "Question X: Word Bank" (NO question text on this line)
+- Line 2: The actual sentence with _______ blank
+- Use exactly ${questionCount} questions
+- All questions about "${formData.topic}"
+- DO NOT use **Question X:** format
+- DO NOT put the sentence on the same line as "Question X:"`;
+
+    } else if (formData.questionType === 'True / False') {
+      listFormat = `TRUE/FALSE FORMAT - FOLLOW EXACTLY:
+
+Create ${questionCount} true/false statements about "${formData.topic}" for ${formData.subject}.
+
+Question 1: True / False
+[Write a true or false statement about ${formData.topic}]
+
+Question 2: True / False
+[Write a different true or false statement about ${formData.topic}]
+
+Continue for all ${questionCount} questions.
+
+CRITICAL RULES:
+- Format: "Question X: True / False" followed by statement
+- Generate exactly ${questionCount} questions
+- Mix true and false statements roughly equally
+- All statements must be about "${formData.topic}"`;
+
+    } else if (formData.questionType === 'Fill in the Blank') {
+      listFormat = `FILL IN THE BLANK FORMAT - FOLLOW EXACTLY:
+
+Create ${questionCount} fill-in-the-blank questions about "${formData.topic}" for ${formData.subject}.
+
+Question 1: Fill in the Blank
+[Write a sentence about ${formData.topic} with ONE blank using _______]
+
+Question 2: Fill in the Blank
+[Write a different sentence about ${formData.topic} with ONE blank using _______]
+
+Continue for all ${questionCount} questions.
+
+CRITICAL RULES:
+- Format: "Question X: Fill in the Blank" followed by sentence
+- Generate exactly ${questionCount} questions
+- Each sentence has ONE blank using _______
+- All questions must be about "${formData.topic}"`;
+
+    } else if (formData.questionType === 'Short Answer') {
+      listFormat = `SHORT ANSWER FORMAT - FOLLOW EXACTLY:
+
+Create ${questionCount} short answer questions about "${formData.topic}" for ${formData.subject}.
+
+Question 1: Short Answer
+[Write a question about ${formData.topic} requiring 2-4 sentences]
+
+Question 2: Short Answer
+[Write a different question about ${formData.topic} requiring 2-4 sentences]
+
+Continue for all ${questionCount} questions.
+
+CRITICAL RULES:
+- Format: "Question X: Short Answer" followed by question
+- Generate exactly ${questionCount} questions
+- Questions require 2-4 sentence responses
+- All questions must be about "${formData.topic}"`;
+
+    } else {
+      listFormat = `Generate exactly ${questionCount} questions in this format:
+
+Question 1: ${formData.questionType}
+[Question text]
+
+Question 2: ${formData.questionType}
+[Question text]`;
+    }
+
+    templateInstructions = `LIST-BASED TEMPLATE:
+
+${listFormat}
+
+CRITICAL: Follow the EXACT format above for ${formData.questionType} questions.
+Generate EXACTLY ${questionCount} questions.
 
 `;
   }
