@@ -1100,7 +1100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {contextMenu && contextMenu.groupType && (
         <div
           className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 dark:bg-gray-800 dark:border-gray-700"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
+          style={{ left: contextMenu.x, top: contextMenu.y + 20}}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Group Actions</div>

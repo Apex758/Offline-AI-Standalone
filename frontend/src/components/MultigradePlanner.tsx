@@ -151,8 +151,16 @@ const parseMultigradeContent = (text: string, formData: FormData): ParsedMultigr
     
     // Extract metadata from form data
     const gradeLevelsArray = formData.gradeRange.split(/[-,]/).map(g => g.trim());
+
+    // Try to extract title from generated content if available
+    let title = formData.topic || 'Multigrade Plan';
+    const titleMatch = text.match(/^\*\*Lesson Plan:\s*(.+?)\*\*/m);
+    if (titleMatch) {
+      title = titleMatch[1].trim();
+    }
+
     const metadata = {
-      title: formData.topic || 'Multigrade Plan',
+      title: title,
       subject: formData.subject,
       gradeLevels: gradeLevelsArray,
       gradeRange: formData.gradeRange,
@@ -732,7 +740,16 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
 
-    const prompt = buildMultigradePrompt(formData);
+    // Transform FormData to MultigradeFormData format
+    const multigradeFormData = {
+      topic: formData.topic,
+      subject: formData.subject,
+      gradeLevels: formData.gradeRange.split(/[-,]/).map(g => g.trim()),
+      duration: formData.duration,
+      totalStudents: formData.totalStudents
+    };
+
+    const prompt = buildMultigradePrompt(multigradeFormData);
 
     try {
       ws.send(JSON.stringify({
@@ -865,7 +882,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                           </div>
                           
                           <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                            {formData.topic ? `${formData.topic} - Multigrade` : 'Multigrade Lesson Plan'}
+                            {parsedPlan?.metadata.title || (formData.topic ? `${formData.topic} - Multigrade` : 'Multigrade Lesson Plan')}
                           </h1>
                           
                           <div className="flex flex-wrap items-center gap-4 text-indigo-100">

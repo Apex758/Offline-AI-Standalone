@@ -1375,6 +1375,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 # Use streaming method for real-time generation
                 token_buffer = []
                 last_send = time.time()
+                chunk_count = 0
                 async for chunk in inference.generate_stream(
                     tool_name="multigrade",
                     input_data=prompt,
@@ -1382,6 +1383,7 @@ async def multigrade_websocket(websocket: WebSocket):
                     max_tokens=6000,
                     temperature=0.7
                 ):
+                    chunk_count += 1
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
                         break
