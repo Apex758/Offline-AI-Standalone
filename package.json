@@ -105,7 +105,7 @@
         ]
       }
     ],
-    "compression": "normal",
+    "compression": "store",
     "asar": true,
     "asarUnpack": [
       "**/backend-bundle/**/*",

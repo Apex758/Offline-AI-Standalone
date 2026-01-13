@@ -16,11 +16,6 @@ Get-ChildItem "backend\*.py" | ForEach-Object {
     Copy-Item $_.FullName -Destination $bundleDir
 }
 
-# Copy models folder
-if (Test-Path "backend\models") {
-    Copy-Item "backend\models" -Destination "$bundleDir\models" -Recurse -Force
-    Write-Host "Copied models folder" -ForegroundColor Green
-}
 
 # Copy data folder
 if (Test-Path "backend\data") {

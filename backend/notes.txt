@@ -24,7 +24,9 @@ python -m uvicorn main:app --reload --port 8000
 
 ```powershell
 .\build-release.ps1
-```
+```   
+
+"maximum" | "normal" | "store"        "compression": "store",   in package.json
 
 ---
 
