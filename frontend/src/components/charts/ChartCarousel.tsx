@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import ResourceTrendChart from './ResourceTrendChart';
 import ResourceDistributionChart from './ResourceDistributionChart';
-import LessonPlanComparisonChart from './LessonPlanComparisonChart';
 import type { ResourceTrendData, DistributionData, Timeframe } from '../../types/analytics';
 
 interface ChartCarouselProps {
   trendData: ResourceTrendData[];
   distributionData: DistributionData[];
-  lessonPlanComparison: { type: string; count: number }[];
   timeframe: Timeframe;
   onTimeframeChange: (timeframe: Timeframe) => void;
   forcePaused?: boolean;
@@ -17,7 +15,6 @@ interface ChartCarouselProps {
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
   trendData,
   distributionData,
-  lessonPlanComparison,
   timeframe,
   onTimeframeChange,
   forcePaused = false
@@ -66,7 +63,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   return (
     <div className="relative" data-tutorial="analytics-chart-carousel">
       {/* Chart Container */}
-      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display" style={{ height: '450px' }}>
+      <div className="relative overflow-hidden" data-tutorial="analytics-chart-display" style={{ height: '500px' }}>
         {/* Trend Chart View */}
         <div
           className={`transition-all duration-500 h-full ${
@@ -82,7 +79,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
           />
         </div>
 
-        {/* Distribution & Comparison Charts View */}
+        {/* Distribution Chart View */}
         <div
           className={`transition-all duration-500 h-full ${
             currentView === 'distribution'
@@ -90,13 +87,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ResourceDistributionChart data={distributionData} />
-            
-            {lessonPlanComparison.length > 0 && (
-              <LessonPlanComparisonChart data={lessonPlanComparison} />
-            )}
-          </div>
+          <ResourceDistributionChart data={distributionData} />
         </div>
       </div>
 

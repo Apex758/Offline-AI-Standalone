@@ -139,13 +139,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     setLoading(true);
     try {
       // Load resources
-      const [lessonPlans, rubrics, quizzes, kindergarten, multigrade, crossCurricular] = await Promise.all([
+      const [lessonPlans, rubrics, quizzes, kindergarten, multigrade, crossCurricular, worksheets, images] = await Promise.all([
         axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/rubric-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/kindergarten-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
-        axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] }))
+        axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/worksheet-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] }))
       ]);
 
       // Combine all resources with type labels
@@ -155,7 +157,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ...quizzes.data.map((r: any) => ({ ...r, type: 'quiz' })),
         ...kindergarten.data.map((r: any) => ({ ...r, type: 'kindergarten' })),
         ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
-        ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' }))
+        ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
+        ...worksheets.data.map((r: any) => ({ ...r, type: 'worksheet' })),
+        ...images.data.map((r: any) => ({ ...r, type: 'image' }))
       ];
       
       setAllResourcesData(allResources);
@@ -194,26 +198,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     return calculateDistribution(allResourcesData);
   }, [allResourcesData]);
 
-  const lessonPlanComparison = useMemo(() => {
-    return [
-      {
-        type: 'Standard',
-        count: allResourcesData.filter(r => r.type === 'lesson').length
-      },
-      {
-        type: 'Kindergarten',
-        count: allResourcesData.filter(r => r.type === 'kindergarten').length
-      },
-      {
-        type: 'Multigrade',
-        count: allResourcesData.filter(r => r.type === 'multigrade').length
-      },
-      {
-        type: 'Cross-Curricular',
-        count: allResourcesData.filter(r => r.type === 'cross-curricular').length
-      }
-    ].filter(item => item.count > 0);
-  }, [allResourcesData]);
 
   const quickStats = useMemo(() => {
     return calculateQuickStats(allResourcesData, tasks, timeframe);
@@ -437,7 +421,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <ChartCarousel
               trendData={trendData}
               distributionData={distributionData}
-              lessonPlanComparison={lessonPlanComparison}
               timeframe={timeframe}
               onTimeframeChange={setTimeframe}
               forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}

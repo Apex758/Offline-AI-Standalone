@@ -52,7 +52,9 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
       rubrics: 0,
       kindergarten: 0,
       multigrade: 0,
-      crossCurricular: 0
+      crossCurricular: 0,
+      worksheets: 0,
+      images: 0
     });
     currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
   }
@@ -87,6 +89,12 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
             case 'cross-curricular':
               data.crossCurricular++;
               break;
+            case 'worksheet':
+              data.worksheets++;
+              break;
+            case 'image':
+              data.images++;
+              break;
           }
         }
       }
@@ -109,7 +117,9 @@ export function calculateDistribution(resources: any[]): DistributionData[] {
     rubric: 'Rubrics',
     kindergarten: 'Kindergarten Plans',
     multigrade: 'Multigrade Plans',
-    'cross-curricular': 'Cross-Curricular Plans'
+    'cross-curricular': 'Cross-Curricular Plans',
+    worksheet: 'Worksheets',
+    image: 'Images'
   };
   
   const typeColors: { [key: string]: string } = {
@@ -118,7 +128,9 @@ export function calculateDistribution(resources: any[]): DistributionData[] {
     rubric: '#f59e0b',
     kindergarten: '#ec4899',
     multigrade: '#6366f1',
-    'cross-curricular': '#14b8a6'
+    'cross-curricular': '#14b8a6',
+    worksheet: '#06b6d4',
+    image: '#8b5a2b'
   };
 
   resources.forEach(resource => {

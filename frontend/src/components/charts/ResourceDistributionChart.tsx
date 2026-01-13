@@ -61,51 +61,54 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
         <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Type Distribution</h3>
       </div>
 
-      {/* Chart */}
-      <div className="relative">
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={dataWithColors}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomLabel}
-              outerRadius={90}
-              innerRadius={60}
-              fill="#8884d8"
-              dataKey="count"
-              paddingAngle={2}
-            >
-              {dataWithColors.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
+      {/* Chart and Legend */}
+      <div className="flex gap-6">
+        {/* Chart */}
+        <div className="flex-1 relative">
+          <ResponsiveContainer width="100%" height={350}>
+            <PieChart>
+              <Pie
+                data={dataWithColors}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={renderCustomLabel}
+                outerRadius={120}
+                innerRadius={80}
+                fill="#8884d8"
+                dataKey="count"
+                paddingAngle={2}
+              >
+                {dataWithColors.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
 
-        {/* Center Label */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center">
-            <div className="text-3xl font-bold" style={{ color: '#020D03' }}>{total}</div>
-            <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
+          {/* Center Label */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center">
+              <div className="text-3xl font-bold" style={{ color: '#020D03' }}>{total}</div>
+              <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Legend */}
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {dataWithColors.map((entry, index) => (
-          <div key={index} className="flex items-center space-x-2">
-            <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-xs truncate" style={{ color: '#552A01' }}>{entry.label}</span>
-            <span className="text-xs font-semibold ml-auto" style={{ color: '#020D03' }}>{entry.count}</span>
-          </div>
-        ))}
+        {/* Legend */}
+        <div className="w-48 space-y-2">
+          {dataWithColors.map((entry, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <div
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-xs" style={{ color: '#552A01' }}>{entry.label}</span>
+              <span className="text-xs font-semibold ml-auto" style={{ color: '#020D03' }}>{entry.count}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

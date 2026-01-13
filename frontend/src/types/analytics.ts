@@ -7,6 +7,8 @@ export interface ResourceTrendData {
   kindergarten: number;
   multigrade: number;
   crossCurricular: number;
+  worksheets: number;
+  images: number;
 }
 
 export interface DistributionData {

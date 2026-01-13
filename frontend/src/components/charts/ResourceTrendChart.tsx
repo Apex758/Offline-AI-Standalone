@@ -144,7 +144,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
             dataKey="lessonPlans"
             stroke="#1D362D"
             strokeWidth={2}
-            name="Lesson Plans"
+            name="Standard Lessons"
             dot={{ r: 3, fill: '#1D362D' }}
           />
           <Line
@@ -162,6 +162,38 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
             strokeWidth={2}
             name="Rubrics"
             dot={{ r: 3, fill: '#F8E59D' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="kindergarten"
+            stroke="#ec4899"
+            strokeWidth={2}
+            name="Kindergarten Plans"
+            dot={{ r: 3, fill: '#ec4899' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="multigrade"
+            stroke="#6366f1"
+            strokeWidth={2}
+            name="Multigrade Plans"
+            dot={{ r: 3, fill: '#6366f1' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="worksheets"
+            stroke="#06b6d4"
+            strokeWidth={2}
+            name="Worksheets"
+            dot={{ r: 3, fill: '#06b6d4' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="images"
+            stroke="#8b5a2b"
+            strokeWidth={2}
+            name="Images"
+            dot={{ r: 3, fill: '#8b5a2b' }}
           />
         </LineChart>
       </ResponsiveContainer>
