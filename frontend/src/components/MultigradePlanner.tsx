@@ -3,10 +3,9 @@ import { ChevronRight, ChevronLeft, Loader2, Users, Trash2, Save, Download, Hist
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import MultigradeEditor from './MultigradeEditor';
-import type { ParsedMultigradePlan } from './MultigradeEditor';
 import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
-import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../utils/multigrade'; 
+import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -63,6 +62,13 @@ const formatMultigradeText = (text: string, accentColor: string, isStreaming: bo
   cleanText = cleanText.replace(/llama_model_loader[^\n]*/g, '');
   cleanText = cleanText.replace(/llm_load_print_meta[^\n]*/g, '');
   cleanText = cleanText.replace(/system_info[^\n]*/g, '');
+  // Remove AI-generated metadata at the top (before section 1)
+  cleanText = cleanText.replace(/^Lesson Plan:.*$/m, '');
+  cleanText = cleanText.replace(/^\*\*Grade Levels?:\*\*.*$/gm, '');
+  cleanText = cleanText.replace(/^\*\*Topic:\*\*.*$/gm, '');
+  cleanText = cleanText.replace(/^\*\*Duration:\*\*.*$/gm, '');
+  cleanText = cleanText.replace(/^\*\*Total Students:\*\*.*$/gm, '');
+  cleanText = cleanText.replace(/^\*\*Subject:\*\*.*$/gm, '');
 
   const lines = cleanText.split('\n');
   const elements: JSX.Element[] = [];
@@ -191,258 +197,17 @@ const formatMultigradeText = (text: string, accentColor: string, isStreaming: bo
 };
 
 // Parse multigrade plan text content into structured ParsedMultigradePlan format
-const parseMultigradeContent = (text: string, formData: FormData): ParsedMultigradePlan | null => {
-  if (!text) return null;
-
-  try {
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
-    // Extract metadata from form data
-    const gradeLevelsArray = formData.gradeRange.split(/[-,]/).map(g => g.trim());
-
-    // Try to extract title from generated content if available
-    let title = formData.topic || 'Multigrade Plan';
-    const titleMatch = text.match(/^\*\*Lesson Plan:\s*(.+?)\*\*/m);
-    if (titleMatch) {
-      title = titleMatch[1].trim();
-    }
-
-    const metadata = {
-      title: title,
-      subject: formData.subject,
-      gradeLevels: gradeLevelsArray,
-      gradeRange: formData.gradeRange,
-      duration: formData.duration,
-      totalStudents: formData.totalStudents,
-      date: new Date().toLocaleDateString()
-    };
-
-    // Parse common objectives
-    const commonObjectives: string[] = [];
-    const commonObjSection = text.match(/\*\*Common (?:Learning )?Objectives.*?\*\*(.*?)(?=\*\*|$)/s);
-    if (commonObjSection) {
-      const objMatches = commonObjSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-      if (objMatches) {
-        objMatches.forEach(match => {
-          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
-          if (cleaned) commonObjectives.push(cleaned);
-        });
-      }
-    }
-
-    // Parse grade-specific objectives
-    const gradeSpecificObjectives: { [gradeLevel: string]: string[] } = {};
-    gradeLevelsArray.forEach(grade => {
-      const gradeObjRegex = new RegExp(`\\*\\*${grade}.*?Objectives.*?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:Grade|Kindergarten)|$)`, 'i');
-      const match = text.match(gradeObjRegex);
-      if (match && match[1]) {
-        const objectives: string[] = [];
-        const objMatches = match[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-        if (objMatches) {
-          objMatches.forEach(m => {
-            const cleaned = m.replace(/^\s*[\*\-•]\s+/, '').trim();
-            if (cleaned) objectives.push(cleaned);
-          });
-        }
-        if (objectives.length > 0) {
-          gradeSpecificObjectives[grade] = objectives;
-        }
-      }
-    });
-
-    // Parse materials
-    const materials: Array<{ id: string; name: string; gradeLevels?: string[] }> = [];
-    const materialsSection = text.match(/\*\*Materials.*?\*\*(.*?)(?=\*\*|$)/s);
-    if (materialsSection) {
-      const matMatches = materialsSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-      if (matMatches) {
-        matMatches.forEach((match, idx) => {
-          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
-          if (cleaned) {
-            // Check for grade-level tags in materials (e.g., "Item (Grade 1, Grade 2)")
-            const gradeMatch = cleaned.match(/\(((?:Grade \d+|Kindergarten)(?:,\s*(?:Grade \d+|Kindergarten))*)\)/);
-            let name = cleaned;
-            let gradeLevels: string[] = [];
-            
-            if (gradeMatch) {
-              name = cleaned.replace(gradeMatch[0], '').trim();
-              gradeLevels = gradeMatch[1].split(',').map(g => g.trim());
-            }
-            
-            materials.push({
-              id: `material_${idx}`,
-              name,
-              gradeLevels: gradeLevels.length > 0 ? gradeLevels : []
-            });
-          }
-        });
-      }
-    }
-
-    // Parse grade-specific activities
-    const gradeActivities: Array<{
-      id: string;
-      gradeLevel: string;
-      activityName: string;
-      description: string;
-      duration?: string;
-    }> = [];
-    
-    gradeLevelsArray.forEach(grade => {
-      const gradeActRegex = new RegExp(`\\*\\*${grade}.*?Activities.*?\\*\\*([\\s\\S]*?)(?=\\*\\*(?:Grade|Kindergarten|Assessment)|$)`, 'i');
-      const match = text.match(gradeActRegex);
-      if (match && match[1]) {
-        const activityBlocks = match[1].split(/(?=\d+\.)/);
-        activityBlocks.forEach((block, idx) => {
-          const trimmed = block.trim();
-          if (trimmed) {
-            const nameMatch = trimmed.match(/^\d+\.\s*(.+?)(?:\n|$)/);
-            const activityName = nameMatch ? nameMatch[1].trim() : `Activity ${idx + 1}`;
-            const description = trimmed.replace(/^\d+\.\s*.+?\n/, '').trim();
-            
-            gradeActivities.push({
-              id: `activity_${grade}_${idx}`,
-              gradeLevel: grade,
-              activityName,
-              description,
-              duration: ''
-            });
-          }
-        });
-      }
-    });
-
-    // Parse assessment strategies
-    const assessmentStrategies: string[] = [];
-    const assessSection = text.match(/\*\*Assessment.*?\*\*(.*?)(?=\*\*|$)/s);
-    if (assessSection) {
-      const assessMatches = assessSection[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g);
-      if (assessMatches) {
-        assessMatches.forEach(match => {
-          const cleaned = match.replace(/^\s*[\*\-•]\s+/, '').trim();
-          if (cleaned) assessmentStrategies.push(cleaned);
-        });
-      }
-    }
-
-    // Parse optional fields
-    const differentiationMatch = text.match(/\*\*Differentiation.*?\*\*(.*?)(?=\*\*|$)/s);
-    const differentiationNotes = differentiationMatch ? differentiationMatch[1].trim() : undefined;
-
-    const prerequisitesMatch = text.match(/\*\*Prerequisites.*?\*\*(.*?)(?=\*\*|$)/s);
-    const prerequisites = prerequisitesMatch ? prerequisitesMatch[1].trim() : undefined;
-
-    const strategiesMatch = text.match(/\*\*Multigrade Strategies.*?\*\*(.*?)(?=\*\*|$)/s);
-    const multigradeStrategies = strategiesMatch
-      ? strategiesMatch[1].match(/(?:^|\n)\s*[\*\-•]\s+(.+)/g)?.map(m => m.replace(/^\s*[\*\-•]\s+/, '').trim())
-      : undefined;
-
-    return {
-      metadata,
-      commonObjectives: commonObjectives.length > 0 ? commonObjectives : ['No common objectives found'],
-      gradeSpecificObjectives,
-      materials: materials.length > 0 ? materials : [{ id: 'mat_0', name: 'No materials specified', gradeLevels: [] }],
-      gradeActivities: gradeActivities.length > 0 ? gradeActivities : [],
-      assessmentStrategies: assessmentStrategies.length > 0 ? assessmentStrategies : ['Observation'],
-      differentiationNotes,
-      multigradeStrategies,
-      prerequisites
-    };
-  } catch (error) {
-    console.error('Failed to parse multigrade plan:', error);
-    return null;
-  }
-};
-
-// Convert ParsedMultigradePlan back to display text format
-const multigradePlanToDisplayText = (plan: ParsedMultigradePlan): string => {
-  let output = '';
+const parseMultigradeContent = (text: string, formData: FormData): ParsedMultigrade | null => {
+  // Transform FormData to match what parseMultigradeFromAI expects
+  const multigradeFormData = {
+    topic: formData.topic,
+    subject: formData.subject,
+    gradeLevels: formData.gradeRange.split(/[-,]/).map(g => g.trim()),
+    duration: formData.duration,
+    totalStudents: formData.totalStudents
+  };
   
-  // Add metadata header
-  output += `**MULTIGRADE LESSON PLAN**\n\n`;
-  output += `**Title:** ${plan.metadata.title}\n`;
-  output += `**Subject:** ${plan.metadata.subject}\n`;
-  output += `**Grade Range:** ${plan.metadata.gradeRange}\n`;
-  output += `**Duration:** ${plan.metadata.duration} minutes\n`;
-  output += `**Total Students:** ${plan.metadata.totalStudents}\n`;
-  output += `**Date:** ${plan.metadata.date}\n\n`;
-  
-  // Common Learning Objectives
-  output += `**Common Learning Objectives (All Grades)**\n`;
-  plan.commonObjectives.forEach(obj => {
-    output += `* ${obj}\n`;
-  });
-  output += '\n';
-  
-  // Grade-Specific Objectives
-  if (Object.keys(plan.gradeSpecificObjectives).length > 0) {
-    output += `**Grade-Specific Learning Objectives**\n\n`;
-    plan.metadata.gradeLevels.forEach(grade => {
-      if (plan.gradeSpecificObjectives[grade]) {
-        output += `**${grade} Objectives:**\n`;
-        plan.gradeSpecificObjectives[grade].forEach(obj => {
-          output += `* ${obj}\n`;
-        });
-        output += '\n';
-      }
-    });
-  }
-  
-  // Materials
-  output += `**Materials Needed:**\n`;
-  plan.materials.forEach(material => {
-    let materialLine = `* ${material.name}`;
-    if (material.gradeLevels && material.gradeLevels.length > 0) {
-      materialLine += ` (${material.gradeLevels.join(', ')})`;
-    }
-    output += `${materialLine}\n`;
-  });
-  output += '\n';
-  
-  // Grade-Specific Activities
-  if (plan.gradeActivities.length > 0) {
-    output += `**Grade-Specific Activities**\n\n`;
-    plan.metadata.gradeLevels.forEach(grade => {
-      const gradeActs = plan.gradeActivities.filter(a => a.gradeLevel === grade);
-      if (gradeActs.length > 0) {
-        output += `**${grade} Activities:**\n`;
-        gradeActs.forEach((activity, idx) => {
-          output += `${idx + 1}. **${activity.activityName}**\n`;
-          output += `${activity.description}\n`;
-          if (activity.duration) {
-            output += `Duration: ${activity.duration}\n`;
-          }
-          output += '\n';
-        });
-      }
-    });
-  }
-  
-  // Assessment Strategies
-  output += `**Assessment Strategies:**\n`;
-  plan.assessmentStrategies.forEach(strategy => {
-    output += `* ${strategy}\n`;
-  });
-  output += '\n';
-  
-  // Optional fields
-  if (plan.differentiationNotes) {
-    output += `**Differentiation Notes:**\n${plan.differentiationNotes}\n\n`;
-  }
-  
-  if (plan.multigradeStrategies && plan.multigradeStrategies.length > 0) {
-    output += `**Multigrade Strategies:**\n`;
-    plan.multigradeStrategies.forEach(strategy => {
-      output += `* ${strategy}\n`;
-    });
-    output += '\n';
-  }
-  
-  if (plan.prerequisites) {
-    output += `**Prerequisites:**\n${plan.prerequisites}\n`;
-  }
-  
-  return output;
+  return parseMultigradeFromAI(text, multigradeFormData);
 };
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
@@ -471,7 +236,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
-  const [parsedPlan, setParsedPlan] = useState<ParsedMultigradePlan | null>(() => {
+  const [parsedPlan, setParsedPlan] = useState<ParsedMultigrade | null>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.parsedPlan && typeof savedData.parsedPlan === 'object') {
       return savedData.parsedPlan;
@@ -540,30 +305,18 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       console.log('Multigrade streaming completed, setting generated plan');
       
-      // ✅ Clean the plan before saving to state
-      let cleanPlan = streamingPlan;
+      // ✅ Save RAW content without cleaning
+      setGeneratedPlan(streamingPlan);
       
-      // Remove everything before the first numbered section
-      const firstSection = cleanPlan.search(/(?:^|\n)\d+\.\s+[A-Z]/m);
-      if (firstSection !== -1 && firstSection > 0) {
-        cleanPlan = cleanPlan.substring(firstSection);
+      // ✅ Parse with new parser
+      const parsed = parseMultigradeContent(streamingPlan, formData);
+      if (parsed) {
+        setParsedPlan(parsed);
+        console.log('✅ Successfully parsed multigrade plan:', parsed);
+      } else {
+        console.warn('⚠️ Failed to parse multigrade plan');
       }
       
-      // Remove metadata lines
-      cleanPlan = cleanPlan
-        .split('\n')
-        .filter(line => {
-          const trimmed = line.trim();
-          if (trimmed.match(/^\*\*[^:]+:\*\*/)) return false;
-          if (trimmed.match(/^Lesson Plan:/i)) return false;
-          return true;
-        })
-        .join('\n')
-        .trim();
-      
-      setGeneratedPlan(cleanPlan);  // ✅ Save cleaned version
-      const parsed = parseMultigradeContent(cleanPlan, formData);
-      if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
 
@@ -707,9 +460,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   // Save edited multigrade plan
-  const saveMultigradeEdit = (editedPlan: ParsedMultigradePlan) => {
+  const saveMultigradeEdit = (editedPlan: ParsedMultigrade) => {
     setParsedPlan(editedPlan);
-    const displayText = multigradePlanToDisplayText(editedPlan);
+    const displayText = multigradeToDisplayText(editedPlan);
     setGeneratedPlan(displayText);
     setIsEditing(false);
   };
@@ -736,27 +489,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
     setSaveStatus('saving');
     try {
-      // ✅ Clean the plan before saving (remove AI metadata header)
-      let cleanPlan = generatedPlan;
-      
-      // Remove everything before the first numbered section
-      const firstSection = cleanPlan.search(/(?:^|\n)\d+\.\s+[A-Z]/m);
-      if (firstSection !== -1 && firstSection > 0) {
-        cleanPlan = cleanPlan.substring(firstSection);
-      }
-      
-      // Remove metadata lines
-      cleanPlan = cleanPlan
-        .split('\n')
-        .filter(line => {
-          const trimmed = line.trim();
-          if (trimmed.match(/^\*\*[^:]+:\*\*/)) return false;
-          if (trimmed.match(/^Lesson Plan:/i)) return false;
-          return true;
-        })
-        .join('\n')
-        .trim();
-      
+      // ✅ DON'T clean the plan - save it as-is
       const title = formData.topic?.trim()
         ? `${formData.subject || 'General'} - ${formData.topic} (${formData.gradeRange || 'All Grades'})`
         : `Multigrade Plan - ${formData.subject || 'General'} (${formData.gradeRange || 'All Grades'})`;
@@ -766,7 +499,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: cleanPlan,  // ✅ Save cleaned version
+        generatedPlan: generatedPlan,  // ✅ Save raw version
         parsedPlan: parsedPlan || undefined
       };
 

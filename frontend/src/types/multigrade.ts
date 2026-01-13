@@ -259,6 +259,12 @@ export function parseMultigradeFromAI(
     const extensionsSection = extractNumberedSection(cleanText, 7);
     const extensionsAndModifications = extensionsSection || undefined;
 
+    console.log('Raw text sections found:');
+    for (let i = 1; i <= 7; i++) {
+      const section = extractNumberedSection(cleanText, i);
+      console.log(`Section ${i}: ${section ? 'FOUND (' + section.substring(0, 50) + '...)' : 'MISSING'}`);
+    }
+
     const parsedPlan: ParsedMultigrade = {
       metadata,
       sharedObjectives,
