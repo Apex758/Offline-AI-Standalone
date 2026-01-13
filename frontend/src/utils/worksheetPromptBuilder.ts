@@ -197,30 +197,65 @@ CRITICAL REQUIREMENTS:
     let listFormat = '';
 
     if (formData.questionType === 'Word Bank') {
-      listFormat = `WORD BANK FORMAT:
+      // UPDATED: Smarter handling for math vs non-math topics
+      const isMathSubject = formData.subject.toLowerCase().includes('math');
+      
+      const wordBankGuidance = isMathSubject ? `
+FOR MATHEMATICS TOPICS:
+- Create a word bank with 6-8 MATH VOCABULARY words (not numbers!)
+- Examples: add, subtract, sum, difference, total, equals, plus, minus, multiply, divide, ones, tens, hundreds
+- Sentences should test UNDERSTANDING of math concepts, not pure arithmetic
+- Each sentence should use a vocabulary word from the bank in context
 
-Step 1: Create a word bank with 6-8 words/terms related to "${formData.topic}".
+EXAMPLE for "multi digit operations":
+**Word Bank:** add, subtract, sum, difference, equals, total
 
-**Word Bank:** [list the words separated by commas]
+**Question 1:** When we _______ two numbers, we find how much they are together.
+**Question 2:** To find the _______ between 50 and 30, we use subtraction.
+**Question 3:** The answer to an addition problem is called the _______.
 
-Step 2: Create ${questionCount} fill-in-the-blank sentences using this EXACT format:
+DO NOT create pure arithmetic like "457 + 275 = _______" - focus on VOCABULARY!
+` : `
+FOR NON-MATH TOPICS:
+- Create a word bank with 6-8 topic-specific vocabulary words
+- Choose key terms students need to learn about ${formData.topic}
+- Each sentence should use one word from the bank in a meaningful way
+`;
 
-Question 1: Word Bank
-When we have 45 pencils and we add 27 more, we now have _______ pencils.
+      listFormat = `WORD BANK FORMAT - FOLLOW EXACTLY:
 
-Question 2: Word Bank
-If we have 54 crayons and we subtract 17, we have _______ crayons left.
+Step 1: Create the worksheet title
+**${formData.topic} Worksheet**
 
-Question 3: Word Bank
-If we have 24 books and we multiply by 4, we have a total of _______ books.
+Step 2: Create the word bank with 6-8 words
+${wordBankGuidance}
 
-CRITICAL FORMAT RULES:
-- Line 1: "Question X: Word Bank" (NO question text on this line)
-- Line 2: The actual sentence with _______ blank
-- Use exactly ${questionCount} questions
-- All questions about "${formData.topic}"
-- DO NOT use **Question X:** format
-- DO NOT put the sentence on the same line as "Question X:"`;
+**Word Bank:** [word1], [word2], [word3], [word4], [word5], [word6]
+
+IMPORTANT: The word bank MUST be on a SINGLE LINE with words separated by commas!
+Example: **Word Bank:** add, subtract, sum, difference, equals, total
+
+Step 3: Create ${questionCount} fill-in-the-blank sentences (NOT question prompts!)
+
+**Question 1:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]
+
+**Question 2:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]
+
+**Question 3:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]
+
+Continue until you have **Question ${questionCount}:**
+
+CRITICAL RULES - READ CAREFULLY:
+1. DO NOT write instructions like "Write a sentence" or "Fill in the blank"
+2. Each question must be a COMPLETE SENTENCE with ONE word missing (shown as _______)
+3. The missing word MUST be from the word bank
+4. Use **Question 1:**, **Question 2:** format (with double asterisks and colon)
+5. All sentences MUST be directly about "${formData.topic}"
+6. Generate EXACTLY ${questionCount} sentences
+7. The word bank should appear ONCE at the top, NOT with each question
+8. Each sentence should make sense when completed with a word from the bank
+${isMathSubject ? '9. For math topics: Focus on VOCABULARY and CONCEPTS, not arithmetic calculations!' : ''}
+`;
 
     } else if (formData.questionType === 'True / False') {
       listFormat = `TRUE/FALSE FORMAT - FOLLOW EXACTLY:

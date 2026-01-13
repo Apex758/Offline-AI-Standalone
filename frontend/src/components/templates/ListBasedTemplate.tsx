@@ -1,123 +1,231 @@
 import React from 'react';
-import { WorksheetQuestion } from '../../types/worksheet';
+import { WorksheetQuestion } from '../types/worksheet';
 
 interface ListBasedTemplateProps {
-  subject?: string;
-  gradeLevel?: string;
-  topic?: string;
-  questionCount?: number;
-  questionType?: string;
-  worksheetTitle?: string;
-  includeImages?: boolean;
+  subject: string;
+  gradeLevel: string;
+  topic: string;
+  questionCount: number;
+  questionType: string;
+  worksheetTitle: string;
+  includeImages: boolean;
   imageMode?: string;
+  imagePlacement?: string;
   generatedImage?: string | null;
   questions?: WorksheetQuestion[];
-  wordBank?: string; // For Word Bank questions
+  wordBank?: string[];  // ✅ NEW: Word bank support
 }
 
 const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
-  subject = 'Subject',
-  gradeLevel = 'Grade',
-  topic = 'Topic',
-  questionCount = 10,
-  questionType = 'Short Answer',
+  subject,
+  gradeLevel,
+  topic,
+  questionType,
   worksheetTitle,
-  includeImages = false,
-  imageMode = 'one-per-question',
-  generatedImage = null,
+  includeImages,
+  imageMode,
+  generatedImage,
   questions,
-  wordBank
+  wordBank  // ✅ Destructure the word bank prop
 }) => {
-  // Use actual questions if provided
-  const displayQuestions = questions || Array.from({ length: questionCount }, (_, i) => ({
-    id: `sample_${i}`,
-    question: `Sample ${questionType} question ${i + 1}`
-  }));
+  // Determine if we're in preview mode (no questions yet) or rendered mode (have questions)
+  const isPreviewMode = !questions || questions.length === 0;
 
   return (
-    <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
+    <div className="w-full max-w-4xl mx-auto bg-white p-8">
       {/* Header */}
       <div className="border-b-2 border-gray-800 pb-4 mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle}</h1>
-            <p className="text-gray-600">
-              <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
-            </p>
-            <p className="text-gray-600">
-              <strong>Topic:</strong> {topic}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-gray-600">Name: ____________________</p>
-            <p className="text-gray-600">Date: ____________________</p>
-          </div>
+        <h1 className="text-2xl font-bold text-center mb-2">{worksheetTitle}</h1>
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>Subject: {subject}</span>
+          <span>Grade: {gradeLevel}</span>
+          <span>Name: _________________</span>
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
-        <p className="text-gray-700">
-          Read each question carefully and provide your answer in the space provided.
-        </p>
-      </div>
-
-      {/* Word Bank (if applicable) */}
-      {questionType === 'Word Bank' && wordBank && (
-        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h3 className="text-sm font-semibold text-gray-800 mb-2">Word Bank</h3>
-          <div className="text-sm text-gray-700">
-            {wordBank}
+      {/* ✅ WORD BANK SECTION - Render if wordBank exists */}
+      {wordBank && wordBank.length > 0 && (
+        <div className="mb-8 p-4 border-2 border-gray-400 rounded-lg bg-gray-50">
+          <h3 className="font-bold text-lg mb-2">Word Bank</h3>
+          <div className="flex flex-wrap gap-3">
+            {wordBank.map((word, index) => (
+              <span 
+                key={index} 
+                className="px-3 py-1 bg-white border border-gray-300 rounded shadow-sm"
+              >
+                {word}
+              </span>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Questions */}
+      {/* Instructions */}
+      <div className="mb-6 p-3 bg-blue-50 border-l-4 border-blue-500">
+        <p className="text-sm">
+          {questionType === 'Word Bank' 
+            ? 'Use the words from the word bank above to fill in the blanks in each sentence.'
+            : questionType === 'True / False'
+            ? 'Read each statement carefully and circle True or False.'
+            : questionType === 'Fill in the Blank'
+            ? 'Complete each sentence by filling in the blank with the correct word or phrase.'
+            : questionType === 'Short Answer'
+            ? 'Answer each question in 2-4 complete sentences.'
+            : 'Answer the following questions.'}
+        </p>
+      </div>
+
+      {/* Image (if shared mode) */}
+      {includeImages && imageMode === 'shared' && generatedImage && (
+        <div className="mb-6 flex justify-center">
+          <img 
+            src={generatedImage} 
+            alt="Worksheet illustration" 
+            className="max-w-md rounded-lg shadow-md"
+          />
+        </div>
+      )}
+
+      {/* Questions Section */}
       <div className="space-y-6">
-        {displayQuestions.map((q, i) => (
-          <div key={q.id} className="flex items-start space-x-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 font-semibold">
-              {i + 1}
-            </div>
-            <div className="flex-1">
-              <div className="mb-2">
-                <p className="text-gray-800">{q.question}</p>
-              </div>
-              
-              {/* Answer space based on question type */}
-              <div className="mt-2">
-                {questionType === 'True / False' && (
-                  <div className="flex space-x-6">
-                    <label className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border border-gray-400 rounded-full"></div>
-                      <span className="text-sm">True</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border border-gray-400 rounded-full"></div>
-                      <span className="text-sm">False</span>
-                    </label>
+        {isPreviewMode ? (
+          // Preview Mode - Show placeholders
+          <>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="border-b border-gray-300 pb-4">
+                <div className="flex items-start space-x-3">
+                  <span className="font-bold">{index + 1}.</span>
+                  <div className="flex-1">
+                    {questionType === 'Word Bank' || questionType === 'Fill in the Blank' ? (
+                      <p className="text-gray-600 mb-2">
+                        Sample sentence with _____________ to complete.
+                      </p>
+                    ) : questionType === 'True / False' ? (
+                      <>
+                        <p className="text-gray-600 mb-2">
+                          Sample statement about {topic}.
+                        </p>
+                        <div className="flex space-x-4 ml-6">
+                          <label className="flex items-center space-x-2">
+                            <input type="radio" name={`q${index}`} disabled />
+                            <span>True</span>
+                          </label>
+                          <label className="flex items-center space-x-2">
+                            <input type="radio" name={`q${index}`} disabled />
+                            <span>False</span>
+                          </label>
+                        </div>
+                      </>
+                    ) : questionType === 'Short Answer' ? (
+                      <>
+                        <p className="text-gray-600 mb-2">
+                          Sample question about {topic}?
+                        </p>
+                        <div className="space-y-2 mt-2">
+                          <div className="border-b border-gray-300 h-8"></div>
+                          <div className="border-b border-gray-300 h-8"></div>
+                          <div className="border-b border-gray-300 h-8"></div>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-gray-600">Sample question text</p>
+                    )}
+
+                    {/* Image per question (if one-per-question mode) */}
+                    {includeImages && imageMode === 'one-per-question' && generatedImage && index === 0 && (
+                      <img 
+                        src={generatedImage} 
+                        alt="Question illustration" 
+                        className="mt-3 max-w-xs rounded shadow"
+                      />
+                    )}
                   </div>
-                )}
-                
-                {(questionType === 'Fill in the Blank' || questionType === 'Word Bank') && (
-                  <div className="border-b-2 border-gray-400 w-full h-6"></div>
-                )}
-                
-                {questionType === 'Short Answer' && (
-                  <div className="min-h-[4rem] border-b border-gray-300"></div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))}
+          </>
+        ) : (
+          // Rendered Mode - Show actual questions
+          <>
+            {questions!.map((question, index) => (
+              <div key={question.id} className="border-b border-gray-300 pb-4">
+                <div className="flex items-start space-x-3">
+                  <span className="font-bold">{index + 1}.</span>
+                  <div className="flex-1">
+                    {/* ✅ Render the actual question text */}
+                    {questionType === 'Word Bank' || question.type === 'word-bank' ? (
+                      // Word Bank question - just the sentence with blank
+                      <p className="text-gray-800 leading-relaxed">
+                        {question.question}
+                      </p>
+                    ) : questionType === 'Fill in the Blank' || question.type === 'fill-blank' ? (
+                      // Fill in blank - sentence with blank
+                      <p className="text-gray-800 leading-relaxed">
+                        {question.question}
+                      </p>
+                    ) : questionType === 'True / False' || question.type === 'true-false' ? (
+                      // True/False - statement with radio buttons
+                      <>
+                        <p className="text-gray-800 leading-relaxed mb-2">
+                          {question.question}
+                        </p>
+                        <div className="flex space-x-4 ml-6">
+                          <label className="flex items-center space-x-2">
+                            <input 
+                              type="radio" 
+                              name={`q${index}`} 
+                              className="w-4 h-4"
+                            />
+                            <span>True</span>
+                          </label>
+                          <label className="flex items-center space-x-2">
+                            <input 
+                              type="radio" 
+                              name={`q${index}`} 
+                              className="w-4 h-4"
+                            />
+                            <span>False</span>
+                          </label>
+                        </div>
+                      </>
+                    ) : questionType === 'Short Answer' || question.type === 'short-answer' ? (
+                      // Short answer - question with lines
+                      <>
+                        <p className="text-gray-800 leading-relaxed mb-2">
+                          {question.question}
+                        </p>
+                        <div className="space-y-2 mt-3">
+                          <div className="border-b border-gray-400 h-8"></div>
+                          <div className="border-b border-gray-400 h-8"></div>
+                          <div className="border-b border-gray-400 h-8"></div>
+                        </div>
+                      </>
+                    ) : (
+                      // Default - just show question
+                      <p className="text-gray-800 leading-relaxed">
+                        {question.question}
+                      </p>
+                    )}
+
+                    {/* Image per question (if one-per-question mode) */}
+                    {includeImages && imageMode === 'one-per-question' && generatedImage && index === 0 && (
+                      <img 
+                        src={generatedImage} 
+                        alt="Question illustration" 
+                        className="mt-3 max-w-xs rounded shadow"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-gray-300">
-        <p className="text-center text-gray-500 text-xs">
-          Worksheet generated for educational purposes
-        </p>
+      <div className="mt-8 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
+        <p>Generated for educational purposes</p>
       </div>
     </div>
   );

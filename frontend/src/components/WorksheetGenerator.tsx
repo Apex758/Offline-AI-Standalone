@@ -1035,6 +1035,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         imageMode={formData.imageMode}
                         generatedImage={generatedImage}
                         questions={parsedWorksheet.questions}
+                        wordBank={parsedWorksheet.wordBank}
                       />
                     )}
                   </div>

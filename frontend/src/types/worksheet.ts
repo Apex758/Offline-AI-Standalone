@@ -1,6 +1,6 @@
 export interface WorksheetQuestion {
   id: string;
-  type: 'multiple-choice' | 'true-false' | 'fill-blank' | 'short-answer' | 'matching' | 'comprehension';
+  type: 'multiple-choice' | 'true-false' | 'fill-blank' | 'short-answer' | 'matching' | 'comprehension' | 'word-bank';
   question: string;
   options?: string[]; // For multiple choice and matching
   correctAnswer?: string | number; // Index for MC, text for others
@@ -23,6 +23,7 @@ export interface ParsedWorksheet {
   questions: WorksheetQuestion[];
   passage?: string; // For comprehension worksheets
   matchingItems?: { columnA: string[]; columnB: string[] }; // For matching worksheets
+  wordBank?: string[]; // For word bank worksheets - the list of available words
 }
 
 // Helper function to parse multiple choice questions
@@ -121,6 +122,17 @@ function parseFillBlankQuestion(questionText: string, questionBody: string, inde
     correctAnswer,
     explanation,
     points
+  };
+}
+
+// Helper function to parse word bank questions (fill-in-blank with word bank)
+function parseWordBankQuestion(questionText: string, index: number): WorksheetQuestion | null {
+  return {
+    id: `q_${Date.now()}_${index}`,
+    type: 'word-bank',
+    question: questionText,
+    correctAnswer: '', // The blank to fill
+    points: 1
   };
 }
 
@@ -370,6 +382,104 @@ function parseComprehensionWorksheet(text: string): ParsedWorksheet | null {
   }
 }
 
+// NEW: Parse Word Bank worksheet
+function parseWordBankWorksheet(text: string): ParsedWorksheet | null {
+  try {
+    console.log('=== PARSING WORD BANK WORKSHEET ===');
+    
+    // Extract title - handle both markdown and plain text
+    const titleMatch = text.match(/\*\*(.+?)\s+Worksheet\*\*/i) || 
+                       text.match(/^(.+?)(?=\n|$)/m);
+    const title = titleMatch ? titleMatch[1].trim() + ' Worksheet' : 'Word Bank Worksheet';
+
+    // Extract word bank - handle both markdown (**Word Bank:**) and plain text (Word Bank:)
+    const wordBankMatch = text.match(/\*\*Word Bank:\*\*\s*(.+?)(?=\n\n|\*\*Question)/is) ||
+                          text.match(/Word Bank:\s*(.+?)(?=\n\n|Question)/is);
+    
+    if (!wordBankMatch) {
+      console.error('❌ No word bank found');
+      return null;
+    }
+
+    // Split word bank - handle BOTH comma-separated AND bullet-point formats
+    let wordBank: string[];
+    const rawWordBank = wordBankMatch[1].trim();
+    
+    if (rawWordBank.includes('*') || rawWordBank.includes('-')) {
+      // Bullet-point format: "* add\n* subtract\n* sum"
+      console.log('📝 Detected bullet-point word bank format');
+      wordBank = rawWordBank
+        .split('\n')
+        .map(line => line.replace(/^[\s\*\-]+/, '').trim()) // Remove bullets and whitespace
+        .filter(word => word.length > 0);
+    } else {
+      // Comma-separated format: "add, subtract, sum, difference"
+      console.log('📝 Detected comma-separated word bank format');
+      wordBank = rawWordBank
+        .split(',')
+        .map(word => word.trim())
+        .filter(word => word.length > 0);
+    }
+
+    console.log(`✅ Found word bank with ${wordBank.length} words:`, wordBank);
+
+    // Extract questions - look for patterns like:
+    // **Question 1:** sentence with ___
+    // Question 1: sentence with ___
+    const questions: WorksheetQuestion[] = [];
+    
+    // Match both markdown and plain text question formats
+    const questionRegex = /\*\*Question\s+\d+:\*\*\s*(.+?)(?=\*\*Question\s+\d+:|$)/gis;
+    const plainQuestionRegex = /Question\s+\d+:\s*(.+?)(?=Question\s+\d+:|$)/gis;
+    
+    let matches = [...text.matchAll(questionRegex)];
+    if (matches.length === 0) {
+      matches = [...text.matchAll(plainQuestionRegex)];
+    }
+
+    console.log(`Found ${matches.length} question matches`);
+
+    matches.forEach((match, index) => {
+      const questionText = match[1].trim();
+      
+      // Skip if this looks like it's part of the word bank definition
+      if (questionText.toLowerCase().includes('word bank') || 
+          questionText.toLowerCase().includes('fill-in-the-blank')) {
+        return;
+      }
+
+      // Only include if it contains a blank (_____)
+      if (questionText.includes('___')) {
+        console.log(`✅ Question ${index + 1}:`, questionText.substring(0, 50) + '...');
+        questions.push(parseWordBankQuestion(questionText, index)!);
+      }
+    });
+
+    console.log(`✅ SUCCESS: Parsed ${questions.length} questions`);
+
+    if (questions.length === 0) {
+      console.error('❌ No valid questions found');
+      return null;
+    }
+
+    return {
+      metadata: {
+        title,
+        subject: 'Various',
+        gradeLevel: 'Multiple',
+        totalQuestions: questions.length,
+        template: 'list-based',
+        instructions: 'Use the words from the word bank to fill in the blanks.'
+      },
+      questions,
+      wordBank
+    };
+  } catch (error) {
+    console.error('❌ Failed to parse word bank worksheet:', error);
+    return null;
+  }
+}
+
 // Parse text-based worksheet format
 function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
   try {
@@ -389,6 +499,13 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
       cleanText = cleanText.replace(pattern, '');
     });
 
+    // Check for Word Bank format FIRST (most specific)
+    if ((cleanText.includes('**Word Bank:**') || cleanText.includes('Word Bank:')) &&
+        cleanText.includes('___')) {
+      console.log('✅ Detected Word Bank format');
+      return parseWordBankWorksheet(cleanText);
+    }
+
     // Check for matching format
     if (cleanText.includes('Column A:') && cleanText.includes('Column B:')) {
       return parseMatchingWorksheet(cleanText);
@@ -401,8 +518,8 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
     }
 
     // Match questions
-    // Match: "**Question 1: Type**", "Question 1: Type", or "**Question 1**"
-    const questionRegex = /(?:\*\*Question\s+(\d+):\s*([^\*\n]+)\*\*|\*\*Question\s+(\d+)\*\*|Question\s+(\d+):\s*([^\n]*))\s*\n([^]*?)(?=(?:\*\*Question\s+\d+:|Question\s+\d+:)|$)/gi;
+    // Match both formats: "Question 1: Type" and "**Question 1**"
+    const questionRegex = /(?:\*\*Question\s+(\d+)\*\*|Question\s+(\d+):\s*([^\n]*))\s*\n([^]*?)(?=(?:\*\*Question\s+\d+\*\*|Question\s+\d+:)|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];
 
     if (matches.length === 0) {
@@ -413,10 +530,9 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
     console.log(`Found ${matches.length} questions in text format`);
 
     matches.forEach((match) => {
-      // Group 1&2: **Question X: Type**, Group 3: **Question X**, Group 4&5: Question X: Type
-      const questionNumber = match[1] || match[3] || match[4];
-      const firstLine = match[2] || match[5] || ''; // Type label
-      const questionContent = match[6].trim(); // Actual content
+      const questionNumber = match[1] || match[2];
+      const firstLine = (match[3] || '').trim();
+      const questionContent = (match[4] || '').trim();
 
       // Detect type from first line
       let questionType: WorksheetQuestion['type'];
@@ -432,6 +548,8 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
         questionType = 'short-answer';
       } else if (/Comprehension/i.test(firstLine)) {
         questionType = 'comprehension';
+      } else if (/Word\s*Bank/i.test(firstLine)) {
+        questionType = 'word-bank';
       } else {
         // Type label might be at start of questionContent
         cleanedContent = firstLine + '\n' + questionContent;
@@ -452,6 +570,9 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
         } else if (/^Comprehension\**/i.test(cleanedContent)) {
           questionType = 'comprehension';
           cleanedContent = cleanedContent.replace(/^Comprehension\**\s*/i, '');
+        } else if (/^Word\s*Bank\**/i.test(cleanedContent)) {
+          questionType = 'word-bank';
+          cleanedContent = cleanedContent.replace(/^Word\s*Bank\**\s*/i, '');
         } else {
           // Fallback to content detection
           if (/[A-D]\)\s*[^\n]+.*[A-D]\)\s*[^\n]+/s.test(cleanedContent)) {
@@ -469,17 +590,8 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
       }
 
       // Extract clean question text
-      let questionText = '';
-
-      // For Word Bank and Fill in the Blank, the question is usually the full sentence
-      // Skip the type label line and get the actual content
-      if (/Word Bank|Fill in the Blank/i.test(firstLine)) {
-        // The actual question is on the line(s) after the type label
-        questionText = cleanedContent.trim();
-      } else {
-        const questionTextMatch = cleanedContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
-        questionText = questionTextMatch ? questionTextMatch[1].trim() : cleanedContent.split('\n')[0].trim();
-      }
+      const questionTextMatch = cleanedContent.match(/^(.+?)(?=\n(?:A\)|Correct Answer:|Answer:|Sample Answer:|Key Points:))/s);
+      let questionText = questionTextMatch ? questionTextMatch[1].trim() : cleanedContent.split('\n')[0].trim();
 
       // Remove type labels from question text
       questionText = questionText
@@ -488,7 +600,7 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
         .replace(/^Fill-in-the-Blank\**\s*/i, '')
         .replace(/^Short\s*Answer\**\s*/i, '')
         .replace(/^Comprehension\**\s*/i, '')
-        .replace(/^Word\s*Bank\**\s*/i, '')  // Add this line
+        .replace(/^Word\s*Bank\**\s*/i, '')
         .replace(/\*\*/g, '')
         .trim();
 
@@ -510,6 +622,9 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
           break;
         case 'comprehension':
           parsedQuestion = parseComprehensionQuestion(questionText, cleanedContent, index);
+          break;
+        case 'word-bank':
+          parsedQuestion = parseWordBankQuestion(questionText, index);
           break;
       }
 
@@ -584,6 +699,11 @@ export function worksheetToDisplayText(worksheet: ParsedWorksheet): string {
     text += `${worksheet.metadata.instructions}\n\n`;
   }
 
+  if (worksheet.wordBank) {
+    text += `## Word Bank\n\n`;
+    text += worksheet.wordBank.join(', ') + '\n\n';
+  }
+
   if (worksheet.passage) {
     text += `## Passage\n\n${worksheet.passage}\n\n`;
   }
@@ -628,8 +748,8 @@ export function worksheetToDisplayText(worksheet: ParsedWorksheet): string {
           text += `Explanation: ${q.explanation}\n`;
         }
         text += '\n';
-      } else if (q.type === 'fill-blank') {
-        text += `Answer: ${q.correctAnswer}\n`;
+      } else if (q.type === 'fill-blank' || q.type === 'word-bank') {
+        text += `Answer: ${q.correctAnswer || '[Student fills in]'}\n`;
         if (q.explanation) {
           text += `Explanation: ${q.explanation}\n`;
         }
