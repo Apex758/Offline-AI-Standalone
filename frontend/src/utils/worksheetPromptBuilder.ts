@@ -237,13 +237,11 @@ Example: **Word Bank:** add, subtract, sum, difference, equals, total
 
 Step 3: Create ${questionCount} fill-in-the-blank sentences (NOT question prompts!)
 
-**Question 1:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]
+${Array.from({ length: Math.min(questionCount, 3) }, (_, i) => 
+  `**Question ${i + 1}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]`
+).join('\n\n')}
 
-**Question 2:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]
-
-**Question 3:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]
-
-Continue until you have **Question ${questionCount}:**
+${questionCount > 3 ? `... continue the pattern ...\n\n**Question ${questionCount}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]` : ''}
 
 CRITICAL RULES - READ CAREFULLY:
 1. DO NOT write instructions like "Write a sentence" or "Fill in the blank"
@@ -262,17 +260,15 @@ ${isMathSubject ? '9. For math topics: Focus on VOCABULARY and CONCEPTS, not ari
 
 Create ${questionCount} true/false statements about "${formData.topic}" for ${formData.subject}.
 
-Question 1: True / False
-[Write a true or false statement about ${formData.topic}]
+${Array.from({ length: Math.min(questionCount, 2) }, (_, i) => 
+  `Question ${i + 1}: True / False\n[Write a ${i === 0 ? '' : 'different '}true or false statement about ${formData.topic}]`
+).join('\n\n')}
 
-Question 2: True / False
-[Write a different true or false statement about ${formData.topic}]
-
-Continue for all ${questionCount} questions.
+${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: True / False\n[Write another true or false statement about ${formData.topic}]` : ''}
 
 CRITICAL RULES:
 - Format: "Question X: True / False" followed by statement
-- Generate exactly ${questionCount} questions
+- Generate EXACTLY ${questionCount} questions (count them!)
 - Mix true and false statements roughly equally
 - All statements must be about "${formData.topic}"`;
 
@@ -281,17 +277,15 @@ CRITICAL RULES:
 
 Create ${questionCount} fill-in-the-blank questions about "${formData.topic}" for ${formData.subject}.
 
-Question 1: Fill in the Blank
-[Write a sentence about ${formData.topic} with ONE blank using _______]
+${Array.from({ length: Math.min(questionCount, 2) }, (_, i) => 
+  `Question ${i + 1}: Fill in the Blank\n[Write a ${i === 0 ? '' : 'different '}sentence about ${formData.topic} with ONE blank using _______]`
+).join('\n\n')}
 
-Question 2: Fill in the Blank
-[Write a different sentence about ${formData.topic} with ONE blank using _______]
-
-Continue for all ${questionCount} questions.
+${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: Fill in the Blank\n[Write another sentence about ${formData.topic} with ONE blank using _______]` : ''}
 
 CRITICAL RULES:
 - Format: "Question X: Fill in the Blank" followed by sentence
-- Generate exactly ${questionCount} questions
+- Generate EXACTLY ${questionCount} questions (count them!)
 - Each sentence has ONE blank using _______
 - All questions must be about "${formData.topic}"`;
 
@@ -300,17 +294,15 @@ CRITICAL RULES:
 
 Create ${questionCount} short answer questions about "${formData.topic}" for ${formData.subject}.
 
-Question 1: Short Answer
-[Write a question about ${formData.topic} requiring 2-4 sentences]
+${Array.from({ length: Math.min(questionCount, 2) }, (_, i) => 
+  `Question ${i + 1}: Short Answer\n[Write a ${i === 0 ? '' : 'different '}question about ${formData.topic} requiring 2-4 sentences]`
+).join('\n\n')}
 
-Question 2: Short Answer
-[Write a different question about ${formData.topic} requiring 2-4 sentences]
-
-Continue for all ${questionCount} questions.
+${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: Short Answer\n[Write another question about ${formData.topic} requiring 2-4 sentences]` : ''}
 
 CRITICAL RULES:
 - Format: "Question X: Short Answer" followed by question
-- Generate exactly ${questionCount} questions
+- Generate EXACTLY ${questionCount} questions (count them!)
 - Questions require 2-4 sentence responses
 - All questions must be about "${formData.topic}"`;
 
@@ -378,6 +370,8 @@ ABSOLUTE REQUIREMENTS:
 6. Make questions engaging and educational
 7. Do NOT add extra explanations or preambles
 8. Do NOT deviate from the specified format
+
+⚠️ CRITICAL: You MUST generate ${questionCount} questions. Not ${questionCount - 1}, not ${questionCount + 1}, EXACTLY ${questionCount}. Count your questions before finishing! ⚠️
 
 Begin generating the worksheet now:`;
 

@@ -20,6 +20,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   subject,
   gradeLevel,
   topic,
+  questionCount,  // ✅ Added missing prop
   questionType,
   worksheetTitle,
   includeImages,
@@ -97,7 +98,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
         {isPreviewMode ? (
           // Preview Mode - Show placeholders
           <>
-            {Array.from({ length: 3 }).map((_, index) => (
+            {Array.from({ length: questionCount }).map((_, index) => (
               <div key={index} className="border-b border-gray-300 pb-4">
                 <div className="flex items-start space-x-3">
                   <span className="font-bold">{index + 1}.</span>
