@@ -1834,6 +1834,26 @@ async def delete_cross_curricular_history(plan_id: str):
     save_json_data("cross_curricular_history.json", histories)
     return {"success": True}
 
+@app.get("/api/worksheet-history")
+async def get_worksheet_history():
+    return load_json_data("worksheet_history.json")
+
+@app.post("/api/worksheet-history")
+async def save_worksheet_history(data: dict):
+    histories = load_json_data("worksheet_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("worksheet_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/worksheet-history/{worksheet_id}")
+async def delete_worksheet_history(worksheet_id: str):
+    histories = load_json_data("worksheet_history.json")
+    histories = [h for h in histories if h.get("id") != worksheet_id]
+    save_json_data("worksheet_history.json", histories)
+    return {"success": True}
 
 @app.get("/api/images-history")
 async def get_images_history():
@@ -2039,6 +2059,7 @@ EXPORT_TYPE_FORMATS = {
     "kindergarten_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
     "multigrade_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
     "cross_curricular_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
+    "worksheet": {"pdf", "docx"},
 }
 
 CONTENT_TYPES = {

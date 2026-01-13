@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Loader2, Eye, Trash2, RotateCcw } from 'lucide-react';
+import { FileText, Loader2, Eye, Trash2, RotateCcw, Wand2, Download, Save, History, X } from 'lucide-react';
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,
@@ -9,10 +9,12 @@ import {
 } from './templates';
 
 import { imageApi } from '../lib/imageApi';
-import { Wand2, Download } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
 import { parseWorksheetFromAI, ParsedWorksheet } from '../types/worksheet';
+import ExportButton from './ExportButton';
+import axios from 'axios';
+
 
 interface CurriculumPage {
   subject: string;
@@ -255,11 +257,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     return null;
   });
 
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [currentWorksheetId, setCurrentWorksheetId] = useState<string | null>(null);
+  const [worksheetHistories, setWorksheetHistories] = useState<any[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // ✅ Connect WebSocket on mount
   useEffect(() => {
     getConnection(tabId || '', ENDPOINT);
   }, [tabId]);
+
+  useEffect(() => {
+    loadWorksheetHistory();
+  }, []);
 
   // Auto-fetch strands based on subject and grade
   const getStrands = (subject: string, grade: string): string[] => {
@@ -355,6 +365,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   const handleClearWorksheet = () => {
+    // Only clear if there's actually content to clear
+    if (!generatedWorksheet && !parsedWorksheet) {
+      return;
+    }
+    
     setClearedWorksheet(generatedWorksheet);
     setClearedParsedWorksheet(parsedWorksheet);
     setGeneratedWorksheet('');
@@ -467,6 +482,63 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         return <ListBasedTemplate {...commonProps} />;
       default:
         return null;
+    }
+  };
+
+  const saveWorksheet = async () => {
+    if (!generatedWorksheet) return;
+    
+    setSaveStatus('saving');
+    try {
+      const worksheetData = {
+        id: currentWorksheetId || `worksheet_${Date.now()}`,
+        title: formData.worksheetTitle || `${formData.subject} - Grade ${formData.gradeLevel} Worksheet`,
+        timestamp: new Date().toISOString(),
+        formData,
+        generatedWorksheet,
+        parsedWorksheet
+      };
+      
+      await axios.post('http://localhost:8000/api/worksheet-history', worksheetData);
+      setCurrentWorksheetId(worksheetData.id);
+      setSaveStatus('saved');
+      loadWorksheetHistory();
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      console.error('Failed to save worksheet:', error);
+      setSaveStatus('idle');
+    }
+  };
+
+  const loadWorksheetHistory = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/worksheet-history');
+      setWorksheetHistories(response.data);
+    } catch (error) {
+      console.error('Failed to load worksheet history:', error);
+    }
+  };
+
+  const loadWorksheetFromHistory = (history: any) => {
+    setFormData(history.formData);
+    setGeneratedWorksheet(history.generatedWorksheet);
+    setParsedWorksheet(history.parsedWorksheet);
+    setCurrentWorksheetId(history.id);
+    setHistoryOpen(false);
+  };
+
+  const deleteWorksheetHistory = async (worksheetId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this worksheet from history?')) return;
+    
+    try {
+      await axios.delete(`http://localhost:8000/api/worksheet-history/${worksheetId}`);
+      loadWorksheetHistory();
+      if (currentWorksheetId === worksheetId) {
+        setCurrentWorksheetId(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete worksheet:', error);
     }
   };
 
@@ -938,7 +1010,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       </div>
 
       {/* Right Panel - Preview (50%) */}
-      <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto">
+      <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto relative">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
@@ -948,16 +1020,59 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </h3>
               <p className="text-sm text-gray-500">Live layout preview</p>
             </div>
-            {(generatedWorksheet || parsedWorksheet) && (
-              <div className="flex space-x-2">
+            {(generatedWorksheet || parsedWorksheet || clearedWorksheet) && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={saveWorksheet}
+                  disabled={saveStatus === 'saving'}
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                >
+                  {saveStatus === 'saving' ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : saveStatus === 'saved' ? (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Saved!
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </>
+                  )}
+                </button>
+                
+                <ExportButton
+                  dataType="worksheet"
+                  data={{
+                    content: generatedWorksheet,
+                    parsedWorksheet: parsedWorksheet,
+                    formData: formData,
+                    accentColor: '#3b82f6'
+                  }}
+                  filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
+                />
+                
+                <button
+                  onClick={() => setHistoryOpen(!historyOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition"
+                  title="Worksheet History"
+                >
+                  <History className="w-5 h-5 text-gray-600" />
+                </button>
+                
                 <button
                   onClick={handleClearWorksheet}
                   className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
                   title="Clear generated worksheet"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  Clear
+                  {clearedWorksheet ? 'Clear' : 'Create New'}
                 </button>
+                
                 {clearedWorksheet && (
                   <button
                     onClick={handleRestoreWorksheet}
@@ -973,116 +1088,172 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           </div>
         </div>
 
+        {/* Template Preview Content */}
         <div className="flex-1 p-4">
-           {generationError ? (
-              <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
-                <div className="text-center text-red-600">
-                  <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
-                  <p className="text-sm mb-4">{generationError}</p>
-                  <button
-                    onClick={handleRetry}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Retry Generation
-                  </button>
-                </div>
+          {generationError ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
+              <div className="text-center text-red-600">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
+                <p className="text-sm mb-4">{generationError}</p>
+                <button
+                  onClick={handleRetry}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Retry Generation
+                </button>
               </div>
-            ) : (generatedWorksheet || streamingWorksheet) ? (
-              <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
-                {loading ? (
-                  // Show loading state during streaming
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-                      <p className="text-gray-600 font-medium">Generating worksheet...</p>
-                      <p className="text-gray-500 text-sm mt-2">The content will appear in your template shortly</p>
+            </div>
+          ) : (generatedWorksheet || streamingWorksheet) ? (
+            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600 font-medium">Generating worksheet...</p>
+                    <p className="text-gray-500 text-sm mt-2">The content will appear in your template shortly</p>
+                  </div>
+                </div>
+              ) : parsedWorksheet ? (
+                <div className="transform scale-90 origin-top">
+                  {formData.selectedTemplate === 'multiple-choice' && (
+                    <MultipleChoiceTemplate
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      topic={formData.topic}
+                      questionCount={parsedWorksheet.questions.length}
+                      questionType={formData.questionType}
+                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                      includeImages={formData.includeImages}
+                      imageMode={formData.imageMode}
+                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                      questions={parsedWorksheet.questions}
+                    />
+                  )}
+                  {formData.selectedTemplate === 'comprehension' && (
+                    <ComprehensionTemplate
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      topic={formData.topic}
+                      questionCount={parsedWorksheet.questions.length}
+                      questionType={formData.questionType}
+                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                      includeImages={formData.includeImages}
+                      imagePlacement={formData.imagePlacement}
+                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                      passage={parsedWorksheet.passage}
+                      questions={parsedWorksheet.questions}
+                    />
+                  )}
+                  {formData.selectedTemplate === 'matching' && (
+                    <MatchingTemplate
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      topic={formData.topic}
+                      questionCount={parsedWorksheet.questions.length}
+                      questionType={formData.questionType}
+                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                      includeImages={formData.includeImages}
+                      columnA={parsedWorksheet.matchingItems?.columnA}
+                      columnB={parsedWorksheet.matchingItems?.columnB}
+                    />
+                  )}
+                  {formData.selectedTemplate === 'list-based' && (
+                    <ListBasedTemplate
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      topic={formData.topic}
+                      questionCount={parsedWorksheet.questions.length}
+                      questionType={formData.questionType}
+                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                      includeImages={formData.includeImages}
+                      imageMode={formData.imageMode}
+                      generatedImage={generatedImage}
+                      questions={parsedWorksheet.questions}
+                      wordBank={parsedWorksheet.wordBank}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="p-4">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-800">
+                    {generatedWorksheet || streamingWorksheet}
+                  </pre>
+                </div>
+              )}
+            </div>
+          ) : selectedTemplate ? (
+            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+              <div className="transform scale-90 origin-top">
+                {renderTemplatePreview()}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">Select a template to preview</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* History Panel - Slides in from right as overlay */}
+        <div
+          className={`absolute top-0 right-0 h-full bg-white border-l border-gray-200 shadow-xl transition-transform duration-300 ease-in-out z-50 ${
+            historyOpen ? 'translate-x-0' : 'translate-x-full'
+          } w-80`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="h-full flex flex-col p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Saved Worksheets</h3>
+              <button
+                onClick={() => setHistoryOpen(false)}
+                className="p-1 rounded hover:bg-gray-200 transition"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {worksheetHistories.length === 0 ? (
+                <div className="text-center text-gray-500 mt-8">
+                  <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No saved worksheets yet</p>
+                </div>
+              ) : (
+                worksheetHistories.map((history) => (
+                  <div
+                    key={history.id}
+                    onClick={() => loadWorksheetFromHistory(history)}
+                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-gray-50 ${
+                      currentWorksheetId === history.id ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                          {history.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(history.timestamp).toLocaleDateString()}{' '}
+                          {new Date(history.timestamp).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => deleteWorksheetHistory(history.id, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                        title="Delete worksheet"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </button>
                     </div>
                   </div>
-                ) : parsedWorksheet ? (
-                  // Show template after streaming completes
-                  <div className="transform scale-90 origin-top">
-                    {formData.selectedTemplate === 'multiple-choice' && (
-                      <MultipleChoiceTemplate
-                        subject={formData.subject}
-                        gradeLevel={formData.gradeLevel}
-                        topic={formData.topic}
-                        questionCount={parsedWorksheet.questions.length}
-                        questionType={formData.questionType}
-                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                        includeImages={formData.includeImages}
-                        imageMode={formData.imageMode}
-                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                        questions={parsedWorksheet.questions}
-                      />
-                    )}
-                    {formData.selectedTemplate === 'comprehension' && (
-                      <ComprehensionTemplate
-                        subject={formData.subject}
-                        gradeLevel={formData.gradeLevel}
-                        topic={formData.topic}
-                        questionCount={parsedWorksheet.questions.length}
-                        questionType={formData.questionType}
-                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                        includeImages={formData.includeImages}
-                        imagePlacement={formData.imagePlacement}
-                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                        passage={parsedWorksheet.passage}
-                        questions={parsedWorksheet.questions}
-                      />
-                    )}
-                    {formData.selectedTemplate === 'matching' && (
-                      <MatchingTemplate
-                        subject={formData.subject}
-                        gradeLevel={formData.gradeLevel}
-                        topic={formData.topic}
-                        questionCount={parsedWorksheet.questions.length}
-                        questionType={formData.questionType}
-                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                        includeImages={formData.includeImages}
-                        columnA={parsedWorksheet.matchingItems?.columnA}
-                        columnB={parsedWorksheet.matchingItems?.columnB}
-                      />
-                    )}
-                    {formData.selectedTemplate === 'list-based' && (
-                      <ListBasedTemplate
-                        subject={formData.subject}
-                        gradeLevel={formData.gradeLevel}
-                        topic={formData.topic}
-                        questionCount={parsedWorksheet.questions.length}
-                        questionType={formData.questionType}
-                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                        includeImages={formData.includeImages}
-                        imageMode={formData.imageMode}
-                        generatedImage={generatedImage}
-                        questions={parsedWorksheet.questions}
-                        wordBank={parsedWorksheet.wordBank}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  // Fallback
-                  <div className="p-4">
-                    <pre className="whitespace-pre-wrap text-sm text-gray-800">
-                      {generatedWorksheet || streamingWorksheet}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            ) : selectedTemplate ? (
-              <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
-                <div className="transform scale-90 origin-top">
-                  {renderTemplatePreview()}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Select a template to preview</p>
-                </div>
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </div>
+        </div>
       </div>
     </div>
   );

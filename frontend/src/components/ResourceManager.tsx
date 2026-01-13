@@ -51,6 +51,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     { key: 'all', label: 'All Resources', icon: FileText },
     { key: 'lesson', label: 'Lesson Plans', icon: BookMarked },
     { key: 'quiz', label: 'Quizzes', icon: ListChecks },
+    { key: 'worksheet', label: 'Worksheets', icon: FileText },
     { key: 'rubric', label: 'Rubrics', icon: FileText },
     { key: 'kindergarten', label: 'Kindergarten', icon: GraduationCap },
     { key: 'multigrade', label: 'Multigrade', icon: Users },
@@ -61,9 +62,10 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const loadAllResources = async () => {
     setLoading(true);
     try {
-      const [lessonPlans, quizzes, rubrics, kindergarten, multigrade, crossCurricular, images] = await Promise.all([
+      const [lessonPlans, quizzes, worksheets, rubrics, kindergarten, multigrade, crossCurricular, images] = await Promise.all([
         axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/worksheet-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/rubric-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/kindergarten-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
@@ -74,6 +76,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       const allResources: Resource[] = [
         ...lessonPlans.data.map((r: any) => ({ ...r, type: 'lesson' })),
         ...quizzes.data.map((r: any) => ({ ...r, type: 'quiz' })),
+        ...worksheets.data.map((r: any) => ({ ...r, type: 'worksheet' })),
         ...rubrics.data.map((r: any) => ({ ...r, type: 'rubric' })),
         ...kindergarten.data.map((r: any) => ({ ...r, type: 'kindergarten' })),
         ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),

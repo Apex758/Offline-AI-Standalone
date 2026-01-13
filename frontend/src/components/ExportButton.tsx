@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Download, Loader2, FileText, FileDown } from 'lucide-react';
 import axios from 'axios';
 import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRenderer';
+import { prepareWorksheetForExport } from '../utils/worksheetHtmlRenderer';
 
 interface ExportButtonProps {
   dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular';
@@ -31,18 +32,31 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     setShowMenu(false);
 
     try {
-      // Generate HTML that matches the screen display exactly
-      const exportData = prepareQuizForExport(
-        data.content,
-        data.formData,
-        data.accentColor
-      );
-
-      // Add title for backend
-      const title = data.formData.subject
-        ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
-        : 'Quiz';
-
+      let exportData;
+      let title;
+      
+      if (dataType === 'worksheet') {
+        // Handle worksheet export
+        exportData = prepareWorksheetForExport(
+          data.content,
+          data.parsedWorksheet,
+          data.formData,
+          data.accentColor
+        );
+        title = data.formData.subject
+          ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
+          : 'Worksheet';
+      } else {
+        // Handle quiz export (existing code)
+        exportData = prepareQuizForExport(
+          data.content,
+          data.formData,
+          data.accentColor
+        );
+        title = data.formData.subject
+          ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
+          : 'Quiz';
+      }
       // Send to backend with rawHtml for perfect rendering
       const response = await axios.post(
         'http://localhost:8000/api/export',
