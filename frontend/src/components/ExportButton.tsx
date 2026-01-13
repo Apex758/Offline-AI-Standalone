@@ -5,6 +5,7 @@ import axios from 'axios';
 import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRenderer';
 import { prepareWorksheetForExport } from '../utils/worksheetHtmlRenderer';
 import { prepareLessonForExport } from '../utils/lessonHtmlRenderer';
+import { prepareRubricForExport } from '../utils/rubricHtmlRenderer';
 
 interface ExportButtonProps {
   dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular';
@@ -63,6 +64,13 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         title = data.formData.topic
           ? `${data.formData.topic} - Grade ${data.formData.gradeLevel}`
           : 'Lesson Plan';
+      } else if (dataType === 'rubric') {  // ✅ ADD THIS
+        exportData = prepareRubricForExport(
+          data.content,
+          data.formData,
+          data.accentColor
+        );
+        title = data.formData.assignmentTitle || 'Assessment Rubric';
       } else {
         // Handle quiz export (existing code)
         exportData = prepareQuizForExport(
