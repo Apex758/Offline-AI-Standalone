@@ -17,33 +17,93 @@ interface RenderOptions {
 }
 
 /**
- * Parse markdown table to structured data
+ * Parse plain text rubric (line-by-line format)
  */
-function parseMarkdownTable(text: string): { headers: string[], rows: string[][] } | null {
+function parseLinewiseRubric(text: string): {
+  title: string;
+  headers: string[];
+  criteria: Array<{ name: string; levels: string[] }>;
+  scoringSummary: string;
+} | null {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l);
   
-  // Find table start (line with |)
-  const tableStart = lines.findIndex(line => line.startsWith('|'));
-  if (tableStart === -1) return null;
+  let title = '';
+  let headers: string[] = [];
+  let criteria: Array<{ name: string; levels: string[] }> = [];
+  let scoringSummary = '';
+  let inScoring = false;
   
-  // Extract header
-  const headerLine = lines[tableStart];
-  const headers = headerLine.split('|').map(h => h.trim()).filter(h => h);
-  
-  // Skip separator line (| --- | --- |)
-  const dataStart = tableStart + 2;
-  
-  // Extract data rows
-  const rows: string[][] = [];
-  for (let i = dataStart; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line.startsWith('|')) break;
-    
-    const cells = line.split('|').map(c => c.trim()).filter(c => c);
-    if (cells.length > 0) rows.push(cells);
+  // Find title (first line with "Rubric" or "Assessment")
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    if (lines[i].toLowerCase().includes('rubric') || lines[i].toLowerCase().includes('assessment')) {
+      title = lines[i].replace(/^\*\*|\*\*$/g, '');
+      break;
+    }
   }
   
-  return { headers, rows };
+  // Find headers (Criteria, Excellent, Proficient, etc.)
+  let headerStartIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].toLowerCase() === 'criteria') {
+      headerStartIdx = i;
+      headers.push('Criteria');
+      
+      // Next few lines should be performance levels
+      for (let j = i + 1; j < Math.min(i + 7, lines.length); j++) {
+        const line = lines[j];
+        // Stop if we hit a long line (likely a descriptor)
+        if (line.length > 30 || line.includes('(') || line.includes('pts')) break;
+        // Performance level names are short and capitalized
+        if (line.match(/^[A-Z][a-z]+$/) || line.match(/^(Excellent|Proficient|Developing|Beginning|Advanced|Good|Fair)$/i)) {
+          headers.push(line);
+        }
+      }
+      break;
+    }
+  }
+  
+  // Parse criteria rows
+  let currentCriterion: { name: string; levels: string[] } | null = null;
+  
+  for (let i = headerStartIdx + headers.length; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Check for scoring summary
+    if (line.toLowerCase().includes('scoring summary')) {
+      inScoring = true;
+      // Save current criterion if any
+      if (currentCriterion && currentCriterion.levels.length > 0) {
+        criteria.push(currentCriterion);
+        currentCriterion = null;
+      }
+      continue;
+    }
+    
+    if (inScoring) {
+      scoringSummary += line + '\n';
+      continue;
+    }
+    
+    // Detect criterion name (short line, no parentheses, no "pts")
+    if (line.length < 50 && !line.includes('(') && !line.toLowerCase().includes('pts') && 
+        line.match(/^[A-Z]/) && !headers.includes(line)) {
+      // Save previous criterion
+      if (currentCriterion && currentCriterion.levels.length > 0) {
+        criteria.push(currentCriterion);
+      }
+      currentCriterion = { name: line, levels: [] };
+    } else if (currentCriterion && line.length > 20) {
+      // This is a level descriptor
+      currentCriterion.levels.push(line);
+    }
+  }
+  
+  // Save last criterion
+  if (currentCriterion && currentCriterion.levels.length > 0) {
+    criteria.push(currentCriterion);
+  }
+  
+  return { title, headers, criteria, scoringSummary };
 }
 
 /**
@@ -60,73 +120,72 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
     cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
   }
 
-  // Remove AI preambles
-  cleanText = cleanText.replace(/^Here is (?:the |a )?(?:complete |detailed )?rubric.*?:\s*/i, '');
-  cleanText = cleanText.replace(/^Below is (?:the |a )?rubric.*?:\s*/i, '');
-
-  // Extract title
-  let rubricTitle = formData.assignmentTitle || 'Assessment Rubric';
-  const titleMatch = cleanText.match(/^\*\*(.+?)\*\*$/m);
-  if (titleMatch && titleMatch[1]) {
-    rubricTitle = titleMatch[1].trim();
-  }
-
-  // Parse the markdown table
-  const tableData = parseMarkdownTable(cleanText);
+  // Parse the rubric
+  const rubricData = parseLinewiseRubric(cleanText);
   
-  let tableHTML = '';
-  if (tableData) {
-    const { headers, rows } = tableData;
-    
-    // Generate table HTML
-    tableHTML = `
-      <table style="
-        width: 100%;
-        border-collapse: collapse;
-        margin: 2rem 0;
-        border: 2px solid ${accentColor}33;
-      ">
-        <thead>
-          <tr style="background: linear-gradient(135deg, ${accentColor}dd, ${accentColor}bb);">
-            ${headers.map((header, idx) => `
-              <th style="
-                padding: 1rem;
-                text-align: left;
-                color: white;
-                font-weight: 600;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                ${idx === 0 ? 'width: 20%;' : `width: ${80 / (headers.length - 1)}%;`}
-              ">${header}</th>
+  if (!rubricData || rubricData.criteria.length === 0) {
+    return '<p style="color: red;">Failed to parse rubric. Please check the format.</p>';
+  }
+  
+  const { title, headers, criteria, scoringSummary } = rubricData;
+  
+  // Generate table HTML
+  const tableHTML = `
+    <table style="
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      border: 2px solid ${accentColor}33;
+      font-size: 0.85rem;
+    ">
+      <thead>
+        <tr style="background: linear-gradient(135deg, ${accentColor}dd, ${accentColor}bb);">
+          ${headers.map((header, idx) => `
+            <th style="
+              padding: 1rem;
+              text-align: left;
+              color: white;
+              font-weight: 600;
+              font-size: 0.9rem;
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              ${idx === 0 ? 'width: 15%;' : `width: ${85 / (headers.length - 1)}%;`}
+            ">${header}</th>
+          `).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${criteria.map((criterion, rowIdx) => `
+          <tr style="${rowIdx % 2 === 0 ? `background-color: ${accentColor}05;` : 'background-color: white;'}">
+            <td style="
+              padding: 1rem;
+              border: 1px solid ${accentColor}22;
+              vertical-align: top;
+              font-weight: 700;
+              font-size: 0.9rem;
+              color: ${accentColor}dd;
+              background-color: ${accentColor}0d;
+            ">${criterion.name}</td>
+            ${criterion.levels.map(level => `
+              <td style="
+                padding: 0.875rem;
+                border: 1px solid ${accentColor}22;
+                vertical-align: top;
+                line-height: 1.5;
+                color: #374151;
+              ">${level}</td>
             `).join('')}
           </tr>
-        </thead>
-        <tbody>
-          ${rows.map((row, rowIdx) => `
-            <tr style="${rowIdx % 2 === 0 ? `background-color: ${accentColor}05;` : 'background-color: white;'}">
-              ${row.map((cell, cellIdx) => `
-                <td style="
-                  padding: 1rem;
-                  border: 1px solid ${accentColor}22;
-                  vertical-align: top;
-                  line-height: 1.6;
-                  ${cellIdx === 0 ? `font-weight: 600; color: ${accentColor}dd; background-color: ${accentColor}0d;` : 'color: #374151;'}
-                ">${cell}</td>
-              `).join('')}
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  }
-
-  // Extract scoring summary
-  let scoringSummary = '';
-  const summaryMatch = cleanText.match(/\*\*Scoring Summary\*\*\s*[\s\S]*$/);
-  if (summaryMatch) {
-    const summaryText = summaryMatch[0].replace(/^\*\*Scoring Summary\*\*\s*/, '');
-    const summaryLines = summaryText.split('\n').filter(l => l.trim());
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  
+  // Generate scoring summary HTML
+  let scoringSummaryHTML = '';
+  if (scoringSummary.trim()) {
+    const summaryLines = scoringSummary.split('\n').filter(l => l.trim());
     
-    scoringSummary = `
+    scoringSummaryHTML = `
       <div style="
         margin-top: 2rem;
         padding: 1.5rem;
@@ -142,25 +201,8 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
         ">Scoring Summary</h3>
         ${summaryLines.map(line => {
           const trimmed = line.trim();
-          if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
-            const content = trimmed.replace(/^[\*\-]\s*/, '');
-            return `
-              <div style="
-                margin-bottom: 0.5rem;
-                display: flex;
-                align-items: flex-start;
-              ">
-                <span style="
-                  margin-right: 0.75rem;
-                  margin-top: 0.375rem;
-                  font-weight: 700;
-                  color: ${accentColor}99;
-                ">•</span>
-                <span style="color: #374151; line-height: 1.625;">${content}</span>
-              </div>
-            `;
-          }
-          return `<p style="color: #374151; line-height: 1.625; margin-bottom: 0.5rem;">${trimmed}</p>`;
+          if (!trimmed) return '';
+          return `<p style="color: #374151; line-height: 1.625; margin-bottom: 0.5rem; font-size: 0.95rem;">${trimmed}</p>`;
         }).join('')}
       </div>
     `;
@@ -174,7 +216,7 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
   <meta charset="UTF-8">
   <style>
     @page {
-      size: A4;
+      size: A4 landscape;
       margin: 1.5cm;
     }
     body {
@@ -218,7 +260,7 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
       color: white;
       margin: 0.5rem 0;
       line-height: 1.2;
-    ">${rubricTitle}</h1>
+    ">${title || formData.assignmentTitle}</h1>
     
     <div style="
       display: flex;
@@ -246,7 +288,7 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
           border-radius: 9999px;
           margin-right: 0.5rem;
         "></div>
-        <span style="font-size: 0.875rem;">${formData.performanceLevels} Performance Levels</span>
+        <span style="font-size: 0.875rem;">${headers.length - 1} Performance Levels</span>
       </div>
       ${formData.includePointValues ? `
         <div style="display: flex; align-items: center;">
@@ -276,7 +318,7 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
   <!-- Content -->
   <div style="margin-top: 2rem;">
     ${tableHTML}
-    ${scoringSummary}
+    ${scoringSummaryHTML}
   </div>
 
   <!-- Footer -->

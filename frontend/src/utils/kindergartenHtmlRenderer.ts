@@ -1,29 +1,30 @@
-// utils/lessonHtmlRenderer.ts
+// utils/kindergartenHtmlRenderer.ts
 /**
- * HTML renderer for lesson plan content
+ * HTML renderer for kindergarten plan content
  * Generates styled HTML for PDF/DOCX export
  */
 
 interface RenderOptions {
   accentColor: string;
   formData: {
-    subject: string;
-    gradeLevel: string;
-    topic: string;
-    strand: string;
+    lessonTopic: string;
+    curriculumUnit: string;
+    week: string;
+    dayOfWeek: string;
+    date: string;
+    ageGroup: string;
+    students: string;
     duration: string;
-    studentCount: string;
   };
-  curriculumReferences?: any[]; // ✅ ADD THIS
 }
 
 /**
- * Generate formatted HTML from lesson plan text
+ * Generate formatted HTML from kindergarten plan text
  */
-export function generateLessonHTML(text: string, options: RenderOptions): string {
+export function generateKindergartenHTML(text: string, options: RenderOptions): string {
   if (!text) return '';
 
-  const { accentColor, formData, curriculumReferences } = options;
+  const { accentColor, formData } = options;
 
   // Clean the text
   let cleanText = text;
@@ -32,41 +33,27 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
   }
 
   // Remove AI preambles
-  cleanText = cleanText.replace(/^Here is (?:the |a )?(?:complete |detailed )?lesson plan.*?:\s*/i, '');
-  cleanText = cleanText.replace(/^Below is (?:the |a )?lesson plan.*?:\s*/i, '');
+  cleanText = cleanText.replace(/^Here is (?:the |a )?(?:complete |detailed )?kindergarten plan.*?:\s*/i, '');
+  cleanText = cleanText.replace(/^Below is (?:the |a )?kindergarten plan.*?:\s*/i, '');
 
-  // Extract the lesson title from "Lesson Plan: X" if present
-  // Match the preview component's title logic
-  let lessonTitle = formData.topic 
-    ? `Exploring ${formData.topic}` 
-    : 'Lesson Plan';
+  // Extract the plan title
+  let planTitle = formData.lessonTopic || 'Kindergarten Plan';
 
-    // If AI generated a "Lesson Plan: X" line, extract and use that instead
-  const titleMatch = cleanText.match(/^Lesson Plan:\s*(.+?)$/m);
-  if (titleMatch && titleMatch[1]) {
-    lessonTitle = titleMatch[1].trim();
-  }
-
-  // Always remove the "Lesson Plan: X" line from content if present
-  cleanText = cleanText.replace(/^Lesson Plan:\s*.+?$/m, '').trim();
+  // Always remove the "KINDERGARTEN LESSON PLAN" line from content if present
+  cleanText = cleanText.replace(/^KINDERGARTEN LESSON PLAN\s*$/m, '').trim();
 
   const lines = cleanText.split('\n');
   let htmlContent = '';
 
   lines.forEach((line) => {
     const trimmed = line.trim();
-    
+
     if (!trimmed) {
       htmlContent += '<div style="height: 12px;"></div>';
       return;
     }
 
-    if (trimmed.match(/^Lesson Plan:\s*.+/i)) {
-        return;
-    }
-
-
-    // Main section headings (e.g., **Learning Objectives:**, **Materials:**)
+    // Main section headings (surrounded by **)
     if (trimmed.match(/^\*\*(.+?)\*\*$/)) {
       const title = trimmed.replace(/\*\*/g, '');
       htmlContent += `
@@ -83,8 +70,9 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
       return;
     }
 
-    // Subsection headings (e.g., A. Introduction/Hook (10 minutes))
-    if (trimmed.match(/^[A-Z]\.\s+(.+?)(\s*\(\d+.*?\))?$/)) {
+    // Field labels (start with ** but don't end with **)
+    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
+      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       htmlContent += `
         <h3 style="
           font-size: 1.125rem;
@@ -93,43 +81,41 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
           margin-bottom: 0.75rem;
           padding: 0.75rem;
           border-radius: 0.5rem;
+          border-left: 4px solid ${accentColor};
           color: ${accentColor}cc;
           background-color: ${accentColor}0d;
-        ">${trimmed}</h3>
+        ">${title}:</h3>
       `;
       return;
     }
 
-    // Sub-bullets with + prefix
-    if (trimmed.match(/^\+\s+/)) {
-      const content = trimmed.replace(/^\+\s+/, '');
+    // Activity items with special highlighting
+    if (trimmed.match(/^(Circle Time|Art Activity|Story Time|Music|Outdoor Play|Learning Centers|Small Group|Snack Time).*:/i)) {
       htmlContent += `
         <div style="
-          margin-bottom: 0.5rem;
-          display: flex;
-          align-items: flex-start;
-          margin-left: 2.5rem;
+          margin-top: 1rem;
+          margin-bottom: 0.75rem;
         ">
-          <span style="
-            margin-right: 0.75rem;
-            margin-top: 0.375rem;
-            font-weight: 600;
-            font-size: 0.75rem;
-            color: ${accentColor}77;
-          ">▸</span>
-          <span style="
-            color: #4B5563;
-            line-height: 1.625;
-            font-size: 0.95rem;
-          ">${content}</span>
+          <div style="
+            border-left: 4px solid ${accentColor}cc;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: linear-gradient(to right, ${accentColor}1a, ${accentColor}0d);
+          ">
+            <h4 style="
+              font-weight: 700;
+              font-size: 1.125rem;
+              color: ${accentColor}dd;
+            ">${trimmed}</h4>
+          </div>
         </div>
       `;
       return;
     }
 
     // Bullet points
-    if (trimmed.match(/^[\*\-•]\s+/)) {
-      const content = trimmed.replace(/^[\*\-•]\s+/, '');
+    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
+      const content = trimmed.replace(/^\s*\*\s+/, '');
       htmlContent += `
         <div style="
           margin-bottom: 0.5rem;
@@ -252,17 +238,17 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
         color: white;
         font-size: 0.875rem;
         font-weight: 500;
-      ">${formData.subject}</span>
+      ">${formData.curriculumUnit}</span>
     </div>
-    
+
     <h1 style="
       font-size: 2rem;
       font-weight: 700;
       color: white;
       margin: 0.5rem 0;
       line-height: 1.2;
-    ">${lessonTitle}</h1>
-    
+    ">${planTitle}</h1>
+
     <div style="
       display: flex;
       flex-wrap: wrap;
@@ -279,7 +265,7 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
           border-radius: 9999px;
           margin-right: 0.5rem;
         "></div>
-        <span style="font-size: 0.875rem;">Grade ${formData.gradeLevel}</span>
+        <span style="font-size: 0.875rem;">${formData.ageGroup}</span>
       </div>
       <div style="display: flex; align-items: center;">
         <div style="
@@ -289,7 +275,7 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
           border-radius: 9999px;
           margin-right: 0.5rem;
         "></div>
-        <span style="font-size: 0.875rem;">${formData.strand}</span>
+        <span style="font-size: 0.875rem;">Week ${formData.week}, ${formData.dayOfWeek}</span>
       </div>
       <div style="display: flex; align-items: center;">
         <div style="
@@ -309,10 +295,10 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
           border-radius: 9999px;
           margin-right: 0.5rem;
         "></div>
-        <span style="font-size: 0.875rem;">${formData.studentCount} students</span>
+        <span style="font-size: 0.875rem;">${formData.students} students</span>
       </div>
     </div>
-    
+
     <div style="
       margin-top: 1.5rem;
       padding-top: 1rem;
@@ -328,53 +314,6 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
   <div style="margin-top: 2rem;">
     ${htmlContent}
   </div>
-
-  <!-- Curriculum References Section -->
-  ${curriculumReferences && curriculumReferences.length > 0 ? `
-    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid ${accentColor}33;">
-      <h2 style="
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        color: ${accentColor}dd;
-      ">Curriculum References:</h2>
-
-      <div style="display: grid; gap: 1rem;">
-        ${curriculumReferences.map((ref, idx) => `
-          <div style="
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid ${accentColor}33;
-            background-color: ${accentColor}0a;
-          ">
-            <div style="
-              font-weight: 600;
-              color: ${accentColor}dd;
-              margin-bottom: 0.5rem;
-            ">${idx + 1}. ${ref.displayName || ref.id}</div>
-
-            <div style="
-              font-size: 0.875rem;
-              color: #6B7280;
-              margin-bottom: 0.5rem;
-            ">
-              Grade ${ref.grade} | ${ref.subject} | ${ref.strand}
-            </div>
-
-            ${ref.essentialOutcomes && ref.essentialOutcomes.length > 0 ? `
-              <div style="
-                font-size: 0.875rem;
-                color: #374151;
-                line-height: 1.5;
-              ">
-                <strong>Essential Outcome:</strong> ${ref.essentialOutcomes[0]}
-              </div>
-            ` : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  ` : ''}
 
   <!-- Footer -->
   <div style="
@@ -395,16 +334,14 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
 }
 
 // Export function to use with backend
-export function prepareLessonForExport(
+export function prepareKindergartenForExport(
   text: string,
   formData: any,
-  accentColor: string,
-  curriculumReferences?: any[] // ✅ ADD THIS PARAMETER
+  accentColor: string
 ) {
-  const html = generateLessonHTML(text, {
+  const html = generateKindergartenHTML(text, {
     accentColor,
-    formData,
-    curriculumReferences // ✅ PASS IT HERE
+    formData
   });
 
   return {
