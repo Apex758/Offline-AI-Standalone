@@ -5,17 +5,33 @@ import type { DistributionData } from '../../types/analytics';
 
 interface ResourceDistributionChartProps {
   data: DistributionData[];
+  tabColors?: { [key: string]: string };
 }
 
-const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data }) => {
+const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data, tabColors = {} }) => {
   const total = data.reduce((sum, item) => sum + item.count, 0);
 
-  // Natural color palette
-  const naturalColors = ['#1D362D', '#F2A631', '#552A01', '#F8E59D', '#A8AFA3'];
-  
-  const dataWithColors = data.map((item, index) => ({
+  // Map resource types to tool types for color lookup
+  const resourceToToolType: { [key: string]: string } = {
+    lesson: 'lesson-planner',
+    quiz: 'quiz-generator',
+    rubric: 'rubric-generator',
+    kindergarten: 'kindergarten-planner',
+    multigrade: 'multigrade-planner',
+    'cross-curricular': 'cross-curricular-planner',
+    worksheet: 'worksheet-generator',
+    image: 'image-studio'
+  };
+
+  // Get color for a resource type
+  const getResourceColor = (resourceType: string): string => {
+    const toolType = resourceToToolType[resourceType];
+    return tabColors[toolType] || '#6b7280'; // fallback color
+  };
+
+  const dataWithColors = data.map((item) => ({
     ...item,
-    color: naturalColors[index % naturalColors.length]
+    color: getResourceColor(item.type)
   }));
 
   const CustomTooltip = ({ active, payload }: any) => {

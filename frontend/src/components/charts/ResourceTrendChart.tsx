@@ -8,12 +8,14 @@ interface ResourceTrendChartProps {
   data: ResourceTrendData[];
   timeframe: Timeframe;
   onTimeframeChange: (timeframe: Timeframe) => void;
+  tabColors?: { [key: string]: string };
 }
 
 const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   data,
   timeframe,
-  onTimeframeChange
+  onTimeframeChange,
+  tabColors = {}
 }) => {
   // Filter data to only include entries from June 2025 onward
   const minDate = new Date('2025-06-01');
@@ -21,6 +23,23 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
     const entryDate = typeof d.date === 'string' ? new Date(d.date) : d.date;
     return entryDate >= minDate;
   });
+
+  // Map resource types to tool types for color lookup
+  const resourceToToolType: { [key: string]: string } = {
+    lessonPlans: 'lesson-planner',
+    quizzes: 'quiz-generator',
+    rubrics: 'rubric-generator',
+    kindergarten: 'kindergarten-planner',
+    multigrade: 'multigrade-planner',
+    worksheets: 'worksheet-generator',
+    images: 'image-studio'
+  };
+
+  // Get color for a resource type
+  const getResourceColor = (resourceType: string): string => {
+    const toolType = resourceToToolType[resourceType];
+    return tabColors[toolType] || '#6b7280'; // fallback color
+  };
 
   const timeframeButtons: { value: Timeframe; label: string }[] = [
     { value: 'week', label: '1 Week' },
@@ -142,58 +161,58 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
           <Line
             type="monotone"
             dataKey="lessonPlans"
-            stroke="#1D362D"
+            stroke={getResourceColor('lessonPlans')}
             strokeWidth={2}
             name="Standard Lessons"
-            dot={{ r: 3, fill: '#1D362D' }}
+            dot={{ r: 3, fill: getResourceColor('lessonPlans') }}
           />
           <Line
             type="monotone"
             dataKey="quizzes"
-            stroke="#552A01"
+            stroke={getResourceColor('quizzes')}
             strokeWidth={2}
             name="Quizzes"
-            dot={{ r: 3, fill: '#552A01' }}
+            dot={{ r: 3, fill: getResourceColor('quizzes') }}
           />
           <Line
             type="monotone"
             dataKey="rubrics"
-            stroke="#F8E59D"
+            stroke={getResourceColor('rubrics')}
             strokeWidth={2}
             name="Rubrics"
-            dot={{ r: 3, fill: '#F8E59D' }}
+            dot={{ r: 3, fill: getResourceColor('rubrics') }}
           />
           <Line
             type="monotone"
             dataKey="kindergarten"
-            stroke="#ec4899"
+            stroke={getResourceColor('kindergarten')}
             strokeWidth={2}
             name="Kindergarten Plans"
-            dot={{ r: 3, fill: '#ec4899' }}
+            dot={{ r: 3, fill: getResourceColor('kindergarten') }}
           />
           <Line
             type="monotone"
             dataKey="multigrade"
-            stroke="#6366f1"
+            stroke={getResourceColor('multigrade')}
             strokeWidth={2}
             name="Multigrade Plans"
-            dot={{ r: 3, fill: '#6366f1' }}
+            dot={{ r: 3, fill: getResourceColor('multigrade') }}
           />
           <Line
             type="monotone"
             dataKey="worksheets"
-            stroke="#06b6d4"
+            stroke={getResourceColor('worksheets')}
             strokeWidth={2}
             name="Worksheets"
-            dot={{ r: 3, fill: '#06b6d4' }}
+            dot={{ r: 3, fill: getResourceColor('worksheets') }}
           />
           <Line
             type="monotone"
             dataKey="images"
-            stroke="#8b5a2b"
+            stroke={getResourceColor('images')}
             strokeWidth={2}
             name="Images"
-            dot={{ r: 3, fill: '#8b5a2b' }}
+            dot={{ r: 3, fill: getResourceColor('images') }}
           />
         </LineChart>
       </ResponsiveContainer>

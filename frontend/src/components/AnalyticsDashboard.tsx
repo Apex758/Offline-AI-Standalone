@@ -34,6 +34,7 @@ interface AnalyticsDashboardProps {
   onDataChange: (data: any) => void;
   onNavigate?: (route: string) => void;
   onCreateTab?: (type: string) => void;
+  tabColors?: { [key: string]: string };
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
@@ -41,7 +42,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   savedData,
   onDataChange,
   onNavigate,
-  onCreateTab
+  onCreateTab,
+  tabColors = {}
 }) => {
   // State management
   const [loading, setLoading] = useState(true);
@@ -195,8 +197,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   }, [allResourcesData, timeframe]);
 
   const distributionData = useMemo(() => {
-    return calculateDistribution(allResourcesData);
-  }, [allResourcesData]);
+    return calculateDistribution(allResourcesData, tabColors);
+  }, [allResourcesData, tabColors]);
 
 
   const quickStats = useMemo(() => {
@@ -424,6 +426,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               timeframe={timeframe}
               onTimeframeChange={setTimeframe}
               forcePaused={currentTutorialStep >= 5 && currentTutorialStep <= 7}
+              tabColors={tabColors}
             />
 
             {/* Curriculum Progress */}

@@ -10,6 +10,7 @@ interface ChartCarouselProps {
   timeframe: Timeframe;
   onTimeframeChange: (timeframe: Timeframe) => void;
   forcePaused?: boolean;
+  tabColors?: { [key: string]: string };
 }
 
 const ChartCarousel: React.FC<ChartCarouselProps> = ({
@@ -17,7 +18,8 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
   distributionData,
   timeframe,
   onTimeframeChange,
-  forcePaused = false
+  forcePaused = false,
+  tabColors = {}
 }) => {
   const views: Array<'trend' | 'distribution'> = ['trend', 'distribution'];
   const [currentView, setCurrentView] = useState<'trend' | 'distribution'>('trend');
@@ -76,6 +78,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
             data={trendData}
             timeframe={timeframe}
             onTimeframeChange={onTimeframeChange}
+            tabColors={tabColors}
           />
         </div>
 
@@ -87,7 +90,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
               : 'opacity-0 -translate-x-full absolute inset-0 pointer-events-none'
           }`}
         >
-          <ResourceDistributionChart data={distributionData} />
+          <ResourceDistributionChart data={distributionData} tabColors={tabColors} />
         </div>
       </div>
 

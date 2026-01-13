@@ -767,7 +767,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 if (route.startsWith('/curriculum')) {
                   // Check if there's already an open curriculum tab
                   const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
-                  
+
                   if (existingCurriculumTab) {
                     // Update existing curriculum tab with new route
                     updateTabData(existingCurriculumTab.id, { currentPath: route });
@@ -775,7 +775,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   } else {
                     // Check if there's any curriculum tab (even inactive)
                     const anyCurriculumTab = tabs.find(t => t.type === 'curriculum');
-                    
+
                     if (anyCurriculumTab) {
                       // Activate existing curriculum tab and update route
                       setTabs(prev => prev.map(t => ({
@@ -808,7 +808,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 if (tool) {
                   // Check if this tool type already has an open tab
                   const existingTab = tabs.find(t => t.type === toolType);
-                  
+
                   if (existingTab) {
                     // Just activate the existing tab
                     setTabs(prev => prev.map(t => ({
@@ -829,6 +829,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   }
                 }
               }}
+              tabColors={Object.fromEntries(
+                Object.entries(tabColors).map(([type, colors]) => [type, colors.border])
+              )}
             />
             {/* Ensure only the centralized floating button is shown for analytics dashboard */}
             <TutorialOverlay

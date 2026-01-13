@@ -109,7 +109,7 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
 /**
  * Calculate resource type distribution
  */
-export function calculateDistribution(resources: any[]): DistributionData[] {
+export function calculateDistribution(resources: any[], tabColors: { [key: string]: string } = {}): DistributionData[] {
   const typeCounts: { [key: string]: number } = {};
   const typeLabels: { [key: string]: string } = {
     lesson: 'Standard Lessons',
@@ -121,16 +121,23 @@ export function calculateDistribution(resources: any[]): DistributionData[] {
     worksheet: 'Worksheets',
     image: 'Images'
   };
-  
-  const typeColors: { [key: string]: string } = {
-    lesson: '#8b5cf6',
-    quiz: '#10b981',
-    rubric: '#f59e0b',
-    kindergarten: '#ec4899',
-    multigrade: '#6366f1',
-    'cross-curricular': '#14b8a6',
-    worksheet: '#06b6d4',
-    image: '#8b5a2b'
+
+  // Map resource types to tool types for color lookup
+  const resourceToToolType: { [key: string]: string } = {
+    lesson: 'lesson-planner',
+    quiz: 'quiz-generator',
+    rubric: 'rubric-generator',
+    kindergarten: 'kindergarten-planner',
+    multigrade: 'multigrade-planner',
+    'cross-curricular': 'cross-curricular-planner',
+    worksheet: 'worksheet-generator',
+    image: 'image-studio'
+  };
+
+  // Get color for a resource type
+  const getResourceColor = (resourceType: string): string => {
+    const toolType = resourceToToolType[resourceType];
+    return tabColors[toolType] || '#6b7280'; // fallback color
   };
 
   resources.forEach(resource => {
@@ -145,7 +152,7 @@ export function calculateDistribution(resources: any[]): DistributionData[] {
     label: typeLabels[type] || type,
     count,
     percentage: Math.round((count / total) * 100),
-    color: typeColors[type] || '#6b7280'
+    color: getResourceColor(type)
   }));
 }
 
