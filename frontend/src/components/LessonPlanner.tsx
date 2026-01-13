@@ -744,7 +744,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <ExportButton
                         dataType="plan"
                         data={{
-                          content: parsedLesson ? lessonToDisplayText(parsedLesson) : generatedPlan,
+                          content: generatedPlan,
                           formData: formData,
                           accentColor: tabColor,
                           curriculumReferences: parsedLesson?.curriculumReferences || [],

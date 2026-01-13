@@ -363,126 +363,72 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     overflow: hidden;
     border-radius: 0.5rem;
     margin-bottom: 2rem;
+    background: linear-gradient(135deg, ${accentColor} 0%, ${accentColor}dd 50%, ${accentColor}bb 100%);
+    padding: 2rem;
   ">
     <div style="
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom right, ${accentColor}, ${accentColor}dd, ${accentColor}bb);
-    "></div>
-    
-    <div style="
-      position: relative;
-      padding: 2rem;
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      margin-bottom: 1rem;
     ">
-      <div style="
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        background-color: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        margin-bottom: 1rem;
-      ">
-        <span style="
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 500;
-        ">${formData.subject}</span>
-      </div>
-      
-      <h1 style="
-        font-size: 2rem;
-        font-weight: 700;
+      <span style="
         color: white;
-        margin: 0.5rem 0;
-        line-height: 1.2;
-      ">${formData.numberOfQuestions}-Question Assessment${!showAnswerKey ? ' (Student Version)' : ''}</h1>
-      
-      <div style="
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 1rem;
-        color: rgba(207, 250, 254, 1);
-        margin-top: 1rem;
-      ">
-        <div style="display: flex; align-items: center;">
-          <div style="
-            width: 0.5rem;
-            height: 0.5rem;
-            background-color: rgba(165, 243, 252, 1);
-            border-radius: 9999px;
-            margin-right: 0.5rem;
-          "></div>
-          <span style="font-size: 0.875rem;">Grade ${formData.gradeLevel}</span>
-        </div>
-        <div style="display: flex; align-items: center;">
-          <div style="
-            width: 0.5rem;
-            height: 0.5rem;
-            background-color: rgba(165, 243, 252, 1);
-            border-radius: 9999px;
-            margin-right: 0.5rem;
-          "></div>
-          <span style="font-size: 0.875rem;">${formData.questionTypes.join(', ')}</span>
-        </div>
-      </div>
-      
-      <div style="
-        margin-top: 1.5rem;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
-      ">
+        font-size: 0.875rem;
+        font-weight: 500;
+      ">${formData.subject}</span>
+    </div>
+
+    <h1 style="
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin: 0.5rem 0;
+      line-height: 1.2;
+    ">${formData.numberOfQuestions}-Question Assessment${!showAnswerKey ? ' (Student Version)' : ''}</h1>
+
+    <div style="
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      color: rgba(207, 250, 254, 1);
+      margin-top: 1rem;
+    ">
+      <div style="display: flex; align-items: center;">
         <div style="
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        ">
-          <div style="
-            color: rgba(207, 250, 254, 1);
-            font-size: 0.875rem;
-          ">
-            <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
-          </div>
-          <div style="
-            display: flex;
-            align-items: center;
-            color: rgba(167, 243, 208, 1);
-            font-size: 0.875rem;
-          ">
-            <div style="
-              width: 0.5rem;
-              height: 0.5rem;
-              background-color: rgba(134, 239, 172, 1);
-              border-radius: 9999px;
-              margin-right: 0.5rem;
-            "></div>
-            <span>Generation Complete</span>
-          </div>
-        </div>
+          width: 0.5rem;
+          height: 0.5rem;
+          background-color: rgba(165, 243, 252, 1);
+          border-radius: 9999px;
+          margin-right: 0.5rem;
+        "></div>
+        <span style="font-size: 0.875rem;">Grade ${formData.gradeLevel}</span>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <div style="
+          width: 0.5rem;
+          height: 0.5rem;
+          background-color: rgba(165, 243, 252, 1);
+          border-radius: 9999px;
+          margin-right: 0.5rem;
+        "></div>
+        <span style="font-size: 0.875rem;">${formData.questionTypes.join(', ')}</span>
       </div>
     </div>
-    
+
     <div style="
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 8rem;
-      height: 8rem;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 9999px;
-      transform: translate(50%, -50%);
-    "></div>
-    <div style="
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 6rem;
-      height: 6rem;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 9999px;
-      transform: translate(-50%, 50%);
-    "></div>
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(207, 250, 254, 1);
+      font-size: 0.875rem;
+    ">
+      <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
+    </div>
   </div>
 
   <!-- Content -->
