@@ -57,7 +57,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         exportData = prepareLessonForExport(
           data.content,
           data.formData,
-          data.accentColor
+          data.accentColor,
+          data.curriculumReferences // ✅ ADD THIS
         );
         title = data.formData.topic
           ? `${data.formData.topic} - Grade ${data.formData.gradeLevel}`

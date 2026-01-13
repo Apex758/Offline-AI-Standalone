@@ -14,6 +14,7 @@ interface RenderOptions {
     duration: string;
     studentCount: string;
   };
+  curriculumReferences?: any[]; // ✅ ADD THIS
 }
 
 /**
@@ -328,6 +329,53 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
     ${htmlContent}
   </div>
 
+  <!-- Curriculum References Section -->
+  ${options.curriculumReferences && options.curriculumReferences.length > 0 ? `
+    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid ${accentColor}33;">
+      <h2 style="
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: ${accentColor}dd;
+      ">Curriculum References:</h2>
+
+      <div style="display: grid; gap: 1rem;">
+        ${options.curriculumReferences.map((ref, idx) => `
+          <div style="
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid ${accentColor}33;
+            background-color: ${accentColor}0a;
+          ">
+            <div style="
+              font-weight: 600;
+              color: ${accentColor}dd;
+              margin-bottom: 0.5rem;
+            ">${idx + 1}. ${ref.displayName || ref.id}</div>
+
+            <div style="
+              font-size: 0.875rem;
+              color: #6B7280;
+              margin-bottom: 0.5rem;
+            ">
+              Grade ${ref.grade} | ${ref.subject} | ${ref.strand}
+            </div>
+
+            ${ref.essentialOutcomes && ref.essentialOutcomes.length > 0 ? `
+              <div style="
+                font-size: 0.875rem;
+                color: #374151;
+                line-height: 1.5;
+              ">
+                <strong>Essential Outcome:</strong> ${ref.essentialOutcomes[0]}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : ''}
+
   <!-- Footer -->
   <div style="
     margin-top: 3rem;
@@ -348,13 +396,15 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
 
 // Export function to use with backend
 export function prepareLessonForExport(
-  text: string, 
-  formData: any, 
-  accentColor: string
+  text: string,
+  formData: any,
+  accentColor: string,
+  curriculumReferences?: any[] // ✅ ADD THIS PARAMETER
 ) {
   const html = generateLessonHTML(text, {
     accentColor,
-    formData
+    formData,
+    curriculumReferences // ✅ PASS IT HERE
   });
 
   return {
