@@ -168,42 +168,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="grade-filter"]',
-        title: 'Grade Level Filter',
-        description: 'Select specific grade levels to view only relevant milestones. Great for grade-specific planning.',
-        position: 'bottom'
-      },
-      {
-        target: '[data-tutorial="subject-filter"]',
-        title: 'Subject Filter',
-        description: 'Filter by subject areas like Language Arts, Mathematics, Science, or Social Studies.',
-        position: 'bottom'
-      },
-      {
-        target: '[data-tutorial="status-filter"]',
-        title: 'Status Filter',
-        description: 'View milestones by status: Not Started, In Progress, Completed, or Skipped.',
-        position: 'bottom'
-      },
-      {
-        target: '[data-tutorial="clear-filters"]',
-        title: 'Clear Filters',
-        description: 'Reset all filters to see your complete curriculum at once.',
-        position: 'left'
-      },
-      {
-        target: '[data-tutorial="collapse-all"]',
-        title: 'Collapse All Nodes',
-        description: 'Quickly collapse the entire curriculum tree to get an overview, or expand sections as needed.',
-        position: 'left'
-      },
-      {
-        target: '[data-tutorial="tree-view"]',
-        title: 'Curriculum Tree View',
-        description: 'Your curriculum is organized hierarchically: Grades → Subjects → Strands → Individual Milestones.',
-        position: 'right'
-      },
-      {
         target: '[data-tutorial="curriculum-tree"]',
         title: 'Interactive Curriculum Tree',
         description: 'Click on grade, subject, or strand nodes to expand and collapse sections. Each level shows progress indicators.',

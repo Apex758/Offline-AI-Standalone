@@ -9,7 +9,6 @@ import type { Milestone, MilestoneTreeNode } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
-import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface CurriculumTrackerProps {
@@ -350,10 +349,6 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   : 0}%
               </div>
             </div>
-            <TutorialButton
-              tutorialId={TUTORIAL_IDS.CURRICULUM_TRACKER}
-              onStartTutorial={() => setShowTutorial(true)}
-            />
           </div>
         </div>
       </div>

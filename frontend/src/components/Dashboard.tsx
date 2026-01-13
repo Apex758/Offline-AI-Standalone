@@ -269,6 +269,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [activeTabId, tabs, settings, isTutorialCompleted]);
 
+  // Auto-show dashboard tutorial when no tabs are open
+  useEffect(() => {
+    if (
+      tabs.length === 0 &&
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.DASHBOARD_MAIN)
+    ) {
+      setShowFirstTimeTutorial(true);
+    }
+  }, [tabs.length, settings, isTutorialCompleted]);
+
   // Close Visual Studio tabs when Visual Studio is disabled
   useEffect(() => {
     if (!settings.visualStudioEnabled) {
@@ -1996,6 +2007,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'resource-manager': TUTORIAL_IDS.RESOURCE_MANAGER,
       'analytics': TUTORIAL_IDS.DASHBOARD_MAIN,
       'curriculum': TUTORIAL_IDS.CURRICULUM,
+      'curriculum-tracker': TUTORIAL_IDS.CURRICULUM_TRACKER,
       'multigrade-planner': TUTORIAL_IDS.MULTIGRADE_PLANNER,
       'cross-curricular-planner': TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER,
       'settings': TUTORIAL_IDS.SETTINGS
@@ -2037,8 +2049,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   
     return (
       <TutorialButton
-        tutorialId={tutorialId}
-        onStartTutorial={() => startTutorial(tutorialId)}
+        tutorialId={tutorialId as TutorialId}
+        onStartTutorial={() => startTutorial(tutorialId as TutorialId)}
         position="bottom-right"
       />
     );
