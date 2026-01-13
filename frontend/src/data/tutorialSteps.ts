@@ -74,19 +74,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         description: 'Each card displays a summary of your resource. Click to view full details, or use the action buttons for quick operations.',
         position: 'top'
       },
-      {
-        target: '[data-tutorial="resource-actions"]',
-        title: 'Quick Actions',
-        description: 'Favorite important resources, edit content, export to PDF or Word, or delete items you no longer need.',
-        position: 'left',
-        actionHint: '👆 Try these actions!'
-      },
-      {
-        target: '[data-tutorial="resource-favorites"]',
-        title: 'Favorites Filter',
-        description: 'Toggle this to quickly access your most important resources. Perfect for frequently used lesson plans!',
-        position: 'bottom'
-      }
+
     ]
   },
   
