@@ -35,13 +35,19 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
   cleanText = cleanText.replace(/^Below is (?:the |a )?lesson plan.*?:\s*/i, '');
 
   // Extract the lesson title from "Lesson Plan: X" if present
-  let lessonTitle = formData.topic || 'Lesson Plan';
+  // Match the preview component's title logic
+  let lessonTitle = formData.topic 
+    ? `Exploring ${formData.topic}` 
+    : 'Lesson Plan';
+
+    // If AI generated a "Lesson Plan: X" line, extract and use that instead
   const titleMatch = cleanText.match(/^Lesson Plan:\s*(.+?)$/m);
   if (titleMatch && titleMatch[1]) {
     lessonTitle = titleMatch[1].trim();
-    // Remove the "Lesson Plan: X" line from content
-    cleanText = cleanText.replace(/^Lesson Plan:\s*.+?$/m, '').trim();
   }
+
+  // Always remove the "Lesson Plan: X" line from content if present
+  cleanText = cleanText.replace(/^Lesson Plan:\s*.+?$/m, '').trim();
 
   const lines = cleanText.split('\n');
   let htmlContent = '';
@@ -53,6 +59,11 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
       htmlContent += '<div style="height: 12px;"></div>';
       return;
     }
+
+    if (trimmed.match(/^Lesson Plan:\s*.+/i)) {
+        return;
+    }
+
 
     // Main section headings (e.g., **Learning Objectives:**, **Materials:**)
     if (trimmed.match(/^\*\*(.+?)\*\*$/)) {
