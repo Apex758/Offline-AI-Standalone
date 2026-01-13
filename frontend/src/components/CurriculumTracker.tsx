@@ -7,6 +7,10 @@ import {
 import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
+import { useSettings } from '../contexts/SettingsContext';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 
 interface CurriculumTrackerProps {
   tabId: string;
@@ -19,6 +23,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   savedData,
   onDataChange
 }) => {
+  const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const [showTutorial, setShowTutorial] = useState(false);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -36,6 +42,21 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   useEffect(() => {
     loadMilestones();
   }, [filters]);
+
+  // Tutorial auto-show logic
+  useEffect(() => {
+    if (
+      settings.tutorials.tutorialPreferences.autoShowOnFirstUse &&
+      !isTutorialCompleted(TUTORIAL_IDS.CURRICULUM_TRACKER)
+    ) {
+      setShowTutorial(true);
+    }
+  }, [settings, isTutorialCompleted]);
+
+  const handleTutorialComplete = () => {
+    markTutorialComplete(TUTORIAL_IDS.CURRICULUM_TRACKER);
+    setShowTutorial(false);
+  };
 
   const loadMilestones = async () => {
     setLoading(true);
@@ -204,6 +225,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           ? 'border-blue-500 bg-blue-50'
           : 'border-gray-200 hover:border-blue-300 bg-white'
       }`}
+      data-tutorial="milestone-item"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3 flex-1">
@@ -221,23 +243,25 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <select
             value={milestone.status}
-            onChange={(e) => handleUpdateMilestone(milestone.id, { status: e.target.value })}
+            onChange={(e) => handleUpdateMilestone(milestone.id, { status: e.target.value as any })}
             className={`px-3 py-1 rounded-lg border-2 font-medium text-sm ${getStatusColor(milestone.status)}`}
+            data-tutorial="milestone-status"
           >
             <option value="not_started">Not Started</option>
             <option value="in_progress">In Progress</option>
             <option value="completed">Completed</option>
             <option value="skipped">Skipped</option>
           </select>
-          
+
           <button
             onClick={() => setSelectedMilestone(milestone)}
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="Edit details"
+            data-tutorial="edit-milestone"
           >
             <Edit2 className="w-4 h-4 text-blue-600" />
           </button>
@@ -255,17 +279,18 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         <div
           className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
           onClick={() => hasChildren && toggleNode(node.id)}
+          data-tutorial={node.type === 'grade' ? 'grade-node' : node.type === 'subject' ? 'subject-node' : 'strand-node'}
         >
           {hasChildren && (
             isExpanded ? <ChevronDown className="w-5 h-5 text-gray-600" /> : <ChevronRight className="w-5 h-5 text-gray-600" />
           )}
-          
+
           <BookOpen className="w-5 h-5 text-indigo-600" />
-          
+
           <span className="font-semibold text-gray-900 flex-1">  {node.type === 'grade' ? `Grade ${node.label}` : node.label}</span>
-          
+
           {node.progress && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2" data-tutorial="node-progress">
               <div className="text-sm text-gray-600">
                 {node.progress.completed}/{node.progress.total}
               </div>
@@ -306,7 +331,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4" data-tutorial="curriculum-tracker-header">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Target className="w-8 h-8" />
@@ -315,29 +340,34 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               <p className="text-indigo-100 text-sm">Track your progress through the curriculum</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2" data-tutorial="overall-progress">
               <div className="text-sm text-indigo-100">Overall Progress</div>
               <div className="text-2xl font-bold">
-                {milestones.length > 0 
+                {milestones.length > 0
                   ? Math.round((milestones.filter(m => m.status === 'completed').length / milestones.length) * 100)
                   : 0}%
               </div>
             </div>
+            <TutorialButton
+              tutorialId={TUTORIAL_IDS.CURRICULUM_TRACKER}
+              onStartTutorial={() => setShowTutorial(true)}
+            />
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-4" data-tutorial="filters-section">
         <div className="flex items-center space-x-4">
           <Filter className="w-5 h-5 text-gray-600" />
-          
+
           <select
             value={filters.grade}
             onChange={(e) => setFilters({ ...filters, grade: e.target.value })}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            data-tutorial="grade-filter"
           >
             <option value="">All Grades</option>
             {uniqueGrades.map(grade => (
@@ -349,6 +379,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             value={filters.subject}
             onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            data-tutorial="subject-filter"
           >
             <option value="">All Subjects</option>
             {uniqueSubjects.map(subject => (
@@ -360,6 +391,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            data-tutorial="status-filter"
           >
             <option value="">All Statuses</option>
             <option value="not_started">Not Started</option>
@@ -372,6 +404,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             <button
               onClick={() => setFilters({ grade: '', subject: '', status: '' })}
               className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+              data-tutorial="clear-filters"
             >
               Clear Filters
             </button>
@@ -379,6 +412,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               onClick={() => setExpandedNodes(new Set())}
               className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center space-x-2"
               title="Collapse All"
+              data-tutorial="collapse-all"
             >
               <ChevronUp className="w-4 h-4" />
               <span>Collapse All</span>
@@ -388,7 +422,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       </div>
 
       {/* Tree View */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6" data-tutorial="tree-view">
         <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           {treeData.length === 0 ? (
             <div className="text-center py-16">
@@ -397,7 +431,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2" data-tutorial="curriculum-tree">
               {treeData.map(renderNode)}
             </div>
           )}
@@ -409,6 +443,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedMilestone(null)}
+          data-tutorial="edit-modal"
         >
           <div
             className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6"
@@ -417,7 +452,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               {selectedMilestone.topic_title}
             </h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -426,9 +461,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                 <select
                   value={selectedMilestone.status}
                   onChange={(e) => {
-                    handleUpdateMilestone(selectedMilestone.id, { status: e.target.value });
+                    handleUpdateMilestone(selectedMilestone.id, { status: e.target.value as any });
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  data-tutorial="modal-status"
                 >
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
@@ -448,6 +484,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   }}
                   placeholder="Add notes about this milestone..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-32 resize-none"
+                  data-tutorial="modal-notes"
                 />
               </div>
 
@@ -462,6 +499,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                     setSelectedMilestone({ ...selectedMilestone, due_date: e.target.value });
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  data-tutorial="modal-due-date"
                 />
               </div>
 
@@ -474,12 +512,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                     });
                   }}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                  data-tutorial="save-changes"
                 >
                   Save Changes
                 </button>
                 <button
                   onClick={() => setSelectedMilestone(null)}
                   className="px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold transition-colors"
+                  data-tutorial="cancel-edit"
                 >
                   Cancel
                 </button>
@@ -488,6 +528,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Tutorial Components */}
+      <TutorialOverlay
+        steps={tutorials[TUTORIAL_IDS.CURRICULUM_TRACKER].steps}
+        onComplete={handleTutorialComplete}
+        autoStart={showTutorial}
+        showFloatingButton={false}
+      />
     </div>
   );
 };

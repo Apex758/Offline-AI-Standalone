@@ -8,6 +8,7 @@ export const TUTORIAL_IDS = {
   // Tool-specific tutorials
   ANALYTICS: 'analytics-dashboard',
   CURRICULUM: 'curriculum-viewer',
+  CURRICULUM_TRACKER: 'curriculum-tracker',
   LESSON_PLANNER: 'lesson-planner',
   KINDERGARTEN_PLANNER: 'kindergarten-planner',
   MULTIGRADE_PLANNER: 'multigrade-planner',
@@ -142,7 +143,153 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       }
     ]
   },
-  
+
+  [TUTORIAL_IDS.CURRICULUM_TRACKER]: {
+    id: TUTORIAL_IDS.CURRICULUM_TRACKER,
+    name: 'Curriculum Tracker',
+    description: 'Track your progress through the curriculum milestones',
+    steps: [
+      {
+        target: '[data-tutorial="curriculum-tracker-header"]',
+        title: 'Welcome to Curriculum Tracker',
+        description: 'Track your progress through the OECS curriculum with this comprehensive milestone tracking tool. Monitor completion status, set due dates, and stay organized.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="overall-progress"]',
+        title: 'Overall Progress Overview',
+        description: 'See your total curriculum completion percentage at a glance. This updates automatically as you mark milestones complete.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="filters-section"]',
+        title: 'Filter Your Curriculum',
+        description: 'Use these filters to focus on specific grades, subjects, or milestone statuses. Perfect for planning your teaching priorities.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="grade-filter"]',
+        title: 'Grade Level Filter',
+        description: 'Select specific grade levels to view only relevant milestones. Great for grade-specific planning.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="subject-filter"]',
+        title: 'Subject Filter',
+        description: 'Filter by subject areas like Language Arts, Mathematics, Science, or Social Studies.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="status-filter"]',
+        title: 'Status Filter',
+        description: 'View milestones by status: Not Started, In Progress, Completed, or Skipped.',
+        position: 'bottom'
+      },
+      {
+        target: '[data-tutorial="clear-filters"]',
+        title: 'Clear Filters',
+        description: 'Reset all filters to see your complete curriculum at once.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="collapse-all"]',
+        title: 'Collapse All Nodes',
+        description: 'Quickly collapse the entire curriculum tree to get an overview, or expand sections as needed.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="tree-view"]',
+        title: 'Curriculum Tree View',
+        description: 'Your curriculum is organized hierarchically: Grades → Subjects → Strands → Individual Milestones.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="curriculum-tree"]',
+        title: 'Interactive Curriculum Tree',
+        description: 'Click on grade, subject, or strand nodes to expand and collapse sections. Each level shows progress indicators.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="grade-node"]',
+        title: 'Grade Level Nodes',
+        description: 'Each grade shows overall progress across all subjects. Click to expand and see subject breakdowns.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="subject-node"]',
+        title: 'Subject Nodes',
+        description: 'Subject areas within each grade. Progress bars show completion status for that subject.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="node-progress"]',
+        title: 'Progress Indicators',
+        description: 'Visual progress bars and percentages help you track completion at every level of the curriculum.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="milestone-item"]',
+        title: 'Individual Milestones',
+        description: 'These are the specific learning objectives and topics you need to cover. Each milestone can be tracked individually.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="milestone-status"]',
+        title: 'Update Milestone Status',
+        description: 'Change milestone status from Not Started to In Progress, Completed, or Skipped. This updates your progress tracking.',
+        position: 'top',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Try changing a status!'
+      },
+      {
+        target: '[data-tutorial="edit-milestone"]',
+        title: 'Edit Milestone Details',
+        description: 'Click the edit button to add notes, set due dates, or modify milestone information.',
+        position: 'left',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Click to edit!'
+      },
+      {
+        target: '[data-tutorial="edit-modal"]',
+        title: 'Milestone Edit Modal',
+        description: 'Here you can add personal notes, set due dates, and update milestone status in detail.',
+        position: 'center'
+      },
+      {
+        target: '[data-tutorial="modal-status"]',
+        title: 'Modal Status Selector',
+        description: 'Choose the current status of this milestone from the dropdown menu.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="modal-notes"]',
+        title: 'Add Notes',
+        description: 'Add personal notes about this milestone - teaching tips, resources needed, or observations.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="modal-due-date"]',
+        title: 'Set Due Date',
+        description: 'Set a target completion date for this milestone to help with planning and prioritization.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="save-changes"]',
+        title: 'Save Changes',
+        description: 'Save your edits to update the milestone with new notes, due date, or status.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="cancel-edit"]',
+        title: 'Cancel Edit',
+        description: 'Close the edit modal without saving changes.',
+        position: 'top'
+      }
+    ]
+  },
+
   [TUTORIAL_IDS.LESSON_PLANNER]: {
     id: TUTORIAL_IDS.LESSON_PLANNER,
     name: 'Lesson Planner',
