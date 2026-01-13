@@ -48,7 +48,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         target: '[data-tutorial="resource-welcome"]',
         title: 'Welcome to Resource Manager',
         description: 'This is your central hub for managing all saved lesson plans, quizzes, rubrics, and other teaching materials. Easily search, filter, and organize your resources.',
-        position: 'bottom'
+        position: 'center'
       },
       {
         target: '[data-tutorial="resource-search"]',
@@ -741,7 +741,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="analytics-chart-display"]',
         title: 'Multiple Chart Views',
-        description: 'View 1 shows Resource Creation Trends over time. View 2 shows Resource Type Distribution and Lesson Plan Comparison side-by-side.',
+        description: 'View 1 shows Resource Creation Trends over time. View 2 shows Resource Type Distribution in the form of a pie chart.',
         position: 'top'
       },
       {

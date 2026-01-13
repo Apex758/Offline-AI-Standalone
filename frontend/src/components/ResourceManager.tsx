@@ -5,6 +5,11 @@ import {
   Link2, RefreshCw, ArrowUpDown, X, Image
 } from 'lucide-react';
 import axios from 'axios';
+import { TutorialOverlay } from './TutorialOverlay';
+import { TutorialButton } from './TutorialButton';
+import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { useSettings } from '../contexts/SettingsContext';
+import { useTutorials } from '../contexts/TutorialContext';
 
 interface ResourceManagerProps {
   tabId: string;
@@ -34,6 +39,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   onViewResource,
   onEditResource
 }) => {
+  const { startTutorial } = useTutorials();
+  const { settings } = useSettings();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -279,7 +286,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-6">
+      <div className="bg-white border-b border-gray-200 p-6" data-tutorial="resource-welcome">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Resource Manager</h1>
@@ -558,6 +565,13 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Tutorial Button */}
+      <TutorialButton
+        tutorialId={TUTORIAL_IDS.RESOURCE_MANAGER}
+        onStartTutorial={() => startTutorial(TUTORIAL_IDS.RESOURCE_MANAGER)}
+        position="bottom-right"
+      />
     </div>
   );
 };
