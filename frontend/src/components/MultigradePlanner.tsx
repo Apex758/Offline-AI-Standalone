@@ -432,6 +432,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
 
+  // Add timeout handling for stuck generations
+  const [generationTimeout, setGenerationTimeout] = useState<NodeJS.Timeout | null>(null);
+
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     subject: '',
@@ -487,13 +490,20 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   // Finalization effect - runs when streaming completes
   useEffect(() => {
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
+      console.log('Multigrade streaming completed, setting generated plan');
       setGeneratedPlan(streamingPlan);
       const parsed = parseMultigradeContent(streamingPlan, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+
+      // Clear any pending timeout
+      if (generationTimeout) {
+        clearTimeout(generationTimeout);
+        setGenerationTimeout(null);
+      }
     }
-  }, [streamingPlan]);
+  }, [streamingPlan, tabId, ENDPOINT, formData, getIsStreaming, clearStreaming, generationTimeout]);
 
   // Auto-enable editing mode if startInEditMode flag is set
   useEffect(() => {
@@ -502,6 +512,15 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       setIsEditing(true);
     }
   }, [savedData?.startInEditMode, parsedPlan, isEditing]);
+
+  // Clear timeout when streaming completes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (generationTimeout) {
+        clearTimeout(generationTimeout);
+      }
+    };
+  }, [generationTimeout]);
 
   const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Art', 'Music', 'Physical Education'];
   
@@ -751,6 +770,22 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
     const prompt = buildMultigradePrompt(multigradeFormData);
 
+    // Set a timeout to force completion if stuck (2 minutes)
+    const timeout = setTimeout(() => {
+      console.log('Multigrade generation timeout, forcing completion');
+      const currentStreaming = getStreamingContent(tabId, ENDPOINT);
+      if (currentStreaming && getIsStreaming(tabId, ENDPOINT)) {
+        setGeneratedPlan(currentStreaming);
+        const parsed = parseMultigradeContent(currentStreaming, formData);
+        if (parsed) setParsedPlan(parsed);
+        clearStreaming(tabId, ENDPOINT);
+        setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+      }
+      setGenerationTimeout(null);
+    }, 120000);
+
+    setGenerationTimeout(timeout);
+
     try {
       ws.send(JSON.stringify({
         prompt,
@@ -758,6 +793,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       }));
     } catch (error) {
       console.error('Failed to send multigrade plan request:', error);
+      clearTimeout(timeout);
+      setGenerationTimeout(null);
     }
   };
 
