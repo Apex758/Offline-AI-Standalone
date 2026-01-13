@@ -180,10 +180,31 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'right'
       },
       {
+        target: '[data-tutorial="grade-node"]',
+        title: 'Expand a Grade Node',
+        description: 'Click on any grade node to expand it and reveal the subject areas within that grade.',
+        position: 'right',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Click a grade node!'
+      },
+      {
         target: '[data-tutorial="subject-node"]',
-        title: 'Subject Nodes',
-        description: 'Subject areas within each grade. Progress bars show completion status for that subject.',
-        position: 'right'
+        title: 'Expand a Subject Node',
+        description: 'Click on any subject node to expand it and reveal the strands or milestones within that subject.',
+        position: 'right',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Click a subject node!'
+      },
+      {
+        target: '[data-tutorial="strand-node"]',
+        title: 'Expand a Strand',
+        description: 'Click on any strand to expand it and reveal the individual milestones within that strand.',
+        position: 'right',
+        interactive: true,
+        waitForAction: 'click',
+        actionHint: '👆 Click a strand!'
       },
       {
         target: '[data-tutorial="node-progress"]',
