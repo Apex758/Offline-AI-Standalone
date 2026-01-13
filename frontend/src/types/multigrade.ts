@@ -77,12 +77,37 @@ function cleanAIOutput(text: string): string {
 }
 
 /**
- * Extract numbered section (e.g., "1. SHARED LEARNING OBJECTIVES")
+ * Extract numbered section (e.g., "1. SHARED LEARNING OBJECTIVES" or "Shared Learning Objectives:")
  */
 function extractNumberedSection(text: string, sectionNumber: number): string {
-  const regex = new RegExp(`${sectionNumber}\\.\\s+[A-Z\\s]+([\\s\\S]*?)(?=${sectionNumber + 1}\\.|$)`, 'i');
-  const match = text.match(regex);
-  return match ? match[1].trim() : '';
+  // Try numbered format first (e.g., "1. SHARED LEARNING OBJECTIVES")
+  const numberedRegex = new RegExp(`${sectionNumber}\\.\\s+[A-Z\\s]+([\\s\\S]*?)(?=${sectionNumber + 1}\\.|$)`, 'i');
+  const numberedMatch = text.match(numberedRegex);
+  if (numberedMatch) {
+    return numberedMatch[1].trim();
+  }
+  
+  // Fallback to section headers without numbers
+  const sectionHeaders = [
+    'Shared Learning Objectives:',
+    'Materials and Resources:',
+    'Lesson Procedures:',
+    'Assessment Strategies:',
+    'Differentiation Across Grades:',
+    'Classroom Management Strategies:',
+    'Extensions and Modifications:'
+  ];
+  
+  if (sectionNumber >= 1 && sectionNumber <= sectionHeaders.length) {
+    const header = sectionHeaders[sectionNumber - 1];
+    const headerRegex = new RegExp(`${header.replace(':', '\\s*:?')}([\\s\\S]*?)(?=${sectionHeaders[sectionNumber] || '$'})`, 'i');
+    const headerMatch = text.match(headerRegex);
+    if (headerMatch) {
+      return headerMatch[1].trim();
+    }
+  }
+  
+  return '';
 }
 
 /**
@@ -135,7 +160,7 @@ function extractBulletList(text: string): string[] {
   
   lines.forEach(line => {
     const trimmed = line.trim();
-    const bulletMatch = trimmed.match(/^[\*\-•]\s+(.+)/);
+    const bulletMatch = trimmed.match(/^[*\-•]\s+(.+)/);
     if (bulletMatch) {
       items.push(bulletMatch[1].trim());
     }

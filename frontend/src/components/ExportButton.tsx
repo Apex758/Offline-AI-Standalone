@@ -9,14 +9,16 @@ import { prepareRubricForExport } from '../utils/rubricHtmlRenderer';
 import { prepareMultigradeForExport } from '../utils/multigradeHtmlRenderer';
 
 interface ExportButtonProps {
-  dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular';
+  dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular' | 'worksheet';
   data: {
     content: string;
     formData: any;
     accentColor: string;
     parsedQuiz?: any;
+    parsedWorksheet?: any;
     curriculumReferences?: any;
-    exportOptions?: {  // ADD THIS
+    generatedImages?: string[];
+    exportOptions?: {
       showAnswerKey?: boolean;
       showExplanations?: boolean;
       boldCorrectAnswers?: boolean;
@@ -49,7 +51,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           data.content,
           data.parsedWorksheet,
           data.formData,
-          data.accentColor
+          data.accentColor,
+          data.generatedImages || []
         );
         title = data.formData.subject
           ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`

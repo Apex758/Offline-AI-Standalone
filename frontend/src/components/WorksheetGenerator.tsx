@@ -496,7 +496,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         timestamp: new Date().toISOString(),
         formData,
         generatedWorksheet,
-        parsedWorksheet
+        parsedWorksheet,
+        generatedImages
       };
       
       await axios.post('http://localhost:8000/api/worksheet-history', worksheetData);
@@ -523,6 +524,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setFormData(history.formData);
     setGeneratedWorksheet(history.generatedWorksheet);
     setParsedWorksheet(history.parsedWorksheet);
+    setGeneratedImages(history.generatedImages || []);
     setCurrentWorksheetId(history.id);
     setHistoryOpen(false);
   };
@@ -1013,15 +1015,16 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto relative">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-                <Eye className="w-5 h-5 mr-2" />
-                Template Preview
-              </h3>
-              <p className="text-sm text-gray-500">Live layout preview</p>
-            </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <Eye className="w-5 h-5 mr-2" />
+              Template Preview
+            </h3>
+            <p className="text-sm text-gray-500">Live layout preview</p>
+          </div>
+          <div className="flex items-center gap-2">
             {(generatedWorksheet || parsedWorksheet || clearedWorksheet) && (
-              <div className="flex items-center gap-2">
+              <>
                 <button
                   onClick={saveWorksheet}
                   disabled={saveStatus === 'saving'}
@@ -1051,18 +1054,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     content: generatedWorksheet,
                     parsedWorksheet: parsedWorksheet,
                     formData: formData,
-                    accentColor: '#3b82f6'
+                    accentColor: '#3b82f6',
+                    generatedImages: generatedImages
                   }}
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
                 />
-                
-                <button
-                  onClick={() => setHistoryOpen(!historyOpen)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition"
-                  title="Worksheet History"
-                >
-                  <History className="w-5 h-5 text-gray-600" />
-                </button>
                 
                 <button
                   onClick={handleClearWorksheet}
@@ -1083,9 +1079,18 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     Back
                   </button>
                 )}
-              </div>
+              </>
             )}
+            
+            <button
+              onClick={() => setHistoryOpen(!historyOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition"
+              title="Worksheet History"
+            >
+              <History className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
+        </div>
         </div>
 
         {/* Template Preview Content */}
