@@ -1,8 +1,7 @@
 // utils/quizHtmlRenderer.ts
 /**
- * Unified HTML renderer for quiz content
- * Generates HTML that matches the frontend display exactly
- * Used for both screen display and PDF/DOCX export
+ * Unified HTML renderer for quiz content with conditional rendering
+ * Supports toggling answer keys, explanations, and correct answer highlighting
  */
 
 interface RenderOptions {
@@ -13,14 +12,39 @@ interface RenderOptions {
     numberOfQuestions: string;
     questionTypes: string[];
   };
+  showAnswerKey?: boolean;
+  showExplanations?: boolean;
+  boldCorrectAnswers?: boolean;
 }
 
-export function generateQuizHTML(text: string, options: RenderOptions): string {
-  if (!text) return '';
+interface ParsedQuiz {
+  questions: QuizQuestion[];
+  answerKey: AnswerKeyEntry[];
+}
 
-  const { accentColor, formData } = options;
+interface QuizQuestion {
+  number: number;
+  text: string;
+  options: QuizOption[];
+}
 
-  // Clean the text (remove system prompts, etc.)
+interface QuizOption {
+  letter: string;
+  text: string;
+}
+
+interface AnswerKeyEntry {
+  questionNumber: number;
+  correctAnswer: string;
+  explanation: string[];
+}
+
+/**
+ * Phase 1: Parse quiz content into structured data
+ * Handles INLINE format where answers appear immediately after questions
+ */
+function parseQuizContent(text: string): ParsedQuiz {
+  // Clean the text
   let cleanText = text;
   if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
     cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
@@ -33,35 +57,239 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
   cleanText = cleanText.replace(/^The following (?:is|are|questions? )?.*?:\s*/i, '');
 
   const lines = cleanText.split('\n');
+  const questions: QuizQuestion[] = [];
+  const answerKey: AnswerKeyEntry[] = [];
+  
+  let currentQuestion: QuizQuestion | null = null;
+  let currentAnswerEntry: AnswerKeyEntry | null = null;
+  let parsingOptions = false;
+  let parsingAnswer = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    
+    if (!trimmed) continue;
+
+    // New question - starts with "Question N:"
+    if (trimmed.match(/^Question (\d+):/)) {
+      // Save previous question and answer
+      if (currentQuestion) {
+        questions.push(currentQuestion);
+      }
+      if (currentAnswerEntry) {
+        answerKey.push(currentAnswerEntry);
+      }
+
+      // Start new question
+      const num = parseInt(trimmed.match(/^Question (\d+):/)?.[1] || '0');
+      const questionText = trimmed.replace(/^Question \d+:\s*/, '');
+      
+      currentQuestion = { 
+        number: num, 
+        text: questionText, 
+        options: [] 
+      };
+      
+      currentAnswerEntry = { 
+        questionNumber: num, 
+        correctAnswer: '', 
+        explanation: [] 
+      };
+      
+      parsingOptions = questionText.length > 0; // If question text exists, next lines might be options
+      parsingAnswer = false;
+      continue;
+    }
+
+    // Answer options - A), B), C), D)
+    if (trimmed.match(/^[A-D]\)/) && currentQuestion) {
+      const letter = trimmed.substring(0, 1);
+      const text = trimmed.substring(2).trim();
+      currentQuestion.options.push({ letter, text });
+      parsingOptions = true;
+      continue;
+    }
+
+    // Correct Answer
+    if (trimmed.match(/^Correct Answer:\s*([A-D]|True|False)/i) && currentAnswerEntry) {
+      const answerMatch = trimmed.match(/^Correct Answer:\s*([A-D]|True|False)/i);
+      if (answerMatch) {
+        currentAnswerEntry.correctAnswer = answerMatch[1];
+      }
+      parsingOptions = false;
+      parsingAnswer = true;
+      continue;
+    }
+
+    // Sample Answer (for open-ended)
+    if (trimmed.match(/^Sample Answer:/i)) {
+      parsingOptions = false;
+      parsingAnswer = true;
+      continue;
+    }
+
+    // Answer (for fill-in-blank)
+    if (trimmed.match(/^Answer:/i) && !trimmed.match(/^Correct Answer:/i) && currentAnswerEntry) {
+      const answerText = trimmed.replace(/^Answer:\s*/i, '');
+      if (answerText) {
+        currentAnswerEntry.correctAnswer = answerText;
+      }
+      parsingAnswer = true;
+      continue;
+    }
+
+    // Explanation
+    if (trimmed.match(/^Explanation:/i) && currentAnswerEntry) {
+      const explanationText = trimmed.replace(/^Explanation:\s*/i, '');
+      if (explanationText) {
+        currentAnswerEntry.explanation.push(explanationText);
+      }
+      parsingAnswer = true;
+      continue;
+    }
+
+    // Key Points
+    if (trimmed.match(/^Key Points:/i)) {
+      parsingAnswer = true;
+      continue;
+    }
+
+    // Points (metadata - skip)
+    if (trimmed.match(/^Points:/i)) {
+      continue;
+    }
+
+    // Continuation of question text (before options start)
+    if (currentQuestion && !parsingOptions && !parsingAnswer && currentQuestion.options.length === 0) {
+      currentQuestion.text += ' ' + trimmed;
+    }
+    
+    // Continuation of explanation or answer content
+    if (parsingAnswer && currentAnswerEntry && trimmed) {
+      currentAnswerEntry.explanation.push(trimmed);
+    }
+  }
+
+  // Push last items
+  if (currentQuestion) {
+    questions.push(currentQuestion);
+  }
+  if (currentAnswerEntry) {
+    answerKey.push(currentAnswerEntry);
+  }
+
+  return { questions, answerKey };
+}
+
+/**
+ * Phase 2: Render HTML with conditional options
+ */
+export function generateQuizHTML(text: string, options: RenderOptions): string {
+  if (!text) return '';
+
+  const { 
+    accentColor, 
+    formData,
+    showAnswerKey = true,
+    showExplanations = true,
+    boldCorrectAnswers = false
+  } = options;
+
+  // Parse the quiz
+  const parsed = parseQuizContent(text);
+  
+  // Create correct answer lookup map
+  const correctAnswersMap = new Map<number, string>();
+  parsed.answerKey.forEach(entry => {
+    correctAnswersMap.set(entry.questionNumber, entry.correctAnswer);
+  });
+
   let htmlContent = '';
 
-  lines.forEach((line) => {
-    const trimmed = line.trim();
+  // Render Questions Section
+  htmlContent += `
+    <h2 style="
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      color: ${accentColor}dd;
+      border-bottom: 2px solid ${accentColor}33;
+    ">Questions</h2>
+  `;
+
+  parsed.questions.forEach(question => {
+    const correctLetter = correctAnswersMap.get(question.number);
     
-    if (!trimmed) {
-      htmlContent += '<div style="height: 12px;"></div>';
-      return;
-    }
+    // Question heading
+    htmlContent += `
+      <h3 style="
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        color: ${accentColor}cc;
+        background-color: ${accentColor}0d;
+      ">Question ${question.number}:</h3>
+    `;
 
-    // Main section headings (e.g., **Questions**, **Answer Key**)
-    if (trimmed.match(/^\*\*(.+)\*\*$/)) {
-      const title = trimmed.replace(/\*\*/g, '');
+    // Question text
+    if (question.text) {
       htmlContent += `
-        <h2 style="
-          font-size: 1.25rem;
-          font-weight: 700;
-          margin-top: 2rem;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
-          color: ${accentColor}dd;
-          border-bottom: 2px solid ${accentColor}33;
-        ">${title}</h2>
+        <p style="
+          color: #374151;
+          line-height: 1.625;
+          margin-bottom: 0.75rem;
+          margin-left: 1.5rem;
+        ">${question.text}</p>
       `;
-      return;
     }
 
-    // Question numbers (e.g., Question 1:)
-    if (trimmed.match(/^Question \d+:/)) {
+    // Options
+    question.options.forEach(option => {
+      const isCorrect = boldCorrectAnswers && option.letter === correctLetter;
+      
+      htmlContent += `
+        <div style="
+          margin-left: 1.5rem;
+          margin-bottom: 0.5rem;
+          display: flex;
+          align-items: flex-start;
+        ">
+          <span style="
+            margin-right: 0.75rem;
+            font-weight: ${isCorrect ? '700' : '600'};
+            color: ${isCorrect ? accentColor : accentColor + 'cc'};
+            ${isCorrect ? `background-color: ${accentColor}15; padding: 0.25rem 0.5rem; border-radius: 0.25rem;` : ''}
+          ">${option.letter})</span>
+          <span style="
+            color: #374151;
+            font-weight: ${isCorrect ? '600' : 'normal'};
+          ">${option.text}</span>
+        </div>
+      `;
+    });
+  });
+
+  // Render Answer Key Section (if enabled)
+  if (showAnswerKey && parsed.answerKey.length > 0) {
+    htmlContent += `
+      <div style="height: 24px;"></div>
+      <h2 style="
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        color: ${accentColor}dd;
+        border-bottom: 2px solid ${accentColor}33;
+      ">Answer Key</h2>
+    `;
+
+    parsed.answerKey.forEach(entry => {
       htmlContent += `
         <h3 style="
           font-size: 1.125rem;
@@ -72,103 +300,43 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
           border-radius: 0.5rem;
           color: ${accentColor}cc;
           background-color: ${accentColor}0d;
-        ">${trimmed}</h3>
+        ">Question ${entry.questionNumber}:</h3>
       `;
-      return;
-    }
 
-    // Answer options (A), B), C), D))
-    if (trimmed.match(/^[A-D]\)/)) {
-      const letter = trimmed.substring(0, 2);
-      const content = trimmed.substring(2).trim();
+      // Correct answer
       htmlContent += `
         <div style="
           margin-left: 1.5rem;
-          margin-bottom: 0.5rem;
-          display: flex;
-          align-items: flex-start;
+          margin-bottom: 0.75rem;
         ">
+          <span style="font-weight: 600; color: ${accentColor};">Correct Answer: </span>
           <span style="
-            margin-right: 0.75rem;
-            font-weight: 600;
-            color: ${accentColor}cc;
-          ">${letter}</span>
-          <span style="color: #374151;">${content}</span>
-        </div>
-      `;
-      return;
-    }
-
-    // Bullet points (not bold)
-    if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
-      const content = trimmed.replace(/^\s*\*\s+/, '');
-      htmlContent += `
-        <div style="
-          margin-bottom: 0.5rem;
-          display: flex;
-          align-items: flex-start;
-          margin-left: 1rem;
-        ">
-          <span style="
-            margin-right: 0.75rem;
-            margin-top: 0.375rem;
             font-weight: 700;
-            font-size: 0.875rem;
-            color: ${accentColor}99;
-          ">•</span>
-          <span style="
-            color: #374151;
-            line-height: 1.625;
-          ">${content}</span>
-        </div>
-      `;
-      return;
-    }
-
-    // Numbered items
-    if (trimmed.match(/^\d+\./)) {
-      const number = trimmed.match(/^\d+\./)?.[0] || '';
-      const content = trimmed.replace(/^\d+\.\s*/, '');
-      htmlContent += `
-        <div style="
-          margin-bottom: 0.75rem;
-          display: flex;
-          align-items: flex-start;
-          margin-left: 1rem;
-        ">
-          <span style="
-            margin-right: 0.75rem;
-            font-weight: 600;
-            min-width: 2rem;
+            color: ${accentColor};
+            background-color: ${accentColor}15;
+            padding: 0.25rem 0.75rem;
             border-radius: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            color: ${accentColor}cc;
-            background-color: ${accentColor}0d;
-          ">${number}</span>
-          <span style="
-            color: #374151;
-            line-height: 1.625;
-            padding-top: 0.25rem;
-          ">${content}</span>
+          ">${entry.correctAnswer}</span>
         </div>
       `;
-      return;
-    }
 
-    // Regular paragraphs
-    if (trimmed.length > 0) {
-      htmlContent += `
-        <p style="
-          color: #374151;
-          line-height: 1.625;
-          margin-bottom: 0.75rem;
-        ">${trimmed}</p>
-      `;
-    }
-  });
+      // Explanation (if enabled)
+      if (showExplanations && entry.explanation.length > 0) {
+        entry.explanation.forEach(line => {
+          htmlContent += `
+            <p style="
+              color: #374151;
+              line-height: 1.625;
+              margin-bottom: 0.5rem;
+              margin-left: 1.5rem;
+            ">${line}</p>
+          `;
+        });
+      }
+    });
+  }
 
-  // Build complete HTML document with header
+  // Build complete HTML document
   const fullHTML = `
 <!DOCTYPE html>
 <html>
@@ -228,7 +396,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
         color: white;
         margin: 0.5rem 0;
         line-height: 1.2;
-      ">${formData.numberOfQuestions}-Question Assessment</h1>
+      ">${formData.numberOfQuestions}-Question Assessment${!showAnswerKey ? ' (Student Version)' : ''}</h1>
       
       <div style="
         display: flex;
@@ -332,6 +500,9 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     text-align: center;
   ">
     Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+    ${!showAnswerKey ? ' • Student Version (No Answers)' : ''}
+    ${showAnswerKey && !showExplanations ? ' • Answer Key Only' : ''}
+    ${showAnswerKey && showExplanations ? ' • Full Answer Key with Explanations' : ''}
   </div>
 </body>
 </html>
@@ -341,16 +512,27 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
 }
 
 // Export function to use with backend
-export function prepareQuizForExport(text: string, formData: any, accentColor: string) {
+export function prepareQuizForExport(
+  text: string, 
+  formData: any, 
+  accentColor: string,
+  exportOptions: {
+    showAnswerKey?: boolean;
+    showExplanations?: boolean;
+    boldCorrectAnswers?: boolean;
+  } = {}
+) {
   const html = generateQuizHTML(text, {
     accentColor,
-    formData
+    formData,
+    ...exportOptions
   });
 
   return {
     rawHtml: html,
     content: text,
     formData: formData,
-    accentColor: accentColor
+    accentColor: accentColor,
+    exportOptions: exportOptions
   };
 }

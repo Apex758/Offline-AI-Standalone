@@ -13,6 +13,11 @@ interface ExportButtonProps {
     accentColor: string;
     parsedQuiz?: any;
     curriculumReferences?: any;
+    exportOptions?: {  // ADD THIS
+      showAnswerKey?: boolean;
+      showExplanations?: boolean;
+      boldCorrectAnswers?: boolean;
+    };
   };
   filename?: string;
   className?: string;
@@ -51,7 +56,12 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         exportData = prepareQuizForExport(
           data.content,
           data.formData,
-          data.accentColor
+          data.accentColor,
+          data.exportOptions || {  // ADD THIS
+            showAnswerKey: true,
+            showExplanations: true,
+            boldCorrectAnswers: false
+          }
         );
         title = data.formData.subject
           ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`

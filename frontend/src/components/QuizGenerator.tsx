@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles } from 'lucide-react';
+import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles, FileText, Users, GraduationCap, ChevronDown } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
@@ -158,8 +158,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     return null;
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
-
-
+  const [selectedVersion, setSelectedVersion] = useState<'teacher' | 'student'>('teacher');
+  const [showVersionMenu, setShowVersionMenu] = useState(false);
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     subject: '',
@@ -517,14 +517,91 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           </>
                         )}
                       </button>
+                      {/* Version Selector Dropdown */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowVersionMenu(!showVersionMenu)}
+                          className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          {selectedVersion === 'teacher' ? 'Teacher Version' : 'Student Version'}
+                          <ChevronDown className="w-4 h-4 ml-2" />
+                        </button>
+
+                        {showVersionMenu && (
+                          <>
+                            {/* Backdrop */}
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setShowVersionMenu(false)}
+                            />
+
+                            {/* Menu */}
+                            <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    setSelectedVersion('student');
+                                    setShowVersionMenu(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition ${
+                                    selectedVersion === 'student' ? 'bg-blue-50' : ''
+                                  }`}
+                                >
+                                  <div className="flex items-center">
+                                    <Users className="w-4 h-4 mr-3 text-blue-600" />
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">Student Version</div>
+                                      <div className="text-xs text-gray-500">Clean quiz without answers</div>
+                                    </div>
+                                  </div>
+                                  {selectedVersion === 'student' && (
+                                    <Check className="w-4 h-4 text-blue-600" />
+                                  )}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setSelectedVersion('teacher');
+                                    setShowVersionMenu(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition ${
+                                    selectedVersion === 'teacher' ? 'bg-blue-50' : ''
+                                  }`}
+                                >
+                                  <div className="flex items-center">
+                                    <GraduationCap className="w-4 h-4 mr-3 text-green-600" />
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">Teacher Version</div>
+                                      <div className="text-xs text-gray-500">With answer key & explanations</div>
+                                    </div>
+                                  </div>
+                                  {selectedVersion === 'teacher' && (
+                                    <Check className="w-4 h-4 text-green-600" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <ExportButton
                         dataType="quiz"
                         data={{
                           content: parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz,
                           formData: formData,
-                          accentColor: tabColor
+                          accentColor: tabColor,
+                          exportOptions: selectedVersion === 'student' ? {
+                            showAnswerKey: false,
+                            showExplanations: false,
+                            boldCorrectAnswers: false
+                          } : {
+                            showAnswerKey: true,
+                            showExplanations: true,
+                            boldCorrectAnswers: true
+                          }
                         }}
-                        filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
+                        filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${selectedVersion}`}
                         className="ml-2"
                       />
                       <button
@@ -620,98 +697,137 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1">
                       {parsedQuiz && !loading ? (
-                        // ✅ Render directly from structured format
+                        // ✅ Conditionally render based on selectedVersion
                         <div className="space-y-6">
-                          {parsedQuiz.questions.map((question, qIndex) => (
-                            <div key={question.id} className="space-y-3">
-                              <h3 className="text-lg font-semibold p-3 rounded-lg" style={{ color: `${tabColor}cc`, backgroundColor: `${tabColor}0d` }}>
-                                Question {qIndex + 1}: {question.question}
-                              </h3>
-                              
-                              {question.type === 'multiple-choice' && question.options && (
-                                <div className="ml-6 space-y-2">
-                                  {question.options.map((option, oIndex) => {
-                                    const letter = String.fromCharCode(65 + oIndex);
-                                    const isCorrect = question.correctAnswer === oIndex;
-                                    return (
-                                      <div key={oIndex} className="flex items-start">
-                                        <span className="mr-3 font-semibold" style={{ color: `${tabColor}cc` }}>
-                                          {letter})
-                                        </span>
-                                        <span className={`text-gray-700 ${isCorrect ? 'font-medium' : ''}`}>
-                                          {option}
+                          {parsedQuiz.questions.map((question, qIndex) => {
+                            const correctAnswerIndex = question.correctAnswer as number;
+                            const correctLetter = question.type === 'multiple-choice' && typeof correctAnswerIndex === 'number'
+                              ? String.fromCharCode(65 + correctAnswerIndex)
+                              : null;
+
+                            return (
+                              <div key={question.id} className="space-y-3">
+                                <h3 className="text-lg font-semibold p-3 rounded-lg" style={{ color: `${tabColor}cc`, backgroundColor: `${tabColor}0d` }}>
+                                  Question {qIndex + 1}: {question.question}
+                                </h3>
+                                
+                                {question.type === 'multiple-choice' && question.options && (
+                                  <div className="ml-6 space-y-2">
+                                    {question.options.map((option, oIndex) => {
+                                      const letter = String.fromCharCode(65 + oIndex);
+                                      const isCorrect = selectedVersion === 'teacher' && correctAnswerIndex === oIndex;
+                                      return (
+                                        <div key={oIndex} className="flex items-start">
+                                          <span 
+                                            className={`mr-3 font-semibold ${isCorrect ? 'px-2 py-0.5 rounded' : ''}`}
+                                            style={{ 
+                                              color: isCorrect ? tabColor : `${tabColor}cc`,
+                                              backgroundColor: isCorrect ? `${tabColor}15` : 'transparent',
+                                              fontWeight: isCorrect ? '700' : '600'
+                                            }}
+                                          >
+                                            {letter})
+                                          </span>
+                                          <span className={`text-gray-700 ${isCorrect ? 'font-medium' : ''}`}>
+                                            {option}
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                    
+                                    {/* Show answer only in teacher version */}
+                                    {selectedVersion === 'teacher' && (
+                                      <div className="mt-3 text-sm">
+                                        <span className="font-semibold text-green-700">
+                                          Correct Answer: {correctLetter}
                                         </span>
                                       </div>
-                                    );
-                                  })}
-                                  <div className="mt-3 text-sm">
-                                    <span className="font-semibold text-green-700">
-                                      Correct Answer: {String.fromCharCode(65 + (question.correctAnswer as number))}
-                                    </span>
+                                    )}
                                   </div>
-                                </div>
-                              )}
-                              
-                              {question.type === 'true-false' && (
-                                <div className="ml-6 space-y-2">
-                                  <div className="flex items-start">
-                                    <span className="mr-3 font-semibold" style={{ color: `${tabColor}cc` }}>A)</span>
-                                    <span className={`text-gray-700 ${question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
-                                      True
-                                    </span>
+                                )}
+                                
+                                {question.type === 'true-false' && (
+                                  <div className="ml-6 space-y-2">
+                                    <div className="flex items-start">
+                                      <span 
+                                        className={`mr-3 font-semibold ${selectedVersion === 'teacher' && question.correctAnswer === 'true' ? 'px-2 py-0.5 rounded' : ''}`}
+                                        style={{ 
+                                          color: selectedVersion === 'teacher' && question.correctAnswer === 'true' ? tabColor : `${tabColor}cc`,
+                                          backgroundColor: selectedVersion === 'teacher' && question.correctAnswer === 'true' ? `${tabColor}15` : 'transparent'
+                                        }}
+                                      >
+                                        A)
+                                      </span>
+                                      <span className={`text-gray-700 ${selectedVersion === 'teacher' && question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
+                                        True
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start">
+                                      <span 
+                                        className={`mr-3 font-semibold ${selectedVersion === 'teacher' && question.correctAnswer === 'false' ? 'px-2 py-0.5 rounded' : ''}`}
+                                        style={{ 
+                                          color: selectedVersion === 'teacher' && question.correctAnswer === 'false' ? tabColor : `${tabColor}cc`,
+                                          backgroundColor: selectedVersion === 'teacher' && question.correctAnswer === 'false' ? `${tabColor}15` : 'transparent'
+                                        }}
+                                      >
+                                        B)
+                                      </span>
+                                      <span className={`text-gray-700 ${selectedVersion === 'teacher' && question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
+                                        False
+                                      </span>
+                                    </div>
+                                    
+                                    {/* Show answer only in teacher version */}
+                                    {selectedVersion === 'teacher' && (
+                                      <div className="mt-3 text-sm">
+                                        <span className="font-semibold text-green-700">
+                                          Correct Answer: {question.correctAnswer === 'true' ? 'True' : 'False'}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="flex items-start">
-                                    <span className="mr-3 font-semibold" style={{ color: `${tabColor}cc` }}>B)</span>
-                                    <span className={`text-gray-700 ${question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
-                                      False
-                                    </span>
+                                )}
+                                
+                                {question.type === 'fill-blank' && selectedVersion === 'teacher' && (
+                                  <div className="ml-6 space-y-2">
+                                    <div className="text-sm">
+                                      <span className="font-semibold text-green-700">
+                                        Answer: {question.correctAnswer}
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className="mt-3 text-sm">
-                                    <span className="font-semibold text-green-700">
-                                      Correct Answer: {question.correctAnswer === 'true' ? 'True' : 'False'}
-                                    </span>
+                                )}
+                                
+                                {question.type === 'open-ended' && selectedVersion === 'teacher' && (
+                                  <div className="ml-6 space-y-2">
+                                    <div className="text-sm">
+                                      <span className="font-semibold text-gray-700">Sample Answer:</span>
+                                      <p className="text-gray-600 mt-1 whitespace-pre-wrap">{question.correctAnswer}</p>
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                              
-                              {question.type === 'fill-blank' && (
-                                <div className="ml-6 space-y-2">
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-green-700">
-                                      Answer: {question.correctAnswer}
-                                    </span>
+                                )}
+                                
+                                {/* Show explanation only in teacher version */}
+                                {selectedVersion === 'teacher' && question.explanation && (
+                                  <div className="ml-6 mt-3 p-3 bg-blue-50 rounded-lg">
+                                    <span className="text-sm font-semibold text-blue-900">Explanation: </span>
+                                    <span className="text-sm text-blue-800">{question.explanation}</span>
                                   </div>
-                                </div>
-                              )}
-                              
-                              {question.type === 'open-ended' && (
-                                <div className="ml-6 space-y-2">
-                                  <div className="text-sm">
-                                    <span className="font-semibold text-gray-700">Sample Answer:</span>
-                                    <p className="text-gray-600 mt-1 whitespace-pre-wrap">{question.correctAnswer}</p>
+                                )}
+                                
+                                {selectedVersion === 'teacher' && (question.cognitiveLevel || question.points) && (
+                                  <div className="ml-6 mt-2 flex gap-4 text-xs text-gray-500">
+                                    {question.cognitiveLevel && (
+                                      <span>Cognitive Level: {question.cognitiveLevel}</span>
+                                    )}
+                                    {question.points && (
+                                      <span>Points: {question.points}</span>
+                                    )}
                                   </div>
-                                </div>
-                              )}
-                              
-                              {question.explanation && (
-                                <div className="ml-6 mt-3 p-3 bg-blue-50 rounded-lg">
-                                  <span className="text-sm font-semibold text-blue-900">Explanation: </span>
-                                  <span className="text-sm text-blue-800">{question.explanation}</span>
-                                </div>
-                              )}
-                              
-                              {(question.cognitiveLevel || question.points) && (
-                                <div className="ml-6 mt-2 flex gap-4 text-xs text-gray-500">
-                                  {question.cognitiveLevel && (
-                                    <span>Cognitive Level: {question.cognitiveLevel}</span>
-                                  )}
-                                  {question.points && (
-                                    <span>Points: {question.points}</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         // Fallback to text rendering for streaming or non-parsed content
