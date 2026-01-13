@@ -76,13 +76,19 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
       </div>
 
       {/* Image (if shared mode) */}
-      {includeImages && imageMode === 'shared' && generatedImage && (
+      {includeImages && imageMode === 'shared' && (
         <div className="mb-6 flex justify-center">
-          <img 
-            src={generatedImage} 
-            alt="Worksheet illustration" 
-            className="max-w-md rounded-lg shadow-md"
-          />
+          {generatedImage ? (
+            <img
+              src={generatedImage}
+              alt="Worksheet illustration"
+              className="max-w-md rounded-lg shadow-md"
+            />
+          ) : (
+            <div className="max-w-md h-48 bg-gray-200 border border-gray-300 rounded-lg flex items-center justify-center text-sm text-gray-500">
+              [Shared Image Placeholder]
+            </div>
+          )}
         </div>
       )}
 
@@ -132,12 +138,20 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                     )}
 
                     {/* Image per question (if one-per-question mode) */}
-                    {includeImages && imageMode === 'one-per-question' && generatedImage && index === 0 && (
-                      <img 
-                        src={generatedImage} 
-                        alt="Question illustration" 
-                        className="mt-3 max-w-xs rounded shadow"
-                      />
+                    {includeImages && imageMode === 'one-per-question' && index === 0 && (
+                      <div className="mt-3 mb-2">
+                        {generatedImage ? (
+                          <img
+                            src={generatedImage}
+                            alt="Question illustration"
+                            className="max-w-xs rounded shadow"
+                          />
+                        ) : (
+                          <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
+                            [Image Placeholder]
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -208,12 +222,20 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                     )}
 
                     {/* Image per question (if one-per-question mode) */}
-                    {includeImages && imageMode === 'one-per-question' && generatedImage && index === 0 && (
-                      <img 
-                        src={generatedImage} 
-                        alt="Question illustration" 
-                        className="mt-3 max-w-xs rounded shadow"
-                      />
+                    {includeImages && imageMode === 'one-per-question' && index === 0 && (
+                      <div className="mt-3 mb-2">
+                        {generatedImage ? (
+                          <img
+                            src={generatedImage}
+                            alt="Question illustration"
+                            className="max-w-xs rounded shadow"
+                          />
+                        ) : (
+                          <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
+                            [Image Placeholder]
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
