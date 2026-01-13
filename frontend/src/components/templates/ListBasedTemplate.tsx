@@ -20,14 +20,14 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   subject,
   gradeLevel,
   topic,
-  questionCount,  // ✅ Added missing prop
+  questionCount,
   questionType,
   worksheetTitle,
   includeImages,
   imageMode,
   generatedImage,
   questions,
-  wordBank  // ✅ Destructure the word bank prop
+  wordBank
 }) => {
   // Determine if we're in preview mode (no questions yet) or rendered mode (have questions)
   const isPreviewMode = !questions || questions.length === 0;

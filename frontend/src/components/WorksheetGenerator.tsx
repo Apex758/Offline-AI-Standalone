@@ -423,11 +423,31 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const renderTemplatePreview = () => {
     if (!selectedTemplate) return null;
 
+    // ✅ ROBUST PARSING with validation
+    const getValidQuestionCount = (value: string): number => {
+      const trimmed = value.trim();
+      if (!trimmed) return 10; // Default if empty
+      
+      const parsed = parseInt(trimmed, 10);
+      
+      // Validate range
+      if (isNaN(parsed)) return 10;
+      if (parsed < 1) return 1;
+      if (parsed > 50) return 50;
+      
+      return parsed;
+    };
+
+    const questionCount = getValidQuestionCount(formData.questionCount);
+    
+    // 🔍 Optional: Remove this console.log after debugging
+    console.log('Preview questionCount:', questionCount, 'from input:', formData.questionCount);
+
     const commonProps = {
       subject: formData.subject,
       gradeLevel: formData.gradeLevel,
       topic: formData.topic,
-      questionCount: parseInt(formData.questionCount) || 10,
+      questionCount: questionCount,  // ✅ Use validated count
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
       includeImages: formData.includeImages,
