@@ -386,6 +386,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       }
     }
 
+    if (tool.type === 'resource-manager') {
+      const existingResourceManagerTab = tabs.find(tab => tab.type === 'resource-manager');
+      if (existingResourceManagerTab) {
+        setActiveTabId(existingResourceManagerTab.id);
+        return;
+      }
+    }
+
     // Special handling for Visual Studio tools - only allow 1 instance each
     const maxTabsForTool = (tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE;
 
@@ -1255,7 +1263,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {tool.name}
                   </p>
-                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && (
+                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && (
                     <p
                       className="text-xs whitespace-nowrap"
                       style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}

@@ -6,6 +6,7 @@ import MultigradeEditor from './MultigradeEditor';
 import type { ParsedMultigradePlan } from './MultigradeEditor';
 import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
+import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../utils/multigrade'; 
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -24,7 +25,7 @@ interface MultigradeHistory {
   timestamp: string;
   formData: FormData;
   generatedPlan: string;
-  parsedPlan?: ParsedMultigradePlan;
+  parsedPlan?: ParsedMultigrade;  
 }
 
 interface FormData {
@@ -48,13 +49,20 @@ interface FormData {
   differentiationNotes: string;
 }
 
-const formatMultigradeText = (text: string, accentColor: string) => {
+const formatMultigradeText = (text: string, accentColor: string, isStreaming: boolean = false) => {
   if (!text) return null;
 
   let cleanText = text;
+  
+  // ✅ ONLY clean init messages - NEVER remove numbered sections!
   if (cleanText.includes("To change it, set a different value via -sys PROMPT")) {
     cleanText = cleanText.split("To change it, set a different value via -sys PROMPT")[1] || cleanText;
   }
+
+  // Remove initialization noise
+  cleanText = cleanText.replace(/llama_model_loader[^\n]*/g, '');
+  cleanText = cleanText.replace(/llm_load_print_meta[^\n]*/g, '');
+  cleanText = cleanText.replace(/system_info[^\n]*/g, '');
 
   const lines = cleanText.split('\n');
   const elements: JSX.Element[] = [];
@@ -68,45 +76,71 @@ const formatMultigradeText = (text: string, accentColor: string) => {
       return;
     }
 
-    // Main section headings
-    if (trimmed.match(/^\*\*(.+)\*\*$/)) {
-      const title = trimmed.replace(/\*\*/g, '');
+    // Main numbered sections (e.g., "1. SHARED LEARNING OBJECTIVES")
+    if (trimmed.match(/^\d+\.\s+[A-Z\s]+$/)) {
+      const title = trimmed.replace(/^\d+\.\s+/, '');
       elements.push(
-        <h2 key={`section-${currentIndex++}`} className="text-xl font-bold mt-8 mb-4 pb-2" style={{ color: `${accentColor}dd`, borderBottom: `2px solid ${accentColor}33` }}>
-          {title}
+        <h2 key={`section-${currentIndex++}`} 
+            className="text-2xl font-bold mt-10 mb-6 p-4 rounded-lg text-white"
+            style={{ 
+              background: `linear-gradient(135deg, ${accentColor}dd, ${accentColor}bb)` 
+            }}>
+          {trimmed}
         </h2>
       );
       return;
     }
 
-    // Field labels
-    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
-      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
+    // Subsection headings (e.g., "A. Opening - WHOLE CLASS (10 minutes)")
+    if (trimmed.match(/^[A-Z]\.\s+(.+?)(\s*-\s*[A-Z\s]+)?(\s*\(\d+.*?\))?$/)) {
       elements.push(
-        <h3 key={`field-${currentIndex++}`} className="text-lg font-semibold mt-6 mb-3 px-3 py-2 rounded-lg border-l-4" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d`, borderColor: accentColor }}>
-          {title}:
+        <h3 key={`subsection-${currentIndex++}`}
+            className="text-xl font-semibold mt-6 mb-4 p-3 rounded-lg border-l-4"
+            style={{ 
+              color: `${accentColor}dd`,
+              backgroundColor: `${accentColor}0d`,
+              borderColor: accentColor
+            }}>
+          {trimmed}
         </h3>
       );
       return;
     }
 
-    // Grade level sections with special highlighting
-    if (trimmed.match(/^(Grade|Kindergarten|Differentiated Activities|Extension Activities).*:/i)) {
+    // Grade-specific sections (e.g., "Grade 1:", "Grade K:")
+    if (trimmed.match(/^Grade\s+[K0-9]:/i)) {
       elements.push(
-        <div key={`grade-${currentIndex++}`} className="mt-4 mb-3">
-          <div className="border-l-4 p-4 rounded-r-lg shadow-sm" style={{ background: `linear-gradient(to right, ${accentColor}1a, ${accentColor}0d)`, borderColor: `${accentColor}cc` }}>
-            <h4 className="font-bold text-lg" style={{ color: `${accentColor}dd` }}>{trimmed}</h4>
-          </div>
+        <div key={`grade-${currentIndex++}`}
+             className="mt-4 mb-4 p-3 rounded-lg border-l-3"
+             style={{ 
+               backgroundColor: `${accentColor}08`,
+               borderLeft: `3px solid ${accentColor}99`
+             }}>
+          <h4 className="font-semibold text-lg" style={{ color: `${accentColor}dd` }}>
+            {trimmed}
+          </h4>
         </div>
       );
       return;
     }
 
-    // Bullet points
+    // Nested bullets (+ or - prefix)
+    if (trimmed.match(/^\s*[\+\-]\s+/)) {
+      const content = trimmed.replace(/^\s*[\+\-]\s+/, '');
+      elements.push(
+        <div key={`sub-bullet-${currentIndex++}`} className="flex items-start mb-2 ml-10">
+          <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}77` }}>▸</span>
+          <span className="text-gray-600 leading-relaxed text-[0.95rem]">{content}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Bullet points (* prefix)
     if (trimmed.match(/^\s*\*\s+/) && !trimmed.startsWith('**')) {
       const content = trimmed.replace(/^\s*\*\s+/, '');
       elements.push(
-        <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
+        <div key={`bullet-${currentIndex++}`} className="flex items-start mb-2 ml-4">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
           <span className="text-gray-700 leading-relaxed">{content}</span>
         </div>
@@ -114,17 +148,31 @@ const formatMultigradeText = (text: string, accentColor: string) => {
       return;
     }
 
-    // Numbered items
-    if (trimmed.match(/^\d+\./)) {
-      const number = trimmed.match(/^\d+\./)?.[0] || '';
-      const content = trimmed.replace(/^\d+\.\s*/, '');
+    // Bold section labels (e.g., "**Materials:**")
+    if (trimmed.match(/^\*\*[^*]+:\*\*/) || trimmed.match(/^\*\*[^*]+:$/)) {
+      const title = trimmed.replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/:$/, '');
       elements.push(
-        <div key={`numbered-${currentIndex++}`} className="mb-3 flex items-start ml-4">
-          <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
-            {number}
-          </span>
-          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
-        </div>
+        <h4 key={`label-${currentIndex++}`} 
+            className="text-lg font-semibold mt-5 mb-3"
+            style={{ color: `${accentColor}cc` }}>
+          {title}:
+        </h4>
+      );
+      return;
+    }
+
+    // Bold inline text
+    if (trimmed.includes('**')) {
+      const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
+      elements.push(
+        <p key={`para-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+          {parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={i} style={{ color: `${accentColor}cc` }}>{part.slice(2, -2)}</strong>;
+            }
+            return <span key={i}>{part}</span>;
+          })}
+        </p>
       );
       return;
     }
@@ -132,14 +180,14 @@ const formatMultigradeText = (text: string, accentColor: string) => {
     // Regular paragraphs
     if (trimmed.length > 0) {
       elements.push(
-        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`text-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
           {trimmed}
         </p>
       );
     }
   });
 
-  return elements;
+  return <div className="multigrade-content">{elements}</div>;
 };
 
 // Parse multigrade plan text content into structured ParsedMultigradePlan format
@@ -491,8 +539,30 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   useEffect(() => {
     if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
       console.log('Multigrade streaming completed, setting generated plan');
-      setGeneratedPlan(streamingPlan);
-      const parsed = parseMultigradeContent(streamingPlan, formData);
+      
+      // ✅ Clean the plan before saving to state
+      let cleanPlan = streamingPlan;
+      
+      // Remove everything before the first numbered section
+      const firstSection = cleanPlan.search(/(?:^|\n)\d+\.\s+[A-Z]/m);
+      if (firstSection !== -1 && firstSection > 0) {
+        cleanPlan = cleanPlan.substring(firstSection);
+      }
+      
+      // Remove metadata lines
+      cleanPlan = cleanPlan
+        .split('\n')
+        .filter(line => {
+          const trimmed = line.trim();
+          if (trimmed.match(/^\*\*[^:]+:\*\*/)) return false;
+          if (trimmed.match(/^Lesson Plan:/i)) return false;
+          return true;
+        })
+        .join('\n')
+        .trim();
+      
+      setGeneratedPlan(cleanPlan);  // ✅ Save cleaned version
+      const parsed = parseMultigradeContent(cleanPlan, formData);
       if (parsed) setParsedPlan(parsed);
       clearStreaming(tabId, ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
@@ -666,7 +736,27 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
     setSaveStatus('saving');
     try {
-      // Build a proper title with fallbacks
+      // ✅ Clean the plan before saving (remove AI metadata header)
+      let cleanPlan = generatedPlan;
+      
+      // Remove everything before the first numbered section
+      const firstSection = cleanPlan.search(/(?:^|\n)\d+\.\s+[A-Z]/m);
+      if (firstSection !== -1 && firstSection > 0) {
+        cleanPlan = cleanPlan.substring(firstSection);
+      }
+      
+      // Remove metadata lines
+      cleanPlan = cleanPlan
+        .split('\n')
+        .filter(line => {
+          const trimmed = line.trim();
+          if (trimmed.match(/^\*\*[^:]+:\*\*/)) return false;
+          if (trimmed.match(/^Lesson Plan:/i)) return false;
+          return true;
+        })
+        .join('\n')
+        .trim();
+      
       const title = formData.topic?.trim()
         ? `${formData.subject || 'General'} - ${formData.topic} (${formData.gradeRange || 'All Grades'})`
         : `Multigrade Plan - ${formData.subject || 'General'} (${formData.gradeRange || 'All Grades'})`;
@@ -676,7 +766,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         title: title,
         timestamp: new Date().toISOString(),
         formData: formData,
-        generatedPlan: generatedPlan,  // ✅ Save original clean text
+        generatedPlan: cleanPlan,  // ✅ Save cleaned version
         parsedPlan: parsedPlan || undefined
       };
 
@@ -875,7 +965,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <ExportButton
                         dataType="plan"
                         data={{
-                          content: parsedPlan ? multigradePlanToDisplayText(parsedPlan) : generatedPlan,
+                          content: generatedPlan,
                           formData: formData,
                           accentColor: tabColor
                         }}
@@ -978,7 +1068,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                      {formatMultigradeText(streamingPlan || generatedPlan, tabColor)}
+                      {formatMultigradeText(
+                        streamingPlan || generatedPlan, 
+                        tabColor,
+                        !!streamingPlan  // ✅ TRUE when streaming, FALSE when complete
+                      )}
                       {loading && streamingPlan && (
                         <span className="inline-flex items-center ml-1">
                           <span className="w-0.5 h-5 animate-pulse rounded-full" style={{ backgroundColor: tabColor }}></span>

@@ -6,6 +6,7 @@ import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRendere
 import { prepareWorksheetForExport } from '../utils/worksheetHtmlRenderer';
 import { prepareLessonForExport } from '../utils/lessonHtmlRenderer';
 import { prepareRubricForExport } from '../utils/rubricHtmlRenderer';
+import { prepareMultigradeForExport } from '../utils/multigradeHtmlRenderer';
 
 interface ExportButtonProps {
   dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular';
@@ -71,6 +72,13 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           data.accentColor
         );
         title = data.formData.assignmentTitle || 'Assessment Rubric';
+      } else if (dataType === 'multigrade') {  // ✅ ADD THIS
+        exportData = prepareMultigradeForExport(
+          data.content,
+          data.formData,
+          data.accentColor
+        );
+        title = data.formData.topic || 'Multigrade Lesson Plan';
       } else {
         // Handle quiz export (existing code)
         exportData = prepareQuizForExport(
