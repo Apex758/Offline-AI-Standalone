@@ -17,11 +17,12 @@ def run_llama(prompt: str) -> str:
     os.makedirs("logs", exist_ok=True)
     log_file = open(os.path.join("logs", "llama.log"), "a", encoding="utf-8")
 
+    MODEL_PATH = __import__("backend.config", fromlist=["MODEL_PATH"]).MODEL_PATH
     process = subprocess.Popen(
         [
             "llama-cli",
             "--model",
-            __import__("backend.config", fromlist=["MODEL_NAME"]).MODEL_NAME,
+            MODEL_PATH,
             "--prompt",
             prompt,
         ],

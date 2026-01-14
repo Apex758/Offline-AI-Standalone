@@ -15,7 +15,7 @@ Get-ChildItem "backend\*.py" | ForEach-Object {
     Copy-Item $_.FullName -Destination $bundleDir
 }
 
-# Whitelist of directories to copy (excludes venv, python-embed, var, __pycache__, bin, data)
+# Whitelist of directories to copy (excludes venv, python-embed, var, __pycache__, bin, data, models)
 $allowedFolders = @("routes", "share", "ssl", "etc", "lib", "milestones")
 
 Get-ChildItem "backend\*" -Directory | Where-Object {

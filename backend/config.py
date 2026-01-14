@@ -58,14 +58,27 @@ def set_selected_model(model_name):
         print(f"Error saving model config: {e}", flush=True)
         return False
 
+def resolve_model_path(model_filename: str) -> str:
+    """Resolve model path: check user data directory first, then bundled."""
+    user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
+    user_model_path = user_models_dir / model_filename
+
+    if user_model_path.exists():
+        print(f"✓ [CONFIG] Using model from user data: {user_model_path}", flush=True)
+        return str(user_model_path)
+    else:
+        bundled_path = MODELS_DIR / model_filename
+        print(f"✓ [CONFIG] Using bundled model: {bundled_path}", flush=True)
+        return str(bundled_path)
+
 def get_model_path():
     """Get the full path to the currently selected model."""
     selected_model = get_selected_model()
-    model_path = MODELS_DIR / selected_model
+    model_path = resolve_model_path(selected_model)
     print(f"✓ [CONFIG] Selected model: {selected_model}", flush=True)
     print(f"✓ [CONFIG] Full model path: {model_path}", flush=True)
-    print(f"✓ [CONFIG] Model exists: {model_path.exists()}", flush=True)
-    return str(model_path)
+    print(f"✓ [CONFIG] Model exists: {Path(model_path).exists()}", flush=True)
+    return model_path
 
 # Update MODEL_PATH to use selected model
 MODEL_PATH = get_model_path()
