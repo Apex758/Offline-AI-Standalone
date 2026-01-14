@@ -30,6 +30,7 @@
     "react-router-dom": "^7.9.4"
   },
   "devDependencies": {
+    "app-builder-bin": "^4.2.0",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "28.3.3",
@@ -39,77 +40,32 @@
   "build": {
     "appId": "com.oecs.learninghub",
     "productName": "OECS Learning Hub",
-    "copyright": "Copyright © 2024 OLH Education",
-    "icon": "build/OECS.ico",
-    "directories": {
-      "output": "dist-electron"
-    },
     "files": [
+      "dist/**/*",
       "electron/**/*",
-      "frontend/dist/**/*",
-      "backend-bundle/**/*",
-      "!backend-bundle/*.gguf",
       "package.json",
-      "!backend/**/*",
-      "!frontend/src/**/*",
-      "!frontend/public/**/*",
-      "!frontend/node_modules/**/*",
-      "!build-scripts/**/*",
-      "!**/*.ts",
-      "!**/*.map",
-      "!**/.git*",
-      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-      "!**/node_modules/*.d.ts",
-      "!**/node_modules/.bin"
+      "!**/*.md",
+      "!**/*.map"
     ],
-    "win": {
-      "icon": "build/OECS.ico",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "artifactName": "${productName} Setup ${version}.${ext}",
-      "requestedExecutionLevel": "highestAvailable"
-    },
+    "extraResources": [
+      {
+        "from": "python-embed",
+        "to": "python-embed",
+        "filter": ["**/*"]
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "OECS Learning Hub",
       "perMachine": false,
-      "allowElevation": true,
-      "installerIcon": "build/OECS.ico",
-      "uninstallerIcon": "build/OECS.ico",
-      "installerHeaderIcon": "build/OECS.ico",
-      "deleteAppDataOnUninstall": false,
-      "include": "build/installer.nsh",
-      "warningsAsErrors": false
+      "include": "build/installer.nsh"
     },
-    "extraResources": [
-      {
-        "from": "resources/frontend/src/data/curriculumIndex.json",
-        "to": "frontend/src/data/curriculumIndex.json"
-      },
-      {
-        "from": "backend-bundle",
-        "to": "backend-bundle",
-        "filter": [
-          "**/*",
-          "!*.gguf"
-        ]
-      }
-    ],
-    "compression": "normal",
-    "asar": true,
-    "asarUnpack": [
-      "**/backend-bundle/**/*",
-      "frontend/dist/**/*"
-    ]
+    "directories": {
+      "output": "dist-electron"
+    },
+    "win": {
+      "icon": "build/OECS.ico",
+      "target": ["nsis"]
+    }
   }
 }
