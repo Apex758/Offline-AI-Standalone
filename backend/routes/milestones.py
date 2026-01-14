@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-from models.milestone_db import get_milestone_db
+from milestones.milestone_db import get_milestone_db
 from curriculum_matcher import CurriculumMatcher
 import logging
 

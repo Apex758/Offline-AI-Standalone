@@ -16,7 +16,7 @@ $LAMA_CACHE_SOURCE = "$env:USERPROFILE\.cache\torch\hub\checkpoints"
 $PROJECT_ROOT = $PSScriptRoot
 
 # Backend folder (for development)
-$BACKEND_MODELS = Join-Path $PROJECT_ROOT "backend\models\image_generation"
+$BACKEND_MODELS = Join-Path $PROJECT_ROOT "backend\milestones\image_generation"
 $BACKEND_SDXL = Join-Path $BACKEND_MODELS "sdxl-turbo-openvino"
 $BACKEND_LAMA = Join-Path $BACKEND_MODELS "lama"
 

@@ -198,7 +198,7 @@ async def lifespan(app):
         logger.error(f"Failed to initialize CurriculumMatcher: {e}")
 
     # Initialize MilestoneDB
-    from models.milestone_db import get_milestone_db
+    from milestones.milestone_db import get_milestone_db
     try:
         milestone_db = get_milestone_db()
         logger.info("Milestone database initialized")
