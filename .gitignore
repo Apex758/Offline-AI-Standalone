@@ -11,7 +11,8 @@ lerna-debug.log*
 node_modules/
 backend/venv/
 
-# Backend bundle (contains large ML models and Python runtime)
+# Backend bun       dle (contains large ML models and Python runtime)
+backend-bundle
 backend-bundle/bin
 backend-bundle/python_libs
 backend-bundle/python-embed

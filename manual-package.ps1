@@ -10,40 +10,29 @@ New-Item -ItemType Directory -Path "$bundleDir\python_libs"
 
 Write-Host "Copying backend files..." -ForegroundColor Yellow
 
-# Copy ALL required Python files and directories from backend (excluding dev/test scripts, if any)
+# Copy ALL Python files from backend root
 Get-ChildItem "backend\*.py" | ForEach-Object {
     Copy-Item $_.FullName -Destination $bundleDir
 }
 
-# Copy all directories EXCEPT bin, data, and models\image_generation
-Get-ChildItem "backend\*" -Recurse -Directory | Where-Object {
-    $_.Name -ne "bin" -and 
-    $_.Name -ne "data" -and 
-    $_.FullName -notlike "*\models\image_generation*"
+# Whitelist of directories to copy (excludes venv, python-embed, var, __pycache__, bin, data)
+$allowedFolders = @("routes", "share", "ssl", "etc", "lib", "models")
+
+Get-ChildItem "backend\*" -Directory | Where-Object {
+    $allowedFolders -contains $_.Name
 } | ForEach-Object {
-    # Get relative path from backend
-    $relativePath = $_.FullName -replace [regex]::Escape((Resolve-Path "backend").Path + "\"), ""
-    $destPath = Join-Path $bundleDir $relativePath
-    
-    # Create parent directory if needed
-    $parentDir = Split-Path $destPath -Parent
-    if (-not (Test-Path $parentDir)) {
-        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
-    }
-    
-    # Copy the directory
-    if (-not (Test-Path $destPath)) {
-        Copy-Item $_.FullName -Destination $destPath -Recurse -Force
-    }
+    Write-Host "Copying folder: $($_.Name)" -ForegroundColor Cyan
+    Copy-Item $_.FullName -Destination $bundleDir -Recurse -Force
 }
 
-Write-Host "Skipped backend\models\image_generation (will be in installer)" -ForegroundColor Cyan
+Write-Host "Copied essential backend folders (excluding venv, var, __pycache__)" -ForegroundColor Green
 
 # Copy data folder
 if (Test-Path "backend\data") {
     Copy-Item "backend\data" -Destination "$bundleDir\data" -Recurse -Force
     Write-Host "Copied data folder" -ForegroundColor Green
 }
+
 # Copy curriculumIndex.json and curriculum data if present
 if (Test-Path "frontend\src\data\curriculumIndex.json") {
     if (-not (Test-Path "$bundleDir\data")) {
@@ -52,7 +41,7 @@ if (Test-Path "frontend\src\data\curriculumIndex.json") {
     Copy-Item "frontend\src\data\curriculumIndex.json" -Destination "$bundleDir\data\curriculumIndex.json" -Force
     Write-Host "Copied curriculumIndex.json" -ForegroundColor Green
 }
-# Optionally copy other curriculum data files if needed
+
 if (Test-Path "frontend\src\data\curriculumTree.json") {
     Copy-Item "frontend\src\data\curriculumTree.json" -Destination "$bundleDir\data\curriculumTree.json" -Force
     Write-Host "Copied curriculumTree.json" -ForegroundColor Green
@@ -94,7 +83,7 @@ foreach ($cmd in @('python', 'py', 'python3')) {
     } catch { continue }
 }
 
-# === Copy curriculumIndex.json and curriculumTree.json to production resources/frontend/src/data if in production build ===
+# Copy curriculumIndex.json and curriculumTree.json to production resources/frontend/src/data
 $prodFrontendDataDir = "resources/frontend/src/data"
 if (-not (Test-Path $prodFrontendDataDir)) {
     New-Item -ItemType Directory -Path $prodFrontendDataDir -Force | Out-Null
@@ -128,8 +117,7 @@ if (Test-Path "backend\python-embed") {
     exit 1
 }
 
-
-# Copy bin contents (not the bin folder itself)
+# Copy bin contents
 $srcBin = "backend\bin"
 $dstBin = "backend-bundle\bin"
 if (Test-Path $srcBin) {
@@ -142,7 +130,7 @@ if (Test-Path $srcBin) {
     }
 }
 
-# Copy other folders as before
+# Copy other GTK folders
 $gtkFolders = @("etc", "lib", "share", "ssl")
 foreach ($folder in $gtkFolders) {
     $src = Join-Path "backend" $folder
@@ -200,6 +188,5 @@ except Exception as e:
     input("Press Enter to exit...")
     sys.exit(1)
 "@ | Out-File -FilePath "$bundleDir\start_backend.py" -Encoding UTF8
-
 
 Write-Host "Backend bundle complete!" -ForegroundColor Green

@@ -74,11 +74,17 @@ def copy_backend_files(bundle_dir):
                 print_warning(f"File not found: {file}")
 
 def copy_model_file(bundle_dir):
-    """Skip model file copy - models are now in separate resources/models folder."""
-    print_step("Skipping model file copy...")
-    print_success("Models will be copied to resources/models during final build")
-    print_warning("NOTE: Models are now stored in the 'models' folder at project root")
-    print_warning("      They will be copied to resources/models by the build scripts")
+    """Copy models folder to bundle (excluding image_generation which is now in backend/)."""
+    print_step("Copying models folder...")
+
+    models_src = os.path.join("backend", "models")
+    models_dest = os.path.join(bundle_dir, "models")
+
+    if os.path.exists(models_src):
+        shutil.copytree(models_src, models_dest)
+        print_success("Copied models folder to bundle")
+    else:
+        print_warning("Models folder not found in backend")
 
 def copy_llama_cli(bundle_dir):
     """Copy llama-cli executables to bundle."""

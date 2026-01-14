@@ -103,16 +103,9 @@
           "**/*",
           "!*.gguf"
         ]
-      },
-      {
-        "from": "RELEASE/models/image_generation",
-        "to": "models/image_generation",
-        "filter": [
-          "**/*"
-        ]
       }
     ],
-    "compression": "store",
+    "compression": "normal",
     "asar": true,
     "asarUnpack": [
       "**/backend-bundle/**/*",

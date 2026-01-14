@@ -21,7 +21,7 @@ def get_resource_path(relative_path: str) -> Path:
     In production: Uses path relative to Electron resources folder
     
     Args:
-        relative_path: Relative path to resource (e.g., "models/image_generation/sdxl-turbo-openvino")
+        relative_path: Relative path to resource (e.g., "../models/image_generation/sdxl-turbo-openvino")
     
     Returns:
         Path: Absolute path to resource
@@ -81,7 +81,7 @@ class ImageService:
         """
         # Auto-detect SDXL model path
         if sdxl_model_path is None:
-            sdxl_model_path = get_resource_path("models/image_generation/sdxl-turbo-openvino")
+            sdxl_model_path = get_resource_path("../models/image_generation/sdxl-turbo-openvino")
         else:
             sdxl_model_path = Path(sdxl_model_path)
         
@@ -112,7 +112,7 @@ class ImageService:
             logger.info("Setting up IOPaint cache...")
 
             # Try to copy from bundled resources
-            bundled_lama = get_resource_path("models/image_generation/lama/big-lama.pt")
+            bundled_lama = get_resource_path("../models/image_generation/lama/big-lama.pt")
 
             if bundled_lama.exists():
                 logger.info(f"Copying LaMa model to torch hub cache: {bundled_lama} -> {lama_cache_file}")
