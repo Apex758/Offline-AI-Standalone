@@ -107,41 +107,14 @@ if (Test-Path $unpackedDir) {
     Write-Host "WARNING: Unpacked directory not found" -ForegroundColor Yellow
 }
 
-# Step 5: Copy Image Generation models (NEW)
-Write-Host "`n[5/8] Copying image generation models..." -ForegroundColor Yellow
-
-if ($hasImageModels -and (Test-Path $unpackedDir)) {
-    $destImageModelsDir = "$unpackedDir\resources\models\image_generation"
-    
-    if (-not (Test-Path $destImageModelsDir)) {
-        New-Item -ItemType Directory -Path $destImageModelsDir -Force | Out-Null
-    }
-    
-    # Copy SDXL model
-    $sdxlSource = "backend\models\image_generation\sdxl-turbo-openvino"
-    $sdxlDest = "$destImageModelsDir\sdxl-turbo-openvino"
-    
-    if (Test-Path $sdxlSource) {
-        Write-Host "Copying SDXL-Turbo model..." -ForegroundColor Cyan
-        Copy-Item -Path $sdxlSource -Destination $sdxlDest -Recurse -Force
-        $sdxlFileCount = (Get-ChildItem -Path $sdxlDest -Recurse -File).Count
-        Write-Host "  ✅ SDXL copied ($sdxlFileCount files)" -ForegroundColor Green
-    }
-    
-    # Copy LaMa model
-    $lamaSource = "backend\models\image_generation\lama"
-    $lamaDest = "$destImageModelsDir\lama"
-    
-    if (Test-Path $lamaSource) {
-        Write-Host "Copying LaMa model..." -ForegroundColor Cyan
-        Copy-Item -Path $lamaSource -Destination $lamaDest -Recurse -Force
-        $lamaFileCount = (Get-ChildItem -Path $lamaDest -Recurse -File).Count
-        Write-Host "  ✅ LaMa copied ($lamaFileCount files)" -ForegroundColor Green
-    }
-    
-    Write-Host "Image generation models packaged successfully" -ForegroundColor Green
+# Step 5: REMOVED - Image models no longer bundled in app
+# They will be included via electron-builder extraResources and copied by the installer
+Write-Host "`n[5/8] Skipping image model bundling (handled by installer)..." -ForegroundColor Cyan
+if ($hasImageModels) {
+    Write-Host "  ℹ️  Image models will be included in installer resources" -ForegroundColor Cyan
+    Write-Host "  ℹ️  App will copy them to user data on first run" -ForegroundColor Cyan
 } else {
-    Write-Host "Skipping image models (not found or unpacked dir missing)" -ForegroundColor Yellow
+    Write-Host "  ⚠️  No image models found - feature will be unavailable" -ForegroundColor Yellow
 }
 
 # Step 6: Test backend
@@ -178,20 +151,21 @@ Copy-Item -Path "models" -Destination "$releaseDir\models" -Recurse -Force
 Write-Host "Copied LLaMA models" -ForegroundColor Green
 
 # Copy Image Generation models (if available)
+# NOTE: These are now used by electron-builder extraResources, not bundled in app
 if ($hasImageModels) {
     $releaseImageModels = "$releaseDir\models\image_generation"
     New-Item -ItemType Directory -Path $releaseImageModels -Force | Out-Null
     Copy-Item -Path "backend\models\image_generation\*" -Destination $releaseImageModels -Recurse -Force
-    Write-Host "Copied image generation models" -ForegroundColor Green
+    Write-Host "Copied image generation models to RELEASE (for installer)" -ForegroundColor Green
 }
 
 # Create README
 $readmeText = "OECS LEARNING HUB - INSTALLATION`n`n"
 $readmeText += "FILES:`n"
-$readmeText += "1. OECS-Learning-Hub-Setup.exe`n"
-$readmeText += "2. models/ folder (includes LLaMA and image generation models)`n`n"
+$readmeText += "1. OECS-Learning-Hub-Setup.exe (includes all models)`n"
+$readmeText += "2. models/ folder (optional - for manual installation)`n`n"
 $readmeText += "INSTALL:`n"
-$readmeText += "Run the .exe installer`n`n"
+$readmeText += "Run the .exe installer - all models will be installed automatically`n`n"
 $readmeText += "FEATURES:`n"
 $readmeText += "- AI-powered lesson planning (LLaMA model)`n"
 if ($hasImageModels) {
@@ -215,10 +189,12 @@ Write-Host "Total size: $([math]::Round($totalSize, 2)) GB" -ForegroundColor Cya
 Write-Host "`nIncluded Features:" -ForegroundColor Yellow
 Write-Host "  ✅ LLaMA AI Model" -ForegroundColor Green
 if ($hasImageModels) {
-    Write-Host "  ✅ Image Generation (SDXL)" -ForegroundColor Green
-    Write-Host "  ✅ Image Editing (LaMa)" -ForegroundColor Green
+    Write-Host "  ✅ Image Generation (SDXL) - via installer" -ForegroundColor Green
+    Write-Host "  ✅ Image Editing (LaMa) - via installer" -ForegroundColor Green
 } else {
     Write-Host "  ⚠️  Image Generation (Not included - run setup-models.ps1)" -ForegroundColor Yellow
 }
 
 Write-Host "`nRELEASE folder ready at: $releaseDir" -ForegroundColor Green
+Write-Host "`nNOTE: Image models are included in the installer and will be" -ForegroundColor Cyan
+Write-Host "      automatically copied to user data directory on first run." -ForegroundColor Cyan

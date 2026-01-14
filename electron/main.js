@@ -68,6 +68,95 @@ function getPythonPath() {
   return 'python';
 }
 
+// Function to recursively copy directory
+function copyDirectorySync(src, dest) {
+  // Create destination directory
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  
+  // Read source directory
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    
+    if (entry.isDirectory()) {
+      copyDirectorySync(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+// Function to setup image generation models on first run
+async function setupImageGenerationModels() {
+  try {
+    log.info('Checking image generation models...');
+    
+    const userDataPath = app.getPath('userData');
+    const targetModelsDir = path.join(userDataPath, 'models');
+    const targetImageGenDir = path.join(targetModelsDir, 'image_generation');
+    
+    // Check if models already exist
+    if (fs.existsSync(targetImageGenDir)) {
+      log.info('Image generation models already installed');
+      return;
+    }
+    
+    log.info('Setting up image generation models for first time...');
+    
+    // Ensure models directory exists
+    if (!fs.existsSync(targetModelsDir)) {
+      fs.mkdirSync(targetModelsDir, { recursive: true });
+      log.info(`Created models directory: ${targetModelsDir}`);
+    }
+    
+    // Determine source path
+    let sourceImageGenDir;
+    
+    if (isDev) {
+      // In development, use backend folder
+      sourceImageGenDir = path.join(__dirname, '..', 'backend', 'models', 'image_generation');
+    } else {
+      // In production, use installer resources
+      sourceImageGenDir = path.join(process.resourcesPath, 'models', 'image_generation');
+    }
+    
+    log.info(`Source path: ${sourceImageGenDir}`);
+    log.info(`Target path: ${targetImageGenDir}`);
+    
+    // Check if source exists
+    if (!fs.existsSync(sourceImageGenDir)) {
+      log.warn(`Image generation models not found at: ${sourceImageGenDir}`);
+      log.warn('Image generation features will be unavailable');
+      return;
+    }
+    
+    // Copy the models
+    log.info('Copying image generation models (this may take a moment)...');
+    copyDirectorySync(sourceImageGenDir, targetImageGenDir);
+    
+    // Verify the copy
+    const sdxlPath = path.join(targetImageGenDir, 'sdxl-turbo-openvino');
+    const lamaPath = path.join(targetImageGenDir, 'lama');
+    
+    if (fs.existsSync(sdxlPath) && fs.existsSync(lamaPath)) {
+      log.info('✅ Image generation models installed successfully');
+      log.info(`  - SDXL-Turbo: ${sdxlPath}`);
+      log.info(`  - LaMa: ${lamaPath}`);
+    } else {
+      log.warn('⚠️  Image models copied but verification failed');
+    }
+    
+  } catch (error) {
+    log.error('Error setting up image generation models:', error);
+    log.error('App will continue without image generation support');
+    // Don't throw - app should still start
+  }
+}
+
 // Function to check if port is in use
 function checkPort(port) {
   return new Promise((resolve) => {
@@ -107,9 +196,9 @@ async function startBackend() {
     startScript = 'start_backend.py';
     log.info(`Production mode - Backend path: ${backendPath}`);
     
-    // Set models directory for production (models are in resources/models)
+    // Set models directory for production (LLaMA models in resources/models)
     const modelsPath = path.join(process.resourcesPath, 'models');
-    log.info(`Production mode - Models path: ${modelsPath}`);
+    log.info(`Production mode - LLaMA models path: ${modelsPath}`);
     
     // Verify files exist
     const requiredFiles = ['main.py', 'config.py', 'start_backend.py'];
@@ -128,14 +217,21 @@ async function startBackend() {
   return new Promise((resolve, reject) => {
     const env = { ...process.env };
     
-    // In production, set MODELS_DIR environment variable for backend
+    // In production, set environment variables for backend
     if (!isDev) {
       const modelsPath = path.join(process.resourcesPath, 'models');
       env.MODELS_DIR = modelsPath;
       log.info(`Set MODELS_DIR environment variable: ${modelsPath}`);
+      
       // Set ELECTRON_RESOURCE_PATH for image service
       env.ELECTRON_RESOURCE_PATH = process.resourcesPath;
       log.info(`Set ELECTRON_RESOURCE_PATH environment variable: ${process.resourcesPath}`);
+      
+      // Set IMAGE_MODELS_DIR to point to user data directory
+      const userDataPath = app.getPath('userData');
+      const imageModelsPath = path.join(userDataPath, 'models', 'image_generation');
+      env.IMAGE_MODELS_DIR = imageModelsPath;
+      log.info(`Set IMAGE_MODELS_DIR environment variable: ${imageModelsPath}`);
 
       // Prepend backend-bundle/bin to PATH for GTK DLLs (WeasyPrint)
       const gtkBinPath = path.join(process.resourcesPath, 'backend-bundle', 'bin');
@@ -146,6 +242,11 @@ async function startBackend() {
       const fontsPath = path.join(process.resourcesPath, 'backend-bundle', 'etc', 'fonts');
       env.FONTCONFIG_PATH = fontsPath;
       log.info(`Set FONTCONFIG_PATH environment variable: ${fontsPath}`);
+    } else {
+      // In development, also set IMAGE_MODELS_DIR for consistency
+      const devImageModelsPath = path.join(__dirname, '..', 'backend', 'models', 'image_generation');
+      env.IMAGE_MODELS_DIR = devImageModelsPath;
+      log.info(`Set IMAGE_MODELS_DIR (dev) environment variable: ${devImageModelsPath}`);
     }
     
     // Use the startup script in production
@@ -479,6 +580,9 @@ app.whenReady().then(async () => {
 
       fs.writeFileSync(firstRunFlag, JSON.stringify({ initialized: true }));
     }
+
+    // === Setup image generation models (first run only) ===
+    await setupImageGenerationModels();
 
     // === Start backend ===
     await startBackend();

@@ -1,0 +1,6 @@
+jtype: Flow
+executors:
+  - name: blip
+    uses: blip_executor.py
+  - name: llama
+    uses: llama_executor.py

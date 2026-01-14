@@ -103,6 +103,13 @@
           "**/*",
           "!*.gguf"
         ]
+      },
+      {
+        "from": "RELEASE/models/image_generation",
+        "to": "models/image_generation",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "compression": "store",

@@ -1,4 +1,3 @@
-
 Write-Host "Creating backend bundle..." -ForegroundColor Green
 
 $bundleDir = "backend-bundle"
@@ -11,18 +10,40 @@ New-Item -ItemType Directory -Path "$bundleDir\python_libs"
 
 Write-Host "Copying backend files..." -ForegroundColor Yellow
 
-# Copy ALL required Python files from backend (excluding dev/test scripts, if any)
+# Copy ALL required Python files and directories from backend (excluding dev/test scripts, if any)
 Get-ChildItem "backend\*.py" | ForEach-Object {
     Copy-Item $_.FullName -Destination $bundleDir
 }
 
+# Copy all directories EXCEPT bin, data, and models\image_generation
+Get-ChildItem "backend\*" -Recurse -Directory | Where-Object {
+    $_.Name -ne "bin" -and 
+    $_.Name -ne "data" -and 
+    $_.FullName -notlike "*\models\image_generation*"
+} | ForEach-Object {
+    # Get relative path from backend
+    $relativePath = $_.FullName -replace [regex]::Escape((Resolve-Path "backend").Path + "\"), ""
+    $destPath = Join-Path $bundleDir $relativePath
+    
+    # Create parent directory if needed
+    $parentDir = Split-Path $destPath -Parent
+    if (-not (Test-Path $parentDir)) {
+        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+    }
+    
+    # Copy the directory
+    if (-not (Test-Path $destPath)) {
+        Copy-Item $_.FullName -Destination $destPath -Recurse -Force
+    }
+}
+
+Write-Host "Skipped backend\models\image_generation (will be in installer)" -ForegroundColor Cyan
 
 # Copy data folder
 if (Test-Path "backend\data") {
     Copy-Item "backend\data" -Destination "$bundleDir\data" -Recurse -Force
     Write-Host "Copied data folder" -ForegroundColor Green
 }
-
 # Copy curriculumIndex.json and curriculum data if present
 if (Test-Path "frontend\src\data\curriculumIndex.json") {
     if (-not (Test-Path "$bundleDir\data")) {
@@ -93,7 +114,11 @@ if (-not $pythonCmd) {
 }
 
 Write-Host "Installing dependencies..." -ForegroundColor Yellow
-& $pythonCmd -m pip install --no-user fastapi uvicorn pydantic python-multipart websockets llama-cpp-python python-docx weasyprint --target "$bundleDir\python_libs" --upgrade --no-warn-script-location | Out-Null
+& $pythonCmd -m pip install `
+    -r backend/requirements-lock.txt `
+    --target "$bundleDir\python_libs" `
+    --no-warn-script-location `
+    --disable-pip-version-check
 
 Write-Host "Copying embedded Python..." -ForegroundColor Yellow
 if (Test-Path "backend\python-embed") {
