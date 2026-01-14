@@ -41,7 +41,7 @@
     "appId": "com.oecs.learninghub",
     "productName": "OECS Learning Hub",
     "files": [
-      "dist/**/*",
+      "frontend/dist/**/*",
       "electron/**/*",
       "package.json",
       "!**/*.md",
@@ -49,15 +49,23 @@
     ],
     "extraResources": [
       {
-        "from": "python-embed",
-        "to": "python-embed",
+        "from": "backend",
+        "to": "backend-bundle",
+        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc", "!**/venv/**", "!**/.venv/**"]
+      },
+      {
+        "from": "frontend/dist/splashscreen",
+        "to": "splashscreen",
         "filter": ["**/*"]
       }
+    ],
+    "asarUnpack": [
+      "**/*.node"
     ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "perMachine": false,
+      "perMachine": false,  
       "include": "build/installer.nsh"
     },
     "directories": {

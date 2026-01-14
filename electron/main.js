@@ -331,7 +331,7 @@ async function startBackend() {
     }, 45000);
   });
 }
-
+ 
 // Function to get splashscreen path
 function getSplashscreenPath() {
   log.info(`Getting splashscreen path - Running in ${isDev ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
@@ -341,29 +341,22 @@ function getSplashscreenPath() {
     // In development, use the source file
     splashPath = path.join(__dirname, '..', 'frontend', 'public', 'splashscreen', 'splashscreen.html');
   } else {
-    // In production, try multiple possible locations
-    const possiblePaths = [
-      path.join(__dirname, '..', 'frontend', 'dist', 'splashscreen', 'splashscreen.html'),
-      path.join(__dirname, '..', 'frontend', 'dist', 'splashscreen.html'),
-      path.join(process.resourcesPath, 'frontend', 'dist', 'splashscreen', 'splashscreen.html'),
-      path.join(process.resourcesPath, 'splashscreen', 'splashscreen.html'),
-      path.join(__dirname, '..', 'splashscreen', 'splashscreen.html')
-    ];
+    // In production, use extraResources location (outside asar)
+    splashPath = path.join(process.resourcesPath, 'splashscreen', 'splashscreen.html');
     
-    for (const testPath of possiblePaths) {
-      if (fs.existsSync(testPath)) {
-        splashPath = testPath;
-        log.info(`Found splashscreen at: ${testPath}`);
-        break;
-      }
-    }
-    
-    if (!splashPath) {
-      log.error('Splashscreen file not found in any expected location!');
-      log.error('Searched paths:', possiblePaths);
+    // Fallback: check if it's in dist inside asar
+    if (!fs.existsSync(splashPath)) {
+      log.warn(`Splashscreen not found at: ${splashPath}`);
       
-      // Use the first path as fallback
-      splashPath = possiblePaths[0];
+      // Try alternative location in dist
+      const distPath = path.join(__dirname, '..', 'dist', 'splashscreen', 'splashscreen.html');
+      if (fs.existsSync(distPath)) {
+        splashPath = distPath;
+        log.info(`Found splashscreen in dist: ${distPath}`);
+      } else {
+        log.error('Splashscreen not found in any location, will skip splashscreen');
+        return null;
+      }
     }
   }
   
@@ -410,23 +403,30 @@ function createWindow() {
   });
 
   // Load splashscreen first
+  // Load splashscreen first
   const splashPath = getSplashscreenPath();
-  
-  log.info(`Loading splashscreen in main window: ${splashPath}`);
-  
-  mainWindow.loadFile(splashPath).then(() => {
-    log.info('Splashscreen loaded, showing window');
-    mainWindow.show();
+
+  if (splashPath && fs.existsSync(splashPath)) {
+    log.info(`Loading splashscreen in main window: ${splashPath}`);
     
-    if (isDev) {
-      mainWindow.webContents.openDevTools({ mode: 'detach' });
-    }
-  }).catch(err => {
-    log.error('Error loading splashscreen:', err);
-    // If splashscreen fails, show window anyway
+    mainWindow.loadFile(splashPath).then(() => {
+      log.info('Splashscreen loaded, showing window');
+      mainWindow.show();
+      
+      if (isDev) {
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
+      }
+    }).catch(err => {
+      log.error('Error loading splashscreen:', err);
+      // If splashscreen fails, load main content directly
+      mainWindow.show();
+      loadMainContent();
+    });
+  } else {
+    log.warn('Splashscreen not available, loading main content directly');
     mainWindow.show();
-  });
-  
+    loadMainContent();
+  }
   // Log console messages
   mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
     log.info(`Window console [${level}]: ${message}`);

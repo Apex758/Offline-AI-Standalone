@@ -116,7 +116,7 @@ def install_python_dependencies(bundle_dir):
     """Install Python dependencies to bundle."""
     print_step("Installing Python dependencies...")
     
-    requirements_file = "requirements.txt"
+    requirements_file = os.path.join("backend", "requirements-lock.txt")
     
     if not os.path.exists(requirements_file):
         print_error("requirements.txt not found!")
@@ -135,18 +135,15 @@ def install_python_dependencies(bundle_dir):
         ], check=True, capture_output=True, text=True)
         
         # Also install for embedded Python if it exists
-        embedded_python = os.path.join("python-embed", "python.exe")
+        embedded_python = os.path.join(bundle_dir, "python-embed", "python.exe")
         if os.path.exists(embedded_python):
             print_step("Installing dependencies for embedded Python...")
             subprocess.run([
                 embedded_python, "-m", "pip", "install",
                 "-r", requirements_file,
-                "--target", python_libs_dir,
                 "--upgrade"
             ], check=True, capture_output=True, text=True)
             print_success("Embedded Python dependencies installed")
-        
-        print_success("Python dependencies installed successfully")
         return True
     except subprocess.CalledProcessError as e:
         print_error("Failed to install Python dependencies")
