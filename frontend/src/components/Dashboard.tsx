@@ -1795,7 +1795,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               }
 
               return (
-                <div key={type} className="flex items-center" data-tutorial="tab-groups">
+                <div key={type} className="flex items-center" data-tutorial="tab-groups" data-group-type={type}>
                   <button
                     onClick={() => {
                       triggerTabBounce(`${type}-group`);

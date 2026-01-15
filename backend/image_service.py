@@ -247,38 +247,24 @@ class ImageService:
         except Exception as e:
             logger.error(f"Error starting IOPaint: {e}")
             return False
-    
+  
+        
     def _find_iopaint_executable(self) -> Optional[str]:
-        """Find iopaint executable in environment"""
+        """Find Python executable to run iopaint as module"""
         logger.info(f"sys.prefix: {sys.prefix}")
-        # Try to find iopaint in PATH
-        if os.name == 'nt':
-            # Windows - check Scripts folder in venv or embedded Python
-            possible_paths = [
-                os.path.join(sys.prefix, 'Scripts', 'iopaint.exe'),
-                os.path.join(sys.prefix, 'Scripts', 'iopaint'),
-                'iopaint.exe',
-                'iopaint'
-            ]
-        else:
-            # Linux/Mac
-            possible_paths = [
-                os.path.join(sys.prefix, 'bin', 'iopaint'),
-                'iopaint'
-            ]
-
-        logger.info(f"Checking possible iopaint paths: {possible_paths}")
-        for path in possible_paths:
-            exists = os.path.exists(path)
-            command_exists = self._command_exists(path)
-            logger.info(f"Checking path: {path} - exists: {exists}, command_exists: {command_exists}")
-            if exists or command_exists:
-                logger.info(f"Found iopaint at: {path}")
-                return path
-
-        logger.error("IOPaint executable not found in any checked paths")
+        logger.info(f"sys.executable: {sys.executable}")
+        
+        # Return Python executable - we'll use "python -m iopaint"
+        python_exe = sys.executable
+        
+        if os.path.exists(python_exe):
+            logger.info(f"Will use Python module: {python_exe} -m iopaint")
+            return python_exe
+        
+        logger.error("Python executable not found")
         return None
-    
+        
+        
     def _command_exists(self, command: str) -> bool:
         """Check if command exists in PATH"""
         try:
