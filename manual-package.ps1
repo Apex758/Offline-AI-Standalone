@@ -53,18 +53,9 @@ if (Test-Path "backend\routes") {
     Write-Host "Copied routes folder" -ForegroundColor Green
 }
 
-# Copy or create JSON files
-if (Test-Path "backend\chat_history.json") {
-    Copy-Item "backend\chat_history.json" -Destination $bundleDir
-} else {
-    "[]" | Out-File -FilePath "$bundleDir\chat_history.json" -Encoding UTF8
-}
-
-if (Test-Path "backend\lesson_plan_history.json") {
-    Copy-Item "backend\lesson_plan_history.json" -Destination $bundleDir
-} else {
-    "[]" | Out-File -FilePath "$bundleDir\lesson_plan_history.json" -Encoding UTF8
-}
+# Create empty JSON files
+"[]" | Out-File -FilePath "$bundleDir\chat_history.json" -Encoding UTF8
+"[]" | Out-File -FilePath "$bundleDir\lesson_plan_history.json" -Encoding UTF8
 
 Write-Host "Copying llama-cli..." -ForegroundColor Yellow
 if (Test-Path "backend\bin\Release") {

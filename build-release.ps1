@@ -1,7 +1,11 @@
 Write-Host "=== Building OECS Learning Hub (Complete Build) ===" -ForegroundColor Cyan
 
-# Step 0: Package Backend
-Write-Host "`n[0/8] Packaging backend..." -ForegroundColor Yellow
+# Step 0: Pre-build cleanup
+Write-Host "`n[0/9] Pre-build cleanup..." -ForegroundColor Yellow
+.\pre-build-cleanup.ps1
+
+# Step 1: Package Backend
+Write-Host "`n[1/9] Packaging backend..." -ForegroundColor Yellow
 
 # Clean old backend bundle
 if (Test-Path "backend-bundle") {
@@ -19,8 +23,8 @@ if (-not (Test-Path "backend-bundle")) {
 
 Write-Host "Backend packaged successfully" -ForegroundColor Green
 
-# Step 1: Check if models folders exist
-Write-Host "`n[1/8] Checking for models..." -ForegroundColor Yellow
+# Step 2: Check if models folders exist
+Write-Host "`n[2/9] Checking for models..." -ForegroundColor Yellow
 
 # Check LLaMA models (existing)
 if (-not (Test-Path "models")) {
@@ -65,8 +69,8 @@ if (-not (Test-Path $imageModelsDir)) {
     }
 }
 
-# Step 2: Build frontend
-Write-Host "`n[2/8] Building frontend..." -ForegroundColor Yellow
+# Step 3: Build frontend
+Write-Host "`n[3/9] Building frontend..." -ForegroundColor Yellow
 Set-Location frontend
 npm run build
 if ($LASTEXITCODE -ne 0) {
@@ -76,8 +80,8 @@ if ($LASTEXITCODE -ne 0) {
 Set-Location ..
 Write-Host "Frontend built successfully" -ForegroundColor Green
 
-# Step 3: Build Electron app
-Write-Host "`n[3/8] Building Electron installer..." -ForegroundColor Yellow
+# Step 4: Build Electron app
+Write-Host "`n[4/9] Building Electron installer..." -ForegroundColor Yellow
 npx electron-builder --win nsis --x64
 
 if ($LASTEXITCODE -ne 0) {
@@ -87,8 +91,8 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "Installer built successfully" -ForegroundColor Green
 
-# Step 4: Copy LLaMA models (existing)
-Write-Host "`n[4/8] Copying LLaMA models to packaged app..." -ForegroundColor Yellow
+# Step 5: Copy LLaMA models (existing)
+Write-Host "`n[5/9] Copying LLaMA models to packaged app..." -ForegroundColor Yellow
 $unpackedDir = "dist-electron\win-unpacked"
 
 if (Test-Path $unpackedDir) {
@@ -107,9 +111,9 @@ if (Test-Path $unpackedDir) {
     Write-Host "WARNING: Unpacked directory not found" -ForegroundColor Yellow
 }
 
-# Step 5: REMOVED - Image models no longer bundled in app
+# Step 6: REMOVED - Image models no longer bundled in app
 # They will be included via electron-builder extraResources and copied by the installer
-Write-Host "`n[5/8] Skipping image model bundling (handled by installer)..." -ForegroundColor Cyan
+Write-Host "`n[6/9] Skipping image model bundling (handled by installer)..." -ForegroundColor Cyan
 if ($hasImageModels) {
     Write-Host "  ℹ️  Image models will be included in installer resources" -ForegroundColor Cyan
     Write-Host "  ℹ️  App will copy them to user data on first run" -ForegroundColor Cyan
@@ -117,8 +121,8 @@ if ($hasImageModels) {
     Write-Host "  ⚠️  No image models found - feature will be unavailable" -ForegroundColor Yellow
 }
 
-# Step 6: Test backend
-Write-Host "`n[6/8] Testing backend..." -ForegroundColor Yellow
+# Step 7: Test backend
+Write-Host "`n[7/9] Testing backend..." -ForegroundColor Yellow
 $backendPython = "$unpackedDir\resources\backend-bundle\python-embed\python.exe"
 
 if (Test-Path $backendPython) {
@@ -127,8 +131,8 @@ if (Test-Path $backendPython) {
     Write-Host "WARNING: Backend Python not found" -ForegroundColor Yellow
 }
 
-# Step 7: Create release package
-Write-Host "`n[7/8] Creating RELEASE folder..." -ForegroundColor Yellow
+# Step 8: Create release package
+Write-Host "`n[8/9] Creating RELEASE folder..." -ForegroundColor Yellow
 
 $releaseDir = "RELEASE"
 if (Test-Path $releaseDir) {
@@ -178,8 +182,8 @@ $readmeText += "Built: $(Get-Date -Format 'yyyy-MM-dd HH:mm')`n"
 $readmeText | Out-File -FilePath "$releaseDir\README.txt" -Encoding UTF8
 Write-Host "Created README" -ForegroundColor Green
 
-# Step 8: Summary
-Write-Host "`n[8/8] Build Summary" -ForegroundColor Yellow
+# Step 9: Summary
+Write-Host "`n[9/9] Build Summary" -ForegroundColor Yellow
 
 $totalSize = (Get-ChildItem $releaseDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1GB
 Write-Host "`n=== BUILD COMPLETE ===" -ForegroundColor Green

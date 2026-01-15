@@ -1,7 +1,11 @@
 Write-Host "=== OLH AI Education Suite Build Process ===" -ForegroundColor Cyan
 
+# Step 0: Pre-build cleanup
+Write-Host "`n[0/4] Pre-build cleanup..." -ForegroundColor Green
+.\pre-build-cleanup.ps1
+
 # Step 1: Package Backend
-Write-Host "`n[1/3] Packaging Backend..." -ForegroundColor Green
+Write-Host "`n[1/4] Packaging Backend..." -ForegroundColor Green
 .\manual-package.ps1
 
 # Step 2: Build Frontend

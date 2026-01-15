@@ -51,12 +51,17 @@
       {
         "from": "backend",
         "to": "backend-bundle",
-        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc", "!**/venv/**", "!**/.venv/**"]
+        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc", "!**/venv/**", "!**/.venv/**", "!chat_history.json", "!lesson_plan_history.json", "!data/**"]
       },
       {
         "from": "frontend/dist/splashscreen",
         "to": "splashscreen",
         "filter": ["**/*"]
+      },
+      {
+        "from": "frontend/src/data",
+        "to": "frontend/src/data",
+        "filter": ["**/*.json"]
       }
     ],
     "asarUnpack": [

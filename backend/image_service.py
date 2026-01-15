@@ -194,7 +194,7 @@ class ImageService:
             
             # Start IOPaint subprocess
             cmd = [
-                iopaint_cmd, "start",
+                iopaint_cmd, "-m", "iopaint", "start",  
                 "--model=lama",
                 "--device=cpu",
                 f"--port={self.iopaint_port}",

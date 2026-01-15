@@ -58,18 +58,18 @@ def copy_backend_files(bundle_dir):
     ]
     
     for file in files_to_copy:
-        src = os.path.join(backend_dir, file)
         dest = os.path.join(bundle_dir, file)
-        
-        if os.path.exists(src):
-            shutil.copy2(src, dest)
-            print_success(f"Copied {file}")
+
+        # Always create empty files for history
+        if file.endswith('.json'):
+            with open(dest, 'w') as f:
+                json.dump([], f)
+            print_success(f"Created empty {file}")
         else:
-            # Create empty files for history if they don't exist
-            if file.endswith('.json'):
-                with open(dest, 'w') as f:
-                    json.dump([], f)
-                print_success(f"Created empty {file}")
+            src = os.path.join(backend_dir, file)
+            if os.path.exists(src):
+                shutil.copy2(src, dest)
+                print_success(f"Copied {file}")
             else:
                 print_warning(f"File not found: {file}")
 

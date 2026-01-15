@@ -623,24 +623,22 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     position: 'bottom',
   },
   {
-    target: '[data-tutorial="tab-groups"][data-group-type="chat"]',
+    target: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
     title: 'Collapse Groups',
     description: 'Click the dropdown arrow on the Chat group to collapse it and save tab bar space. Try it now!',
     position: 'bottom',
     interactive: true,
     waitForAction: 'click',
     actionHint: '👆 Click to collapse!',
-    clickTarget: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
   },
   {
-    target: '[data-tutorial="tab-groups"][data-group-type="chat"]',
+    target: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
     title: 'Expand Groups',
     description: 'Perfect! Now click the arrow again to expand the group and see all your Chat tabs.',
     position: 'bottom',
     interactive: true,
     waitForAction: 'click',
     actionHint: '👆 Click to expand!',
-    clickTarget: '[data-tutorial="tab-groups"][data-group-type="chat"] button',
   },
   {
     target: '[data-tab-type="analytics"]',
@@ -650,7 +648,6 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     interactive: true,
     waitForAction: 'click',
     actionHint: '👆 Click Dashboard!',
-    clickTarget: '[data-tab-type="analytics"]', 
   },
   {
     target: '[data-tutorial="split-toggle"]',
@@ -677,7 +674,6 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
     interactive: true,
     waitForAction: 'click',
     actionHint: '👆 Click to expand!',
-    clickTarget: '[data-tutorial-click="lesson-planners-group"]',
   },
   {
     target: '[data-tutorial="tool-quiz"]',
