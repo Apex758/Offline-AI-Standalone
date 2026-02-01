@@ -82,7 +82,13 @@ function parseQuizContent(text: string): ParsedQuiz {
 
       // Start new question
       const num = parseInt(trimmed.match(/^Question (\d+):/)?.[1] || '0');
-      const questionText = trimmed.replace(/^Question \d+:\s*/, '');
+      let questionText = trimmed.replace(/^Question \d+:\s*/, '');
+
+      // Strip "(Sample Answer)" and any trailing example text from open-ended questions
+      questionText = questionText
+        .replace(/\s*\(Sample\s*Answer\).*$/i, '')
+        .replace(/\s*Example of a good response:.*$/i, '')
+        .trim();
       
       currentQuestion = { 
         number: num, 
@@ -272,10 +278,43 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
         </div>
       `;
     });
+
+    // Inline: Correct Answer + Explanation (Teacher Version)
+    if (showAnswerKey) {
+      const answerEntry = parsed.answerKey.find(a => a.questionNumber === question.number);
+      if (answerEntry && answerEntry.correctAnswer) {
+        htmlContent += `
+          <div style="
+            margin-left: 1.5rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+          ">
+            <span style="font-weight: 600; color: #374151;">Correct Answer: </span>
+            <span style="font-weight: 700; color: ${accentColor};">${answerEntry.correctAnswer}</span>
+          </div>
+        `;
+      }
+      if (showExplanations && answerEntry && answerEntry.explanation.length > 0) {
+        htmlContent += `
+          <div style="
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: ${accentColor}0d;
+            border-left: 3px solid ${accentColor}66;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+          ">
+            <span style="font-weight: 600; color: ${accentColor};">Explanation: </span>
+            <span style="color: #374151; line-height: 1.625;">${answerEntry.explanation.join(' ')}</span>
+          </div>
+        `;
+      }
+    }
   });
 
-  // Render Answer Key Section (if enabled)
-  if (showAnswerKey && parsed.answerKey.length > 0) {
+  // Standalone Answer Key section removed — answers now render inline above.
+  if (false) {
     htmlContent += `
       <div style="height: 24px;"></div>
       <h2 style="

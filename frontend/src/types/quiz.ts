@@ -264,6 +264,12 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
         .replace(/^Fill-in-the-Blank\**\s*/i, '')
         .replace(/^Open-Ended\**\s*/i, '')
         .trim();
+
+      // Strip "(Sample Answer)" and any trailing example text the LLM appends to open-ended questions
+      questionText = questionText
+        .replace(/\s*\(Sample\s*Answer\).*$/i, '')
+        .replace(/\s*Example of a good response:.*$/i, '')
+        .trim();
       
       const index = parseInt(questionNumber) - 1;
       let parsedQuestion: QuizQuestion | null = null;

@@ -130,8 +130,8 @@ Explanation: [Why this is the answer]
     
     if (hasOpenEnded) {
       formatInstructions += `OPEN-ENDED FORMAT:
-Question X: [Open-ended question]
-Sample Answer: [Example of a good response]
+Question X: [Write ONLY the question here. Do NOT append "(Sample Answer)" or any example text to this line]
+Sample Answer: [Example of a good response — on its own line, NOT part of the question above]
 Key Points: [Bullet points of what should be included]
 Explanation: [Additional context or rubric guidance]
 

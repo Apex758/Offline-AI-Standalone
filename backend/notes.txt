@@ -89,7 +89,4 @@ queue and notification system
 
 
 
-✓ [CONFIG] Model exists: True
-[2026-01-15 02:05:41.929] [info]  Window console [1]: Waiting 3121ms to meet minimum splash time...
-[2026-01-15 02:05:42.712] [info]  Backend: Failed to initialize CurriculumMatcher: Curriculum index not found at C:\Users\LG\AppData\Local\Programs\OECS Learning Hub\resources\frontend\src\data\curriculumIndex.json
-[2026-01-15 02:05:42.714] [info]  Backend: INFO:     Application startup complete.
+add jumpable chat like deepseek that leets you jump to the different messages you sent
