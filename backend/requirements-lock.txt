@@ -67,6 +67,8 @@ typer-config==1.4.0
 # Document Generation
 python-docx==1.2.0
 weasyprint==67.0
+beautifulsoup4==4.14.2
+soupsieve==2.8  
 pydyf==0.12.1
 cffi==2.0.0
 pycparser==2.23

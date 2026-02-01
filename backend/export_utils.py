@@ -2,7 +2,7 @@ import io
 import csv
 import json
 from typing import Any, Dict, List, Union
-
+from bs4 import BeautifulSoup
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH

@@ -460,7 +460,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     </div>
 
     <div style="
-      margin-top: 1.5rem;
+      // margin-top: 1.5rem;
       padding-top: 1rem;
       border-top: 1px solid rgba(255, 255, 255, 0.2);
       color: rgba(207, 250, 254, 1);
