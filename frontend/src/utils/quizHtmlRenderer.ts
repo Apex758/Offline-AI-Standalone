@@ -427,7 +427,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       color: white;
       margin: 0.5rem 0;
       line-height: 1.2;
-    ">${formData.numberOfQuestions}-Question Assessment${!showAnswerKey ? ' (Student Version)' : ''}</h1>
+    ">${formData.numberOfQuestions}-Question Assessment</h1>
 
     <div style="
       display: flex;
@@ -485,7 +485,6 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     text-align: center;
   ">
     Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-    ${!showAnswerKey ? ' • Student Version (No Answers)' : ''}
     ${showAnswerKey && !showExplanations ? ' • Answer Key Only' : ''}
     ${showAnswerKey && showExplanations ? ' • Full Answer Key with Explanations' : ''}
   </div>

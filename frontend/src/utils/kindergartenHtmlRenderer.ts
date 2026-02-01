@@ -306,7 +306,7 @@ export function generateKindergartenHTML(text: string, options: RenderOptions): 
       color: rgba(207, 250, 254, 1);
       font-size: 0.875rem;
     ">
-      <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
+      // <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
     </div>
   </div>
 
