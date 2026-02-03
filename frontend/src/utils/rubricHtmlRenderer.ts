@@ -43,64 +43,116 @@ function parseLinewiseRubric(text: string): {
   
   // Find headers (Criteria, Excellent, Proficient, etc.)
   let headerStartIdx = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].toLowerCase() === 'criteria') {
-      headerStartIdx = i;
-      headers.push('Criteria');
-      
-      // Next few lines should be performance levels
-      for (let j = i + 1; j < Math.min(i + 7, lines.length); j++) {
-        const line = lines[j];
-        // Stop if we hit a long line (likely a descriptor)
-        if (line.length > 30 || line.includes('(') || line.includes('pts')) break;
-        // Performance level names are short and capitalized
-        if (line.match(/^[A-Z][a-z]+$/) || line.match(/^(Excellent|Proficient|Developing|Beginning|Advanced|Good|Fair)$/i)) {
-          headers.push(line);
-        }
-      }
-      break;
+  
+  // First, try to detect markdown table format (lines with |)
+  const tableLines = lines.filter(line => line.includes('|'));
+  if (tableLines.length > 0) {
+    // Parse markdown table header
+    const headerLine = tableLines[0];
+    const headerCells = headerLine.split('|')
+      .map(cell => cell.trim())
+      .filter(cell => cell.length > 0 && !cell.match(/^-+$/));
+    
+    if (headerCells.length > 1) {
+      headerStartIdx = lines.indexOf(headerLine);
+      headers.push(...headerCells);
     }
+  }
+  
+  // Fallback: try line-by-line format
+  if (headerStartIdx === -1) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].toLowerCase() === 'criteria') {
+        headerStartIdx = i;
+        headers.push('Criteria');
+        
+        // Next few lines should be performance levels
+        for (let j = i + 1; j < Math.min(i + 7, lines.length); j++) {
+          const line = lines[j];
+          // Stop if we hit a long line (likely a descriptor)
+          if (line.length > 30 || line.includes('(') || line.includes('pts')) break;
+          // Performance level names are short and capitalized
+          if (line.match(/^[A-Z][a-z]+$/) || line.match(/^(Excellent|Proficient|Developing|Beginning|Advanced|Good|Fair)$/i)) {
+            headers.push(line);
+          }
+        }
+        break;
+      }
+    }
+  }
+  
+  // If no header row found, we can't parse the rubric
+  if (headerStartIdx === -1) {
+    return null;
   }
   
   // Parse criteria rows
   let currentCriterion: { name: string; levels: string[] } | null = null;
   
-  for (let i = headerStartIdx + headers.length; i < lines.length; i++) {
-    const line = lines[i];
+  // If we detected a markdown table, parse table rows
+  if (tableLines.length > 0 && headers.length > 0) {
+    // Skip header row and separator row (---)
+    const dataRows = tableLines.slice(1).filter(line => !line.includes('---'));
     
-    // Check for scoring summary
-    if (line.toLowerCase().includes('scoring summary')) {
-      inScoring = true;
-      // Save current criterion if any
-      if (currentCriterion && currentCriterion.levels.length > 0) {
-        criteria.push(currentCriterion);
-        currentCriterion = null;
+    for (const row of dataRows) {
+      const cells = row.split('|')
+        .map(cell => cell.trim())
+        .filter(cell => cell.length > 0);
+      
+      if (cells.length > 1) {
+        const criterionName = cells[0];
+        const levels = cells.slice(1);
+        
+        criteria.push({
+          name: criterionName,
+          levels: levels
+        });
       }
-      continue;
     }
-    
-    if (inScoring) {
-      scoringSummary += line + '\n';
-      continue;
-    }
-    
-    // Detect criterion name (short line, no parentheses, no "pts")
-    if (line.length < 50 && !line.includes('(') && !line.toLowerCase().includes('pts') && 
-        line.match(/^[A-Z]/) && !headers.includes(line)) {
-      // Save previous criterion
-      if (currentCriterion && currentCriterion.levels.length > 0) {
-        criteria.push(currentCriterion);
+  } else {
+    // Parse line-by-line format
+    for (let i = headerStartIdx + headers.length; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // Defensive: skip undefined lines
+      if (line === undefined || line === null) {
+        continue;
       }
-      currentCriterion = { name: line, levels: [] };
-    } else if (currentCriterion && line.length > 20) {
-      // This is a level descriptor
-      currentCriterion.levels.push(line);
+      
+      // Check for scoring summary
+      if (line.toLowerCase().includes('scoring summary')) {
+        inScoring = true;
+        // Save current criterion if any
+        if (currentCriterion && currentCriterion.levels.length > 0) {
+          criteria.push(currentCriterion);
+          currentCriterion = null;
+        }
+        continue;
+      }
+      
+      if (inScoring) {
+        scoringSummary += line + '\n';
+        continue;
+      }
+      
+      // Detect criterion name (short line, no parentheses, no "pts")
+      if (line.length < 50 && !line.includes('(') && !line.toLowerCase().includes('pts') &&
+          line.match(/^[A-Z]/) && !headers.includes(line)) {
+        // Save previous criterion
+        if (currentCriterion && currentCriterion.levels.length > 0) {
+          criteria.push(currentCriterion);
+        }
+        currentCriterion = { name: line, levels: [] };
+      } else if (currentCriterion && line.length > 20) {
+        // This is a level descriptor
+        currentCriterion.levels.push(line);
+      }
     }
-  }
-  
-  // Save last criterion
-  if (currentCriterion && currentCriterion.levels.length > 0) {
-    criteria.push(currentCriterion);
+    
+    // Save last criterion
+    if (currentCriterion && currentCriterion.levels.length > 0) {
+      criteria.push(currentCriterion);
+    }
   }
   
   return { title, headers, criteria, scoringSummary };
