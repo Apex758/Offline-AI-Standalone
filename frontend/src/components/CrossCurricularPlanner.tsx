@@ -892,9 +892,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         )}
                       </button>
                       <ExportButton
-                        dataType="plan"
+                        dataType="cross-curricular"
                         data={{
                           content: parsedPlan ? crossCurricularPlanToDisplayText(parsedPlan) : generatedPlan,
+                          parsedPlan: parsedPlan,
                           formData: formData,
                           accentColor: tabColor
                         }}

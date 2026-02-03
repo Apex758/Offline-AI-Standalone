@@ -7,6 +7,8 @@ import { prepareWorksheetForExport } from '../utils/worksheetHtmlRenderer';
 import { prepareLessonForExport } from '../utils/lessonHtmlRenderer';
 import { prepareRubricForExport } from '../utils/rubricHtmlRenderer';
 import { prepareMultigradeForExport } from '../utils/multigradeHtmlRenderer';
+import { prepareKindergartenForExport } from '../utils/kindergartenHtmlRenderer';
+import { prepareCrossCurricularForExport } from '../utils/crossCurricularHtmlRenderer';
 
 interface ExportButtonProps {
   dataType: 'quiz' | 'plan' | 'rubric' | 'kindergarten' | 'multigrade' | 'cross-curricular' | 'worksheet';
@@ -16,6 +18,8 @@ interface ExportButtonProps {
     accentColor: string;
     parsedQuiz?: any;
     parsedWorksheet?: any;
+    parsedPlan?: any;
+    parsedKindergartenPlan?: any;
     curriculumReferences?: any;
     generatedImages?: string[];
     exportOptions?: {
@@ -82,6 +86,22 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           data.accentColor
         );
         title = data.formData.topic || 'Multigrade Lesson Plan';
+      } else if (dataType === 'kindergarten') {  // ✅ ADD THIS
+        exportData = prepareKindergartenForExport(
+          data.content,
+          data.formData,
+          data.accentColor,
+          data.parsedKindergartenPlan
+        );
+        title = data.formData.lessonTopic || 'Kindergarten Plan';
+      } else if (dataType === 'cross-curricular') {  // ✅ ADD THIS
+        exportData = prepareCrossCurricularForExport(
+          data.content,
+          data.formData,
+          data.accentColor,
+          data.parsedPlan
+        );
+        title = data.formData.lessonTitle || 'Cross-Curricular Plan';
       } else {
         // Handle quiz export (existing code)
         exportData = prepareQuizForExport(

@@ -696,7 +696,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         )}
                       </button>
                       <ExportButton
-                        dataType="plan"
+                        dataType="multigrade"
                         data={{
                           content: generatedPlan,
                           formData: formData,

@@ -867,9 +867,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                         )}
                       </button>
                       <ExportButton
-                        dataType="plan"
+                        dataType="kindergarten"
                         data={{
                           content: parsedPlan ? kindergartenPlanToDisplayText(parsedPlan) : generatedPlan,
+                          parsedKindergartenPlan: parsedPlan,
                           formData: formData,
                           accentColor: tabColor
                         }}
