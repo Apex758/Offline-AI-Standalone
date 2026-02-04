@@ -15,6 +15,8 @@ export const TUTORIAL_IDS = {
   CROSS_CURRICULAR_PLANNER: 'cross-curricular-planner',
   QUIZ_GENERATOR: 'quiz-generator',
   RUBRIC_GENERATOR: 'rubric-generator',
+  WORKSHEET_GENERATOR: 'worksheet-generator',
+  IMAGE_STUDIO: 'image-studio',
   RESOURCE_MANAGER: 'resource-manager',
   SETTINGS: 'settings',
 } as const;
@@ -559,71 +561,60 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Generate customized quizzes',
     steps: [
       {
-        target: '[data-tutorial="quiz-welcome"]',
+        target: '[data-tutorial="quiz-generator-welcome"]',
         title: 'Welcome to Quiz Generator',
         description: 'Create customized quizzes and assessments with various question types. Perfect for formative and summative assessments.',
-        position: 'bottom'
+        position: 'center'
       },
       {
-        target: '[data-tutorial="quiz-topic"]',
-        title: 'Topic & Grade',
-        description: 'Enter the topic or learning objective and select the grade level for your quiz.',
-        position: 'right'
+        target: '[data-tutorial="quiz-generator-history"]',
+        title: 'Quiz History',
+        description: 'Open your saved quizzes to reload, edit, or delete them.',
+        position: 'top'
       },
       {
-        target: '[data-tutorial="quiz-subject"]',
+        target: '[data-tutorial="quiz-generator-subject"]',
         title: 'Subject Area',
         description: 'Choose the subject: Language Arts, Mathematics, Science, or Social Studies.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="quiz-question-types"]',
-        title: 'Question Types',
-        description: 'Select question formats: multiple choice, true/false, short answer, matching, or fill-in-the-blank.',
-        position: 'right',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="quiz-cognitive-levels"]',
-        title: 'Cognitive Levels',
-        description: 'Choose Bloom\'s Taxonomy levels: remember, understand, apply, analyze, evaluate, or create. Mix levels for balanced assessment.',
+        target: '[data-tutorial="quiz-generator-grade"]',
+        title: 'Grade Level',
+        description: 'Select the grade to align difficulty and standards.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="quiz-count"]',
+        target: '[data-tutorial="quiz-generator-question-count"]',
         title: 'Number of Questions',
         description: 'Specify how many questions you need. Consider your class time and assessment purpose.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="quiz-difficulty"]',
-        title: 'Difficulty Level',
-        description: 'Set overall difficulty: easy, medium, or hard. Or mix difficulties for differentiation.',
+        target: '[data-tutorial="quiz-generator-topic"]',
+        title: 'Learning Outcomes',
+        description: 'Describe the learning outcomes or focus topic to guide question generation.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="quiz-generate"]',
+        target: '[data-tutorial="quiz-generator-question-types"]',
+        title: 'Question Types',
+        description: 'Select question formats: multiple choice, true/false, short answer, matching, or fill-in-the-blank.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="quiz-generator-cognitive-levels"]',
+        title: 'Cognitive Levels',
+        description: 'Choose Bloom\'s Taxonomy levels: remember, understand, apply, analyze, evaluate, or create. Mix levels for balanced assessment.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="quiz-generator-generate"]',
         title: 'Generate Quiz',
         description: 'Create your quiz! PEARL AI will generate questions with answer keys and marking schemes.',
-        position: 'top',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
+        position: 'top'
       },
-      {
-        target: '[data-tutorial="quiz-preview"]',
-        title: 'Preview & Edit',
-        description: 'Review generated questions, edit as needed, and rearrange question order before finalizing.',
-        position: 'left'
-      },
-      {
-        target: '[data-tutorial="quiz-export"]',
-        title: 'Save & Export',
-        description: 'Save to resources, print for students, or export with answer keys for grading.',
-        position: 'left'
-      }
+      // Optional future: preview/edit/export steps once anchors exist
     ]
   },
   
@@ -633,19 +624,19 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Create grading rubrics',
     steps: [
       {
-        target: '[data-tutorial="rubric-welcome"]',
+        target: '[data-tutorial="rubric-generator-welcome"]',
         title: 'Welcome to Rubric Generator',
         description: 'Create clear, detailed grading rubrics for assignments and projects. Help students understand expectations and make grading consistent.',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="rubric-assignment"]',
+        target: '[data-tutorial="rubric-generator-assignment"]',
         title: 'Assignment Details',
         description: 'Describe the assignment, project, or task being assessed. Include grade level and subject.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="rubric-criteria"]',
+        target: '[data-tutorial="rubric-generator-criteria"]',
         title: 'Assessment Criteria',
         description: 'List the criteria you\'ll assess: content knowledge, organization, creativity, effort, etc. Add as many as needed.',
         position: 'right',
@@ -654,25 +645,25 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         actionHint: '👆 Click here!'
       },
       {
-        target: '[data-tutorial="rubric-levels"]',
+        target: '[data-tutorial="rubric-generator-levels"]',
         title: 'Performance Levels',
         description: 'Choose performance levels: typically 3-5 levels like "Exceeds," "Meets," "Approaching," and "Below" expectations.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="rubric-points"]',
+        target: '[data-tutorial="rubric-generator-points"]',
         title: 'Point Values',
         description: 'Assign point values to each performance level. Total points help with grade calculation.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="rubric-descriptors"]',
+        target: '[data-tutorial="rubric-generator-descriptors"]',
         title: 'Performance Descriptors',
         description: 'PEARL AI generates clear descriptors for each criterion at each level, making expectations explicit.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="rubric-generate"]',
+        target: '[data-tutorial="rubric-generator-generate"]',
         title: 'Generate Rubric',
         description: 'Create a complete, professional rubric with all criteria, levels, and descriptors.',
         position: 'top',
@@ -680,12 +671,54 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         waitForAction: 'click',
         actionHint: '👆 Click here!'
       },
-      {
-        target: '[data-tutorial="rubric-export"]',
-        title: 'Save & Share',
-        description: 'Save to resources, print to share with students, or export for your records.',
-        position: 'left'
-      }
+      // Optional future: export/save anchor not present
+    ]
+  },
+
+  [TUTORIAL_IDS.WORKSHEET_GENERATOR]: {
+    id: TUTORIAL_IDS.WORKSHEET_GENERATOR,
+    name: 'Worksheet Generator',
+    description: 'Create and preview AI-assisted worksheets',
+    steps: [
+      { target: '[data-tutorial="worksheet-generator-welcome"]', title: 'Welcome to Worksheet Generator', description: 'Configure subject, grade, and scope to create aligned worksheets.', position: 'bottom' },
+      { target: '[data-tutorial="worksheet-generator-subject"]', title: 'Pick Subject', description: 'Choose the subject to align standards and content.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-grade"]', title: 'Set Grade', description: 'Select the grade level for appropriate rigor.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-strand"]', title: 'Choose Strand', description: 'Pick the strand to narrow curriculum alignment.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-topic"]', title: 'Topic / Focus', description: 'Add a topic or key idea to guide generation.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-question-count"]', title: 'Question Count', description: 'Set how many questions to include.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-question-type"]', title: 'Question Type', description: 'Select the question type to shape the template and prompts.', position: 'right', interactive: true, waitForAction: 'click', actionHint: '👆 Select a type' },
+      { target: '[data-tutorial="worksheet-generator-templates"]', title: 'Template Layout', description: 'Pick the worksheet layout that matches your question type.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-include-images"]', title: 'Images (Optional)', description: 'Toggle images on/off to enrich the worksheet.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-image-prompt"]', title: 'Image Prompt', description: 'Describe the image for AI generation when images are enabled.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-image-generate"]', title: 'Generate Images', description: 'Generate supportive images for the worksheet.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
+      { target: '[data-tutorial="worksheet-generator-generate"]', title: 'Generate Worksheet', description: 'Produce the worksheet with the chosen settings.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
+      { target: '[data-tutorial="worksheet-generator-preview"]', title: 'Live Preview', description: 'See the rendered worksheet; switch between student/teacher views.', position: 'left' },
+      { target: '[data-tutorial="worksheet-generator-view-toggle"]', title: 'Student vs. Teacher', description: 'Toggle to show/hide answers.', position: 'left', interactive: true, waitForAction: 'click', actionHint: '👆 Toggle view' },
+      { target: '[data-tutorial="worksheet-generator-save"]', title: 'Save', description: 'Save your worksheet to history/resources.', position: 'left' },
+      { target: '[data-tutorial="worksheet-generator-export"]', title: 'Export', description: 'Export the worksheet for sharing/printing.', position: 'left' },
+      { target: '[data-tutorial="worksheet-generator-history-toggle"]', title: 'History', description: 'Open saved worksheets to load, edit, or delete.', position: 'left' },
+      { target: '[data-tutorial="worksheet-generator-preview-pane"]', title: 'Edit / Preview Pane', description: 'Review content; edit text if needed.', position: 'left' }
+    ]
+  },
+
+  [TUTORIAL_IDS.IMAGE_STUDIO]: {
+    id: TUTORIAL_IDS.IMAGE_STUDIO,
+    name: 'Image Studio',
+    description: 'Generate and edit images with inpainting',
+    steps: [
+      { target: '[data-tutorial="image-studio-tab-toggle"]', title: 'Generator vs. Editor', description: 'Switch between generating images and editing uploads.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Toggle' },
+      { target: '[data-tutorial="image-studio-prompt"]', title: 'Prompt', description: 'Describe the image you want to generate.', position: 'right' },
+      { target: '[data-tutorial="image-studio-negative-prompt"]', title: 'Negative Prompt', description: 'Exclude unwanted elements (optional).', position: 'right' },
+      { target: '[data-tutorial="image-studio-dimensions"]', title: 'Dimensions', description: 'Pick width/height for outputs.', position: 'right' },
+      { target: '[data-tutorial="image-studio-steps"]', title: 'Steps / Batch', description: 'Control quality and batch size.', position: 'right' },
+      { target: '[data-tutorial="image-studio-generate"]', title: 'Generate Images', description: 'Start the AI image generation.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
+      { target: '[data-tutorial="image-studio-results"]', title: 'Results', description: 'Review generated images; download or save.', position: 'left' },
+      { target: '[data-tutorial="image-studio-upload"]', title: 'Upload to Edit', description: 'Upload an image for cleanup or inpainting.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Upload' },
+      { target: '[data-tutorial="image-studio-canvas"]', title: 'Mask & Preview', description: 'Draw masks over areas to remove.', position: 'center' },
+      { target: '[data-tutorial="image-studio-brush"]', title: 'Brush Size', description: 'Adjust brush size for masking.', position: 'right' },
+      { target: '[data-tutorial="image-studio-remove"]', title: 'Remove Marked Area', description: 'Run inpainting on the masked area.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Remove' },
+      { target: '[data-tutorial="image-studio-undo"]', title: 'Undo / Redo', description: 'Step through your edit history.', position: 'right' },
+      { target: '[data-tutorial="image-studio-save-edited"]', title: 'Save Edited Image', description: 'Save the edited image to resources.', position: 'left' }
     ]
   },
   [TUTORIAL_IDS.ANALYTICS]: {

@@ -623,10 +623,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   return (
-    <div className="h-full bg-white grid grid-cols-2">
+    <div className="h-full bg-white grid grid-cols-2" data-tutorial="worksheet-generator-welcome">
       {/* Left Panel - Configuration (50%) */}
       <div className="flex flex-col border-r border-gray-200 overflow-y-auto">
-        <div className="border-b border-gray-200 p-4">
+        <div className="border-b border-gray-200 p-4" data-tutorial="worksheet-generator-header">
           <h2 className="text-xl font-semibold text-gray-800">Worksheet Generator</h2>
           <p className="text-sm text-gray-500">Create customized worksheets with curriculum alignment</p>
         </div>
@@ -634,14 +634,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Curriculum Section */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="worksheet-generator-curriculum">
               <h3 className="text-lg font-semibold text-gray-800">Curriculum Alignment</h3>
 
               {/* Two-column layout for dropdowns and curriculum box */}
               <div className="grid grid-cols-2 gap-6">
                 {/* Left column - Form fields */}
                 <div className="space-y-4">
-                  <div>
+                  <div data-tutorial="worksheet-generator-subject">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Subject <span className="text-red-500">*</span>
                     </label>
@@ -660,7 +660,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     </select>
                   </div>
 
-                  <div>
+                  <div data-tutorial="worksheet-generator-grade">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Grade Level <span className="text-red-500">*</span>
                     </label>
@@ -680,7 +680,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   </div>
 
                   {formData.subject && formData.gradeLevel && (
-                    <div>
+                    <div data-tutorial="worksheet-generator-strand">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Strand <span className="text-red-500">*</span>
                       </label>
@@ -697,7 +697,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     </div>
                   )}
 
-                  <div>
+                  <div data-tutorial="worksheet-generator-topic">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Topic
                     </label>
@@ -710,7 +710,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     />
                   </div>
 
-                  <div>
+                  <div data-tutorial="worksheet-generator-title">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Worksheet Title <span className="text-gray-500">(optional)</span>
                     </label>
@@ -725,7 +725,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
 
                 {/* Right column - Related Curriculum Box */}
-                <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50" data-tutorial="worksheet-generator-curriculum-box">
                   <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center">
                     <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -794,14 +794,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
 
             {/* Worksheet Scope */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="worksheet-generator-scope">
               <h3 className="text-lg font-semibold text-gray-800">Worksheet Scope</h3>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Students
-                  </label>
+                 <div data-tutorial="worksheet-generator-student-count">
+                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Number of Students
+                   </label>
                   <input
                     type="number"
                     value={formData.studentCount}
@@ -811,10 +811,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Questions <span className="text-red-500">*</span>
-                  </label>
+                 <div data-tutorial="worksheet-generator-question-count">
+                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Number of Questions <span className="text-red-500">*</span>
+                   </label>
                   <input
                     type="number"
                     min="1"
@@ -830,7 +830,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
 
             {/* Question Type */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="worksheet-generator-question-type">
               <h3 className="text-lg font-semibold text-gray-800">Question Type</h3>
               <p className="text-sm text-gray-500">Select the type of questions to include in your worksheet</p>
 
@@ -852,7 +852,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
 
             {/* Include Images */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="worksheet-generator-include-images">
               <div>
                 <label className="flex items-center space-x-2">
                   <input
@@ -869,7 +869,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
             {/* AI Image Generation */}
             {formData.includeImages && (
-              <div className="space-y-4">
+              <div className="space-y-4" data-tutorial="worksheet-generator-image-prompt">
               <h3 className="text-lg font-semibold text-gray-800">AI Image Generation</h3>
 
               <div>
@@ -889,6 +889,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 onClick={handleGenerateImage}
                 disabled={generatingImages || !imagePrompt.trim()}
                 className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                data-tutorial="worksheet-generator-image-generate"
               >
                 {generatingImages ? (
                   <>
@@ -919,7 +920,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               )}
 
               {generatedImages.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="worksheet-generator-generated-images">
                   <h4 className="text-md font-semibold text-gray-800">Generated Images</h4>
                   {generatedImages.map((img, i) => (
                     <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
@@ -943,7 +944,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             )}
 
             {/* Templates */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="worksheet-generator-templates">
               <h3 className="text-lg font-semibold text-gray-800">Worksheet Template</h3>
               <p className="text-sm text-gray-500">Choose a layout that works with your selected question types</p>
 
@@ -975,7 +976,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
             {/* Template Options */}
             {formData.selectedTemplate && formData.includeImages && (
-              <div className="space-y-4">
+              <div className="space-y-4" data-tutorial="worksheet-generator-template-options">
                 <h3 className="text-lg font-semibold text-gray-800">Template-Specific Options</h3>
                 {formData.selectedTemplate === 'multiple-choice' || formData.selectedTemplate === 'list-based' ? (
                   <div>
@@ -1011,7 +1012,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         </div>
 
         {/* Generate Button */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <div className="border-t border-gray-200 p-4 bg-gray-50" data-tutorial="worksheet-generator-generate">
           <div className="max-w-4xl mx-auto">
             {generationError && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
@@ -1048,7 +1049,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       </div>
 
       {/* Right Panel - Preview (50%) */}
-      <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto relative">
+      <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto relative" data-tutorial="worksheet-generator-preview">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
           <div>
@@ -1068,6 +1069,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
                   title="Edit generated worksheet text"
                   disabled={!generatedWorksheet}
+                  data-tutorial="worksheet-generator-edit"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Edit
@@ -1077,6 +1079,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   onClick={saveWorksheet}
                   disabled={saveStatus === 'saving'}
                   className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                  data-tutorial="worksheet-generator-save"
                 >
                   {saveStatus === 'saving' ? (
                     <>
@@ -1100,6 +1103,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   <button
                     onClick={() => setShowVersionMenu(!showVersionMenu)}
                     className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
+                    data-tutorial="worksheet-generator-view-toggle"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     {viewMode === 'teacher' ? 'Teacher Version' : 'Student Version'}
@@ -1175,12 +1179,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     generatedImages: generatedImages
                   }}
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
+                  data-tutorial="worksheet-generator-export"
                 />
 
                 <button
                   onClick={() => setHistoryOpen(!historyOpen)}
                   className="p-2 rounded-lg hover:bg-gray-100 transition"
                   title="Worksheet History"
+                  data-tutorial="worksheet-generator-history-toggle"
                 >
                   <History className="w-5 h-5 text-gray-600" />
                 </button>
@@ -1209,7 +1215,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         </div>
 
         {/* Template Preview Content */}
-        <div className="flex-1 p-4">
+                <div className="flex-1 p-4" data-tutorial="worksheet-generator-preview-pane">
           {isEditing ? (
             <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto p-4 space-y-4">
               <h4 className="text-lg font-semibold text-gray-800">Edit Worksheet Text</h4>

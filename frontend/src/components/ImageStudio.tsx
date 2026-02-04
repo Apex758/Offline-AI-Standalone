@@ -567,30 +567,30 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // RENDER
   // ========================================
   return (
-    <div className="h-full bg-white flex flex-col">
+    <div className="h-full bg-white flex flex-col" data-tutorial="image-studio-root">
       {/* Top Right Sliding Toggle */}
-      <div className="flex justify-end p-4 border-b border-gray-200">
+      <div className="flex justify-end p-4 border-b border-gray-200" data-tutorial="image-studio-tab-toggle">
         <div className="relative flex bg-gray-200 rounded-lg p-1">
           <div
             className={`absolute top-1 bottom-1 w-1/2 bg-blue-600 rounded-md transition-all duration-300 ease-in-out ${
               activeTab === 'generator' ? 'left-1' : 'left-1/2'
             }`}
           />
-          <button
-            onClick={() => setActiveTab('generator')}
-            className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
-              activeTab === 'generator' ? 'text-white' : 'text-gray-700 hover:text-gray-900'
-            }`}
-          >
+           <button
+             onClick={() => setActiveTab('generator')}
+             className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
+               activeTab === 'generator' ? 'text-white' : 'text-gray-700 hover:text-gray-900'
+             }`}
+           >
             <Sparkles className="w-4 h-4 mr-2" />
             Image Generator
           </button>
-          <button
-            onClick={() => setActiveTab('editor')}
-            className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
-              activeTab === 'editor' ? 'text-white' : 'text-gray-700 hover:text-gray-900'
-            }`}
-          >
+           <button
+             onClick={() => setActiveTab('editor')}
+             className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
+               activeTab === 'editor' ? 'text-white' : 'text-gray-700 hover:text-gray-900'
+             }`}
+           >
             <Eraser className="w-4 h-4 mr-2" />
             Image Editor
           </button>
@@ -615,13 +615,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         {/* ========================================
             GENERATOR TAB
         ======================================== */}
-        {activeTab === 'generator' && (
-          <div className="h-full p-6 overflow-y-auto">
+         {activeTab === 'generator' && (
+          <div className="h-full p-6 overflow-y-auto" data-tutorial="image-studio-generator-panel">
             {generationState === 'input' && (
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-2xl font-semibold mb-6">AI Image Generator</h2>
+                <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">AI Image Generator</h2>
                 <div className="space-y-6">
-                  <div>
+                  <div data-tutorial="image-studio-prompt">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Prompt <span className="text-red-500">*</span>
                     </label>
@@ -634,7 +634,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     />
                   </div>
 
-                  <div>
+                  <div data-tutorial="image-studio-negative-prompt">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Negative Prompt <span className="text-gray-500">(optional)</span>
                     </label>
@@ -647,7 +647,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     />
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-4" data-tutorial="image-studio-dimensions">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
                       <select
@@ -672,7 +672,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         <option value={1024}>1024px</option>
                       </select>
                     </div>
-                    <div>
+                    <div data-tutorial="image-studio-steps">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Steps</label>
                       <select
                         value={numInferenceSteps}
@@ -685,7 +685,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         <option value={4}>4 (Best Quality)</option>
                       </select>
                     </div>
-                    <div>
+                    <div data-tutorial="image-studio-batch">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Batch Size</label>
                       <select
                         value={numImages}
@@ -705,6 +705,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     onClick={handleGenerate}
                     disabled={!prompt.trim()}
                     className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                    data-tutorial="image-studio-generate"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />
                     Generate Image
@@ -714,7 +715,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             )}
 
             {generationState === 'generating' && (
-              <div className="max-w-5xl mx-auto">
+              <div className="max-w-5xl mx-auto" data-tutorial="image-studio-results">
                 <h2 className="text-2xl font-semibold mb-6">Generating Images...</h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {imageSlots.map((slot, i) => (
@@ -773,7 +774,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             )}
 
             {generationState === 'results' && (
-              <div className="max-w-5xl mx-auto">
+              <div className="max-w-5xl mx-auto" data-tutorial="image-studio-results">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold">Generated Image</h2>
                   <button
@@ -847,11 +848,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             EDITOR TAB
         ======================================== */}
         {activeTab === 'editor' && (
-          <div className="h-full flex">
+          <div className="h-full flex" data-tutorial="image-studio-editor-panel">
             {/* Main Canvas Area */}
             <div className="flex-1 p-6 overflow-y-auto">
               {!uploadedImage ? (
-                <div className="h-full flex items-center justify-center">
+                <div className="h-full flex items-center justify-center" data-tutorial="image-studio-upload">
                   <div className="text-center">
                     <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                     <h2 className="text-xl font-semibold mb-2">Upload an Image</h2>
@@ -892,7 +893,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </div>
                   </div>
 
-                  <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100">
+                  <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100" data-tutorial="image-studio-canvas">
                     {/* Original image underneath */}
                     <img
                       src={history.original}
@@ -946,6 +947,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       onClick={handleRemoveObject}
                       disabled={isInpainting}
                       className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                      data-tutorial="image-studio-remove"
                     >
                       {isInpainting ? (
                         <>
@@ -973,12 +975,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
             {/* Right Sidebar - Editor Tools */}
             {uploadedImage && (
-              <div className="w-72 border-l border-gray-200 p-4 overflow-y-auto bg-gray-50">
+              <div className="w-72 border-l border-gray-200 p-4 overflow-y-auto bg-gray-50" data-tutorial="image-studio-tools">
                 <h3 className="text-lg font-semibold mb-4">Editor Tools</h3>
 
                 <div className="space-y-4">
                   {/* Brush Size */}
-                  <div>
+                  <div data-tutorial="image-studio-brush">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Brush Size: {brushSize}px
                     </label>
@@ -993,7 +995,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </div>
 
                   {/* Undo/Redo */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" data-tutorial="image-studio-undo">
                     <button
                       onClick={handleUndo}
                       disabled={history.undoStack.length === 0}
@@ -1025,6 +1027,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   <button
                     onClick={handleSaveEdited}
                     className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                    data-tutorial="image-studio-save-edited"
                   >
                     <Save className="w-4 h-4 mr-1" />
                     Save

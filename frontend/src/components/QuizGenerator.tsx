@@ -868,19 +868,20 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         ) : (
           // Form view
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">Quiz Configuration</h2>
-                <p className="text-sm text-gray-500">Configure your quiz parameters</p>
+              <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Quiz Configuration</h2>
+                  <p className="text-sm text-gray-500">Configure your quiz parameters</p>
+                </div>
+                <button
+                  onClick={() => setHistoryOpen(!historyOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition"
+                  title="Quiz History"
+                  data-tutorial="quiz-generator-history"
+                >
+                  <History className="w-5 h-5 text-gray-600" />
+                </button>
               </div>
-              <button
-                onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition"
-                title="Quiz History"
-              >
-                <History className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
