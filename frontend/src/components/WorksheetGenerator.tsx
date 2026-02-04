@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Loader2, Eye, Trash2, Wand2, Save, History, X } from 'lucide-react';
+import { FileText, Loader2, Eye, Trash2, Wand2, Save, History, X, Download } from 'lucide-react';
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,
