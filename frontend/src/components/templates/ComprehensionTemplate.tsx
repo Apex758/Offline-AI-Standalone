@@ -1,4 +1,5 @@
 import React from 'react';
+import { WorksheetQuestion } from '../../types/worksheet';
 
 interface ComprehensionTemplateProps {
   subject?: string;
@@ -10,11 +11,9 @@ interface ComprehensionTemplateProps {
   includeImages?: boolean;
   imagePlacement?: string;
   generatedImage?: string | null;
-  passage?: string;  // ← ADD THIS
-  questions?: Array<{  // ← ADD THIS
-    question: string;
-    id: string;
-  }>;
+  passage?: string;
+  questions?: WorksheetQuestion[];
+  showAnswers?: boolean;
 }
 
 const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
@@ -27,15 +26,18 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
   imagePlacement = 'large-centered',
   generatedImage = null,
   passage,  // ← NEW
-  questions  // ← NEW
+  questions,
+  showAnswers = false
 }) => {
   // Use actual passage if provided
   const displayPassage = passage || "Lorem ipsum dolor sit amet...";
   
   // Use actual questions if provided
-  const displayQuestions = questions || Array.from({ length: questionCount }, (_, i) => ({
+  const displayQuestions: WorksheetQuestion[] = questions || Array.from({ length: questionCount }, (_, i) => ({
     id: `sample_${i}`,
-    question: `Sample comprehension question ${i + 1}: What is the main idea?`
+    question: `Sample comprehension question ${i + 1}: What is the main idea?`,
+    correctAnswer: undefined,
+    type: 'comprehension'
   }));
 
   return (
@@ -123,11 +125,16 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
                     {q.question}
                   </p>
                 </div>
-                {/* Answer space */}
-                <div className="border-b border-gray-300 pb-2">
-                  <span className="text-gray-500 text-xs">Answer:</span>
-                  <div className="mt-1 min-h-[3rem]"></div>
-                </div>
+                {showAnswers && q.correctAnswer ? (
+                  <div className="mt-2 text-sm text-green-700">
+                    Answer: {String(q.correctAnswer)}
+                  </div>
+                ) : (
+                  <div className="border-b border-gray-300 pb-2">
+                    <span className="text-gray-500 text-xs">Answer:</span>
+                    <div className="mt-1 min-h-[3rem]"></div>
+                   </div>
+                 )}
               </div>
             </div>
           </div>

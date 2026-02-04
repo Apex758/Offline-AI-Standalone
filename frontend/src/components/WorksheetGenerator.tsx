@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Loader2, Eye, Trash2, RotateCcw, Wand2, Download, Save, History, X } from 'lucide-react';
+import { FileText, Loader2, Eye, Trash2, Wand2, Save, History, X } from 'lucide-react';
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,
@@ -34,6 +34,16 @@ interface WorksheetGeneratorProps {
   onOpenCurriculumTab?: (route: string) => void;
 }
 
+interface WorksheetHistory {
+  id: string;
+  title: string;
+  timestamp: string;
+  formData: WorksheetFormData;
+  generatedWorksheet: string;
+  parsedWorksheet: ParsedWorksheet | null;
+  generatedImages?: string[];
+}
+
 interface WorksheetFormData {
   subject: string;
   gradeLevel: string;
@@ -46,7 +56,7 @@ interface WorksheetFormData {
   worksheetTitle: string;
   includeImages: boolean;
   imageStyle: string;
-  imageMode: string;
+  imageMode: 'shared';
   imagePlacement: string;
 }
 
@@ -127,7 +137,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     worksheetTitle: '',
     includeImages: false,
     imageStyle: 'Cartoon',
-    imageMode: 'one-per-question',
+    imageMode: 'shared',
     imagePlacement: 'large-centered'
   });
 
@@ -228,6 +238,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
 
+  // Normalize image mode to the single supported option
+  useEffect(() => {
+    setFormData(prev => prev.imageMode === 'shared' ? prev : { ...prev, imageMode: 'shared' });
+  }, []);
+
   // Generation error state
   const [generationError, setGenerationError] = useState<string | null>(null);
 
@@ -259,8 +274,27 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [currentWorksheetId, setCurrentWorksheetId] = useState<string | null>(null);
-  const [worksheetHistories, setWorksheetHistories] = useState<any[]>([]);
+  const [worksheetHistories, setWorksheetHistories] = useState<WorksheetHistory[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'student' | 'teacher'>(() => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.viewMode === 'teacher' || parsed.viewMode === 'student') {
+          return parsed.viewMode;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore viewMode:', e);
+    }
+    if (savedData && typeof savedData === 'object' && (savedData as Record<string, unknown>).viewMode === 'teacher') {
+      return 'teacher';
+    }
+    return 'student';
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editBuffer, setEditBuffer] = useState('');
 
   // ✅ Connect WebSocket on mount
   useEffect(() => {
@@ -299,8 +333,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     );
   };
 
-  const handleInputChange = (field: keyof WorksheetFormData, value: string | boolean | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof WorksheetFormData, value: WorksheetFormData[keyof WorksheetFormData]) => {
+    setFormData(prev => ({ ...prev, [field]: value }) as WorksheetFormData);
   };
 
   // Handler for opening a curriculum card
@@ -375,6 +409,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setGeneratedWorksheet('');
     setParsedWorksheet(null);
     setGenerationError(null);
+    setIsEditing(false);
   };
 
   const handleRestoreWorksheet = () => {
@@ -388,13 +423,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   // Persist to localStorage
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet }));
-  }, [formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet, viewMode }));
+  }, [formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet, viewMode]);
 
   // Notify parent
   useEffect(() => {
-    onDataChange?.({ formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet });
-  }, [formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet]);
+    onDataChange?.({ formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet, viewMode });
+  }, [formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet, viewMode]);
 
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
@@ -466,9 +501,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
       includeImages: formData.includeImages,
-      imageMode: formData.imageMode,
+      imageMode: 'shared' as const,
       imagePlacement: formData.imagePlacement,
-      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null
+      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
+      showAnswers: viewMode === 'teacher'
     };
 
     switch (selectedTemplate.id) {
@@ -514,14 +550,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const loadWorksheetHistory = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/worksheet-history');
-      setWorksheetHistories(response.data);
+      setWorksheetHistories(response.data as WorksheetHistory[]);
     } catch (error) {
       console.error('Failed to load worksheet history:', error);
     }
   };
 
-  const loadWorksheetFromHistory = (history: any) => {
-    setFormData(history.formData);
+  const loadWorksheetFromHistory = (history: WorksheetHistory) => {
+    setFormData(history.formData as WorksheetFormData);
     setGeneratedWorksheet(history.generatedWorksheet);
     setParsedWorksheet(history.parsedWorksheet);
     setGeneratedImages(history.generatedImages || []);
@@ -950,7 +986,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       onChange={(e) => handleInputChange('imageMode', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="one-per-question">One image per question</option>
                       <option value="shared">One shared image for the entire worksheet</option>
                     </select>
                   </div>
@@ -1018,12 +1053,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           <div>
             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
               <Eye className="w-5 h-5 mr-2" />
-              Template Preview
+              Preview
             </h3>
-            <p className="text-sm text-gray-500">Live layout preview</p>
           </div>
           <div className="flex items-center gap-2">
-            {(generatedWorksheet || parsedWorksheet || clearedWorksheet) && (
+            {(generatedWorksheet || parsedWorksheet) && (
               <>
                 <button
                   onClick={saveWorksheet}
@@ -1043,11 +1077,26 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Save
+                      Save Worksheet
                     </>
                   )}
                 </button>
-                
+
+                <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => setViewMode('student')}
+                    className={`px-3 py-1 text-sm ${viewMode === 'student' ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  >
+                    Student
+                  </button>
+                  <button
+                    onClick={() => setViewMode('teacher')}
+                    className={`px-3 py-1 text-sm border-l border-gray-200 ${viewMode === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  >
+                    Teacher
+                  </button>
+                </div>
+
                 <ExportButton
                   dataType="worksheet"
                   data={{
@@ -1055,33 +1104,34 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     parsedWorksheet: parsedWorksheet,
                     formData: formData,
                     accentColor: '#3b82f6',
-                    generatedImages: generatedImages
+                    generatedImages: generatedImages,
+                    viewMode
                   }}
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
                 />
-                
+
+                <button
+                  onClick={() => {
+                    setEditBuffer(generatedWorksheet);
+                    setIsEditing(true);
+                  }}
+                  className="flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 transition text-sm"
+                  title="Edit generated worksheet text"
+                  disabled={!generatedWorksheet}
+                >
+                  Edit
+                </button>
+
                 <button
                   onClick={handleClearWorksheet}
                   className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
-                  title="Clear generated worksheet"
+                  title="Create a new worksheet"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  {clearedWorksheet ? 'Clear' : 'Create New'}
+                  Create New
                 </button>
-                
-                {clearedWorksheet && (
-                  <button
-                    onClick={handleRestoreWorksheet}
-                    className="flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
-                    title="Restore cleared worksheet"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-1" />
-                    Back
-                  </button>
-                )}
               </>
             )}
-            
             <button
               onClick={() => setHistoryOpen(!historyOpen)}
               className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -1095,7 +1145,35 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
         {/* Template Preview Content */}
         <div className="flex-1 p-4">
-          {generationError ? (
+          {isEditing ? (
+            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto p-4 space-y-4">
+              <h4 className="text-lg font-semibold text-gray-800">Edit Worksheet Text</h4>
+              <textarea
+                value={editBuffer}
+                onChange={(e) => setEditBuffer(e.target.value)}
+                className="w-full h-96 border border-gray-300 rounded-lg p-3 font-mono text-sm"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const parsed = parseWorksheetFromAI(editBuffer);
+                    setGeneratedWorksheet(editBuffer);
+                    setParsedWorksheet(parsed || null);
+                    setIsEditing(false);
+                  }}
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          ) : generationError ? (
             <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
               <div className="text-center text-red-600">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
@@ -1132,6 +1210,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       imageMode={formData.imageMode}
                       generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                       questions={parsedWorksheet.questions}
+                      showAnswers={viewMode === 'teacher'}
                     />
                   )}
                   {formData.selectedTemplate === 'comprehension' && (
@@ -1147,6 +1226,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                       passage={parsedWorksheet.passage}
                       questions={parsedWorksheet.questions}
+                      showAnswers={viewMode === 'teacher'}
                     />
                   )}
                   {formData.selectedTemplate === 'matching' && (
@@ -1160,6 +1240,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       includeImages={formData.includeImages}
                       columnA={parsedWorksheet.matchingItems?.columnA}
                       columnB={parsedWorksheet.matchingItems?.columnB}
+                      showAnswers={viewMode === 'teacher'}
                     />
                   )}
                   {formData.selectedTemplate === 'list-based' && (
@@ -1175,6 +1256,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       generatedImage={generatedImage}
                       questions={parsedWorksheet.questions}
                       wordBank={parsedWorksheet.wordBank}
+                      showAnswers={viewMode === 'teacher'}
                     />
                   )}
                 </div>
@@ -1265,3 +1347,4 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 };
 
 export default WorksheetGenerator;
+

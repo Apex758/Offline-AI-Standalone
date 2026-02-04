@@ -1,10 +1,3 @@
-// utils/worksheetHtmlRenderer.ts
-/**
- * Unified HTML renderer for worksheet content
- * Generates HTML that matches the frontend template display exactly
- * Used for both screen display and PDF/DOCX export
- */
-
 import { ParsedWorksheet } from '../types/worksheet';
 
 interface RenderOptions {
@@ -22,28 +15,30 @@ interface RenderOptions {
     imagePlacement?: string;
   };
   generatedImages?: string[];
+  viewMode?: 'student' | 'teacher';
 }
 
 export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: RenderOptions): string {
   if (!worksheet) return '';
 
-  const { formData, generatedImages = [] } = options;
+  const { formData, generatedImages = [], viewMode = 'student' } = options;
   const selectedTemplate = formData.selectedTemplate || 'list-based';
   const worksheetTitle = formData.worksheetTitle || worksheet.metadata.title;
   const generatedImage = generatedImages.length > 0 ? generatedImages[0] : null;
+  const showAnswers = viewMode === 'teacher';
 
   // Build HTML content based on selected template
   let contentHTML = '';
 
   // Template-specific rendering to match preview exactly
   if (selectedTemplate === 'multiple-choice') {
-    contentHTML = generateMultipleChoiceHTML(worksheet, formData, worksheetTitle, generatedImage);
+    contentHTML = generateMultipleChoiceHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
   } else if (selectedTemplate === 'comprehension') {
-    contentHTML = generateComprehensionHTML(worksheet, formData, worksheetTitle, generatedImage);
+    contentHTML = generateComprehensionHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
   } else if (selectedTemplate === 'matching') {
-    contentHTML = generateMatchingHTML(worksheet, formData, worksheetTitle);
+    contentHTML = generateMatchingHTML(worksheet, formData, worksheetTitle, showAnswers);
   } else if (selectedTemplate === 'list-based') {
-    contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage);
+    contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
   }
 
   // Build complete HTML document
@@ -76,7 +71,13 @@ export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: Rende
 }
 
 // Template-specific HTML generators matching the React components exactly
-function generateMultipleChoiceHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null): string {
+function generateMultipleChoiceHTML(
+  worksheet: ParsedWorksheet,
+  formData: RenderOptions['formData'],
+  worksheetTitle: string,
+  generatedImage: string | null,
+  showAnswers: boolean
+): string {
   const includeImages = formData.includeImages || false;
   const imageMode = formData.imageMode || 'one-per-question';
   
@@ -136,14 +137,17 @@ function generateMultipleChoiceHTML(worksheet: ParsedWorksheet, formData: any, w
                   ` : ''}
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-                  ${(q.options || []).map((option, optIndex) => `
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                      <div style="width: 1.5rem; height: 1.5rem; border: 2px solid #d1d5db; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 0.75rem; font-weight: 600;">${String.fromCharCode(65 + optIndex)}</span>
-                      </div>
-                      <span style="color: #374151;">${option}</span>
-                    </div>
-                  `).join('')}
+                   ${(q.options || []).map((option, optIndex) => {
+                     const isCorrect = typeof q.correctAnswer === 'number' && q.correctAnswer === optIndex;
+                     return `
+                     <div style="display: flex; align-items: center; gap: 0.5rem;">
+                       <div style="width: 1.5rem; height: 1.5rem; border: 2px solid ${isCorrect && showAnswers ? '#22c55e' : '#d1d5db'}; border-radius: 9999px; display: flex; align-items: center; justify-content: center; ${isCorrect && showAnswers ? 'background-color: #ecfdf3; color: #15803d;' : ''}">
+                         <span style="font-size: 0.75rem; font-weight: 600;">${String.fromCharCode(65 + optIndex)}</span>
+                       </div>
+                       <span style="color: ${isCorrect && showAnswers ? '#15803d' : '#374151'}; font-weight: ${isCorrect && showAnswers ? '600' : '400'};">${option}</span>
+                       ${isCorrect && showAnswers ? '<span style="font-size: 0.75rem; color: #15803d;">(Answer)</span>' : ''}
+                     </div>`;
+                   }).join('')}
                 </div>
               </div>
             </div>
@@ -161,7 +165,13 @@ function generateMultipleChoiceHTML(worksheet: ParsedWorksheet, formData: any, w
   `;
 }
 
-function generateComprehensionHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null): string {
+function generateComprehensionHTML(
+  worksheet: ParsedWorksheet,
+  formData: RenderOptions['formData'],
+  worksheetTitle: string,
+  generatedImage: string | null,
+  showAnswers: boolean
+): string {
   const includeImages = formData.includeImages || false;
   const imagePlacement = formData.imagePlacement || 'large-centered';
   
@@ -221,22 +231,28 @@ function generateComprehensionHTML(worksheet: ParsedWorksheet, formData: any, wo
                 <p style="color: #1f2937; font-weight: 500; margin: 0 0 0.5rem 0;">
                   ${q.question}
                 </p>
-                ${q.options ? `
-                  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.75rem;">
-                    ${q.options.map((option, optIndex) => `
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 1.5rem; height: 1.5rem; border: 2px solid #d1d5db; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
+                 ${q.options ? `
+                   <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.75rem;">
+                     ${q.options.map((option, optIndex) => `
+                       <div style="display: flex; align-items: center; gap: 0.5rem;">
+                         <div style="width: 1.5rem; height: 1.5rem; border: 2px solid #d1d5db; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
                           <span style="font-size: 0.75rem; font-weight: 600;">${String.fromCharCode(65 + optIndex)}</span>
                         </div>
                         <span style="color: #374151;">${option}</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                ` : `
-                  <div style="margin-top: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #d1d5db;">
-                    <span style="color: #9ca3af;">Answer: _______________________________________________</span>
-                  </div>
-                `}
+                       </div>
+                     `).join('')}
+                   </div>
+                 ` : `
+                   ${showAnswers && q.correctAnswer ? `
+                     <div style="margin-top: 0.5rem; color: #15803d; font-weight: 600;">
+                       Answer: ${q.correctAnswer}
+                     </div>
+                   ` : `
+                     <div style=\"margin-top: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #d1d5db;\">
+                       <span style=\"color: #9ca3af;\">Answer: _______________________________________________</span>
+                     </div>
+                   `}
+                 `}
               </div>
             </div>
           </div>
@@ -253,7 +269,12 @@ function generateComprehensionHTML(worksheet: ParsedWorksheet, formData: any, wo
   `;
 }
 
-function generateMatchingHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string): string {
+function generateMatchingHTML(
+  worksheet: ParsedWorksheet,
+  formData: RenderOptions['formData'],
+  worksheetTitle: string,
+  showAnswers: boolean
+): string {
   return `
     <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.875rem;">
       <!-- Header -->
@@ -312,6 +333,18 @@ function generateMatchingHTML(worksheet: ParsedWorksheet, formData: any, workshe
               `).join('')}
             </div>
           </div>
+        </div>
+      ` : ''}
+
+      ${showAnswers && worksheet.matchingItems ? `
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 0.5rem;">
+          <h4 style="font-size: 1rem; font-weight: 600; color: #166534; margin-bottom: 0.5rem;">Answer Key</h4>
+          <ul style="margin: 0; padding-left: 1.25rem; color: #166534;">
+            ${worksheet.matchingItems.columnA.map((item, idx) => {
+              const answer = worksheet.matchingItems?.columnB[idx] ?? worksheet.matchingItems?.columnB[Math.min(idx, worksheet.matchingItems.columnB.length - 1)];
+              return `<li style="margin-bottom: 0.25rem;">${idx + 1}. ${item} — ${answer ?? 'N/A'}</li>`;
+            }).join('')}
+          </ul>
         </div>
       ` : ''}
 

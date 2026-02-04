@@ -9,11 +9,12 @@ interface ListBasedTemplateProps {
   questionType: string;
   worksheetTitle: string;
   includeImages: boolean;
-  imageMode?: string;
+  imageMode?: 'shared';
   imagePlacement?: string;
   generatedImage?: string | null;
   questions?: WorksheetQuestion[];
   wordBank?: string[];  // ✅ NEW: Word bank support
+  showAnswers?: boolean;
 }
 
 const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
@@ -27,7 +28,8 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   imageMode,
   generatedImage,
   questions,
-  wordBank
+  wordBank,
+  showAnswers = false
 }) => {
   // Determine if we're in preview mode (no questions yet) or rendered mode (have questions)
   const isPreviewMode = !questions || questions.length === 0;
@@ -138,22 +140,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                       <p className="text-gray-600">Sample question text</p>
                     )}
 
-                    {/* Image per question (if one-per-question mode) */}
-                    {includeImages && imageMode === 'one-per-question' && index === 0 && (
-                      <div className="mt-3 mb-2">
-                        {generatedImage ? (
-                          <img
-                            src={generatedImage}
-                            alt="Question illustration"
-                            className="max-w-xs rounded shadow"
-                          />
-                        ) : (
-                          <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                            [Image Placeholder]
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {/* Image per question removed; only shared image is supported */}
                   </div>
                 </div>
               </div>
@@ -168,12 +155,12 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                   <span className="font-bold">{index + 1}.</span>
                   <div className="flex-1">
                     {/* ✅ Render the actual question text */}
-                    {questionType === 'Word Bank' || question.type === 'word-bank' ? (
-                      // Word Bank question - just the sentence with blank
-                      <p className="text-gray-800 leading-relaxed">
-                        {question.question}
-                      </p>
-                    ) : questionType === 'Fill in the Blank' || question.type === 'fill-blank' ? (
+                     {questionType === 'Word Bank' || question.type === 'word-bank' ? (
+                       // Word Bank question - just the sentence with blank
+                       <p className="text-gray-800 leading-relaxed">
+                         {question.question}
+                       </p>
+                     ) : questionType === 'Fill in the Blank' || question.type === 'fill-blank' ? (
                       // Fill in blank - sentence with blank
                       <p className="text-gray-800 leading-relaxed">
                         {question.question}
@@ -203,41 +190,32 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
                           </label>
                         </div>
                       </>
-                    ) : questionType === 'Short Answer' || question.type === 'short-answer' ? (
-                      // Short answer - question with lines
-                      <>
-                        <p className="text-gray-800 leading-relaxed mb-2">
-                          {question.question}
-                        </p>
+                     ) : questionType === 'Short Answer' || question.type === 'short-answer' ? (
+                       // Short answer - question with lines
+                       <>
+                         <p className="text-gray-800 leading-relaxed mb-2">
+                           {question.question}
+                         </p>
                         <div className="space-y-2 mt-3">
                           <div className="border-b border-gray-400 h-8"></div>
                           <div className="border-b border-gray-400 h-8"></div>
                           <div className="border-b border-gray-400 h-8"></div>
                         </div>
                       </>
-                    ) : (
-                      // Default - just show question
-                      <p className="text-gray-800 leading-relaxed">
-                        {question.question}
-                      </p>
-                    )}
+                     ) : (
+                       // Default - just show question
+                       <p className="text-gray-800 leading-relaxed">
+                         {question.question}
+                       </p>
+                     )}
 
-                    {/* Image per question (if one-per-question mode) */}
-                    {includeImages && imageMode === 'one-per-question' && index === 0 && (
-                      <div className="mt-3 mb-2">
-                        {generatedImage ? (
-                          <img
-                            src={generatedImage}
-                            alt="Question illustration"
-                            className="max-w-xs rounded shadow"
-                          />
-                        ) : (
-                          <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                            [Image Placeholder]
-                          </div>
-                        )}
+                    {showAnswers && question.correctAnswer !== undefined && question.correctAnswer !== '' && (
+                      <div className="mt-2 text-sm text-green-700">
+                        Answer: {String(question.correctAnswer)}
                       </div>
                     )}
+
+                    {/* Image per question removed; only shared image is supported */}
                   </div>
                 </div>
               </div>

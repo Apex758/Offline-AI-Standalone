@@ -10,7 +10,7 @@ interface WorksheetFormData {
   worksheetTitle: string;
   includeImages: boolean;
   imageStyle: string;
-  imageMode: string;
+  imageMode: 'shared';
   imagePlacement: string;
 }
 

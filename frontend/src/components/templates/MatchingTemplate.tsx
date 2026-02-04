@@ -10,6 +10,7 @@ interface MatchingTemplateProps {
   includeImages?: boolean;
   columnA?: string[];   
   columnB?: string[];   
+  showAnswers?: boolean;
 }
 
 const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
@@ -17,11 +18,12 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
   gradeLevel = 'Grade',
   topic = 'Topic',
   questionCount = 10,
-  questionType = 'Matching',
+  questionType = 'Matching', // eslint-disable-line @typescript-eslint/no-unused-vars
   worksheetTitle,
-  includeImages = false,
+  includeImages = false, // eslint-disable-line @typescript-eslint/no-unused-vars
   columnA,
-  columnB
+  columnB,
+  showAnswers = false
 }) => {
   // Use actual data if provided, otherwise use placeholders
   const displayColumnA = columnA || Array.from({ length: questionCount }, (_, i) =>
@@ -61,11 +63,11 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
       </div>
 
       {/* Matching Section */}
-      <div className="mb-8">
-        <div className="grid grid-cols-2 gap-8">
-          {/* Column A - Prompts */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Column A</h3>
+       <div className="mb-8">
+         <div className="grid grid-cols-2 gap-8">
+           {/* Column A - Prompts */}
+           <div>
+             <h3 className="text-lg font-semibold text-gray-800 mb-4">Column A</h3>
             <div className="space-y-4">
               {displayColumnA.map((item, i) => (
                 <div key={i} className="flex items-center space-x-3">
@@ -78,26 +80,42 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Column B - Answers */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Column B</h3>
-            <div className="space-y-4">
-              {displayColumnB.map((item, i) => (
-                <div key={i} className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-gray-800">{item}</p>
-                  </div>
-                </div>
-              ))}
             </div>
-          </div>
-        </div>
-      </div>
+
+            {/* Column B - Answers */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Column B</h3>
+              <div className="space-y-4">
+                {displayColumnB.map((item, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
+                      {String.fromCharCode(65 + i)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-gray-800">{item}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+         </div>
+       </div>
+
+       {showAnswers && columnA && columnB && (
+         <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+           <h4 className="font-semibold mb-2">Answer Key</h4>
+           <ul className="space-y-1 list-disc list-inside">
+             {columnA.map((item, idx) => {
+               const answer = columnB[idx] ?? columnB[Math.min(idx, columnB.length - 1)];
+               return (
+                 <li key={idx}>
+                   {idx + 1}. {item} — {answer ?? 'N/A'}
+                 </li>
+               );
+             })}
+           </ul>
+         </div>
+       )}
 
       {/* Footer */}
       <div className="mt-8 pt-4 border-t border-gray-300">

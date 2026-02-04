@@ -8,7 +8,7 @@ interface MultipleChoiceTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
-  imageMode?: string;
+  imageMode?: 'shared';
   generatedImage?: string | null;
   questions?: Array<{  // ← ADD THIS
     question: string;
@@ -16,6 +16,7 @@ interface MultipleChoiceTemplateProps {
     correctAnswer?: number;
     id: string;
   }>;
+  showAnswers?: boolean;
 }
 
 const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
@@ -23,12 +24,13 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   gradeLevel = 'Grade',
   topic = 'Topic',
   questionCount = 10,
-  questionType = 'Multiple Choice',
+  questionType = 'Multiple Choice', // eslint-disable-line @typescript-eslint/no-unused-vars
   worksheetTitle,
   includeImages = false,
-  imageMode = 'one-per-question',
+  imageMode = 'shared',
   generatedImage = null,
-  questions  // ← ADD THIS
+  questions,
+  showAnswers = false
 }) => {
   // Use actual questions if provided, otherwise generate placeholders
   const displayQuestions = questions || Array.from({ length: questionCount }, (_, i) => ({
@@ -96,37 +98,36 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                   <p className="text-gray-800 font-medium">
                     {q.question}
                   </p>
-                  {includeImages && imageMode === 'one-per-question' && (
-                    <div className="mt-2 mb-2">
-                      {generatedImage ? (
-                        <img
-                          src={generatedImage}
-                          alt="Generated worksheet image"
-                          className="w-32 h-20 object-contain border border-gray-300 rounded"
-                        />
-                      ) : (
-                        <div className="w-32 h-20 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500">
-                          [Image Placeholder]
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {q.options?.map((option, optIndex) => (
-                    <div key={optIndex} className="flex items-center space-x-2">
-                      <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-blue-500">
-                        <span className="text-xs font-semibold">{String.fromCharCode(65 + optIndex)}</span>
-                      </div>
-                      <span className="text-gray-700">{option}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                 <div className="grid grid-cols-2 gap-3">
+                   {q.options?.map((option, optIndex) => {
+                     const isCorrect = typeof q.correctAnswer === 'number' && q.correctAnswer === optIndex;
+                     return (
+                       <div key={optIndex} className="flex items-center space-x-2">
+                         <div
+                           className={`w-6 h-6 border-2 rounded-full flex items-center justify-center cursor-pointer ${
+                             isCorrect && showAnswers
+                               ? 'border-green-500 bg-green-50 text-green-700'
+                               : 'border-gray-300 hover:border-blue-500'
+                           }`}
+                         >
+                           <span className="text-xs font-semibold">{String.fromCharCode(65 + optIndex)}</span>
+                         </div>
+                         <span className={`text-gray-700 ${isCorrect && showAnswers ? 'font-semibold' : ''}`}>
+                           {option}
+                         </span>
+                         {isCorrect && showAnswers && (
+                           <span className="text-xs text-green-700 ml-1">(Answer)</span>
+                         )}
+                       </div>
+                     );
+                   })}
+                 </div>
+               </div>
+             </div>
+           </div>
+         ))}
+       </div>
 
       {/* Footer */}
       <div className="mt-8 pt-4 border-t border-gray-300">
