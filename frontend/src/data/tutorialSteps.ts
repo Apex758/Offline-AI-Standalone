@@ -614,7 +614,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         description: 'Create your quiz! PEARL AI will generate questions with answer keys and marking schemes.',
         position: 'top'
       },
-      // Optional future: preview/edit/export steps once anchors exist
+      //Future: preview/edit/export steps once anchors exist
     ]
   },
   
@@ -627,7 +627,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         target: '[data-tutorial="rubric-generator-welcome"]',
         title: 'Welcome to Rubric Generator',
         description: 'Create clear, detailed grading rubrics for assignments and projects. Help students understand expectations and make grading consistent.',
-        position: 'bottom'
+        position: 'center'
       },
       {
         target: '[data-tutorial="rubric-generator-assignment"]',
