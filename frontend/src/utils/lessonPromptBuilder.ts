@@ -89,6 +89,64 @@ const GRADE_SPECS = {
   }
 };
 
+function getSubjectGuidance(subject: string): string {
+  const guidance: Record<string, string> = {
+    'Mathematics': `
+Subject-Specific Guidance for Mathematics (Grades K-6):
+- Focus Areas: Problem-solving, conceptual understanding, procedural fluency, mathematical reasoning
+- Resource Types: Manipulatives, number lines, graph paper, geometric tools, fraction bars, place value blocks
+- Pedagogical Approaches: Concrete-pictorial-abstract progression, real-world problem contexts, multiple solution strategies
+- Assessment Best Practices: Step-by-step problem solving, error analysis, math journals, performance tasks showing work
+- Cognitive Levels by Grade:
+  * K-1: Number sense, counting, basic operations with concrete materials
+  * 2-3: Place value, multi-digit operations, introductory fractions, measurement
+  * 4-5: Multiplicative reasoning, fraction/decimal operations, geometry, data analysis
+  * 6: Ratio/proportional reasoning, algebraic expressions, statistical thinking
+- Common Pitfalls to Avoid: Rote memorization without understanding, over-reliance on algorithms, lack of concrete representation
+`,
+    'Language Arts': `
+Subject-Specific Guidance for Language Arts (Grades K-6):
+- Focus Areas: Reading comprehension, writing craft, communication skills, vocabulary development
+- Resource Types: Leveled texts, graphic organizers, writing prompts, word walls, anchor charts, mentor texts
+- Pedagogical Approaches: Balanced literacy, writing workshop model, shared/guided/independent reading, close reading
+- Assessment Best Practices: Running records, writing rubrics (ideas, organization, voice, word choice), comprehension checks, reading response journals
+- Cognitive Levels by Grade:
+  * K-1: Phonemic awareness, decoding, emergent writing, sight words
+  * 2-3: Reading fluency, narrative writing, paragraph structure, basic research
+  * 4-5: Critical reading, expository writing, genre analysis, summarizing
+  * 6: Literary analysis, argument writing, research skills, synthesis of multiple sources
+- Common Pitfalls to Avoid: Isolated grammar drills without context, single text perspectives, over-reliance on worksheets
+`,
+    'Science': `
+Subject-Specific Guidance for Science (Grades K-6):
+- Focus Areas: Scientific inquiry, investigation skills, evidence-based reasoning, nature of science
+- Resource Types: Lab equipment, models, observation sheets, safety gear, measuring tools, science notebooks
+- Pedagogical Approaches: Inquiry-based learning, 5E model (Engage, Explore, Explain, Elaborate, Evaluate), hands-on experiments
+- Assessment Best Practices: Lab reports, science notebooks, hypothesis formulation, data analysis, scientific explanations with evidence
+- Cognitive Levels by Grade:
+  * K-1: Observing, questioning, describing properties, living vs non-living
+  * 2-3: Simple investigations, plants/animals, matter states, weather patterns
+  * 4-5: Controlled experiments, ecosystems, earth systems, forces/motion
+  * 6: Independent investigations, scientific method, energy transfer, human body systems
+- Common Pitfalls to Avoid: Memorization of facts without inquiry, "cookbook" labs without thinking, lack of connection to real phenomena
+`,
+    'Social Studies': `
+Subject-Specific Guidance for Social Studies (Grades K-6):
+- Focus Areas: Historical thinking, geographic reasoning, civic engagement, economic understanding, cultural awareness
+- Resource Types: Maps, timelines, primary sources, artifacts, globes, atlases, historical documents, biographies
+- Pedagogical Approaches: Project-based learning, document-based questions, inquiry into historical events, current events connections
+- Assessment Best Practices: Research projects, document analysis, debates, presentations, reflective essays, civic action projects
+- Cognitive Levels by Grade:
+  * K-1: Families, communities, basic map skills, holidays and traditions
+  * 2-3: Neighborhoods, local history, map reading, cultures, goods/services
+  * 4-5: Regions, indigenous peoples, government basics, historical events and causes
+  * 6: Ancient civilizations, world geography, U.S. history, government systems, economic principles
+- Common Pitfalls to Avoid: Presenting single narratives, memorization of dates/facts without context, lack of diverse perspectives
+`
+  };
+
+  return guidance[subject] || '';
+}
 
 export function buildLessonPrompt(formData: any, curriculumRefs?: CurriculumReference[]): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
@@ -129,6 +187,9 @@ GRADE LEVEL REQUIREMENTS:
 - Materials: ${gradeSpec.materialComplexity}
 - Learning Objectives: ${gradeSpec.learningObjectiveDepth}
 - Instructions: ${gradeSpec.instructionalLanguage}
+
+SUBJECT-SPECIFIC GUIDANCE:
+${getSubjectGuidance(formData.subject)}
 
 REQUIRED LESSON PLAN STRUCTURE:
 

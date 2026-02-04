@@ -28,6 +28,7 @@ interface LessonPlanHistory {
   formData: FormData;
   generatedPlan: string;
   parsedLesson?: ParsedLesson;
+  curriculumMatches?: CurriculumReference[]; // ✅ Related curriculum section
 }
 
 interface CurriculumReference {
@@ -558,8 +559,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   }, [tabId, subscribe]);
 
   // Finalization effect - runs when streaming completes
+  const isStreaming = getIsStreaming(tabId, ENDPOINT);
   useEffect(() => {
-    if (streamingPlan && !getIsStreaming(tabId, ENDPOINT)) {
+    if (streamingPlan && !isStreaming) {
       setGeneratedPlan(streamingPlan);
       const parsed = parseLessonFromAI(streamingPlan, formData, curriculumReferences);
       if (parsed) setParsedLesson(parsed);
@@ -570,7 +572,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         return newMap;
       });
     }
-  }, [streamingPlan, curriculumReferences]);
+  }, [streamingPlan, curriculumReferences, isStreaming, tabId, ENDPOINT, clearStreaming, formData]);
 
   const generateLessonPlan = () => {
     const ws = getConnection(tabId, ENDPOINT);
@@ -622,7 +624,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         timestamp: new Date().toISOString(),
         formData: formData,
         generatedPlan: generatedPlan,  // ✅ Save original clean text
-        parsedLesson: parsedLesson || undefined
+        parsedLesson: parsedLesson || undefined,
+        curriculumMatches: curriculumMatches // ✅ Save related curriculum section
       };
 
       await axios.post('http://localhost:8000/api/lesson-plan-history', planData);
@@ -640,6 +643,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setFormData(history.formData);
     setGeneratedPlan(history.generatedPlan);
     setParsedLesson(history.parsedLesson || null);
+    setCurriculumMatches(history.curriculumMatches || []); // ✅ Restore related curriculum
     setCurrentPlanId(history.id);
     setHistoryOpen(false);
   };
@@ -879,9 +883,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     )}
                   </div>
                   {/* Curriculum References */}
-                  {parsedLesson?.curriculumReferences && (
+                  {(parsedLesson?.curriculumReferences || curriculumMatches.length > 0) && (
                     <CurriculumReferences
-                      references={parsedLesson.curriculumReferences}
+                      references={parsedLesson?.curriculumReferences || curriculumMatches}
                       onOpenCurriculum={handleOpenCurriculum}
                     />
                   )}
@@ -1521,3 +1525,4 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 };
 
 export default LessonPlanner;
+

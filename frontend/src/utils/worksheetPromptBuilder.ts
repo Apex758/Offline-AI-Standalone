@@ -14,10 +14,16 @@ interface WorksheetFormData {
   imagePlacement: string;
 }
 
-// Grade-specific vocabulary and complexity guidance
+// Grade-specific pedagogical guidance (unified format)
 const GRADE_SPECS = {
   'K': {
     name: 'Kindergarten',
+    pedagogicalApproach: 'Play-based, hands-on learning with frequent transitions',
+    activityTypes: 'Sensory play, movement, songs, stories, dramatic play, art',
+    assessmentMethods: 'Observation checklists, anecdotal notes, thumbs up/down',
+    materialComplexity: 'Large manipulatives, bright visuals, real objects',
+    learningObjectiveDepth: 'Recognition, identification, basic motor skills (Bloom: Remember)',
+    instructionalLanguage: 'Simple 3-5 word instructions, visual cues required',
     readingLevel: '50-100 words per question',
     sentenceStructure: 'Simple 3-5 word sentences',
     vocabulary: 'Use only basic sight words and common nouns',
@@ -28,6 +34,12 @@ const GRADE_SPECS = {
   },
   '1': {
     name: 'Grade 1',
+    pedagogicalApproach: 'Concrete experiences with guided practice and modeling',
+    activityTypes: 'Center activities, partner work, simple experiments, craft projects',
+    assessmentMethods: 'Exit tickets, work samples, simple rubrics, oral responses',
+    materialComplexity: 'Manipulatives, pictures with words, simple worksheets',
+    learningObjectiveDepth: 'Recall, basic application, simple comparisons (Bloom: Remember, Understand)',
+    instructionalLanguage: 'Clear step-by-step directions with demonstrations',
     readingLevel: '100-150 words per question',
     sentenceStructure: 'Simple sentences with basic conjunctions',
     vocabulary: 'Basic academic vocabulary, simple descriptive words',
@@ -38,6 +50,12 @@ const GRADE_SPECS = {
   },
   '2': {
     name: 'Grade 2',
+    pedagogicalApproach: 'Guided discovery with structured collaboration',
+    activityTypes: 'Small group projects, hands-on investigations, role-play, journals',
+    assessmentMethods: 'Rubrics, peer assessment, self-reflection, portfolios',
+    materialComplexity: 'Graphic organizers, simple texts, basic tools and instruments',
+    learningObjectiveDepth: 'Comprehension, application, basic analysis (Bloom: Understand, Apply)',
+    instructionalLanguage: 'Multi-step instructions with visual supports',
     readingLevel: '150-200 words per question',
     sentenceStructure: 'Compound sentences, basic transitions',
     vocabulary: 'Age-appropriate academic terms, more descriptive language',
@@ -48,6 +66,12 @@ const GRADE_SPECS = {
   },
   '3': {
     name: 'Grade 3',
+    pedagogicalApproach: 'Inquiry-based with scaffolded independence',
+    activityTypes: 'Research projects, experiments, presentations, collaborative tasks',
+    assessmentMethods: 'Performance tasks, written responses, project rubrics, quizzes',
+    materialComplexity: 'Reference materials, detailed diagrams, age-appropriate tech tools',
+    learningObjectiveDepth: 'Application, analysis, beginning synthesis (Bloom: Apply, Analyze)',
+    instructionalLanguage: 'Detailed written and verbal instructions',
     readingLevel: '200-250 words per question',
     sentenceStructure: 'Mix of simple and complex sentences',
     vocabulary: 'Subject-specific terms introduced with context',
@@ -58,6 +82,12 @@ const GRADE_SPECS = {
   },
   '4': {
     name: 'Grade 4',
+    pedagogicalApproach: 'Student-centered inquiry with differentiation',
+    activityTypes: 'Independent research, debates, design challenges, multimedia projects',
+    assessmentMethods: 'Essays, presentations, self-assessment, peer review, tests',
+    materialComplexity: 'Multiple sources, technical tools, complex models and diagrams',
+    learningObjectiveDepth: 'Analysis, synthesis, evaluation (Bloom: Analyze, Evaluate)',
+    instructionalLanguage: 'Complex instructions with options for student choice',
     readingLevel: '250-300 words per question',
     sentenceStructure: 'Complex sentences with multiple clauses',
     vocabulary: 'Academic vocabulary with technical terms',
@@ -68,6 +98,12 @@ const GRADE_SPECS = {
   },
   '5': {
     name: 'Grade 5',
+    pedagogicalApproach: 'Collaborative inquiry with critical thinking emphasis',
+    activityTypes: 'Extended projects, scientific investigations, literary analysis, debates',
+    assessmentMethods: 'Research papers, oral presentations, portfolios, authentic assessments',
+    materialComplexity: 'Primary sources, advanced technology, specialized equipment',
+    learningObjectiveDepth: 'Synthesis, evaluation, creation (Bloom: Evaluate, Create)',
+    instructionalLanguage: 'Sophisticated directions with metacognitive prompts',
     readingLevel: '300-400 words per question',
     sentenceStructure: 'Sophisticated sentence structures',
     vocabulary: 'Subject-specific terminology, nuanced language',
@@ -78,6 +114,12 @@ const GRADE_SPECS = {
   },
   '6': {
     name: 'Grade 6',
+    pedagogicalApproach: 'Independent inquiry with real-world connections',
+    activityTypes: 'Capstone projects, expert presentations, community partnerships, research',
+    assessmentMethods: 'Authentic assessments, portfolios, peer and expert feedback, exhibitions',
+    materialComplexity: 'Academic texts, professional tools, complex digital resources',
+    learningObjectiveDepth: 'Advanced evaluation and creation (Bloom: Evaluate, Create)',
+    instructionalLanguage: 'Academic language with student-driven modifications',
     readingLevel: '400+ words per question',
     sentenceStructure: 'Advanced academic writing structures',
     vocabulary: 'Advanced academic and technical terminology',
@@ -87,6 +129,65 @@ const GRADE_SPECS = {
     cognitiveDepth: 'Analysis, synthesis, evaluation'
   }
 };
+
+function getSubjectGuidance(subject: string): string {
+  const guidance: Record<string, string> = {
+    'Mathematics': `
+Subject-Specific Guidance for Mathematics Worksheets (Grades K-6):
+- Focus Areas: Number sense, operations, problem-solving, geometry, measurement, data analysis
+- Worksheet Types: Computation practice, word problems, number puzzles, pattern recognition, graphing
+- Pedagogical Approaches: Concrete-pictorial-abstract progression, scaffolding from simple to complex, multiple representations
+- Grade Progression:
+  * K-1: Counting, number recognition, basic shapes, simple addition/subtraction with visuals
+  * 2-3: Place value, multi-digit operations, time/money, measurement, introductory fractions
+  * 4-5: Multi-digit multiplication/division, fraction/decimal operations, area/perimeter, data analysis
+  * 6: Ratio/proportion, algebraic expressions, geometry, statistics, pre-algebra concepts
+- Format Tips: Include workspace for showing work, number lines, graph paper for geometry, visual models
+- Common Pitfalls to Avoid: Too many problems causing fatigue, lack of visual support, rote drill without understanding
+`,
+    'Language Arts': `
+Subject-Specific Guidance for Language Arts Worksheets (Grades K-6):
+- Focus Areas: Reading comprehension, vocabulary, grammar, writing, spelling, phonics
+- Worksheet Types: Comprehension questions, vocabulary matching, grammar exercises, writing prompts, phonics practice
+- Pedagogical Approaches: Balanced literacy, gradual release, authentic contexts, multisensory activities
+- Grade Progression:
+  * K-1: Letter recognition, phonics, sight words, simple sentence writing, picture comprehension
+  * 2-3: Reading passages, vocabulary in context, paragraph writing, basic grammar, story elements
+  * 4-5: Complex texts, figurative language, essay planning, research skills, editing/revising
+  * 6: Literary analysis, argument writing, research documentation, advanced grammar, synthesis
+- Format Tips: Include graphic organizers, space for writing, word banks for support, clear rubrics
+- Common Pitfalls to Avoid: Isolated grammar drills, comprehension questions answerable without reading, insufficient writing space
+`,
+    'Science': `
+Subject-Specific Guidance for Science Worksheets (Grades K-6):
+- Focus Areas: Scientific concepts, inquiry skills, vocabulary, data analysis, diagrams/labeling
+- Worksheet Types: Observation recording, diagram labeling, experiment planning, data tables, concept mapping
+- Pedagogical Approaches: Inquiry-based, hands-on connections, real-world applications, visual learning
+- Grade Progression:
+  * K-1: Observing/describing, living/non-living, five senses, basic needs, simple classifications
+  * 2-3: Life cycles, matter states, weather patterns, simple investigations, data collection basics
+  * 4-5: Ecosystems, earth systems, forces/motion, controlled experiments, graphing data
+  * 6: Scientific method, variables, energy transfer, human body systems, independent inquiry
+- Format Tips: Include diagrams to label, data tables, observation charts, prediction spaces, conclusion sections
+- Common Pitfalls to Avoid: Memorization-focused questions, lack of connection to phenomena, no space for observations
+`,
+    'Social Studies': `
+Subject-Specific Guidance for Social Studies Worksheets (Grades K-6):
+- Focus Areas: History, geography, civics, economics, culture, map skills, timelines
+- Worksheet Types: Map activities, timeline creation, document analysis, comparison charts, research organizers
+- Pedagogical Approaches: Inquiry-based, multiple perspectives, primary source analysis, connections to self
+- Grade Progression:
+  * K-1: Family trees, community maps, basic timeline, goods/services, rules/responsibilities
+  * 2-3: Neighborhood maps, local history research, cultural comparisons, government basics, simple economics
+  * 4-5: State/regional studies, historical event analysis, constitution basics, economic systems, document analysis
+  * 6: Ancient civilizations, world geography, U.S. history research, comparative government, current events
+- Format Tips: Include maps, timelines, graphic organizers, primary source excerpts, comparison charts
+- Common Pitfalls to Avoid: Focus on memorizing dates/facts, single perspectives, lack of primary sources
+`
+  };
+
+  return guidance[subject] || '';
+}
 
 export function buildWorksheetPrompt(formData: WorksheetFormData): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
@@ -150,7 +251,7 @@ CRITICAL FORMATTING RULES:
   } else if (formData.selectedTemplate === 'matching') {
     // UPDATED - Topic-specific matching guidance
     const isMathTopic = formData.subject.toLowerCase().includes('math');
-    
+
     const matchingGuidance = isMathTopic ? `
 FOR MATH TOPICS:
 - Column A: Math problems (e.g., "457 + 325 = ?", "18 × 3 = ?", "144 ÷ 12 = ?")
@@ -199,7 +300,7 @@ CRITICAL REQUIREMENTS:
     if (formData.questionType === 'Word Bank') {
       // UPDATED: Smarter handling for math vs non-math topics
       const isMathSubject = formData.subject.toLowerCase().includes('math');
-      
+
       const wordBankGuidance = isMathSubject ? `
 FOR MATHEMATICS TOPICS:
 - Create a word bank with 6-8 MATH VOCABULARY words (not numbers!)
@@ -237,7 +338,7 @@ Example: **Word Bank:** add, subtract, sum, difference, equals, total
 
 Step 3: Create ${questionCount} fill-in-the-blank sentences (NOT question prompts!)
 
-${Array.from({ length: Math.min(questionCount, 3) }, (_, i) => 
+${Array.from({ length: Math.min(questionCount, 3) }, (_, i) =>
   `**Question ${i + 1}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]`
 ).join('\n\n')}
 
@@ -260,7 +361,7 @@ ${isMathSubject ? '9. For math topics: Focus on VOCABULARY and CONCEPTS, not ari
 
 Create ${questionCount} true/false statements about "${formData.topic}" for ${formData.subject}.
 
-${Array.from({ length: Math.min(questionCount, 2) }, (_, i) => 
+${Array.from({ length: Math.min(questionCount, 2) }, (_, i) =>
   `Question ${i + 1}: True / False\n[Write a ${i === 0 ? '' : 'different '}true or false statement about ${formData.topic}]`
 ).join('\n\n')}
 
@@ -277,7 +378,7 @@ CRITICAL RULES:
 
 Create ${questionCount} fill-in-the-blank questions about "${formData.topic}" for ${formData.subject}.
 
-${Array.from({ length: Math.min(questionCount, 2) }, (_, i) => 
+${Array.from({ length: Math.min(questionCount, 2) }, (_, i) =>
   `Question ${i + 1}: Fill in the Blank\n[Write a ${i === 0 ? '' : 'different '}sentence about ${formData.topic} with ONE blank using _______]`
 ).join('\n\n')}
 
@@ -294,7 +395,7 @@ CRITICAL RULES:
 
 Create ${questionCount} short answer questions about "${formData.topic}" for ${formData.subject}.
 
-${Array.from({ length: Math.min(questionCount, 2) }, (_, i) => 
+${Array.from({ length: Math.min(questionCount, 2) }, (_, i) =>
   `Question ${i + 1}: Short Answer\n[Write a ${i === 0 ? '' : 'different '}question about ${formData.topic} requiring 2-4 sentences]`
 ).join('\n\n')}
 
@@ -345,13 +446,22 @@ CURRICULUM CONTEXT:
 - Strand: ${formData.strand}
 - Topic: ${formData.topic}
 
-GRADE LEVEL REQUIREMENTS (CRITICAL):
-Reading Level: ${gradeSpec.readingLevel}
-Sentence Structure: ${gradeSpec.sentenceStructure}
-Vocabulary: ${gradeSpec.vocabulary}
-Focus Areas: ${gradeSpec.examples}
-Question Complexity: ${gradeSpec.questionComplexity}
-Cognitive Depth: ${gradeSpec.cognitiveDepth}
+GRADE LEVEL REQUIREMENTS:
+- Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
+- Activity Types: ${gradeSpec.activityTypes}
+- Assessment Methods: ${gradeSpec.assessmentMethods}
+- Material Complexity: ${gradeSpec.materialComplexity}
+- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}
+- Instructional Language: ${gradeSpec.instructionalLanguage}
+- Reading Level: ${gradeSpec.readingLevel}
+- Sentence Structure: ${gradeSpec.sentenceStructure}
+- Vocabulary: ${gradeSpec.vocabulary}
+- Focus Areas: ${gradeSpec.examples}
+- Question Complexity: ${gradeSpec.questionComplexity}
+- Cognitive Depth: ${gradeSpec.cognitiveDepth}
+
+SUBJECT-SPECIFIC GUIDANCE:
+${getSubjectGuidance(formData.subject)}
 
 WORKSHEET DETAILS:
 - Title: ${formData.worksheetTitle || formData.topic + ' Worksheet'}

@@ -23,6 +23,49 @@ const KINDERGARTEN_SPECS = {
   differentiation: 'Varied materials, flexible grouping, scaffolding'
 };
 
+function getSubjectGuidance(subject: string): string {
+  const guidance: Record<string, string> = {
+    'Mathematics': `
+Subject-Specific Guidance for Mathematics (Kindergarten):
+- Focus Areas: Number sense (1-20), counting, basic shapes, patterns, comparing quantities
+- Resource Types: Large manipulatives, counting bears, pattern blocks, number lines, ten frames
+- Pedagogical Approaches: Concrete learning through play, real-world counting experiences, hands-on exploration
+- Assessment Best Practices: Observation during play, one-on-one counting assessments, portfolio samples
+- Key Concepts: Rote counting, one-to-one correspondence, recognizing numerals, simple patterns, 2D/3D shapes
+- Common Pitfalls to Avoid: Abstract symbols without concrete objects, worksheets over manipulatives, rushing to formal algorithms
+`,
+    'Language Arts': `
+Subject-Specific Guidance for Language Arts (Kindergarten):
+- Focus Areas: Phonemic awareness, letter recognition, emergent writing, vocabulary development, listening skills
+- Resource Types: Big books, alphabet charts, word walls, story props, writing centers with varied materials
+- Pedagogical Approaches: Interactive read-alouds, shared writing, phonics through songs/games, environmental print exploration
+- Assessment Best Practices: Running records (emergent), letter recognition checks, writing sample portfolios, oral language observations
+- Key Concepts: Letter-sound correspondence, rhyming, syllables, sight words, "reading" familiar texts, drawing/writing connection
+- Common Pitfalls to Avoid: Isolated phonics drills, forcing standard spelling, too much seatwork, neglecting oral language development
+`,
+    'Science': `
+Subject-Specific Guidance for Science (Kindergarten):
+- Focus Areas: Observing, questioning, describing properties, living vs non-living, five senses, weather, plants/animals
+- Resource Types: Magnifying glasses, nature collections, observation journals (drawing), simple measurement tools, living things (plants/pets)
+- Pedagogical Approaches: Hands-on exploration, outdoor discovery, questioning and predicting, using senses to investigate
+- Assessment Best Practices: Science talk discussions, observation of exploration behaviors, drawing/writing about observations
+- Key Concepts: Properties of objects, living things grow/need food, weather patterns, pushing/pulling, sorting by attributes
+- Common Pitfalls to Avoid: Too much teacher talk, worksheets about science rather than doing science, vocabulary without experience
+`,
+    'Social Studies': `
+Subject-Specific Guidance for Social Studies (Kindergarten):
+- Focus Areas: Families, communities, basic geography, holidays/traditions, rules/responsibilities, self-awareness
+- Resource Types: Maps (simple), family photos, community helper props, cultural artifacts, classroom job charts
+- Pedagogical Approaches: Role-play and dramatic play, sharing personal experiences, community walks, celebration of diversity
+- Assessment Best Practices: Discussions about self/family, drawing community maps, role-play observations, sharing traditions
+- Key Concepts: My place in family/classroom, community helpers and their roles, basic map concepts, respecting differences, taking turns/sharing
+- Common Pitfalls to Avoid: Abstract concepts without personal connection, single-family narratives, too much seatwork, ignoring students' own experiences
+`
+  };
+
+  return guidance[subject] || '';
+}
+
 export function buildKindergartenPrompt(formData: KindergartenFormData): string {
   const specs = KINDERGARTEN_SPECS;
   const domains = formData.learningDomains.join(', ');

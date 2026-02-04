@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import CurriculumNavigator from './CurriculumNavigator';
 import { Menu, X } from 'lucide-react';
@@ -27,11 +27,11 @@ const curriculumPages = Object.keys(allCurriculumPages)
     return acc;
   }, {} as Record<string, () => Promise<unknown>>);
 
-const CurriculumViewer: React.FC<CurriculumViewerProps> = ({ 
-  tabId, 
-  savedData, 
+const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
+  tabId,
+  savedData,
   onDataChange,
-  onPanelClick 
+  onPanelClick
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentComponent, setCurrentComponent] = useState<React.ComponentType | null>(null);
@@ -41,19 +41,30 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  
+  // Ref to track last navigation to prevent rapid jumps
+  const lastNavigatedPath = useRef<string>(location.pathname);
+  const isNavigating = useRef<boolean>(false);
 
   // Save current location to tab data
   useEffect(() => {
-    if (location.pathname !== savedData?.currentPath) {
+    if (location.pathname !== savedData?.currentPath && !isNavigating.current) {
       onDataChange({ currentPath: location.pathname });
     }
   }, [location.pathname]);
 
-  // Restore saved location on mount
+  // Restore saved location on mount or when currentPath changes
   useEffect(() => {
-    if (savedData?.currentPath && savedData.currentPath !== location.pathname) {
-      console.log('📍 Restoring path from savedData:', savedData.currentPath);
-      navigate(savedData.currentPath, { replace: true });
+    const targetPath = savedData?.currentPath;
+    if (targetPath && targetPath !== location.pathname && targetPath !== lastNavigatedPath.current) {
+      console.log('📍 Navigating to curriculum path:', targetPath);
+      isNavigating.current = true;
+      lastNavigatedPath.current = targetPath;
+      navigate(targetPath, { replace: true });
+      // Reset navigation flag after a short delay
+      setTimeout(() => {
+        isNavigating.current = false;
+      }, 100);
     }
   }, [savedData?.currentPath]);
 
