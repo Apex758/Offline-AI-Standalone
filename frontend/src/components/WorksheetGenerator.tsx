@@ -679,11 +679,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     </select>
                   </div>
 
-                  {formData.subject && formData.gradeLevel && (
-                    <div data-tutorial="worksheet-generator-strand">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Strand <span className="text-red-500">*</span>
-                      </label>
+                  <div data-tutorial="worksheet-generator-strand">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Strand <span className="text-red-500">*</span>
+                    </label>
+                    {formData.subject && formData.gradeLevel ? (
                       <select
                         value={formData.strand}
                         onChange={(e) => handleInputChange('strand', e.target.value)}
@@ -694,8 +694,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                           <option key={strand} value={strand}>{strand}</option>
                         ))}
                       </select>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Select subject and grade level to choose a strand.</p>
+                    )}
+                  </div>
 
                   <div data-tutorial="worksheet-generator-topic">
                     <label className="block text-sm font-medium text-gray-700 mb-2">

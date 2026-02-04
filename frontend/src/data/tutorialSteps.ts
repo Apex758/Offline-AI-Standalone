@@ -703,7 +703,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     name: 'Worksheet Generator',
     description: 'Create and preview AI-assisted worksheets',
     steps: [
-      { target: '[data-tutorial="worksheet-generator-welcome"]', title: 'Welcome to Worksheet Generator', description: 'Configure subject, grade, and scope to create aligned worksheets.', position: 'bottom' },
+      { target: '[data-tutorial="worksheet-generator-welcome"]', title: 'Welcome to Worksheet Generator', description: 'Configure subject, grade, and scope to create aligned worksheets.', position: 'center' },
       { target: '[data-tutorial="worksheet-generator-subject"]', title: 'Pick Subject', description: 'Choose the subject to align standards and content.', position: 'right' },
       { target: '[data-tutorial="worksheet-generator-grade"]', title: 'Set Grade', description: 'Select the grade level for appropriate rigor.', position: 'right' },
       { target: '[data-tutorial="worksheet-generator-strand"]', title: 'Choose Strand', description: 'Pick the strand to narrow curriculum alignment.', position: 'right' },

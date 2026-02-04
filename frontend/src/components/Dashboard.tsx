@@ -2010,6 +2010,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'curriculum-tracker': TUTORIAL_IDS.CURRICULUM_TRACKER,
       'multigrade-planner': TUTORIAL_IDS.MULTIGRADE_PLANNER,
       'cross-curricular-planner': TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER,
+      'worksheet-generator': TUTORIAL_IDS.WORKSHEET_GENERATOR,
+      'image-studio': TUTORIAL_IDS.IMAGE_STUDIO,
       'settings': TUTORIAL_IDS.SETTINGS
     };
 
