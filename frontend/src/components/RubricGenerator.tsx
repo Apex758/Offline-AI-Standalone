@@ -966,6 +966,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition"
                 title="Rubric History"
+                data-tutorial="rubric-generator-history"
               >
                 <History className="w-5 h-5 text-gray-600" />
               </button>
@@ -987,7 +988,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   />
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-assignment-type">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Assignment Type <span className="text-red-500">*</span>
                   </label>
@@ -1002,7 +1003,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </select>
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-subject">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Subject <span className="text-red-500">*</span>
                   </label>
@@ -1017,7 +1018,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </select>
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-grade">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Grade Level <span className="text-red-500">*</span>
                   </label>
@@ -1096,7 +1097,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </label>
                 </div>
 
-                <div>
+                <div data-tutorial="rubric-generator-focus-areas">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Focus Areas <span className="text-red-500">*</span>
                   </label>

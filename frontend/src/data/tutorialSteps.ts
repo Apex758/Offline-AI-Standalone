@@ -630,48 +630,71 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'center'
       },
       {
+        target: '[data-tutorial="rubric-generator-history"]',
+        title: 'Rubric History',
+        description: 'Open your saved rubrics to reload, edit, or delete them.',
+        position: 'top'
+      },
+      {
         target: '[data-tutorial="rubric-generator-assignment"]',
-        title: 'Assignment Details',
-        description: 'Describe the assignment, project, or task being assessed. Include grade level and subject.',
+        title: 'Assignment Title',
+        description: 'Name the assignment you are grading.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="rubric-generator-assignment-type"]',
+        title: 'Assignment Type',
+        description: 'Select the assignment type to tailor the rubric.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="rubric-generator-subject"]',
+        title: 'Subject',
+        description: 'Choose the subject for this rubric.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="rubric-generator-grade"]',
+        title: 'Grade Level',
+        description: 'Select the grade level to align expectations.',
         position: 'right'
       },
       {
         target: '[data-tutorial="rubric-generator-criteria"]',
-        title: 'Assessment Criteria',
-        description: 'List the criteria you\'ll assess: content knowledge, organization, creativity, effort, etc. Add as many as needed.',
-        position: 'right',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="rubric-generator-levels"]',
-        title: 'Performance Levels',
-        description: 'Choose performance levels: typically 3-5 levels like "Exceeds," "Meets," "Approaching," and "Below" expectations.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="rubric-generator-points"]',
-        title: 'Point Values',
-        description: 'Assign point values to each performance level. Total points help with grade calculation.',
+        title: 'Learning Objectives',
+        description: 'Define the learning objectives that the rubric will assess.',
         position: 'right'
       },
       {
         target: '[data-tutorial="rubric-generator-descriptors"]',
-        title: 'Performance Descriptors',
-        description: 'PEARL AI generates clear descriptors for each criterion at each level, making expectations explicit.',
+        title: 'Specific Requirements',
+        description: 'List any specific requirements for the assignment.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="rubric-generator-levels"]',
+        title: 'Performance Levels',
+        description: 'Choose how many performance levels to include.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="rubric-generator-points"]',
+        title: 'Options',
+        description: 'Toggle whether to include point values.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="rubric-generator-focus-areas"]',
+        title: 'Focus Areas',
+        description: 'Select focus areas for the rubric criteria.',
         position: 'right'
       },
       {
         target: '[data-tutorial="rubric-generator-generate"]',
         title: 'Generate Rubric',
         description: 'Create a complete, professional rubric with all criteria, levels, and descriptors.',
-        position: 'top',
-        interactive: true,
-        waitForAction: 'click',
-        actionHint: '👆 Click here!'
-      },
-      // Optional future: export/save anchor not present
+        position: 'top'
+      }
     ]
   },
 
