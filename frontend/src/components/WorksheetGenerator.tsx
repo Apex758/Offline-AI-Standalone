@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Loader2, Eye, Trash2, Wand2, Save, History, X, Download } from 'lucide-react';
+import { FileText, Loader2, Eye, Trash2, Wand2, Save, History, X, Download, ChevronDown, Users, GraduationCap, Check, Undo2 } from 'lucide-react';
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,
@@ -293,6 +293,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
     return 'student';
   });
+  const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editBuffer, setEditBuffer] = useState('');
 
@@ -1060,6 +1061,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             {(generatedWorksheet || parsedWorksheet) && (
               <>
                 <button
+                  onClick={() => {
+                    setEditBuffer(generatedWorksheet);
+                    setIsEditing(true);
+                  }}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+                  title="Edit generated worksheet text"
+                  disabled={!generatedWorksheet}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Edit
+                </button>
+
+                <button
                   onClick={saveWorksheet}
                   disabled={saveStatus === 'saving'}
                   className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
@@ -1077,24 +1091,75 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Save Worksheet
+                      Save 
                     </>
                   )}
                 </button>
 
-                <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden">
+                <div className="relative">
                   <button
-                    onClick={() => setViewMode('student')}
-                    className={`px-3 py-1 text-sm ${viewMode === 'student' ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={() => setShowVersionMenu(!showVersionMenu)}
+                    className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
                   >
-                    Student
+                    <FileText className="w-4 h-4 mr-2" />
+                    {viewMode === 'teacher' ? 'Teacher Version' : 'Student Version'}
+                    <ChevronDown className="w-4 h-4 ml-2" />
                   </button>
-                  <button
-                    onClick={() => setViewMode('teacher')}
-                    className={`px-3 py-1 text-sm border-l border-gray-200 ${viewMode === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-                  >
-                    Teacher
-                  </button>
+
+                  {showVersionMenu && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setShowVersionMenu(false)}
+                      />
+
+                      <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+                        <div className="py-1">
+                          <button
+                            onClick={() => {
+                              setViewMode('student');
+                              setShowVersionMenu(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition ${
+                              viewMode === 'student' ? 'bg-blue-50' : ''
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <Users className="w-4 h-4 mr-3 text-blue-600" />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">Student Version</div>
+                                <div className="text-xs text-gray-500">Hide answers</div>
+                              </div>
+                            </div>
+                            {viewMode === 'student' && (
+                              <Check className="w-4 h-4 text-blue-600" />
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setViewMode('teacher');
+                              setShowVersionMenu(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition ${
+                              viewMode === 'teacher' ? 'bg-blue-50' : ''
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <GraduationCap className="w-4 h-4 mr-3 text-green-600" />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">Teacher Version</div>
+                                <div className="text-xs text-gray-500">Show answers</div>
+                              </div>
+                            </div>
+                            {viewMode === 'teacher' && (
+                              <Check className="w-4 h-4 text-green-600" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <ExportButton
@@ -1102,43 +1167,43 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   data={{
                     content: generatedWorksheet,
                     parsedWorksheet: parsedWorksheet,
-                    formData: formData,
+                    formData: {
+                      ...formData,
+                      viewMode
+                    },
                     accentColor: '#3b82f6',
-                    generatedImages: generatedImages,
-                    viewMode
+                    generatedImages: generatedImages
                   }}
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
                 />
 
                 <button
-                  onClick={() => {
-                    setEditBuffer(generatedWorksheet);
-                    setIsEditing(true);
-                  }}
-                  className="flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 transition text-sm"
-                  title="Edit generated worksheet text"
-                  disabled={!generatedWorksheet}
+                  onClick={() => setHistoryOpen(!historyOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition"
+                  title="Worksheet History"
                 >
-                  Edit
+                  <History className="w-5 h-5 text-gray-600" />
                 </button>
 
                 <button
                   onClick={handleClearWorksheet}
-                  className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                   title="Create a new worksheet"
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Create New
+                  Create New 
                 </button>
+
+                {(clearedWorksheet || clearedParsedWorksheet) && (
+                  <button
+                    onClick={handleRestoreWorksheet}
+                    className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                  >
+                    <Undo2 className="w-4 h-4 mr-2" />
+                    Restore
+                  </button>
+                )}
               </>
             )}
-            <button
-              onClick={() => setHistoryOpen(!historyOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition"
-              title="Worksheet History"
-            >
-              <History className="w-5 h-5 text-gray-600" />
-            </button>
           </div>
         </div>
         </div>
@@ -1198,21 +1263,26 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               ) : parsedWorksheet ? (
                 <div className="transform scale-90 origin-top">
-                  {formData.selectedTemplate === 'multiple-choice' && (
-                    <MultipleChoiceTemplate
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeLevel}
-                      topic={formData.topic}
-                      questionCount={parsedWorksheet.questions.length}
-                      questionType={formData.questionType}
-                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
-                      includeImages={formData.includeImages}
-                      imageMode={formData.imageMode}
-                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
-                      questions={parsedWorksheet.questions}
-                      showAnswers={viewMode === 'teacher'}
-                    />
-                  )}
+                   {formData.selectedTemplate === 'multiple-choice' && (
+                     <MultipleChoiceTemplate
+                       subject={formData.subject}
+                       gradeLevel={formData.gradeLevel}
+                       topic={formData.topic}
+                       questionCount={parsedWorksheet.questions.length}
+                       questionType={formData.questionType}
+                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                       includeImages={formData.includeImages}
+                       imageMode={formData.imageMode}
+                       generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
+                       questions={parsedWorksheet.questions.map((q) => ({
+                         id: q.id,
+                         question: q.question,
+                         options: q.options,
+                         correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : undefined
+                       }))}
+                       showAnswers={viewMode === 'teacher'}
+                     />
+                   )}
                   {formData.selectedTemplate === 'comprehension' && (
                     <ComprehensionTemplate
                       subject={formData.subject}
