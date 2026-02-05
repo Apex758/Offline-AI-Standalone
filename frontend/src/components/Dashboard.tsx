@@ -1285,7 +1285,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {tool.name}
                   </p>
-                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && (
+                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' &&(
                     <p
                       className="text-xs whitespace-nowrap"
                       style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
