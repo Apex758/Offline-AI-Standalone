@@ -364,7 +364,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return;
       }
     }
-
+    if (tool.type === 'curriculum') {
+      const existingCurriculumTab = tabs.find(tab => tab.type === 'curriculum');
+      if (existingCurriculumTab) {
+        setActiveTabId(existingCurriculumTab.id);
+        return;
+      }
+    }
     if (tool.type === 'settings') {
       const existingSettingsTab = tabs.find(tab => tab.type === 'settings');
       if (existingSettingsTab) {
@@ -1221,6 +1227,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ? 'tool-analytics'
                     : tool.type === 'chat'
                     ? 'tool-chat'
+                    : tool.type === 'curriculum' // Add this check
+                    ? 'tool-curriculum'
                     : undefined
                 }
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
