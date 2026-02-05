@@ -5,7 +5,8 @@ import {
   MultipleChoiceTemplate,
   ComprehensionTemplate,
   MatchingTemplate,
-  ListBasedTemplate
+  ListBasedTemplate,
+  MathTemplate
 } from './templates';
 
 import { imageApi } from '../lib/imageApi';
@@ -70,6 +71,7 @@ interface WorksheetTemplate {
 
 const questionTypeOptions = [
   'Multiple Choice',
+  'Calculations',
   'True / False',
   'Word Bank',
   'Fill in the Blank',
@@ -86,6 +88,13 @@ const worksheetTemplates: WorksheetTemplate[] = [
     description: 'Layout for multiple-choice questions with A-D options',
     compatibleTypes: ['Multiple Choice'],
     preview: 'Multiple Choice Layout Preview'
+  },
+  {
+    id: 'math',
+    name: 'Math Calculation Template',
+    description: 'Vertical layout for arithmetic problems',
+    compatibleTypes: ['Calculations'],
+    preview: 'Vertical Math Layout'
   },
   {
     id: 'comprehension',
@@ -325,10 +334,32 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     });
     return Array.from(strandsSet);
   };
+ 
+  const getAvailableQuestionTypes = (): string[] => {
+    if (formData.subject === 'Mathematics') {
+      return ['Multiple Choice', 'Calculations'];
+    }
+    // Default options for other subjects (excluding Calculations if you wish)
+    return questionTypeOptions.filter(t => t !== 'Calculations');
+  };
 
-  // Get compatible templates based on selected question type
+  // UPDATED: Filter Templates based on Subject AND Question Type 
   const getCompatibleTemplates = (): WorksheetTemplate[] => {
-    if (!formData.questionType) return worksheetTemplates;
+    // 1. Strict filtering for Mathematics
+    if (formData.subject === 'Mathematics') {
+      if (formData.questionType === 'Multiple Choice') {
+        return worksheetTemplates.filter(t => t.id === 'multiple-choice');
+      }
+      if (formData.questionType === 'Calculations') {
+        return worksheetTemplates.filter(t => t.id === 'math');
+      }
+      // If no type selected yet, show both relevant templates
+      return worksheetTemplates.filter(t => t.id === 'multiple-choice' || t.id === 'math');
+    }
+
+    // 2. Default behavior for other subjects
+    if (!formData.questionType) return worksheetTemplates.filter(t => t.id !== 'math');
+    
     return worksheetTemplates.filter(template =>
       template.compatibleTypes.includes(formData.questionType)
     );
@@ -517,6 +548,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         return <MatchingTemplate {...commonProps} />;
       case 'list-based':
         return <ListBasedTemplate {...commonProps} />;
+      case 'math':
+        return (
+            <MathTemplate 
+                {...commonProps} 
+                // Pass parsed questions directly; MathTemplate will handle parsing
+                questions={parsedWorksheet?.questions.map(q => ({
+                    id: q.id,
+                    question: q.question,
+                    correctAnswer: q.correctAnswer
+                }))}
+                showAnswers={viewMode === 'teacher'}
+            />
+        );
       default:
         return null;
     }
@@ -846,9 +890,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select a question type</option>
-                  {questionTypeOptions.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
+                  {getAvailableQuestionTypes().map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
                 </select>
               </div>
             </div>

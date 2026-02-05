@@ -293,6 +293,32 @@ CRITICAL REQUIREMENTS:
 - For math: Column A = problems, Column B = answers
 
 `;
+
+  }
+// --- ADD THIS BLOCK ---
+  else if (formData.selectedTemplate === 'math') {
+    templateInstructions = `MATH CALCULATIONS FORMAT - FOLLOW EXACTLY:
+
+Create ${questionCount} arithmetic problems appropriate for Grade ${formData.gradeLevel} ${formData.topic}.
+
+Format each question EXACTLY like this:
+Question X: [Number1] [Operator] [Number2]
+
+Examples:
+Question 1: 45 + 23
+Question 2: 15 x 3
+Question 3: 80 - 12
+Question 4: 50 ÷ 5
+
+CRITICAL RULES:
+1. Format must be strictly: "Question X:" followed by the math expression
+2. The expression must contain TWO numbers and ONE operator
+3. Allowed operators: +, -, x, *, ÷, /
+4. Do NOT include the equals sign or answer (e.g., do NOT write "12 + 5 = 17")
+5. Ensure difficulty matches Grade ${formData.gradeLevel}
+6. Generate EXACTLY ${questionCount} problems
+`;
+
   } else if (formData.selectedTemplate === 'list-based') {
     // Question-type-specific instructions
     let listFormat = '';

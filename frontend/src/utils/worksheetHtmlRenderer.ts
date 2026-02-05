@@ -39,8 +39,9 @@ export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: Rende
     contentHTML = generateMatchingHTML(worksheet, formData, worksheetTitle, showAnswers);
   } else if (selectedTemplate === 'list-based') {
     contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
+  } else if (selectedTemplate === 'math') {
+    contentHTML = generateMathHTML(worksheet, formData, worksheetTitle, showAnswers);
   }
-
   // Build complete HTML document
   const fullHTML = `
 <!DOCTYPE html>
@@ -68,6 +69,75 @@ export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: Rende
   `;
 
   return fullHTML;
+}
+
+function generateMathHTML(
+  worksheet: ParsedWorksheet,
+  formData: RenderOptions['formData'],
+  worksheetTitle: string,
+  showAnswers: boolean
+): string {
+  const questions = worksheet.questions || [];
+
+  return `
+    <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
+      <div style="border-bottom: 4px solid #111827; padding-bottom: 1rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 style="font-size: 2rem; font-weight: 900; text-transform: uppercase; margin: 0; color: #111827;">${worksheetTitle}</h1>
+            <div style="display: flex; gap: 1rem; font-weight: 700; color: #374151; margin-top: 0.5rem; font-size: 0.875rem;">
+              <span>${formData.subject}</span>
+              <span>|</span>
+              <span>Grade ${formData.gradeLevel}</span>
+              <span>|</span>
+              <span style="color: #1d4ed8;">${formData.topic || 'Arithmetic'}</span>
+            </div>
+          </div>
+          <div style="text-align: right; min-width: 200px;">
+            <p style="font-weight: 700; color: #111827; margin: 0 0 0.25rem 0;">Name:</p>
+            <div style="border-bottom: 2px solid #9ca3af; height: 1.5rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem 2rem;">
+        ${questions.map((q, i) => {
+          // Parse the math question string (e.g. "12 + 5")
+          const match = q.question.match(/(\d+)\s*([+\-xX*÷/])\s*(\d+)/);
+          let n1 = '', op = '+', n2 = '';
+          
+          if (match) {
+            n1 = match[1];
+            op = match[2];
+            n2 = match[3];
+            if (op === '*') op = 'x'; // Normalize multiplication
+          } else {
+            n1 = q.question; // Fallback if parsing fails
+          }
+
+          return `
+            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+              <span style="color: #6b7280; font-weight: 700; font-size: 1.25rem; padding-top: 0.25rem;">${i + 1}.</span>
+              <div style="flex: 1; text-align: right; font-family: monospace; font-size: 1.875rem; font-weight: 700; color: #111827;">
+                <div style="margin-bottom: 0.25rem;">${n1}</div>
+                <div style="border-bottom: 4px solid #111827; padding-bottom: 0.5rem; position: relative;">
+                  <span style="position: absolute; left: -1.5rem; color: #374151;">${op}</span>
+                  ${n2}
+                </div>
+                <div style="height: 3rem; padding-top: 0.5rem; color: #1d4ed8; font-size: 1.5rem;">
+                  ${showAnswers && q.correctAnswer ? q.correctAnswer : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div style="margin-top: 4rem; padding-top: 1rem; border-top: 2px solid #d1d5db; text-align: center; color: #6b7280; font-size: 0.875rem; font-weight: 500;">
+        © SuperWorksheets | Educational Purposes Only
+      </div>
+    </div>
+  `;
 }
 
 // Template-specific HTML generators matching the React components exactly
