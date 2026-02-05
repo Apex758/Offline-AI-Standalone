@@ -194,6 +194,60 @@ Subject-Specific Guidance for Social Studies Worksheets (Grades K-6):
 function getMathStrandGuidance(strand: string, gradeLevel: string, topic: string, questionCount: number): string {
   const strandLower = strand.toLowerCase();
   
+
+  // ========== MEASUREMENT ==========
+  if (strandLower.includes('measurement')) {
+    return `MEASUREMENT FORMAT:
+
+  Create ${questionCount} measurement questions for Grade ${gradeLevel} about ${topic}.
+
+  Step 1: Write the questions in this EXACT format:
+  Question 1: [Measurement question]
+  Question 2: [Measurement question]
+  ...
+  Question ${questionCount}: [Measurement question]
+
+  Step 2: Include answer key section:
+
+  **Answer Key:**
+  Question 1: [Answer with units]
+  Question 2: [Answer with units]
+  ...
+  Question ${questionCount}: [Answer with units]
+
+  Grade-Appropriate Examples:
+  ${gradeLevel === 'K' || gradeLevel === '1' ? `
+  Question 1: Which is longer: a pencil or a book?
+  Question 2: How many cubes long is this pencil?
+
+  **Answer Key:**
+  Question 1: A book
+  Question 2: 5 cubes
+  ` : gradeLevel === '2' || gradeLevel === '3' ? `
+  Question 1: 5 meters is equal to _______ centimeters.
+  Question 2: 2.5 meters is equal to _______ centimeters.
+
+  **Answer Key:**
+  Question 1: 500 centimeters
+  Question 2: 250 centimeters
+  ` : `
+  Question 1: Convert 2.5 kilometers to meters.
+  Question 2: A jug contains 2.5 liters of juice. How many milliliters is this?
+
+  **Answer Key:**
+  Question 1: 2500 meters
+  Question 2: 2500 milliliters
+  `}
+
+  CRITICAL RULES:
+  1. Use "Question X:" format (not just "1 question")
+  2. Generate EXACTLY ${questionCount} questions
+  3. MUST include "**Answer Key:**" section with all answers
+  4. Answers must include units where applicable
+  `;
+  }
+
+
   // ========== OPERATIONS WITH NUMBERS ==========
   if (strandLower.includes('operation')) {
     return `OPERATIONS WITH NUMBERS - ARITHMETIC FORMAT:
@@ -268,46 +322,6 @@ Example Questions:
 Question 1: What is the sum of angles in a triangle?
 Question 2: Calculate the area of a rectangle with length 8cm and width 5cm.
 Question 3: How many edges does a rectangular prism have?
-`}
-
-CRITICAL: Generate ${questionCount} questions following the format above.
-`;
-  }
-
-  // ========== MEASUREMENT ==========
-  if (strandLower.includes('measurement')) {
-    return `MEASUREMENT FORMAT:
-
-Create ${questionCount} measurement questions for Grade ${gradeLevel} about ${topic}.
-
-Format each question EXACTLY like this:
-Question X: [Measurement question text]
-
-Grade-Appropriate Topics:
-${gradeLevel === 'K' || gradeLevel === '1' ? `
-- Length comparison: "Which is longer: a pencil or a book?"
-- Weight: "Which is heavier: a feather or a rock?"
-- Time: "What time does the clock show?" (whole hours)
-Example Questions:
-Question 1: Which is taller: a table or a chair?
-Question 2: How many cubes long is this pencil?
-Question 3: What day comes after Tuesday?
-` : gradeLevel === '2' || gradeLevel === '3' ? `
-- Units: "How many centimeters are in 1 meter?"
-- Time: "What time is 30 minutes after 2:15?"
-- Money: "How much is 3 quarters and 2 dimes?"
-Example Questions:
-Question 1: Convert 200 centimeters to meters.
-Question 2: If the movie starts at 3:30 PM and lasts 1 hour 45 minutes, when does it end?
-Question 3: How many millimeters are in 5 centimeters?
-` : `
-- Conversions: "Convert 2.5 kilometers to meters"
-- Perimeter: "Find the perimeter of a square with side 12cm"
-- Volume: "What is the capacity of a box 10cm x 8cm x 5cm?"
-Example Questions:
-Question 1: A jug contains 2.5 liters of juice. How many milliliters is this?
-Question 2: The perimeter of a rectangle is 24cm. If the length is 8cm, what is the width?
-Question 3: Convert 3 hours and 45 minutes to minutes.
 `}
 
 CRITICAL: Generate ${questionCount} questions following the format above.

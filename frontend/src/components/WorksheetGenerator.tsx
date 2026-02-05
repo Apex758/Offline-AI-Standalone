@@ -398,8 +398,15 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       setGenerationError('Connection not established. Please wait and try again.');
       return;
     }
-    // Clear any previous errors and streaming content
+    
+    // ✅ CLEAR PREVIOUS WORKSHEET BEFORE GENERATING NEW ONE
+    setGeneratedWorksheet('');
+    setParsedWorksheet(null);
+    setGeneratedImages([]);
     setGenerationError(null);
+    setIsEditing(false);
+    
+    // Clear any previous errors and streaming content
     clearStreaming(tabId || '', ENDPOINT);
     console.log('Setting loading state');
     setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));

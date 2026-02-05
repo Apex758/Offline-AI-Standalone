@@ -410,7 +410,7 @@ function parseWordBankWorksheet(text: string): ParsedWorksheet | null {
       console.log('📝 Detected bullet-point word bank format');
       wordBank = rawWordBank
         .split('\n')
-        .map(line => line.replace(/^[\s\*\-]+/, '').trim()) // Remove bullets and whitespace
+        .map(line => line.replace(/^[\s*-]+/, '').trim()) // Remove bullets and whitespace
         .filter(word => word.length > 0);
     } else {
       // Comma-separated format: "add, subtract, sum, difference"
@@ -682,9 +682,90 @@ export function parseWorksheetFromAI(aiResponse: string): ParsedWorksheet | null
 
     return parsed as ParsedWorksheet;
   } catch {
-    // If JSON parsing fails, try to parse text-based format
-    console.log('JSON parsing failed, attempting text-based parsing...');
+    // JSON parsing failed, try simple numbered format FIRST
+    console.log('JSON parsing failed, trying simple numbered format...');
+    const simpleResult = parseSimpleNumberedQuestions(aiResponse);
+    if (simpleResult) {
+      console.log('✅ Successfully parsed simple numbered format');
+      return simpleResult;
+    }
+    
+    // Fall back to text-based parsing
+    console.log('Simple numbered parsing failed, attempting text-based parsing...');
     return parseTextBasedWorksheet(aiResponse);
+  }
+}
+
+function parseSimpleNumberedQuestions(text: string): ParsedWorksheet | null {
+  try {
+    console.log('=== ATTEMPTING SIMPLE NUMBERED PARSE ===');
+    
+    // Extract title
+    const titleMatch = text.match(/^(?:Generated Worksheet|Mathematics|Subject:)\s*(.+?)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : 'Generated Worksheet';
+    
+    // Extract subject and grade
+    const subjectMatch = text.match(/Subject:\s*(.+?)\s*\|/i);
+    const gradeMatch = text.match(/Grade:\s*(\d+)/i);
+    const topicMatch = text.match(/Topic:\s*(.+?)$/m);
+    
+    // Match lines like: "1 Question text" or "1. Question text"
+    const questionRegex = /^(\d+)[\.\s]+(.+)$/gm;
+    const matches = [...text.matchAll(questionRegex)];
+    
+    if (matches.length === 0) {
+      console.log('No numbered questions found');
+      return null;
+    }
+    
+    console.log(`Found ${matches.length} simple numbered questions`);
+    
+    const questions: WorksheetQuestion[] = matches.map((match, idx) => ({
+      id: `q_${Date.now()}_${idx}`,
+      type: 'short-answer',
+      question: match[2].trim(),
+      correctAnswer: '',
+      points: 1
+    }));
+    
+    // Try to find answer key section - multiple formats
+    let answerKeySection = text.match(/(?:\*\*)?Answer Key:?\*\*?\s*\n([\s\S]+?)(?:\n\n|$)/i);
+    if (!answerKeySection) {
+      answerKeySection = text.match(/Answers?:\s*\n([\s\S]+?)(?:\n\n|$)/i);
+    }
+    
+    if (answerKeySection) {
+      console.log('✅ Found answer key section');
+      const answerLines = answerKeySection[1].split('\n');
+      answerLines.forEach((line) => {
+        // Match "Question 1: answer" or "1: answer" or "1. answer"
+        const answerMatch = line.match(/(?:Question\s+)?(\d+)[\.\s:]+(.+)$/i);
+        if (answerMatch) {
+          const questionIndex = parseInt(answerMatch[1]) - 1;
+          if (questions[questionIndex]) {
+            questions[questionIndex].correctAnswer = answerMatch[2].trim();
+            console.log(`✅ Added answer for Q${questionIndex + 1}: ${answerMatch[2].trim()}`);
+          }
+        }
+      });
+    } else {
+      console.log('❌ No answer key section found');
+    }
+    
+    return {
+      metadata: {
+        title: title,
+        subject: subjectMatch ? subjectMatch[1].trim() : 'Mathematics',
+        gradeLevel: gradeMatch ? gradeMatch[1] : 'Multiple',
+        totalQuestions: questions.length,
+        template: 'list-based',
+        instructions: 'Answer the following questions. Show your work where applicable.'
+      },
+      questions
+    };
+  } catch (error) {
+    console.error('Simple numbered parse failed:', error);
+    return null;
   }
 }
 

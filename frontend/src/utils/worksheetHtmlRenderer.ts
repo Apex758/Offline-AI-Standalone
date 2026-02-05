@@ -79,7 +79,7 @@ function generateMathHTML(
 ): string {
   const questions = worksheet.questions || [];
   
-  // ✅ DETECT STRAND TYPE
+  // Detect strand type
   const isComputationalStrand = () => {
     const computationalKeywords = ['operation', 'addition', 'subtraction', 'multiplication', 'division', 'arithmetic', 'calculation', 'add', 'subtract', 'multiply', 'divide'];
     const topicLower = (formData.topic || '').toLowerCase();
@@ -91,13 +91,13 @@ function generateMathHTML(
 
   const useVerticalLayout = isComputationalStrand();
 
-  // ✅ PARSE QUESTIONS CONDITIONALLY
+  // Parse to arithmetic if needed
   const parseToArithmetic = (q: any) => {
     const match = q.question.match(/(\d+)\s*([+\-xX*÷/])\s*(\d+)/);
     if (match) {
       return {
         num1: match[1],
-        operator: match[2] === '*' ? 'x' : match[2],
+        operator: match[2] === '*' ? '×' : match[2] === '/' ? '÷' : match[2],
         num2: match[3],
         answer: q.correctAnswer
       };
@@ -106,12 +106,11 @@ function generateMathHTML(
   };
 
   if (useVerticalLayout) {
-    // ========== VERTICAL ARITHMETIC LAYOUT ==========
+    // Vertical arithmetic layout (same as preview)
     const arithmeticProblems = questions.map(parseToArithmetic).filter(Boolean);
     
     return `
     <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
-      <!-- Header -->
       <div style="border-bottom: 4px solid #111827; padding-bottom: 1rem; margin-bottom: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-end;">
           <div>
@@ -131,13 +130,11 @@ function generateMathHTML(
         </div>
       </div>
 
-      <!-- Instructions -->
       <div style="margin-bottom: 1.5rem;">
         <h2 style="font-size: 1.125rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Instructions:</h2>
         <p style="color: #374151; margin: 0;">Solve the following problems. Show your work.</p>
       </div>
 
-      <!-- Arithmetic Grid -->
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem 2rem;">
         ${arithmeticProblems.map((problem, i) => `
           <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
@@ -156,17 +153,15 @@ function generateMathHTML(
         `).join('')}
       </div>
 
-      <!-- Footer -->
       <div style="margin-top: 4rem; padding-top: 1rem; border-top: 2px solid #d1d5db; text-align: center; color: #6b7280; font-size: 0.875rem; font-weight: 500;">
         © Educational Worksheet | Math Practice
       </div>
     </div>
     `;
   } else {
-    // ========== QUESTION-ANSWER LAYOUT (for Geometry, Measurement, Data, Patterns) ==========
+    // Q&A layout (same as preview)
     return `
     <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
-      <!-- Header -->
       <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
@@ -185,18 +180,16 @@ function generateMathHTML(
         </div>
       </div>
 
-      <!-- Instructions -->
       <div style="margin-bottom: 1.5rem;">
         <h2 style="font-size: 1.125rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Instructions:</h2>
         <p style="color: #374151; margin: 0;">Answer the following questions. Show your work where applicable.</p>
       </div>
 
-      <!-- Questions -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         ${questions.map((q, i) => `
           <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
-              <div style="flex-shrink: 0; width: 2rem; height: 2rem; background-color: #dbeafe; border-radius: 9999px; display: flex; align-items: center; justify-center; color: #1d4ed8; font-weight: 600;">
+              <div style="flex-shrink: 0; width: 2rem; height: 2rem; background-color: #dbeafe; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 600;">
                 ${i + 1}
               </div>
               <div style="flex: 1;">
@@ -217,7 +210,6 @@ function generateMathHTML(
         `).join('')}
       </div>
 
-      <!-- Footer -->
       <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
         <p style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin: 0;">
           Worksheet generated for educational purposes
