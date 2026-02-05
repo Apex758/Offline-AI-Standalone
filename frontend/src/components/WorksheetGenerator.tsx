@@ -315,6 +315,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     loadWorksheetHistory();
   }, []);
 
+  // Auto-disable images for Mathematics
+  useEffect(() => {
+    if (formData.subject === 'Mathematics' && formData.includeImages) {
+      handleInputChange('includeImages', false);
+    }
+  }, [formData.subject]);
+
   // Auto-fetch strands based on subject and grade
   const getStrands = (subject: string, grade: string): string[] => {
     if (!subject || !grade) return [];
@@ -552,6 +559,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         return (
             <MathTemplate 
                 {...commonProps} 
+                strand={formData.strand}
                 // Pass parsed questions directly; MathTemplate will handle parsing
                 questions={parsedWorksheet?.questions.map(q => ({
                     id: q.id,
@@ -905,16 +913,23 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     type="checkbox"
                     checked={formData.includeImages}
                     onChange={(e) => handleInputChange('includeImages', e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    disabled={formData.subject === 'Mathematics'}  // ✅ ADD THIS
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <span className="text-sm font-medium text-gray-700">Include Images</span>
+                  <span className={`text-sm font-medium ${formData.subject === 'Mathematics' ? 'text-gray-400' : 'text-gray-700'}`}>
+                    Include Images
+                  </span>
                 </label>
-                <p className="text-xs text-gray-500 mt-1">Add relevant images to enhance the worksheet</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.subject === 'Mathematics' 
+                    ? 'Images are not available for Mathematics worksheets'
+                    : 'Add relevant images to enhance the worksheet'}
+                </p>
               </div>
             </div>
 
             {/* AI Image Generation */}
-            {formData.includeImages && (
+            {formData.includeImages && formData.subject !== 'Mathematics' && (  
               <div className="space-y-4" data-tutorial="worksheet-generator-image-prompt">
               <h3 className="text-lg font-semibold text-gray-800">AI Image Generation</h3>
 

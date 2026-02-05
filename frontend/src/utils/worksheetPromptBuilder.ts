@@ -189,6 +189,262 @@ Subject-Specific Guidance for Social Studies Worksheets (Grades K-6):
   return guidance[subject] || '';
 }
 
+
+
+function getMathStrandGuidance(strand: string, gradeLevel: string, topic: string, questionCount: number): string {
+  const strandLower = strand.toLowerCase();
+  
+  // ========== OPERATIONS WITH NUMBERS ==========
+  if (strandLower.includes('operation')) {
+    return `OPERATIONS WITH NUMBERS - ARITHMETIC FORMAT:
+
+Create ${questionCount} arithmetic problems appropriate for Grade ${gradeLevel}.
+
+Format each question EXACTLY like this:
+Question X: [Number1] [Operator] [Number2]
+
+Examples for Grade ${gradeLevel}:
+${gradeLevel === 'K' || gradeLevel === '1' ? `
+Question 1: 5 + 3
+Question 2: 8 - 2
+Question 3: 6 + 4
+` : gradeLevel === '2' || gradeLevel === '3' ? `
+Question 1: 45 + 23
+Question 2: 67 - 34
+Question 3: 12 x 4
+` : `
+Question 1: 457 + 325
+Question 2: 945 - 279
+Question 3: 36 x 24
+Question 4: 144 ÷ 12
+`}
+
+Grade-Specific Number Ranges:
+- K-1: Single digits (0-10), addition and subtraction only
+- Grade 2: Two digits (10-99), introduce multiplication with single digits
+- Grade 3: Two to three digits (10-999), basic division
+- Grade 4-6: Three to four digits (100-9999), multi-digit operations
+
+CRITICAL RULES:
+1. Format: "Question X:" followed by the math expression
+2. Expression: TWO numbers and ONE operator (+, -, x, ÷)
+3. DO NOT include equals sign or answer
+4. Generate EXACTLY ${questionCount} problems
+5. Vary operations appropriately for the grade level
+`;
+  }
+
+  // ========== GEOMETRICAL THINKING ==========
+  if (strandLower.includes('geomet')) {
+    return `GEOMETRICAL THINKING FORMAT:
+
+Create ${questionCount} geometry questions for Grade ${gradeLevel} about ${topic}.
+
+Format each question EXACTLY like this:
+Question X: [Geometry question text]
+
+Grade-Appropriate Topics:
+${gradeLevel === 'K' || gradeLevel === '1' ? `
+- Shape identification: "How many sides does a triangle have?"
+- Basic properties: "Which shape has 4 equal sides?"
+- Sorting shapes: "Circle all the rectangles"
+Example Questions:
+Question 1: How many corners does a square have?
+Question 2: What shape has 3 sides and 3 corners?
+Question 3: Which shape is round with no corners?
+` : gradeLevel === '2' || gradeLevel === '3' ? `
+- 2D and 3D shapes: "Name a shape that has 6 faces"
+- Lines and angles: "How many right angles does a rectangle have?"
+- Symmetry: "Does the letter A have a line of symmetry?"
+Example Questions:
+Question 1: How many faces does a cube have?
+Question 2: What is a polygon with 5 sides called?
+Question 3: Draw all lines of symmetry in a square.
+` : `
+- Angles: "What type of angle measures 90 degrees?"
+- Perimeter and area: "Find the perimeter of a rectangle 5cm by 3cm"
+- Volume: "What is the volume of a box 4cm x 3cm x 2cm?"
+Example Questions:
+Question 1: What is the sum of angles in a triangle?
+Question 2: Calculate the area of a rectangle with length 8cm and width 5cm.
+Question 3: How many edges does a rectangular prism have?
+`}
+
+CRITICAL: Generate ${questionCount} questions following the format above.
+`;
+  }
+
+  // ========== MEASUREMENT ==========
+  if (strandLower.includes('measurement')) {
+    return `MEASUREMENT FORMAT:
+
+Create ${questionCount} measurement questions for Grade ${gradeLevel} about ${topic}.
+
+Format each question EXACTLY like this:
+Question X: [Measurement question text]
+
+Grade-Appropriate Topics:
+${gradeLevel === 'K' || gradeLevel === '1' ? `
+- Length comparison: "Which is longer: a pencil or a book?"
+- Weight: "Which is heavier: a feather or a rock?"
+- Time: "What time does the clock show?" (whole hours)
+Example Questions:
+Question 1: Which is taller: a table or a chair?
+Question 2: How many cubes long is this pencil?
+Question 3: What day comes after Tuesday?
+` : gradeLevel === '2' || gradeLevel === '3' ? `
+- Units: "How many centimeters are in 1 meter?"
+- Time: "What time is 30 minutes after 2:15?"
+- Money: "How much is 3 quarters and 2 dimes?"
+Example Questions:
+Question 1: Convert 200 centimeters to meters.
+Question 2: If the movie starts at 3:30 PM and lasts 1 hour 45 minutes, when does it end?
+Question 3: How many millimeters are in 5 centimeters?
+` : `
+- Conversions: "Convert 2.5 kilometers to meters"
+- Perimeter: "Find the perimeter of a square with side 12cm"
+- Volume: "What is the capacity of a box 10cm x 8cm x 5cm?"
+Example Questions:
+Question 1: A jug contains 2.5 liters of juice. How many milliliters is this?
+Question 2: The perimeter of a rectangle is 24cm. If the length is 8cm, what is the width?
+Question 3: Convert 3 hours and 45 minutes to minutes.
+`}
+
+CRITICAL: Generate ${questionCount} questions following the format above.
+`;
+  }
+
+  // ========== DATA & PROBABILITY ==========
+  if (strandLower.includes('data') || strandLower.includes('probability')) {
+    return `DATA & PROBABILITY FORMAT:
+
+Create ${questionCount} data/probability questions for Grade ${gradeLevel} about ${topic}.
+
+Format each question EXACTLY like this:
+Question X: [Data/probability question text]
+
+Grade-Appropriate Topics:
+${gradeLevel === 'K' || gradeLevel === '1' ? `
+- Sorting: "Sort these animals: cat, dog, fish (pets or not pets)"
+- Tallying: "Count how many students like apples"
+- Simple graphs: "Which fruit got the most votes?"
+Example Questions:
+Question 1: Look at the tally chart. How many students chose pizza?
+Question 2: Which color was picked the least number of times?
+Question 3: How many more students like dogs than cats?
+` : gradeLevel === '2' || gradeLevel === '3' ? `
+- Bar graphs: "What is the most popular sport?"
+- Pictographs: "How many more students ride the bus than walk?"
+- Simple probability: "What are the chances of picking a red marble if there are 2 red and 3 blue?"
+Example Questions:
+Question 1: If you flip a coin, what are the possible outcomes?
+Question 2: Find the mode of this data: 5, 7, 5, 8, 5, 9
+Question 3: According to the bar graph, how many students chose soccer?
+` : `
+- Mean, median, mode: "Find the mean of: 12, 15, 18, 21, 14"
+- Probability: "What is the probability of rolling a 6 on a dice?"
+- Interpreting data: "What conclusion can you draw from this line graph?"
+Example Questions:
+Question 1: Calculate the mean of these test scores: 85, 90, 78, 92, 88
+Question 2: What is the probability of drawing a heart from a deck of cards?
+Question 3: Find the median of: 23, 19, 31, 27, 21
+`}
+
+CRITICAL: Generate ${questionCount} questions following the format above.
+`;
+  }
+
+  // ========== PATTERNS & RELATIONSHIPS ==========
+  if (strandLower.includes('pattern')) {
+    return `PATTERNS & RELATIONSHIPS FORMAT:
+
+Create ${questionCount} pattern questions for Grade ${gradeLevel} about ${topic}.
+
+Format each question EXACTLY like this:
+Question X: [Pattern question text]
+
+Grade-Appropriate Topics:
+${gradeLevel === 'K' || gradeLevel === '1' ? `
+- Repeating patterns: "What comes next: red, blue, red, blue, ___?"
+- Growing patterns: "Complete the pattern: 1, 2, 3, ___"
+- Shape patterns: "What shape comes next: circle, square, circle, ___?"
+Example Questions:
+Question 1: What comes next in the pattern: △, ○, △, ○, ___?
+Question 2: Complete the number pattern: 2, 4, 6, 8, ___
+Question 3: What is missing: cat, dog, ___, cat, dog, bird
+` : gradeLevel === '2' || gradeLevel === '3' ? `
+- Number patterns: "What is the rule: 5, 10, 15, 20?"
+- Skip counting: "Complete: 3, 6, 9, 12, ___"
+- Pattern rules: "What comes next: 2, 4, 8, 16, ___?"
+Example Questions:
+Question 1: Find the next three numbers: 7, 14, 21, 28, ___, ___, ___
+Question 2: What is the pattern rule for: 100, 90, 80, 70?
+Question 3: Complete the pattern: 2, 5, 8, 11, ___
+` : `
+- Algebraic patterns: "If the pattern is n + 3, what is the 10th term?"
+- Geometric sequences: "Find the next term: 2, 6, 18, 54, ___"
+- Function tables: "Complete the table where y = 2x + 1"
+Example Questions:
+Question 1: What is the 15th term in the sequence 3, 7, 11, 15...?
+Question 2: Write the rule for this pattern: 5, 10, 20, 40, 80
+Question 3: If the pattern rule is multiply by 3 then subtract 1, what are the next two numbers after 5?
+`}
+
+CRITICAL: Generate ${questionCount} questions following the format above.
+`;
+  }
+
+  // ========== NUMBER SENSE ==========
+  if (strandLower.includes('number sense')) {
+    return `NUMBER SENSE FORMAT:
+
+Create ${questionCount} number sense questions for Grade ${gradeLevel} about ${topic}.
+
+Format each question EXACTLY like this:
+Question X: [Number sense question text]
+
+Grade-Appropriate Topics:
+${gradeLevel === 'K' || gradeLevel === '1' ? `
+- Counting: "Count these objects and write the number"
+- Number recognition: "Which number is bigger: 5 or 8?"
+- Before/After: "What number comes after 7?"
+Example Questions:
+Question 1: What number comes between 4 and 6?
+Question 2: Circle the larger number: 3 or 9
+Question 3: Count by 2s: 2, 4, 6, ___, ___
+` : gradeLevel === '2' || gradeLevel === '3' ? `
+- Place value: "What is the value of 5 in 357?"
+- Comparing numbers: "Which is greater: 234 or 243?"
+- Rounding: "Round 67 to the nearest ten"
+Example Questions:
+Question 1: What is the place value of 7 in 573?
+Question 2: Write 456 in expanded form.
+Question 3: Round 385 to the nearest hundred.
+` : `
+- Large numbers: "Write five hundred thousand in numbers"
+- Prime numbers: "Is 17 a prime or composite number?"
+- Fractions/Decimals: "Which is larger: 0.5 or 0.05?"
+Example Questions:
+Question 1: Express 3/4 as a decimal.
+Question 2: What is the greatest common factor of 12 and 18?
+Question 3: Order from smallest to largest: 0.7, 0.07, 0.77
+`}
+
+CRITICAL: Generate ${questionCount} questions following the format above.
+`;
+  }
+
+  // Default fallback
+  return `Create ${questionCount} mathematics questions for Grade ${gradeLevel} about ${topic}.
+
+Format each question EXACTLY like this:
+Question X: [Question text]
+
+Generate questions appropriate for the grade level and topic.
+`;
+}
+
+
 export function buildWorksheetPrompt(formData: WorksheetFormData): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
 
@@ -209,7 +465,6 @@ Correct Answer: A
 
 `;
   } else if (formData.selectedTemplate === 'comprehension') {
-    // UPDATED - More explicit format instructions
     templateInstructions = `COMPREHENSION FORMAT - FOLLOW EXACTLY:
 
 Step 1: Write the passage header and passage
@@ -513,3 +768,5 @@ Begin generating the worksheet now:`;
 
   return prompt;
 }
+
+

@@ -78,9 +78,40 @@ function generateMathHTML(
   showAnswers: boolean
 ): string {
   const questions = worksheet.questions || [];
+  
+  // ✅ DETECT STRAND TYPE
+  const isComputationalStrand = () => {
+    const computationalKeywords = ['operation', 'addition', 'subtraction', 'multiplication', 'division', 'arithmetic', 'calculation', 'add', 'subtract', 'multiply', 'divide'];
+    const topicLower = (formData.topic || '').toLowerCase();
+    const strandLower = (formData.strand || '').toLowerCase();
+    return computationalKeywords.some(keyword => 
+      topicLower.includes(keyword) || strandLower.includes(keyword)
+    );
+  };
 
-  return `
+  const useVerticalLayout = isComputationalStrand();
+
+  // ✅ PARSE QUESTIONS CONDITIONALLY
+  const parseToArithmetic = (q: any) => {
+    const match = q.question.match(/(\d+)\s*([+\-xX*÷/])\s*(\d+)/);
+    if (match) {
+      return {
+        num1: match[1],
+        operator: match[2] === '*' ? 'x' : match[2],
+        num2: match[3],
+        answer: q.correctAnswer
+      };
+    }
+    return null;
+  };
+
+  if (useVerticalLayout) {
+    // ========== VERTICAL ARITHMETIC LAYOUT ==========
+    const arithmeticProblems = questions.map(parseToArithmetic).filter(Boolean);
+    
+    return `
     <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
+      <!-- Header -->
       <div style="border-bottom: 4px solid #111827; padding-bottom: 1rem; margin-bottom: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-end;">
           <div>
@@ -100,44 +131,101 @@ function generateMathHTML(
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem 2rem;">
-        ${questions.map((q, i) => {
-          // Parse the math question string (e.g. "12 + 5")
-          const match = q.question.match(/(\d+)\s*([+\-xX*÷/])\s*(\d+)/);
-          let n1 = '', op = '+', n2 = '';
-          
-          if (match) {
-            n1 = match[1];
-            op = match[2];
-            n2 = match[3];
-            if (op === '*') op = 'x'; // Normalize multiplication
-          } else {
-            n1 = q.question; // Fallback if parsing fails
-          }
+      <!-- Instructions -->
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.125rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Instructions:</h2>
+        <p style="color: #374151; margin: 0;">Solve the following problems. Show your work.</p>
+      </div>
 
-          return `
-            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-              <span style="color: #6b7280; font-weight: 700; font-size: 1.25rem; padding-top: 0.25rem;">${i + 1}.</span>
-              <div style="flex: 1; text-align: right; font-family: monospace; font-size: 1.875rem; font-weight: 700; color: #111827;">
-                <div style="margin-bottom: 0.25rem;">${n1}</div>
-                <div style="border-bottom: 4px solid #111827; padding-bottom: 0.5rem; position: relative;">
-                  <span style="position: absolute; left: -1.5rem; color: #374151;">${op}</span>
-                  ${n2}
-                </div>
-                <div style="height: 3rem; padding-top: 0.5rem; color: #1d4ed8; font-size: 1.5rem;">
-                  ${showAnswers && q.correctAnswer ? q.correctAnswer : ''}
-                </div>
+      <!-- Arithmetic Grid -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem 2rem;">
+        ${arithmeticProblems.map((problem, i) => `
+          <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+            <span style="color: #6b7280; font-weight: 700; font-size: 1.25rem; padding-top: 0.25rem;">${i + 1}.</span>
+            <div style="flex: 1; text-align: right; font-family: monospace; font-size: 1.875rem; font-weight: 700; color: #111827;">
+              <div style="margin-bottom: 0.25rem;">${problem.num1}</div>
+              <div style="border-bottom: 4px solid #111827; padding-bottom: 0.5rem; position: relative;">
+                <span style="position: absolute; left: -1.5rem; color: #374151;">${problem.operator}</span>
+                ${problem.num2}
+              </div>
+              <div style="height: 3rem; padding-top: 0.5rem; color: #1d4ed8; font-size: 1.5rem;">
+                ${showAnswers && problem.answer ? problem.answer : ''}
               </div>
             </div>
-          `;
-        }).join('')}
+          </div>
+        `).join('')}
       </div>
 
+      <!-- Footer -->
       <div style="margin-top: 4rem; padding-top: 1rem; border-top: 2px solid #d1d5db; text-align: center; color: #6b7280; font-size: 0.875rem; font-weight: 500;">
-        © SuperWorksheets | Educational Purposes Only
+        © Educational Worksheet | Math Practice
       </div>
     </div>
-  `;
+    `;
+  } else {
+    // ========== QUESTION-ANSWER LAYOUT (for Geometry, Measurement, Data, Patterns) ==========
+    return `
+    <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
+      <!-- Header -->
+      <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">${worksheetTitle}</h1>
+            <p style="color: #4b5563; margin: 0.25rem 0;">
+              <strong>Subject:</strong> ${formData.subject} | <strong>Grade:</strong> ${formData.gradeLevel}
+            </p>
+            <p style="color: #4b5563; margin: 0.25rem 0;">
+              <strong>Topic:</strong> ${formData.topic || 'N/A'}
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <p style="color: #4b5563; margin: 0.25rem 0;">Name: ____________________</p>
+            <p style="color: #4b5563; margin: 0.25rem 0;">Date: ____________________</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.125rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Instructions:</h2>
+        <p style="color: #374151; margin: 0;">Answer the following questions. Show your work where applicable.</p>
+      </div>
+
+      <!-- Questions -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        ${questions.map((q, i) => `
+          <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+              <div style="flex-shrink: 0; width: 2rem; height: 2rem; background-color: #dbeafe; border-radius: 9999px; display: flex; align-items: center; justify-center; color: #1d4ed8; font-weight: 600;">
+                ${i + 1}
+              </div>
+              <div style="flex: 1;">
+                <p style="color: #1f2937; font-weight: 500; margin: 0 0 0.75rem 0;">
+                  ${q.question}
+                </p>
+                ${showAnswers && q.correctAnswer ? `
+                  <div style="margin-top: 0.5rem; padding: 0.5rem; background-color: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 0.25rem;">
+                    <span style="font-weight: 600; color: #166534;">Answer:</span>
+                    <span style="color: #166534; margin-left: 0.5rem;">${q.correctAnswer}</span>
+                  </div>
+                ` : `
+                  <div style="border-bottom: 2px solid #d1d5db; height: 3rem; margin-top: 0.5rem;"></div>
+                `}
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Footer -->
+      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
+        <p style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin: 0;">
+          Worksheet generated for educational purposes
+        </p>
+      </div>
+    </div>
+    `;
+  }
 }
 
 // Template-specific HTML generators matching the React components exactly
