@@ -595,10 +595,12 @@ export function prepareWorksheetForExport(content: string, parsedWorksheet: Pars
     throw new Error('Parsed worksheet required for export');
   }
 
+  // ✅ FIX: Pass viewMode from formData to generateWorksheetHTML
   const html = generateWorksheetHTML(parsedWorksheet, {
     accentColor,
     formData,
-    generatedImages
+    generatedImages,
+    viewMode: formData.viewMode || 'student' // Extract viewMode from formData
   });
 
   return {
