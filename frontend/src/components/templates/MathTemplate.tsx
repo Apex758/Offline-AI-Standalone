@@ -38,9 +38,22 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
   
   // ✅ STRAND DETECTION: Determine if this is computational (vertical layout) or conceptual (Q&A layout)
   const isComputationalStrand = () => {
-    const computationalKeywords = ['operation', 'addition', 'subtraction', 'multiplication', 'division', 'arithmetic', 'calculation', 'add', 'subtract', 'multiply', 'divide', 'times', 'plus', 'minus'];
+    const computationalKeywords = [
+        'operation', 'addition', 'subtraction', 'multiplication', 'division', 
+        'arithmetic', 'calculation', 'add', 'subtract', 'multiply', 'divide', 
+        'times', 'plus', 'minus'
+    ];
     const topicLower = (topic || '').toLowerCase();
     const strandLower = (strand || '').toLowerCase();
+    
+    // Check if it's measurement/conversion which should use Q&A format
+    const isMeasurementConversion = 
+        strandLower.includes('measurement') || 
+        topicLower.includes('meter') || 
+        topicLower.includes('convert');
+    
+    if (isMeasurementConversion) return false; // Use Q&A format for conversions
+    
     return computationalKeywords.some(keyword => 
         topicLower.includes(keyword) || strandLower.includes(keyword)
     );

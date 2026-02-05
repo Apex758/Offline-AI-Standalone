@@ -566,27 +566,142 @@ CRITICAL REQUIREMENTS:
   }
 // --- ADD THIS BLOCK ---
   else if (formData.selectedTemplate === 'math') {
-    templateInstructions = `MATH CALCULATIONS FORMAT - FOLLOW EXACTLY:
+    // SMART DETECTION: Determine what kind of math problems to generate
+    const topicLower = formData.topic.toLowerCase();
+    const strandLower = (formData.strand || '').toLowerCase();
+    
+    // Detect if this is a conversion/measurement topic
+    const isConversion = 
+      topicLower.includes('convert') || 
+      topicLower.includes('to ') || 
+      (topicLower.includes('meter') && topicLower.includes('kilometer')) ||
+      (topicLower.includes('cm') && topicLower.includes('m')) ||
+      topicLower.includes('feet to') ||
+      topicLower.includes('pounds to') ||
+      topicLower.includes('inches to') ||
+      strandLower.includes('measurement') && (topicLower.includes('meter') || topicLower.includes('unit'));
+    
+    // Detect if this is pure arithmetic
+    const isArithmetic =
+      topicLower.includes('addition') ||
+      topicLower.includes('subtraction') ||
+      topicLower.includes('multiplication') ||
+      topicLower.includes('division') ||
+      topicLower.includes('add') ||
+      topicLower.includes('subtract') ||
+      topicLower.includes('multiply') ||
+      topicLower.includes('divide') ||
+      topicLower.includes('operation');
+    
+    let mathInstructions = '';
+    
+    if (isConversion) {
+      // CONVERSION PROBLEMS (e.g., meters to kilometers)
+      mathInstructions = `UNIT CONVERSION FORMAT - FOLLOW EXACTLY:
 
-Create ${questionCount} arithmetic problems appropriate for Grade ${formData.gradeLevel} ${formData.topic}.
+Create ${questionCount} conversion problems for "${formData.topic}".
+
+Format each question EXACTLY like this:
+Question X: [Number] [FromUnit] = _______ [ToUnit]
+[Answer: correct numerical answer with unit]
+
+Examples for "meters to kilometers":
+Question 1: 1000 meters = _______ kilometers
+[Answer: 1 kilometer]
+
+Question 2: 3500 meters = _______ kilometers
+[Answer: 3.5 kilometers]
+
+Question 3: 500 meters = _______ kilometers
+[Answer: 0.5 kilometers]
+
+Examples for "centimeters to meters":
+Question 1: 150 centimeters = _______ meters
+[Answer: 1.5 meters]
+
+Question 2: 300 centimeters = _______ meters
+[Answer: 3 meters]
+
+CRITICAL RULES:
+1. Format must be: "Question X: [number] [unit] = _______ [unit]"
+2. ALWAYS include "[Answer: X]" on the next line after each question
+3. Use realistic numbers appropriate for Grade ${formData.gradeLevel}
+4. The conversion relationship must be correct (e.g., 1000m = 1km, 100cm = 1m)
+5. Generate EXACTLY ${questionCount} conversion problems
+6. All problems must be about the same conversion type: ${formData.topic}
+7. Answer format: [Answer: number + unit] (e.g., [Answer: 1.5 kilometers])
+`;
+      
+    } else if (isArithmetic) {
+      // PURE ARITHMETIC OPERATIONS
+      mathInstructions = `ARITHMETIC CALCULATIONS FORMAT - FOLLOW EXACTLY:
+
+Create ${questionCount} arithmetic problems appropriate for Grade ${formData.gradeLevel} focusing on ${formData.topic}.
 
 Format each question EXACTLY like this:
 Question X: [Number1] [Operator] [Number2]
+[Answer: correct numerical answer]
 
 Examples:
 Question 1: 45 + 23
+[Answer: 68]
+
 Question 2: 15 x 3
+[Answer: 45]
+
 Question 3: 80 - 12
+[Answer: 68]
+
 Question 4: 50 ÷ 5
+[Answer: 10]
 
 CRITICAL RULES:
 1. Format must be strictly: "Question X:" followed by the math expression
-2. The expression must contain TWO numbers and ONE operator
-3. Allowed operators: +, -, x, *, ÷, /
-4. Do NOT include the equals sign or answer (e.g., do NOT write "12 + 5 = 17")
-5. Ensure difficulty matches Grade ${formData.gradeLevel}
-6. Generate EXACTLY ${questionCount} problems
+2. ALWAYS include "[Answer: X]" on the next line after each question
+3. The expression must contain TWO numbers and ONE operator
+4. Allowed operators: +, -, x, *, ÷, /
+5. Do NOT include the equals sign in the question (e.g., do NOT write "12 + 5 = ?")
+6. Ensure difficulty matches Grade ${formData.gradeLevel}
+7. Generate EXACTLY ${questionCount} problems
+8. All problems must use the operation type specified in: ${formData.topic}
 `;
+      
+    } else {
+      // WORD PROBLEMS OR APPLIED MATH
+      mathInstructions = `APPLIED MATH PROBLEMS FORMAT - FOLLOW EXACTLY:
+
+Create ${questionCount} word problems or applied math questions about "${formData.topic}" for Grade ${formData.gradeLevel}.
+
+Format each question like this:
+Question X: [Word problem or applied question about the topic]
+[Answer: complete answer with explanation if needed]
+
+Examples for "money and cents":
+Question 1: Sarah has 3 quarters and 2 dimes. How much money does she have in cents?
+[Answer: 95 cents]
+
+Question 2: A toy costs 85 cents. How many pennies is that?
+[Answer: 85 pennies]
+
+Examples for "time and hours":
+Question 1: School starts at 8:00 AM and ends at 3:00 PM. How many hours is that?
+[Answer: 7 hours]
+
+Question 2: It takes 45 minutes to walk to school. Is that more or less than 1 hour?
+[Answer: Less than 1 hour]
+
+CRITICAL RULES:
+1. Format: "Question X:" followed by the complete word problem
+2. ALWAYS include "[Answer: X]" on the next line after each question
+3. Questions must be solvable by Grade ${formData.gradeLevel} students
+4. All questions must relate directly to: ${formData.topic}
+5. Use realistic scenarios that students can understand
+6. Generate EXACTLY ${questionCount} questions
+7. Answers should be clear and include units where appropriate
+`;
+    }
+    
+    templateInstructions = mathInstructions;
 
   } else if (formData.selectedTemplate === 'list-based') {
     // Question-type-specific instructions
@@ -782,5 +897,3 @@ Begin generating the worksheet now:`;
 
   return prompt;
 }
-
-

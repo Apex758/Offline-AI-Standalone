@@ -661,6 +661,11 @@ function parseTextBasedWorksheet(text: string): ParsedWorksheet | null {
 // Parser utility - handles both JSON and text-based worksheet formats
 export function parseWorksheetFromAI(aiResponse: string): ParsedWorksheet | null {
   try {
+    // 🔍 DIAGNOSTIC: Log the raw AI response
+    console.log('=== RAW AI RESPONSE ===');
+    console.log(aiResponse.substring(0, 500));
+    console.log('======================');
+    
     // First, try to extract JSON from markdown code blocks
     const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
     const jsonString = jsonMatch ? jsonMatch[1] : aiResponse;
@@ -682,8 +687,16 @@ export function parseWorksheetFromAI(aiResponse: string): ParsedWorksheet | null
 
     return parsed as ParsedWorksheet;
   } catch {
-    // JSON parsing failed, try simple numbered format FIRST
-    console.log('JSON parsing failed, trying simple numbered format...');
+    // JSON parsing failed, try markdown header format FIRST
+    console.log('JSON parsing failed, trying markdown header format...');
+    const markdownResult = parseMarkdownHeaderWorksheet(aiResponse);
+    if (markdownResult) {
+      console.log('✅ Successfully parsed markdown header format');
+      return markdownResult;
+    }
+    
+    // Try simple numbered format
+    console.log('Markdown header parsing failed, trying simple numbered format...');
     const simpleResult = parseSimpleNumberedQuestions(aiResponse);
     if (simpleResult) {
       console.log('✅ Successfully parsed simple numbered format');
@@ -693,6 +706,98 @@ export function parseWorksheetFromAI(aiResponse: string): ParsedWorksheet | null
     // Fall back to text-based parsing
     console.log('Simple numbered parsing failed, attempting text-based parsing...');
     return parseTextBasedWorksheet(aiResponse);
+  }
+}
+
+// NEW: Parse markdown header format worksheet (e.g., **Title**, ### Question N, [Answer: ...])
+function parseMarkdownHeaderWorksheet(text: string): ParsedWorksheet | null {
+  try {
+    console.log('=== ATTEMPTING MARKDOWN HEADER PARSE ===');
+    
+    // Extract title - look for **Title** at the start
+    const titleMatch = text.match(/^\*\*(.+?)\*\*/m);
+    const title = titleMatch ? titleMatch[1].trim() : 'Generated Worksheet';
+    console.log('📝 Title:', title);
+    
+    // Extract grade and subject - look for **Grade X Subject**
+    const gradeSubjectMatch = text.match(/\*\*Grade\s+(\d+|[KkPp])\s+(.+?)\*\*/i);
+    const gradeLevel = gradeSubjectMatch ? gradeSubjectMatch[1] : 'Multiple';
+    const subject = gradeSubjectMatch ? gradeSubjectMatch[2].trim() : 'Various';
+    console.log('📚 Grade:', gradeLevel, 'Subject:', subject);
+    
+    // Extract instructions
+    const instructionsMatch = text.match(/\*\*Instructions?:\*\*\s*(.+?)(?=\n\n|###|$)/is);
+    const instructions = instructionsMatch ? instructionsMatch[1].trim() : undefined;
+    console.log('📋 Instructions:', instructions ? 'Found' : 'None');
+    
+    // Match questions - look for ### Question N format
+    const questionRegex = /###\s*Question\s+(\d+)\s*\n([\s\S]+?)(?=###\s*Question\s+\d+|$)/gi;
+    const matches = [...text.matchAll(questionRegex)];
+    
+    if (matches.length === 0) {
+      console.log('❌ No markdown header questions found');
+      return null;
+    }
+    
+    console.log(`✅ Found ${matches.length} markdown header questions`);
+    
+    const questions: WorksheetQuestion[] = matches.map((match, idx) => {
+      const questionNumber = parseInt(match[1]);
+      const questionContent = match[2].trim();
+      
+      // Extract question text - look for **Problem:** or just the first line
+      let questionText = '';
+      const problemMatch = questionContent.match(/\*\*Problem:\*\*\s*(.+?)(?=\n|$)/is);
+      if (problemMatch) {
+        questionText = problemMatch[1].trim();
+      } else {
+        // Take the first line as question text
+        questionText = questionContent.split('\n')[0].trim();
+      }
+      
+      // Remove markdown formatting from question text
+      questionText = questionText.replace(/\*\*/g, '').trim();
+      
+      // Extract answer - look for [Answer: ...] format
+      let correctAnswer = '';
+      const answerMatch = questionContent.match(/\[Answer:\s*(.+?)\]/i);
+      if (answerMatch) {
+        correctAnswer = answerMatch[1].trim();
+        console.log(`✅ Q${questionNumber}: "${questionText}" → Answer: "${correctAnswer}"`);
+      } else {
+        console.log(`⚠️ Q${questionNumber}: "${questionText}" → No answer found`);
+      }
+      
+      return {
+        id: `q_${Date.now()}_${idx}`,
+        type: 'short-answer' as const,
+        question: questionText,
+        correctAnswer: correctAnswer,
+        points: 1
+      };
+    });
+    
+    if (questions.length === 0) {
+      console.log('❌ No valid questions parsed');
+      return null;
+    }
+    
+    console.log(`✅ SUCCESS: Parsed ${questions.length} markdown header questions`);
+    
+    return {
+      metadata: {
+        title,
+        subject,
+        gradeLevel,
+        totalQuestions: questions.length,
+        template: 'list-based',
+        instructions
+      },
+      questions
+    };
+  } catch (error) {
+    console.error('❌ Markdown header parse failed:', error);
+    return null;
   }
 }
 

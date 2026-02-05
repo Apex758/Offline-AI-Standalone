@@ -252,6 +252,17 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setFormData(prev => prev.imageMode === 'shared' ? prev : { ...prev, imageMode: 'shared' });
   }, []);
 
+  // Auto-select template when only one compatible option exists
+  useEffect(() => {
+    const compatible = getCompatibleTemplates();
+    if (compatible.length === 1 && formData.selectedTemplate !== compatible[0].id) {
+      handleInputChange('selectedTemplate', compatible[0].id);
+    } else if (compatible.length > 1 && !compatible.find(t => t.id === formData.selectedTemplate)) {
+      // Clear selection if current template is no longer compatible
+      handleInputChange('selectedTemplate', '');
+    }
+  }, [formData.questionType, formData.subject]);
+
   // Generation error state
   const [generationError, setGenerationError] = useState<string | null>(null);
 
@@ -477,6 +488,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     onDataChange?.({ formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet, viewMode });
   }, [formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet, viewMode]);
 
+  // Auto-select template when only one is compatible
+  useEffect(() => {
+    const compatibleTemplates = getCompatibleTemplates();
+    if (compatibleTemplates.length === 1 && !formData.selectedTemplate) {
+      handleInputChange('selectedTemplate', compatibleTemplates[0].id);
+    }
+  }, [formData.questionType, formData.subject]);
+
   // Auto-fetch curriculum matches when subject, grade, or strand changes
   useEffect(() => {
     const fetchMatchingCurriculum = async () => {
@@ -543,6 +562,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       subject: formData.subject,
       gradeLevel: formData.gradeLevel,
       topic: formData.topic,
+      strand: formData.strand,
       questionCount: questionCount,  // ✅ Use validated count
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
@@ -563,19 +583,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       case 'list-based':
         return <ListBasedTemplate {...commonProps} />;
       case 'math':
-        return (
-            <MathTemplate 
-                {...commonProps} 
-                strand={formData.strand}
-                // Pass parsed questions directly; MathTemplate will handle parsing
-                questions={parsedWorksheet?.questions.map(q => ({
-                    id: q.id,
-                    question: q.question,
-                    correctAnswer: q.correctAnswer
-                }))}
-                showAnswers={viewMode === 'teacher'}
-            />
-        );
+        return <MathTemplate {...commonProps} showAnswers={viewMode === 'teacher'} />;
       default:
         return null;
     }
@@ -1127,6 +1135,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </h3>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setHistoryOpen(!historyOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition"
+              title="Worksheet History"
+              data-tutorial="worksheet-generator-history-toggle"
+            >
+              <History className="w-5 h-5 text-gray-600" />
+            </button>
             {(generatedWorksheet || parsedWorksheet) && (
               <>
                 <button
@@ -1249,15 +1265,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
                   data-tutorial="worksheet-generator-export"
                 />
-
-                <button
-                  onClick={() => setHistoryOpen(!historyOpen)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition"
-                  title="Worksheet History"
-                  data-tutorial="worksheet-generator-history-toggle"
-                >
-                  <History className="w-5 h-5 text-gray-600" />
-                </button>
 
                 <button
                   onClick={handleClearWorksheet}
@@ -1403,6 +1410,18 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       showAnswers={viewMode === 'teacher'}
                     />
                   )}
+                  {formData.selectedTemplate === 'math' && (
+                    <MathTemplate
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      topic={formData.topic}
+                      strand={formData.strand}
+                      worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
+                      questions={parsedWorksheet.questions}
+                      showAnswers={viewMode === 'teacher'}
+                      questionCount={parsedWorksheet.questions.length}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="p-4">
@@ -1427,14 +1446,20 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
           )}
         </div>
-
+ 
         {/* History Panel - Slides in from right as overlay */}
-        <div
-          className={`absolute top-0 right-0 h-full bg-white border-l border-gray-200 shadow-xl transition-transform duration-300 ease-in-out z-50 ${
-            historyOpen ? 'translate-x-0' : 'translate-x-full'
-          } w-80`}
-          onClick={(e) => e.stopPropagation()}
-        >
+        {historyOpen && (
+          <>
+            {/* Backdrop to close on outside click */}
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setHistoryOpen(false)}
+            />
+            
+            <div
+              className="absolute top-0 right-0 h-full bg-white border-l border-gray-200 shadow-xl transition-transform duration-300 ease-in-out z-50 w-80"
+              onClick={(e) => e.stopPropagation()}
+            >
           <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800">Saved Worksheets</h3>
@@ -1485,10 +1510,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
           </div>
         </div>
+      </>
+    )}
       </div>
     </div>
   );
 };
 
 export default WorksheetGenerator;
-
