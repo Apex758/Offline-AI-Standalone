@@ -363,9 +363,16 @@ export function calculateQuickStats(resources: any[], tasks: Task[], timeframe: 
     }
   });
 
-  // Calculate active days (days with at least 1 resource) in timeframe
+  // Calculate active days - ALL unique days with resources ever created
   const activeDays = new Set(
-    resourcesInRange.map(r => format(new Date(r.timestamp), 'yyyy-MM-dd'))
+    resources.map(r => {
+      try {
+        return format(new Date(r.timestamp), 'yyyy-MM-dd');
+      } catch (error) {
+        console.error('Error formatting resource date:', error);
+        return null;
+      }
+    }).filter(date => date !== null)
   ).size;
 
   // Calculate average per week in timeframe
@@ -378,8 +385,8 @@ export function calculateQuickStats(resources: any[], tasks: Task[], timeframe: 
   const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   return {
-    totalResources: resources.length, // ✅ FIXED - show ALL resources ever created
-    activeDays, // Days active in selected timeframe
+    totalResources: resources.length, // ✅ ALL resources ever created
+    activeDays, // ✅ FIXED - ALL unique days with activity (not filtered by timeframe)
     avgPerWeek, // Average for selected timeframe
     completionRate // Overall task completion
   };
