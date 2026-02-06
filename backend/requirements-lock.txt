@@ -76,6 +76,7 @@ tinycss2==1.5.1
 tinyhtml5==2.0.0
 cssselect2==0.8.0
 Pyphen==0.17.2
+beautifulsoup4==4.14.2
 
 # Python Socket.IO (for iopaint)
 python-socketio==5.7.2
