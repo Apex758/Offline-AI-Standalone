@@ -179,7 +179,7 @@ class SceneSchemaBuilder:
                 id=f"{obj_type}_{i+1:02d}",
                 type=obj_type,
                 name=obj_type.replace("_", " ").title(),
-                properties={"index": i, "source": "preset"},
+                properties={"index": i, "source": "preset", "base_prompt": preset.get("base_prompt", "")},
                 visible=True,
                 countable=True
             ))
@@ -187,7 +187,8 @@ class SceneSchemaBuilder:
         # Build relationships from preset metadata and object types
         relationships = self._infer_relationships(scene_objects, preset)
         
-        return SceneSpec(
+        # Store base_prompt in scene's properties for later use
+        scene_spec = SceneSpec(
             scene_id=scene_id,
             topic_id=topic_id,
             subject=topic_data["subject"],
@@ -201,6 +202,12 @@ class SceneSchemaBuilder:
             image_preset_id=preset_id,
             style_profile_id=style_profile_id
         )
+        
+        # Store the base_prompt as a property on the scene for use in prompt generation
+        if scene_spec.objects:
+            scene_spec.objects[0].properties["scene_base_prompt"] = preset.get("base_prompt", "")
+        
+        return scene_spec
     
     def _infer_relationships(
         self, 
@@ -250,34 +257,42 @@ class SceneSchemaBuilder:
         
         return relationships
     
-    def scene_to_prompt(self, scene: SceneSpec, style_suffix: str) -> str:
+    def scene_to_prompt(self, scene: SceneSpec, style_suffix: str, base_prompt: str = "") -> str:
         """
         Convert scene spec to image generation prompt
         
         Args:
             scene: Scene specification
             style_suffix: Style-specific prompt suffix
+            base_prompt: Base prompt from preset (preferred over building from objects)
         
         Returns:
             Complete image generation prompt
         """
-        # Build base prompt from visible objects
-        visible_objects = [obj for obj in scene.objects if obj.visible]
-        object_names = [obj.name for obj in visible_objects]
-        
-        # Start with a structured description
-        if len(object_names) == 1:
-            prompt = f"A scene showing {object_names[0]}"
-        elif len(object_names) == 2:
-            prompt = f"A scene showing {object_names[0]} and {object_names[1]}"
+        # PRIORITY 1: Use the base_prompt from the preset if available
+        if base_prompt:
+            prompt = base_prompt
+        # PRIORITY 2: Check if base_prompt is stored in scene objects
+        elif scene.objects and "scene_base_prompt" in scene.objects[0].properties:
+            prompt = scene.objects[0].properties["scene_base_prompt"]
         else:
-            prompt = f"A scene showing {', '.join(object_names[:-1])}, and {object_names[-1]}"
-        
-        # Add relationship context (first 2 relationships)
-        if scene.relationships:
-            rel_descriptions = [r.description for r in scene.relationships[:2]]
-            if rel_descriptions:
-                prompt += f", where {', and '.join(rel_descriptions)}"
+            # FALLBACK: Build from object names (old behavior)
+            visible_objects = [obj for obj in scene.objects if obj.visible]
+            object_names = [obj.name for obj in visible_objects]
+            
+            # Start with a structured description
+            if len(object_names) == 1:
+                prompt = f"A scene showing {object_names[0]}"
+            elif len(object_names) == 2:
+                prompt = f"A scene showing {object_names[0]} and {object_names[1]}"
+            else:
+                prompt = f"A scene showing {', '.join(object_names[:-1])}, and {object_names[-1]}"
+            
+            # Add relationship context (first 2 relationships)
+            if scene.relationships:
+                rel_descriptions = [r.description for r in scene.relationships[:2]]
+                if rel_descriptions:
+                    prompt += f", where {', and '.join(rel_descriptions)}"
         
         # Add style suffix
         prompt += style_suffix

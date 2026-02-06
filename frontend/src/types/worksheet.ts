@@ -429,8 +429,9 @@ function parseWordBankWorksheet(text: string): ParsedWorksheet | null {
     const questions: WorksheetQuestion[] = [];
     
     // Match both markdown and plain text question formats
-    const questionRegex = /\*\*Question\s+\d+:\*\*\s*(.+?)(?=\*\*Question\s+\d+:|$)/gis;
-    const plainQuestionRegex = /Question\s+\d+:\s*(.+?)(?=Question\s+\d+:|$)/gis;
+    // Updated to stop at notes/comments like "(Note:" in addition to next question
+    const questionRegex = /\*\*Question\s+\d+:\*\*\s*(.+?)(?=\*\*Question\s+\d+:|\(Note:|$)/gis;
+    const plainQuestionRegex = /Question\s+\d+:\s*(.+?)(?=Question\s+\d+:|\(Note:|$)/gis;
     
     let matches = [...text.matchAll(questionRegex)];
     if (matches.length === 0) {
@@ -440,10 +441,13 @@ function parseWordBankWorksheet(text: string): ParsedWorksheet | null {
     console.log(`Found ${matches.length} question matches`);
 
     matches.forEach((match, index) => {
-      const questionText = match[1].trim();
+      let questionText = match[1].trim();
+      
+      // Clean up any trailing notes or parenthetical comments
+      questionText = questionText.replace(/\(Note:.*$/is, '').trim();
       
       // Skip if this looks like it's part of the word bank definition
-      if (questionText.toLowerCase().includes('word bank') || 
+      if (questionText.toLowerCase().includes('word bank') ||
           questionText.toLowerCase().includes('fill-in-the-blank')) {
         return;
       }
@@ -452,6 +456,8 @@ function parseWordBankWorksheet(text: string): ParsedWorksheet | null {
       if (questionText.includes('___')) {
         console.log(`✅ Question ${index + 1}:`, questionText.substring(0, 50) + '...');
         questions.push(parseWordBankQuestion(questionText, index)!);
+      } else {
+        console.warn(`⚠️ Question ${index + 1} skipped (no blanks found):`, questionText.substring(0, 50) + '...');
       }
     });
 

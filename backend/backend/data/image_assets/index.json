@@ -95,5 +95,167 @@
       "image_size_bytes": 586105
     },
     "created_at": "2026-02-05T20:15:50.611217"
+  },
+  "asset_3d82454a4d1b6478_1770338833": {
+    "asset_id": "asset_3d82454a4d1b6478_1770338833",
+    "image_path": "backend\\data\\image_assets\\asset_3d82454a4d1b6478_1770338833.png",
+    "scene_spec": {
+      "scene_id": "scene_science_grade4_structure-function_plant_parts_20260205_204354",
+      "topic_id": "science.grade4.structure-function",
+      "subject": "Science",
+      "grade_level": "4",
+      "strand": "structure-function",
+      "objects": [
+        {
+          "id": "roots_01",
+          "type": "roots",
+          "name": "Roots",
+          "properties": {
+            "index": 0,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly",
+            "scene_base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "stem_02",
+          "type": "stem",
+          "name": "Stem",
+          "properties": {
+            "index": 1,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "leaves_03",
+          "type": "leaves",
+          "name": "Leaves",
+          "properties": {
+            "index": 2,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "flower_04",
+          "type": "flower",
+          "name": "Flower",
+          "properties": {
+            "index": 3,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text_labels",
+        "multiple_species"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T20:43:54.388022",
+      "image_preset_id": "plant_parts",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "science.grade4.structure-function",
+      "preset_id": "plant_parts",
+      "prompt": "A scene showing Roots, Stem, Leaves, and Flower, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T20:47:13.042703",
+      "created_at": "2026-02-05T20:47:13.059813",
+      "image_size_bytes": 634165
+    },
+    "created_at": "2026-02-05T20:47:13.059813"
+  },
+  "asset_42a671b54548dd41_1770339700": {
+    "asset_id": "asset_42a671b54548dd41_1770339700",
+    "image_path": "backend\\data\\image_assets\\asset_42a671b54548dd41_1770339700.png",
+    "scene_spec": {
+      "scene_id": "scene_science_grade4_structure-function_plant_parts_20260205_210026",
+      "topic_id": "science.grade4.structure-function",
+      "subject": "Science",
+      "grade_level": "4",
+      "strand": "structure-function",
+      "objects": [
+        {
+          "id": "roots_01",
+          "type": "roots",
+          "name": "Roots",
+          "properties": {
+            "index": 0,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly",
+            "scene_base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "stem_02",
+          "type": "stem",
+          "name": "Stem",
+          "properties": {
+            "index": 1,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "leaves_03",
+          "type": "leaves",
+          "name": "Leaves",
+          "properties": {
+            "index": 2,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "flower_04",
+          "type": "flower",
+          "name": "Flower",
+          "properties": {
+            "index": 3,
+            "source": "preset",
+            "base_prompt": "A flowering plant showing roots, stem, leaves, and flower clearly"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text_labels",
+        "multiple_species"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T21:00:26.367614",
+      "image_preset_id": "plant_parts",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "science.grade4.structure-function",
+      "preset_id": "plant_parts",
+      "prompt": "A scene showing Roots, Stem, Leaves, and Flower, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T21:01:40.623496",
+      "created_at": "2026-02-05T21:01:40.639602",
+      "image_size_bytes": 658091
+    },
+    "created_at": "2026-02-05T21:01:40.639602"
   }
 }

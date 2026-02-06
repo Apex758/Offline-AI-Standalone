@@ -175,6 +175,10 @@ async def generate_scene_image(request: Request):
         
         logger.info(f"Built scene spec: {scene_spec.scene_id}")
         
+        # Get the preset to access base_prompt
+        preset = builder.get_preset(topic_id, preset_id)
+        base_prompt = preset.get("base_prompt", "") if preset else ""
+        
         # Load style profile
         base_dir = Path(__file__).parent
         profiles_path = base_dir / "config" / "style_profiles.json"
@@ -197,11 +201,12 @@ async def generate_scene_image(request: Request):
         
         logger.info(f"Reference images available for {style_profile_id}: {ref_count}")
         
-        # Build image prompt from scene spec
+        # Build image prompt from scene spec using base_prompt from preset
         style_suffix = style_profile.get("base_prompt_suffix", "")
-        prompt = builder.scene_to_prompt(scene_spec, style_suffix)
+        prompt = builder.scene_to_prompt(scene_spec, style_suffix, base_prompt)
         
         logger.info(f"Generated prompt: {prompt[:100]}...")
+        logger.info(f"Used base_prompt: {base_prompt[:100] if base_prompt else 'None (fallback to objects)'}")
         
         # Get SDXL settings from style profile
         settings = style_profile.get("sdxl_settings", {})

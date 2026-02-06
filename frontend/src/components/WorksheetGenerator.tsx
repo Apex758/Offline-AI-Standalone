@@ -498,19 +498,63 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     console.log('handleGenerate called');
+    
+    // Variables to track scene data (either from state or newly generated)
+    let currentSceneSpec = sceneSpec;
+    let currentAssetId = assetId;
+    let imageWasGenerated = false;
+    
+    // ✅ AUTO-GENERATE IMAGE FIRST IF NEEDED
+    if (formData.includeImages && !sceneSpec && selectedPreset) {
+      console.log('🎨 Auto-generating image before worksheet...');
+      setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
+      
+      try {
+        const generatedScene = await handleGenerateSceneImage();
+        if (generatedScene) {
+          console.log('✅ Image generated, proceeding with worksheet generation');
+          console.log('   Image data length:', generatedScene.imageData.length);
+          // Use the returned scene data immediately (don't wait for state update)
+          currentSceneSpec = generatedScene.sceneSpec;
+          currentAssetId = generatedScene.assetId;
+          imageWasGenerated = true;
+        }
+      } catch (error) {
+        console.error('Failed to auto-generate image:', error);
+        setGenerationError('Failed to generate image. Please try again.');
+        setLocalLoadingMap(prev => {
+          const newMap = { ...prev };
+          delete newMap[tabId || ''];
+          return newMap;
+        });
+        return;
+      }
+    }
+    
     const ws = getConnection(tabId || '', ENDPOINT);
     console.log('WebSocket readyState:', ws.readyState);
     if (ws.readyState !== WebSocket.OPEN) {
       setGenerationError('Connection not established. Please wait and try again.');
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId || ''];
+        return newMap;
+      });
       return;
     }
     
     // ✅ CLEAR PREVIOUS WORKSHEET BEFORE GENERATING NEW ONE
     setGeneratedWorksheet('');
     setParsedWorksheet(null);
-    setGeneratedImages([]);
+    // Only clear images if we're not using images AND we didn't just auto-generate them
+    if (!formData.includeImages && !imageWasGenerated) {
+      console.log('Clearing old images (not using images in this worksheet)');
+      setGeneratedImages([]);
+    } else {
+      console.log('Keeping generated images - includeImages:', formData.includeImages, 'imageWasGenerated:', imageWasGenerated, 'current count:', generatedImages.length);
+    }
     setGenerationError(null);
     setIsEditing(false);
     
@@ -519,18 +563,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     console.log('Setting loading state');
     setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
 
-    // Build prompt for worksheet generation
-    const prompt = buildWorksheetPrompt(formData, sceneSpec);
+    // Build prompt for worksheet generation (will include sceneSpec if available)
+    const prompt = buildWorksheetPrompt(formData, currentSceneSpec);
 
     const jobId = `worksheet-${Date.now()}`;
     console.log('Built prompt, jobId:', jobId);
+    console.log('Using sceneSpec:', currentSceneSpec ? currentSceneSpec.scene_id : 'none');
 
     const message = {
       prompt,
       formData: {
         ...formData,
-        sceneSpec: sceneSpec,
-        assetId: assetId,
+        sceneSpec: currentSceneSpec,
+        assetId: currentAssetId,
       },
       jobId,
       generationMode: "queued",
@@ -794,7 +839,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const handleGenerateSceneImage = async () => {
     if (!selectedPreset) {
       setImageError("Please select an image preset");
-      return;
+      return null;
     }
 
     setGeneratingImages(true);
@@ -829,17 +874,26 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         );
         console.log(
           "   Objects:",
-          response.data.sceneSpec.objects.map((o: any) => o.name).join(", "),
+          response.data.sceneSpec.objects.map((o: { name: string }) => o.name).join(", "),
         );
         console.log("   Asset ID:", response.data.assetId);
+        
+        // Return the scene data for immediate use
+        return {
+          sceneSpec: response.data.sceneSpec,
+          assetId: response.data.assetId,
+          imageData: response.data.imageData
+        };
       } else {
         throw new Error("Image generation failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Scene image generation error:", error);
-      setImageError(
-        error.response?.data?.detail || "Failed to generate image from scene",
-      );
+      const errorMessage = error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : "Failed to generate image from scene";
+      setImageError(errorMessage || "Failed to generate image from scene");
+      throw error;
     } finally {
       setGeneratingImages(false);
     }
