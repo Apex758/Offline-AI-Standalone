@@ -257,5 +257,176 @@
       "image_size_bytes": 658091
     },
     "created_at": "2026-02-05T21:01:40.639602"
+  },
+  "asset_939e8c6cf515acff_1770341328": {
+    "asset_id": "asset_939e8c6cf515acff_1770341328",
+    "image_path": "backend\\data\\image_assets\\asset_939e8c6cf515acff_1770341328.png",
+    "scene_spec": {
+      "scene_id": "scene_science_grade4_structure-function_habitat_scene_20260205_212605",
+      "topic_id": "science.grade4.structure-function",
+      "subject": "Science",
+      "grade_level": "4",
+      "strand": "structure-function",
+      "objects": [
+        {
+          "id": "environment_01",
+          "type": "environment",
+          "name": "Environment",
+          "properties": {
+            "index": 0,
+            "source": "preset",
+            "base_prompt": "A natural habitat showing plants and environment - forest, ocean, or desert",
+            "scene_base_prompt": "A natural habitat showing plants and environment - forest, ocean, or desert"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "natural_elements_02",
+          "type": "natural_elements",
+          "name": "Natural Elements",
+          "properties": {
+            "index": 1,
+            "source": "preset",
+            "base_prompt": "A natural habitat showing plants and environment - forest, ocean, or desert"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text",
+        "pollution"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T21:26:05.378134",
+      "image_preset_id": "habitat_scene",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "science.grade4.structure-function",
+      "preset_id": "habitat_scene",
+      "prompt": "A natural habitat showing plants and environment - forest, ocean, or desert, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T21:28:48.597917",
+      "created_at": "2026-02-05T21:28:48.609938",
+      "image_size_bytes": 606638
+    },
+    "created_at": "2026-02-05T21:28:48.609938"
+  },
+  "asset_83da083987938426_1770341739": {
+    "asset_id": "asset_83da083987938426_1770341739",
+    "image_path": "backend\\data\\image_assets\\asset_83da083987938426_1770341739.png",
+    "scene_spec": {
+      "scene_id": "scene_science_grade4_structure-function_animal_features_20260205_213324",
+      "topic_id": "science.grade4.structure-function",
+      "subject": "Science",
+      "grade_level": "4",
+      "strand": "structure-function",
+      "objects": [
+        {
+          "id": "animal_body_01",
+          "type": "animal_body",
+          "name": "Animal Body",
+          "properties": {
+            "index": 0,
+            "source": "preset",
+            "base_prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4",
+            "scene_base_prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "features_02",
+          "type": "features",
+          "name": "Features",
+          "properties": {
+            "index": 1,
+            "source": "preset",
+            "base_prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text",
+        "scary_elements"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T21:33:24.410477",
+      "image_preset_id": "animal_features",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "science.grade4.structure-function",
+      "preset_id": "animal_features",
+      "prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T21:35:39.042837",
+      "created_at": "2026-02-05T21:35:39.088698",
+      "image_size_bytes": 498619
+    },
+    "created_at": "2026-02-05T21:35:39.088698"
+  },
+  "asset_14120c59adf1c381_1770342296": {
+    "asset_id": "asset_14120c59adf1c381_1770342296",
+    "image_path": "backend\\data\\image_assets\\asset_14120c59adf1c381_1770342296.png",
+    "scene_spec": {
+      "scene_id": "scene_science_grade4_structure-function_animal_features_20260205_214330",
+      "topic_id": "science.grade4.structure-function",
+      "subject": "Science",
+      "grade_level": "4",
+      "strand": "structure-function",
+      "objects": [
+        {
+          "id": "animal_body_01",
+          "type": "animal_body",
+          "name": "Animal Body",
+          "properties": {
+            "index": 0,
+            "source": "preset",
+            "base_prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4",
+            "scene_base_prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "features_02",
+          "type": "features",
+          "name": "Features",
+          "properties": {
+            "index": 1,
+            "source": "preset",
+            "base_prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text",
+        "scary_elements"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T21:43:30.671963",
+      "image_preset_id": "animal_features",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "science.grade4.structure-function",
+      "preset_id": "animal_features",
+      "prompt": "A friendly animal showing clear body parts - head, legs, tail, appropriate for grade 4, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T21:44:56.683322",
+      "created_at": "2026-02-05T21:44:56.699751",
+      "image_size_bytes": 492117
+    },
+    "created_at": "2026-02-05T21:44:56.699751"
   }
 }

@@ -507,7 +507,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     let imageWasGenerated = false;
     
     // ✅ AUTO-GENERATE IMAGE FIRST IF NEEDED
-    if (formData.includeImages && !sceneSpec && selectedPreset) {
+    if (formData.includeImages && selectedPreset) {
       console.log('🎨 Auto-generating image before worksheet...');
       setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
       

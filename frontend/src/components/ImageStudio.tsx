@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save } from 'lucide-react';
+import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown } from 'lucide-react';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 
 interface ImageStudioProps {
@@ -13,6 +13,27 @@ interface ImageHistory {
   current: string;
   undoStack: string[];
   redoStack: string[];
+}
+
+interface StyleProfile {
+  id: string;
+  name: string;
+  description: string;
+  grade_bands: string[];
+  base_prompt_suffix: string;
+  negative_prompt: string;
+  sdxl_settings: {
+    width: number;
+    height: number;
+    num_inference_steps: number;
+    guidance_scale: number;
+    cfg_scale: number;
+  };
+  ip_adapter: {
+    enabled: boolean;
+    strength: number;
+    reference_set: string;
+  };
 }
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
@@ -39,6 +60,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ========================================
+  // Style Management States (NEW)
+  // ========================================
+  const [selectedStyle, setSelectedStyle] = useState<string>('cartoon_3d');
+  const [styleProfiles, setStyleProfiles] = useState<Record<string, StyleProfile>>({});
+  const [loadingStyles, setLoadingStyles] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [useManualNegative, setUseManualNegative] = useState(false);
 
   // ========================================
   // Editor States
@@ -97,12 +127,58 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // ========================================
+  // Load style profiles from backend
+  // ========================================
+  useEffect(() => {
+    const loadStyleProfiles = async () => {
+      setLoadingStyles(true);
+      try {
+        const response = await fetch('http://localhost:8000/api/style-profiles');
+        const data = await response.json();
+        
+        if (data.success && data.profiles) {
+          setStyleProfiles(data.profiles);
+          console.log('✅ Loaded style profiles:', Object.keys(data.profiles));
+        }
+      } catch (error) {
+        console.error('Failed to load style profiles:', error);
+        // Fallback to default settings
+      } finally {
+        setLoadingStyles(false);
+      }
+    };
+    
+    loadStyleProfiles();
+  }, []);
+
+  // ========================================
+  // Auto-update settings when style changes
+  // ========================================
+  useEffect(() => {
+    const profile = styleProfiles[selectedStyle];
+    if (!profile) return;
+    
+    // Update negative prompt (unless user has manually edited it)
+    if (!useManualNegative) {
+      setNegativePrompt(profile.negative_prompt);
+    }
+    
+    // Update dimensions
+    setWidth(profile.sdxl_settings.width);
+    setHeight(profile.sdxl_settings.height);
+    setNumInferenceSteps(profile.sdxl_settings.num_inference_steps);
+    
+    console.log(`✅ Applied style settings for: ${profile.name}`);
+  }, [selectedStyle, styleProfiles, useManualNegative]);
+
+  // ========================================
   // Modified: Restore saved state
   // ========================================
   useEffect(() => {
     if (savedData && !hasRestoredRef.current) {
       if (savedData.initialTab) setActiveTab(savedData.initialTab);
       if (savedData.prompt) setPrompt(savedData.prompt);
+      if (savedData.selectedStyle) setSelectedStyle(savedData.selectedStyle);
       if (savedData.imageSlots) setImageSlots(savedData.imageSlots);
       if (savedData.generationState) setGenerationState(savedData.generationState);
       if (savedData.selectedImage) setSelectedImage(savedData.selectedImage);
@@ -135,7 +211,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
       hasRestoredRef.current = true;
     }
-  }, [savedData]);
+  }, [savedData, uploadedImage]);
   
   // ========================================
   // Save light data to parent
@@ -144,11 +220,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     onDataChange({
       initialTab: activeTab,
       prompt,
+      selectedStyle,
       imageSlots,
       generationState,
       selectedImage
     });
-  }, [activeTab, prompt, imageSlots, generationState, selectedImage]);
+  }, [activeTab, prompt, selectedStyle, imageSlots, generationState, selectedImage, onDataChange]);
 
   // ========================================
   // Save heavy image data to sessionStorage (larger quota, clears on browser close)
@@ -188,7 +265,31 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       autoSaveImage(uploadedImage, 'uploaded');
       setIsNewUpload(false);
     }
-  }, [uploadedImage, isNewUpload]);
+  }, [uploadedImage, isNewUpload, history.original]);
+
+  // ========================================
+  // Build styled prompt with style suffix
+  // ========================================
+  const buildStyledPrompt = (basePrompt: string, styleId: string): string => {
+    const profile = styleProfiles[styleId];
+    
+    if (!profile) {
+      console.warn('⚠️ Style profile not available, using base prompt only');
+      return basePrompt;
+    }
+    
+    // Combine base prompt with style suffix
+    const finalPrompt = basePrompt.trim() + profile.base_prompt_suffix;
+    
+    console.log('📝 Built styled prompt:', {
+      base: basePrompt,
+      style: profile.name,
+      suffix: profile.base_prompt_suffix,
+      final: finalPrompt
+    });
+    
+    return finalPrompt;
+  };
 
   // ========================================
   // GENERATOR: Generate Images (Batch)
@@ -211,6 +312,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setImageSlots(slots);
 
     try {
+      // 🆕 BUILD STYLED PROMPT
+      const finalPrompt = buildStyledPrompt(prompt, selectedStyle);
+      
       // Start all generations in parallel
       const generationPromises = slots.map(async (_, index) => {
         // Update slot to generating
@@ -222,7 +326,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
         try {
           const response = await imageApi.generateImageBase64({
-            prompt,
+            prompt: finalPrompt,  // ← Use styled prompt
             negativePrompt,
             width,
             height,
@@ -621,94 +725,168 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               <div className="max-w-3xl mx-auto">
                 <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">AI Image Generator</h2>
                 <div className="space-y-6">
+                  
+                  {/* Visual Style Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Visual Style
+                    </label>
+                    <select
+                      value={selectedStyle}
+                      onChange={(e) => setSelectedStyle(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={loadingStyles}
+                    >
+                      <option value="cartoon_3d">3D Cartoon</option>
+                      <option value="line_art_bw">Black & White Line Art</option>
+                      <option value="illustrated_painting">Illustrated Painting</option>
+                      <option value="realistic">Photorealistic</option>
+                    </select>
+                    {styleProfiles[selectedStyle] && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {styleProfiles[selectedStyle].description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Base Prompt Field */}
                   <div data-tutorial="image-studio-prompt">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Prompt <span className="text-red-500">*</span>
                     </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Describe what you want to generate. The selected style will be applied automatically.
+                    </p>
                     <textarea
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={4}
-                      placeholder="E.g., A colorful cartoon illustration of a pizza divided into 8 slices, 3 slices highlighted, educational style, simple shapes"
+                      placeholder="E.g., A flowering plant showing roots, stem, leaves, and flower petals"
                     />
                   </div>
 
-                  <div data-tutorial="image-studio-negative-prompt">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Negative Prompt <span className="text-gray-500">(optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={negativePrompt}
-                      onChange={(e) => setNegativePrompt(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Things to avoid..."
-                    />
+                  {/* Advanced Options */}
+                  <div className="border border-gray-200 rounded-lg">
+                    <button
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition rounded-lg"
+                    >
+                      <span className="text-sm font-medium text-gray-700">Advanced Options</span>
+                      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {showAdvanced && (
+                      <div className="px-4 pb-4 space-y-4 border-t border-gray-200 pt-4">
+                        {/* Negative Prompt */}
+                        <div data-tutorial="image-studio-negative-prompt">
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Negative Prompt
+                            </label>
+                            <label className="flex items-center text-xs text-gray-500">
+                              <input
+                                type="checkbox"
+                                checked={useManualNegative}
+                                onChange={(e) => setUseManualNegative(e.target.checked)}
+                                className="mr-1 rounded"
+                              />
+                              Manual
+                            </label>
+                          </div>
+                          <input
+                            type="text"
+                            value={negativePrompt}
+                            onChange={(e) => {
+                              setNegativePrompt(e.target.value);
+                              setUseManualNegative(true);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Things to avoid in the image..."
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {useManualNegative ? 'Custom settings' : 'Auto-filled from style profile'}
+                          </p>
+                        </div>
+
+                        {/* Dimensions and Steps */}
+                        <div className="grid grid-cols-3 gap-4" data-tutorial="image-studio-dimensions">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
+                            <select
+                              value={width}
+                              onChange={(e) => setWidth(Number(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value={512}>512</option>
+                              <option value={768}>768</option>
+                              <option value={1024}>1024</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
+                            <select
+                              value={height}
+                              onChange={(e) => setHeight(Number(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value={512}>512</option>
+                              <option value={768}>768</option>
+                              <option value={1024}>1024</option>
+                            </select>
+                          </div>
+                          <div data-tutorial="image-studio-steps">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Steps</label>
+                            <select
+                              value={numInferenceSteps}
+                              onChange={(e) => setNumInferenceSteps(Number(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value={1}>1</option>
+                              <option value={2}>2</option>
+                              <option value={3}>3</option>
+                              <option value={4}>4</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4" data-tutorial="image-studio-dimensions">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
-                      <select
-                        value={width}
-                        onChange={(e) => setWidth(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value={512}>512px</option>
-                        <option value={768}>768px</option>
-                        <option value={1024}>1024px</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
-                      <select
-                        value={height}
-                        onChange={(e) => setHeight(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value={512}>512px</option>
-                        <option value={768}>768px</option>
-                        <option value={1024}>1024px</option>
-                      </select>
-                    </div>
-                    <div data-tutorial="image-studio-steps">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Steps</label>
-                      <select
-                        value={numInferenceSteps}
-                        onChange={(e) => setNumInferenceSteps(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value={1}>1 (Fastest)</option>
-                        <option value={2}>2 (Recommended)</option>
-                        <option value={3}>3</option>
-                        <option value={4}>4 (Best Quality)</option>
-                      </select>
-                    </div>
-                    <div data-tutorial="image-studio-batch">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Batch Size</label>
-                      <select
-                        value={numImages}
-                        onChange={(e) => setNumImages(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value={1}>1 Image</option>
-                        <option value={2}>2 Images</option>
-                        <option value={3}>3 Images</option>
-                        <option value={4}>4 Images</option>
-                        <option value={5}>5 Images</option>
-                      </select>
-                    </div>
+                  {/* Batch Size */}
+                  <div data-tutorial="image-studio-batch">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Batch Size</label>
+                    <select
+                      value={numImages}
+                      onChange={(e) => setNumImages(Number(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value={1}>1 Image</option>
+                      <option value={2}>2 Images</option>
+                      <option value={3}>3 Images</option>
+                      <option value={4}>4 Images</option>
+                      <option value={5}>5 Images</option>
+                    </select>
                   </div>
 
+                  {/* Generate Button */}
                   <button
                     onClick={handleGenerate}
-                    disabled={!prompt.trim()}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                    disabled={!prompt.trim() || loadingStyles}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center transition"
                     data-tutorial="image-studio-generate"
                   >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Generate Image
+                    {loadingStyles ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Generate Image
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
