@@ -503,6 +503,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const handleGenerate = async () => {
     console.log('handleGenerate called');
     
+    // ✅ VALIDATION: Image Intent is required when images are included
+    if (formData.includeImages && !selectedPreset) {
+      setGenerationError('Please select an Image Intent before generating the worksheet.');
+      return;
+    }
+
     // Variables to track scene data (either from state or newly generated)
     let currentSceneSpec = sceneSpec;
     let currentAssetId = assetId;
