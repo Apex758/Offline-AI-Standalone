@@ -1246,11 +1246,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                           <Check className="w-4 h-4 mr-1" />
                           Scene Image Generated
                         </h4>
-                        <div className="text-xs text-green-700 space-y-1">
-                          <p><strong>Scene ID:</strong> {sceneSpec.scene_id}</p>
-                          <p><strong>Objects:</strong> {sceneSpec.objects.filter(o => o.visible).map(o => o.name).join(', ')}</p>
-                          <p><strong>Excluded:</strong> {sceneSpec.exclusions.join(', ')}</p>
-                        </div>
                         <img
                           src={generatedImages[0]}
                           alt="Generated scene"
@@ -1541,15 +1536,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   Create New 
                 </button>
 
-                {(clearedWorksheet || clearedParsedWorksheet) && (
-                  <button
-                    onClick={handleRestoreWorksheet}
-                    className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-                  >
-                    <Undo2 className="w-4 h-4 mr-2" />
-                    Restore
-                  </button>
-                )}
               </>
             )}
           </div>
