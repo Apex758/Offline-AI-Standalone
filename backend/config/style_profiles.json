@@ -1,0 +1,82 @@
+{
+  "line_art_bw": {
+    "id": "line_art_bw",
+    "name": "Black & White Line Art",
+    "description": "Simple clean lines, perfect for K-2 coloring",
+    "grade_bands": ["K", "1", "2"],
+    "base_prompt_suffix": ", black and white line art, clean simple lines, coloring book style, no shading, clear outlines",
+    "negative_prompt": "color, shading, gradient, photorealistic, complex details, text, labels, numbers, watermark, blurry",
+    "sdxl_settings": {
+      "width": 512,
+      "height": 512,
+      "num_inference_steps": 4,
+      "guidance_scale": 0.0,
+      "cfg_scale": 7.0
+    },
+    "ip_adapter": {
+      "enabled": true,
+      "strength": 0.6,
+      "reference_set": "line_art_references"
+    }
+  },
+  "cartoon_3d": {
+    "id": "cartoon_3d",
+    "name": "3D Cartoon Style",
+    "description": "Colorful, friendly, Pixar-like style for ages 6-10",
+    "grade_bands": ["2", "3", "4", "5"],
+    "base_prompt_suffix": ", 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+    "negative_prompt": "photorealistic, scary, violent, dark, grim, text, labels, watermark, signature, blurry, deformed",
+    "sdxl_settings": {
+      "width": 768,
+      "height": 512,
+      "num_inference_steps": 4,
+      "guidance_scale": 0.0,
+      "cfg_scale": 7.0
+    },
+    "ip_adapter": {
+      "enabled": true,
+      "strength": 0.7,
+      "reference_set": "cartoon_3d_references"
+    }
+  },
+  "illustrated_painting": {
+    "id": "illustrated_painting",
+    "name": "Illustrated Painting",
+    "description": "Textured, artistic style for grades 4-6",
+    "grade_bands": ["4", "5", "6"],
+    "base_prompt_suffix": ", illustrated painting style, textured brushstrokes, educational illustration, vibrant colors, artistic rendering",
+    "negative_prompt": "photographic, overly cartoonish, childish, text, labels, numbers, watermark, low quality",
+    "sdxl_settings": {
+      "width": 768,
+      "height": 768,
+      "num_inference_steps": 4,
+      "guidance_scale": 0.0,
+      "cfg_scale": 7.0
+    },
+    "ip_adapter": {
+      "enabled": true,
+      "strength": 0.5,
+      "reference_set": "illustrated_references"
+    }
+  },
+  "realistic": {
+    "id": "realistic",
+    "name": "Photorealistic",
+    "description": "Realistic scientific diagrams for upper grades",
+    "grade_bands": ["5", "6"],
+    "base_prompt_suffix": ", photorealistic, scientific accuracy, high detail, educational photography style, clear and sharp",
+    "negative_prompt": "cartoon, stylized, artistic interpretation, text, labels, watermark, blurry, low resolution",
+    "sdxl_settings": {
+      "width": 768,
+      "height": 768,
+      "num_inference_steps": 6,
+      "guidance_scale": 0.0,
+      "cfg_scale": 7.5
+    },
+    "ip_adapter": {
+      "enabled": true,
+      "strength": 0.4,
+      "reference_set": "realistic_references"
+    }
+  }
+}

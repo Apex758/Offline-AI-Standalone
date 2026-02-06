@@ -13,6 +13,7 @@ import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
 import { parseWorksheetFromAI, ParsedWorksheet } from '../types/worksheet';
+import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
 import axios from 'axios';
 
@@ -145,20 +146,31 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     selectedTemplate: '',
     worksheetTitle: '',
     includeImages: false,
-    imageStyle: 'Cartoon',
+    imageStyle: 'cartoon_3d',
     imageMode: 'shared',
     imagePlacement: 'large-centered'
   });
 
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
+    const validStyles = ['cartoon_3d', 'line_art_bw', 'illustrated_painting', 'realistic'];
+    
     if (savedData?.formData && typeof savedData.formData === 'object') {
-      return savedData.formData as WorksheetFormData;
+      // Normalize invalid imageStyle values
+      const data = savedData.formData as WorksheetFormData;
+      if (data.imageStyle && !validStyles.includes(data.imageStyle)) {
+        data.imageStyle = 'cartoon_3d'; // Default to valid style
+      }
+      return data;
     }
     try {
       const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedState) {
         const parsed = JSON.parse(savedState);
         if (parsed.formData && typeof parsed.formData === 'object') {
+          // Normalize invalid imageStyle values
+          if (parsed.formData.imageStyle && !validStyles.includes(parsed.formData.imageStyle)) {
+            parsed.formData.imageStyle = 'cartoon_3d';
+          }
           return parsed.formData;
         }
       }
@@ -246,6 +258,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [generatingImages, setGeneratingImages] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
+  
+  // Scene-based image generation state
+  const [topicPresets, setTopicPresets] = useState<ImagePreset[]>([]);
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [sceneSpec, setSceneSpec] = useState<SceneSpec | null>(null);
+  const [assetId, setAssetId] = useState<string | null>(null);
+  const [styleProfiles, setStyleProfiles] = useState<Record<string, StyleProfile>>({});
+  const [loadingPresets, setLoadingPresets] = useState(false);
 
   // Normalize image mode to the single supported option
   useEffect(() => {
@@ -333,6 +353,50 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
   }, [formData.subject]);
 
+  // Load topic presets when subject/grade/strand changes
+  useEffect(() => {
+    const loadTopicPresets = async () => {
+      if (!formData.subject || !formData.gradeLevel || !formData.strand) {
+        setTopicPresets([]);
+        setSelectedPreset('');
+        return;
+      }
+      
+      // Build topic ID from form data (matches backend format)
+      const topicId = `${formData.subject.toLowerCase().replace(/\s+/g, '_')}.grade${formData.gradeLevel}.${formData.strand}`;
+      
+      setLoadingPresets(true);
+      try {
+        const response = await axios.get(`http://localhost:8000/api/topic-presets/${topicId}`);
+        setTopicPresets(response.data.image_presets || []);
+        console.log(`✅ Loaded ${response.data.image_presets?.length || 0} presets for ${topicId}`);
+      } catch (error) {
+        console.log(`⚠️ No presets for ${topicId}, trying without topic`);
+        setTopicPresets([]);
+      } finally {
+        setLoadingPresets(false);
+      }
+    };
+    
+    loadTopicPresets();
+  }, [formData.subject, formData.gradeLevel, formData.strand]);
+
+  // Load style profiles once on mount
+  useEffect(() => {
+    const loadStyleProfiles = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/style-profiles');
+        setStyleProfiles(response.data.profiles || {});
+        console.log('✅ Style profiles loaded');
+      } catch (error) {
+        console.error('Error loading style profiles:', error);
+      }
+    };
+    
+    loadStyleProfiles();
+  }, []);
+
+
   // Auto-fetch strands based on subject and grade
   const getStrands = (subject: string, grade: string): string[] => {
     if (!subject || !grade) return [];
@@ -351,6 +415,34 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       }
     });
     return Array.from(strandsSet);
+  };
+
+  // Get available topics (keywords) based on subject, grade, and strand
+  const getTopics = (subject: string, grade: string, strand: string): string[] => {
+    if (!subject || !grade || !strand) return [];
+    const curriculumData = curriculumIndex as CurriculumIndex;
+    const pages = curriculumData.indexedPages || [];
+    const topicsSet = new Set<string>();
+    
+    pages.forEach((page: CurriculumPage) => {
+      if (
+        page.subject &&
+        page.grade &&
+        page.strand &&
+        page.subject.toLowerCase() === subject.toLowerCase() &&
+        page.grade.toString() === grade.toString() &&
+        page.strand.toLowerCase() === strand.toLowerCase()
+      ) {
+        // Add keywords as available topics
+        if (page.keywords && Array.isArray(page.keywords)) {
+          page.keywords.forEach((keyword: string) => {
+            topicsSet.add(keyword);
+          });
+        }
+      }
+    });
+    
+    return Array.from(topicsSet).sort();
   };
  
   const getAvailableQuestionTypes = (): string[] => {
@@ -384,7 +476,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   const handleInputChange = (field: keyof WorksheetFormData, value: WorksheetFormData[keyof WorksheetFormData]) => {
-    setFormData(prev => ({ ...prev, [field]: value }) as WorksheetFormData);
+    // Reset topic when strand changes since topics are dependent on strand
+    if (field === 'strand') {
+      setFormData(prev => ({ ...prev, [field]: value, topic: '' }) as WorksheetFormData);
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }) as WorksheetFormData);
+    }
   };
 
   // Handler for opening a curriculum card
@@ -423,16 +520,20 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
 
     // Build prompt for worksheet generation
-    const prompt = buildWorksheetPrompt(formData);
+    const prompt = buildWorksheetPrompt(formData, sceneSpec);
 
     const jobId = `worksheet-${Date.now()}`;
     console.log('Built prompt, jobId:', jobId);
 
     const message = {
       prompt,
-      formData,
+      formData: {
+        ...formData,
+        sceneSpec: sceneSpec,
+        assetId: assetId,
+      },
       jobId,
-      generationMode: 'queued',
+      generationMode: "queued",
     };
     console.log('Sending message:', message);
 
@@ -689,6 +790,61 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     link.click();
   };
 
+  // Scene-based image generation handler
+  const handleGenerateSceneImage = async () => {
+    if (!selectedPreset) {
+      setImageError("Please select an image preset");
+      return;
+    }
+
+    setGeneratingImages(true);
+    setImageError(null);
+
+    try {
+      // Build topic ID from STRAND, not topic field
+      const topicId = `${formData.subject.toLowerCase().replace(/\s+/g, '_')}.grade${formData.gradeLevel}.${formData.strand}`;
+
+      console.log("🎨 Generating scene image:", {
+        topicId,
+        selectedPreset,
+        style: formData.imageStyle,
+      });
+
+      const response = await axios.post(
+        "http://localhost:8000/api/generate-scene-image",
+        {
+          topic_id: topicId,
+          preset_id: selectedPreset,
+          style_profile_id: formData.imageStyle || "cartoon_3d",
+        },
+      );
+
+      if (response.data.success) {
+        setGeneratedImages([response.data.imageData]);
+        setSceneSpec(response.data.sceneSpec);
+        setAssetId(response.data.assetId);
+        console.log(
+          "✅ Scene image generated:",
+          response.data.sceneSpec.scene_id,
+        );
+        console.log(
+          "   Objects:",
+          response.data.sceneSpec.objects.map((o: any) => o.name).join(", "),
+        );
+        console.log("   Asset ID:", response.data.assetId);
+      } else {
+        throw new Error("Image generation failed");
+      }
+    } catch (error: any) {
+      console.error("Scene image generation error:", error);
+      setImageError(
+        error.response?.data?.detail || "Failed to generate image from scene",
+      );
+    } finally {
+      setGeneratingImages(false);
+    }
+  };
+
   return (
     <div className="h-full bg-white grid grid-cols-2" data-tutorial="worksheet-generator-welcome">
       {/* Left Panel - Configuration (50%) */}
@@ -770,13 +926,20 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Topic
                     </label>
-                    <input
-                      type="text"
-                      value={formData.topic}
-                      onChange={(e) => handleInputChange('topic', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Water Cycle"
-                    />
+                    {formData.subject && formData.gradeLevel && formData.strand ? (
+                      <select
+                        value={formData.topic}
+                        onChange={(e) => handleInputChange('topic', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">-- Select a Topic --</option>
+                        {getTopics(formData.subject, formData.gradeLevel, formData.strand).map(topic => (
+                          <option key={topic} value={topic}>{topic}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Select subject, grade level, and strand to choose a topic.</p>
+                    )}
                   </div>
 
                   <div data-tutorial="worksheet-generator-title">
@@ -944,79 +1107,129 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
 
             {/* AI Image Generation */}
-            {formData.includeImages && formData.subject !== 'Mathematics' && (  
+            {formData.includeImages && formData.subject !== 'Mathematics' && (
               <div className="space-y-4" data-tutorial="worksheet-generator-image-prompt">
-              <h3 className="text-lg font-semibold text-gray-800">AI Image Generation</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Scene-Based Image Generation</h3>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image Prompt <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={imagePrompt}
-                  onChange={(e) => setImagePrompt(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="Describe the image you want to generate..."
-                />
-              </div>
-
-              <button
-                onClick={handleGenerateImage}
-                disabled={generatingImages || !imagePrompt.trim()}
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
-                data-tutorial="worksheet-generator-image-generate"
-              >
-                {generatingImages ? (
+                {loadingPresets ? (
+                  <div className="p-4 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-sm text-gray-500 mt-2">Loading presets...</p>
+                  </div>
+                ) : topicPresets.length > 0 ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="w-5 h-5 mr-2" />
-                    Generate Image
-                  </>
-                )}
-              </button>
-
-              {imageError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
-                  <span>{imageError}</span>
-                  <button
-                    onClick={() => {
-                      setImageError(null);
-                      handleGenerateImage();
-                    }}
-                    className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
-
-              {generatedImages.length > 0 && (
-                <div className="space-y-4" data-tutorial="worksheet-generator-generated-images">
-                  <h4 className="text-md font-semibold text-gray-800">Generated Images</h4>
-                  {generatedImages.map((img, i) => (
-                    <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                      <img
-                        src={img}
-                        alt={`Generated ${i + 1}`}
-                        className="w-full max-h-64 object-contain rounded-lg mb-4"
-                      />
-                      <button
-                        onClick={() => handleDownloadImage(img)}
-                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Image Intent <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={selectedPreset}
+                        onChange={(e) => setSelectedPreset(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Image
-                      </button>
+                        <option value="">Select what you want to show...</option>
+                        {topicPresets.map(preset => (
+                          <option key={preset.id} value={preset.id}>
+                            {preset.name} - {preset.description}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedPreset && topicPresets.find(p => p.id === selectedPreset) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          📦 Objects: {topicPresets.find(p => p.id === selectedPreset)?.objects.join(', ')}
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Visual Style <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.imageStyle}
+                        onChange={(e) => handleInputChange('imageStyle', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="cartoon_3d">3D Cartoon (Colorful, Pixar-like)</option>
+                        <option value="line_art_bw">Black & White Line Art (Coloring)</option>
+                        <option value="illustrated_painting">Illustrated Painting</option>
+                        <option value="realistic">Photorealistic</option>
+                      </select>
+                      {styleProfiles[formData.imageStyle || 'cartoon_3d'] && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {styleProfiles[formData.imageStyle || 'cartoon_3d'].description}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleGenerateSceneImage}
+                      disabled={!selectedPreset || generatingImages}
+                      className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {generatingImages ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Generating Scene Image...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="w-5 h-5 mr-2" />
+                          Generate Image from Preset
+                        </>
+                      )}
+                    </button>
+
+                    {imageError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        ❌ {imageError}
+                      </div>
+                    )}
+
+                    {generatedImages.length > 0 && sceneSpec && (
+                      <div className="space-y-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <h4 className="text-sm font-semibold text-green-800 flex items-center">
+                          <Check className="w-4 h-4 mr-1" />
+                          Scene Image Generated
+                        </h4>
+                        <div className="text-xs text-green-700 space-y-1">
+                          <p><strong>Scene ID:</strong> {sceneSpec.scene_id}</p>
+                          <p><strong>Objects:</strong> {sceneSpec.objects.filter(o => o.visible).map(o => o.name).join(', ')}</p>
+                          <p><strong>Excluded:</strong> {sceneSpec.exclusions.join(', ')}</p>
+                        </div>
+                        <img
+                          src={generatedImages[0]}
+                          alt="Generated scene"
+                          className="w-full max-h-64 object-contain rounded-lg mt-2 border border-green-300"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleDownloadImage(generatedImages[0])}
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center text-sm"
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download Image
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : formData.strand ? (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <strong>⚠️ No presets loaded for this strand</strong><br/>
+                      Selected: {formData.subject} &gt; Grade {formData.gradeLevel} &gt; {formData.strand}<br/>
+                      <span className="text-xs">This may indicate a backend connection issue or the strand isn't in the preset database yet.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      Select subject, grade, and strand above to see available image presets
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Templates */}

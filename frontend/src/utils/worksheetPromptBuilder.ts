@@ -1,3 +1,5 @@
+import { SceneSpec } from '../types/scene';
+
 interface WorksheetFormData {
   subject: string;
   gradeLevel: string;
@@ -12,6 +14,55 @@ interface WorksheetFormData {
   imageStyle: string;
   imageMode: 'shared';
   imagePlacement: string;
+}
+
+/**
+ * Build scene context for worksheet prompt
+ * This ensures questions are generated from structured scene data, not pixels
+ */
+function buildSceneContextPrompt(sceneSpec: SceneSpec): string {
+  const visibleObjects = sceneSpec.objects
+    .filter(obj => obj.visible)
+    .map(obj => `- ${obj.name} (${obj.type})${obj.countable ? ' [countable]' : ''}`)
+    .join('\n');
+  
+  const relationships = sceneSpec.relationships
+    .map(rel => `- ${rel.description}`)
+    .join('\n');
+  
+  const exclusions = sceneSpec.exclusions
+    .map(ex => `- NO ${ex}`)
+    .join('\n');
+  
+  return `
+
+SCENE CONTEXT (CRITICAL - use ONLY this information):
+
+Objects visible in the image:
+${visibleObjects}
+
+${relationships ? `Relationships between objects:\n${relationships}\n` : ''}
+What is NOT in the scene (do not reference these):
+${exclusions}
+
+RULES FOR QUESTION GENERATION:
+1. Only reference objects explicitly listed above
+2. Only ask about visible, countable objects
+3. Respect the relationships described
+4. NEVER reference excluded items
+5. Questions must be answerable from the scene description alone
+6. Do not assume details not explicitly stated
+
+Example Good Questions (based on scene):
+- "How many [specific countable object] are shown?"
+- "Which object is [relationship from list]?"
+- "What can you observe about [specific listed object]?"
+
+Example BAD Questions (avoid these):
+- Questions about excluded items
+- Questions requiring measurements not in scene
+- Questions about objects not in the list
+`;
 }
 
 // Grade-specific pedagogical guidance (unified format)
@@ -459,7 +510,10 @@ Generate questions appropriate for the grade level and topic.
 }
 
 
-export function buildWorksheetPrompt(formData: WorksheetFormData): string {
+export function buildWorksheetPrompt(
+  formData: WorksheetFormData,
+  sceneSpec?: SceneSpec | null
+): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
 
   // Build template-specific instructions
@@ -878,6 +932,8 @@ WORKSHEET DETAILS:
 - Question Type: ${formData.questionType}
 - Number of Questions: ${questionCount}
 - Template: ${formData.selectedTemplate}
+
+${sceneSpec ? buildSceneContextPrompt(sceneSpec) : ''}
 
 ${templateInstructions}${imageInstructions}
 

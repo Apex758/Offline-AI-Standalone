@@ -1,0 +1,656 @@
+{
+  "language_arts.grade1.listening-speaking": {
+    "subject": "Language Arts",
+    "grade": "1",
+    "strand": "listening-speaking",
+    "display_name": "Listening & Speaking"
+  },
+  "language_arts.grade1.reading-viewing": {
+    "subject": "Language Arts",
+    "grade": "1",
+    "strand": "reading-viewing",
+    "display_name": "Reading & Viewing"
+  },
+  "language_arts.grade1.writing-representing": {
+    "subject": "Language Arts",
+    "grade": "1",
+    "strand": "writing-representing",
+    "display_name": "Writing & Representing"
+  },
+  "mathematics.grade1.data-probability": {
+    "subject": "Mathematics",
+    "grade": "1",
+    "strand": "data-probability",
+    "display_name": "Data & Probability"
+  },
+  "mathematics.grade1.geometrical-thinking": {
+    "subject": "Mathematics",
+    "grade": "1",
+    "strand": "geometrical-thinking",
+    "display_name": "Geometrical Thinking"
+  },
+  "mathematics.grade1.measurement": {
+    "subject": "Mathematics",
+    "grade": "1",
+    "strand": "measurement",
+    "display_name": "Measurement"
+  },
+  "mathematics.grade1.number-sense": {
+    "subject": "Mathematics",
+    "grade": "1",
+    "strand": "number-sense",
+    "display_name": "Number Sense"
+  },
+  "mathematics.grade1.operations-with-numbers": {
+    "subject": "Mathematics",
+    "grade": "1",
+    "strand": "operations-with-numbers",
+    "display_name": "Operations with Numbers"
+  },
+  "mathematics.grade1.patterns-relationships": {
+    "subject": "Mathematics",
+    "grade": "1",
+    "strand": "patterns-relationships",
+    "display_name": "Patterns & Relationships"
+  },
+  "science.grade1.scientific-inquiry": {
+    "subject": "Science",
+    "grade": "1",
+    "strand": "scientific-inquiry",
+    "display_name": "Scientific Inquiry"
+  },
+  "science.grade1.space-systems": {
+    "subject": "Science",
+    "grade": "1",
+    "strand": "space-systems",
+    "display_name": "Space Systems"
+  },
+  "science.grade1.structure-function-processing": {
+    "subject": "Science",
+    "grade": "1",
+    "strand": "structure-function-processing",
+    "display_name": "Structure, Function & Processing"
+  },
+  "science.grade1.waves-lights-sounds": {
+    "subject": "Science",
+    "grade": "1",
+    "strand": "waves-lights-sounds",
+    "display_name": "Waves, Light & Sounds"
+  },
+  "social_studies.grade1.civic-participation": {
+    "subject": "Social Studies",
+    "grade": "1",
+    "strand": "civic-participation",
+    "display_name": "Civic Participation"
+  },
+  "social_studies.grade1.economic-decision-making": {
+    "subject": "Social Studies",
+    "grade": "1",
+    "strand": "economic-decision-making",
+    "display_name": "Economic Decision Making"
+  },
+  "social_studies.grade1.historical-cultural-thinking": {
+    "subject": "Social Studies",
+    "grade": "1",
+    "strand": "historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking"
+  },
+  "social_studies.grade1.spatial-thinking": {
+    "subject": "Social Studies",
+    "grade": "1",
+    "strand": "spatial-thinking",
+    "display_name": "Spatial Thinking"
+  },
+  "language_arts.grade2.listening-speaking": {
+    "subject": "Language Arts",
+    "grade": "2",
+    "strand": "listening-speaking",
+    "display_name": "Listening & Speaking"
+  },
+  "language_arts.grade2.reading-viewing": {
+    "subject": "Language Arts",
+    "grade": "2",
+    "strand": "reading-viewing",
+    "display_name": "Reading & Viewing"
+  },
+  "language_arts.grade2.writing-representing": {
+    "subject": "Language Arts",
+    "grade": "2",
+    "strand": "writing-representing",
+    "display_name": "Writing & Representing"
+  },
+  "mathematics.grade2.data-handling": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "data-handling",
+    "display_name": "Data Handling"
+  },
+  "mathematics.grade2.data-probability": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "data-probability",
+    "display_name": "Data & Probability"
+  },
+  "mathematics.grade2.geometrical-thinking": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "geometrical-thinking",
+    "display_name": "Geometrical Thinking"
+  },
+  "mathematics.grade2.measurement": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "measurement",
+    "display_name": "Measurement"
+  },
+  "mathematics.grade2.number-sense": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "number-sense",
+    "display_name": "Number Sense"
+  },
+  "mathematics.grade2.operations": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "operations",
+    "display_name": "Operations"
+  },
+  "mathematics.grade2.patterns-relationships": {
+    "subject": "Mathematics",
+    "grade": "2",
+    "strand": "patterns-relationships",
+    "display_name": "Patterns & Relationships"
+  },
+  "science.grade2.earth-systems-processes": {
+    "subject": "Science",
+    "grade": "2",
+    "strand": "earth-systems-processes",
+    "display_name": "Earth Systems & Processes"
+  },
+  "science.grade2.engineering-design": {
+    "subject": "Science",
+    "grade": "2",
+    "strand": "engineering-design",
+    "display_name": "Engineering Design"
+  },
+  "science.grade2.interdependent-relationships": {
+    "subject": "Science",
+    "grade": "2",
+    "strand": "interdependent-relationships",
+    "display_name": "Interdependent Relationships"
+  },
+  "science.grade2.structure-properties-matter": {
+    "subject": "Science",
+    "grade": "2",
+    "strand": "structure-properties-matter",
+    "display_name": "Structure & Properties of Matter"
+  },
+  "social_studies.grade2.civic-participation": {
+    "subject": "Social Studies",
+    "grade": "2",
+    "strand": "civic-participation",
+    "display_name": "Civic Participation"
+  },
+  "social_studies.grade2.economic-decision-making": {
+    "subject": "Social Studies",
+    "grade": "2",
+    "strand": "economic-decision-making",
+    "display_name": "Economic Decision Making"
+  },
+  "social_studies.grade2.historical-cultural-thinking": {
+    "subject": "Social Studies",
+    "grade": "2",
+    "strand": "historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking"
+  },
+  "social_studies.grade2.spatial-thinking": {
+    "subject": "Social Studies",
+    "grade": "2",
+    "strand": "spatial-thinking",
+    "display_name": "Spatial Thinking"
+  },
+  "language_arts.grade3.listening-speaking": {
+    "subject": "Language Arts",
+    "grade": "3",
+    "strand": "listening-speaking",
+    "display_name": "Listening & Speaking"
+  },
+  "language_arts.grade3.reading-viewing": {
+    "subject": "Language Arts",
+    "grade": "3",
+    "strand": "reading-viewing",
+    "display_name": "Reading & Viewing"
+  },
+  "language_arts.grade3.writing-representing": {
+    "subject": "Language Arts",
+    "grade": "3",
+    "strand": "writing-representing",
+    "display_name": "Writing & Representing"
+  },
+  "mathematics.grade3.data-probability": {
+    "subject": "Mathematics",
+    "grade": "3",
+    "strand": "data-probability",
+    "display_name": "Data & Probability"
+  },
+  "mathematics.grade3.geometrical-thinking": {
+    "subject": "Mathematics",
+    "grade": "3",
+    "strand": "geometrical-thinking",
+    "display_name": "Geometrical Thinking"
+  },
+  "mathematics.grade3.measurement": {
+    "subject": "Mathematics",
+    "grade": "3",
+    "strand": "measurement",
+    "display_name": "Measurement"
+  },
+  "mathematics.grade3.number-sense": {
+    "subject": "Mathematics",
+    "grade": "3",
+    "strand": "number-sense",
+    "display_name": "Number Sense"
+  },
+  "mathematics.grade3.operations-with-numbers": {
+    "subject": "Mathematics",
+    "grade": "3",
+    "strand": "operations-with-numbers",
+    "display_name": "Operations with Numbers"
+  },
+  "mathematics.grade3.patterns-relationships": {
+    "subject": "Mathematics",
+    "grade": "3",
+    "strand": "patterns-relationships",
+    "display_name": "Patterns & Relationships"
+  },
+  "science.grade3.earth-systems": {
+    "subject": "Science",
+    "grade": "3",
+    "strand": "earth-systems",
+    "display_name": "Earth Systems"
+  },
+  "science.grade3.engineering-design": {
+    "subject": "Science",
+    "grade": "3",
+    "strand": "engineering-design",
+    "display_name": "Engineering Design"
+  },
+  "science.grade3.forces-interactions": {
+    "subject": "Science",
+    "grade": "3",
+    "strand": "forces-interactions",
+    "display_name": "Forces & Interactions"
+  },
+  "science.grade3.inheritance-variation": {
+    "subject": "Science",
+    "grade": "3",
+    "strand": "inheritance-variation",
+    "display_name": "Inheritance & Variation"
+  },
+  "science.grade3.interdependent-relationships": {
+    "subject": "Science",
+    "grade": "3",
+    "strand": "interdependent-relationships",
+    "display_name": "Interdependent Relationships"
+  },
+  "science.grade3.weather-climate": {
+    "subject": "Science",
+    "grade": "3",
+    "strand": "weather-climate",
+    "display_name": "Weather & Climate"
+  },
+  "social_studies.grade3.civic-participation": {
+    "subject": "Social Studies",
+    "grade": "3",
+    "strand": "civic-participation",
+    "display_name": "Civic Participation"
+  },
+  "social_studies.grade3.economic-decision-making": {
+    "subject": "Social Studies",
+    "grade": "3",
+    "strand": "economic-decision-making",
+    "display_name": "Economic Decision Making"
+  },
+  "social_studies.grade3.historical-cultural-thinking": {
+    "subject": "Social Studies",
+    "grade": "3",
+    "strand": "historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking"
+  },
+  "social_studies.grade3.spatial-thinking": {
+    "subject": "Social Studies",
+    "grade": "3",
+    "strand": "spatial-thinking",
+    "display_name": "Spatial Thinking"
+  },
+  "language_arts.grade4.listening-speaking": {
+    "subject": "Language Arts",
+    "grade": "4",
+    "strand": "listening-speaking",
+    "display_name": "Listening & Speaking"
+  },
+  "language_arts.grade4.reading-viewing": {
+    "subject": "Language Arts",
+    "grade": "4",
+    "strand": "reading-viewing",
+    "display_name": "Reading & Viewing"
+  },
+  "language_arts.grade4.writing-representing": {
+    "subject": "Language Arts",
+    "grade": "4",
+    "strand": "writing-representing",
+    "display_name": "Writing & Representing"
+  },
+  "mathematics.grade4.data-probability": {
+    "subject": "Mathematics",
+    "grade": "4",
+    "strand": "data-probability",
+    "display_name": "Data & Probability"
+  },
+  "mathematics.grade4.geometrical-thinking": {
+    "subject": "Mathematics",
+    "grade": "4",
+    "strand": "geometrical-thinking",
+    "display_name": "Geometrical Thinking"
+  },
+  "mathematics.grade4.measurement": {
+    "subject": "Mathematics",
+    "grade": "4",
+    "strand": "measurement",
+    "display_name": "Measurement"
+  },
+  "mathematics.grade4.number-sense": {
+    "subject": "Mathematics",
+    "grade": "4",
+    "strand": "number-sense",
+    "display_name": "Number Sense"
+  },
+  "mathematics.grade4.operations-with-numbers": {
+    "subject": "Mathematics",
+    "grade": "4",
+    "strand": "operations-with-numbers",
+    "display_name": "Operations with Numbers"
+  },
+  "mathematics.grade4.patterns-relationships": {
+    "subject": "Mathematics",
+    "grade": "4",
+    "strand": "patterns-relationships",
+    "display_name": "Patterns & Relationships"
+  },
+  "science.grade4.earth-systems": {
+    "subject": "Science",
+    "grade": "4",
+    "strand": "earth-systems",
+    "display_name": "Earth Systems"
+  },
+  "science.grade4.energy": {
+    "subject": "Science",
+    "grade": "4",
+    "strand": "energy",
+    "display_name": "Energy"
+  },
+  "science.grade4.structure-function": {
+    "subject": "Science",
+    "grade": "4",
+    "strand": "structure-function",
+    "display_name": "Structure & Function"
+  },
+  "science.grade4.waves": {
+    "subject": "Science",
+    "grade": "4",
+    "strand": "waves",
+    "display_name": "Waves"
+  },
+  "social_studies.grade4.civic-participation": {
+    "subject": "Social Studies",
+    "grade": "4",
+    "strand": "civic-participation",
+    "display_name": "Civic Participation"
+  },
+  "social_studies.grade4.economic-decision-making": {
+    "subject": "Social Studies",
+    "grade": "4",
+    "strand": "economic-decision-making",
+    "display_name": "Economic Decision Making"
+  },
+  "social_studies.grade4.historical-cultural-thinking": {
+    "subject": "Social Studies",
+    "grade": "4",
+    "strand": "historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking"
+  },
+  "social_studies.grade4.spatial-thinking": {
+    "subject": "Social Studies",
+    "grade": "4",
+    "strand": "spatial-thinking",
+    "display_name": "Spatial Thinking"
+  },
+  "language_arts.grade5.listening-speaking": {
+    "subject": "Language Arts",
+    "grade": "5",
+    "strand": "listening-speaking",
+    "display_name": "Listening & Speaking"
+  },
+  "language_arts.grade5.reading-viewing": {
+    "subject": "Language Arts",
+    "grade": "5",
+    "strand": "reading-viewing",
+    "display_name": "Reading & Viewing"
+  },
+  "language_arts.grade5.writing-representing": {
+    "subject": "Language Arts",
+    "grade": "5",
+    "strand": "writing-representing",
+    "display_name": "Writing & Representing"
+  },
+  "mathematics.grade5.data-probability": {
+    "subject": "Mathematics",
+    "grade": "5",
+    "strand": "data-probability",
+    "display_name": "Data & Probability"
+  },
+  "mathematics.grade5.geometrical-thinking": {
+    "subject": "Mathematics",
+    "grade": "5",
+    "strand": "geometrical-thinking",
+    "display_name": "Geometrical Thinking"
+  },
+  "mathematics.grade5.measurement": {
+    "subject": "Mathematics",
+    "grade": "5",
+    "strand": "measurement",
+    "display_name": "Measurement"
+  },
+  "mathematics.grade5.number-sense": {
+    "subject": "Mathematics",
+    "grade": "5",
+    "strand": "number-sense",
+    "display_name": "Number Sense"
+  },
+  "mathematics.grade5.operations-with-numbers": {
+    "subject": "Mathematics",
+    "grade": "5",
+    "strand": "operations-with-numbers",
+    "display_name": "Operations with Numbers"
+  },
+  "mathematics.grade5.patterns-relationships": {
+    "subject": "Mathematics",
+    "grade": "5",
+    "strand": "patterns-relationships",
+    "display_name": "Patterns & Relationships"
+  },
+  "science.grade5.earth-systems": {
+    "subject": "Science",
+    "grade": "5",
+    "strand": "earth-systems",
+    "display_name": "Earth Systems"
+  },
+  "science.grade5.engineering": {
+    "subject": "Science",
+    "grade": "5",
+    "strand": "engineering",
+    "display_name": "Engineering"
+  },
+  "science.grade5.matter-energy-organisms-ecosystems": {
+    "subject": "Science",
+    "grade": "5",
+    "strand": "matter-energy-organisms-ecosystems",
+    "display_name": "Matter, Energy, Organisms & Ecosystems"
+  },
+  "science.grade5.space-systems": {
+    "subject": "Science",
+    "grade": "5",
+    "strand": "space-systems",
+    "display_name": "Space Systems"
+  },
+  "science.grade5.structure-properties-matter": {
+    "subject": "Science",
+    "grade": "5",
+    "strand": "structure-properties-matter",
+    "display_name": "Structure & Properties of Matter"
+  },
+  "social_studies.grade5.civic-participation": {
+    "subject": "Social Studies",
+    "grade": "5",
+    "strand": "civic-participation",
+    "display_name": "Civic Participation"
+  },
+  "social_studies.grade5.economic-decision-making": {
+    "subject": "Social Studies",
+    "grade": "5",
+    "strand": "economic-decision-making",
+    "display_name": "Economic Decision Making"
+  },
+  "social_studies.grade5.historical-cultural-thinking": {
+    "subject": "Social Studies",
+    "grade": "5",
+    "strand": "historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking"
+  },
+  "social_studies.grade5.spatial-thinking": {
+    "subject": "Social Studies",
+    "grade": "5",
+    "strand": "spatial-thinking",
+    "display_name": "Spatial Thinking"
+  },
+  "language_arts.grade6.listening-speaking": {
+    "subject": "Language Arts",
+    "grade": "6",
+    "strand": "listening-speaking",
+    "display_name": "Listening & Speaking"
+  },
+  "language_arts.grade6.reading-viewing": {
+    "subject": "Language Arts",
+    "grade": "6",
+    "strand": "reading-viewing",
+    "display_name": "Reading & Viewing"
+  },
+  "language_arts.grade6.writing-representing": {
+    "subject": "Language Arts",
+    "grade": "6",
+    "strand": "writing-representing",
+    "display_name": "Writing & Representing"
+  },
+  "mathematics.grade6.data-probability": {
+    "subject": "Mathematics",
+    "grade": "6",
+    "strand": "data-probability",
+    "display_name": "Data & Probability"
+  },
+  "mathematics.grade6.geometrical-thinking": {
+    "subject": "Mathematics",
+    "grade": "6",
+    "strand": "geometrical-thinking",
+    "display_name": "Geometrical Thinking"
+  },
+  "mathematics.grade6.measurement": {
+    "subject": "Mathematics",
+    "grade": "6",
+    "strand": "measurement",
+    "display_name": "Measurement"
+  },
+  "mathematics.grade6.number-sense": {
+    "subject": "Mathematics",
+    "grade": "6",
+    "strand": "number-sense",
+    "display_name": "Number Sense"
+  },
+  "mathematics.grade6.operations-with-numbers": {
+    "subject": "Mathematics",
+    "grade": "6",
+    "strand": "operations-with-numbers",
+    "display_name": "Operations with Numbers"
+  },
+  "mathematics.grade6.patterns-relationships": {
+    "subject": "Mathematics",
+    "grade": "6",
+    "strand": "patterns-relationships",
+    "display_name": "Patterns & Relationships"
+  },
+  "science.grade6.chemical-reactions": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "chemical-reactions",
+    "display_name": "Chemical Reactions"
+  },
+  "science.grade6.earth-systems": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "earth-systems",
+    "display_name": "Earth Systems"
+  },
+  "science.grade6.forces-interactions": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "forces-interactions",
+    "display_name": "Forces & Interactions"
+  },
+  "science.grade6.inheritance-variation": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "inheritance-variation",
+    "display_name": "Inheritance & Variation"
+  },
+  "science.grade6.space-systems": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "space-systems",
+    "display_name": "Space Systems"
+  },
+  "science.grade6.structure-properties-matter": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "structure-properties-matter",
+    "display_name": "Structure & Properties of Matter"
+  },
+  "science.grade6.waves-electromagnetic": {
+    "subject": "Science",
+    "grade": "6",
+    "strand": "waves-electromagnetic",
+    "display_name": "Waves & Electromagnetic"
+  },
+  "social_studies.grade6.civic-participation": {
+    "subject": "Social Studies",
+    "grade": "6",
+    "strand": "civic-participation",
+    "display_name": "Civic Participation"
+  },
+  "social_studies.grade6.economic-decision-making": {
+    "subject": "Social Studies",
+    "grade": "6",
+    "strand": "economic-decision-making",
+    "display_name": "Economic Decision Making"
+  },
+  "social_studies.grade6.historical-cultural-thinking": {
+    "subject": "Social Studies",
+    "grade": "6",
+    "strand": "historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking"
+  },
+  "social_studies.grade6.spatial-thinking": {
+    "subject": "Social Studies",
+    "grade": "6",
+    "strand": "spatial-thinking",
+    "display_name": "Spatial Thinking"
+  }
+}

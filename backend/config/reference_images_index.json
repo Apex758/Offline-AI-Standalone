@@ -1,0 +1,22 @@
+{
+  "line_art_references": {
+    "style_id": "line_art_bw",
+    "description": "Black and white line art references for coloring book style",
+    "images": []
+  },
+  "cartoon_3d_references": {
+    "style_id": "cartoon_3d",
+    "description": "3D cartoon style references (Pixar-like)",
+    "images": []
+  },
+  "illustrated_references": {
+    "style_id": "illustrated_painting",
+    "description": "Illustrated painting style references",
+    "images": []
+  },
+  "realistic_references": {
+    "style_id": "realistic",
+    "description": "Photorealistic style references",
+    "images": []
+  }
+}

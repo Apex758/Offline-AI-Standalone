@@ -1,0 +1,99 @@
+{
+  "asset_423838d752f68248_1770336365": {
+    "asset_id": "asset_423838d752f68248_1770336365",
+    "image_path": "backend\\data\\image_assets\\asset_423838d752f68248_1770336365.png",
+    "scene_spec": {
+      "scene_id": "scene_social_studies_grade4_historical-cultural-thinking_cultural_scene_20260205_200257",
+      "topic_id": "social_studies.grade4.historical-cultural-thinking",
+      "subject": "Social Studies",
+      "grade_level": "4",
+      "strand": "historical-cultural-thinking",
+      "objects": [
+        {
+          "id": "celebratory_elements_01",
+          "type": "celebratory_elements",
+          "name": "Celebratory Elements",
+          "properties": {
+            "index": 0,
+            "source": "preset"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "cultural_items_02",
+          "type": "cultural_items",
+          "name": "Cultural Items",
+          "properties": {
+            "index": 1,
+            "source": "preset"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text",
+        "stereotypes"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T20:02:57.596634",
+      "image_preset_id": "cultural_scene",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "social_studies.grade4.historical-cultural-thinking",
+      "preset_id": "cultural_scene",
+      "prompt": "A scene showing Celebratory Elements and Cultural Items, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T20:06:05.265803",
+      "created_at": "2026-02-05T20:06:05.272150",
+      "image_size_bytes": 601900
+    },
+    "created_at": "2026-02-05T20:06:05.272150"
+  },
+  "asset_37fc7435d1a9b88f_1770336950": {
+    "asset_id": "asset_37fc7435d1a9b88f_1770336950",
+    "image_path": "backend\\data\\image_assets\\asset_37fc7435d1a9b88f_1770336950.png",
+    "scene_spec": {
+      "scene_id": "scene_science_grade4_energy_energy_sources_20260205_201340",
+      "topic_id": "science.grade4.energy",
+      "subject": "Science",
+      "grade_level": "4",
+      "strand": "energy",
+      "objects": [
+        {
+          "id": "energy_sources_01",
+          "type": "energy_sources",
+          "name": "Energy Sources",
+          "properties": {
+            "index": 0,
+            "source": "preset"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "text",
+        "dangerous_elements"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T20:13:40.770134",
+      "image_preset_id": "energy_sources",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "science.grade4.energy",
+      "preset_id": "energy_sources",
+      "prompt": "A scene showing Energy Sources, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T20:15:50.600716",
+      "created_at": "2026-02-05T20:15:50.611217",
+      "image_size_bytes": 586105
+    },
+    "created_at": "2026-02-05T20:15:50.611217"
+  }
+}

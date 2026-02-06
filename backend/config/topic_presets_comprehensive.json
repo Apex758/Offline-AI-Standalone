@@ -1,0 +1,4494 @@
+{
+  "language_arts.grade1.listening-speaking": {
+    "topic_id": "language_arts.grade1.listening-speaking",
+    "display_name": "Listening & Speaking (Grade 1 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "1",
+    "strand": "listening-speaking",
+    "image_presets": [
+      {
+        "id": "communication_scene",
+        "name": "Communication Scene",
+        "description": "People or characters in communication",
+        "base_prompt": "Two friendly characters appearing to communicate, simple and expressive body language",
+        "objects": [
+          "character_1",
+          "character_2",
+          "setting"
+        ],
+        "relationships": [
+          "interaction",
+          "communication"
+        ],
+        "exclusions": [
+          "speech_bubbles",
+          "text",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade1.reading-viewing": {
+    "topic_id": "language_arts.grade1.reading-viewing",
+    "display_name": "Reading & Viewing (Grade 1 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "1",
+    "strand": "reading-viewing",
+    "image_presets": [
+      {
+        "id": "storybook_scene",
+        "name": "Storybook Scene",
+        "description": "Simple story scene with character and setting",
+        "base_prompt": "A colorful storybook illustration showing a character in a simple setting, child-friendly and engaging",
+        "objects": [
+          "character",
+          "setting_elements",
+          "background"
+        ],
+        "relationships": [
+          "character_in_setting"
+        ],
+        "exclusions": [
+          "text",
+          "speech_bubbles",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "book_cover_style",
+        "name": "Book Cover Scene",
+        "description": "Illustrated scene suitable for a book cover",
+        "base_prompt": "An engaging illustration suitable for a children's book cover, showing an interesting scene without text",
+        "objects": [
+          "scene_elements",
+          "focal_point"
+        ],
+        "relationships": [
+          "visual_composition"
+        ],
+        "exclusions": [
+          "text",
+          "title",
+          "author_name"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade1.writing-representing": {
+    "topic_id": "language_arts.grade1.writing-representing",
+    "display_name": "Writing & Representing (Grade 1 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "1",
+    "strand": "writing-representing",
+    "image_presets": [
+      {
+        "id": "writing_inspiration_scene",
+        "name": "Story Inspiration Scene",
+        "description": "Interesting scene to inspire creative writing",
+        "base_prompt": "An interesting scene that could inspire a story - a mysterious door, a magical forest, or an unusual object",
+        "objects": [
+          "story_elements",
+          "setting",
+          "interesting_object"
+        ],
+        "relationships": [
+          "visual_narrative"
+        ],
+        "exclusions": [
+          "text",
+          "completed_story",
+          "characters_with_dialogue"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade1.data-probability": {
+    "topic_id": "mathematics.grade1.data-probability",
+    "display_name": "Data & Probability (Grade 1 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "1",
+    "strand": "data-probability",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade1.geometrical-thinking": {
+    "topic_id": "mathematics.grade1.geometrical-thinking",
+    "display_name": "Geometrical Thinking (Grade 1 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "1",
+    "strand": "geometrical-thinking",
+    "image_presets": [
+      {
+        "id": "2d_shapes_collection",
+        "name": "2D Shapes Display",
+        "description": "Common 2D shapes in different sizes and colors",
+        "base_prompt": "A collection of basic 2D geometric shapes - circles, squares, triangles, rectangles - in various bright colors",
+        "objects": [
+          "circle",
+          "square",
+          "triangle",
+          "rectangle",
+          "pentagon",
+          "hexagon"
+        ],
+        "relationships": [
+          "shape_comparison",
+          "size_variation"
+        ],
+        "exclusions": [
+          "text_labels",
+          "numbers",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "3d_shapes_display",
+        "name": "3D Shapes Collection",
+        "description": "Common 3D shapes rendered clearly",
+        "base_prompt": "3D geometric solids - cube, sphere, cone, cylinder, pyramid - with visible faces and edges, colorful",
+        "objects": [
+          "cube",
+          "sphere",
+          "cone",
+          "cylinder",
+          "pyramid"
+        ],
+        "relationships": [
+          "dimensional_relationships",
+          "face_edge_vertex"
+        ],
+        "exclusions": [
+          "text",
+          "measurements",
+          "formulas"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade1.measurement": {
+    "topic_id": "mathematics.grade1.measurement",
+    "display_name": "Measurement (Grade 1 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "1",
+    "strand": "measurement",
+    "image_presets": [
+      {
+        "id": "measurement_tools",
+        "name": "Measurement Tools Display",
+        "description": "Common measurement tools for length, mass, capacity",
+        "base_prompt": "A collection of measurement tools - ruler, scale, measuring cup, clock - arranged neatly",
+        "objects": [
+          "ruler",
+          "scale",
+          "measuring_cup",
+          "clock"
+        ],
+        "relationships": [
+          "tool_to_measurement_type"
+        ],
+        "exclusions": [
+          "numbers",
+          "measurements",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "realistic"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade1.number-sense": {
+    "topic_id": "mathematics.grade1.number-sense",
+    "display_name": "Number Sense (Grade 1 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "1",
+    "strand": "number-sense",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 10, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade1.operations-with-numbers": {
+    "topic_id": "mathematics.grade1.operations-with-numbers",
+    "display_name": "Operations with Numbers (Grade 1 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "1",
+    "strand": "operations-with-numbers",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 10, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade1.patterns-relationships": {
+    "topic_id": "mathematics.grade1.patterns-relationships",
+    "display_name": "Patterns & Relationships (Grade 1 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "1",
+    "strand": "patterns-relationships",
+    "image_presets": [
+      {
+        "id": "pattern_blocks",
+        "name": "Pattern Block Sequence",
+        "description": "Colorful blocks showing repeating patterns",
+        "base_prompt": "A sequence of colorful pattern blocks arranged to show repeating patterns with shapes and colors",
+        "objects": [
+          "pattern_blocks",
+          "sequence",
+          "repeating_elements"
+        ],
+        "relationships": [
+          "pattern_repetition",
+          "sequence_order"
+        ],
+        "exclusions": [
+          "text",
+          "numbers"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade1.scientific-inquiry": {
+    "topic_id": "science.grade1.scientific-inquiry",
+    "display_name": "Scientific Inquiry (Grade 1 Science)",
+    "subject": "Science",
+    "grade_band": "1",
+    "strand": "scientific-inquiry",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Scientific Inquiry Visual",
+        "description": "Scientific visualization for Scientific Inquiry",
+        "base_prompt": "An educational science scene related to Scientific Inquiry, clear and age-appropriate for grade 1",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade1.space-systems": {
+    "topic_id": "science.grade1.space-systems",
+    "display_name": "Space Systems (Grade 1 Science)",
+    "subject": "Science",
+    "grade_band": "1",
+    "strand": "space-systems",
+    "image_presets": [
+      {
+        "id": "solar_system_overview",
+        "name": "Solar System Overview",
+        "description": "Complete solar system with planets",
+        "base_prompt": "A complete solar system showing the sun and all planets in their orbital paths",
+        "objects": [
+          "sun",
+          "mercury",
+          "venus",
+          "earth",
+          "mars",
+          "jupiter",
+          "saturn",
+          "uranus",
+          "neptune"
+        ],
+        "relationships": [
+          "orbiting",
+          "relative_size"
+        ],
+        "exclusions": [
+          "text_labels",
+          "measurements",
+          "moons",
+          "spacecraft"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "planet_close_up",
+        "name": "Planet Details",
+        "description": "Individual planet with surface features",
+        "base_prompt": "A detailed view of a single planet showing surface features and atmosphere",
+        "objects": [
+          "single_planet",
+          "surface_features",
+          "atmosphere"
+        ],
+        "relationships": [
+          "surface_to_planet"
+        ],
+        "exclusions": [
+          "text",
+          "other_planets",
+          "moons"
+        ],
+        "recommended_styles": [
+          "realistic",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade1.structure-function-processing": {
+    "topic_id": "science.grade1.structure-function-processing",
+    "display_name": "Structure, Function & Processing (Grade 1 Science)",
+    "subject": "Science",
+    "grade_band": "1",
+    "strand": "structure-function-processing",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Structure, Function & Processing Visual",
+        "description": "Scientific visualization for Structure, Function & Processing",
+        "base_prompt": "An educational science scene related to Structure, Function & Processing, clear and age-appropriate for grade 1",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade1.waves-lights-sounds": {
+    "topic_id": "science.grade1.waves-lights-sounds",
+    "display_name": "Waves, Light & Sounds (Grade 1 Science)",
+    "subject": "Science",
+    "grade_band": "1",
+    "strand": "waves-lights-sounds",
+    "image_presets": [
+      {
+        "id": "wave_diagram",
+        "name": "Wave Visualization",
+        "description": "Visual representation of waves",
+        "base_prompt": "Colorful wave patterns showing peaks and troughs, simple wave diagram",
+        "objects": [
+          "waves",
+          "crests",
+          "troughs"
+        ],
+        "relationships": [
+          "wave_pattern",
+          "repetition"
+        ],
+        "exclusions": [
+          "text",
+          "labels",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "light_rays_scene",
+        "name": "Light and Shadows",
+        "description": "Light source creating shadows",
+        "base_prompt": "A light source casting rays and creating shadows on simple objects",
+        "objects": [
+          "light_source",
+          "light_rays",
+          "objects",
+          "shadows"
+        ],
+        "relationships": [
+          "light_to_shadow",
+          "directional_rays"
+        ],
+        "exclusions": [
+          "text",
+          "complex_objects"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade1.civic-participation": {
+    "topic_id": "social_studies.grade1.civic-participation",
+    "display_name": "Civic Participation (Grade 1 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "1",
+    "strand": "civic-participation",
+    "image_presets": [
+      {
+        "id": "community_scene",
+        "name": "Community Helper Scene",
+        "description": "Community helpers in their work environment",
+        "base_prompt": "A friendly community helper at work - firefighter, teacher, or doctor - in a simple work setting, grade 1 appropriate",
+        "objects": [
+          "community_helper",
+          "work_setting",
+          "tools_equipment"
+        ],
+        "relationships": [
+          "person_to_profession",
+          "tools_to_work"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "complex_scenes"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade1.economic-decision-making": {
+    "topic_id": "social_studies.grade1.economic-decision-making",
+    "display_name": "Economic Decision Making (Grade 1 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "1",
+    "strand": "economic-decision-making",
+    "image_presets": [
+      {
+        "id": "goods_services_scene",
+        "name": "Goods and Services",
+        "description": "Visual showing goods or services",
+        "base_prompt": "A simple scene showing goods in a store or someone providing a service, child-friendly",
+        "objects": [
+          "goods_items",
+          "service_provider",
+          "setting"
+        ],
+        "relationships": [
+          "economic_exchange"
+        ],
+        "exclusions": [
+          "money_amounts",
+          "prices",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade1.historical-cultural-thinking": {
+    "topic_id": "social_studies.grade1.historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking (Grade 1 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "1",
+    "strand": "historical-cultural-thinking",
+    "image_presets": [
+      {
+        "id": "historical_scene",
+        "name": "Historical Setting",
+        "description": "Simple historical or cultural scene",
+        "base_prompt": "A simple historical or cultural scene appropriate for grade 1, showing traditional elements without text",
+        "objects": [
+          "historical_elements",
+          "cultural_items",
+          "setting"
+        ],
+        "relationships": [
+          "cultural_context"
+        ],
+        "exclusions": [
+          "text",
+          "specific_dates",
+          "complex_politics"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade1.spatial-thinking": {
+    "topic_id": "social_studies.grade1.spatial-thinking",
+    "display_name": "Spatial Thinking (Grade 1 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "1",
+    "strand": "spatial-thinking",
+    "image_presets": [
+      {
+        "id": "map_style_view",
+        "name": "Map-Style View",
+        "description": "Simplified map or geographical view",
+        "base_prompt": "A simple map-style illustration showing geographical features like mountains, rivers, and coastlines",
+        "objects": [
+          "land",
+          "water",
+          "geographical_features"
+        ],
+        "relationships": [
+          "spatial_arrangement"
+        ],
+        "exclusions": [
+          "text_labels",
+          "place_names",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade2.listening-speaking": {
+    "topic_id": "language_arts.grade2.listening-speaking",
+    "display_name": "Listening & Speaking (Grade 2 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "2",
+    "strand": "listening-speaking",
+    "image_presets": [
+      {
+        "id": "communication_scene",
+        "name": "Communication Scene",
+        "description": "People or characters in communication",
+        "base_prompt": "Two friendly characters appearing to communicate, simple and expressive body language",
+        "objects": [
+          "character_1",
+          "character_2",
+          "setting"
+        ],
+        "relationships": [
+          "interaction",
+          "communication"
+        ],
+        "exclusions": [
+          "speech_bubbles",
+          "text",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade2.reading-viewing": {
+    "topic_id": "language_arts.grade2.reading-viewing",
+    "display_name": "Reading & Viewing (Grade 2 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "2",
+    "strand": "reading-viewing",
+    "image_presets": [
+      {
+        "id": "storybook_scene",
+        "name": "Storybook Scene",
+        "description": "Simple story scene with character and setting",
+        "base_prompt": "A colorful storybook illustration showing a character in a simple setting, child-friendly and engaging",
+        "objects": [
+          "character",
+          "setting_elements",
+          "background"
+        ],
+        "relationships": [
+          "character_in_setting"
+        ],
+        "exclusions": [
+          "text",
+          "speech_bubbles",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "book_cover_style",
+        "name": "Book Cover Scene",
+        "description": "Illustrated scene suitable for a book cover",
+        "base_prompt": "An engaging illustration suitable for a children's book cover, showing an interesting scene without text",
+        "objects": [
+          "scene_elements",
+          "focal_point"
+        ],
+        "relationships": [
+          "visual_composition"
+        ],
+        "exclusions": [
+          "text",
+          "title",
+          "author_name"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade2.writing-representing": {
+    "topic_id": "language_arts.grade2.writing-representing",
+    "display_name": "Writing & Representing (Grade 2 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "2",
+    "strand": "writing-representing",
+    "image_presets": [
+      {
+        "id": "writing_inspiration_scene",
+        "name": "Story Inspiration Scene",
+        "description": "Interesting scene to inspire creative writing",
+        "base_prompt": "An interesting scene that could inspire a story - a mysterious door, a magical forest, or an unusual object",
+        "objects": [
+          "story_elements",
+          "setting",
+          "interesting_object"
+        ],
+        "relationships": [
+          "visual_narrative"
+        ],
+        "exclusions": [
+          "text",
+          "completed_story",
+          "characters_with_dialogue"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.data-handling": {
+    "topic_id": "mathematics.grade2.data-handling",
+    "display_name": "Data Handling (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "data-handling",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.data-probability": {
+    "topic_id": "mathematics.grade2.data-probability",
+    "display_name": "Data & Probability (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "data-probability",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.geometrical-thinking": {
+    "topic_id": "mathematics.grade2.geometrical-thinking",
+    "display_name": "Geometrical Thinking (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "geometrical-thinking",
+    "image_presets": [
+      {
+        "id": "2d_shapes_collection",
+        "name": "2D Shapes Display",
+        "description": "Common 2D shapes in different sizes and colors",
+        "base_prompt": "A collection of basic 2D geometric shapes - circles, squares, triangles, rectangles - in various bright colors",
+        "objects": [
+          "circle",
+          "square",
+          "triangle",
+          "rectangle",
+          "pentagon",
+          "hexagon"
+        ],
+        "relationships": [
+          "shape_comparison",
+          "size_variation"
+        ],
+        "exclusions": [
+          "text_labels",
+          "numbers",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "3d_shapes_display",
+        "name": "3D Shapes Collection",
+        "description": "Common 3D shapes rendered clearly",
+        "base_prompt": "3D geometric solids - cube, sphere, cone, cylinder, pyramid - with visible faces and edges, colorful",
+        "objects": [
+          "cube",
+          "sphere",
+          "cone",
+          "cylinder",
+          "pyramid"
+        ],
+        "relationships": [
+          "dimensional_relationships",
+          "face_edge_vertex"
+        ],
+        "exclusions": [
+          "text",
+          "measurements",
+          "formulas"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.measurement": {
+    "topic_id": "mathematics.grade2.measurement",
+    "display_name": "Measurement (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "measurement",
+    "image_presets": [
+      {
+        "id": "measurement_tools",
+        "name": "Measurement Tools Display",
+        "description": "Common measurement tools for length, mass, capacity",
+        "base_prompt": "A collection of measurement tools - ruler, scale, measuring cup, clock - arranged neatly",
+        "objects": [
+          "ruler",
+          "scale",
+          "measuring_cup",
+          "clock"
+        ],
+        "relationships": [
+          "tool_to_measurement_type"
+        ],
+        "exclusions": [
+          "numbers",
+          "measurements",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "realistic"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.number-sense": {
+    "topic_id": "mathematics.grade2.number-sense",
+    "display_name": "Number Sense (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "number-sense",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 10, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.operations": {
+    "topic_id": "mathematics.grade2.operations",
+    "display_name": "Operations (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "operations",
+    "image_presets": [
+      {
+        "id": "fraction_circles",
+        "name": "Fraction Circle Models",
+        "description": "Circles divided into equal parts showing fractions",
+        "base_prompt": "Circular fraction models divided into halves, thirds, fourths, and eighths with different colors for each section",
+        "objects": [
+          "whole_circle",
+          "halves",
+          "thirds",
+          "fourths",
+          "eighths"
+        ],
+        "relationships": [
+          "part_to_whole",
+          "equal_parts"
+        ],
+        "exclusions": [
+          "numbers",
+          "fraction_notation",
+          "text"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade2.patterns-relationships": {
+    "topic_id": "mathematics.grade2.patterns-relationships",
+    "display_name": "Patterns & Relationships (Grade 2 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "2",
+    "strand": "patterns-relationships",
+    "image_presets": [
+      {
+        "id": "pattern_blocks",
+        "name": "Pattern Block Sequence",
+        "description": "Colorful blocks showing repeating patterns",
+        "base_prompt": "A sequence of colorful pattern blocks arranged to show repeating patterns with shapes and colors",
+        "objects": [
+          "pattern_blocks",
+          "sequence",
+          "repeating_elements"
+        ],
+        "relationships": [
+          "pattern_repetition",
+          "sequence_order"
+        ],
+        "exclusions": [
+          "text",
+          "numbers"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade2.earth-systems-processes": {
+    "topic_id": "science.grade2.earth-systems-processes",
+    "display_name": "Earth Systems & Processes (Grade 2 Science)",
+    "subject": "Science",
+    "grade_band": "2",
+    "strand": "earth-systems-processes",
+    "image_presets": [
+      {
+        "id": "weather_types_scene",
+        "name": "Weather Types",
+        "description": "Different weather conditions visualized",
+        "base_prompt": "Four panels showing different weather types - sunny, rainy, cloudy, and windy - with simple icons",
+        "objects": [
+          "sun",
+          "clouds",
+          "rain",
+          "wind_indicators"
+        ],
+        "relationships": [
+          "weather_variation"
+        ],
+        "exclusions": [
+          "text",
+          "temperature_readings",
+          "specific_locations"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade2.engineering-design": {
+    "topic_id": "science.grade2.engineering-design",
+    "display_name": "Engineering Design (Grade 2 Science)",
+    "subject": "Science",
+    "grade_band": "2",
+    "strand": "engineering-design",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Engineering Design Visual",
+        "description": "Scientific visualization for Engineering Design",
+        "base_prompt": "An educational science scene related to Engineering Design, clear and age-appropriate for grade 2",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade2.interdependent-relationships": {
+    "topic_id": "science.grade2.interdependent-relationships",
+    "display_name": "Interdependent Relationships (Grade 2 Science)",
+    "subject": "Science",
+    "grade_band": "2",
+    "strand": "interdependent-relationships",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Interdependent Relationships Visual",
+        "description": "Scientific visualization for Interdependent Relationships",
+        "base_prompt": "An educational science scene related to Interdependent Relationships, clear and age-appropriate for grade 2",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade2.structure-properties-matter": {
+    "topic_id": "science.grade2.structure-properties-matter",
+    "display_name": "Structure & Properties of Matter (Grade 2 Science)",
+    "subject": "Science",
+    "grade_band": "2",
+    "strand": "structure-properties-matter",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Structure & Properties of Matter Visual",
+        "description": "Scientific visualization for Structure & Properties of Matter",
+        "base_prompt": "An educational science scene related to Structure & Properties of Matter, clear and age-appropriate for grade 2",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade2.civic-participation": {
+    "topic_id": "social_studies.grade2.civic-participation",
+    "display_name": "Civic Participation (Grade 2 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "2",
+    "strand": "civic-participation",
+    "image_presets": [
+      {
+        "id": "community_scene",
+        "name": "Community Helper Scene",
+        "description": "Community helpers in their work environment",
+        "base_prompt": "A friendly community helper at work - firefighter, teacher, or doctor - in a simple work setting, grade 2 appropriate",
+        "objects": [
+          "community_helper",
+          "work_setting",
+          "tools_equipment"
+        ],
+        "relationships": [
+          "person_to_profession",
+          "tools_to_work"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "complex_scenes"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade2.economic-decision-making": {
+    "topic_id": "social_studies.grade2.economic-decision-making",
+    "display_name": "Economic Decision Making (Grade 2 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "2",
+    "strand": "economic-decision-making",
+    "image_presets": [
+      {
+        "id": "goods_services_scene",
+        "name": "Goods and Services",
+        "description": "Visual showing goods or services",
+        "base_prompt": "A simple scene showing goods in a store or someone providing a service, child-friendly",
+        "objects": [
+          "goods_items",
+          "service_provider",
+          "setting"
+        ],
+        "relationships": [
+          "economic_exchange"
+        ],
+        "exclusions": [
+          "money_amounts",
+          "prices",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade2.historical-cultural-thinking": {
+    "topic_id": "social_studies.grade2.historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking (Grade 2 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "2",
+    "strand": "historical-cultural-thinking",
+    "image_presets": [
+      {
+        "id": "historical_scene",
+        "name": "Historical Setting",
+        "description": "Simple historical or cultural scene",
+        "base_prompt": "A simple historical or cultural scene appropriate for grade 2, showing traditional elements without text",
+        "objects": [
+          "historical_elements",
+          "cultural_items",
+          "setting"
+        ],
+        "relationships": [
+          "cultural_context"
+        ],
+        "exclusions": [
+          "text",
+          "specific_dates",
+          "complex_politics"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade2.spatial-thinking": {
+    "topic_id": "social_studies.grade2.spatial-thinking",
+    "display_name": "Spatial Thinking (Grade 2 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "2",
+    "strand": "spatial-thinking",
+    "image_presets": [
+      {
+        "id": "map_style_view",
+        "name": "Map-Style View",
+        "description": "Simplified map or geographical view",
+        "base_prompt": "A simple map-style illustration showing geographical features like mountains, rivers, and coastlines",
+        "objects": [
+          "land",
+          "water",
+          "geographical_features"
+        ],
+        "relationships": [
+          "spatial_arrangement"
+        ],
+        "exclusions": [
+          "text_labels",
+          "place_names",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade3.listening-speaking": {
+    "topic_id": "language_arts.grade3.listening-speaking",
+    "display_name": "Listening & Speaking (Grade 3 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "3",
+    "strand": "listening-speaking",
+    "image_presets": [
+      {
+        "id": "communication_scene",
+        "name": "Communication Scene",
+        "description": "People or characters in communication",
+        "base_prompt": "Two friendly characters appearing to communicate, simple and expressive body language",
+        "objects": [
+          "character_1",
+          "character_2",
+          "setting"
+        ],
+        "relationships": [
+          "interaction",
+          "communication"
+        ],
+        "exclusions": [
+          "speech_bubbles",
+          "text",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade3.reading-viewing": {
+    "topic_id": "language_arts.grade3.reading-viewing",
+    "display_name": "Reading & Viewing (Grade 3 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "3",
+    "strand": "reading-viewing",
+    "image_presets": [
+      {
+        "id": "storybook_scene",
+        "name": "Storybook Scene",
+        "description": "Simple story scene with character and setting",
+        "base_prompt": "A colorful storybook illustration showing a character in a simple setting, child-friendly and engaging",
+        "objects": [
+          "character",
+          "setting_elements",
+          "background"
+        ],
+        "relationships": [
+          "character_in_setting"
+        ],
+        "exclusions": [
+          "text",
+          "speech_bubbles",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "book_cover_style",
+        "name": "Book Cover Scene",
+        "description": "Illustrated scene suitable for a book cover",
+        "base_prompt": "An engaging illustration suitable for a children's book cover, showing an interesting scene without text",
+        "objects": [
+          "scene_elements",
+          "focal_point"
+        ],
+        "relationships": [
+          "visual_composition"
+        ],
+        "exclusions": [
+          "text",
+          "title",
+          "author_name"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade3.writing-representing": {
+    "topic_id": "language_arts.grade3.writing-representing",
+    "display_name": "Writing & Representing (Grade 3 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "3",
+    "strand": "writing-representing",
+    "image_presets": [
+      {
+        "id": "writing_inspiration_scene",
+        "name": "Story Inspiration Scene",
+        "description": "Interesting scene to inspire creative writing",
+        "base_prompt": "An interesting scene that could inspire a story - a mysterious door, a magical forest, or an unusual object",
+        "objects": [
+          "story_elements",
+          "setting",
+          "interesting_object"
+        ],
+        "relationships": [
+          "visual_narrative"
+        ],
+        "exclusions": [
+          "text",
+          "completed_story",
+          "characters_with_dialogue"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade3.data-probability": {
+    "topic_id": "mathematics.grade3.data-probability",
+    "display_name": "Data & Probability (Grade 3 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "3",
+    "strand": "data-probability",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade3.geometrical-thinking": {
+    "topic_id": "mathematics.grade3.geometrical-thinking",
+    "display_name": "Geometrical Thinking (Grade 3 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "3",
+    "strand": "geometrical-thinking",
+    "image_presets": [
+      {
+        "id": "2d_shapes_collection",
+        "name": "2D Shapes Display",
+        "description": "Common 2D shapes in different sizes and colors",
+        "base_prompt": "A collection of basic 2D geometric shapes - circles, squares, triangles, rectangles - in various bright colors",
+        "objects": [
+          "circle",
+          "square",
+          "triangle",
+          "rectangle",
+          "pentagon",
+          "hexagon"
+        ],
+        "relationships": [
+          "shape_comparison",
+          "size_variation"
+        ],
+        "exclusions": [
+          "text_labels",
+          "numbers",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "3d_shapes_display",
+        "name": "3D Shapes Collection",
+        "description": "Common 3D shapes rendered clearly",
+        "base_prompt": "3D geometric solids - cube, sphere, cone, cylinder, pyramid - with visible faces and edges, colorful",
+        "objects": [
+          "cube",
+          "sphere",
+          "cone",
+          "cylinder",
+          "pyramid"
+        ],
+        "relationships": [
+          "dimensional_relationships",
+          "face_edge_vertex"
+        ],
+        "exclusions": [
+          "text",
+          "measurements",
+          "formulas"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade3.measurement": {
+    "topic_id": "mathematics.grade3.measurement",
+    "display_name": "Measurement (Grade 3 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "3",
+    "strand": "measurement",
+    "image_presets": [
+      {
+        "id": "measurement_tools",
+        "name": "Measurement Tools Display",
+        "description": "Common measurement tools for length, mass, capacity",
+        "base_prompt": "A collection of measurement tools - ruler, scale, measuring cup, clock - arranged neatly",
+        "objects": [
+          "ruler",
+          "scale",
+          "measuring_cup",
+          "clock"
+        ],
+        "relationships": [
+          "tool_to_measurement_type"
+        ],
+        "exclusions": [
+          "numbers",
+          "measurements",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "realistic"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade3.number-sense": {
+    "topic_id": "mathematics.grade3.number-sense",
+    "display_name": "Number Sense (Grade 3 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "3",
+    "strand": "number-sense",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 100, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade3.operations-with-numbers": {
+    "topic_id": "mathematics.grade3.operations-with-numbers",
+    "display_name": "Operations with Numbers (Grade 3 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "3",
+    "strand": "operations-with-numbers",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 100, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade3.patterns-relationships": {
+    "topic_id": "mathematics.grade3.patterns-relationships",
+    "display_name": "Patterns & Relationships (Grade 3 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "3",
+    "strand": "patterns-relationships",
+    "image_presets": [
+      {
+        "id": "pattern_blocks",
+        "name": "Pattern Block Sequence",
+        "description": "Colorful blocks showing repeating patterns",
+        "base_prompt": "A sequence of colorful pattern blocks arranged to show repeating patterns with shapes and colors",
+        "objects": [
+          "pattern_blocks",
+          "sequence",
+          "repeating_elements"
+        ],
+        "relationships": [
+          "pattern_repetition",
+          "sequence_order"
+        ],
+        "exclusions": [
+          "text",
+          "numbers"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade3.earth-systems": {
+    "topic_id": "science.grade3.earth-systems",
+    "display_name": "Earth Systems (Grade 3 Science)",
+    "subject": "Science",
+    "grade_band": "3",
+    "strand": "earth-systems",
+    "image_presets": [
+      {
+        "id": "weather_types_scene",
+        "name": "Weather Types",
+        "description": "Different weather conditions visualized",
+        "base_prompt": "Four panels showing different weather types - sunny, rainy, cloudy, and windy - with simple icons",
+        "objects": [
+          "sun",
+          "clouds",
+          "rain",
+          "wind_indicators"
+        ],
+        "relationships": [
+          "weather_variation"
+        ],
+        "exclusions": [
+          "text",
+          "temperature_readings",
+          "specific_locations"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade3.engineering-design": {
+    "topic_id": "science.grade3.engineering-design",
+    "display_name": "Engineering Design (Grade 3 Science)",
+    "subject": "Science",
+    "grade_band": "3",
+    "strand": "engineering-design",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Engineering Design Visual",
+        "description": "Scientific visualization for Engineering Design",
+        "base_prompt": "An educational science scene related to Engineering Design, clear and age-appropriate for grade 3",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade3.forces-interactions": {
+    "topic_id": "science.grade3.forces-interactions",
+    "display_name": "Forces & Interactions (Grade 3 Science)",
+    "subject": "Science",
+    "grade_band": "3",
+    "strand": "forces-interactions",
+    "image_presets": [
+      {
+        "id": "forces_in_action",
+        "name": "Forces Demonstration",
+        "description": "Objects showing push and pull forces",
+        "base_prompt": "Simple objects demonstrating forces - a ball being pushed, a wagon being pulled, showing motion",
+        "objects": [
+          "ball",
+          "wagon",
+          "motion_indicators"
+        ],
+        "relationships": [
+          "force_to_motion",
+          "cause_effect"
+        ],
+        "exclusions": [
+          "text",
+          "arrows_with_labels",
+          "people"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "science.grade3.inheritance-variation": {
+    "topic_id": "science.grade3.inheritance-variation",
+    "display_name": "Inheritance & Variation (Grade 3 Science)",
+    "subject": "Science",
+    "grade_band": "3",
+    "strand": "inheritance-variation",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Inheritance & Variation Visual",
+        "description": "Scientific visualization for Inheritance & Variation",
+        "base_prompt": "An educational science scene related to Inheritance & Variation, clear and age-appropriate for grade 3",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade3.interdependent-relationships": {
+    "topic_id": "science.grade3.interdependent-relationships",
+    "display_name": "Interdependent Relationships (Grade 3 Science)",
+    "subject": "Science",
+    "grade_band": "3",
+    "strand": "interdependent-relationships",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Interdependent Relationships Visual",
+        "description": "Scientific visualization for Interdependent Relationships",
+        "base_prompt": "An educational science scene related to Interdependent Relationships, clear and age-appropriate for grade 3",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade3.weather-climate": {
+    "topic_id": "science.grade3.weather-climate",
+    "display_name": "Weather & Climate (Grade 3 Science)",
+    "subject": "Science",
+    "grade_band": "3",
+    "strand": "weather-climate",
+    "image_presets": [
+      {
+        "id": "weather_types_scene",
+        "name": "Weather Types",
+        "description": "Different weather conditions visualized",
+        "base_prompt": "Four panels showing different weather types - sunny, rainy, cloudy, and windy - with simple icons",
+        "objects": [
+          "sun",
+          "clouds",
+          "rain",
+          "wind_indicators"
+        ],
+        "relationships": [
+          "weather_variation"
+        ],
+        "exclusions": [
+          "text",
+          "temperature_readings",
+          "specific_locations"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade3.civic-participation": {
+    "topic_id": "social_studies.grade3.civic-participation",
+    "display_name": "Civic Participation (Grade 3 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "3",
+    "strand": "civic-participation",
+    "image_presets": [
+      {
+        "id": "community_scene",
+        "name": "Community Helper Scene",
+        "description": "Community helpers in their work environment",
+        "base_prompt": "A friendly community helper at work - firefighter, teacher, or doctor - in a simple work setting, grade 3 appropriate",
+        "objects": [
+          "community_helper",
+          "work_setting",
+          "tools_equipment"
+        ],
+        "relationships": [
+          "person_to_profession",
+          "tools_to_work"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "complex_scenes"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade3.economic-decision-making": {
+    "topic_id": "social_studies.grade3.economic-decision-making",
+    "display_name": "Economic Decision Making (Grade 3 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "3",
+    "strand": "economic-decision-making",
+    "image_presets": [
+      {
+        "id": "goods_services_scene",
+        "name": "Goods and Services",
+        "description": "Visual showing goods or services",
+        "base_prompt": "A simple scene showing goods in a store or someone providing a service, child-friendly",
+        "objects": [
+          "goods_items",
+          "service_provider",
+          "setting"
+        ],
+        "relationships": [
+          "economic_exchange"
+        ],
+        "exclusions": [
+          "money_amounts",
+          "prices",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade3.historical-cultural-thinking": {
+    "topic_id": "social_studies.grade3.historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking (Grade 3 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "3",
+    "strand": "historical-cultural-thinking",
+    "image_presets": [
+      {
+        "id": "historical_scene",
+        "name": "Historical Setting",
+        "description": "Simple historical or cultural scene",
+        "base_prompt": "A simple historical or cultural scene appropriate for grade 3, showing traditional elements without text",
+        "objects": [
+          "historical_elements",
+          "cultural_items",
+          "setting"
+        ],
+        "relationships": [
+          "cultural_context"
+        ],
+        "exclusions": [
+          "text",
+          "specific_dates",
+          "complex_politics"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade3.spatial-thinking": {
+    "topic_id": "social_studies.grade3.spatial-thinking",
+    "display_name": "Spatial Thinking (Grade 3 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "3",
+    "strand": "spatial-thinking",
+    "image_presets": [
+      {
+        "id": "map_style_view",
+        "name": "Map-Style View",
+        "description": "Simplified map or geographical view",
+        "base_prompt": "A simple map-style illustration showing geographical features like mountains, rivers, and coastlines",
+        "objects": [
+          "land",
+          "water",
+          "geographical_features"
+        ],
+        "relationships": [
+          "spatial_arrangement"
+        ],
+        "exclusions": [
+          "text_labels",
+          "place_names",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade4.listening-speaking": {
+    "topic_id": "language_arts.grade4.listening-speaking",
+    "display_name": "Listening & Speaking (Grade 4 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "4",
+    "strand": "listening-speaking",
+    "image_presets": [
+      {
+        "id": "communication_scene",
+        "name": "Communication Scene",
+        "description": "People or characters in communication",
+        "base_prompt": "Two friendly characters appearing to communicate, simple and expressive body language",
+        "objects": [
+          "character_1",
+          "character_2",
+          "setting"
+        ],
+        "relationships": [
+          "interaction",
+          "communication"
+        ],
+        "exclusions": [
+          "speech_bubbles",
+          "text",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade4.reading-viewing": {
+    "topic_id": "language_arts.grade4.reading-viewing",
+    "display_name": "Reading & Viewing (Grade 4 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "4",
+    "strand": "reading-viewing",
+    "image_presets": [
+      {
+        "id": "storybook_scene",
+        "name": "Storybook Scene",
+        "description": "Simple story scene with character and setting",
+        "base_prompt": "A colorful storybook illustration showing a character in a simple setting, child-friendly and engaging",
+        "objects": [
+          "character",
+          "setting_elements",
+          "background"
+        ],
+        "relationships": [
+          "character_in_setting"
+        ],
+        "exclusions": [
+          "text",
+          "speech_bubbles",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "book_cover_style",
+        "name": "Book Cover Scene",
+        "description": "Illustrated scene suitable for a book cover",
+        "base_prompt": "An engaging illustration suitable for a children's book cover, showing an interesting scene without text",
+        "objects": [
+          "scene_elements",
+          "focal_point"
+        ],
+        "relationships": [
+          "visual_composition"
+        ],
+        "exclusions": [
+          "text",
+          "title",
+          "author_name"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade4.writing-representing": {
+    "topic_id": "language_arts.grade4.writing-representing",
+    "display_name": "Writing & Representing (Grade 4 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "4",
+    "strand": "writing-representing",
+    "image_presets": [
+      {
+        "id": "writing_inspiration_scene",
+        "name": "Story Inspiration Scene",
+        "description": "Interesting scene to inspire creative writing",
+        "base_prompt": "An interesting scene that could inspire a story - a mysterious door, a magical forest, or an unusual object",
+        "objects": [
+          "story_elements",
+          "setting",
+          "interesting_object"
+        ],
+        "relationships": [
+          "visual_narrative"
+        ],
+        "exclusions": [
+          "text",
+          "completed_story",
+          "characters_with_dialogue"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade4.data-probability": {
+    "topic_id": "mathematics.grade4.data-probability",
+    "display_name": "Data & Probability (Grade 4 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "4",
+    "strand": "data-probability",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade4.geometrical-thinking": {
+    "topic_id": "mathematics.grade4.geometrical-thinking",
+    "display_name": "Geometrical Thinking (Grade 4 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "4",
+    "strand": "geometrical-thinking",
+    "image_presets": [
+      {
+        "id": "2d_shapes_collection",
+        "name": "2D Shapes Display",
+        "description": "Common 2D shapes in different sizes and colors",
+        "base_prompt": "A collection of basic 2D geometric shapes - circles, squares, triangles, rectangles - in various bright colors",
+        "objects": [
+          "circle",
+          "square",
+          "triangle",
+          "rectangle",
+          "pentagon",
+          "hexagon"
+        ],
+        "relationships": [
+          "shape_comparison",
+          "size_variation"
+        ],
+        "exclusions": [
+          "text_labels",
+          "numbers",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "3d_shapes_display",
+        "name": "3D Shapes Collection",
+        "description": "Common 3D shapes rendered clearly",
+        "base_prompt": "3D geometric solids - cube, sphere, cone, cylinder, pyramid - with visible faces and edges, colorful",
+        "objects": [
+          "cube",
+          "sphere",
+          "cone",
+          "cylinder",
+          "pyramid"
+        ],
+        "relationships": [
+          "dimensional_relationships",
+          "face_edge_vertex"
+        ],
+        "exclusions": [
+          "text",
+          "measurements",
+          "formulas"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade4.measurement": {
+    "topic_id": "mathematics.grade4.measurement",
+    "display_name": "Measurement (Grade 4 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "4",
+    "strand": "measurement",
+    "image_presets": [
+      {
+        "id": "measurement_tools",
+        "name": "Measurement Tools Display",
+        "description": "Common measurement tools for length, mass, capacity",
+        "base_prompt": "A collection of measurement tools - ruler, scale, measuring cup, clock - arranged neatly",
+        "objects": [
+          "ruler",
+          "scale",
+          "measuring_cup",
+          "clock"
+        ],
+        "relationships": [
+          "tool_to_measurement_type"
+        ],
+        "exclusions": [
+          "numbers",
+          "measurements",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "realistic"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade4.number-sense": {
+    "topic_id": "mathematics.grade4.number-sense",
+    "display_name": "Number Sense (Grade 4 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "4",
+    "strand": "number-sense",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 100, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade4.operations-with-numbers": {
+    "topic_id": "mathematics.grade4.operations-with-numbers",
+    "display_name": "Operations with Numbers (Grade 4 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "4",
+    "strand": "operations-with-numbers",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 100, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade4.patterns-relationships": {
+    "topic_id": "mathematics.grade4.patterns-relationships",
+    "display_name": "Patterns & Relationships (Grade 4 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "4",
+    "strand": "patterns-relationships",
+    "image_presets": [
+      {
+        "id": "pattern_blocks",
+        "name": "Pattern Block Sequence",
+        "description": "Colorful blocks showing repeating patterns",
+        "base_prompt": "A sequence of colorful pattern blocks arranged to show repeating patterns with shapes and colors",
+        "objects": [
+          "pattern_blocks",
+          "sequence",
+          "repeating_elements"
+        ],
+        "relationships": [
+          "pattern_repetition",
+          "sequence_order"
+        ],
+        "exclusions": [
+          "text",
+          "numbers"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade4.earth-systems": {
+    "topic_id": "science.grade4.earth-systems",
+    "display_name": "Earth Systems (Grade 4 Science)",
+    "subject": "Science",
+    "grade_band": "4",
+    "strand": "earth-systems",
+    "image_presets": [
+      {
+        "id": "weather_types_scene",
+        "name": "Weather Types",
+        "description": "Different weather conditions visualized",
+        "base_prompt": "Four panels showing different weather types - sunny, rainy, cloudy, and windy - with simple icons",
+        "objects": [
+          "sun",
+          "clouds",
+          "rain",
+          "wind_indicators"
+        ],
+        "relationships": [
+          "weather_variation"
+        ],
+        "exclusions": [
+          "text",
+          "temperature_readings",
+          "specific_locations"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade4.energy": {
+    "topic_id": "science.grade4.energy",
+    "display_name": "Energy (Grade 4 Science)",
+    "subject": "Science",
+    "grade_band": "4",
+    "strand": "energy",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Energy Visual",
+        "description": "Scientific visualization for Energy",
+        "base_prompt": "An educational science scene related to Energy, clear and age-appropriate for grade 4",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade4.structure-function": {
+    "topic_id": "science.grade4.structure-function",
+    "display_name": "Structure & Function (Grade 4 Science)",
+    "subject": "Science",
+    "grade_band": "4",
+    "strand": "structure-function",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Structure & Function Visual",
+        "description": "Scientific visualization for Structure & Function",
+        "base_prompt": "An educational science scene related to Structure & Function, clear and age-appropriate for grade 4",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade4.waves": {
+    "topic_id": "science.grade4.waves",
+    "display_name": "Waves (Grade 4 Science)",
+    "subject": "Science",
+    "grade_band": "4",
+    "strand": "waves",
+    "image_presets": [
+      {
+        "id": "wave_diagram",
+        "name": "Wave Visualization",
+        "description": "Visual representation of waves",
+        "base_prompt": "Colorful wave patterns showing peaks and troughs, simple wave diagram",
+        "objects": [
+          "waves",
+          "crests",
+          "troughs"
+        ],
+        "relationships": [
+          "wave_pattern",
+          "repetition"
+        ],
+        "exclusions": [
+          "text",
+          "labels",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "light_rays_scene",
+        "name": "Light and Shadows",
+        "description": "Light source creating shadows",
+        "base_prompt": "A light source casting rays and creating shadows on simple objects",
+        "objects": [
+          "light_source",
+          "light_rays",
+          "objects",
+          "shadows"
+        ],
+        "relationships": [
+          "light_to_shadow",
+          "directional_rays"
+        ],
+        "exclusions": [
+          "text",
+          "complex_objects"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade4.civic-participation": {
+    "topic_id": "social_studies.grade4.civic-participation",
+    "display_name": "Civic Participation (Grade 4 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "4",
+    "strand": "civic-participation",
+    "image_presets": [
+      {
+        "id": "community_scene",
+        "name": "Community Helper Scene",
+        "description": "Community helpers in their work environment",
+        "base_prompt": "A friendly community helper at work - firefighter, teacher, or doctor - in a simple work setting, grade 4 appropriate",
+        "objects": [
+          "community_helper",
+          "work_setting",
+          "tools_equipment"
+        ],
+        "relationships": [
+          "person_to_profession",
+          "tools_to_work"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "complex_scenes"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade4.economic-decision-making": {
+    "topic_id": "social_studies.grade4.economic-decision-making",
+    "display_name": "Economic Decision Making (Grade 4 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "4",
+    "strand": "economic-decision-making",
+    "image_presets": [
+      {
+        "id": "goods_services_scene",
+        "name": "Goods and Services",
+        "description": "Visual showing goods or services",
+        "base_prompt": "A simple scene showing goods in a store or someone providing a service, child-friendly",
+        "objects": [
+          "goods_items",
+          "service_provider",
+          "setting"
+        ],
+        "relationships": [
+          "economic_exchange"
+        ],
+        "exclusions": [
+          "money_amounts",
+          "prices",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade4.historical-cultural-thinking": {
+    "topic_id": "social_studies.grade4.historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking (Grade 4 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "4",
+    "strand": "historical-cultural-thinking",
+    "image_presets": [
+      {
+        "id": "historical_scene",
+        "name": "Historical Setting",
+        "description": "Simple historical or cultural scene",
+        "base_prompt": "A simple historical or cultural scene appropriate for grade 4, showing traditional elements without text",
+        "objects": [
+          "historical_elements",
+          "cultural_items",
+          "setting"
+        ],
+        "relationships": [
+          "cultural_context"
+        ],
+        "exclusions": [
+          "text",
+          "specific_dates",
+          "complex_politics"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade4.spatial-thinking": {
+    "topic_id": "social_studies.grade4.spatial-thinking",
+    "display_name": "Spatial Thinking (Grade 4 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "4",
+    "strand": "spatial-thinking",
+    "image_presets": [
+      {
+        "id": "map_style_view",
+        "name": "Map-Style View",
+        "description": "Simplified map or geographical view",
+        "base_prompt": "A simple map-style illustration showing geographical features like mountains, rivers, and coastlines",
+        "objects": [
+          "land",
+          "water",
+          "geographical_features"
+        ],
+        "relationships": [
+          "spatial_arrangement"
+        ],
+        "exclusions": [
+          "text_labels",
+          "place_names",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade5.listening-speaking": {
+    "topic_id": "language_arts.grade5.listening-speaking",
+    "display_name": "Listening & Speaking (Grade 5 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "5",
+    "strand": "listening-speaking",
+    "image_presets": [
+      {
+        "id": "communication_scene",
+        "name": "Communication Scene",
+        "description": "People or characters in communication",
+        "base_prompt": "Two friendly characters appearing to communicate, simple and expressive body language",
+        "objects": [
+          "character_1",
+          "character_2",
+          "setting"
+        ],
+        "relationships": [
+          "interaction",
+          "communication"
+        ],
+        "exclusions": [
+          "speech_bubbles",
+          "text",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade5.reading-viewing": {
+    "topic_id": "language_arts.grade5.reading-viewing",
+    "display_name": "Reading & Viewing (Grade 5 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "5",
+    "strand": "reading-viewing",
+    "image_presets": [
+      {
+        "id": "storybook_scene",
+        "name": "Storybook Scene",
+        "description": "Simple story scene with character and setting",
+        "base_prompt": "A colorful storybook illustration showing a character in a simple setting, child-friendly and engaging",
+        "objects": [
+          "character",
+          "setting_elements",
+          "background"
+        ],
+        "relationships": [
+          "character_in_setting"
+        ],
+        "exclusions": [
+          "text",
+          "speech_bubbles",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "book_cover_style",
+        "name": "Book Cover Scene",
+        "description": "Illustrated scene suitable for a book cover",
+        "base_prompt": "An engaging illustration suitable for a children's book cover, showing an interesting scene without text",
+        "objects": [
+          "scene_elements",
+          "focal_point"
+        ],
+        "relationships": [
+          "visual_composition"
+        ],
+        "exclusions": [
+          "text",
+          "title",
+          "author_name"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade5.writing-representing": {
+    "topic_id": "language_arts.grade5.writing-representing",
+    "display_name": "Writing & Representing (Grade 5 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "5",
+    "strand": "writing-representing",
+    "image_presets": [
+      {
+        "id": "writing_inspiration_scene",
+        "name": "Story Inspiration Scene",
+        "description": "Interesting scene to inspire creative writing",
+        "base_prompt": "An interesting scene that could inspire a story - a mysterious door, a magical forest, or an unusual object",
+        "objects": [
+          "story_elements",
+          "setting",
+          "interesting_object"
+        ],
+        "relationships": [
+          "visual_narrative"
+        ],
+        "exclusions": [
+          "text",
+          "completed_story",
+          "characters_with_dialogue"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade5.data-probability": {
+    "topic_id": "mathematics.grade5.data-probability",
+    "display_name": "Data & Probability (Grade 5 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "5",
+    "strand": "data-probability",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade5.geometrical-thinking": {
+    "topic_id": "mathematics.grade5.geometrical-thinking",
+    "display_name": "Geometrical Thinking (Grade 5 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "5",
+    "strand": "geometrical-thinking",
+    "image_presets": [
+      {
+        "id": "2d_shapes_collection",
+        "name": "2D Shapes Display",
+        "description": "Common 2D shapes in different sizes and colors",
+        "base_prompt": "A collection of basic 2D geometric shapes - circles, squares, triangles, rectangles - in various bright colors",
+        "objects": [
+          "circle",
+          "square",
+          "triangle",
+          "rectangle",
+          "pentagon",
+          "hexagon"
+        ],
+        "relationships": [
+          "shape_comparison",
+          "size_variation"
+        ],
+        "exclusions": [
+          "text_labels",
+          "numbers",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "3d_shapes_display",
+        "name": "3D Shapes Collection",
+        "description": "Common 3D shapes rendered clearly",
+        "base_prompt": "3D geometric solids - cube, sphere, cone, cylinder, pyramid - with visible faces and edges, colorful",
+        "objects": [
+          "cube",
+          "sphere",
+          "cone",
+          "cylinder",
+          "pyramid"
+        ],
+        "relationships": [
+          "dimensional_relationships",
+          "face_edge_vertex"
+        ],
+        "exclusions": [
+          "text",
+          "measurements",
+          "formulas"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade5.measurement": {
+    "topic_id": "mathematics.grade5.measurement",
+    "display_name": "Measurement (Grade 5 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "5",
+    "strand": "measurement",
+    "image_presets": [
+      {
+        "id": "measurement_tools",
+        "name": "Measurement Tools Display",
+        "description": "Common measurement tools for length, mass, capacity",
+        "base_prompt": "A collection of measurement tools - ruler, scale, measuring cup, clock - arranged neatly",
+        "objects": [
+          "ruler",
+          "scale",
+          "measuring_cup",
+          "clock"
+        ],
+        "relationships": [
+          "tool_to_measurement_type"
+        ],
+        "exclusions": [
+          "numbers",
+          "measurements",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "realistic"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade5.number-sense": {
+    "topic_id": "mathematics.grade5.number-sense",
+    "display_name": "Number Sense (Grade 5 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "5",
+    "strand": "number-sense",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 1000, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade5.operations-with-numbers": {
+    "topic_id": "mathematics.grade5.operations-with-numbers",
+    "display_name": "Operations with Numbers (Grade 5 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "5",
+    "strand": "operations-with-numbers",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 1000, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade5.patterns-relationships": {
+    "topic_id": "mathematics.grade5.patterns-relationships",
+    "display_name": "Patterns & Relationships (Grade 5 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "5",
+    "strand": "patterns-relationships",
+    "image_presets": [
+      {
+        "id": "pattern_blocks",
+        "name": "Pattern Block Sequence",
+        "description": "Colorful blocks showing repeating patterns",
+        "base_prompt": "A sequence of colorful pattern blocks arranged to show repeating patterns with shapes and colors",
+        "objects": [
+          "pattern_blocks",
+          "sequence",
+          "repeating_elements"
+        ],
+        "relationships": [
+          "pattern_repetition",
+          "sequence_order"
+        ],
+        "exclusions": [
+          "text",
+          "numbers"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade5.earth-systems": {
+    "topic_id": "science.grade5.earth-systems",
+    "display_name": "Earth Systems (Grade 5 Science)",
+    "subject": "Science",
+    "grade_band": "5",
+    "strand": "earth-systems",
+    "image_presets": [
+      {
+        "id": "weather_types_scene",
+        "name": "Weather Types",
+        "description": "Different weather conditions visualized",
+        "base_prompt": "Four panels showing different weather types - sunny, rainy, cloudy, and windy - with simple icons",
+        "objects": [
+          "sun",
+          "clouds",
+          "rain",
+          "wind_indicators"
+        ],
+        "relationships": [
+          "weather_variation"
+        ],
+        "exclusions": [
+          "text",
+          "temperature_readings",
+          "specific_locations"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade5.engineering": {
+    "topic_id": "science.grade5.engineering",
+    "display_name": "Engineering (Grade 5 Science)",
+    "subject": "Science",
+    "grade_band": "5",
+    "strand": "engineering",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Engineering Visual",
+        "description": "Scientific visualization for Engineering",
+        "base_prompt": "An educational science scene related to Engineering, clear and age-appropriate for grade 5",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade5.matter-energy-organisms-ecosystems": {
+    "topic_id": "science.grade5.matter-energy-organisms-ecosystems",
+    "display_name": "Matter, Energy, Organisms & Ecosystems (Grade 5 Science)",
+    "subject": "Science",
+    "grade_band": "5",
+    "strand": "matter-energy-organisms-ecosystems",
+    "image_presets": [
+      {
+        "id": "plant_parts_diagram",
+        "name": "Plant Parts",
+        "description": "Complete plant showing all parts",
+        "base_prompt": "A simple flowering plant showing visible roots, stem, leaves, and flower",
+        "objects": [
+          "roots",
+          "stem",
+          "leaves",
+          "flower",
+          "soil"
+        ],
+        "relationships": [
+          "parts_of_whole",
+          "above_below_ground"
+        ],
+        "exclusions": [
+          "text_labels",
+          "measurements",
+          "multiple_species"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "animal_habitat",
+        "name": "Animal in Habitat",
+        "description": "Animal in its natural environment",
+        "base_prompt": "A friendly animal in its natural habitat, simple and colorful, appropriate for grade 5",
+        "objects": [
+          "animal",
+          "habitat_elements",
+          "environment"
+        ],
+        "relationships": [
+          "animal_to_environment"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "scary_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "science.grade5.space-systems": {
+    "topic_id": "science.grade5.space-systems",
+    "display_name": "Space Systems (Grade 5 Science)",
+    "subject": "Science",
+    "grade_band": "5",
+    "strand": "space-systems",
+    "image_presets": [
+      {
+        "id": "solar_system_overview",
+        "name": "Solar System Overview",
+        "description": "Complete solar system with planets",
+        "base_prompt": "A complete solar system showing the sun and all planets in their orbital paths",
+        "objects": [
+          "sun",
+          "mercury",
+          "venus",
+          "earth",
+          "mars",
+          "jupiter",
+          "saturn",
+          "uranus",
+          "neptune"
+        ],
+        "relationships": [
+          "orbiting",
+          "relative_size"
+        ],
+        "exclusions": [
+          "text_labels",
+          "measurements",
+          "moons",
+          "spacecraft"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "planet_close_up",
+        "name": "Planet Details",
+        "description": "Individual planet with surface features",
+        "base_prompt": "A detailed view of a single planet showing surface features and atmosphere",
+        "objects": [
+          "single_planet",
+          "surface_features",
+          "atmosphere"
+        ],
+        "relationships": [
+          "surface_to_planet"
+        ],
+        "exclusions": [
+          "text",
+          "other_planets",
+          "moons"
+        ],
+        "recommended_styles": [
+          "realistic",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade5.structure-properties-matter": {
+    "topic_id": "science.grade5.structure-properties-matter",
+    "display_name": "Structure & Properties of Matter (Grade 5 Science)",
+    "subject": "Science",
+    "grade_band": "5",
+    "strand": "structure-properties-matter",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Structure & Properties of Matter Visual",
+        "description": "Scientific visualization for Structure & Properties of Matter",
+        "base_prompt": "An educational science scene related to Structure & Properties of Matter, clear and age-appropriate for grade 5",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade5.civic-participation": {
+    "topic_id": "social_studies.grade5.civic-participation",
+    "display_name": "Civic Participation (Grade 5 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "5",
+    "strand": "civic-participation",
+    "image_presets": [
+      {
+        "id": "community_scene",
+        "name": "Community Helper Scene",
+        "description": "Community helpers in their work environment",
+        "base_prompt": "A friendly community helper at work - firefighter, teacher, or doctor - in a simple work setting, grade 5 appropriate",
+        "objects": [
+          "community_helper",
+          "work_setting",
+          "tools_equipment"
+        ],
+        "relationships": [
+          "person_to_profession",
+          "tools_to_work"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "complex_scenes"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade5.economic-decision-making": {
+    "topic_id": "social_studies.grade5.economic-decision-making",
+    "display_name": "Economic Decision Making (Grade 5 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "5",
+    "strand": "economic-decision-making",
+    "image_presets": [
+      {
+        "id": "goods_services_scene",
+        "name": "Goods and Services",
+        "description": "Visual showing goods or services",
+        "base_prompt": "A simple scene showing goods in a store or someone providing a service, child-friendly",
+        "objects": [
+          "goods_items",
+          "service_provider",
+          "setting"
+        ],
+        "relationships": [
+          "economic_exchange"
+        ],
+        "exclusions": [
+          "money_amounts",
+          "prices",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade5.historical-cultural-thinking": {
+    "topic_id": "social_studies.grade5.historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking (Grade 5 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "5",
+    "strand": "historical-cultural-thinking",
+    "image_presets": [
+      {
+        "id": "historical_scene",
+        "name": "Historical Setting",
+        "description": "Simple historical or cultural scene",
+        "base_prompt": "A simple historical or cultural scene appropriate for grade 5, showing traditional elements without text",
+        "objects": [
+          "historical_elements",
+          "cultural_items",
+          "setting"
+        ],
+        "relationships": [
+          "cultural_context"
+        ],
+        "exclusions": [
+          "text",
+          "specific_dates",
+          "complex_politics"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade5.spatial-thinking": {
+    "topic_id": "social_studies.grade5.spatial-thinking",
+    "display_name": "Spatial Thinking (Grade 5 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "5",
+    "strand": "spatial-thinking",
+    "image_presets": [
+      {
+        "id": "map_style_view",
+        "name": "Map-Style View",
+        "description": "Simplified map or geographical view",
+        "base_prompt": "A simple map-style illustration showing geographical features like mountains, rivers, and coastlines",
+        "objects": [
+          "land",
+          "water",
+          "geographical_features"
+        ],
+        "relationships": [
+          "spatial_arrangement"
+        ],
+        "exclusions": [
+          "text_labels",
+          "place_names",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade6.listening-speaking": {
+    "topic_id": "language_arts.grade6.listening-speaking",
+    "display_name": "Listening & Speaking (Grade 6 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "6",
+    "strand": "listening-speaking",
+    "image_presets": [
+      {
+        "id": "communication_scene",
+        "name": "Communication Scene",
+        "description": "People or characters in communication",
+        "base_prompt": "Two friendly characters appearing to communicate, simple and expressive body language",
+        "objects": [
+          "character_1",
+          "character_2",
+          "setting"
+        ],
+        "relationships": [
+          "interaction",
+          "communication"
+        ],
+        "exclusions": [
+          "speech_bubbles",
+          "text",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade6.reading-viewing": {
+    "topic_id": "language_arts.grade6.reading-viewing",
+    "display_name": "Reading & Viewing (Grade 6 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "6",
+    "strand": "reading-viewing",
+    "image_presets": [
+      {
+        "id": "storybook_scene",
+        "name": "Storybook Scene",
+        "description": "Simple story scene with character and setting",
+        "base_prompt": "A colorful storybook illustration showing a character in a simple setting, child-friendly and engaging",
+        "objects": [
+          "character",
+          "setting_elements",
+          "background"
+        ],
+        "relationships": [
+          "character_in_setting"
+        ],
+        "exclusions": [
+          "text",
+          "speech_bubbles",
+          "words"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "book_cover_style",
+        "name": "Book Cover Scene",
+        "description": "Illustrated scene suitable for a book cover",
+        "base_prompt": "An engaging illustration suitable for a children's book cover, showing an interesting scene without text",
+        "objects": [
+          "scene_elements",
+          "focal_point"
+        ],
+        "relationships": [
+          "visual_composition"
+        ],
+        "exclusions": [
+          "text",
+          "title",
+          "author_name"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "language_arts.grade6.writing-representing": {
+    "topic_id": "language_arts.grade6.writing-representing",
+    "display_name": "Writing & Representing (Grade 6 Language Arts)",
+    "subject": "Language Arts",
+    "grade_band": "6",
+    "strand": "writing-representing",
+    "image_presets": [
+      {
+        "id": "writing_inspiration_scene",
+        "name": "Story Inspiration Scene",
+        "description": "Interesting scene to inspire creative writing",
+        "base_prompt": "An interesting scene that could inspire a story - a mysterious door, a magical forest, or an unusual object",
+        "objects": [
+          "story_elements",
+          "setting",
+          "interesting_object"
+        ],
+        "relationships": [
+          "visual_narrative"
+        ],
+        "exclusions": [
+          "text",
+          "completed_story",
+          "characters_with_dialogue"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade6.data-probability": {
+    "topic_id": "mathematics.grade6.data-probability",
+    "display_name": "Data & Probability (Grade 6 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "6",
+    "strand": "data-probability",
+    "image_presets": [
+      {
+        "id": "simple_graph_template",
+        "name": "Graph Template",
+        "description": "Empty graph structure for data display",
+        "base_prompt": "A simple bar graph template with grid lines and axes, colorful but no data filled in",
+        "objects": [
+          "axes",
+          "grid_lines",
+          "bars_empty"
+        ],
+        "relationships": [
+          "axis_orientation"
+        ],
+        "exclusions": [
+          "numbers",
+          "data_values",
+          "text_labels"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade6.geometrical-thinking": {
+    "topic_id": "mathematics.grade6.geometrical-thinking",
+    "display_name": "Geometrical Thinking (Grade 6 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "6",
+    "strand": "geometrical-thinking",
+    "image_presets": [
+      {
+        "id": "2d_shapes_collection",
+        "name": "2D Shapes Display",
+        "description": "Common 2D shapes in different sizes and colors",
+        "base_prompt": "A collection of basic 2D geometric shapes - circles, squares, triangles, rectangles - in various bright colors",
+        "objects": [
+          "circle",
+          "square",
+          "triangle",
+          "rectangle",
+          "pentagon",
+          "hexagon"
+        ],
+        "relationships": [
+          "shape_comparison",
+          "size_variation"
+        ],
+        "exclusions": [
+          "text_labels",
+          "numbers",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "3d_shapes_display",
+        "name": "3D Shapes Collection",
+        "description": "Common 3D shapes rendered clearly",
+        "base_prompt": "3D geometric solids - cube, sphere, cone, cylinder, pyramid - with visible faces and edges, colorful",
+        "objects": [
+          "cube",
+          "sphere",
+          "cone",
+          "cylinder",
+          "pyramid"
+        ],
+        "relationships": [
+          "dimensional_relationships",
+          "face_edge_vertex"
+        ],
+        "exclusions": [
+          "text",
+          "measurements",
+          "formulas"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade6.measurement": {
+    "topic_id": "mathematics.grade6.measurement",
+    "display_name": "Measurement (Grade 6 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "6",
+    "strand": "measurement",
+    "image_presets": [
+      {
+        "id": "measurement_tools",
+        "name": "Measurement Tools Display",
+        "description": "Common measurement tools for length, mass, capacity",
+        "base_prompt": "A collection of measurement tools - ruler, scale, measuring cup, clock - arranged neatly",
+        "objects": [
+          "ruler",
+          "scale",
+          "measuring_cup",
+          "clock"
+        ],
+        "relationships": [
+          "tool_to_measurement_type"
+        ],
+        "exclusions": [
+          "numbers",
+          "measurements",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "realistic"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade6.number-sense": {
+    "topic_id": "mathematics.grade6.number-sense",
+    "display_name": "Number Sense (Grade 6 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "6",
+    "strand": "number-sense",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 1000, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade6.operations-with-numbers": {
+    "topic_id": "mathematics.grade6.operations-with-numbers",
+    "display_name": "Operations with Numbers (Grade 6 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "6",
+    "strand": "operations-with-numbers",
+    "image_presets": [
+      {
+        "id": "number_line_model",
+        "name": "Number Line Visual",
+        "description": "Number line showing counting and ordering",
+        "base_prompt": "A colorful number line from 0 to 1000, clear markings, educational style",
+        "objects": [
+          "number_line",
+          "numbers",
+          "tick_marks"
+        ],
+        "relationships": [
+          "sequential_order",
+          "equal_spacing"
+        ],
+        "exclusions": [
+          "text_labels",
+          "equations",
+          "word_problems"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "cartoon_3d"
+        ]
+      },
+      {
+        "id": "counting_objects",
+        "name": "Counting Objects",
+        "description": "Groups of objects for counting practice",
+        "base_prompt": "Groups of colorful objects arranged for counting, simple and clear, child-friendly items like blocks or fruits",
+        "objects": [
+          "counting_objects",
+          "groups",
+          "individual_items"
+        ],
+        "relationships": [
+          "grouping",
+          "one_to_one_correspondence"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "place_value_chart",
+        "name": "Place Value Model",
+        "description": "Visual model showing place value concepts",
+        "base_prompt": "A place value chart with base-10 blocks showing ones, tens, and hundreds in different colors",
+        "objects": [
+          "ones_blocks",
+          "tens_blocks",
+          "hundreds_blocks"
+        ],
+        "relationships": [
+          "place_value_grouping",
+          "size_relationships"
+        ],
+        "exclusions": [
+          "numbers",
+          "text"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "mathematics.grade6.patterns-relationships": {
+    "topic_id": "mathematics.grade6.patterns-relationships",
+    "display_name": "Patterns & Relationships (Grade 6 Mathematics)",
+    "subject": "Mathematics",
+    "grade_band": "6",
+    "strand": "patterns-relationships",
+    "image_presets": [
+      {
+        "id": "pattern_blocks",
+        "name": "Pattern Block Sequence",
+        "description": "Colorful blocks showing repeating patterns",
+        "base_prompt": "A sequence of colorful pattern blocks arranged to show repeating patterns with shapes and colors",
+        "objects": [
+          "pattern_blocks",
+          "sequence",
+          "repeating_elements"
+        ],
+        "relationships": [
+          "pattern_repetition",
+          "sequence_order"
+        ],
+        "exclusions": [
+          "text",
+          "numbers"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade6.chemical-reactions": {
+    "topic_id": "science.grade6.chemical-reactions",
+    "display_name": "Chemical Reactions (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "chemical-reactions",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Chemical Reactions Visual",
+        "description": "Scientific visualization for Chemical Reactions",
+        "base_prompt": "An educational science scene related to Chemical Reactions, clear and age-appropriate for grade 6",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade6.earth-systems": {
+    "topic_id": "science.grade6.earth-systems",
+    "display_name": "Earth Systems (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "earth-systems",
+    "image_presets": [
+      {
+        "id": "weather_types_scene",
+        "name": "Weather Types",
+        "description": "Different weather conditions visualized",
+        "base_prompt": "Four panels showing different weather types - sunny, rainy, cloudy, and windy - with simple icons",
+        "objects": [
+          "sun",
+          "clouds",
+          "rain",
+          "wind_indicators"
+        ],
+        "relationships": [
+          "weather_variation"
+        ],
+        "exclusions": [
+          "text",
+          "temperature_readings",
+          "specific_locations"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade6.forces-interactions": {
+    "topic_id": "science.grade6.forces-interactions",
+    "display_name": "Forces & Interactions (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "forces-interactions",
+    "image_presets": [
+      {
+        "id": "forces_in_action",
+        "name": "Forces Demonstration",
+        "description": "Objects showing push and pull forces",
+        "base_prompt": "Simple objects demonstrating forces - a ball being pushed, a wagon being pulled, showing motion",
+        "objects": [
+          "ball",
+          "wagon",
+          "motion_indicators"
+        ],
+        "relationships": [
+          "force_to_motion",
+          "cause_effect"
+        ],
+        "exclusions": [
+          "text",
+          "arrows_with_labels",
+          "people"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "science.grade6.inheritance-variation": {
+    "topic_id": "science.grade6.inheritance-variation",
+    "display_name": "Inheritance & Variation (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "inheritance-variation",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Inheritance & Variation Visual",
+        "description": "Scientific visualization for Inheritance & Variation",
+        "base_prompt": "An educational science scene related to Inheritance & Variation, clear and age-appropriate for grade 6",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade6.space-systems": {
+    "topic_id": "science.grade6.space-systems",
+    "display_name": "Space Systems (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "space-systems",
+    "image_presets": [
+      {
+        "id": "solar_system_overview",
+        "name": "Solar System Overview",
+        "description": "Complete solar system with planets",
+        "base_prompt": "A complete solar system showing the sun and all planets in their orbital paths",
+        "objects": [
+          "sun",
+          "mercury",
+          "venus",
+          "earth",
+          "mars",
+          "jupiter",
+          "saturn",
+          "uranus",
+          "neptune"
+        ],
+        "relationships": [
+          "orbiting",
+          "relative_size"
+        ],
+        "exclusions": [
+          "text_labels",
+          "measurements",
+          "moons",
+          "spacecraft"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "planet_close_up",
+        "name": "Planet Details",
+        "description": "Individual planet with surface features",
+        "base_prompt": "A detailed view of a single planet showing surface features and atmosphere",
+        "objects": [
+          "single_planet",
+          "surface_features",
+          "atmosphere"
+        ],
+        "relationships": [
+          "surface_to_planet"
+        ],
+        "exclusions": [
+          "text",
+          "other_planets",
+          "moons"
+        ],
+        "recommended_styles": [
+          "realistic",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade6.structure-properties-matter": {
+    "topic_id": "science.grade6.structure-properties-matter",
+    "display_name": "Structure & Properties of Matter (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "structure-properties-matter",
+    "image_presets": [
+      {
+        "id": "general_science_scene",
+        "name": "Structure & Properties of Matter Visual",
+        "description": "Scientific visualization for Structure & Properties of Matter",
+        "base_prompt": "An educational science scene related to Structure & Properties of Matter, clear and age-appropriate for grade 6",
+        "objects": [
+          "scientific_elements",
+          "educational_components"
+        ],
+        "relationships": [
+          "scientific_relationships"
+        ],
+        "exclusions": [
+          "complex_text",
+          "advanced_concepts",
+          "dangerous_elements"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "science.grade6.waves-electromagnetic": {
+    "topic_id": "science.grade6.waves-electromagnetic",
+    "display_name": "Waves & Electromagnetic (Grade 6 Science)",
+    "subject": "Science",
+    "grade_band": "6",
+    "strand": "waves-electromagnetic",
+    "image_presets": [
+      {
+        "id": "wave_diagram",
+        "name": "Wave Visualization",
+        "description": "Visual representation of waves",
+        "base_prompt": "Colorful wave patterns showing peaks and troughs, simple wave diagram",
+        "objects": [
+          "waves",
+          "crests",
+          "troughs"
+        ],
+        "relationships": [
+          "wave_pattern",
+          "repetition"
+        ],
+        "exclusions": [
+          "text",
+          "labels",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "line_art_bw",
+          "illustrated_painting"
+        ]
+      },
+      {
+        "id": "light_rays_scene",
+        "name": "Light and Shadows",
+        "description": "Light source creating shadows",
+        "base_prompt": "A light source casting rays and creating shadows on simple objects",
+        "objects": [
+          "light_source",
+          "light_rays",
+          "objects",
+          "shadows"
+        ],
+        "relationships": [
+          "light_to_shadow",
+          "directional_rays"
+        ],
+        "exclusions": [
+          "text",
+          "complex_objects"
+        ],
+        "recommended_styles": [
+          "cartoon_3d",
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade6.civic-participation": {
+    "topic_id": "social_studies.grade6.civic-participation",
+    "display_name": "Civic Participation (Grade 6 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "6",
+    "strand": "civic-participation",
+    "image_presets": [
+      {
+        "id": "community_scene",
+        "name": "Community Helper Scene",
+        "description": "Community helpers in their work environment",
+        "base_prompt": "A friendly community helper at work - firefighter, teacher, or doctor - in a simple work setting, grade 6 appropriate",
+        "objects": [
+          "community_helper",
+          "work_setting",
+          "tools_equipment"
+        ],
+        "relationships": [
+          "person_to_profession",
+          "tools_to_work"
+        ],
+        "exclusions": [
+          "text",
+          "dangerous_situations",
+          "complex_scenes"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade6.economic-decision-making": {
+    "topic_id": "social_studies.grade6.economic-decision-making",
+    "display_name": "Economic Decision Making (Grade 6 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "6",
+    "strand": "economic-decision-making",
+    "image_presets": [
+      {
+        "id": "goods_services_scene",
+        "name": "Goods and Services",
+        "description": "Visual showing goods or services",
+        "base_prompt": "A simple scene showing goods in a store or someone providing a service, child-friendly",
+        "objects": [
+          "goods_items",
+          "service_provider",
+          "setting"
+        ],
+        "relationships": [
+          "economic_exchange"
+        ],
+        "exclusions": [
+          "money_amounts",
+          "prices",
+          "text"
+        ],
+        "recommended_styles": [
+          "cartoon_3d"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade6.historical-cultural-thinking": {
+    "topic_id": "social_studies.grade6.historical-cultural-thinking",
+    "display_name": "Historical & Cultural Thinking (Grade 6 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "6",
+    "strand": "historical-cultural-thinking",
+    "image_presets": [
+      {
+        "id": "historical_scene",
+        "name": "Historical Setting",
+        "description": "Simple historical or cultural scene",
+        "base_prompt": "A simple historical or cultural scene appropriate for grade 6, showing traditional elements without text",
+        "objects": [
+          "historical_elements",
+          "cultural_items",
+          "setting"
+        ],
+        "relationships": [
+          "cultural_context"
+        ],
+        "exclusions": [
+          "text",
+          "specific_dates",
+          "complex_politics"
+        ],
+        "recommended_styles": [
+          "illustrated_painting"
+        ]
+      }
+    ]
+  },
+  "social_studies.grade6.spatial-thinking": {
+    "topic_id": "social_studies.grade6.spatial-thinking",
+    "display_name": "Spatial Thinking (Grade 6 Social Studies)",
+    "subject": "Social Studies",
+    "grade_band": "6",
+    "strand": "spatial-thinking",
+    "image_presets": [
+      {
+        "id": "map_style_view",
+        "name": "Map-Style View",
+        "description": "Simplified map or geographical view",
+        "base_prompt": "A simple map-style illustration showing geographical features like mountains, rivers, and coastlines",
+        "objects": [
+          "land",
+          "water",
+          "geographical_features"
+        ],
+        "relationships": [
+          "spatial_arrangement"
+        ],
+        "exclusions": [
+          "text_labels",
+          "place_names",
+          "measurements"
+        ],
+        "recommended_styles": [
+          "illustrated_painting",
+          "cartoon_3d"
+        ]
+      }
+    ]
+  }
+}

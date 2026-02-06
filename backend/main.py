@@ -248,6 +248,10 @@ app = FastAPI(lifespan=lifespan)
 # Include milestone routes
 app.include_router(milestones.router)
 
+# Include scene-based image generation routes
+from scene_api_endpoints import router as scene_router
+app.include_router(scene_router)
+
 # Add CORS middleware AFTER creating app
 app.add_middleware(
     CORSMiddleware,
