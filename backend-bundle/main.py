@@ -248,6 +248,10 @@ app = FastAPI(lifespan=lifespan)
 # Include milestone routes
 app.include_router(milestones.router)
 
+# Include scene-based image generation routes
+from scene_api_endpoints import router as scene_router
+app.include_router(scene_router)
+
 # Add CORS middleware AFTER creating app
 app.add_middleware(
     CORSMiddleware,
@@ -2053,6 +2057,9 @@ EXPORT_TYPE_FORMATS = {
     "plan": {"pdf", "docx"},
     "quiz": {"pdf", "docx"},
     "rubric": {"pdf", "docx"},
+    "kindergarten": {"pdf", "docx"},
+    "multigrade": {"pdf", "docx"},
+    "cross-curricular": {"pdf", "docx"},
     "curriculum": {"pdf", "docx", "csv", "json", "md", "markdown"},
     "chat_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
     "lesson_plan_history": {"pdf", "docx", "csv", "json", "md", "markdown"},

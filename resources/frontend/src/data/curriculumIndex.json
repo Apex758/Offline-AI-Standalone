@@ -2,7 +2,7 @@
   "indexedPages": [
     {
       "id": "grade1-language-arts-listening-speaking",
-      "route": "/curriculum/grade1-subjects/activities/language-arts/listening-speaking",
+      "route": "/curriculum/grade1-subjects/language-arts/listening-speaking",
       "displayName": "Listening & Speaking",
       "grade": "1",
       "subject": "Language Arts",
@@ -37,7 +37,7 @@
     },
     {
       "id": "grade1-language-arts-reading-viewing",
-      "route": "/curriculum/grade1-subjects/activities/language-arts/reading-viewing",
+      "route": "/curriculum/grade1-subjects/language-arts/reading-viewing",
       "displayName": "Reading & Viewing",
       "grade": "1",
       "subject": "Language Arts",
@@ -63,7 +63,7 @@
     },
     {
       "id": "grade1-language-arts-writing-representing",
-      "route": "/curriculum/grade1-subjects/activities/language-arts/writing-representing",
+      "route": "/curriculum/grade1-subjects/language-arts/writing-representing",
       "displayName": "Writing & Representing",
       "grade": "1",
       "subject": "Language Arts",
@@ -103,7 +103,7 @@
     },
     {
       "id": "grade1-mathematics-data-probability",
-      "route": "/curriculum/grade1-subjects/activities/mathematics/data-probability",
+      "route": "/curriculum/grade1-subjects/mathematics/data-probability",
       "displayName": "Data & Probability",
       "grade": "1",
       "subject": "Mathematics",
@@ -135,7 +135,7 @@
     },
     {
       "id": "grade1-mathematics-geometrical-thinking",
-      "route": "/curriculum/grade1-subjects/activities/mathematics/geometrical-thinking",
+      "route": "/curriculum/grade1-subjects/mathematics/geometrical-thinking",
       "displayName": "Geometrical Thinking",
       "grade": "1",
       "subject": "Mathematics",
@@ -180,7 +180,7 @@
     },
     {
       "id": "grade1-mathematics-measurement",
-      "route": "/curriculum/grade1-subjects/activities/mathematics/measurement",
+      "route": "/curriculum/grade1-subjects/mathematics/measurement",
       "displayName": "Measurement",
       "grade": "1",
       "subject": "Mathematics",
@@ -219,7 +219,7 @@
     },
     {
       "id": "grade1-mathematics-number-sense",
-      "route": "/curriculum/grade1-subjects/activities/mathematics/number-sense",
+      "route": "/curriculum/grade1-subjects/mathematics/number-sense",
       "displayName": "Number Sense",
       "grade": "1",
       "subject": "Mathematics",
@@ -237,7 +237,7 @@
     },
     {
       "id": "grade1-mathematics-operations-with-numbers",
-      "route": "/curriculum/grade1-subjects/activities/mathematics/operations-with-numbers",
+      "route": "/curriculum/grade1-subjects/mathematics/operations-with-numbers",
       "displayName": "Operations with Numbers",
       "grade": "1",
       "subject": "Mathematics",
@@ -267,7 +267,7 @@
     },
     {
       "id": "grade1-mathematics-patterns-relationships",
-      "route": "/curriculum/grade1-subjects/activities/mathematics/patterns-relationships",
+      "route": "/curriculum/grade1-subjects/mathematics/patterns-relationships",
       "displayName": "Patterns & Relationships",
       "grade": "1",
       "subject": "Mathematics",
@@ -303,7 +303,7 @@
     },
     {
       "id": "grade1-science-scientific-inquiry",
-      "route": "/curriculum/grade1-subjects/activities/science/scientific-inquiry",
+      "route": "/curriculum/grade1-subjects/science/scientific-inquiry",
       "displayName": "Scientific Inquiry",
       "grade": "1",
       "subject": "Science",
@@ -338,7 +338,7 @@
     },
     {
       "id": "grade1-science-space-systems",
-      "route": "/curriculum/grade1-subjects/activities/science/space-systems",
+      "route": "/curriculum/grade1-subjects/science/space-systems",
       "displayName": "Space Systems",
       "grade": "1",
       "subject": "Science",
@@ -363,7 +363,7 @@
     },
     {
       "id": "grade1-science-structure-function-processing",
-      "route": "/curriculum/grade1-subjects/activities/science/structure-function-processing",
+      "route": "/curriculum/grade1-subjects/science/structure-function-processing",
       "displayName": "Structure, Function & Processing",
       "grade": "1",
       "subject": "Science",
@@ -393,7 +393,7 @@
     },
     {
       "id": "grade1-science-waves-lights-sounds",
-      "route": "/curriculum/grade1-subjects/activities/science/waves-lights-sounds",
+      "route": "/curriculum/grade1-subjects/science/waves-lights-sounds",
       "displayName": "Waves, Light & Sounds",
       "grade": "1",
       "subject": "Science",
@@ -426,7 +426,7 @@
     },
     {
       "id": "grade1-social-studies-civic-participation",
-      "route": "/curriculum/grade1-subjects/activities/social-studies/civic-participation",
+      "route": "/curriculum/grade1-subjects/social-studies/civic-participation",
       "displayName": "Civic Participation",
       "grade": "1",
       "subject": "Social Studies",
@@ -451,7 +451,7 @@
     },
     {
       "id": "grade1-social-studies-economic-decision-making",
-      "route": "/curriculum/grade1-subjects/activities/social-studies/economic-decision-making",
+      "route": "/curriculum/grade1-subjects/social-studies/economic-decision-making",
       "displayName": "Economic Decision Making",
       "grade": "1",
       "subject": "Social Studies",
@@ -474,7 +474,7 @@
     },
     {
       "id": "grade1-social-studies-historical-cultural-thinking",
-      "route": "/curriculum/grade1-subjects/activities/social-studies/historical-cultural-thinking",
+      "route": "/curriculum/grade1-subjects/social-studies/historical-cultural-thinking",
       "displayName": "Historical & Cultural Thinking",
       "grade": "1",
       "subject": "Social Studies",
@@ -496,7 +496,7 @@
     },
     {
       "id": "grade1-social-studies-spatial-thinking",
-      "route": "/curriculum/grade1-subjects/activities/social-studies/spatial-thinking",
+      "route": "/curriculum/grade1-subjects/social-studies/spatial-thinking",
       "displayName": "Spatial Thinking",
       "grade": "1",
       "subject": "Social Studies",
@@ -522,7 +522,7 @@
     },
     {
       "id": "grade2-language-arts-listening-speaking",
-      "route": "/curriculum/grade2-subjects/activities/language-arts/listening-speaking",
+      "route": "/curriculum/grade2-subjects/language-arts/listening-speaking",
       "displayName": "Listening & Speaking",
       "grade": "2",
       "subject": "Language Arts",
@@ -557,7 +557,7 @@
     },
     {
       "id": "grade2-language-arts-reading-viewing",
-      "route": "/curriculum/grade2-subjects/activities/language-arts/reading-viewing",
+      "route": "/curriculum/grade2-subjects/language-arts/reading-viewing",
       "displayName": "Reading & Viewing",
       "grade": "2",
       "subject": "Language Arts",
@@ -588,7 +588,7 @@
     },
     {
       "id": "grade2-language-arts-writing-representing",
-      "route": "/curriculum/grade2-subjects/activities/language-arts/writing-representing",
+      "route": "/curriculum/grade2-subjects/language-arts/writing-representing",
       "displayName": "Writing & Representing",
       "grade": "2",
       "subject": "Language Arts",
@@ -623,7 +623,7 @@
     },
     {
       "id": "grade2-mathematics-data-handling",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/data-handling",
+      "route": "/curriculum/grade2-subjects/mathematics/data-handling",
       "displayName": "Data Handling",
       "grade": "2",
       "subject": "Mathematics",
@@ -650,7 +650,7 @@
     },
     {
       "id": "grade2-mathematics-data-probability",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/data-probability",
+      "route": "/curriculum/grade2-subjects/mathematics/data-probability",
       "displayName": "Data & Probability",
       "grade": "2",
       "subject": "Mathematics",
@@ -671,7 +671,7 @@
     },
     {
       "id": "grade2-mathematics-geometrical-thinking",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/geometrical-thinking",
+      "route": "/curriculum/grade2-subjects/mathematics/geometrical-thinking",
       "displayName": "Geometrical Thinking",
       "grade": "2",
       "subject": "Mathematics",
@@ -712,7 +712,7 @@
     },
     {
       "id": "grade2-mathematics-measurement",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/measurement",
+      "route": "/curriculum/grade2-subjects/mathematics/measurement",
       "displayName": "Measurement",
       "grade": "2",
       "subject": "Mathematics",
@@ -744,7 +744,7 @@
     },
     {
       "id": "grade2-mathematics-number-sense",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/number-sense",
+      "route": "/curriculum/grade2-subjects/mathematics/number-sense",
       "displayName": "Number Sense",
       "grade": "2",
       "subject": "Mathematics",
@@ -773,7 +773,7 @@
     },
     {
       "id": "grade2-mathematics-operations",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/operations",
+      "route": "/curriculum/grade2-subjects/mathematics/operations",
       "displayName": "Operations",
       "grade": "2",
       "subject": "Mathematics",
@@ -800,7 +800,7 @@
     },
     {
       "id": "grade2-mathematics-patterns-relationships",
-      "route": "/curriculum/grade2-subjects/activities/mathematics/patterns-relationships",
+      "route": "/curriculum/grade2-subjects/mathematics/patterns-relationships",
       "displayName": "Patterns & Relationships",
       "grade": "2",
       "subject": "Mathematics",
@@ -826,7 +826,7 @@
     },
     {
       "id": "grade2-science-earth-systems-processes",
-      "route": "/curriculum/grade2-subjects/activities/science/earth-systems-processes",
+      "route": "/curriculum/grade2-subjects/science/earth-systems-processes",
       "displayName": "Earth Systems & Processes",
       "grade": "2",
       "subject": "Science",
@@ -864,7 +864,7 @@
     },
     {
       "id": "grade2-science-engineering-design",
-      "route": "/curriculum/grade2-subjects/activities/science/engineering-design",
+      "route": "/curriculum/grade2-subjects/science/engineering-design",
       "displayName": "Engineering Design",
       "grade": "2",
       "subject": "Science",
@@ -894,7 +894,7 @@
     },
     {
       "id": "grade2-science-interdependent-relationships",
-      "route": "/curriculum/grade2-subjects/activities/science/interdependent-relationships",
+      "route": "/curriculum/grade2-subjects/science/interdependent-relationships",
       "displayName": "Interdependent Relationships",
       "grade": "2",
       "subject": "Science",
@@ -926,7 +926,7 @@
     },
     {
       "id": "grade2-science-structure-properties-matter",
-      "route": "/curriculum/grade2-subjects/activities/science/structure-properties-matter",
+      "route": "/curriculum/grade2-subjects/science/structure-properties-matter",
       "displayName": "Structure & Properties of Matter",
       "grade": "2",
       "subject": "Science",
@@ -950,7 +950,7 @@
     },
     {
       "id": "grade2-social-studies-civic-participation",
-      "route": "/curriculum/grade2-subjects/activities/social-studies/civic-participation",
+      "route": "/curriculum/grade2-subjects/social-studies/civic-participation",
       "displayName": "Civic Participation",
       "grade": "2",
       "subject": "Social Studies",
@@ -980,7 +980,7 @@
     },
     {
       "id": "grade2-social-studies-economic-decision-making",
-      "route": "/curriculum/grade2-subjects/activities/social-studies/economic-decision-making",
+      "route": "/curriculum/grade2-subjects/social-studies/economic-decision-making",
       "displayName": "Economic Decision Making",
       "grade": "2",
       "subject": "Social Studies",
@@ -1010,7 +1010,7 @@
     },
     {
       "id": "grade2-social-studies-historical-cultural-thinking",
-      "route": "/curriculum/grade2-subjects/activities/social-studies/historical-cultural-thinking",
+      "route": "/curriculum/grade2-subjects/social-studies/historical-cultural-thinking",
       "displayName": "Historical & Cultural Thinking",
       "grade": "2",
       "subject": "Social Studies",
@@ -1047,7 +1047,7 @@
     },
     {
       "id": "grade2-social-studies-spatial-thinking",
-      "route": "/curriculum/grade2-subjects/activities/social-studies/spatial-thinking",
+      "route": "/curriculum/grade2-subjects/social-studies/spatial-thinking",
       "displayName": "Spatial Thinking",
       "grade": "2",
       "subject": "Social Studies",
@@ -1083,7 +1083,7 @@
     },
     {
       "id": "grade3-language-arts-listening-speaking",
-      "route": "/curriculum/grade3-subjects/activities/language-arts/listening-speaking",
+      "route": "/curriculum/grade3-subjects/language-arts/listening-speaking",
       "displayName": "Listening & Speaking",
       "grade": "3",
       "subject": "Language Arts",
@@ -1101,7 +1101,7 @@
     },
     {
       "id": "grade3-language-arts-reading-viewing",
-      "route": "/curriculum/grade3-subjects/activities/language-arts/reading-viewing",
+      "route": "/curriculum/grade3-subjects/language-arts/reading-viewing",
       "displayName": "Reading & Viewing",
       "grade": "3",
       "subject": "Language Arts",
@@ -1120,7 +1120,7 @@
     },
     {
       "id": "grade3-language-arts-writing-representing",
-      "route": "/curriculum/grade3-subjects/activities/language-arts/writing-representing",
+      "route": "/curriculum/grade3-subjects/language-arts/writing-representing",
       "displayName": "Writing & Representing",
       "grade": "3",
       "subject": "Language Arts",
@@ -1138,7 +1138,7 @@
     },
     {
       "id": "grade3-mathematics-data-probability",
-      "route": "/curriculum/grade3-subjects/activities/mathematics/data-probability",
+      "route": "/curriculum/grade3-subjects/mathematics/data-probability",
       "displayName": "Data & Probability",
       "grade": "3",
       "subject": "Mathematics",
@@ -1167,7 +1167,7 @@
     },
     {
       "id": "grade3-mathematics-geometrical-thinking",
-      "route": "/curriculum/grade3-subjects/activities/mathematics/geometrical-thinking",
+      "route": "/curriculum/grade3-subjects/mathematics/geometrical-thinking",
       "displayName": "Geometrical Thinking",
       "grade": "3",
       "subject": "Mathematics",
@@ -1200,7 +1200,7 @@
     },
     {
       "id": "grade3-mathematics-measurement",
-      "route": "/curriculum/grade3-subjects/activities/mathematics/measurement",
+      "route": "/curriculum/grade3-subjects/mathematics/measurement",
       "displayName": "Measurement",
       "grade": "3",
       "subject": "Mathematics",
@@ -1239,7 +1239,7 @@
     },
     {
       "id": "grade3-mathematics-number-sense",
-      "route": "/curriculum/grade3-subjects/activities/mathematics/number-sense",
+      "route": "/curriculum/grade3-subjects/mathematics/number-sense",
       "displayName": "Number Sense",
       "grade": "3",
       "subject": "Mathematics",
@@ -1272,7 +1272,7 @@
     },
     {
       "id": "grade3-mathematics-operations-with-numbers",
-      "route": "/curriculum/grade3-subjects/activities/mathematics/operations-with-numbers",
+      "route": "/curriculum/grade3-subjects/mathematics/operations-with-numbers",
       "displayName": "Operations with Numbers",
       "grade": "3",
       "subject": "Mathematics",
@@ -1301,7 +1301,7 @@
     },
     {
       "id": "grade3-mathematics-patterns-relationships",
-      "route": "/curriculum/grade3-subjects/activities/mathematics/patterns-relationships",
+      "route": "/curriculum/grade3-subjects/mathematics/patterns-relationships",
       "displayName": "Patterns & Relationships",
       "grade": "3",
       "subject": "Mathematics",
@@ -1330,7 +1330,7 @@
     },
     {
       "id": "grade3-science-earth-systems",
-      "route": "/curriculum/grade3-subjects/activities/science/earth-systems",
+      "route": "/curriculum/grade3-subjects/science/earth-systems",
       "displayName": "Earth Systems",
       "grade": "3",
       "subject": "Science",
@@ -1377,7 +1377,7 @@
     },
     {
       "id": "grade3-science-engineering-design",
-      "route": "/curriculum/grade3-subjects/activities/science/engineering-design",
+      "route": "/curriculum/grade3-subjects/science/engineering-design",
       "displayName": "Engineering Design",
       "grade": "3",
       "subject": "Science",
@@ -1424,7 +1424,7 @@
     },
     {
       "id": "grade3-science-forces-interactions",
-      "route": "/curriculum/grade3-subjects/activities/science/forces-interactions",
+      "route": "/curriculum/grade3-subjects/science/forces-interactions",
       "displayName": "Forces & Interactions",
       "grade": "3",
       "subject": "Science",
@@ -1471,7 +1471,7 @@
     },
     {
       "id": "grade3-science-inheritance-variation",
-      "route": "/curriculum/grade3-subjects/activities/science/inheritance-variation",
+      "route": "/curriculum/grade3-subjects/science/inheritance-variation",
       "displayName": "Inheritance & Variation",
       "grade": "3",
       "subject": "Science",
@@ -1510,7 +1510,7 @@
     },
     {
       "id": "grade3-science-interdependent-relationships",
-      "route": "/curriculum/grade3-subjects/activities/science/interdependent-relationships",
+      "route": "/curriculum/grade3-subjects/science/interdependent-relationships",
       "displayName": "Interdependent Relationships",
       "grade": "3",
       "subject": "Science",
@@ -1557,7 +1557,7 @@
     },
     {
       "id": "grade3-science-weather-climate",
-      "route": "/curriculum/grade3-subjects/activities/science/weather-climate",
+      "route": "/curriculum/grade3-subjects/science/weather-climate",
       "displayName": "Weather & Climate",
       "grade": "3",
       "subject": "Science",
@@ -1593,7 +1593,7 @@
     },
     {
       "id": "grade3-social-studies-civic-participation",
-      "route": "/curriculum/grade3-subjects/activities/social-studies/civic-participation",
+      "route": "/curriculum/grade3-subjects/social-studies/civic-participation",
       "displayName": "Civic Participation",
       "grade": "3",
       "subject": "Social Studies",
@@ -1620,7 +1620,7 @@
     },
     {
       "id": "grade3-social-studies-economic-decision-making",
-      "route": "/curriculum/grade3-subjects/activities/social-studies/economic-decision-making",
+      "route": "/curriculum/grade3-subjects/social-studies/economic-decision-making",
       "displayName": "Economic Decision Making",
       "grade": "3",
       "subject": "Social Studies",
@@ -1647,7 +1647,7 @@
     },
     {
       "id": "grade3-social-studies-historical-cultural-thinking",
-      "route": "/curriculum/grade3-subjects/activities/social-studies/historical-cultural-thinking",
+      "route": "/curriculum/grade3-subjects/social-studies/historical-cultural-thinking",
       "displayName": "Historical & Cultural Thinking",
       "grade": "3",
       "subject": "Social Studies",
@@ -1680,7 +1680,7 @@
     },
     {
       "id": "grade3-social-studies-spatial-thinking",
-      "route": "/curriculum/grade3-subjects/activities/social-studies/spatial-thinking",
+      "route": "/curriculum/grade3-subjects/social-studies/spatial-thinking",
       "displayName": "Spatial Thinking",
       "grade": "3",
       "subject": "Social Studies",
@@ -1713,7 +1713,7 @@
     },
     {
       "id": "grade4-language-arts-listening-speaking",
-      "route": "/curriculum/grade4-subjects/activities/language-arts/listening-speaking",
+      "route": "/curriculum/grade4-subjects/language-arts/listening-speaking",
       "displayName": "Listening & Speaking",
       "grade": "4",
       "subject": "Language Arts",
@@ -1756,7 +1756,7 @@
     },
     {
       "id": "grade4-language-arts-reading-viewing",
-      "route": "/curriculum/grade4-subjects/activities/language-arts/reading-viewing",
+      "route": "/curriculum/grade4-subjects/language-arts/reading-viewing",
       "displayName": "Reading & Viewing",
       "grade": "4",
       "subject": "Language Arts",
@@ -1807,7 +1807,7 @@
     },
     {
       "id": "grade4-language-arts-writing-representing",
-      "route": "/curriculum/grade4-subjects/activities/language-arts/writing-representing",
+      "route": "/curriculum/grade4-subjects/language-arts/writing-representing",
       "displayName": "Writing & Representing",
       "grade": "4",
       "subject": "Language Arts",
@@ -1862,7 +1862,7 @@
     },
     {
       "id": "grade4-mathematics-data-probability",
-      "route": "/curriculum/grade4-subjects/activities/mathematics/data-probability",
+      "route": "/curriculum/grade4-subjects/mathematics/data-probability",
       "displayName": "Data & Probability",
       "grade": "4",
       "subject": "Mathematics",
@@ -1883,7 +1883,7 @@
     },
     {
       "id": "grade4-mathematics-geometrical-thinking",
-      "route": "/curriculum/grade4-subjects/activities/mathematics/geometrical-thinking",
+      "route": "/curriculum/grade4-subjects/mathematics/geometrical-thinking",
       "displayName": "Geometrical Thinking",
       "grade": "4",
       "subject": "Mathematics",
@@ -1903,7 +1903,7 @@
     },
     {
       "id": "grade4-mathematics-measurement",
-      "route": "/curriculum/grade4-subjects/activities/mathematics/measurement",
+      "route": "/curriculum/grade4-subjects/mathematics/measurement",
       "displayName": "Measurement",
       "grade": "4",
       "subject": "Mathematics",
@@ -1924,7 +1924,7 @@
     },
     {
       "id": "grade4-mathematics-number-sense",
-      "route": "/curriculum/grade4-subjects/activities/mathematics/number-sense",
+      "route": "/curriculum/grade4-subjects/mathematics/number-sense",
       "displayName": "Number Sense",
       "grade": "4",
       "subject": "Mathematics",
@@ -1957,7 +1957,7 @@
     },
     {
       "id": "grade4-mathematics-operations-with-numbers",
-      "route": "/curriculum/grade4-subjects/activities/mathematics/operations-with-numbers",
+      "route": "/curriculum/grade4-subjects/mathematics/operations-with-numbers",
       "displayName": "Operations with Numbers",
       "grade": "4",
       "subject": "Mathematics",
@@ -1983,7 +1983,7 @@
     },
     {
       "id": "grade4-mathematics-patterns-relationships",
-      "route": "/curriculum/grade4-subjects/activities/mathematics/patterns-relationships",
+      "route": "/curriculum/grade4-subjects/mathematics/patterns-relationships",
       "displayName": "Patterns & Relationships",
       "grade": "4",
       "subject": "Mathematics",
@@ -2004,7 +2004,7 @@
     },
     {
       "id": "grade4-science-earth-systems",
-      "route": "/curriculum/grade4-subjects/activities/science/earth-systems",
+      "route": "/curriculum/grade4-subjects/science/earth-systems",
       "displayName": "Earth Systems",
       "grade": "4",
       "subject": "Science",
@@ -2035,7 +2035,7 @@
     },
     {
       "id": "grade4-science-energy",
-      "route": "/curriculum/grade4-subjects/activities/science/energy",
+      "route": "/curriculum/grade4-subjects/science/energy",
       "displayName": "Energy",
       "grade": "4",
       "subject": "Science",
@@ -2071,7 +2071,7 @@
     },
     {
       "id": "grade4-science-structure-function",
-      "route": "/curriculum/grade4-subjects/activities/science/structure-function",
+      "route": "/curriculum/grade4-subjects/science/structure-function",
       "displayName": "Structure & Function",
       "grade": "4",
       "subject": "Science",
@@ -2110,7 +2110,7 @@
     },
     {
       "id": "grade4-science-waves",
-      "route": "/curriculum/grade4-subjects/activities/science/waves",
+      "route": "/curriculum/grade4-subjects/science/waves",
       "displayName": "Waves",
       "grade": "4",
       "subject": "Science",
@@ -2147,7 +2147,7 @@
     },
     {
       "id": "grade4-social-studies-civic-participation",
-      "route": "/curriculum/grade4-subjects/activities/social-studies/civic-participation",
+      "route": "/curriculum/grade4-subjects/social-studies/civic-participation",
       "displayName": "Civic Participation",
       "grade": "4",
       "subject": "Social Studies",
@@ -2170,7 +2170,7 @@
     },
     {
       "id": "grade4-social-studies-economic-decision-making",
-      "route": "/curriculum/grade4-subjects/activities/social-studies/economic-decision-making",
+      "route": "/curriculum/grade4-subjects/social-studies/economic-decision-making",
       "displayName": "Economic Decision Making",
       "grade": "4",
       "subject": "Social Studies",
@@ -2191,7 +2191,7 @@
     },
     {
       "id": "grade4-social-studies-historical-cultural-thinking",
-      "route": "/curriculum/grade4-subjects/activities/social-studies/historical-cultural-thinking",
+      "route": "/curriculum/grade4-subjects/social-studies/historical-cultural-thinking",
       "displayName": "Historical & Cultural Thinking",
       "grade": "4",
       "subject": "Social Studies",
@@ -2210,7 +2210,7 @@
     },
     {
       "id": "grade4-social-studies-spatial-thinking",
-      "route": "/curriculum/grade4-subjects/activities/social-studies/spatial-thinking",
+      "route": "/curriculum/grade4-subjects/social-studies/spatial-thinking",
       "displayName": "Spatial Thinking",
       "grade": "4",
       "subject": "Social Studies",
@@ -2232,7 +2232,7 @@
     },
     {
       "id": "grade5-language-arts-listening-speaking",
-      "route": "/curriculum/grade5-subjects/activities/language-arts/listening-speaking",
+      "route": "/curriculum/grade5-subjects/language-arts/listening-speaking",
       "displayName": "Listening & Speaking",
       "grade": "5",
       "subject": "Language Arts",
@@ -2255,7 +2255,7 @@
     },
     {
       "id": "grade5-language-arts-reading-viewing",
-      "route": "/curriculum/grade5-subjects/activities/language-arts/reading-viewing",
+      "route": "/curriculum/grade5-subjects/language-arts/reading-viewing",
       "displayName": "Reading & Viewing",
       "grade": "5",
       "subject": "Language Arts",
@@ -2283,7 +2283,7 @@
     },
     {
       "id": "grade5-language-arts-writing-representing",
-      "route": "/curriculum/grade5-subjects/activities/language-arts/writing-representing",
+      "route": "/curriculum/grade5-subjects/language-arts/writing-representing",
       "displayName": "Writing & Representing",
       "grade": "5",
       "subject": "Language Arts",
@@ -2318,7 +2318,7 @@
     },
     {
       "id": "grade5-mathematics-data-probability",
-      "route": "/curriculum/grade5-subjects/activities/mathematics/data-probability",
+      "route": "/curriculum/grade5-subjects/mathematics/data-probability",
       "displayName": "Data & Probability",
       "grade": "5",
       "subject": "Mathematics",
@@ -2345,7 +2345,7 @@
     },
     {
       "id": "grade5-mathematics-geometrical-thinking",
-      "route": "/curriculum/grade5-subjects/activities/mathematics/geometrical-thinking",
+      "route": "/curriculum/grade5-subjects/mathematics/geometrical-thinking",
       "displayName": "Geometrical Thinking",
       "grade": "5",
       "subject": "Mathematics",
@@ -2372,7 +2372,7 @@
     },
     {
       "id": "grade5-mathematics-measurement",
-      "route": "/curriculum/grade5-subjects/activities/mathematics/measurement",
+      "route": "/curriculum/grade5-subjects/mathematics/measurement",
       "displayName": "Measurement",
       "grade": "5",
       "subject": "Mathematics",
@@ -2399,7 +2399,7 @@
     },
     {
       "id": "grade5-mathematics-number-sense",
-      "route": "/curriculum/grade5-subjects/activities/mathematics/number-sense",
+      "route": "/curriculum/grade5-subjects/mathematics/number-sense",
       "displayName": "Number Sense",
       "grade": "5",
       "subject": "Mathematics",
@@ -2424,7 +2424,7 @@
     },
     {
       "id": "grade5-mathematics-operations-with-numbers",
-      "route": "/curriculum/grade5-subjects/activities/mathematics/operations-with-numbers",
+      "route": "/curriculum/grade5-subjects/mathematics/operations-with-numbers",
       "displayName": "Operations with Numbers",
       "grade": "5",
       "subject": "Mathematics",
@@ -2451,7 +2451,7 @@
     },
     {
       "id": "grade5-mathematics-patterns-relationships",
-      "route": "/curriculum/grade5-subjects/activities/mathematics/patterns-relationships",
+      "route": "/curriculum/grade5-subjects/mathematics/patterns-relationships",
       "displayName": "Patterns & Relationships",
       "grade": "5",
       "subject": "Mathematics",
@@ -2478,7 +2478,7 @@
     },
     {
       "id": "grade5-science-earth-systems",
-      "route": "/curriculum/grade5-subjects/activities/science/earth-systems",
+      "route": "/curriculum/grade5-subjects/science/earth-systems",
       "displayName": "Earth Systems",
       "grade": "5",
       "subject": "Science",
@@ -2500,7 +2500,7 @@
     },
     {
       "id": "grade5-science-engineering",
-      "route": "/curriculum/grade5-subjects/activities/science/engineering",
+      "route": "/curriculum/grade5-subjects/science/engineering",
       "displayName": "Engineering",
       "grade": "5",
       "subject": "Science",
@@ -2522,7 +2522,7 @@
     },
     {
       "id": "grade5-science-matter-energy-organisms-ecosystems",
-      "route": "/curriculum/grade5-subjects/activities/science/matter-energy-organisms-ecosystems",
+      "route": "/curriculum/grade5-subjects/science/matter-energy-organisms-ecosystems",
       "displayName": "Matter, Energy, Organisms & Ecosystems",
       "grade": "5",
       "subject": "Science",
@@ -2543,7 +2543,7 @@
     },
     {
       "id": "grade5-science-space-systems",
-      "route": "/curriculum/grade5-subjects/activities/science/space-systems",
+      "route": "/curriculum/grade5-subjects/science/space-systems",
       "displayName": "Space Systems",
       "grade": "5",
       "subject": "Science",
@@ -2564,7 +2564,7 @@
     },
     {
       "id": "grade5-science-structure-properties-matter",
-      "route": "/curriculum/grade5-subjects/activities/science/structure-properties-matter",
+      "route": "/curriculum/grade5-subjects/science/structure-properties-matter",
       "displayName": "Structure & Properties of Matter",
       "grade": "5",
       "subject": "Science",
@@ -2585,7 +2585,7 @@
     },
     {
       "id": "grade5-social-studies-civic-participation",
-      "route": "/curriculum/grade5-subjects/activities/social-studies/civic-participation",
+      "route": "/curriculum/grade5-subjects/social-studies/civic-participation",
       "displayName": "Civic Participation",
       "grade": "5",
       "subject": "Social Studies",
@@ -2618,7 +2618,7 @@
     },
     {
       "id": "grade5-social-studies-economic-decision-making",
-      "route": "/curriculum/grade5-subjects/activities/social-studies/economic-decision-making",
+      "route": "/curriculum/grade5-subjects/social-studies/economic-decision-making",
       "displayName": "Economic Decision Making",
       "grade": "5",
       "subject": "Social Studies",
@@ -2657,7 +2657,7 @@
     },
     {
       "id": "grade5-social-studies-historical-cultural-thinking",
-      "route": "/curriculum/grade5-subjects/activities/social-studies/historical-cultural-thinking",
+      "route": "/curriculum/grade5-subjects/social-studies/historical-cultural-thinking",
       "displayName": "Historical & Cultural Thinking",
       "grade": "5",
       "subject": "Social Studies",
@@ -2696,7 +2696,7 @@
     },
     {
       "id": "grade5-social-studies-spatial-thinking",
-      "route": "/curriculum/grade5-subjects/activities/social-studies/spatial-thinking",
+      "route": "/curriculum/grade5-subjects/social-studies/spatial-thinking",
       "displayName": "Spatial Thinking",
       "grade": "5",
       "subject": "Social Studies",
@@ -2735,7 +2735,7 @@
     },
     {
       "id": "grade6-language-arts-listening-speaking",
-      "route": "/curriculum/grade6-subjects/activities/language-arts/listening-speaking",
+      "route": "/curriculum/grade6-subjects/language-arts/listening-speaking",
       "displayName": "Listening & Speaking",
       "grade": "6",
       "subject": "Language Arts",
@@ -2783,7 +2783,7 @@
     },
     {
       "id": "grade6-language-arts-reading-viewing",
-      "route": "/curriculum/grade6-subjects/activities/language-arts/reading-viewing",
+      "route": "/curriculum/grade6-subjects/language-arts/reading-viewing",
       "displayName": "Reading & Viewing",
       "grade": "6",
       "subject": "Language Arts",
@@ -2834,7 +2834,7 @@
     },
     {
       "id": "grade6-language-arts-writing-representing",
-      "route": "/curriculum/grade6-subjects/activities/language-arts/writing-representing",
+      "route": "/curriculum/grade6-subjects/language-arts/writing-representing",
       "displayName": "Writing & Representing",
       "grade": "6",
       "subject": "Language Arts",
@@ -2884,7 +2884,7 @@
     },
     {
       "id": "grade6-mathematics-data-probability",
-      "route": "/curriculum/grade6-subjects/activities/mathematics/data-probability",
+      "route": "/curriculum/grade6-subjects/mathematics/data-probability",
       "displayName": "Data & Probability",
       "grade": "6",
       "subject": "Mathematics",
@@ -2903,7 +2903,7 @@
     },
     {
       "id": "grade6-mathematics-geometrical-thinking",
-      "route": "/curriculum/grade6-subjects/activities/mathematics/geometrical-thinking",
+      "route": "/curriculum/grade6-subjects/mathematics/geometrical-thinking",
       "displayName": "Geometrical Thinking",
       "grade": "6",
       "subject": "Mathematics",
@@ -2924,7 +2924,7 @@
     },
     {
       "id": "grade6-mathematics-measurement",
-      "route": "/curriculum/grade6-subjects/activities/mathematics/measurement",
+      "route": "/curriculum/grade6-subjects/mathematics/measurement",
       "displayName": "Measurement",
       "grade": "6",
       "subject": "Mathematics",
@@ -2942,7 +2942,7 @@
     },
     {
       "id": "grade6-mathematics-number-sense",
-      "route": "/curriculum/grade6-subjects/activities/mathematics/number-sense",
+      "route": "/curriculum/grade6-subjects/mathematics/number-sense",
       "displayName": "Number Sense",
       "grade": "6",
       "subject": "Mathematics",
@@ -2963,7 +2963,7 @@
     },
     {
       "id": "grade6-mathematics-operations-with-numbers",
-      "route": "/curriculum/grade6-subjects/activities/mathematics/operations-with-numbers",
+      "route": "/curriculum/grade6-subjects/mathematics/operations-with-numbers",
       "displayName": "Operations with Numbers",
       "grade": "6",
       "subject": "Mathematics",
@@ -2984,7 +2984,7 @@
     },
     {
       "id": "grade6-mathematics-patterns-relationships",
-      "route": "/curriculum/grade6-subjects/activities/mathematics/patterns-relationships",
+      "route": "/curriculum/grade6-subjects/mathematics/patterns-relationships",
       "displayName": "Patterns & Relationships",
       "grade": "6",
       "subject": "Mathematics",
@@ -3005,7 +3005,7 @@
     },
     {
       "id": "grade6-science-chemical-reactions",
-      "route": "/curriculum/grade6-subjects/activities/science/chemical-reactions",
+      "route": "/curriculum/grade6-subjects/science/chemical-reactions",
       "displayName": "Chemical Reactions",
       "grade": "6",
       "subject": "Science",
@@ -3026,7 +3026,7 @@
     },
     {
       "id": "grade6-science-earth-systems",
-      "route": "/curriculum/grade6-subjects/activities/science/earth-systems",
+      "route": "/curriculum/grade6-subjects/science/earth-systems",
       "displayName": "Earth Systems",
       "grade": "6",
       "subject": "Science",
@@ -3045,7 +3045,7 @@
     },
     {
       "id": "grade6-science-forces-interactions",
-      "route": "/curriculum/grade6-subjects/activities/science/forces-interactions",
+      "route": "/curriculum/grade6-subjects/science/forces-interactions",
       "displayName": "Forces & Interactions",
       "grade": "6",
       "subject": "Science",
@@ -3064,7 +3064,7 @@
     },
     {
       "id": "grade6-science-inheritance-variation",
-      "route": "/curriculum/grade6-subjects/activities/science/inheritance-variation",
+      "route": "/curriculum/grade6-subjects/science/inheritance-variation",
       "displayName": "Inheritance & Variation",
       "grade": "6",
       "subject": "Science",
@@ -3085,7 +3085,7 @@
     },
     {
       "id": "grade6-science-space-systems",
-      "route": "/curriculum/grade6-subjects/activities/science/space-systems",
+      "route": "/curriculum/grade6-subjects/science/space-systems",
       "displayName": "Space Systems",
       "grade": "6",
       "subject": "Science",
@@ -3104,7 +3104,7 @@
     },
     {
       "id": "grade6-science-structure-properties-matter",
-      "route": "/curriculum/grade6-subjects/activities/science/structure-properties-matter",
+      "route": "/curriculum/grade6-subjects/science/structure-properties-matter",
       "displayName": "Structure & Properties of Matter",
       "grade": "6",
       "subject": "Science",
@@ -3125,7 +3125,7 @@
     },
     {
       "id": "grade6-science-waves-electromagnetic",
-      "route": "/curriculum/grade6-subjects/activities/science/waves-electromagnetic",
+      "route": "/curriculum/grade6-subjects/science/waves-electromagnetic",
       "displayName": "Waves & Electromagnetic",
       "grade": "6",
       "subject": "Science",
@@ -3144,7 +3144,7 @@
     },
     {
       "id": "grade6-social-studies-civic-participation",
-      "route": "/curriculum/grade6-subjects/activities/social-studies/civic-participation",
+      "route": "/curriculum/grade6-subjects/social-studies/civic-participation",
       "displayName": "Civic Participation",
       "grade": "6",
       "subject": "Social Studies",
@@ -3171,7 +3171,7 @@
     },
     {
       "id": "grade6-social-studies-economic-decision-making",
-      "route": "/curriculum/grade6-subjects/activities/social-studies/economic-decision-making",
+      "route": "/curriculum/grade6-subjects/social-studies/economic-decision-making",
       "displayName": "Economic Decision Making",
       "grade": "6",
       "subject": "Social Studies",
@@ -3198,7 +3198,7 @@
     },
     {
       "id": "grade6-social-studies-historical-cultural-thinking",
-      "route": "/curriculum/grade6-subjects/activities/social-studies/historical-cultural-thinking",
+      "route": "/curriculum/grade6-subjects/social-studies/historical-cultural-thinking",
       "displayName": "Historical & Cultural Thinking",
       "grade": "6",
       "subject": "Social Studies",
@@ -3225,7 +3225,7 @@
     },
     {
       "id": "grade6-social-studies-spatial-thinking",
-      "route": "/curriculum/grade6-subjects/activities/social-studies/spatial-thinking",
+      "route": "/curriculum/grade6-subjects/social-studies/spatial-thinking",
       "displayName": "Spatial Thinking",
       "grade": "6",
       "subject": "Social Studies",
