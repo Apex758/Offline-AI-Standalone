@@ -225,7 +225,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       generationState,
       selectedImage
     });
-  }, [activeTab, prompt, selectedStyle, imageSlots, generationState, selectedImage, onDataChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, prompt, selectedStyle, imageSlots, generationState, selectedImage]);
 
   // ========================================
   // Save heavy image data to sessionStorage (larger quota, clears on browser close)

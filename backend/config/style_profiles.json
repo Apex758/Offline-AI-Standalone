@@ -9,7 +9,7 @@
     "sdxl_settings": {
       "width": 512,
       "height": 512,
-      "num_inference_steps": 4,
+      "num_inference_steps": 2,
       "guidance_scale": 0.0,
       "cfg_scale": 7.0
     },
@@ -29,7 +29,7 @@
     "sdxl_settings": {
       "width": 768,
       "height": 512,
-      "num_inference_steps": 4,
+      "num_inference_steps": 2,
       "guidance_scale": 0.0,
       "cfg_scale": 7.0
     },
@@ -49,7 +49,7 @@
     "sdxl_settings": {
       "width": 768,
       "height": 768,
-      "num_inference_steps": 4,
+      "num_inference_steps": 2,
       "guidance_scale": 0.0,
       "cfg_scale": 7.0
     },
