@@ -12,9 +12,10 @@ import {
 import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
-import { parseWorksheetFromAI, ParsedWorksheet } from '../types/worksheet';
+import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
+import WorksheetStructuredEditor from './WorksheetStructuredEditor';
 import axios from 'axios';
 
 
@@ -335,6 +336,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   });
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingStructured, setIsEditingStructured] = useState(false);
   const [editBuffer, setEditBuffer] = useState('');
 
   // ✅ Connect WebSocket on mount
@@ -1442,16 +1444,20 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               <>
                 <button
                   onClick={() => {
-                    setEditBuffer(generatedWorksheet);
-                    setIsEditing(true);
+                    if (parsedWorksheet) {
+                      setIsEditingStructured(true);
+                    } else {
+                      setEditBuffer(generatedWorksheet);
+                      setIsEditing(true);
+                    }
                   }}
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
-                  title="Edit generated worksheet text"
-                  disabled={!generatedWorksheet}
+                  title="Edit generated worksheet"
+                  disabled={!generatedWorksheet && !parsedWorksheet}
                   data-tutorial="worksheet-generator-edit"
                 >
                   <FileText className="w-4 h-4 mr-2" />
-                  Edit
+                  Edit {parsedWorksheet ? '' : '(Text Mode)'}
                 </button>
 
                 <button
@@ -1577,6 +1583,24 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
         {/* Template Preview Content */}
                 <div className="flex-1 p-4" data-tutorial="worksheet-generator-preview-pane">
+          {isEditingStructured && parsedWorksheet ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+              <WorksheetStructuredEditor
+                worksheet={parsedWorksheet}
+                onSave={(editedWorksheet) => {
+                  setParsedWorksheet(editedWorksheet);
+                  setGeneratedWorksheet(worksheetToDisplayText(editedWorksheet));
+                  setIsEditingStructured(false);
+                  // Auto-save
+                  setTimeout(() => {
+                    saveWorksheet();
+                  }, 100);
+                }}
+                onCancel={() => setIsEditingStructured(false)}
+                accentColor="#3b82f6"
+              />
+            </div>
+          ) : null}
           {isEditing ? (
             <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto p-4 space-y-4">
               <h4 className="text-lg font-semibold text-gray-800">Edit Worksheet Text</h4>

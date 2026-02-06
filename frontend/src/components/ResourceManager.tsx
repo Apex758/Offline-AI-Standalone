@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Search, Filter, Star, Trash2, Edit, Download, Calendar, Eye,
   FileText, ListChecks, BookMarked, GraduationCap, Users,
-  Link2, RefreshCw, ArrowUpDown, X, Image
+  Link2, RefreshCw, ArrowUpDown, X, Image, FileSpreadsheet
 } from 'lucide-react';
 import axios from 'axios';
 import { TutorialOverlay } from './TutorialOverlay';
@@ -201,6 +201,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     const endpoints: { [key: string]: string } = {
       'lesson': 'http://localhost:8000/api/lesson-plan-history',
       'quiz': 'http://localhost:8000/api/quiz-history',
+      'worksheet': 'http://localhost:8000/api/worksheet-history',
       'rubric': 'http://localhost:8000/api/rubric-history',
       'kindergarten': 'http://localhost:8000/api/kindergarten-history',
       'multigrade': 'http://localhost:8000/api/multigrade-history',
@@ -227,6 +228,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     const icons: { [key: string]: any } = {
       'lesson': BookMarked,
       'quiz': ListChecks,
+      'worksheet': FileSpreadsheet,
       'rubric': FileText,
       'kindergarten': GraduationCap,
       'multigrade': Users,
@@ -241,6 +243,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     const colors: { [key: string]: string } = {
       'lesson': 'bg-purple-100 text-purple-700 border-purple-200',
       'quiz': 'bg-cyan-100 text-cyan-700 border-cyan-200',
+      'worksheet': 'bg-blue-100 text-blue-700 border-blue-200',
       'rubric': 'bg-amber-100 text-amber-700 border-amber-200',
       'kindergarten': 'bg-pink-100 text-pink-700 border-pink-200',
       'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200',

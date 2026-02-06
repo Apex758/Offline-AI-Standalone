@@ -684,6 +684,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const typeToToolType: { [key: string]: string } = {
       'lesson': 'lesson-planner',
       'quiz': 'quiz-generator',
+      'worksheet': 'worksheet-generator',
       'rubric': 'rubric-generator',
       'kindergarten': 'kindergarten-planner',
       'multigrade': 'multigrade-planner',
@@ -713,8 +714,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         formData: resource.formData,
         generatedQuiz: resource.generatedQuiz,
         generatedPlan: resource.generatedPlan,
+        generatedWorksheet: resource.generatedWorksheet,
         generatedRubric: resource.generatedRubric,
         parsedQuiz: resource.parsedQuiz,
+        parsedWorksheet: resource.parsedWorksheet,
         streamingQuiz: resource.streamingQuiz,
         startInEditMode: false, // View mode
         ...(type === 'images' && { initialTab: 'editor', imageId: resource.id, imageUrl: resource.imageUrl })
@@ -729,6 +732,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     const typeToToolType: { [key: string]: string } = {
       'lesson': 'lesson-planner',
       'quiz': 'quiz-generator',
+      'worksheet': 'worksheet-generator',
       'rubric': 'rubric-generator',
       'kindergarten': 'kindergarten-planner',
       'multigrade': 'multigrade-planner',
@@ -758,8 +762,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         formData: resource.formData,
         generatedQuiz: resource.generatedQuiz,
         generatedPlan: resource.generatedPlan,
+        generatedWorksheet: resource.generatedWorksheet,
         generatedRubric: resource.generatedRubric,
         parsedQuiz: resource.parsedQuiz,
+        parsedWorksheet: resource.parsedWorksheet,
         streamingQuiz: resource.streamingQuiz,
         startInEditMode: true, // Edit mode
         ...(type === 'images' && { initialTab: 'editor', imageId: resource.id, imageUrl: resource.imageUrl })
