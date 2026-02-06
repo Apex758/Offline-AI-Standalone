@@ -801,69 +801,90 @@ IMPORTANT: The word bank MUST be on a SINGLE LINE with words separated by commas
 Example: **Word Bank:** add, subtract, sum, difference, equals, total
 
 Step 3: Create ${questionCount} fill-in-the-blank sentences (NOT question prompts!)
+IMPORTANT: Include the answer after EACH question!
 
 ${Array.from({ length: Math.min(questionCount, 3) }, (_, i) =>
-  `**Question ${i + 1}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]`
+  `**Question ${i + 1}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]\n[Answer: correct word from word bank]`
 ).join('\n\n')}
 
-${questionCount > 3 ? `... continue the pattern ...\n\n**Question ${questionCount}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]` : ''}
+${questionCount > 3 ? `... continue the pattern ...\n\n**Question ${questionCount}:** [Complete sentence about ${formData.topic} with ONE blank shown as _______]\n[Answer: correct word from word bank]` : ''}
 
 CRITICAL RULES - READ CAREFULLY:
 1. DO NOT write instructions like "Write a sentence" or "Fill in the blank"
 2. Each question must be a COMPLETE SENTENCE with ONE word missing (shown as _______)
 3. The missing word MUST be from the word bank
 4. Use **Question 1:**, **Question 2:** format (with double asterisks and colon)
-5. All sentences MUST be directly about "${formData.topic}"
-6. Generate EXACTLY ${questionCount} sentences
-7. The word bank should appear ONCE at the top, NOT with each question
-8. Each sentence should make sense when completed with a word from the bank
-${isMathSubject ? '9. For math topics: Focus on VOCABULARY and CONCEPTS, not arithmetic calculations!' : ''}
+5. ALWAYS include [Answer: word] on the line immediately after each question
+6. All sentences MUST be directly about "${formData.topic}"
+7. Generate EXACTLY ${questionCount} sentences
+8. The word bank should appear ONCE at the top, NOT with each question
+9. Each sentence should make sense when completed with a word from the bank
+${isMathSubject ? '10. For math topics: Focus on VOCABULARY and CONCEPTS, not arithmetic calculations!' : ''}
+
+Example format:
+**Question 1:** The plant's _______ absorbs water from the soil.
+[Answer: roots]
 `;
 
     } else if (formData.questionType === 'True / False') {
       listFormat = `TRUE/FALSE FORMAT - FOLLOW EXACTLY:
 
 Create ${questionCount} true/false statements about "${formData.topic}" for ${formData.subject}.
+IMPORTANT: Include the answer after EACH question!
 
 ${Array.from({ length: Math.min(questionCount, 2) }, (_, i) =>
-  `Question ${i + 1}: True / False\n[Write a ${i === 0 ? '' : 'different '}true or false statement about ${formData.topic}]`
+  `Question ${i + 1}: True / False\n[Write a ${i === 0 ? '' : 'different '}true or false statement about ${formData.topic}]\n[Answer: True] or [Answer: False]`
 ).join('\n\n')}
 
-${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: True / False\n[Write another true or false statement about ${formData.topic}]` : ''}
+${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: True / False\n[Write another true or false statement about ${formData.topic}]\n[Answer: True] or [Answer: False]` : ''}
 
 CRITICAL RULES:
 - Format: "Question X: True / False" followed by statement
+- ALWAYS include [Answer: True] or [Answer: False] on the line immediately after each statement
 - Generate EXACTLY ${questionCount} questions (count them!)
 - Mix true and false statements roughly equally
-- All statements must be about "${formData.topic}"`;
+- All statements must be about "${formData.topic}"
+
+Example format:
+Question 1: True / False
+Plants need sunlight to grow.
+[Answer: True]`;
 
     } else if (formData.questionType === 'Fill in the Blank') {
       listFormat = `FILL IN THE BLANK FORMAT - FOLLOW EXACTLY:
 
 Create ${questionCount} fill-in-the-blank questions about "${formData.topic}" for ${formData.subject}.
+IMPORTANT: Include the answer after EACH question!
 
 ${Array.from({ length: Math.min(questionCount, 2) }, (_, i) =>
-  `Question ${i + 1}: Fill in the Blank\n[Write a ${i === 0 ? '' : 'different '}sentence about ${formData.topic} with ONE blank using _______]`
+  `Question ${i + 1}: Fill in the Blank\n[Write a ${i === 0 ? '' : 'different '}sentence about ${formData.topic} with ONE blank using _______]\n[Answer: correct word or phrase]`
 ).join('\n\n')}
 
-${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: Fill in the Blank\n[Write another sentence about ${formData.topic} with ONE blank using _______]` : ''}
+${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: Fill in the Blank\n[Write another sentence about ${formData.topic} with ONE blank using _______]\n[Answer: correct word or phrase]` : ''}
 
 CRITICAL RULES:
 - Format: "Question X: Fill in the Blank" followed by sentence
+- ALWAYS include [Answer: word/phrase] on the line immediately after each question
 - Generate EXACTLY ${questionCount} questions (count them!)
 - Each sentence has ONE blank using _______
-- All questions must be about "${formData.topic}"`;
+- All questions must be about "${formData.topic}"
+
+Example format:
+Question 1: Fill in the Blank
+Water freezes at _______ degrees Celsius.
+[Answer: zero or 0]`;
 
     } else if (formData.questionType === 'Short Answer') {
       listFormat = `SHORT ANSWER FORMAT - FOLLOW EXACTLY:
 
 Create ${questionCount} short answer questions about "${formData.topic}" for ${formData.subject}.
+IMPORTANT: Include a sample answer after EACH question!
 
 ${Array.from({ length: Math.min(questionCount, 2) }, (_, i) =>
-  `Question ${i + 1}: Short Answer\n[Write a ${i === 0 ? '' : 'different '}question about ${formData.topic} requiring 2-4 sentences]`
+  `Question ${i + 1}: Short Answer\n[Write a ${i === 0 ? '' : 'different '}question about ${formData.topic} requiring 2-4 sentences]\n[Answer: Sample 2-4 sentence answer]`
 ).join('\n\n')}
 
-${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: Short Answer\n[Write another question about ${formData.topic} requiring 2-4 sentences]` : ''}
+${questionCount > 2 ? `... continue the pattern ...\n\nQuestion ${questionCount}: Short Answer\n[Write another question about ${formData.topic} requiring 2-4 sentences]\n[Answer: Sample 2-4 sentence answer]` : ''}
 
 CRITICAL RULES:
 - Format: "Question X: Short Answer" followed by question

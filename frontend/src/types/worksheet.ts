@@ -78,8 +78,11 @@ function parseMultipleChoiceQuestion(questionText: string, questionBody: string,
 
 // Helper function to parse true/false questions
 function parseTrueFalseQuestion(questionText: string, questionBody: string, index: number): WorksheetQuestion | null {
-  // Extract correct answer - look for "Correct Answer: True" or "Correct Answer: False"
-  const answerMatch = questionBody.match(/Correct\s+Answer:\s*(True|False)/i);
+  // Extract correct answer - try [Answer: X] format first, then "Correct Answer: X"
+  let answerMatch = questionBody.match(/\[Answer:\s*(True|False)\]/i);
+  if (!answerMatch) {
+    answerMatch = questionBody.match(/Correct\s+Answer:\s*(True|False)/i);
+  }
   const correctAnswer = answerMatch ? answerMatch[1].toLowerCase() : 'true';
 
   // Extract explanation (handle multi-line explanations)
@@ -103,9 +106,15 @@ function parseTrueFalseQuestion(questionText: string, questionBody: string, inde
 
 // Helper function to parse fill-in-the-blank questions
 function parseFillBlankQuestion(questionText: string, questionBody: string, index: number): WorksheetQuestion | null {
-  // Extract answer - look for "Answer: [text]" but not "Correct Answer:"
-  const answerMatch = questionBody.match(/(?<!Correct\s)Answer:\s*(.+?)(?=\n|$)/i);
-  const correctAnswer = answerMatch ? answerMatch[1].trim() : '';
+  // Extract answer - try [Answer: X] format first, then "Answer: X" (but not "Correct Answer:")
+  let correctAnswer = '';
+  let answerMatch = questionBody.match(/\[Answer:\s*([^\]]+)\]/i);
+  if (answerMatch) {
+    correctAnswer = answerMatch[1].trim();
+  } else {
+    answerMatch = questionBody.match(/(?<!Correct\s)Answer:\s*(.+?)(?=\n|$)/i);
+    correctAnswer = answerMatch ? answerMatch[1].trim() : '';
+  }
 
   // Extract explanation (handle multi-line explanations)
   const explanationMatch = questionBody.match(/Explanation:\s*(.+?)(?=\n\n|$)/is);
@@ -127,22 +136,38 @@ function parseFillBlankQuestion(questionText: string, questionBody: string, inde
 
 // Helper function to parse word bank questions (fill-in-blank with word bank)
 function parseWordBankQuestion(questionText: string, index: number): WorksheetQuestion | null {
+  // Extract answer if present
+  let correctAnswer = '';
+  let cleanQuestion = questionText;
+  
+  const answerMatch = questionText.match(/\[Answer:\s*([^\]]+)\]/i);
+  if (answerMatch) {
+    correctAnswer = answerMatch[1].trim();
+    // Remove the answer line from the question
+    cleanQuestion = questionText.replace(/\[Answer:[^\]]+\]/gi, '').trim();
+  }
+  
   return {
     id: `q_${Date.now()}_${index}`,
     type: 'word-bank',
-    question: questionText,
-    correctAnswer: '', // The blank to fill
+    question: cleanQuestion,
+    correctAnswer: correctAnswer,
     points: 1
   };
 }
 
 // Helper function to parse short answer questions
 function parseShortAnswerQuestion(questionText: string, questionBody: string, index: number): WorksheetQuestion | null {
-  // Extract sample answer
+  // Extract sample answer - try [Answer: X] format first, then Sample Answer:
   let correctAnswer = '';
-  const sampleAnswerMatch = questionBody.match(/Sample\s+Answer:\s*(.+?)(?=\n(?:Key Points:|Explanation:)|\n\n|$)/is);
-  if (sampleAnswerMatch) {
-    correctAnswer = sampleAnswerMatch[1].trim();
+  const answerMatch = questionBody.match(/\[Answer:\s*([^\]]+)\]/i);
+  if (answerMatch) {
+    correctAnswer = answerMatch[1].trim();
+  } else {
+    const sampleAnswerMatch = questionBody.match(/Sample\s+Answer:\s*(.+?)(?=\n(?:Key Points:|Explanation:)|\n\n|$)/is);
+    if (sampleAnswerMatch) {
+      correctAnswer = sampleAnswerMatch[1].trim();
+    }
   }
 
   // Extract key points if present

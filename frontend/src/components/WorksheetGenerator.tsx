@@ -828,11 +828,37 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   const handleDownloadImage = (imageData: string) => {
-    // Assuming downloadImage is imported, but since it's not, perhaps use a simple download
     const link = document.createElement('a');
     link.href = imageData;
     link.download = `generated-image-${Date.now()}.png`;
     link.click();
+  };
+
+  const handleSaveImageToResources = async (imageData: string) => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/images-history', {
+        title: `${formData.topic || 'Scene'} - ${formData.subject} Grade ${formData.gradeLevel}`,
+        timestamp: new Date().toISOString(),
+        type: 'images',
+        imageUrl: imageData,
+        formData: {
+          subject: formData.subject,
+          gradeLevel: formData.gradeLevel,
+          strand: formData.strand,
+          topic: formData.topic,
+          sceneSpec: sceneSpec,
+          assetId: assetId
+        }
+      });
+      
+      if (response.status === 200) {
+        console.log('✅ Image saved to resources successfully');
+        // Could add a toast notification here
+      }
+    } catch (error) {
+      console.error('Failed to save image to resources:', error);
+      setImageError('Failed to save image to resources');
+    }
   };
 
   // Scene-based image generation handler
@@ -1258,6 +1284,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                           >
                             <Download className="w-4 h-4 mr-2" />
                             Download Image
+                          </button>
+                          <button
+                            onClick={() => handleSaveImageToResources(generatedImages[0])}
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center text-sm"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Save to Resources
                           </button>
                         </div>
                       </div>
