@@ -474,7 +474,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredAndSortedResources.map(resource => (
                 <ResourceCard
-                  key={resource.id}
+                  key={`${resource.type}-${resource.id}`}  
                   resource={resource}
                   onToggleFavorite={() => toggleFavorite(resource)}
                   onDelete={() => setShowDeleteConfirm(resource.id)}
