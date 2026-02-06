@@ -428,5 +428,62 @@
       "image_size_bytes": 492117
     },
     "created_at": "2026-02-05T21:44:56.699751"
+  },
+  "asset_c3ef05e675e5822f_1770346138": {
+    "asset_id": "asset_c3ef05e675e5822f_1770346138",
+    "image_path": "backend\\data\\image_assets\\asset_c3ef05e675e5822f_1770346138.png",
+    "scene_spec": {
+      "scene_id": "scene_language_arts_grade4_listening-speaking_communication_scene_20260205_224817",
+      "topic_id": "language_arts.grade4.listening-speaking",
+      "subject": "Language Arts",
+      "grade_level": "4",
+      "strand": "listening-speaking",
+      "objects": [
+        {
+          "id": "characters_01",
+          "type": "characters",
+          "name": "Characters",
+          "properties": {
+            "index": 0,
+            "source": "preset",
+            "base_prompt": "Two friendly characters appearing to communicate, expressive body language",
+            "scene_base_prompt": "Two friendly characters appearing to communicate, expressive body language"
+          },
+          "visible": true,
+          "countable": true
+        },
+        {
+          "id": "interaction_02",
+          "type": "interaction",
+          "name": "Interaction",
+          "properties": {
+            "index": 1,
+            "source": "preset",
+            "base_prompt": "Two friendly characters appearing to communicate, expressive body language"
+          },
+          "visible": true,
+          "countable": true
+        }
+      ],
+      "relationships": [],
+      "exclusions": [
+        "speech_bubbles",
+        "text"
+      ],
+      "learning_objectives": [],
+      "created_at": "2026-02-05T22:48:17.543477",
+      "image_preset_id": "communication_scene",
+      "style_profile_id": "cartoon_3d"
+    },
+    "style_profile_id": "cartoon_3d",
+    "metadata": {
+      "topic_id": "language_arts.grade4.listening-speaking",
+      "preset_id": "communication_scene",
+      "prompt": "Two friendly characters appearing to communicate, expressive body language, 3D cartoon style, Pixar-like, colorful, friendly, smooth shading, child-appropriate, vibrant colors",
+      "generated_at": "2026-02-05T22:48:58.934094",
+      "created_at": "2026-02-05T22:48:58.952982",
+      "image_size_bytes": 474537
+    },
+    "created_at": "2026-02-05T22:48:58.952982"
   }
 }

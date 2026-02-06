@@ -108,55 +108,59 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
     <div className="bg-white rounded-lg shadow-lg max-w-5xl mx-auto max-h-[90vh] flex flex-col">
       {/* Gradient Header - BLUE theme for worksheets */}
       <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Worksheet</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Worksheet</h2>
         
         {/* Metadata Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-700 mb-2">
               Worksheet Title
             </label>
             <input
               type="text"
               value={worksheet.metadata.title}
               onChange={(e) => updateMetadata('title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              placeholder="Enter worksheet title"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-700 mb-2">
               Subject
             </label>
             <input
               type="text"
               value={worksheet.metadata.subject}
               onChange={(e) => updateMetadata('subject', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              placeholder="e.g., Science"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-700 mb-2">
               Grade Level
             </label>
             <input
               type="text"
               value={worksheet.metadata.gradeLevel}
               onChange={(e) => updateMetadata('gradeLevel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              placeholder="e.g., Grade 4"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Instructions
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-700 mb-2">
+              Instructions (Optional)
             </label>
             <input
               type="text"
               value={worksheet.metadata.instructions || ''}
               onChange={(e) => updateMetadata('instructions', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              placeholder="e.g., Use the word bank to fill in the blanks"
             />
           </div>
         </div>

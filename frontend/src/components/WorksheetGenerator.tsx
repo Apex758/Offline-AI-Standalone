@@ -1586,7 +1586,15 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           {isEditingStructured && parsedWorksheet ? (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
               <WorksheetStructuredEditor
-                worksheet={parsedWorksheet}
+                worksheet={{
+                  ...parsedWorksheet,
+                  metadata: {
+                    ...parsedWorksheet.metadata,
+                    subject: formData.subject || parsedWorksheet.metadata.subject,
+                    gradeLevel: formData.gradeLevel || parsedWorksheet.metadata.gradeLevel,
+                    title: formData.worksheetTitle || parsedWorksheet.metadata.title
+                  }
+                }}
                 onSave={(editedWorksheet) => {
                   setParsedWorksheet(editedWorksheet);
                   setGeneratedWorksheet(worksheetToDisplayText(editedWorksheet));
