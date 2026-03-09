@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wmic logicaldisk:*)",
+      "Bash(mkdir:*)",
+      "Bash(\"C:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\":*)"
+    ]
+  }
+}
