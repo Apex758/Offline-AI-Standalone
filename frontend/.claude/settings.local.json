@@ -7,7 +7,9 @@
       "Bash(ls \"C:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/components\"/*.tsx)",
       "Bash(ls:*)",
       "Bash(do:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(huggingface-cli:*)",
+      "Bash(/c/Users/LG/AppData/Local/Programs/Python/Python311/python.exe:*)"
     ]
   }
 }
