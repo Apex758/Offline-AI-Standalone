@@ -1128,7 +1128,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   return (
     <div
-      className="flex h-screen bg-gray-50 dark:bg-gray-900"
+      className="flex h-screen bg-[#f5f5f0] dark:bg-[#2b2b2b]"
       onClick={() => setContextMenu(null)}
       style={{ fontSize: `${settings.fontSize}%` }}
     >

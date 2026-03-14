@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { useSettings } from '../contexts/SettingsContext';
-import { downloadJSON } from '../lib/utils';
+import { downloadJSON, isColorDark } from '../lib/utils';
 import axios from 'axios';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -603,39 +603,36 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="theme"
-                    value="light"
-                    checked={settings.theme === 'light'}
-                    onChange={(e) => updateSettings({ theme: e.target.value as 'light' | 'dark' | 'system' })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Light</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="theme"
-                    value="dark"
-                    checked={settings.theme === 'dark'}
-                    onChange={(e) => updateSettings({ theme: e.target.value as 'light' | 'dark' | 'system' })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Dark</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="theme"
-                    value="system"
-                    checked={settings.theme === 'system'}
-                    onChange={(e) => updateSettings({ theme: e.target.value as 'light' | 'dark' | 'system' })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span className="text-sm font-medium text-gray-700">System</span>
-                </label>
+                {([
+                  { value: 'light', label: 'Light' },
+                  { value: 'dark', label: 'Dark' },
+                  { value: 'system', label: 'System' },
+                ] as const).map((option) => (
+                  <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="theme"
+                      value={option.value}
+                      checked={settings.theme === option.value}
+                      onChange={(e) => {
+                        const newTheme = e.target.value as 'light' | 'dark' | 'system';
+                        updateSettings({ theme: newTheme });
+                        // Auto-switch sidebar color to match theme
+                        if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                          if (!isColorDark(settings.sidebarColor)) {
+                            updateSettings({ theme: newTheme, sidebarColor: '#1e293b' });
+                          }
+                        } else if (newTheme === 'light' || (newTheme === 'system' && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                          if (isColorDark(settings.sidebarColor)) {
+                            updateSettings({ theme: newTheme, sidebarColor: '#f1f5f9' });
+                          }
+                        }
+                      }}
+                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{option.label}</span>
+                  </label>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -652,15 +649,18 @@ const Settings: React.FC<SettingsProps> = () => {
                   type="color"
                   value={settings.sidebarColor}
                   onChange={(e) => updateSettings({ sidebarColor: e.target.value })}
-                  className="w-16 h-12 rounded border border-gray-300 cursor-pointer"
+                  className="w-16 h-12 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
                 />
                 <div
-                  className="flex-1 h-12 rounded-md flex items-center px-4 text-white font-medium"
-                  style={{ backgroundColor: settings.sidebarColor }}
+                  className="flex-1 h-12 rounded-md flex items-center px-4 font-medium"
+                  style={{
+                    backgroundColor: settings.sidebarColor,
+                    color: isColorDark(settings.sidebarColor) ? '#ffffff' : '#1f2937'
+                  }}
                 >
                   Preview
                 </div>
-                <span className="text-sm text-gray-600 font-mono">{settings.sidebarColor}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">{settings.sidebarColor}</span>
               </div>
             </CardContent>
           </Card>
