@@ -13,10 +13,10 @@ interface TaskListWidgetProps {
 }
 
 const priorityColors: Record<string, { dot: string; gradient: string }> = {
-  urgent: { dot: 'var(--dash-orange)', gradient: 'rgba(239, 68, 68, 0.12)' },
-  high: { dot: 'var(--dash-orange-a60, #f59e0b)', gradient: 'rgba(245, 158, 11, 0.09)' },
-  medium: { dot: 'var(--dash-primary)', gradient: 'rgba(99, 102, 241, 0.08)' },
-  low: { dot: 'var(--dash-text-faint)', gradient: 'rgba(148, 163, 184, 0.06)' },
+  urgent: { dot: 'var(--dash-orange)', gradient: 'var(--dash-orange-a25)' },
+  high: { dot: 'var(--dash-orange-a60)', gradient: 'var(--dash-orange-a12)' },
+  medium: { dot: 'var(--dash-primary)', gradient: 'var(--dash-primary-a25)' },
+  low: { dot: 'var(--dash-text-faint)', gradient: 'var(--dash-primary-a12)' },
 };
 
 const TaskListWidget: React.FC<TaskListWidgetProps> = ({
@@ -33,26 +33,39 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
     const colors = priorityColors[task.priority] || priorityColors.low;
     const gradientBg = task.completed
       ? 'transparent'
-      : `linear-gradient(135deg, ${colors.gradient} 0%, transparent 70%)`;
+      : `linear-gradient(to right, ${colors.gradient} 0%, transparent 80%)`;
 
     return (
     <div
       key={task.id}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
+      className="group relative flex items-center gap-3 pl-10 pr-3 py-2.5 rounded-lg transition-colors cursor-pointer"
       style={{
-        background: gradientBg,
         opacity: task.completed ? 0.5 : 1,
       }}
       onMouseEnter={(e) => {
-        if (!task.completed) {
-          e.currentTarget.style.background = `linear-gradient(135deg, ${colors.gradient} 0%, var(--dash-task-bg) 70%)`;
+        const bg = e.currentTarget.querySelector('[data-gradient]') as HTMLElement;
+        if (!task.completed && bg) {
+          bg.style.background = `linear-gradient(to right, ${colors.gradient} 0%, var(--dash-task-bg) 80%)`;
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = task.completed ? 'transparent' : gradientBg;
+        const bg = e.currentTarget.querySelector('[data-gradient]') as HTMLElement;
+        if (bg) bg.style.background = task.completed ? 'transparent' : gradientBg;
       }}
       onClick={() => onTaskEdit(task)}
     >
+      {/* Gradient background with rounded left edge */}
+      {!task.completed && (
+        <div
+          data-gradient
+          className="absolute inset-y-0 right-0 pointer-events-none"
+          style={{
+            left: '1.5rem',
+            background: gradientBg,
+            borderRadius: '8px 4px 4px 8px',
+          }}
+        />
+      )}
       {/* Checkbox */}
       <button
         onClick={(e) => {
