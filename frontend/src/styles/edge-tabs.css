@@ -163,10 +163,14 @@
 /* Tab bar with border line */
 .edge-tab-bar {
   position: relative;
-  background: #58585e;
+  background: #f5f5f0;
   border-bottom: none;
   overflow: visible;  /* allow active tab SVG to extend below */
   z-index: 2;         /* sit above content so shadows render */
+}
+
+.dark .edge-tab-bar {
+  background: #58585e;
 }
 
 /* Highlight bar beneath the tab strip, above content */
