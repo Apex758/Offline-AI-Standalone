@@ -8,6 +8,7 @@ import CurriculumReferences from './CurriculumReferences';
 import LessonEditor from './LessonEditor';
 import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/lesson';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
+import StepProgressBar from './ui/StepProgressBar';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
@@ -935,27 +936,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             </div>
 
             {/* Progress Steps */}
-            <div className="border-b border-theme px-6 py-4">
-              <div className="flex items-center justify-between max-w-2xl">
-                {['Basic Info', 'Teaching Strategy', 'Additional Details'].map((label, idx) => (
-                  <div key={idx} className="flex items-center">
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-blue-600' : 'bg-theme-tertiary'
-                    } text-white font-semibold text-sm`}>
-                      {idx + 1}
-                    </div>
-                    <span className={`ml-2 text-sm font-medium ${
-                      step === idx + 1 ? 'text-blue-600' : 'text-theme-hint'
-                    }`}>
-                      {label}
-                    </span>
-                    {idx < 2 && (
-                      <ChevronRight className="w-5 h-5 text-theme-hint mx-4" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <StepProgressBar
+              steps={['Basic Info', 'Teaching Strategy', 'Additional Details']}
+              currentStep={step}
+            />
 
             {/* Form Content */}
             <div className="flex-1 overflow-y-auto p-6" style={{ height: 'calc(100vh - 200px)' }}>

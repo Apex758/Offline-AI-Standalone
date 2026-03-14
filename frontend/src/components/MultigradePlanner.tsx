@@ -8,6 +8,7 @@ import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
 import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
+import StepProgressBar from './ui/StepProgressBar';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -854,25 +855,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             </div>
 
             {/* Progress Steps */}
-            <div className="border-b border-theme px-6 py-4">
-              <div className="flex items-center justify-between max-w-2xl">
-                {['Basic Info', 'Learning & Strategies', 'Additional Details'].map((label, idx) => (
-                  <div key={idx} className="flex items-center">
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-indigo-600' : 'bg-theme-tertiary'
-                    } text-white font-semibold text-sm`}>
-                      {idx + 1}
-                    </div>
-                    <span className={`ml-2 text-sm font-medium ${
-                      step === idx + 1 ? 'text-indigo-600' : 'text-theme-hint'
-                    }`}>
-                      {label}
-                    </span>
-                    {idx < 2 && <ChevronRight className="w-5 h-5 text-theme-hint mx-4" />}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <StepProgressBar
+              steps={['Basic Info', 'Learning & Strategies', 'Additional Details']}
+              currentStep={step}
+            />
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-4xl mx-auto">

@@ -8,6 +8,7 @@ import axios from 'axios';
 import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
+import StepProgressBar from './ui/StepProgressBar';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -1047,23 +1048,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             </div>
 
             {/* Progress Indicator */}
-            <div className="border-b border-theme px-6 py-3 overflow-x-auto">
-              <div className="flex items-center space-x-2 min-w-max">
-                {stepLabels.map((label, idx) => (
-                  <React.Fragment key={idx}>
-                    <div className={`flex items-center ${step === idx + 1 ? 'text-teal-600' : 'text-theme-hint'}`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step > idx + 1 ? 'bg-green-500 text-white' : step === idx + 1 ? 'bg-teal-600 text-white' : 'bg-theme-tertiary'
-                      }`}>
-                        {idx + 1}
-                      </div>
-                      <span className="ml-2 text-xs font-medium whitespace-nowrap">{label}</span>
-                    </div>
-                    {idx < stepLabels.length - 1 && <ChevronRight className="w-4 h-4 text-theme-hint" />}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
+            <StepProgressBar steps={stepLabels} currentStep={step} />
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-4xl mx-auto space-y-6">

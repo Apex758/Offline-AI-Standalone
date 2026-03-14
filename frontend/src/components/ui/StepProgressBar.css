@@ -1,0 +1,65 @@
+.spb-wrapper {
+  background: transparent;
+}
+
+.spb-row {
+  display: flex;
+  align-items: center;
+  min-width: max-content;
+}
+
+.spb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Step circle */
+.spb-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.spb-number {
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
+.spb-check {
+  width: 1rem;
+  height: 1rem;
+  color: #ffffff;
+}
+
+/* Label */
+.spb-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Connector line */
+.spb-connector {
+  position: relative;
+  flex: 1;
+  min-width: 2.5rem;
+  height: 0.125rem;
+  background-color: #E8EAE3;
+  border-radius: 9999px;
+  margin: 0 0.75rem;
+  overflow: hidden;
+}
+
+.spb-connector-fill {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background-color: #552A01;
+  border-radius: 9999px;
+}
