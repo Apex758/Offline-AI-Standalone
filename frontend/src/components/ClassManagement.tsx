@@ -3,7 +3,8 @@ import {
   Users, Plus, Trash2, Edit, Search, X, Save,
   ChevronRight, Award, BookOpen, Calendar, Phone,
   User, AlertCircle, Upload, Download, FileSpreadsheet,
-  CheckCircle, GraduationCap, BarChart2, ClipboardCheck, Zap
+  CheckCircle, GraduationCap, BarChart2, ClipboardCheck, Zap,
+  FileText, Loader2, Printer
 } from 'lucide-react';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
@@ -415,6 +416,250 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
     } catch { setError('Failed to download sample file.'); }
   }, []);
 
+  // ── Report Card PDF Generation ──────────────────────────────────────────
+
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [generatingBulkReport, setGeneratingBulkReport] = useState(false);
+
+  const SUBJECTS = ['Math', 'Science', 'English', 'Social Studies', 'Reading', 'Writing', 'Art', 'Music', 'Physical Education'];
+
+  const buildReportCardHTML = (student: Student, accent: string) => {
+    const grades = student.quiz_grades ?? [];
+    // Group grades by subject
+    const subjectGrades: Record<string, { scores: number[]; letters: string[] }> = {};
+    for (const g of grades) {
+      const subj = g.subject || 'General';
+      if (!subjectGrades[subj]) subjectGrades[subj] = { scores: [], letters: [] };
+      subjectGrades[subj].scores.push(g.percentage);
+      subjectGrades[subj].letters.push(g.letter_grade);
+    }
+
+    const getLetterGrade = (pct: number) => pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
+    const gradeColor = (letter: string) => {
+      const m: Record<string, string> = { A: '#059669', B: '#2563eb', C: '#d97706', D: '#ea580c', F: '#dc2626' };
+      return m[letter] || '#6b7280';
+    };
+
+    const overallAvg = grades.length > 0
+      ? Math.round(grades.reduce((s, g) => s + g.percentage, 0) / grades.length) : null;
+
+    // Build subject rows — show subjects with data + empty rows for common subjects without data
+    const allSubjects = new Set([...Object.keys(subjectGrades), ...SUBJECTS]);
+    const subjectRows = [...allSubjects].map(subj => {
+      const data = subjectGrades[subj];
+      if (data) {
+        const avg = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
+        const letter = getLetterGrade(avg);
+        return { subject: subj, avg, letter, quizCount: data.scores.length, hasData: true };
+      }
+      return { subject: subj, avg: null, letter: '—', quizCount: 0, hasData: false };
+    }).sort((a, b) => (b.hasData ? 1 : 0) - (a.hasData ? 1 : 0) || a.subject.localeCompare(b.subject));
+
+    return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+  @page { size: A4; margin: 15mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; font-size: 11pt; line-height: 1.4; }
+  .header { background: ${accent}; color: white; padding: 24px 30px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 20px; }
+  .header .avatar { width: 64px; height: 64px; background: rgba(255,255,255,0.25); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 2px solid rgba(255,255,255,0.4); }
+  .header .info h1 { font-size: 20pt; margin-bottom: 2px; }
+  .header .info p { opacity: 0.8; font-size: 10pt; }
+  .header .badge { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 12px; font-size: 9pt; margin-right: 6px; }
+  .body-card { border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px; padding: 24px 30px; }
+  .section-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: ${accent}; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid ${accent}22; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+  .info-box .label { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 2px; }
+  .info-box .value { font-size: 11pt; font-weight: 600; color: #1e293b; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  th { background: #f1f5f9; text-align: left; padding: 10px 14px; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+  td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 10pt; }
+  tr:last-child td { border-bottom: none; }
+  .grade-badge { display: inline-block; width: 30px; height: 30px; border-radius: 8px; text-align: center; line-height: 30px; font-weight: 700; font-size: 12pt; color: white; }
+  .overall-box { background: ${accent}08; border: 2px solid ${accent}30; border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .overall-box .label { font-size: 11pt; font-weight: 600; color: #475569; }
+  .overall-box .grade { font-size: 20pt; font-weight: 800; color: ${accent}; }
+  .comment-section { margin-top: 16px; }
+  .comment-box { border: 1px solid #e2e8f0; border-radius: 8px; min-height: 60px; padding: 12px; background: #fafbfc; }
+  .comment-label { font-size: 9pt; font-weight: 600; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px; }
+  .signature-row { display: flex; gap: 40px; margin-top: 30px; }
+  .signature-line { flex: 1; border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 9pt; color: #94a3b8; }
+  .footer { text-align: center; font-size: 8pt; color: #94a3b8; margin-top: 20px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+</style></head><body>
+
+<div class="header">
+  <div class="avatar">${student.full_name.charAt(0).toUpperCase()}</div>
+  <div class="info">
+    <h1>${student.full_name}</h1>
+    <p>Student ID: ${student.id}</p>
+    <div style="margin-top:6px">
+      ${student.grade_level ? `<span class="badge">${student.grade_level === 'K' ? 'Kindergarten' : 'Grade ' + student.grade_level}</span>` : ''}
+      ${student.class_name ? `<span class="badge">Class ${student.class_name}</span>` : ''}
+    </div>
+  </div>
+</div>
+
+<div class="body-card">
+  <div class="section-title">Student Information</div>
+  <div class="info-grid">
+    <div class="info-box">
+      <div class="label">Date of Birth</div>
+      <div class="value">${student.date_of_birth || '—'}</div>
+    </div>
+    <div class="info-box">
+      <div class="label">Gender</div>
+      <div class="value">${student.gender || '—'}</div>
+    </div>
+    <div class="info-box">
+      <div class="label">Contact</div>
+      <div class="value">${student.contact_info || '—'}</div>
+    </div>
+    <div class="info-box">
+      <div class="label">Enrolled</div>
+      <div class="value">${student.created_at ? new Date(student.created_at).toLocaleDateString() : '—'}</div>
+    </div>
+  </div>
+
+  ${overallAvg !== null ? `
+  <div class="overall-box">
+    <div>
+      <div class="label">Overall Grade Average</div>
+      <div style="font-size:9pt;color:#94a3b8;margin-top:2px">Based on ${grades.length} quiz${grades.length !== 1 ? 'zes' : ''}</div>
+    </div>
+    <div class="grade">${overallAvg}% (${getLetterGrade(overallAvg)})</div>
+  </div>` : ''}
+
+  <div class="section-title">Academic Performance by Subject</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40%">Subject</th>
+        <th style="width:15%">Quizzes</th>
+        <th style="width:20%">Average</th>
+        <th style="width:12%">Grade</th>
+        <th style="width:13%">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${subjectRows.map(r => `<tr>
+        <td style="font-weight:${r.hasData ? '600' : '400'};color:${r.hasData ? '#1e293b' : '#94a3b8'}">${r.subject}</td>
+        <td>${r.hasData ? r.quizCount : '—'}</td>
+        <td>${r.hasData ? r.avg + '%' : '—'}</td>
+        <td>${r.hasData ? `<span class="grade-badge" style="background:${gradeColor(r.letter!)}">${r.letter}</span>` : '<span style="color:#cbd5e1">—</span>'}</td>
+        <td style="font-size:9pt;color:${r.hasData ? (r.avg! >= 70 ? '#059669' : '#dc2626') : '#cbd5e1'}">${r.hasData ? (r.avg! >= 90 ? 'Excellent' : r.avg! >= 80 ? 'Good' : r.avg! >= 70 ? 'Satisfactory' : r.avg! >= 60 ? 'Needs Improvement' : 'Failing') : '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+
+  <div class="section-title">Quiz History</div>
+  ${grades.length === 0 ? '<p style="color:#94a3b8;font-size:10pt;text-align:center;padding:16px 0">No quiz results recorded yet.</p>' : `
+  <table>
+    <thead>
+      <tr>
+        <th>Quiz Title</th>
+        <th>Subject</th>
+        <th>Date</th>
+        <th>Score</th>
+        <th>Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${grades.map(g => `<tr>
+        <td>${g.quiz_title}</td>
+        <td>${g.subject}</td>
+        <td>${new Date(g.graded_at).toLocaleDateString()}</td>
+        <td>${g.score}/${g.total_points} (${g.percentage}%)</td>
+        <td><span class="grade-badge" style="background:${gradeColor(g.letter_grade)}">${g.letter_grade}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`}
+
+  <div class="comment-section">
+    <div class="section-title">Comments</div>
+    <div class="comment-label">Teacher Comments</div>
+    <div class="comment-box"></div>
+  </div>
+
+  <div class="signature-row">
+    <div class="signature-line">Teacher's Signature</div>
+    <div class="signature-line">Parent/Guardian's Signature</div>
+    <div class="signature-line">Date</div>
+  </div>
+
+  <div class="footer">Generated on ${new Date().toLocaleDateString()} &bull; Report Card</div>
+</div>
+
+</body></html>`;
+  };
+
+  const generateReportCard = async (student: Student) => {
+    setGeneratingReport(true);
+    try {
+      // Fetch full student data with grades
+      const r = await axios.get(`${API_BASE}/api/students/${student.id}`);
+      const fullStudent = r.data;
+      const html = buildReportCardHTML(fullStudent, accentColor);
+
+      const response = await axios.post(`${API_BASE}/api/export`, {
+        data_type: 'report-card',
+        format: 'pdf',
+        data: { rawHtml: html },
+        title: fullStudent.full_name.replace(/\s+/g, '_') + '_Report_Card',
+      }, { responseType: 'blob' });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fullStudent.full_name.replace(/\s+/g, '_')}_Report_Card.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Report card generation failed:', err);
+      setError('Failed to generate report card.');
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  const generateBulkReportCards = async (classStudents: Student[]) => {
+    setGeneratingBulkReport(true);
+    try {
+      for (const student of classStudents) {
+        const r = await axios.get(`${API_BASE}/api/students/${student.id}`);
+        const fullStudent = r.data;
+        const html = buildReportCardHTML(fullStudent, accentColor);
+
+        const response = await axios.post(`${API_BASE}/api/export`, {
+          data_type: 'report-card',
+          format: 'pdf',
+          data: { rawHtml: html },
+          title: fullStudent.full_name.replace(/\s+/g, '_') + '_Report_Card',
+        }, { responseType: 'blob' });
+
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fullStudent.full_name.replace(/\s+/g, '_')}_Report_Card.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        // Small delay to avoid browser blocking multiple downloads
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } catch (err) {
+      console.error('Bulk report card generation failed:', err);
+      setError('Failed to generate report cards.');
+    } finally {
+      setGeneratingBulkReport(false);
+    }
+  };
+
   // ── LEFT SIDEBAR ──────────────────────────────────────────────────────────
 
   const renderSidebar = () => (
@@ -755,12 +1000,24 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
           <p className="text-white/70 text-sm">
             {cs.length} student{cs.length !== 1 ? 's' : ''}
           </p>
-          <button
-            onClick={() => openAdd(grade, cls)}
-            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition"
-          >
-            <Plus className="w-4 h-4" /> Add Student to Class {cls}
-          </button>
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() => openAdd(grade, cls)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition"
+            >
+              <Plus className="w-4 h-4" /> Add Student
+            </button>
+            {cs.length > 0 && (
+              <button
+                onClick={() => generateBulkReportCards(cs)}
+                disabled={generatingBulkReport}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition disabled:opacity-50"
+              >
+                {generatingBulkReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+                {generatingBulkReport ? 'Generating...' : `Generate All Report Cards (${cs.length})`}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tab bar */}
@@ -973,7 +1230,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
     );
   };
 
-  // ── RIGHT: STUDENT PROFILE ────────────────────────────────────────────────
+  // ── RIGHT: STUDENT PROFILE (Report Card Layout) ─────────────────────────
 
   const renderStudentView = () => {
     if (!activeStudent) return (
@@ -982,6 +1239,32 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
     const grades = activeStudent.quiz_grades ?? [];
     const avgPct = grades.length > 0
       ? Math.round(grades.reduce((s, g) => s + g.percentage, 0) / grades.length) : null;
+    const getLetterGrade = (pct: number) => pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
+    const getStatus = (pct: number) => pct >= 90 ? 'Excellent' : pct >= 80 ? 'Good' : pct >= 70 ? 'Satisfactory' : pct >= 60 ? 'Needs Improvement' : 'Failing';
+    const gradeColor = (letter: string) => {
+      const m: Record<string, string> = { A: '#059669', B: '#2563eb', C: '#d97706', D: '#ea580c', F: '#dc2626' };
+      return m[letter] || '#6b7280';
+    };
+
+    // Group grades by subject
+    const subjectGrades: Record<string, { scores: number[]; letters: string[] }> = {};
+    for (const g of grades) {
+      const subj = g.subject || 'General';
+      if (!subjectGrades[subj]) subjectGrades[subj] = { scores: [], letters: [] };
+      subjectGrades[subj].scores.push(g.percentage);
+      subjectGrades[subj].letters.push(g.letter_grade);
+    }
+
+    const allSubjects = new Set([...Object.keys(subjectGrades), ...SUBJECTS]);
+    const subjectRows = [...allSubjects].map(subj => {
+      const data = subjectGrades[subj];
+      if (data) {
+        const avg = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
+        const letter = getLetterGrade(avg);
+        return { subject: subj, avg, letter, quizCount: data.scores.length, hasData: true };
+      }
+      return { subject: subj, avg: null, letter: '—', quizCount: 0, hasData: false };
+    }).sort((a, b) => (b.hasData ? 1 : 0) - (a.hasData ? 1 : 0) || a.subject.localeCompare(b.subject));
 
     return (
       <div className="flex flex-col h-full overflow-hidden">
@@ -1010,6 +1293,14 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
               </div>
             </div>
             <div className="flex gap-2 flex-shrink-0 pb-1">
+              <button
+                onClick={() => generateReportCard(activeStudent)}
+                disabled={generatingReport}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm transition disabled:opacity-50"
+              >
+                {generatingReport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
+                {generatingReport ? 'Generating...' : 'Report Card'}
+              </button>
               <button onClick={() => openEdit(activeStudent)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm transition">
                 <Edit className="w-3.5 h-3.5" /> Edit
@@ -1023,74 +1314,116 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Name breakdown */}
-          {(activeStudent.first_name || activeStudent.last_name) && (
-            <div className="grid grid-cols-3 gap-3">
+          {/* Student Information Section */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: accentColor }}>
+              <User className="w-3.5 h-3.5" /> Student Information
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'First Name', value: activeStudent.first_name },
-                { label: 'Middle Name', value: activeStudent.middle_name || '—' },
-                { label: 'Last Name', value: activeStudent.last_name },
-              ].map(({ label, value }) => (
+                { label: 'First Name', value: activeStudent.first_name || '—', icon: User },
+                { label: 'Middle Name', value: activeStudent.middle_name || '—', icon: User },
+                { label: 'Last Name', value: activeStudent.last_name || '—', icon: User },
+                { label: 'Date of Birth', value: activeStudent.date_of_birth || '—', icon: Calendar },
+                { label: 'Gender', value: activeStudent.gender || '—', icon: User },
+                { label: 'Contact', value: activeStudent.contact_info || '—', icon: Phone },
+                { label: 'Grade Level', value: activeStudent.grade_level ? gradeLabel(activeStudent.grade_level) : '—', icon: GraduationCap },
+                { label: 'Class', value: activeStudent.class_name ? `Class ${activeStudent.class_name}` : '—', icon: Users },
+              ].map(({ label, value, icon: Icon }) => (
                 <div key={label} className="rounded-xl px-4 py-3 widget-glass">
-                  <p className="text-[11px] text-theme-muted uppercase tracking-wide">{label}</p>
-                  <p className="text-sm font-semibold text-theme-label mt-0.5">{value || '—'}</p>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Icon className="w-3 h-3 text-theme-muted" />
+                    <p className="text-[10px] text-theme-muted uppercase tracking-wide">{label}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-theme-label break-all">{value}</p>
                 </div>
               ))}
             </div>
-          )}
-
-          {/* Info cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {activeStudent.date_of_birth && (
-              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
-                  <Calendar className="w-4 h-4" style={{ color: accentColor }} />
-                </div>
-                <div>
-                  <p className="text-[11px] text-theme-muted uppercase tracking-wide">Date of Birth</p>
-                  <p className="text-sm font-semibold text-theme-label mt-0.5">{activeStudent.date_of_birth}</p>
-                </div>
-              </div>
-            )}
-            {activeStudent.gender && (
-              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
-                  <User className="w-4 h-4" style={{ color: accentColor }} />
-                </div>
-                <div>
-                  <p className="text-[11px] text-theme-muted uppercase tracking-wide">Gender</p>
-                  <p className="text-sm font-semibold text-theme-label mt-0.5">{activeStudent.gender}</p>
-                </div>
-              </div>
-            )}
-            {activeStudent.contact_info && (
-              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
-                  <Phone className="w-4 h-4" style={{ color: accentColor }} />
-                </div>
-                <div>
-                  <p className="text-[11px] text-theme-muted uppercase tracking-wide">Contact</p>
-                  <p className="text-sm font-semibold text-theme-label mt-0.5 break-all">{activeStudent.contact_info}</p>
-                </div>
-              </div>
-            )}
-            {avgPct !== null && (
-              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
-                  <Award className="w-4 h-4" style={{ color: accentColor }} />
-                </div>
-                <div>
-                  <p className="text-[11px] text-theme-muted uppercase tracking-wide">Quiz Avg</p>
-                  <p className="text-sm font-bold mt-0.5" style={{ color: accentColor }}>{avgPct}%</p>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Quiz results */}
+          {/* Overall Grade Average */}
+          {avgPct !== null && (
+            <div className="rounded-xl p-5 flex items-center justify-between" style={{ background: `${accentColor}08`, border: `2px solid ${accentColor}30` }}>
+              <div>
+                <p className="text-sm font-semibold text-theme-label">Overall Grade Average</p>
+                <p className="text-xs text-theme-muted mt-0.5">Based on {grades.length} quiz{grades.length !== 1 ? 'zes' : ''}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-extrabold" style={{ color: accentColor }}>{avgPct}%</span>
+                <span
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-bold"
+                  style={{ backgroundColor: gradeColor(getLetterGrade(avgPct)) }}
+                >
+                  {getLetterGrade(avgPct)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Academic Performance by Subject — Report Card Table */}
           <div>
-            <h2 className="text-sm font-semibold text-theme-hint uppercase tracking-wider mb-3 flex items-center gap-2">
-              <BookOpen className="w-4 h-4" /> Quiz Results ({grades.length})
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: accentColor }}>
+              <BarChart2 className="w-3.5 h-3.5" /> Academic Performance by Subject
+            </h2>
+            <div className="rounded-xl overflow-hidden widget-glass">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-theme" style={{ background: `${accentColor}08` }}>
+                    <th className="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Subject</th>
+                    <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Quizzes</th>
+                    <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Average</th>
+                    <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Grade</th>
+                    <th className="text-left px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subjectRows.map((r, i) => (
+                    <tr key={r.subject} className={`border-b border-theme/30 last:border-b-0 ${!r.hasData ? 'opacity-40' : ''}`}>
+                      <td className={`px-4 py-2.5 ${r.hasData ? 'font-semibold text-theme-heading' : 'text-theme-muted'}`}>
+                        {r.subject}
+                      </td>
+                      <td className="text-center px-3 py-2.5 text-theme-muted">
+                        {r.hasData ? r.quizCount : '—'}
+                      </td>
+                      <td className="text-center px-3 py-2.5">
+                        {r.hasData ? (
+                          <span className="font-semibold text-theme-label">{r.avg}%</span>
+                        ) : (
+                          <span className="text-theme-muted">—</span>
+                        )}
+                      </td>
+                      <td className="text-center px-3 py-2.5">
+                        {r.hasData ? (
+                          <span
+                            className="inline-flex w-8 h-8 items-center justify-center rounded-lg text-white text-xs font-bold"
+                            style={{ backgroundColor: gradeColor(r.letter) }}
+                          >
+                            {r.letter}
+                          </span>
+                        ) : (
+                          <span className="text-theme-muted">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-xs">
+                        {r.hasData ? (
+                          <span style={{ color: r.avg! >= 70 ? '#059669' : '#dc2626' }}>
+                            {getStatus(r.avg!)}
+                          </span>
+                        ) : (
+                          <span className="text-theme-muted">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Quiz History */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: accentColor }}>
+              <BookOpen className="w-3.5 h-3.5" /> Quiz History ({grades.length})
             </h2>
             {grades.length === 0 ? (
               <div className="rounded-xl border border-dashed border-theme p-8 text-center text-sm text-theme-muted">
@@ -1121,6 +1454,19 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Comments & Signatures (empty placeholders matching PDF) */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: accentColor }}>
+              <FileText className="w-3.5 h-3.5" /> Comments
+            </h2>
+            <div className="rounded-xl p-4 widget-glass">
+              <p className="text-[10px] text-theme-muted uppercase tracking-wide mb-2">Teacher Comments</p>
+              <div className="rounded-lg border border-dashed border-theme p-4 min-h-[60px] text-sm text-theme-muted italic">
+                Comments will appear on the generated PDF report card.
+              </div>
+            </div>
           </div>
         </div>
 

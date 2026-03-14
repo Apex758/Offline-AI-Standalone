@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Trash2, CalendarDays, Type, AlignLeft, Flag } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Task, TaskFormData, TaskPriority } from '../../types/task';
 
@@ -11,11 +11,11 @@ interface TaskEditModalProps {
   onClose: () => void;
 }
 
-const priorityOptions: { value: TaskPriority; label: string; dot: string }[] = [
-  { value: 'low', label: 'Low', dot: 'var(--dash-text-faint)' },
-  { value: 'medium', label: 'Medium', dot: 'var(--dash-primary)' },
-  { value: 'high', label: 'High', dot: 'var(--dash-orange)' },
-  { value: 'urgent', label: 'Urgent', dot: '#ef4444' },
+const priorityOptions: { value: TaskPriority; label: string; color: string }[] = [
+  { value: 'low', label: 'Low', color: 'var(--dash-text-faint)' },
+  { value: 'medium', label: 'Medium', color: 'var(--dash-primary)' },
+  { value: 'high', label: 'High', color: 'var(--dash-orange)' },
+  { value: 'urgent', label: 'Urgent', color: '#ef4444' },
 ];
 
 const TaskEditModal: React.FC<TaskEditModalProps> = ({
@@ -33,6 +33,11 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setMounted(true));
+  }, []);
 
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -68,118 +73,149 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
     }
   };
 
-  const selectedPriority = priorityOptions.find(p => p.value === formData.priority)!;
-
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: mounted ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0)',
+        backdropFilter: mounted ? 'blur(8px)' : 'blur(0px)',
+        transition: 'background-color 0.2s ease, backdrop-filter 0.2s ease',
       }}
       onClick={onClose}
     >
       <div
-        className="rounded-2xl w-full max-w-sm overflow-hidden"
+        className="rounded-2xl w-full max-w-md overflow-hidden"
         data-tutorial="task-edit-modal"
         style={{
           backgroundColor: 'var(--dash-card-bg, rgba(253, 253, 248, 0.97))',
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--dash-border)',
+          backdropFilter: 'blur(24px)',
+          boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--dash-border)',
+          transform: mounted ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.97)',
+          opacity: mounted ? 1 : 0,
+          transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4">
-          <h2 className="text-base font-semibold" style={{ color: 'var(--dash-text)' }}>
+        <div className="flex items-center justify-between px-6 pt-6 pb-1">
+          <h2 className="text-lg font-semibold tracking-tight" style={{ color: 'var(--dash-text)' }}>
             {task ? 'Edit Task' : 'New Task'}
           </h2>
           <button
             onClick={onClose}
             data-tutorial="task-modal-close"
-            className="p-1.5 rounded-lg transition-colors"
+            className="p-1.5 rounded-xl transition-all"
             style={{ color: 'var(--dash-text-faint)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--dash-task-bg)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--dash-task-bg)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-5 pb-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-5">
           {/* Title */}
-          <div>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--dash-text-faint)' }}>
+              <Type className="w-4 h-4" />
+            </div>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg outline-none text-sm transition-all"
+              className="w-full pl-10 pr-3 py-3 rounded-xl outline-none text-sm font-medium transition-all"
               style={{
                 backgroundColor: 'var(--dash-task-bg)',
                 border: errors.title ? '1.5px solid #ef4444' : '1.5px solid transparent',
                 color: 'var(--dash-text)',
               }}
-              onFocus={(e) => { if (!errors.title) e.currentTarget.style.borderColor = 'var(--dash-primary)'; }}
-              onBlur={(e) => { if (!errors.title) e.currentTarget.style.borderColor = 'transparent'; }}
+              onFocus={(e) => {
+                if (!errors.title) e.currentTarget.style.borderColor = 'var(--dash-primary)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px var(--dash-primary-a12)';
+              }}
+              onBlur={(e) => {
+                if (!errors.title) e.currentTarget.style.borderColor = 'transparent';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               placeholder="Task name"
               autoFocus
             />
             {errors.title && (
-              <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.title}</p>
+              <p className="mt-1.5 text-xs font-medium" style={{ color: '#ef4444' }}>{errors.title}</p>
             )}
           </div>
 
           {/* Description */}
-          <div>
+          <div className="relative">
+            <div className="absolute left-3 top-3 pointer-events-none" style={{ color: 'var(--dash-text-faint)' }}>
+              <AlignLeft className="w-4 h-4" />
+            </div>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg outline-none resize-none text-sm transition-all"
+              className="w-full pl-10 pr-3 py-3 rounded-xl outline-none resize-none text-sm transition-all"
               style={{
                 backgroundColor: 'var(--dash-task-bg)',
                 border: '1.5px solid transparent',
                 color: 'var(--dash-text)',
               }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--dash-primary)'; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'transparent'; }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--dash-primary)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px var(--dash-primary-a12)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'transparent';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               placeholder="Add a description (optional)"
               rows={2}
             />
           </div>
 
-          {/* Date & Priority row */}
-          <div className="flex gap-3">
-            {/* Date */}
-            <div className="flex-1">
-              <label className="block text-[11px] font-medium uppercase tracking-wider mb-1.5" style={{ color: 'var(--dash-text-faint)' }}>
-                Due date
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg outline-none text-sm transition-all"
-                style={{
-                  backgroundColor: 'var(--dash-task-bg)',
-                  border: errors.date ? '1.5px solid #ef4444' : '1.5px solid transparent',
-                  color: 'var(--dash-text)',
-                }}
-                onFocus={(e) => { if (!errors.date) e.currentTarget.style.borderColor = 'var(--dash-primary)'; }}
-                onBlur={(e) => { if (!errors.date) e.currentTarget.style.borderColor = 'transparent'; }}
-              />
-              {errors.date && (
-                <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.date}</p>
-              )}
-            </div>
+          {/* Date */}
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--dash-text-faint)' }}>
+              <CalendarDays className="w-3.5 h-3.5" />
+              Due date
+            </label>
+            <input
+              type="date"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl outline-none text-sm transition-all"
+              style={{
+                backgroundColor: 'var(--dash-task-bg)',
+                border: errors.date ? '1.5px solid #ef4444' : '1.5px solid transparent',
+                color: 'var(--dash-text)',
+              }}
+              onFocus={(e) => {
+                if (!errors.date) e.currentTarget.style.borderColor = 'var(--dash-primary)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px var(--dash-primary-a12)';
+              }}
+              onBlur={(e) => {
+                if (!errors.date) e.currentTarget.style.borderColor = 'transparent';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            />
+            {errors.date && (
+              <p className="mt-1.5 text-xs font-medium" style={{ color: '#ef4444' }}>{errors.date}</p>
+            )}
           </div>
 
           {/* Priority */}
           <div>
-            <label className="block text-[11px] font-medium uppercase tracking-wider mb-1.5" style={{ color: 'var(--dash-text-faint)' }}>
+            <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--dash-text-faint)' }}>
+              <Flag className="w-3.5 h-3.5" />
               Priority
             </label>
-            <div className="flex gap-1.5">
+            <div className="grid grid-cols-4 gap-2">
               {priorityOptions.map((p) => {
                 const isSelected = formData.priority === p.value;
                 return (
@@ -187,20 +223,29 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
                     key={p.value}
                     type="button"
                     onClick={() => setFormData({ ...formData, priority: p.value })}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all"
+                    className="relative flex flex-col items-center gap-2 px-2 py-2.5 rounded-xl text-xs font-medium transition-all"
                     style={{
                       backgroundColor: isSelected ? 'var(--dash-task-bg)' : 'transparent',
                       border: isSelected ? '1.5px solid var(--dash-border)' : '1.5px solid transparent',
                       color: isSelected ? 'var(--dash-text)' : 'var(--dash-text-faint)',
+                      transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                      boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--dash-task-bg)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
                     <div
-                      className="rounded-full flex-shrink-0"
+                      className="rounded-full flex-shrink-0 transition-all"
                       style={{
-                        width: 8,
-                        height: 8,
-                        backgroundColor: p.dot,
-                        opacity: isSelected ? 1 : 0.5,
+                        width: isSelected ? 10 : 8,
+                        height: isSelected ? 10 : 8,
+                        backgroundColor: p.color,
+                        opacity: isSelected ? 1 : 0.45,
+                        boxShadow: isSelected ? `0 0 8px ${p.color}` : 'none',
                       }}
                     />
                     {p.label}
@@ -210,16 +255,25 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
             </div>
           </div>
 
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid var(--dash-border)', opacity: 0.5 }} />
+
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between">
             {task && onDelete ? (
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all"
                 style={{ color: '#ef4444' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete
@@ -232,25 +286,40 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={{
                   color: 'var(--dash-text-sub)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--dash-task-bg)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--dash-task-bg)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 data-tutorial="task-create-button"
-                className="px-5 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
                 style={{
                   backgroundColor: 'var(--dash-primary)',
                   color: 'var(--dash-primary-fg, white)',
+                  boxShadow: '0 2px 8px var(--dash-primary-a12)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px var(--dash-primary-a12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px var(--dash-primary-a12)';
                 }}
               >
-                {task ? 'Save' : 'Create'}
+                {task ? 'Save Changes' : 'Create Task'}
               </button>
             </div>
           </div>

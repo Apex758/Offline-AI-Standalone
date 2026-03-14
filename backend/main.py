@@ -2664,6 +2664,7 @@ EXPORT_TYPE_FORMATS = {
     "multigrade_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
     "cross_curricular_history": {"pdf", "docx", "csv", "json", "md", "markdown"},
     "worksheet": {"pdf", "docx"},
+    "report-card": {"pdf"},
 }
 
 CONTENT_TYPES = {
