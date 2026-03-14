@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -11,7 +10,7 @@
     padding: 0;
     box-sizing: border-box;
   }
-  
+
   body {
     background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
     display: flex;
@@ -21,61 +20,68 @@
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
-  
+
   .splash-container {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2rem;
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    will-change: opacity, transform;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   .splash-container.lightspeed {
     opacity: 0;
     transform: scale(3);
   }
-  
+
   .logo-wrapper {
     position: relative;
-    animation: logoFloat 3s ease-in-out infinite;
+    will-change: transform;
+    animation: logoFloat 4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     transform-origin: center center;
   }
-  
+
   svg {
     max-width: 400px;
     height: auto;
     filter: drop-shadow(0 0 30px rgba(165, 198, 77, 0.3));
     clip-path: circle(38% at 51.5% 48.5%);
     transform-origin: center center;
-    animation: heartbeat 0.8s ease-in-out 1.3s infinite;
+    will-change: transform, filter;
+    animation: heartbeat 1.6s cubic-bezier(0.4, 0, 0.2, 1) 1.5s infinite;
   }
-  
-  /* Animated paths */
+
+  /* Animated paths — staggered fade-in for a layered reveal */
   .path-dark {
     opacity: 0;
     transform-origin: center center;
-    animation: fadeInScale 1s ease-out 0.3s forwards, heartbeat 0.8s ease-in-out 1.3s infinite;
+    will-change: opacity, transform;
+    animation: fadeInScale 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
   }
-  
+
   .path-green {
     opacity: 0;
     transform-origin: center center;
-    animation: fadeInScale 1s ease-out 0.3s forwards, heartbeat 0.8s ease-in-out 1.3s infinite;
+    will-change: opacity, transform;
+    animation: fadeInScale 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
   }
-  
+
   .path-gold {
     opacity: 0;
     transform-origin: center center;
-    animation: fadeInScale 1s ease-out 0.3s forwards, heartbeat 0.8s ease-in-out 1.3s infinite;
+    will-change: opacity, transform;
+    animation: fadeInScale 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
   }
-  
+
   .path-white {
     opacity: 0;
     transform-origin: center center;
-    animation: fadeInScale 1s ease-out 0.3s forwards, heartbeat 0.8s ease-in-out 1.3s infinite;
+    will-change: opacity, transform;
+    animation: fadeInScale 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
   }
-  
+
   /* Glow effect container */
   .glow-ring {
     position: absolute;
@@ -85,9 +91,10 @@
     width: 260px;
     height: 260px;
     border-radius: 50%;
-    animation: expandRing 2s ease-out 0.5s forwards;
+    will-change: width, height, opacity;
+    animation: expandRing 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards, glowPulse 4s cubic-bezier(0.4, 0, 0.2, 1) 3s infinite;
     opacity: 0;
-    background: radial-gradient(circle, 
+    background: radial-gradient(circle,
       rgba(255, 220, 100, 0.5) 0%,
       rgba(255, 200, 80, 0.45) 15%,
       rgba(255, 180, 60, 0.35) 25%,
@@ -98,20 +105,20 @@
       rgba(255, 90, 0, 0.04) 75%,
       rgba(255, 80, 0, 0.02) 85%,
       transparent 100%);
-    box-shadow: 
+    box-shadow:
       0 0 30px rgba(255, 200, 80, 0.8),
-      0 0 60px rgba(255, 165, 50, 0.6), 
+      0 0 60px rgba(255, 165, 50, 0.6),
       0 0 100px rgba(255, 140, 30, 0.5),
       0 0 150px rgba(255, 120, 20, 0.4),
       0 0 200px rgba(255, 100, 10, 0.3),
       0 0 250px rgba(255, 80, 0, 0.2),
       0 0 300px rgba(255, 60, 0, 0.1);
   }
-  
+
   .glow-ring::before {
     display: none;
   }
-  
+
   /* Loading text */
   .loading-text {
     color: transparent;
@@ -122,7 +129,7 @@
     position: relative;
     margin-left: 20px;
   }
-  
+
   .loading-text::before {
     content: 'INITIALIZING';
     position: absolute;
@@ -135,7 +142,7 @@
     border-right: 2px solid rgba(165, 198, 77, 0.9);
     animation: typingCycle 6s steps(12, end) 1.8s infinite;
   }
-  
+
   .loading-text::after {
     content: '';
     position: absolute;
@@ -143,56 +150,60 @@
     top: 0;
     animation: dotsCycle 6s ease-in-out 1.8s infinite;
   }
-  
+
   /* Particles background */
   .particle {
     position: absolute;
     background: rgba(165, 198, 77, 0.6);
     border-radius: 50%;
     pointer-events: none;
-    transition: all 0.3s ease-out;
+    will-change: transform, opacity;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   body.lightspeed .particle {
     border-radius: 50% / 10%;
     animation: none !important;
     background: linear-gradient(to bottom, transparent, rgba(165, 198, 77, 0.9), transparent);
   }
-  
+
+  /* --- Keyframes with smoother curves --- */
+
   @keyframes fadeInScale {
     from {
       opacity: 0;
-      transform: scale(0.8);
+      transform: scale(0.85);
     }
     to {
       opacity: 1;
       transform: scale(1);
     }
   }
-  
+
+  /* Smooth heartbeat with stronger pulse */
   @keyframes heartbeat {
     0%, 100% {
       transform: scale(1);
-      filter: drop-shadow(0 0 5px rgba(165, 198, 77, 0.5));
+      filter: drop-shadow(0 0 6px rgba(165, 198, 77, 0.45));
     }
-    10% {
-      transform: scale(1.08);
-      filter: drop-shadow(0 0 25px rgba(165, 198, 77, 0.9));
+    12% {
+      transform: scale(1.07);
+      filter: drop-shadow(0 0 22px rgba(165, 198, 77, 0.85));
     }
-    20% {
+    24% {
       transform: scale(1);
-      filter: drop-shadow(0 0 5px rgba(165, 198, 77, 0.5));
+      filter: drop-shadow(0 0 6px rgba(165, 198, 77, 0.45));
     }
-    30% {
-      transform: scale(1.12);
-      filter: drop-shadow(0 0 30px rgba(165, 198, 77, 1));
+    36% {
+      transform: scale(1.10);
+      filter: drop-shadow(0 0 28px rgba(165, 198, 77, 1));
     }
-    45% {
+    55% {
       transform: scale(1);
-      filter: drop-shadow(0 0 5px rgba(165, 198, 77, 0.5));
+      filter: drop-shadow(0 0 6px rgba(165, 198, 77, 0.45));
     }
   }
-  
+
   @keyframes shimmer {
     0%, 100% {
       filter: brightness(1);
@@ -201,7 +212,7 @@
       filter: brightness(1.3);
     }
   }
-  
+
   @keyframes expandRing {
     from {
       width: 200px;
@@ -214,7 +225,19 @@
       opacity: 1;
     }
   }
-  
+
+  /* Subtle glow breathing */
+  @keyframes glowPulse {
+    0%, 100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: translate(-50%, -50%) scale(1.04);
+    }
+  }
+
   @keyframes rotateRing {
     from {
       transform: translate(-50%, -50%) rotate(0deg);
@@ -223,7 +246,7 @@
       transform: translate(-50%, -50%) rotate(360deg);
     }
   }
-  
+
   @keyframes rotateBorder {
     from {
       transform: rotate(0deg);
@@ -232,7 +255,7 @@
       transform: rotate(360deg);
     }
   }
-  
+
   @keyframes typingCycle {
     0% {
       width: 0;
@@ -267,7 +290,7 @@
       border-right-color: transparent;
     }
   }
-  
+
   @keyframes dotsCycle {
     0%, 36% {
       content: '';
@@ -298,7 +321,7 @@
       opacity: 0;
     }
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -309,7 +332,7 @@
       transform: translateY(0);
     }
   }
-  
+
   @keyframes textGlow {
     0%, 100% {
       text-shadow: 0 0 10px rgba(165, 198, 77, 0.5);
@@ -318,7 +341,7 @@
       text-shadow: 0 0 20px rgba(165, 198, 77, 0.8), 0 0 30px rgba(165, 198, 77, 0.4);
     }
   }
-  
+
   @keyframes logoFloat {
     0%, 100% {
       transform: translateY(0px);
@@ -327,75 +350,76 @@
       transform: translateY(-10px);
     }
   }
-  
+
+  /* Particles use ease-in-out for smoother drift with gentle fade edges */
   @keyframes floatUp {
     0% {
       transform: translateY(0);
       opacity: 0;
     }
-    10% {
-      opacity: 1;
+    8% {
+      opacity: 0.8;
     }
-    90% {
-      opacity: 1;
+    92% {
+      opacity: 0.8;
     }
     100% {
       transform: translateY(-100vh);
       opacity: 0;
     }
   }
-  
+
   @keyframes floatDown {
     0% {
       transform: translateY(0);
       opacity: 0;
     }
-    10% {
-      opacity: 1;
+    8% {
+      opacity: 0.8;
     }
-    90% {
-      opacity: 1;
+    92% {
+      opacity: 0.8;
     }
     100% {
       transform: translateY(100vh);
       opacity: 0;
     }
   }
-  
+
   @keyframes floatRight {
     0% {
       transform: translateX(0);
       opacity: 0;
     }
-    10% {
-      opacity: 1;
+    8% {
+      opacity: 0.8;
     }
-    90% {
-      opacity: 1;
+    92% {
+      opacity: 0.8;
     }
     100% {
       transform: translateX(100vw);
       opacity: 0;
     }
   }
-  
+
   @keyframes floatLeft {
     0% {
       transform: translateX(0);
       opacity: 0;
     }
-    10% {
-      opacity: 1;
+    8% {
+      opacity: 0.8;
     }
-    90% {
-      opacity: 1;
+    92% {
+      opacity: 0.8;
     }
     100% {
       transform: translateX(-100vw);
       opacity: 0;
     }
   }
-  
+
   @keyframes lightspeedStretch {
     0% {
       transform: translate(0, 0) scaleY(1);
@@ -452,28 +476,28 @@ function createParticle() {
     posY = 100;
     particle.style.left = posX + '%';
     particle.style.bottom = '-10px';
-    particle.style.animation = `floatUp ${duration}s linear infinite`;
+    particle.style.animation = `floatUp ${duration}s ease-in-out infinite`;
   } else if (direction === 1) {
     // From top
     posX = Math.random() * 100;
     posY = 0;
     particle.style.left = posX + '%';
     particle.style.top = '-10px';
-    particle.style.animation = `floatDown ${duration}s linear infinite`;
+    particle.style.animation = `floatDown ${duration}s ease-in-out infinite`;
   } else if (direction === 2) {
     // From left
     posX = 0;
     posY = Math.random() * 100;
     particle.style.top = posY + '%';
     particle.style.left = '-10px';
-    particle.style.animation = `floatRight ${duration}s linear infinite`;
+    particle.style.animation = `floatRight ${duration}s ease-in-out infinite`;
   } else {
     // From right
     posX = 100;
     posY = Math.random() * 100;
     particle.style.top = posY + '%';
     particle.style.right = '-10px';
-    particle.style.animation = `floatLeft ${duration}s linear infinite`;
+    particle.style.animation = `floatLeft ${duration}s ease-in-out infinite`;
   }
   
   particle.dataset.posX = posX;
@@ -519,7 +543,7 @@ function triggerLightspeed() {
     
     particle.style.setProperty('--speedX', (deltaX * factor) + 'px');
     particle.style.setProperty('--speedY', (deltaY * factor) + 'px');
-    particle.style.animation = 'lightspeedStretch 0.8s ease-in forwards';
+    particle.style.animation = 'lightspeedStretch 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards';
   });
   
   // Wait for animation to complete, then notify main process
@@ -527,7 +551,7 @@ function triggerLightspeed() {
     if (window.electron && window.electron.ipcRenderer) {
       window.electron.ipcRenderer.send('splashscreen-complete');
     }
-  }, 1500);
+  }, 1800);
 }
 
 // Listen for backend-ready message from main process
