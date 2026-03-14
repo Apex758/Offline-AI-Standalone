@@ -134,7 +134,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
       </ResponsiveContainer>
 
       {/* Toggleable Legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 px-1">
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 px-1">
         {SERIES.map((s) => {
           const color = getColor(s.toolType);
           const hidden = hiddenSeries.has(s.key);
