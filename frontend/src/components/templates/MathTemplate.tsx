@@ -1,4 +1,5 @@
 import React from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 export interface MathProblem {
   id: string;
@@ -20,6 +21,7 @@ interface MathTemplateProps {
   columnCount?: number;
   showAnswers?: boolean;
   questionCount?: number;
+  loading?: boolean;
 }
 
 const MathTemplate: React.FC<MathTemplateProps> = ({
@@ -33,7 +35,8 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
   questions,
   columnCount = 4,
   showAnswers = false,
-  questionCount = 10
+  questionCount = 10,
+  loading = false
 }) => {
   
   // ✅ STRAND DETECTION: Determine if this is computational (vertical layout) or conceptual (Q&A layout)
@@ -133,13 +136,23 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
       <div className="border-b-2 border-gray-800 pb-4 mb-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle || 'Math Worksheet'}</h1>
-            <p className="text-gray-600">
-              <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
-            </p>
-            <p className="text-gray-600">
-              <strong>Topic:</strong> {topic}
-            </p>
+            {loading ? (
+              <>
+                <Skeleton className="h-7 w-64 mb-2 bg-gray-200" />
+                <Skeleton className="h-4 w-48 mb-1 bg-gray-200" />
+                <Skeleton className="h-4 w-36 bg-gray-200" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle || 'Math Worksheet'}</h1>
+                <p className="text-gray-600">
+                  <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
+                </p>
+                <p className="text-gray-600">
+                  <strong>Topic:</strong> {topic}
+                </p>
+              </>
+            )}
           </div>
           <div className="text-right">
             <p className="text-gray-600">Name: ____________________</p>
@@ -151,11 +164,58 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
       {/* --- Instructions --- */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
-        <p className="text-gray-700">{instructions}</p>
+        {loading ? (
+          <Skeleton className="h-4 w-64 bg-gray-200" />
+        ) : (
+          <p className="text-gray-700">{instructions}</p>
+        )}
       </div>
 
       {/* --- CONDITIONAL RENDERING BASED ON STRAND TYPE --- */}
-      {useVerticalLayout ? (
+      {loading ? (
+        useVerticalLayout ? (
+          <div className={gridClass}>
+            {Array.from({ length: questionCount }, (_, index) => (
+              <div key={`skeleton_${index}`} className="border border-gray-200 rounded-lg p-4 bg-gray-50/50">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold text-xs">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="font-mono text-2xl font-bold text-right inline-block">
+                      <Skeleton className="h-7 w-12 mb-1 bg-gray-200" />
+                      <div className="border-b-2 border-gray-800 pb-1 min-w-[3rem]">
+                        <Skeleton className="h-7 w-12 bg-gray-200" />
+                      </div>
+                      <div className="h-8 pt-1"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={gridClass}>
+            {Array.from({ length: questionCount }, (_, index) => (
+              <div key={`skeleton_${index}`} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="mb-3">
+                      <Skeleton className="h-4 w-5/6 bg-gray-200" />
+                    </div>
+                    <div className="mt-2">
+                      <div className="border-b-2 border-gray-300 pt-6"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : useVerticalLayout ? (
         /* ========== VERTICAL ARITHMETIC LAYOUT (for Operations) ========== */
         <div className={gridClass}>
           {displayProblems.map((problem, index) => (
@@ -171,7 +231,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                   <div className="font-mono text-2xl font-bold text-gray-800 text-right inline-block">
                     {/* Top Number */}
                     <div className="mb-1">{problem.num1}</div>
-                    
+
                     {/* Bottom Number with Operator */}
                     <div className="border-b-2 border-gray-800 pb-1 relative min-w-[3rem]">
                       <span className="absolute left-[-1.5rem] text-gray-600 font-sans text-xl">
@@ -200,13 +260,13 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                 <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
                   {index + 1}
                 </div>
-                
+
                 <div className="flex-1">
                   {/* Question Text */}
                   <div className="mb-3">
                     <p className="text-gray-800 font-medium">{q.question}</p>
                   </div>
-                  
+
                   {/* Answer Section */}
                   {showAnswers && q.correctAnswer ? (
                     <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">

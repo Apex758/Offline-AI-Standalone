@@ -1,5 +1,6 @@
 import React from 'react';
 import { WorksheetQuestion } from '../types/worksheet';
+import { Skeleton } from '../ui/skeleton';
 
 interface ListBasedTemplateProps {
   subject: string;
@@ -13,8 +14,9 @@ interface ListBasedTemplateProps {
   imagePlacement?: string;
   generatedImage?: string | null;
   questions?: WorksheetQuestion[];
-  wordBank?: string[];  // ✅ NEW: Word bank support
+  wordBank?: string[];
   showAnswers?: boolean;
+  loading?: boolean;
 }
 
 const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
@@ -29,7 +31,8 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   generatedImage,
   questions,
   wordBank,
-  showAnswers = false
+  showAnswers = false,
+  loading = false
 }) => {
   // Determine if we're in preview mode (no questions yet) or rendered mode (have questions)
   const isPreviewMode = !questions || questions.length === 0;
@@ -38,22 +41,44 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
     <div className="w-full max-w-4xl mx-auto bg-white p-8">
       {/* Header */}
       <div className="border-b-2 border-gray-800 pb-4 mb-6">
-        <h1 className="text-2xl font-bold text-center mb-2">{worksheetTitle}</h1>
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>Subject: {subject}</span>
-          <span>Grade: {gradeLevel}</span>
-          <span>Name: _________________</span>
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-7 w-64 mx-auto mb-2 bg-gray-200" />
+            <div className="flex justify-between text-sm text-gray-600">
+              <Skeleton className="h-4 w-24 bg-gray-200" />
+              <Skeleton className="h-4 w-20 bg-gray-200" />
+              <span>Name: _________________</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-center mb-2">{worksheetTitle}</h1>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Subject: {subject}</span>
+              <span>Grade: {gradeLevel}</span>
+              <span>Name: _________________</span>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* ✅ WORD BANK SECTION - Render if wordBank exists */}
-      {wordBank && wordBank.length > 0 && (
+      {/* Word Bank Section */}
+      {loading && (questionType === 'Word Bank') ? (
+        <div className="mb-8 p-4 border-2 border-gray-400 rounded-lg bg-gray-50">
+          <h3 className="font-bold text-lg mb-2">Word Bank</h3>
+          <div className="flex flex-wrap gap-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="h-8 w-20 rounded bg-gray-200" />
+            ))}
+          </div>
+        </div>
+      ) : wordBank && wordBank.length > 0 ? (
         <div className="mb-8 p-4 border-2 border-gray-400 rounded-lg bg-gray-50">
           <h3 className="font-bold text-lg mb-2">Word Bank</h3>
           <div className="flex flex-wrap gap-3">
             {wordBank.map((word, index) => (
-              <span 
-                key={index} 
+              <span
+                key={index}
                 className="px-3 py-1 bg-white border border-gray-300 rounded shadow-sm"
               >
                 {word}
@@ -61,27 +86,33 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Instructions */}
       <div className="mb-6 p-3 bg-blue-50 border-l-4 border-blue-500">
-        <p className="text-sm">
-          {questionType === 'Word Bank' 
-            ? 'Use the words from the word bank above to fill in the blanks in each sentence.'
-            : questionType === 'True / False'
-            ? 'Read each statement carefully and circle True or False.'
-            : questionType === 'Fill in the Blank'
-            ? 'Complete each sentence by filling in the blank with the correct word or phrase.'
-            : questionType === 'Short Answer'
-            ? 'Answer each question in 2-4 complete sentences.'
-            : 'Answer the following questions.'}
-        </p>
+        {loading ? (
+          <Skeleton className="h-4 w-80 bg-blue-100" />
+        ) : (
+          <p className="text-sm">
+            {questionType === 'Word Bank'
+              ? 'Use the words from the word bank above to fill in the blanks in each sentence.'
+              : questionType === 'True / False'
+              ? 'Read each statement carefully and circle True or False.'
+              : questionType === 'Fill in the Blank'
+              ? 'Complete each sentence by filling in the blank with the correct word or phrase.'
+              : questionType === 'Short Answer'
+              ? 'Answer each question in 2-4 complete sentences.'
+              : 'Answer the following questions.'}
+          </p>
+        )}
       </div>
 
       {/* Image (if shared mode) */}
       {includeImages && imageMode === 'shared' && (
         <div className="mb-6 flex justify-center">
-          {generatedImage ? (
+          {loading ? (
+            <Skeleton className="max-w-md h-48 w-full bg-gray-200 rounded-lg" />
+          ) : generatedImage ? (
             <img
               src={generatedImage}
               alt="Worksheet illustration"
@@ -97,7 +128,34 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
 
       {/* Questions Section */}
       <div className="space-y-6">
-        {isPreviewMode ? (
+        {loading ? (
+          // Loading Mode - Show skeleton placeholders
+          <>
+            {Array.from({ length: questionCount }).map((_, index) => (
+              <div key={`skeleton_${index}`} className="border-b border-gray-300 pb-4">
+                <div className="flex items-start space-x-3">
+                  <span className="font-bold">{index + 1}.</span>
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-5/6 mb-2 bg-gray-200" />
+                    {(questionType === 'True / False') ? (
+                      <div className="flex space-x-4 ml-6">
+                        <Skeleton className="h-4 w-12 bg-gray-200" />
+                        <Skeleton className="h-4 w-12 bg-gray-200" />
+                      </div>
+                    ) : (questionType === 'Short Answer') ? (
+                      <div className="space-y-2 mt-2">
+                        <div className="border-b border-gray-300 h-8"></div>
+                        <div className="border-b border-gray-300 h-8"></div>
+                      </div>
+                    ) : (
+                      <Skeleton className="h-4 w-2/3 bg-gray-200" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        ) : isPreviewMode ? (
           // Preview Mode - Show placeholders
           <>
             {Array.from({ length: questionCount }).map((_, index) => (

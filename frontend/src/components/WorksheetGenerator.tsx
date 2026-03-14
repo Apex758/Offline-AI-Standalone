@@ -772,6 +772,54 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     }
   };
 
+  const renderTemplateWithLoading = () => {
+    const template = selectedTemplate?.id || formData.selectedTemplate;
+    if (!template) return <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />;
+
+    const getValidQuestionCount = (value: string): number => {
+      const trimmed = value.trim();
+      if (!trimmed) return 10;
+      const parsed = parseInt(trimmed, 10);
+      if (isNaN(parsed)) return 10;
+      if (parsed < 1) return 1;
+      if (parsed > 50) return 50;
+      return parsed;
+    };
+
+    const qCount = getValidQuestionCount(formData.questionCount);
+
+    const commonProps = {
+      subject: formData.subject,
+      gradeLevel: formData.gradeLevel,
+      topic: formData.topic,
+      strand: formData.strand,
+      questionCount: qCount,
+      questionType: formData.questionType,
+      worksheetTitle: formData.worksheetTitle || 'Worksheet',
+      includeImages: formData.includeImages,
+      imageMode: 'shared' as const,
+      imagePlacement: formData.imagePlacement,
+      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
+      showAnswers: viewMode === 'teacher',
+      loading: true
+    };
+
+    switch (template) {
+      case 'multiple-choice':
+        return <MultipleChoiceTemplate {...commonProps} />;
+      case 'comprehension':
+        return <ComprehensionTemplate {...commonProps} />;
+      case 'matching':
+        return <MatchingTemplate {...commonProps} />;
+      case 'list-based':
+        return <ListBasedTemplate {...commonProps} />;
+      case 'math':
+        return <MathTemplate {...commonProps} />;
+      default:
+        return <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />;
+    }
+  };
+
   const saveWorksheet = async () => {
     if (!generatedWorksheet) return;
     
@@ -1688,14 +1736,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           ) : (generatedWorksheet || streamingWorksheet || loading) ? (
             <div className="rounded-lg h-full overflow-y-auto widget-glass">
               {loading && !streamingWorksheet && !generatedWorksheet ? (
-                <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />
+                <div className="transform scale-90 origin-top">
+                  {renderTemplateWithLoading()}
+                </div>
               ) : loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <HeartbeatLoader className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                    <p className="text-theme-muted font-medium">Generating worksheet...</p>
-                    <p className="text-theme-hint text-sm mt-2">The content will appear in your template shortly</p>
-                  </div>
+                <div className="transform scale-90 origin-top">
+                  {renderTemplateWithLoading()}
                 </div>
               ) : parsedWorksheet ? (
                 <div className="transform scale-90 origin-top">

@@ -55,6 +55,7 @@ import CommandPalette from './CommandPalette';
 import { SearchEntry } from '../data/searchIndex';
 import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
+import Grainient from './Grainient';
 
 
 interface DashboardProps {
@@ -199,6 +200,52 @@ const iconMap: { [key: string]: React.ElementType } = {
   Palette
 };
 
+const WELCOME_TIPS = [
+  'Right-click on tabs to split them side-by-side',
+  'Use Ctrl+K to open the command palette',
+  'Drag tabs to reorder them in the toolbar',
+  'The Chat tool can help you plan lessons instantly',
+  'Generate worksheets tailored to any grade level',
+  'Track curriculum coverage from the Analytics dashboard',
+  'Use the Rubric Generator to create assessment criteria',
+  'The Curriculum Viewer covers all OECS subject areas',
+  'Create multigrade lesson plans for combined classes',
+  'Export your lesson plans and worksheets as PDFs',
+  'Use the Image Studio to create visual aids for lessons',
+  'Manage your classes and student groups from one place',
+  'The Quiz Generator supports multiple question types',
+  'Pin your most-used tools for quick access',
+  'Keyboard shortcuts make navigation faster — try them out',
+];
+
+const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * WELCOME_TIPS.length));
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex(prev => (prev + 1) % WELCOME_TIPS.length);
+        setVisible(true);
+      }, 400);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <p
+      className="text-xs transition-opacity duration-400"
+      style={{
+        color: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(29,54,45,0.4)',
+        opacity: visible ? 1 : 0,
+      }}
+    >
+      Tip: {WELCOME_TIPS[index]}
+    </p>
+  );
+};
+
 const MAX_TABS_PER_TYPE = 3;
 const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management']);
 
@@ -212,6 +259,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Ctrl+K / Cmd+K to open command palette
   useEffect(() => {
@@ -2235,19 +2291,51 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </>
           ) : (
-            <div className="h-full relative overflow-hidden" style={{
+            <div className="h-full relative overflow-hidden" style={isDarkMode ? {
               background: 'radial-gradient(ellipse at 25% 40%, rgba(60,140,30,0.6) 0%, transparent 55%), radial-gradient(ellipse at 70% 70%, rgba(75,160,40,0.5) 0%, transparent 50%), radial-gradient(ellipse at 50% 10%, rgba(92,184,50,0.4) 0%, transparent 45%), radial-gradient(ellipse at 55% 55%, rgba(232,170,32,0.35) 0%, transparent 40%), radial-gradient(ellipse at 80% 40%, rgba(240,180,20,0.25) 0%, transparent 35%), radial-gradient(ellipse at 35% 75%, rgba(220,150,10,0.2) 0%, transparent 30%), radial-gradient(ellipse at 85% 25%, rgba(255,255,255,0.15) 0%, transparent 30%), radial-gradient(ellipse at 20% 70%, rgba(255,255,255,0.1) 0%, transparent 25%), linear-gradient(160deg, #0a1f10 0%, #0d2a14 30%, #112a10 60%, #0a1a0c 100%)'
-            }}>
-              {/* Cosmic orbs */}
-              <div className="cosmic-orb cosmic-orb-g1" />
-              <div className="cosmic-orb cosmic-orb-g2" />
-              <div className="cosmic-orb cosmic-orb-g3" />
-              <div className="cosmic-orb cosmic-orb-y1" />
-              <div className="cosmic-orb cosmic-orb-y2" />
-              <div className="cosmic-orb cosmic-orb-y3" />
-              <div className="cosmic-orb cosmic-orb-w1" />
-              <div className="cosmic-orb cosmic-orb-w2" />
-              <div className="cosmic-grid-overlay" />
+            } : {}}>
+              {/* Background layer */}
+              {isDarkMode ? (
+                <>
+                  {/* Cosmic orbs for dark mode */}
+                  <div className="cosmic-orb cosmic-orb-g1" />
+                  <div className="cosmic-orb cosmic-orb-g2" />
+                  <div className="cosmic-orb cosmic-orb-g3" />
+                  <div className="cosmic-orb cosmic-orb-y1" />
+                  <div className="cosmic-orb cosmic-orb-y2" />
+                  <div className="cosmic-orb cosmic-orb-y3" />
+                  <div className="cosmic-orb cosmic-orb-w1" />
+                  <div className="cosmic-orb cosmic-orb-w2" />
+                  <div className="cosmic-grid-overlay" />
+                </>
+              ) : (
+                <div className="absolute inset-0" style={{ zIndex: 0 }}>
+                  <Grainient
+                    color1="#5cb832"
+                    color2="#f0b818"
+                    color3="#ffffff"
+                    timeSpeed={0.25}
+                    colorBalance={0}
+                    warpStrength={1}
+                    warpFrequency={5}
+                    warpSpeed={2}
+                    warpAmplitude={50}
+                    blendAngle={0}
+                    blendSoftness={0.05}
+                    rotationAmount={500}
+                    noiseScale={2}
+                    grainAmount={0.1}
+                    grainScale={2}
+                    grainAnimated={false}
+                    contrast={1.5}
+                    gamma={1}
+                    saturation={1}
+                    centerX={0}
+                    centerY={0}
+                    zoom={0.9}
+                  />
+                </div>
+              )}
 
               {/* Glass welcome card */}
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1 }}>
@@ -2256,12 +2344,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <div
                       className="mx-auto mb-6 w-16 h-16 rounded-2xl flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(77,168,46,0.3), rgba(232,170,32,0.25))',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        boxShadow: '0 4px 24px rgba(77,168,46,0.2)'
+                        background: isDarkMode
+                          ? 'linear-gradient(135deg, rgba(77,168,46,0.3), rgba(232,170,32,0.25))'
+                          : 'linear-gradient(135deg, rgba(29,54,45,0.5), rgba(232,170,32,0.4))',
+                        border: isDarkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(29,54,45,0.2)',
+                        boxShadow: isDarkMode ? '0 4px 24px rgba(77,168,46,0.2)' : '0 4px 24px rgba(29,54,45,0.15)'
                       }}
                     >
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(160,220,120,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? 'rgba(160,220,120,0.8)' : 'rgba(255,255,255,0.9)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
                         <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
                       </svg>
@@ -2269,13 +2359,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
                     <h3
                       className="text-2xl font-bold mb-2"
-                      style={{ color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.02em' }}
+                      style={{
+                        color: isDarkMode ? 'rgba(255,255,255,0.92)' : 'rgba(29,54,45,0.95)',
+                        letterSpacing: '-0.02em',
+                        textShadow: isDarkMode ? 'none' : '0 1px 2px rgba(255,255,255,0.5)'
+                      }}
                     >
                       OECS Learning Hub
                     </h3>
                     <p
                       className="text-sm mb-8"
-                      style={{ color: 'rgba(255,255,255,0.4)' }}
+                      style={{ color: isDarkMode ? 'rgba(255,255,255,0.4)' : 'rgba(29,54,45,0.6)' }}
                     >
                       Select a tool from the sidebar to get started
                     </p>
@@ -2288,18 +2382,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       ].map((item) => (
                         <button
                           key={item.label}
-                          className="glass-action-btn flex flex-col items-center gap-2 p-4"
+                          className={`glass-action-btn flex flex-col items-center gap-2 p-4 ${!isDarkMode ? 'glass-action-btn-light' : ''}`}
                           onClick={() => item.tool && openTool(item.tool)}
                         >
-                          <item.icon className="w-5 h-5" style={{ color: 'rgba(160,220,120,0.7)' }} />
-                          <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{item.label}</span>
+                          <item.icon className="w-5 h-5" style={{ color: isDarkMode ? 'rgba(160,220,120,0.7)' : 'rgba(29,54,45,0.8)' }} />
+                          <span className="text-xs font-medium" style={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(29,54,45,0.75)' }}>{item.label}</span>
                         </button>
                       ))}
                     </div>
 
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                      Tip: Right-click on tabs to split them side-by-side
-                    </p>
+                    <RotatingTip isDarkMode={isDarkMode} />
                   </div>
                 </div>
               </div>

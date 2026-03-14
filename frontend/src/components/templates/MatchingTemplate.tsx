@@ -1,4 +1,5 @@
 import React from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 interface MatchingTemplateProps {
   subject?: string;
@@ -8,9 +9,10 @@ interface MatchingTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
-  columnA?: string[];   
-  columnB?: string[];   
+  columnA?: string[];
+  columnB?: string[];
   showAnswers?: boolean;
+  loading?: boolean;
 }
 
 const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
@@ -23,7 +25,8 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
   includeImages = false, // eslint-disable-line @typescript-eslint/no-unused-vars
   columnA,
   columnB,
-  showAnswers = false
+  showAnswers = false,
+  loading = false
 }) => {
   // Use actual data if provided, otherwise use placeholders
   const displayColumnA = columnA || Array.from({ length: questionCount }, (_, i) =>
@@ -39,13 +42,23 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
       <div className="border-b-2 border-gray-800 pb-4 mb-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle}</h1>
-            <p className="text-gray-600">
-              <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
-            </p>
-            <p className="text-gray-600">
-              <strong>Topic:</strong> {topic}
-            </p>
+            {loading ? (
+              <>
+                <Skeleton className="h-7 w-64 mb-2 bg-gray-200" />
+                <Skeleton className="h-4 w-48 mb-1 bg-gray-200" />
+                <Skeleton className="h-4 w-36 bg-gray-200" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle}</h1>
+                <p className="text-gray-600">
+                  <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
+                </p>
+                <p className="text-gray-600">
+                  <strong>Topic:</strong> {topic}
+                </p>
+              </>
+            )}
           </div>
           <div className="text-right">
             <p className="text-gray-600">Name: ____________________</p>
@@ -57,9 +70,13 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
       {/* Instructions */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
-        <p className="text-gray-700">
-          Draw lines to match the items in Column A with the correct items in Column B.
-        </p>
+        {loading ? (
+          <Skeleton className="h-4 w-80 bg-gray-200" />
+        ) : (
+          <p className="text-gray-700">
+            Draw lines to match the items in Column A with the correct items in Column B.
+          </p>
+        )}
       </div>
 
       {/* Matching Section */}
@@ -69,16 +86,27 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
            <div>
              <h3 className="text-lg font-semibold text-gray-800 mb-4">Column A</h3>
             <div className="space-y-4">
-              {displayColumnA.map((item, i) => (
-                <div key={i} className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
-                    {i + 1}
+              {loading ? (
+                Array.from({ length: questionCount }, (_, i) => (
+                  <div key={`skA_${i}`} className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
+                      {i + 1}
+                    </div>
+                    <Skeleton className="h-4 flex-1 bg-gray-200" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-gray-800">{item}</p>
+                ))
+              ) : (
+                displayColumnA.map((item, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
+                      {i + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-gray-800">{item}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             </div>
 
@@ -86,16 +114,27 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Column B</h3>
               <div className="space-y-4">
-                {displayColumnB.map((item, i) => (
-                  <div key={i} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
-                      {String.fromCharCode(65 + i)}
+                {loading ? (
+                  Array.from({ length: questionCount }, (_, i) => (
+                    <div key={`skB_${i}`} className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
+                        {String.fromCharCode(65 + i)}
+                      </div>
+                      <Skeleton className="h-4 flex-1 bg-gray-200" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-gray-800">{item}</p>
+                  ))
+                ) : (
+                  displayColumnB.map((item, i) => (
+                    <div key={i} className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
+                        {String.fromCharCode(65 + i)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-gray-800">{item}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
          </div>

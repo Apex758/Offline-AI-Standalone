@@ -481,6 +481,30 @@
   opacity: 1;
 }
 
+/* Light mode glass overrides for Grainient background */
+:root:not(.dark) .glass-card {
+  background: rgba(255,255,255,0.45);
+  border-color: rgba(255,255,255,0.6);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+:root:not(.dark) .glass-card::before {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+}
+
+.glass-action-btn-light {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
+.glass-action-btn-light:hover {
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.25) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important;
+}
+
 /* Dashboard welcome fade-in */
 .dashboard-welcome-enter {
   opacity: 0;
