@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ChevronRight, ChevronDown, Circle, CheckCircle2, PlayCircle, XCircle,
   Calendar, Edit2, Eye, Filter, RotateCcw, BookOpen, TrendingUp,
-  Target, Clock, AlertCircle, ChevronUp
+  Target, Clock, AlertCircle, ChevronUp, ListChecks
 } from 'lucide-react';
 import { milestoneApi } from '../lib/milestoneApi';
-import type { Milestone, MilestoneTreeNode } from '../types/milestone';
+import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -35,6 +35,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     subject: '',
     status: ''
   });
+  const [expandedChecklists, setExpandedChecklists] = useState<Set<string>>(new Set());
 
   const teacherId = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user')!).username
@@ -211,6 +212,34 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     }
   };
 
+  const handleChecklistToggle = async (milestone: Milestone, index: number) => {
+    const updatedChecklist = milestone.checklist.map((item, i) =>
+      i === index ? { ...item, checked: !item.checked } : item
+    );
+    const update: any = {
+      checklist_json: JSON.stringify(updatedChecklist)
+    };
+    // Auto-switch to in_progress when first outcome is checked on a not_started milestone
+    if (milestone.status === 'not_started' && updatedChecklist.some(c => c.checked)) {
+      update.status = 'in_progress';
+    }
+    try {
+      await milestoneApi.updateMilestone(milestone.id, update);
+      await loadMilestones();
+    } catch (error) {
+      console.error('Failed to update checklist:', error);
+    }
+  };
+
+  const toggleChecklist = (milestoneId: string) => {
+    setExpandedChecklists(prev => {
+      const next = new Set(prev);
+      if (next.has(milestoneId)) next.delete(milestoneId);
+      else next.add(milestoneId);
+      return next;
+    });
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
@@ -229,66 +258,123 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     }
   };
 
-  const renderMilestone = (milestone: Milestone) => (
-    <div
-      key={milestone.id}
-      className={`ml-8 p-3 rounded-lg border-2 transition-all ${
-        selectedMilestone?.id === milestone.id
-          ? 'bg-theme-surface'
-          : 'border-theme bg-theme-surface'
-      }`}
-      style={selectedMilestone?.id === milestone.id
-        ? { borderColor: accentColor, backgroundColor: `${accentColor}08` }
-        : {}
-      }
-      data-tutorial="milestone-item"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3 flex-1">
-          {getStatusIcon(milestone.status)}
-          <div className="flex-1">
-            <h4 className="font-semibold text-theme-title">{milestone.topic_title}</h4>
-            {milestone.notes && (
-              <p className="text-sm text-theme-muted mt-1">{milestone.notes}</p>
+  const renderMilestone = (milestone: Milestone) => {
+    const checklist = milestone.checklist || [];
+    const checkedCount = checklist.filter(c => c.checked).length;
+    const isChecklistExpanded = expandedChecklists.has(milestone.id);
+
+    return (
+      <div
+        key={milestone.id}
+        className={`ml-8 p-3 rounded-lg border-2 transition-all ${
+          selectedMilestone?.id === milestone.id
+            ? 'bg-theme-surface'
+            : 'border-theme bg-theme-surface'
+        }`}
+        style={selectedMilestone?.id === milestone.id
+          ? { borderColor: accentColor, backgroundColor: `${accentColor}08` }
+          : {}
+        }
+        data-tutorial="milestone-item"
+      >
+        <div className="flex items-center justify-between">
+          <div
+            className={`flex items-center space-x-3 flex-1 ${checklist.length > 0 ? 'cursor-pointer' : ''}`}
+            onClick={() => checklist.length > 0 && toggleChecklist(milestone.id)}
+          >
+            {checklist.length > 0 ? (
+              isChecklistExpanded
+                ? <ChevronDown className="w-5 h-5 text-theme-muted flex-shrink-0" />
+                : <ChevronRight className="w-5 h-5 text-theme-muted flex-shrink-0" />
+            ) : (
+              <div className="w-5" />
             )}
-            {milestone.due_date && (
-              <div className="flex items-center space-x-1 mt-1 text-xs text-theme-hint">
-                <Calendar className="w-3 h-3" />
-                <span>Due: {format(parseISO(milestone.due_date), 'MMM d, yyyy')}</span>
+            {getStatusIcon(milestone.status)}
+            <div className="flex-1">
+              <h4 className="font-semibold text-theme-title">{milestone.topic_title}</h4>
+              {milestone.notes && (
+                <p className="text-sm text-theme-muted mt-1">{milestone.notes}</p>
+              )}
+              <div className="flex items-center space-x-3 mt-1">
+                {milestone.due_date && (
+                  <div className="flex items-center space-x-1 text-xs text-theme-hint">
+                    <Calendar className="w-3 h-3" />
+                    <span>Due: {format(parseISO(milestone.due_date), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+                {checklist.length > 0 && (
+                  <div className="flex items-center space-x-1 text-xs text-theme-muted">
+                    <ListChecks className="w-3 h-3" />
+                    <span>{checkedCount}/{checklist.length} outcomes</span>
+                    <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${checklist.length > 0 ? Math.round((checkedCount / checklist.length) * 100) : 0}%`,
+                          backgroundColor: accentColor
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <select
+              value={milestone.status}
+              onChange={(e) => handleUpdateMilestone(milestone.id, { status: e.target.value as any })}
+              className={`px-3 py-1 rounded-lg border-2 font-medium text-sm ${getStatusColor(milestone.status)}`}
+              style={milestone.status === 'in_progress' ? { backgroundColor: `${accentColor}18`, color: accentColor, borderColor: `${accentColor}50` } : {}}
+              data-tutorial="milestone-status"
+            >
+              <option value="not_started">Not Started</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="skipped">Skipped</option>
+            </select>
+
+            <button
+              onClick={() => setSelectedMilestone(milestone)}
+              className="p-2 rounded-lg transition-colors"
+              style={{ color: accentColor }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${accentColor}18`}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="Edit details"
+              data-tutorial="edit-milestone"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <select
-            value={milestone.status}
-            onChange={(e) => handleUpdateMilestone(milestone.id, { status: e.target.value as any })}
-            className={`px-3 py-1 rounded-lg border-2 font-medium text-sm ${getStatusColor(milestone.status)}`}
-            style={milestone.status === 'in_progress' ? { backgroundColor: `${accentColor}18`, color: accentColor, borderColor: `${accentColor}50` } : {}}
-            data-tutorial="milestone-status"
-          >
-            <option value="not_started">Not Started</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="skipped">Skipped</option>
-          </select>
-
-          <button
-            onClick={() => setSelectedMilestone(milestone)}
-            className="p-2 rounded-lg transition-colors"
-            style={{ color: accentColor }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${accentColor}18`}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            title="Edit details"
-            data-tutorial="edit-milestone"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Expandable checklist */}
+        {isChecklistExpanded && checklist.length > 0 && (
+          <div className="mt-3 ml-8 space-y-1 border-t border-theme pt-3">
+            {checklist.map((item, index) => (
+              <label
+                key={item.key}
+                className="flex items-start space-x-2 py-1 px-2 rounded hover:bg-theme-hover cursor-pointer transition-colors group"
+              >
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  onChange={() => handleChecklistToggle(milestone, index)}
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 cursor-pointer"
+                  style={{ accentColor }}
+                />
+                <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
+                  {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
+                  {item.text}
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderNode = (node: MilestoneTreeNode) => {
     const isExpanded = expandedNodes.has(node.id);
@@ -467,7 +553,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           data-tutorial="edit-modal"
         >
           <div
-            className="rounded-2xl w-full max-w-2xl p-6 widget-glass"
+            className="rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 widget-glass"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl font-bold text-theme-title mb-4">
@@ -527,12 +613,47 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                 />
               </div>
 
+              {/* Specific Outcomes Checklist */}
+              {selectedMilestone.checklist && selectedMilestone.checklist.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">
+                    Specific Outcomes ({selectedMilestone.checklist.filter(c => c.checked).length}/{selectedMilestone.checklist.length})
+                  </label>
+                  <div className="border border-theme-strong rounded-lg max-h-64 overflow-y-auto">
+                    {selectedMilestone.checklist.map((item, index) => (
+                      <label
+                        key={item.key}
+                        className="flex items-start space-x-3 px-4 py-2 hover:bg-theme-hover cursor-pointer transition-colors border-b border-theme last:border-b-0"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={item.checked}
+                          onChange={() => {
+                            const updated = selectedMilestone.checklist.map((c, i) =>
+                              i === index ? { ...c, checked: !c.checked } : c
+                            );
+                            setSelectedMilestone({ ...selectedMilestone, checklist: updated });
+                          }}
+                          className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 cursor-pointer"
+                          style={{ accentColor }}
+                        />
+                        <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
+                          {item.key.match(/^\d/) && <span className="font-semibold mr-1">{item.key}</span>}
+                          {item.text}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex space-x-3 pt-4">
                 <button
                   onClick={() => {
                     handleUpdateMilestone(selectedMilestone.id, {
                       notes: selectedMilestone.notes,
-                      due_date: selectedMilestone.due_date
+                      due_date: selectedMilestone.due_date,
+                      checklist_json: JSON.stringify(selectedMilestone.checklist || [])
                     });
                   }}
                   className="flex-1 text-white py-3 rounded-lg font-semibold transition-colors"

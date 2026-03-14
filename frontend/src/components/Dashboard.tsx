@@ -21,7 +21,17 @@ import {
   Target,
   FileSpreadsheet,
   Palette,
-  Bell
+  Bell,
+  LayoutDashboard,
+  TrendingUp,
+  FolderOpen,
+  Search,
+  PenTool,
+  ClipboardList,
+  UsersRound,
+  Baby,
+  Layers,
+  Merge
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';

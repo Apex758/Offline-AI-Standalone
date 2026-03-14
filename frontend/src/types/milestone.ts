@@ -1,3 +1,9 @@
+export interface ChecklistItem {
+  key: string;
+  text: string;
+  checked: boolean;
+}
+
 export interface Milestone {
   id: string;
   teacher_id: string;
@@ -14,6 +20,7 @@ export interface Milestone {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  checklist: ChecklistItem[];
 }
 
 export interface MilestoneUpdate {
@@ -21,6 +28,7 @@ export interface MilestoneUpdate {
   notes?: string;
   due_date?: string | null;
   is_hidden?: boolean;
+  checklist_json?: string;
 }
 
 export interface ProgressSummary {

@@ -1,5 +1,12 @@
 import axios from 'axios';
-import type { Milestone, MilestoneUpdate, ProgressSummary, MilestoneStats } from '../types/milestone';
+import type { Milestone, MilestoneUpdate, ProgressSummary, MilestoneStats, ChecklistItem } from '../types/milestone';
+
+function parseMilestone(raw: any): Milestone {
+  return {
+    ...raw,
+    checklist: raw.checklist_json ? JSON.parse(raw.checklist_json) : []
+  };
+}
 
 const API_URL = 'http://localhost:8000/api/milestones';
 
@@ -27,7 +34,7 @@ export const milestoneApi = {
     if (filters?.include_hidden) params.append('include_hidden', 'true');
 
     const response = await axios.get(`${API_URL}/${teacherId}?${params.toString()}`);
-    return response.data.milestones as Milestone[];
+    return (response.data.milestones as any[]).map(parseMilestone);
   },
 
   // Get progress summary
@@ -39,13 +46,13 @@ export const milestoneApi = {
   // Get upcoming milestones
   getUpcoming: async (teacherId: string, days: number = 7) => {
     const response = await axios.get(`${API_URL}/${teacherId}/upcoming?days=${days}`);
-    return response.data.milestones as Milestone[];
+    return (response.data.milestones as any[]).map(parseMilestone);
   },
 
   // Update a milestone
   updateMilestone: async (milestoneId: string, update: MilestoneUpdate) => {
     const response = await axios.patch(`${API_URL}/${milestoneId}`, update);
-    return response.data.milestone as Milestone;
+    return parseMilestone(response.data.milestone);
   },
 
   // Bulk reset for new year

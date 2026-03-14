@@ -15,6 +15,7 @@ class MilestoneUpdate(BaseModel):
     notes: Optional[str] = None
     due_date: Optional[str] = None
     is_hidden: Optional[bool] = None
+    checklist_json: Optional[str] = None
 
 class BulkResetRequest(BaseModel):
     teacher_id: str
@@ -128,7 +129,8 @@ async def update_milestone(milestone_id: str, update: MilestoneUpdate):
         status=update.status,
         notes=update.notes,
         due_date=update.due_date,
-        is_hidden=update.is_hidden
+        is_hidden=update.is_hidden,
+        checklist_json=update.checklist_json
     )
     
     if not updated:

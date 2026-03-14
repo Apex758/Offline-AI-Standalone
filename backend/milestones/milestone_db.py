@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional, Any
@@ -76,9 +77,50 @@ class MilestoneDB:
             )
         """)
         
+        # Migration: add checklist_json column for existing databases
+        try:
+            conn.execute("ALTER TABLE milestones ADD COLUMN checklist_json TEXT DEFAULT '[]'")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+
         conn.commit()
         conn.close()
         logger.info(f"Milestone database initialized at {self.db_path}")
+
+    @staticmethod
+    def _parse_outcomes_to_checklist(specific_outcomes: list) -> str:
+        """Convert specificOutcomes strings into checklist JSON."""
+        checklist = []
+        for i, outcome in enumerate(specific_outcomes):
+            text = outcome.strip()
+            if not text:
+                continue
+            match = re.match(r'^(\d+\.\d+)\s+(.+)', text)
+            if match:
+                checklist.append({"key": match.group(1), "text": match.group(2).strip(), "checked": False})
+            else:
+                checklist.append({"key": str(i), "text": text, "checked": False})
+        return json.dumps(checklist)
+
+    @staticmethod
+    def _merge_checklists(existing_json: str, specific_outcomes: list) -> str:
+        """Merge new curriculum outcomes with existing checked state."""
+        existing = json.loads(existing_json) if existing_json else []
+        existing_map = {item['key']: item['checked'] for item in existing}
+
+        checklist = []
+        for i, outcome in enumerate(specific_outcomes):
+            text = outcome.strip()
+            if not text:
+                continue
+            match = re.match(r'^(\d+\.\d+)\s+(.+)', text)
+            if match:
+                key = match.group(1)
+                checklist.append({"key": key, "text": match.group(2).strip(), "checked": existing_map.get(key, False)})
+            else:
+                key = str(i)
+                checklist.append({"key": key, "text": text, "checked": existing_map.get(key, False)})
+        return json.dumps(checklist)
     
     def get_connection(self):
         """Get database connection with row factory"""
@@ -95,20 +137,22 @@ class MilestoneDB:
         subject: str,
         strand: str = "",
         route: str = "",
-        status: str = "not_started"
+        status: str = "not_started",
+        specific_outcomes: list = None
     ) -> Dict[str, Any]:
         """Create a new milestone"""
         milestone_id = f"{teacher_id}_{topic_id}"
-        
+        checklist_json = self._parse_outcomes_to_checklist(specific_outcomes) if specific_outcomes else '[]'
+
         conn = self.get_connection()
         try:
             conn.execute("""
-                INSERT OR IGNORE INTO milestones 
-                (id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (milestone_id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status))
+                INSERT OR IGNORE INTO milestones
+                (id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status, checklist_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (milestone_id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status, checklist_json))
             conn.commit()
-            
+
             row = conn.execute("SELECT * FROM milestones WHERE id = ?", (milestone_id,)).fetchone()
             return dict(row) if row else {}
         finally:
@@ -157,7 +201,8 @@ class MilestoneDB:
         status: Optional[str] = None,
         notes: Optional[str] = None,
         due_date: Optional[str] = None,
-        is_hidden: Optional[bool] = None
+        is_hidden: Optional[bool] = None,
+        checklist_json: Optional[str] = None
     ) -> Dict[str, Any]:
         """Update milestone fields"""
         conn = self.get_connection()
@@ -198,7 +243,11 @@ class MilestoneDB:
             if is_hidden is not None:
                 updates.append("is_hidden = ?")
                 params.append(1 if is_hidden else 0)
-            
+
+            if checklist_json is not None:
+                updates.append("checklist_json = ?")
+                params.append(checklist_json)
+
             if updates:
                 updates.append("updated_at = CURRENT_TIMESTAMP")
                 params.append(milestone_id)
@@ -286,7 +335,20 @@ class MilestoneDB:
                     WHERE teacher_id = ?
                 """, (teacher_id,))
             
-            # Reset all
+            # Reset all (uncheck all checklist items too)
+            rows = conn.execute(
+                "SELECT id, checklist_json FROM milestones WHERE teacher_id = ?", (teacher_id,)
+            ).fetchall()
+            for row in rows:
+                if row['checklist_json']:
+                    checklist = json.loads(row['checklist_json'])
+                    for item in checklist:
+                        item['checked'] = False
+                    conn.execute(
+                        "UPDATE milestones SET checklist_json = ? WHERE id = ?",
+                        (json.dumps(checklist), row['id'])
+                    )
+
             result = conn.execute("""
                 UPDATE milestones
                 SET status = 'not_started',
@@ -318,7 +380,8 @@ class MilestoneDB:
                     grade=page.get('grade', ''),
                     subject=page.get('subject', ''),
                     strand=page.get('strand', ''),
-                    route=page.get('route', '')
+                    route=page.get('route', ''),
+                    specific_outcomes=page.get('specificOutcomes', [])
                 )
                 count += 1
             except Exception as e:
@@ -359,13 +422,20 @@ class MilestoneDB:
                     continue
                 curriculum_ids.add(page_id)
 
+                specific_outcomes = page.get('specificOutcomes', [])
+
                 if page_id in existing_map:
                     # Update existing milestone metadata (preserve status, notes, due_date)
                     milestone_id = existing_map[page_id]['id']
+                    # Merge checklist: preserve checked state, add/remove outcomes
+                    merged_checklist = self._merge_checklists(
+                        existing_map[page_id].get('checklist_json', '[]'),
+                        specific_outcomes
+                    )
                     conn.execute("""
                         UPDATE milestones
                         SET topic_title = ?, grade = ?, subject = ?, strand = ?, route = ?,
-                            updated_at = CURRENT_TIMESTAMP
+                            checklist_json = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
                     """, (
                         page.get('displayName', ''),
@@ -373,23 +443,26 @@ class MilestoneDB:
                         page.get('subject', ''),
                         page.get('strand', ''),
                         page.get('route', ''),
+                        merged_checklist,
                         milestone_id
                     ))
                     updated += 1
                 else:
                     # Add new milestone (inline to reuse existing connection)
                     milestone_id = f"{teacher_id}_{page_id}"
+                    checklist_json = self._parse_outcomes_to_checklist(specific_outcomes)
                     conn.execute("""
                         INSERT OR IGNORE INTO milestones
-                        (id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'not_started')
+                        (id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status, checklist_json)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'not_started', ?)
                     """, (
                         milestone_id, teacher_id, page_id,
                         page.get('displayName', ''),
                         page.get('grade', ''),
                         page.get('subject', ''),
                         page.get('strand', ''),
-                        page.get('route', '')
+                        page.get('route', ''),
+                        checklist_json
                     ))
                     added += 1
 
