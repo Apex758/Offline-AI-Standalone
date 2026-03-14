@@ -1,5 +1,5 @@
-import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React, { useState } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import type { ResourceTrendData, Timeframe } from '../../types/analytics';
@@ -27,6 +27,15 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   onTimeframeChange,
   tabColors = {}
 }) => {
+  const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+
+  const toggleSeries = (key: string) =>
+    setHiddenSeries(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+
   const minDate = new Date('2025-06-01');
   const filteredData = data.filter(d => {
     const entryDate = typeof d.date === 'string' ? new Date(d.date) : d.date;
@@ -136,12 +145,6 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
             tickLine={false}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            iconSize={8}
-            iconType="circle"
-            wrapperStyle={{ fontSize: '11px' }}
-            formatter={(value) => <span style={{ color: '#552A01' }}>{value}</span>}
-          />
           {SERIES.map((s) => {
             const color = getColor(s.toolType);
             return (
@@ -157,11 +160,43 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
                 dot={false}
                 activeDot={{ r: 4, fill: color, strokeWidth: 0 }}
                 connectNulls
+                hide={hiddenSeries.has(s.key)}
               />
             );
           })}
         </AreaChart>
       </ResponsiveContainer>
+
+      {/* Toggleable Legend */}
+      <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 px-1">
+        {SERIES.map((s) => {
+          const color = getColor(s.toolType);
+          const hidden = hiddenSeries.has(s.key);
+          return (
+            <button
+              key={s.key}
+              onClick={() => toggleSeries(s.key)}
+              className="flex items-center gap-1.5 transition-opacity"
+              style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+            >
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: hidden ? '#d1d5db' : color,
+                flexShrink: 0, display: 'inline-block',
+                transition: 'background 0.2s',
+              }} />
+              <span style={{
+                fontSize: 11,
+                color: hidden ? '#9ca3af' : '#552A01',
+                textDecoration: hidden ? 'line-through' : 'none',
+                transition: 'color 0.2s',
+              }}>
+                {s.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };

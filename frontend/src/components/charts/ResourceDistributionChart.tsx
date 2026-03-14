@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from 'recharts';
 import { BarChart2 } from 'lucide-react';
 import type { DistributionData } from '../../types/analytics';
@@ -20,12 +20,21 @@ const resourceToToolType: { [key: string]: string } = {
 };
 
 const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data, tabColors = {} }) => {
+  const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
+
+  const toggleItem = (name: string) =>
+    setHiddenItems(prev => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+
   const total = data.reduce((sum, item) => sum + item.count, 0);
   const max = Math.max(...data.map((d) => d.count), 1);
 
   const getColor = (type: string): string => tabColors[resourceToToolType[type]] || '#6b7280';
 
-  const radialData = data
+  const allRadialData = data
     .filter((d) => d.count > 0)
     .map((d) => ({
       name: d.label,
@@ -34,6 +43,8 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
       percentage: d.percentage,
       fill: getColor(d.type),
     }));
+
+  const radialData = allRadialData.filter((d) => !hiddenItems.has(d.name));
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.[0]) return null;
@@ -95,19 +106,40 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
           </ResponsiveContainer>
         </div>
 
-        {/* Legend */}
+        {/* Toggleable Legend */}
         <div className="w-44 space-y-2.5">
           <div className="text-center mb-3">
             <div className="text-2xl font-bold" style={{ color: '#020D03' }}>{total}</div>
             <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
           </div>
-          {radialData.map((entry, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.fill, flexShrink: 0, display: 'inline-block' }} />
-              <span className="text-xs truncate" style={{ color: '#552A01' }}>{entry.name}</span>
-              <span className="text-xs font-semibold ml-auto" style={{ color: '#020D03' }}>{entry.count}</span>
-            </div>
-          ))}
+          {allRadialData.map((entry, i) => {
+            const hidden = hiddenItems.has(entry.name);
+            return (
+              <button
+                key={i}
+                onClick={() => toggleItem(entry.name)}
+                className="flex items-center gap-2 w-full transition-opacity"
+                style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+              >
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: hidden ? '#d1d5db' : entry.fill,
+                  flexShrink: 0, display: 'inline-block',
+                  transition: 'background 0.2s',
+                }} />
+                <span className="text-xs truncate" style={{
+                  color: hidden ? '#9ca3af' : '#552A01',
+                  textDecoration: hidden ? 'line-through' : 'none',
+                  transition: 'color 0.2s',
+                }}>
+                  {entry.name}
+                </span>
+                <span className="text-xs font-semibold ml-auto" style={{ color: hidden ? '#9ca3af' : '#020D03' }}>
+                  {entry.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
