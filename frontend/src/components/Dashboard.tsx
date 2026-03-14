@@ -42,7 +42,7 @@ import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
 import { useSettings } from '../contexts/SettingsContext';
-import { generateColorVariants, isColorDark } from '../lib/utils';
+import { generateColorVariants } from '../lib/utils';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useTutorials } from '../contexts/TutorialContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -207,8 +207,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     
     return colors;
   }, [settings.tabColors]);
-  // Determine if sidebar color is dark for text contrast
-  const sidebarIsDark = useMemo(() => isColorDark(settings.sidebarColor), [settings.sidebarColor]);
   
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
@@ -1067,10 +1065,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       };
 
       return (
-        <div className="flex h-full gap-1 bg-gray-200 p-1" data-tutorial="split-view-demo">
+        <div className="flex h-full gap-1 p-1" style={{ backgroundColor: 'var(--tab-content-bg)' }} data-tutorial="split-view-demo">
           {/* Left Pane */}
           <div
-            className={`flex-1 overflow-hidden relative bg-white ${
+            className={`flex-1 overflow-hidden relative ${
               splitView.activePaneId === 'left' ? 'active-pane-glow' : ''
             }`}
             onFocus={() => {
@@ -1080,12 +1078,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             }}
             tabIndex={-1}
             style={splitView.activePaneId === 'left' ? {
+              backgroundColor: 'var(--tab-content-bg)',
               '--glow-color': activePaneColor,
               '--glow-rgb': hexToRgb(activePaneColor),
               border: `3px solid ${activePaneColor}`,
               borderRadius: '4px',
               zIndex: 10
             } as React.CSSProperties : {
+              backgroundColor: 'var(--tab-content-bg)',
               border: '3px solid transparent',
               borderRadius: '4px',
               zIndex: 1
@@ -1096,7 +1096,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           
           {/* Right Pane */}
           <div
-            className={`flex-1 overflow-hidden relative bg-white ${
+            className={`flex-1 overflow-hidden relative ${
               splitView.activePaneId === 'right' ? 'active-pane-glow' : ''
             }`}
             onFocus={() => {
@@ -1106,12 +1106,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             }}
             tabIndex={-1}
             style={splitView.activePaneId === 'right' ? {
+              backgroundColor: 'var(--tab-content-bg)',
               '--glow-color': activePaneColor,
               '--glow-rgb': hexToRgb(activePaneColor),
               border: `3px solid ${activePaneColor}`,
               borderRadius: '4px',
               zIndex: 10
             } as React.CSSProperties : {
+              backgroundColor: 'var(--tab-content-bg)',
               border: '3px solid transparent',
               borderRadius: '4px',
               zIndex: 1
@@ -1176,18 +1178,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           bottom: 0,
           width: sidebarOpen ? '256px' : '72px',
           zIndex: 40,
-          background: (() => {
-            const hex = settings.sidebarColor.replace('#', '');
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            return `rgba(${r},${g},${b},${sidebarOpen ? 0.82 : 0.55})`;
-          })(),
-          color: sidebarIsDark ? '#ffffff' : '#1f2937',
+          background: sidebarOpen ? 'var(--sidebar-bg)' : 'var(--sidebar-bg-collapsed)',
+          color: 'var(--sidebar-text)',
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s',
           backdropFilter: 'blur(24px) saturate(1.5)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
-          borderRight: `1px solid ${sidebarIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+          borderRight: '1px solid var(--sidebar-border)',
           boxShadow: sidebarOpen ? '6px 0 40px rgba(0,0,0,0.25), 2px 0 12px rgba(0,0,0,0.15)' : '4px 0 16px rgba(0,0,0,0.12)',
         }}
         data-tutorial="main-sidebar"
@@ -1198,8 +1194,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div
           className="p-4"
           style={{
-            borderBottom: `1px solid ${sidebarIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-            background: sidebarIsDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+            borderBottom: '1px solid var(--sidebar-border)',
+            background: 'var(--sidebar-header-bg)'
           }}
         >
           <div className="flex items-center justify-center">
@@ -1257,7 +1253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <p
                       className="text-xs whitespace-nowrap overflow-hidden"
                       style={{
-                        color: sidebarIsDark ? 'rgba(255,255,255,0.45)' : '#6b7280',
+                        color: 'var(--sidebar-text-muted)',
                         textOverflow: 'ellipsis'
                       }}
                     >
@@ -1270,11 +1266,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
         </div>
 
-        <div ref={sidebarScrollRef} className={`flex-1 p-4 space-y-1 overflow-y-auto ${sidebarIsDark ? 'glass-scrollbar' : 'glass-scrollbar glass-scrollbar-light'}`}>
+        <div ref={sidebarScrollRef} className="flex-1 p-4 space-y-1 overflow-y-auto glass-scrollbar">
           <div
             className="glass-section-label"
             style={{
-              color: sidebarIsDark ? 'rgba(255,255,255,0.25)' : '#9ca3af',
+              color: 'var(--sidebar-text-faint)',
               textAlign: sidebarOpen ? 'left' : 'center',
               padding: sidebarOpen ? '14px 12px 6px' : '14px 0 6px'
             }}
@@ -1315,7 +1311,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   ...(count < MAX_TABS_PER_TYPE
                     ? {
                         backgroundColor: isActiveToolType
-                          ? (sidebarIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')
+                          ? ('var(--sidebar-active)')
                           : 'transparent',
                         transition: 'background-color 0.25s, box-shadow 0.25s'
                       }
@@ -1324,15 +1320,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }}
                 onMouseEnter={(e) => {
                   if (count < MAX_TABS_PER_TYPE) {
-                    e.currentTarget.style.backgroundColor = sidebarIsDark
-                      ? 'rgba(255, 255, 255, 0.1)'
-                      : 'rgba(0, 0, 0, 0.05)';
+                    e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (count < MAX_TABS_PER_TYPE) {
                     e.currentTarget.style.backgroundColor = isActiveToolType
-                      ? (sidebarIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')
+                      ? ('var(--sidebar-active)')
                       : 'transparent';
                   }
                 }}
@@ -1344,7 +1338,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   style={
                     isActiveToolType && toolColor
                       ? { color: toolColor }
-                      : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                      : { color: 'var(--sidebar-text-muted)' }
                   }
                 />
                 <div
@@ -1367,7 +1361,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' &&(
                     <p
                       className="text-xs whitespace-nowrap"
-                      style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                      style={{ color: 'var(--sidebar-text-muted)' }}
                     >
                       {count}/{MAX_TABS_PER_TYPE} open
                     </p>
@@ -1378,7 +1372,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })}
 
           {/* Glass divider */}
-          <div className={`glass-divider ${!sidebarIsDark ? 'glass-divider-dark' : ''}`} />
+          <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
 
           {/* Other Grouped Tools */}
           {otherGroupedTools.map((tool, i) => {
@@ -1414,9 +1408,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }}
                 onMouseEnter={(e) => {
                   if (count < MAX_TABS_PER_TYPE) {
-                    e.currentTarget.style.backgroundColor = sidebarIsDark
-                      ? 'rgba(255, 255, 255, 0.1)'
-                      : 'rgba(0, 0, 0, 0.05)';
+                    e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -1432,7 +1424,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   style={
                     isActiveToolType && toolColor
                       ? { color: toolColor }
-                      : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                      : { color: 'var(--sidebar-text-muted)' }
                   }
                 />
                 <div
@@ -1454,7 +1446,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   </p>
                   <p
                     className="text-xs whitespace-nowrap"
-                    style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                    style={{ color: 'var(--sidebar-text-muted)' }}
                   >
                     {count}/{MAX_TABS_PER_TYPE} open
                   </p>
@@ -1464,7 +1456,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           })}
 
           {/* Glass divider */}
-          <div className={`glass-divider ${!sidebarIsDark ? 'glass-divider-dark' : ''}`} />
+          <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
 
           {/* Lesson Planners Dropdown */}
           <div className="mt-2" data-tutorial="lesson-planners-group">
@@ -1484,9 +1476,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     transition: 'background-color 0.25s, box-shadow 0.25s'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = sidebarIsDark
-                      ? 'rgba(255, 255, 255, 0.1)'
-                      : 'rgba(0, 0, 0, 0.05)';
+                    e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -1495,7 +1485,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   <LPIcon
                     className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeLPTool ? 'icon-glow' : ''}`}
                     style={{
-                      color: activeLPTool && lpToolColor ? lpToolColor : (sidebarIsDark ? '#9ca3af' : '#6b7280'),
+                      color: activeLPTool && lpToolColor ? lpToolColor : ('var(--sidebar-text-muted)'),
                       transition: 'color 0.3s, filter 0.3s'
                     }}
                   />
@@ -1533,7 +1523,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <div
               className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
               style={{
-                borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                borderColor: 'var(--sidebar-border)',
                 opacity: lessonPlannerExpanded && sidebarOpen ? 1 : 0,
                 transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 pointerEvents: lessonPlannerExpanded && sidebarOpen ? 'auto' : 'none',
@@ -1565,9 +1555,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       }}
                       onMouseEnter={(e) => {
                         if (count < MAX_TABS_PER_TYPE) {
-                          e.currentTarget.style.backgroundColor = sidebarIsDark
-                            ? 'rgba(255, 255, 255, 0.1)'
-                            : 'rgba(0, 0, 0, 0.05)';
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -1583,7 +1571,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         style={
                           isActiveToolType && toolColor
                             ? { color: toolColor }
-                            : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                            : { color: 'var(--sidebar-text-muted)' }
                         }
                       />
                       <div className="flex-1 text-left overflow-hidden">
@@ -1596,7 +1584,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         </p>
                         <p
                           className="text-xs"
-                          style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+                          style={{ color: 'var(--sidebar-text-muted)' }}
                         >
                           {count}/{(tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE}
                         </p>
@@ -1625,9 +1613,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   transition: 'background-color 0.25s, box-shadow 0.25s'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = sidebarIsDark
-                    ? 'rgba(255, 255, 255, 0.1)'
-                    : 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -1636,7 +1622,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <VSIcon
                       className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeVSTool ? 'icon-glow' : ''}`}
                       style={{
-                        color: activeVSTool && vsToolColor ? vsToolColor : (sidebarIsDark ? '#9ca3af' : '#6b7280'),
+                        color: activeVSTool && vsToolColor ? vsToolColor : ('var(--sidebar-text-muted)'),
                         transition: 'color 0.3s, filter 0.3s'
                       }}
                     />
@@ -1674,7 +1660,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div
                 className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
                 style={{
-                  borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                  borderColor: 'var(--sidebar-border)',
                   opacity: visualStudioExpanded && sidebarOpen ? 1 : 0,
                   transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   pointerEvents: visualStudioExpanded && sidebarOpen ? 'auto' : 'none',
@@ -1706,9 +1692,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       }}
                       onMouseEnter={(e) => {
                         if (count < MAX_TABS_PER_TYPE) {
-                          e.currentTarget.style.backgroundColor = sidebarIsDark
-                            ? 'rgba(255, 255, 255, 0.1)'
-                            : 'rgba(0, 0, 0, 0.05)';
+                          e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -1724,7 +1708,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         style={
                           isActiveToolType && toolColor
                             ? { color: toolColor }
-                            : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                            : { color: 'var(--sidebar-text-muted)' }
                         }
                       />
                       <div className="flex-1 text-left overflow-hidden">
@@ -1744,7 +1728,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           )}
 
           {/* Glass divider */}
-          <div className={`glass-divider ${!sidebarIsDark ? 'glass-divider-dark' : ''}`} />
+          <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
 
           {/* Settings Tool */}
           {settingsTool && (
@@ -1765,9 +1749,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       transition: 'background-color 0.25s, box-shadow 0.25s'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = sidebarIsDark
-                        ? 'rgba(255, 255, 255, 0.1)'
-                        : 'rgba(0, 0, 0, 0.05)';
+                      e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
@@ -1780,7 +1762,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       style={
                         isActiveToolType
                           ? { color: '#64748b' }
-                          : { color: sidebarIsDark ? '#9ca3af' : '#6b7280' }
+                          : { color: 'var(--sidebar-text-muted)' }
                       }
                     />
                     <div
@@ -1811,7 +1793,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div
           className="p-4"
           style={{
-            borderTop: `1px solid ${sidebarIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+            borderTop: '1px solid var(--sidebar-border)',
             opacity: sidebarOpen ? 1 : 0,
             transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             pointerEvents: sidebarOpen ? 'auto' : 'none'
@@ -1827,9 +1809,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               transition: 'background-color 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = sidebarIsDark
-                ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(0, 0, 0, 0.05)';
+              e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
@@ -1853,7 +1833,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: '72px' }}>
         {/* Top Bar */}
-        <div className="px-2 flex items-end justify-between edge-tab-bar dark:bg-gray-800 dark:border-gray-700" style={{ height: `${TAB_H + 4}px`, paddingTop: '4px', paddingBottom: 0 }}>
+        <div className="px-2 flex items-end justify-between edge-tab-bar" style={{ height: `${TAB_H + 4}px`, paddingTop: '4px', paddingBottom: 0 }}>
           {/* Highlight bar at top when a tab is active */}
           {(() => {
             const currentActiveTab = tabs.find(t => t.id === activeTabId);
@@ -2135,6 +2115,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           className="flex-1 overflow-hidden relative"
           onClick={() => setSidebarOpen(false)}
           data-tutorial="main-content"
+          style={{ backgroundColor: 'var(--tab-content-bg)' }}
         >
           {tabs.length > 0 ? (
             <>

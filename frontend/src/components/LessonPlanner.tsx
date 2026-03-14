@@ -95,13 +95,13 @@ const formatLessonText = (text: string, accentColor: string) => {
       // When we have all 6 details, render them in a grid
       if (detailsCollected.length === 6) {
         elements.push(
-          <div key={`details-grid-${currentIndex++}`} className="grid grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+          <div key={`details-grid-${currentIndex++}`} className="grid grid-cols-3 gap-4 mb-6 bg-theme-secondary p-4 rounded-lg">
             {detailsCollected.map((detail, i) => {
               const [label, value] = detail.replace(/\*\*/g, '').split(': ');
               return (
                 <div key={i} className="text-sm">
-                  <span className="font-semibold text-gray-600">{label}:</span>
-                  <span className="ml-2 text-gray-800">{value}</span>
+                  <span className="font-semibold text-theme-muted">{label}:</span>
+                  <span className="ml-2 text-theme-heading">{value}</span>
                 </div>
               );
             })}
@@ -145,7 +145,7 @@ const formatLessonText = (text: string, accentColor: string) => {
       elements.push(
         <div key={`nested-${currentIndex++}`} className="ml-8 mb-2 flex items-start">
           <span className="mr-2 mt-1.5 text-xs" style={{ color: `${accentColor}66` }}>▸</span>
-          <span className="text-gray-600 leading-relaxed text-sm">{content}</span>
+          <span className="text-theme-muted leading-relaxed text-sm">{content}</span>
         </div>
       );
       return;
@@ -157,7 +157,7 @@ const formatLessonText = (text: string, accentColor: string) => {
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
-          <span className="text-gray-700 leading-relaxed">{content}</span>
+          <span className="text-theme-label leading-relaxed">{content}</span>
         </div>
       );
       return;
@@ -172,7 +172,7 @@ const formatLessonText = (text: string, accentColor: string) => {
           <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
-          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+          <span className="text-theme-label leading-relaxed pt-1">{content}</span>
         </div>
       );
       return;
@@ -181,7 +181,7 @@ const formatLessonText = (text: string, accentColor: string) => {
     // Regular paragraphs
     if (trimmed.length > 0) {
       elements.push(
-        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`p-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
           {trimmed}
         </p>
       );
@@ -683,8 +683,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
  
   return (
-    <div className="flex h-full bg-white relative" data-tutorial="lesson-planner-welcome">
-      <div className="flex-1 flex flex-col bg-white">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="lesson-planner-welcome">
+      <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan) ? (
           <>
             {isEditing && parsedLesson ? (
@@ -697,19 +697,19 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             ) : (
               // Show generated lesson plan (existing display code)
               <>
-                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-theme-heading">
                       {loading ? 'Generating Lesson Plan...' : 'Generated Lesson Plan'}
                     </h2>
-                    <p className="text-sm text-gray-500">{formData.subject} - Grade {formData.gradeLevel}</p>
+                    <p className="text-sm text-theme-hint">{formData.subject} - Grade {formData.gradeLevel}</p>
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
                         disabled={!parsedLesson}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                         title={!parsedLesson ? "Lesson format not recognized" : "Edit lesson"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -725,7 +725,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <button
                         onClick={saveLessonPlan}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary"
                       >
                         {saveStatus === 'saving' ? (
                           <>
@@ -770,10 +770,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       {/* --- HTML Export Enhancement End --- */}
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        className="p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Lesson Plan History"
                       >
-                        <History className="w-5 h-5 text-gray-600" />
+                        <History className="w-5 h-5 text-theme-muted" />
                       </button>
                       <button
                         onClick={() => {
@@ -790,7 +790,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                   )}
                 </div>
             
-            <div className="flex-1 overflow-y-auto bg-white p-6">
+            <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
               {/* Modern Header Card */}
               {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
@@ -916,37 +916,37 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         ) : (
           // Form view
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">AI Lesson Plan Generator</h2>
-                <p className="text-sm text-gray-500">Fill in the details to generate a personalized D-OHPC lesson plan</p>
+                <h2 className="text-xl font-semibold text-theme-heading">AI Lesson Plan Generator</h2>
+                <p className="text-sm text-theme-hint">Fill in the details to generate a personalized D-OHPC lesson plan</p>
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                className="p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Lesson Plan History"
               >
-                <History className="w-5 h-5 text-gray-600" />
+                <History className="w-5 h-5 text-theme-muted" />
               </button>
             </div>
 
             {/* Progress Steps */}
-            <div className="border-b border-gray-200 px-6 py-4">
+            <div className="border-b border-theme px-6 py-4">
               <div className="flex items-center justify-between max-w-2xl">
                 {['Basic Info', 'Teaching Strategy', 'Additional Details'].map((label, idx) => (
                   <div key={idx} className="flex items-center">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-blue-600' : 'bg-gray-300'
+                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-blue-600' : 'bg-theme-tertiary'
                     } text-white font-semibold text-sm`}>
                       {idx + 1}
                     </div>
                     <span className={`ml-2 text-sm font-medium ${
-                      step === idx + 1 ? 'text-blue-600' : 'text-gray-500'
+                      step === idx + 1 ? 'text-blue-600' : 'text-theme-hint'
                     }`}>
                       {label}
                     </span>
                     {idx < 2 && (
-                      <ChevronRight className="w-5 h-5 text-gray-400 mx-4" />
+                      <ChevronRight className="w-5 h-5 text-theme-hint mx-4" />
                     )}
                   </div>
                 ))}
@@ -959,14 +959,14 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 {/* Step 1: Basic Information */}
                 {step === 1 && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
+                    <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
                     {/* Two-column layout for dropdowns and curriculum box */}
                     <div className="grid grid-cols-2 gap-6">
                       {/* Left column - Form fields */}
                       <div className="space-y-4">
                         <div data-tutorial="lesson-planner-basic-info">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-theme-label mb-2">
                             Subject <span className="text-red-500">*</span>
                           </label>
                           <select
@@ -975,7 +975,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               handleInputChange('subject', e.target.value);
                               handleInputChange('strand', '');
                             }}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           >
                             <option value="">Select a subject</option>
@@ -986,7 +986,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-theme-label mb-2">
                             Grade Level <span className="text-red-500">*</span>
                           </label>
                           <select
@@ -994,7 +994,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             onChange={(e) => {
                               handleInputChange('gradeLevel', e.target.value);
                             }}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           >
                             <option value="">Select a grade</option>
@@ -1006,7 +1006,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                         {formData.subject && formData.gradeLevel && (
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-theme-label mb-2">
                               Strand <span className="text-red-500">*</span>
                             </label>
                             <select
@@ -1014,7 +1014,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               onChange={(e) => {
                                 handleInputChange('strand', e.target.value);
                               }}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                               style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                             >
                               <option value="">Select a strand</option>
@@ -1027,8 +1027,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       </div>
 
                       {/* Right column - Related Curriculum Box */}
-                      <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
-                        <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center">
+                      <div className="border-2 border-theme-strong rounded-lg p-4 bg-theme-secondary">
+                        <h4 className="text-sm font-semibold text-theme-heading mb-3 flex items-center">
                           <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
@@ -1037,7 +1037,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         
                         <div className="max-h-96 overflow-y-auto space-y-2">
                           {!formData.subject || !formData.gradeLevel || !formData.strand ? (
-                            <p className="text-sm text-gray-500 italic">
+                            <p className="text-sm text-theme-hint italic">
                               Select subject, grade level, and strand to see related curriculum
                             </p>
                           ) : loadingCurriculum ? (
@@ -1045,7 +1045,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                             </div>
                           ) : curriculumMatches.length === 0 ? (
-                            <p className="text-sm text-gray-500 italic">
+                            <p className="text-sm text-theme-hint italic">
                               No matching curriculum found
                             </p>
                           ) : (
@@ -1053,7 +1053,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               {curriculumMatches.map((curriculum) => (
                                 <div
                                   key={curriculum.id}
-                                  className="flex flex-col p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md cursor-pointer transition group"
+                                  className="flex flex-col p-3 rounded-lg border border-theme bg-theme-surface hover:shadow-md cursor-pointer transition group"
                                   tabIndex={0}
                                   role="button"
                                   onClick={() => handleOpenCurriculum(curriculum.route)}
@@ -1064,10 +1064,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                                 >
                                   <div className="flex items-center justify-between">
                                     <div>
-                                      <p className="text-sm font-medium text-gray-900">
+                                      <p className="text-sm font-medium text-theme-title">
                                         {curriculum.displayName}
                                       </p>
-                                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                      <p className="text-xs text-theme-muted mt-1 line-clamp-2">
                                         {curriculum.essentialOutcomes?.[0] || 'No description available'}
                                       </p>
                                     </div>
@@ -1082,7 +1082,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                                     </button>
                                   </div>
                                   <div className="mt-2">
-                                    <span className="inline-block text-xs text-gray-500">
+                                    <span className="inline-block text-xs text-theme-hint">
                                       Grade: {curriculum.grade} | Strand: {curriculum.strand}
                                     </span>
                                   </div>
@@ -1098,41 +1098,41 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                     {/* Rest of the form fields below (full width) */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Topic <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.topic}
                         onChange={(e) => handleInputChange('topic', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="e.g., Water Cycle"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Essential Learning Outcome <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.essentialOutcomes}
                         onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="The broad, overarching curriculum outcomes from curriculum standards"
                       />
                     </div>
 
                     <div data-tutorial="lesson-planner-objectives">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Specific Curriculum Outcomes <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.specificOutcomes}
                         onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="What students should know or be able to do by the end of the lesson"
                       />
@@ -1140,28 +1140,28 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Student Count <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
                           value={formData.studentCount}
                           onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="e.g., 20"
                         />
                       </div>
 
                       <div data-tutorial="lesson-planner-duration">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Duration (minutes) <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
                           value={formData.duration}
                           onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="e.g., 50"
                         />
@@ -1173,18 +1173,18 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 {/* Step 2: Teaching Strategy */}
                 {step === 2 && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800">Teaching Strategy</h3>
+                    <h3 className="text-lg font-bold text-theme-heading">Teaching Strategy</h3>
 
                     <div data-tutorial="lesson-planner-activities">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Pedagogical Strategies <span className="text-red-500">*</span>
                       </label>
-                      <p className="text-xs text-gray-500 mb-3">
+                      <p className="text-xs text-theme-hint mb-3">
                         Select all teaching strategies that will guide the structure and activities of your lesson plan
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {pedagogicalStrategiesOptions.map(strategy => (
-                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.pedagogicalStrategies.includes(strategy)}
@@ -1192,22 +1192,22 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               className="w-4 h-4 rounded focus:ring-2"
                               style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
-                            <span className="text-sm text-gray-700">{strategy}</span>
+                            <span className="text-sm text-theme-label">{strategy}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Learning Styles <span className="text-red-500">*</span>
                       </label>
-                      <p className="text-xs text-gray-500 mb-3">
+                      <p className="text-xs text-theme-hint mb-3">
                         Select learning styles that best describe how your students prefer to learn
                       </p>
                       <div className="grid grid-cols-3 gap-2">
                         {learningStylesOptions.map(style => (
-                          <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.learningStyles.includes(style)}
@@ -1215,22 +1215,22 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               className="w-4 h-4 rounded focus:ring-2"
                               style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
-                            <span className="text-sm text-gray-700">{style}</span>
+                            <span className="text-sm text-theme-label">{style}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Learning Preferences
                       </label>
-                      <p className="text-xs text-gray-500 mb-3">
+                      <p className="text-xs text-theme-hint mb-3">
                         Select how your students prefer to work and learn
                       </p>
                       <div className="grid grid-cols-3 gap-2">
                         {learningPreferencesOptions.map(pref => (
-                          <label key={pref} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={pref} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.learningPreferences.includes(pref)}
@@ -1238,22 +1238,22 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               className="w-4 h-4 rounded focus:ring-2"
                               style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
-                            <span className="text-sm text-gray-700">{pref}</span>
+                            <span className="text-sm text-theme-label">{pref}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Multiple Intelligences
                       </label>
-                      <p className="text-xs text-gray-500 mb-3">
+                      <p className="text-xs text-theme-hint mb-3">
                         Select the types of intelligence your students demonstrate
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {multipleIntelligencesOptions.map(intel => (
-                          <label key={intel} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={intel} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.multipleIntelligences.includes(intel)}
@@ -1261,49 +1261,49 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               className="w-4 h-4 rounded focus:ring-2"
                               style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                             />
-                            <span className="text-sm text-gray-700">{intel}</span>
+                            <span className="text-sm text-theme-label">{intel}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Custom Learning Styles (Optional)
                       </label>
                       <textarea
                         value={formData.customLearningStyles}
                         onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Add any specific learning styles or preferences not covered above"
                       />
                     </div>
 
                     <div data-tutorial="lesson-planner-materials">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Materials <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.materials}
                         onChange={(e) => handleInputChange('materials', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Resources needed for the lesson (e.g., chart paper, colored markers, projector)"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Prerequisite Skills <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.prerequisiteSkills}
                         onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Skills students should already have before this lesson"
                       />
@@ -1314,7 +1314,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 {/* Step 3: Additional Details */}
                 {step === 3 && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800">Additional Details</h3>
+                    <h3 className="text-lg font-bold text-theme-heading">Additional Details</h3>
 
                     <div>
                       <label className="flex items-center space-x-2 cursor-pointer">
@@ -1325,20 +1325,20 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           className="w-4 h-4 rounded focus:ring-2"
                           style={{ accentColor: tabColor, '--tw-ring-color': tabColor } as React.CSSProperties}
                         />
-                        <span className="text-sm font-medium text-gray-700">Students with Special Needs</span>
+                        <span className="text-sm font-medium text-theme-label">Students with Special Needs</span>
                       </label>
                     </div>
 
                     {formData.specialNeeds && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Special Needs Details
                         </label>
                         <textarea
                           value={formData.specialNeedsDetails}
                           onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
                           rows={3}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="Describe specific accommodations or modifications needed"
                         />
@@ -1346,27 +1346,27 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Additional Instructions
                       </label>
                       <textarea
                         value={formData.additionalInstructions}
                         onChange={(e) => handleInputChange('additionalInstructions', e.target.value)}
                         rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Any additional context or specific requirements for the lesson plan"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Reference URL
                       </label>
                       <input
                         type="url"
                         value={formData.referenceUrl}
                         onChange={(e) => handleInputChange('referenceUrl', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="https://example.com/resource"
                       />
@@ -1377,13 +1377,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             </div>
 
             {/* Footer Navigation */}
-            <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex items-center justify-between">
                 <div>
                   {step > 1 && (
                     <button
                       onClick={() => setStep(step - 1)}
-                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                      className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg transition"
                     >
                       <ChevronLeft className="w-5 h-5 mr-1" />
                       Previous
@@ -1404,7 +1404,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     <button
                       onClick={() => setStep(step + 1)}
                       disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 text-white rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex items-center px-6 py-2 text-white rounded-lg transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                       style={!validateStep() ? {} : { backgroundColor: tabColor }}
                       onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
                       onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}
@@ -1416,7 +1416,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     <button
                       onClick={generateLessonPlan}
                       disabled={loading}
-                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                       data-tutorial="lesson-planner-generate"
                     >
                       {loading ? (
@@ -1441,26 +1441,26 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
       {/* History Panel - Always available */}
       <div
-        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Saved Plans</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">Saved Plans</h3>
             <button
               onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-gray-200 transition"
+              className="p-1 rounded hover:bg-theme-hover transition"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
             {lessonPlanHistories.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <div className="text-center text-theme-hint mt-8">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved plans yet</p>
               </div>
             ) : (
@@ -1468,16 +1468,16 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 <div
                   key={history.id}
                   onClick={() => loadLessonPlanHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
-                    currentPlanId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                    currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
                         {history.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
                       </p>
                     </div>

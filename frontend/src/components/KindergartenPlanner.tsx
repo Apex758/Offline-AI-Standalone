@@ -103,7 +103,7 @@ const formatKindergartenText = (text: string, accentColor: string) => {
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
-          <span className="text-gray-700 leading-relaxed">{content}</span>
+          <span className="text-theme-label leading-relaxed">{content}</span>
         </div>
       );
       return;
@@ -118,7 +118,7 @@ const formatKindergartenText = (text: string, accentColor: string) => {
           <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
-          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+          <span className="text-theme-label leading-relaxed pt-1">{content}</span>
         </div>
       );
       return;
@@ -127,7 +127,7 @@ const formatKindergartenText = (text: string, accentColor: string) => {
     // Regular paragraphs
     if (trimmed.length > 0) {
       elements.push(
-        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`p-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
           {trimmed}
         </p>
       );
@@ -803,8 +803,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   return (
-    <div className="flex h-full bg-white relative" data-tutorial="kinder-planner-welcome">
-      <div className="flex-1 flex flex-col bg-white">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="kinder-planner-welcome">
+      <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan) ? (
           <>
             {isEditing && parsedPlan ? (
@@ -819,19 +819,19 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
             ) : (
               // Show generated plan (existing display code)
               <>
-                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-theme-heading">
                       {loading ? 'Generating Kindergarten Plan...' : 'Generated Kindergarten Plan'}
                     </h2>
-                    <p className="text-sm text-gray-500">{formData.lessonTopic} - {formData.curriculumUnit}</p>
+                    <p className="text-sm text-theme-hint">{formData.lessonTopic} - {formData.curriculumUnit}</p>
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
                         disabled={!parsedPlan}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                         title={!parsedPlan ? "Kindergarten plan format not recognized" : "Edit plan"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -847,7 +847,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       <button
                         onClick={savePlan}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary"
                       >
                         {saveStatus === 'saving' ? (
                           <>
@@ -879,10 +879,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        className="p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Kindergarten Plan History"
                       >
-                        <History className="w-5 h-5 text-gray-600" />
+                        <History className="w-5 h-5 text-theme-muted" />
                       </button>
                       <button
                         onClick={() => {
@@ -899,7 +899,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   )}
                 </div>
                 
-                <div className="flex-1 overflow-y-auto bg-white p-6">
+                <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
                   {(streamingPlan || generatedPlan) && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
@@ -972,7 +972,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   )}
 
                   <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div className="space-y-1 bg-theme-surface rounded-xl p-6 shadow-sm border border-theme">
                       {formatKindergartenText(streamingPlan || generatedPlan, tabColor)}
                       {loading && streamingPlan && (
                         <span className="inline-flex items-center ml-1">
@@ -1003,44 +1003,44 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
           </>
         ) : (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">AI-Powered Kindergarten Lesson Planner</h2>
-                <p className="text-sm text-gray-500">Generate engaging, developmentally appropriate lesson plans tailored to your kindergarten students</p>
+                <h2 className="text-xl font-semibold text-theme-heading">AI-Powered Kindergarten Lesson Planner</h2>
+                <p className="text-sm text-theme-hint">Generate engaging, developmentally appropriate lesson plans tailored to your kindergarten students</p>
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                className="p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Kindergarten Plan History"
               >
-                <History className="w-5 h-5 text-gray-600" />
+                <History className="w-5 h-5 text-theme-muted" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
                 <div data-tutorial="kinder-planner-theme">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Lesson Topic <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.lessonTopic}
                     onChange={(e) => handleInputChange('lessonTopic', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Exploring Colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Curriculum Unit <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.curriculumUnit}
                     onChange={(e) => handleInputChange('curriculumUnit', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select unit</option>
@@ -1050,27 +1050,27 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Week <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       value={formData.week}
                       onChange={(e) => handleInputChange('week', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       min="1"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Day of Week <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={formData.dayOfWeek}
                       onChange={(e) => handleInputChange('dayOfWeek', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
                       <option value="">Select day</option>
@@ -1079,14 +1079,14 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Date <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
                       value={formData.date}
                       onChange={(e) => handleDateChange(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     />
                   </div>
@@ -1094,13 +1094,13 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Age Group <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={formData.ageGroup}
                       onChange={(e) => handleInputChange('ageGroup', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-pink-500"
                     >
                       <option value="">Select age group</option>
                       {ageGroups.map(a => <option key={a} value={a}>{a}</option>)}
@@ -1108,25 +1108,25 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Students <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       value={formData.students}
                       onChange={(e) => handleInputChange('students', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     />
                   </div>
                 </div>
 
                 <div data-tutorial="kinder-planner-centers">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Creativity Level <span className="text-red-500">*</span>
                   </label>
                   <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-600">Structured</span>
+                    <span className="text-sm text-theme-muted">Structured</span>
                     <input
                       type="range"
                       min="0"
@@ -1135,20 +1135,20 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       onChange={(e) => handleInputChange('creativityLevel', parseInt(e.target.value))}
                       className="flex-1"
                     />
-                    <span className="text-sm text-gray-600">Highly Creative</span>
+                    <span className="text-sm text-theme-muted">Highly Creative</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 text-center">
+                  <p className="text-xs text-theme-hint mt-2 text-center">
                     {formData.creativityLevel < 33 ? 'Structured' : formData.creativityLevel < 67 ? 'Balanced' : 'Highly Creative'}
                   </p>
                 </div>
 
                 <div data-tutorial="kinder-planner-learning-areas">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-theme-label mb-3">
                     Learning Domains <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {learningDomainsOptions.map(domain => (
-                      <label key={domain} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                      <label key={domain} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.learningDomains.includes(domain)}
@@ -1163,14 +1163,14 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 </div>
 
                 <div data-tutorial="kinder-planner-circle-time">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Duration (minutes) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     value={formData.duration}
                     onChange={(e) => handleInputChange('duration', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     min="15"
                     max="480"
@@ -1179,20 +1179,20 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 </div>
 
                 <div data-tutorial="kinder-planner-play-activities">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Additional Requirements
                   </label>
                   <textarea
                     value={formData.additionalRequirements}
                     onChange={(e) => handleInputChange('additionalRequirements', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   />
                 </div>
 
                 <div data-tutorial="kinder-planner-assessment">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-theme-label mb-3">
                     Generation Options
                   </label>
                   <div className="space-y-2">
@@ -1221,7 +1221,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
               </div>
             </div>
 
-            <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex justify-between">
                 <button
                   onClick={clearForm}
@@ -1233,7 +1233,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 <button
                   onClick={generatePlan}
                   disabled={!validateForm() || loading}
-                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
                   style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
                   onMouseEnter={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '0.9')}
                   onMouseLeave={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '1')}
@@ -1259,26 +1259,26 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
       {/* History Panel */}
       <div
-        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Saved Kindergarten Plans</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">Saved Kindergarten Plans</h3>
             <button
               onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-gray-200 transition"
+              className="p-1 rounded hover:bg-theme-hover transition"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
             {kindergartenHistories.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <div className="text-center text-theme-hint mt-8">
+                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved kindergarten plans yet</p>
               </div>
             ) : (
@@ -1286,16 +1286,16 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 <div
                   key={history.id}
                   onClick={() => loadKindergartenHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
-                    currentPlanId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                    currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
                         {history.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
                       </p>
                     </div>

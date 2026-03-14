@@ -136,7 +136,7 @@ const formatMultigradeText = (text: string, accentColor: string, isStreaming: bo
       elements.push(
         <div key={`sub-bullet-${currentIndex++}`} className="flex items-start mb-2 ml-10">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}77` }}>▸</span>
-          <span className="text-gray-600 leading-relaxed text-[0.95rem]">{content}</span>
+          <span className="text-theme-muted leading-relaxed text-[0.95rem]">{content}</span>
         </div>
       );
       return;
@@ -148,7 +148,7 @@ const formatMultigradeText = (text: string, accentColor: string, isStreaming: bo
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="flex items-start mb-2 ml-4">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
-          <span className="text-gray-700 leading-relaxed">{content}</span>
+          <span className="text-theme-label leading-relaxed">{content}</span>
         </div>
       );
       return;
@@ -171,7 +171,7 @@ const formatMultigradeText = (text: string, accentColor: string, isStreaming: bo
     if (trimmed.includes('**')) {
       const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
       elements.push(
-        <p key={`para-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`para-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
           {parts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               return <strong key={i} style={{ color: `${accentColor}cc` }}>{part.slice(2, -2)}</strong>;
@@ -186,7 +186,7 @@ const formatMultigradeText = (text: string, accentColor: string, isStreaming: bo
     // Regular paragraphs
     if (trimmed.length > 0) {
       elements.push(
-        <p key={`text-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`text-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
           {trimmed}
         </p>
       );
@@ -634,8 +634,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   return (
-    <div className="flex h-full bg-white relative" data-tutorial="multigrade-planner-welcome">
-      <div className="flex-1 flex flex-col bg-white">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="multigrade-planner-welcome">
+      <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan) ? (
           <>
             {isEditing && parsedPlan ? (
@@ -648,19 +648,19 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             ) : (
               // Show generated plan (existing display code)
               <>
-                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-theme-heading">
                       {loading ? 'Generating Multigrade Plan...' : 'Generated Multigrade Plan'}
                     </h2>
-                    <p className="text-sm text-gray-500">{formData.subject} - {formData.gradeRange}</p>
+                    <p className="text-sm text-theme-hint">{formData.subject} - {formData.gradeRange}</p>
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
                         disabled={!parsedPlan}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                         title={!parsedPlan ? "Multigrade plan format not recognized" : "Edit plan"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -676,7 +676,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <button
                         onClick={savePlan}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary"
                       >
                         {saveStatus === 'saving' ? (
                           <>
@@ -707,10 +707,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        className="p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Multigrade Plan History"
                       >
-                        <History className="w-5 h-5 text-gray-600" />
+                        <History className="w-5 h-5 text-theme-muted" />
                       </button>
                       <button
                         onClick={() => {
@@ -727,7 +727,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   )}
                 </div>
             
-                <div className="flex-1 overflow-y-auto bg-white p-6">
+                <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
               {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
@@ -800,7 +800,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   )}
 
                   <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div className="space-y-1 bg-theme-surface rounded-xl p-6 shadow-sm border border-theme">
                       {formatMultigradeText(
                         streamingPlan || generatedPlan, 
                         tabColor,
@@ -835,36 +835,36 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
           </>
         ) : (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Create Multigrade Lesson Plan</h2>
-                <p className="text-sm text-gray-500">Design a lesson that addresses multiple grade levels simultaneously</p>
+                <h2 className="text-xl font-semibold text-theme-heading">Create Multigrade Lesson Plan</h2>
+                <p className="text-sm text-theme-hint">Design a lesson that addresses multiple grade levels simultaneously</p>
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                className="p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Multigrade Plan History"
               >
-                <History className="w-5 h-5 text-gray-600" />
+                <History className="w-5 h-5 text-theme-muted" />
               </button>
             </div>
 
             {/* Progress Steps */}
-            <div className="border-b border-gray-200 px-6 py-4">
+            <div className="border-b border-theme px-6 py-4">
               <div className="flex items-center justify-between max-w-2xl">
                 {['Basic Info', 'Learning & Strategies', 'Additional Details'].map((label, idx) => (
                   <div key={idx} className="flex items-center">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-indigo-600' : 'bg-gray-300'
+                      step > idx + 1 ? 'bg-green-600' : step === idx + 1 ? 'bg-indigo-600' : 'bg-theme-tertiary'
                     } text-white font-semibold text-sm`}>
                       {idx + 1}
                     </div>
                     <span className={`ml-2 text-sm font-medium ${
-                      step === idx + 1 ? 'text-indigo-600' : 'text-gray-500'
+                      step === idx + 1 ? 'text-indigo-600' : 'text-theme-hint'
                     }`}>
                       {label}
                     </span>
-                    {idx < 2 && <ChevronRight className="w-5 h-5 text-gray-400 mx-4" />}
+                    {idx < 2 && <ChevronRight className="w-5 h-5 text-theme-hint mx-4" />}
                   </div>
                 ))}
               </div>
@@ -875,17 +875,17 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 {/* Step 1: Basic Info */}
                 {step === 1 && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800">Basic Information</h3>
+                    <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div data-tutorial="multigrade-planner-subject">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Subject <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={formData.subject}
                           onChange={(e) => handleInputChange('subject', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
                           <option value="">Select a subject</option>
@@ -894,13 +894,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       </div>
 
                       <div data-tutorial="multigrade-planner-grades">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Grade Range <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={formData.gradeRange}
                           onChange={(e) => handleInputChange('gradeRange', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         >
                           <option value="">Select grade range</option>
@@ -910,94 +910,94 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div data-tutorial="multigrade-planner-theme">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Topic <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.topic}
                         onChange={(e) => handleInputChange('topic', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Essential Learning Outcomes <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.essentialLearningOutcomes}
                         onChange={(e) => handleInputChange('essentialLearningOutcomes', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Include outcomes for each grade level in your range"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Specific Learning Objectives <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.specificLearningObjectives}
                         onChange={(e) => handleInputChange('specificLearningObjectives', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Total Number of Students <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
                           value={formData.totalStudents}
                           onChange={(e) => handleInputChange('totalStudents', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Duration (minutes) <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="number"
                           value={formData.duration}
                           onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Prerequisite Skills
                       </label>
                       <textarea
                         value={formData.prerequisiteSkills}
                         onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
                     <div data-tutorial="multigrade-planner-resources">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Materials <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={formData.materials}
                         onChange={(e) => handleInputChange('materials', e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
@@ -1007,15 +1007,15 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 {/* Step 2: Learning & Strategies */}
                 {step === 2 && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800">Learning Styles & Preferences</h3>
+                    <h3 className="text-lg font-bold text-theme-heading">Learning Styles & Preferences</h3>
 
                     <div data-tutorial="multigrade-planner-grouping">
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-theme-label mb-3">
                         Learning Styles <span className="text-red-500">*</span>
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {learningStylesOptions.map(style => (
-                          <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.learningStyles.includes(style)}
@@ -1030,12 +1030,12 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-theme-label mb-3">
                         Learning Preferences
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {learningPreferencesOptions.map(pref => (
-                          <label key={pref} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={pref} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.learningPreferences.includes(pref)}
@@ -1050,12 +1050,12 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-theme-label mb-3">
                         Multiple Intelligences
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {multipleIntelligencesOptions.map(intel => (
-                          <label key={intel} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={intel} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.multipleIntelligences.includes(intel)}
@@ -1070,27 +1070,27 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Custom Learning Styles (Optional)
                       </label>
                       <textarea
                         value={formData.customLearningStyles}
                         onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
                     </div>
 
-                    <h3 className="text-lg font-bold text-gray-800 mt-8">Teaching Strategies</h3>
+                    <h3 className="text-lg font-bold text-theme-heading mt-8">Teaching Strategies</h3>
 
                     <div data-tutorial="multigrade-planner-common-activities">
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-theme-label mb-3">
                         Pedagogical Strategies <span className="text-red-500">*</span>
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {pedagogicalStrategiesOptions.map(strategy => (
-                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.pedagogicalStrategies.includes(strategy)}
@@ -1105,12 +1105,12 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div data-tutorial="multigrade-planner-differentiation">
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-theme-label mb-3">
                         Multigrade Teaching Strategies <span className="text-red-500">*</span>
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {multigradeStrategiesOptions.map(strategy => (
-                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.multigradeStrategies.includes(strategy)}
@@ -1129,7 +1129,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 {/* Step 3: Additional Details */}
                 {step === 3 && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800">Special Needs Accommodations</h3>
+                    <h3 className="text-lg font-bold text-theme-heading">Special Needs Accommodations</h3>
 
                     <div>
                       <label className="flex items-center space-x-2 cursor-pointer">
@@ -1146,28 +1146,28 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                     {formData.specialNeeds && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
                           Special Needs Details
                         </label>
                         <textarea
                           value={formData.specialNeedsDetails}
                           onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
                           rows={3}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         />
                       </div>
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Differentiation Notes
                       </label>
                       <textarea
                         value={formData.differentiationNotes}
                         onChange={(e) => handleInputChange('differentiationNotes', e.target.value)}
                         rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="How will you differentiate for different grade levels?"
                       />
@@ -1177,13 +1177,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
               </div>
             </div>
 
-            <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex items-center justify-between">
                 <div>
                   {step > 1 && (
                     <button
                       onClick={() => setStep(step - 1)}
-                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg"
+                      className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg"
                     >
                       <ChevronLeft className="w-5 h-5 mr-1" />
                       Previous
@@ -1204,7 +1204,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     <button
                       onClick={() => setStep(step + 1)}
                       disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
                       style={!validateStep() ? {} : { backgroundColor: tabColor }}
                       onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
                       onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}
@@ -1216,7 +1216,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     <button
                       onClick={generatePlan}
                       disabled={loading || !validateStep()}
-                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition"
+                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-theme-tertiary transition"
                       style={loading || !validateStep() ? {} : { backgroundColor: 'rgb(22 163 74)' }}
                       data-tutorial="multigrade-planner-generate"
                     >
@@ -1242,26 +1242,26 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
       {/* History Panel */}
       <div
-        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Saved Multigrade Plans</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">Saved Multigrade Plans</h3>
             <button
               onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-gray-200 transition"
+              className="p-1 rounded hover:bg-theme-hover transition"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
             {multigradeHistories.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <div className="text-center text-theme-hint mt-8">
+                <Users className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved multigrade plans yet</p>
               </div>
             ) : (
@@ -1269,16 +1269,16 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 <div
                   key={history.id}
                   onClick={() => loadMultigradeHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
-                    currentPlanId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                    currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
                         {history.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
                       </p>
                     </div>

@@ -180,7 +180,7 @@ const formatRubricText = (text: string, accentColor: string, isStreaming: boolea
                onMouseEnter={(e) => !isHeaderRow && (e.currentTarget.style.backgroundColor = `${accentColor}0d`)}
                onMouseLeave={(e) => !isHeaderRow && (e.currentTarget.style.backgroundColor = 'transparent')}>
             {cells.map((cell, idx) => (
-              <div key={idx} className={`px-2 ${idx === 0 ? 'font-semibold' : 'text-gray-700'}`} style={idx === 0 ? { color: `${accentColor}dd` } : {}}>
+              <div key={idx} className={`px-2 ${idx === 0 ? 'font-semibold' : 'text-theme-label'}`} style={idx === 0 ? { color: `${accentColor}dd` } : {}}>
                 {cell}
               </div>
             ))}
@@ -196,7 +196,7 @@ const formatRubricText = (text: string, accentColor: string, isStreaming: boolea
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
-          <span className="text-gray-700 leading-relaxed">{content}</span>
+          <span className="text-theme-label leading-relaxed">{content}</span>
         </div>
       );
       return;
@@ -211,7 +211,7 @@ const formatRubricText = (text: string, accentColor: string, isStreaming: boolea
           <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
-          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+          <span className="text-theme-label leading-relaxed pt-1">{content}</span>
         </div>
       );
       return;
@@ -220,7 +220,7 @@ const formatRubricText = (text: string, accentColor: string, isStreaming: boolea
     // Regular paragraphs
     if (trimmed.length > 0) {
       elements.push(
-        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`p-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
           {trimmed}
         </p>
       );
@@ -765,8 +765,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   return (
-    <div className="flex h-full bg-white relative" data-tutorial="rubric-generator-welcome">
-      <div className="flex-1 flex flex-col bg-white">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="rubric-generator-welcome">
+      <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedRubric || streamingRubric) ? (
           <>
             {isEditing && parsedRubric ? (
@@ -778,19 +778,19 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
               />
             ) : (   
               <>
-                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-theme-heading">
                       {loading ? 'Generating Rubric...' : 'Generated Rubric'}
                     </h2>
-                    <p className="text-sm text-gray-500">{formData.assignmentTitle} - {formData.subject}</p>
+                    <p className="text-sm text-theme-hint">{formData.assignmentTitle} - {formData.subject}</p>
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
                         disabled={!parsedRubric}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         title={!parsedRubric ? "Rubric format not recognized" : "Edit rubric"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -806,7 +806,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       <button
                         onClick={saveRubric}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
                       >
                         {saveStatus === 'saving' ? (
                           <>
@@ -837,10 +837,10 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        className="p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Rubric History"
                       >
-                        <History className="w-5 h-5 text-gray-600" />
+                        <History className="w-5 h-5 text-theme-muted" />
                       </button>
                       <button
                         onClick={() => {
@@ -857,7 +857,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   )}
                 </div>
             
-                <div className="flex-1 overflow-y-auto bg-white p-6">
+                <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
                   {(streamingRubric || generatedRubric) && (
                     <div className="mb-8">
                       <div className="relative overflow-hidden rounded-2xl shadow-lg">
@@ -926,7 +926,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     )}
 
                   <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div className="space-y-1 bg-theme-surface rounded-xl p-6 shadow-sm border border-theme">
                       {formatRubricText(streamingRubric || generatedRubric, tabColor, !!streamingRubric)}
                       {loading && streamingRubric && (
                         <span className="inline-flex items-center ml-1">
@@ -957,45 +957,45 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
           </>
         ) : (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Rubric Details</h2>
-                <p className="text-sm text-gray-500">Provide information about your assignment to generate a customized rubric</p>
+                <h2 className="text-xl font-semibold text-theme-heading">Rubric Details</h2>
+                <p className="text-sm text-theme-hint">Provide information about your assignment to generate a customized rubric</p>
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                className="p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Rubric History"
                 data-tutorial="rubric-generator-history"
               >
-                <History className="w-5 h-5 text-gray-600" />
+                <History className="w-5 h-5 text-theme-muted" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
                 <div data-tutorial="rubric-generator-assignment">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Assignment Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.assignmentTitle}
                     onChange={(e) => handleInputChange('assignmentTitle', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Persuasive Essay on Climate Change"
                   />
                 </div>
 
                 <div data-tutorial="rubric-generator-assignment-type">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Assignment Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.assignmentType}
                     onChange={(e) => handleInputChange('assignmentType', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select type</option>
@@ -1004,13 +1004,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </div>
 
                 <div data-tutorial="rubric-generator-subject">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Subject <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.subject}
                     onChange={(e) => handleInputChange('subject', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select subject</option>
@@ -1019,13 +1019,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </div>
 
                 <div data-tutorial="rubric-generator-grade">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Grade Level <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.gradeLevel}
                     onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select grade</option>
@@ -1034,35 +1034,35 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </div>
 
                 <div data-tutorial="rubric-generator-criteria">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Learning Objectives <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={formData.learningObjectives}
                     onChange={(e) => handleInputChange('learningObjectives', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="What should students demonstrate or achieve?"
                   />
                 </div>
 
                 <div data-tutorial="rubric-generator-descriptors">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
                     Specific Requirements
                   </label>
                   <textarea
                     value={formData.specificRequirements}
                     onChange={(e) => handleInputChange('specificRequirements', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="Any specific requirements or criteria for the assignment"
                   />
                 </div>
 
                 <div data-tutorial="rubric-generator-levels">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-theme-label mb-3">
                     Performance Levels
                   </label>
                   <div className="flex gap-4">
@@ -1084,7 +1084,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </div>
 
                 <div data-tutorial="rubric-generator-points">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Options</label>
+                  <label className="block text-sm font-medium text-theme-label mb-3">Options</label>
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -1098,13 +1098,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </div>
 
                 <div data-tutorial="rubric-generator-focus-areas">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-theme-label mb-3">
                     Focus Areas <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-xs text-gray-500 mb-2">Select at least one focus area for your rubric criteria</p>
+                  <p className="text-xs text-theme-hint mb-2">Select at least one focus area for your rubric criteria</p>
                   <div className="grid grid-cols-2 gap-2">
                     {focusAreasOptions.map(area => (
-                      <label key={area} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                      <label key={area} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.focusAreas.includes(area)}
@@ -1120,7 +1120,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
               </div>
             </div>
 
-            <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex justify-between">
                 <button
                   onClick={clearForm}
@@ -1132,7 +1132,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 <button
                   onClick={generateRubric}
                   disabled={!validateForm() || loading}
-                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                  className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
                   data-tutorial="rubric-generator-generate"
                   style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
                   onMouseEnter={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '0.9')}
@@ -1158,26 +1158,26 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
       {/* History Panel */}
       <div
-        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Saved Rubrics</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">Saved Rubrics</h3>
             <button
               onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-gray-200 transition"
+              className="p-1 rounded hover:bg-theme-hover transition"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
             {rubricHistories.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <div className="text-center text-theme-hint mt-8">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved rubrics yet</p>
               </div>
             ) : (
@@ -1185,16 +1185,16 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 <div
                   key={history.id}
                   onClick={() => loadRubricHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
-                    currentRubricId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                    currentRubricId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
                         {history.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
                       </p>
                     </div>

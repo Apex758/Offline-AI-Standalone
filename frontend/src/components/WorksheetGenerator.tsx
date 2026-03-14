@@ -934,26 +934,26 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   return (
-    <div className="h-full bg-white grid grid-cols-2" data-tutorial="worksheet-generator-welcome">
+    <div className="h-full tab-content-bg grid grid-cols-2" data-tutorial="worksheet-generator-welcome">
       {/* Left Panel - Configuration (50%) */}
-      <div className="flex flex-col border-r border-gray-200 overflow-y-auto">
-        <div className="border-b border-gray-200 p-4" data-tutorial="worksheet-generator-header">
-          <h2 className="text-xl font-semibold text-gray-800">Worksheet Generator</h2>
-          <p className="text-sm text-gray-500">Create customized worksheets with curriculum alignment</p>
+      <div className="flex flex-col border-r border-theme overflow-y-auto">
+        <div className="border-b border-theme p-4" data-tutorial="worksheet-generator-header">
+          <h2 className="text-xl font-semibold text-theme-heading">Worksheet Generator</h2>
+          <p className="text-sm text-theme-hint">Create customized worksheets with curriculum alignment</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Curriculum Section */}
             <div className="space-y-4" data-tutorial="worksheet-generator-curriculum">
-              <h3 className="text-lg font-semibold text-gray-800">Curriculum Alignment</h3>
+              <h3 className="text-lg font-semibold text-theme-heading">Curriculum Alignment</h3>
 
               {/* Two-column layout for dropdowns and curriculum box */}
               <div className="grid grid-cols-2 gap-6">
                 {/* Left column - Form fields */}
                 <div className="space-y-4">
                   <div data-tutorial="worksheet-generator-subject">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Subject <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -962,7 +962,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         handleInputChange('subject', e.target.value);
                         handleInputChange('strand', '');
                       }}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Select a subject</option>
                       {subjects.map(subject => (
@@ -972,7 +972,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   </div>
 
                   <div data-tutorial="worksheet-generator-grade">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Grade Level <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -981,7 +981,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         handleInputChange('gradeLevel', e.target.value);
                         handleInputChange('strand', '');
                       }}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Select a grade</option>
                       {grades.map(grade => (
@@ -991,14 +991,14 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   </div>
 
                   <div data-tutorial="worksheet-generator-strand">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Strand <span className="text-red-500">*</span>
                     </label>
                     {formData.subject && formData.gradeLevel ? (
                       <select
                         value={formData.strand}
                         onChange={(e) => handleInputChange('strand', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select a strand</option>
                         {getStrands(formData.subject, formData.gradeLevel).map(strand => (
@@ -1006,19 +1006,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         ))}
                       </select>
                     ) : (
-                      <p className="text-sm text-gray-500 italic">Select subject and grade level to choose a strand.</p>
+                      <p className="text-sm text-theme-hint italic">Select subject and grade level to choose a strand.</p>
                     )}
                   </div>
 
                   <div data-tutorial="worksheet-generator-topic">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Topic
                     </label>
                     {formData.subject && formData.gradeLevel && formData.strand ? (
                       <select
                         value={formData.topic}
                         onChange={(e) => handleInputChange('topic', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">-- Select a Topic --</option>
                         {getTopics(formData.subject, formData.gradeLevel, formData.strand).map(topic => (
@@ -1026,27 +1026,27 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         ))}
                       </select>
                     ) : (
-                      <p className="text-sm text-gray-500 italic">Select subject, grade level, and strand to choose a topic.</p>
+                      <p className="text-sm text-theme-hint italic">Select subject, grade level, and strand to choose a topic.</p>
                     )}
                   </div>
 
                   <div data-tutorial="worksheet-generator-title">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Worksheet Title <span className="text-gray-500">(optional)</span>
+                    <label className="block text-sm font-medium text-theme-label mb-2">
+                      Worksheet Title <span className="text-theme-hint">(optional)</span>
                     </label>
                     <input
                       type="text"
                       value={formData.worksheetTitle}
                       onChange={(e) => handleInputChange('worksheetTitle', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Leave blank to use template name"
                     />
                   </div>
                 </div>
 
                 {/* Right column - Related Curriculum Box */}
-                <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50" data-tutorial="worksheet-generator-curriculum-box">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center">
+                <div className="border-2 border-theme-strong rounded-lg p-4 bg-theme-secondary" data-tutorial="worksheet-generator-curriculum-box">
+                  <h4 className="text-sm font-semibold text-theme-heading mb-3 flex items-center">
                     <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
@@ -1055,7 +1055,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
                   <div className="max-h-96 overflow-y-auto space-y-2">
                     {!formData.subject || !formData.gradeLevel || !formData.strand ? (
-                      <p className="text-sm text-gray-500 italic">
+                      <p className="text-sm text-theme-hint italic">
                         Select subject, grade level, and strand to see related curriculum
                       </p>
                     ) : loadingCurriculum ? (
@@ -1063,7 +1063,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                       </div>
                     ) : curriculumMatches.length === 0 ? (
-                      <p className="text-sm text-gray-500 italic">
+                      <p className="text-sm text-theme-hint italic">
                         No matching curriculum found
                       </p>
                     ) : (
@@ -1071,7 +1071,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         {curriculumMatches.map((curriculum: Record<string, unknown>) => (
                           <div
                             key={curriculum.id as string}
-                            className="flex flex-col p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md cursor-pointer transition group"
+                            className="flex flex-col p-3 rounded-lg border border-theme bg-theme-surface hover:shadow-md cursor-pointer transition group"
                             tabIndex={0}
                             role="button"
                             onClick={() => handleOpenCurriculum(curriculum.route as string)}
@@ -1082,10 +1082,10 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-sm font-medium text-theme-title">
                                   {(curriculum.displayName as string) || (curriculum.strand as string)}
                                 </p>
-                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                <p className="text-xs text-theme-muted mt-1 line-clamp-2">
                                   {((curriculum.essentialOutcomes as string[])?.[0]) || 'No description available'}
                                 </p>
                               </div>
@@ -1100,7 +1100,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                               </button>
                             </div>
                             <div className="mt-2">
-                              <span className="inline-block text-xs text-gray-500">
+                              <span className="inline-block text-xs text-theme-hint">
                                 Grade: {curriculum.grade as string} | Strand: {curriculum.strand as string}
                               </span>
                             </div>
@@ -1115,24 +1115,24 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
             {/* Worksheet Scope */}
             <div className="space-y-4" data-tutorial="worksheet-generator-scope">
-              <h3 className="text-lg font-semibold text-gray-800">Worksheet Scope</h3>
+              <h3 className="text-lg font-semibold text-theme-heading">Worksheet Scope</h3>
 
               <div className="grid grid-cols-2 gap-4">
                  <div data-tutorial="worksheet-generator-student-count">
-                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                   <label className="block text-sm font-medium text-theme-label mb-2">
                      Number of Students
                    </label>
                   <input
                     type="number"
                     value={formData.studentCount}
                     onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 25"
                   />
                 </div>
 
                  <div data-tutorial="worksheet-generator-question-count">
-                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                   <label className="block text-sm font-medium text-theme-label mb-2">
                      Number of Questions <span className="text-red-500">*</span>
                    </label>
                   <input
@@ -1141,7 +1141,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     max="50"
                     value={formData.questionCount}
                     onChange={(e) => handleInputChange('questionCount', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 10"
                     required
                   />
@@ -1151,8 +1151,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
             {/* Question Type */}
             <div className="space-y-4" data-tutorial="worksheet-generator-question-type">
-              <h3 className="text-lg font-semibold text-gray-800">Question Type</h3>
-              <p className="text-sm text-gray-500">Select the type of questions to include in your worksheet</p>
+              <h3 className="text-lg font-semibold text-theme-heading">Question Type</h3>
+              <p className="text-sm text-theme-hint">Select the type of questions to include in your worksheet</p>
 
               <div>
                 <select
@@ -1161,7 +1161,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     handleInputChange('questionType', e.target.value);
                     handleInputChange('selectedTemplate', getCompatibleTemplates().find(t => t.id === formData.selectedTemplate) ? formData.selectedTemplate : '');
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select a question type</option>
                   {getAvailableQuestionTypes().map(type => (
@@ -1180,13 +1180,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     checked={formData.includeImages}
                     onChange={(e) => handleInputChange('includeImages', e.target.checked)}
                     disabled={formData.subject === 'Mathematics'}  // ✅ ADD THIS
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded border-theme-strong text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <span className={`text-sm font-medium ${formData.subject === 'Mathematics' ? 'text-gray-400' : 'text-gray-700'}`}>
+                  <span className={`text-sm font-medium ${formData.subject === 'Mathematics' ? 'text-theme-hint' : 'text-theme-label'}`}>
                     Include Images
                   </span>
                 </label>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-theme-hint mt-1">
                   {formData.subject === 'Mathematics' 
                     ? 'Images are not available for Mathematics worksheets'
                     : 'Add relevant images to enhance the worksheet'}
@@ -1197,23 +1197,23 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             {/* AI Image Generation */}
             {formData.includeImages && formData.subject !== 'Mathematics' && (
               <div className="space-y-4" data-tutorial="worksheet-generator-image-prompt">
-                <h3 className="text-lg font-semibold text-gray-800">Scene-Based Image Generation</h3>
+                <h3 className="text-lg font-semibold text-theme-heading">Scene-Based Image Generation</h3>
 
                 {loadingPresets ? (
                   <div className="p-4 text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-sm text-gray-500 mt-2">Loading presets...</p>
+                    <p className="text-sm text-theme-hint mt-2">Loading presets...</p>
                   </div>
                 ) : topicPresets.length > 0 ? (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Image Intent <span className="text-red-500">*</span>
                       </label>
                       <select
                         value={selectedPreset}
                         onChange={(e) => setSelectedPreset(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select what you want to show...</option>
                         {topicPresets.map(preset => (
@@ -1223,20 +1223,20 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         ))}
                       </select>
                       {selectedPreset && topicPresets.find(p => p.id === selectedPreset) && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-theme-hint mt-1">
                           📦 Objects: {topicPresets.find(p => p.id === selectedPreset)?.objects.join(', ')}
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
                         Visual Style <span className="text-red-500">*</span>
                       </label>
                       <select
                         value={formData.imageStyle}
                         onChange={(e) => handleInputChange('imageStyle', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="cartoon_3d">3D Cartoon (Colorful, Pixar-like)</option>
                         <option value="line_art_bw">Black & White Line Art (Coloring)</option>
@@ -1244,7 +1244,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         <option value="realistic">Photorealistic</option>
                       </select>
                       {styleProfiles[formData.imageStyle || 'cartoon_3d'] && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-theme-hint mt-1">
                           {styleProfiles[formData.imageStyle || 'cartoon_3d'].description}
                         </p>
                       )}
@@ -1253,7 +1253,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     <button
                       onClick={handleGenerateSceneImage}
                       disabled={!selectedPreset || generatingImages}
-                      className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       {generatingImages ? (
                         <>
@@ -1313,8 +1313,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     </p>
                   </div>
                 ) : (
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <p className="text-sm text-gray-600">
+                  <div className="p-4 bg-theme-secondary border border-theme rounded-lg">
+                    <p className="text-sm text-theme-muted">
                       Select subject, grade, and strand above to see available image presets
                     </p>
                   </div>
@@ -1324,12 +1324,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
             {/* Templates */}
             <div className="space-y-4" data-tutorial="worksheet-generator-templates">
-              <h3 className="text-lg font-semibold text-gray-800">Worksheet Template</h3>
-              <p className="text-sm text-gray-500">Choose a layout that works with your selected question types</p>
+              <h3 className="text-lg font-semibold text-theme-heading">Worksheet Template</h3>
+              <p className="text-sm text-theme-hint">Choose a layout that works with your selected question types</p>
 
               <div className="grid grid-cols-1 gap-3">
                 {compatibleTemplates.map(template => (
-                  <label key={template.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <label key={template.id} className="flex items-center space-x-3 p-3 border border-theme rounded-lg hover:bg-theme-subtle cursor-pointer">
                     <input
                       type="radio"
                       name="template"
@@ -1339,8 +1339,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">{template.name}</div>
-                      <div className="text-sm text-gray-500">{template.description}</div>
+                      <div className="font-medium text-theme-title">{template.name}</div>
+                      <div className="text-sm text-theme-hint">{template.description}</div>
                     </div>
                   </label>
                 ))}
@@ -1356,29 +1356,29 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             {/* Template Options */}
             {formData.selectedTemplate && formData.includeImages && (
               <div className="space-y-4" data-tutorial="worksheet-generator-template-options">
-                <h3 className="text-lg font-semibold text-gray-800">Template-Specific Options</h3>
+                <h3 className="text-lg font-semibold text-theme-heading">Template-Specific Options</h3>
                 {formData.selectedTemplate === 'multiple-choice' || formData.selectedTemplate === 'list-based' ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Image Mode
                     </label>
                     <select
                       value={formData.imageMode}
                       onChange={(e) => handleInputChange('imageMode', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="shared">One shared image for the entire worksheet</option>
                     </select>
                   </div>
                 ) : formData.selectedTemplate === 'comprehension' ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Image Placement
                     </label>
                     <select
                       value={formData.imagePlacement}
                       onChange={(e) => handleInputChange('imagePlacement', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="large-centered">Large centered image above or within the passage</option>
                       <option value="small-corner">Small image in a corner with text wrapping around it</option>
@@ -1391,7 +1391,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         </div>
 
         {/* Generate Button */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50" data-tutorial="worksheet-generator-generate">
+        <div className="border-t border-theme p-4 bg-theme-secondary" data-tutorial="worksheet-generator-generate">
           <div className="max-w-4xl mx-auto">
             {generationError && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
@@ -1408,7 +1408,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               <button
                 onClick={handleGenerate}
                 disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate}
-                className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -1428,11 +1428,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       </div>
 
       {/* Right Panel - Preview (50%) */}
-      <div className="bg-gray-50 border-l border-gray-200 flex flex-col overflow-y-auto relative" data-tutorial="worksheet-generator-preview">
-        <div className="p-4 border-b border-gray-200">
+      <div className="bg-theme-secondary border-l border-theme flex flex-col overflow-y-auto relative" data-tutorial="worksheet-generator-preview">
+        <div className="p-4 border-b border-theme">
           <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <h3 className="text-lg font-semibold text-theme-heading flex items-center">
               <Eye className="w-5 h-5 mr-2" />
               Preview
             </h3>
@@ -1440,11 +1440,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           <div className="flex items-center gap-2">
             <button
               onClick={() => setHistoryOpen(!historyOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition"
+              className="p-2 rounded-lg hover:bg-theme-hover transition"
               title="Worksheet History"
               data-tutorial="worksheet-generator-history-toggle"
             >
-              <History className="w-5 h-5 text-gray-600" />
+              <History className="w-5 h-5 text-theme-muted" />
             </button>
             {(generatedWorksheet || parsedWorksheet) && (
               <>
@@ -1457,7 +1457,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       setIsEditing(true);
                     }
                   }}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                   title="Edit generated worksheet"
                   disabled={!generatedWorksheet && !parsedWorksheet}
                   data-tutorial="worksheet-generator-edit"
@@ -1469,7 +1469,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 <button
                   onClick={saveWorksheet}
                   disabled={saveStatus === 'saving'}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
                   data-tutorial="worksheet-generator-save"
                 >
                   {saveStatus === 'saving' ? (
@@ -1493,7 +1493,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 <div className="relative">
                   <button
                     onClick={() => setShowVersionMenu(!showVersionMenu)}
-                    className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
+                    className="flex items-center px-4 py-2 bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
                     data-tutorial="worksheet-generator-view-toggle"
                   >
                     <FileText className="w-4 h-4 mr-2" />
@@ -1508,22 +1508,22 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         onClick={() => setShowVersionMenu(false)}
                       />
 
-                      <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+                      <div className="absolute left-0 mt-2 w-56 bg-theme-surface rounded-lg shadow-xl border border-theme z-20 overflow-hidden">
                         <div className="py-1">
                           <button
                             onClick={() => {
                               setViewMode('student');
                               setShowVersionMenu(false);
                             }}
-                            className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition ${
+                            className={`w-full text-left px-4 py-2 hover:bg-theme-subtle flex items-center justify-between transition ${
                               viewMode === 'student' ? 'bg-blue-50' : ''
                             }`}
                           >
                             <div className="flex items-center">
                               <Users className="w-4 h-4 mr-3 text-blue-600" />
                               <div>
-                                <div className="text-sm font-medium text-gray-900">Student Version</div>
-                                <div className="text-xs text-gray-500">Hide answers</div>
+                                <div className="text-sm font-medium text-theme-title">Student Version</div>
+                                <div className="text-xs text-theme-hint">Hide answers</div>
                               </div>
                             </div>
                             {viewMode === 'student' && (
@@ -1536,15 +1536,15 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                               setViewMode('teacher');
                               setShowVersionMenu(false);
                             }}
-                            className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition ${
+                            className={`w-full text-left px-4 py-2 hover:bg-theme-subtle flex items-center justify-between transition ${
                               viewMode === 'teacher' ? 'bg-blue-50' : ''
                             }`}
                           >
                             <div className="flex items-center">
                               <GraduationCap className="w-4 h-4 mr-3 text-green-600" />
                               <div>
-                                <div className="text-sm font-medium text-gray-900">Teacher Version</div>
-                                <div className="text-xs text-gray-500">Show answers</div>
+                                <div className="text-sm font-medium text-theme-title">Teacher Version</div>
+                                <div className="text-xs text-theme-hint">Show answers</div>
                               </div>
                             </div>
                             {viewMode === 'teacher' && (
@@ -1616,17 +1616,17 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
           ) : null}
           {isEditing ? (
-            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto p-4 space-y-4">
-              <h4 className="text-lg font-semibold text-gray-800">Edit Worksheet Text</h4>
+            <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto p-4 space-y-4">
+              <h4 className="text-lg font-semibold text-theme-heading">Edit Worksheet Text</h4>
               <textarea
                 value={editBuffer}
                 onChange={(e) => setEditBuffer(e.target.value)}
-                className="w-full h-96 border border-gray-300 rounded-lg p-3 font-mono text-sm"
+                className="w-full h-96 border border-theme-strong rounded-lg p-3 font-mono text-sm"
               />
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  className="px-4 py-2 rounded bg-theme-tertiary text-theme-label hover:bg-theme-hover"
                 >
                   Cancel
                 </button>
@@ -1644,7 +1644,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
           ) : generationError ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
+            <div className="bg-theme-surface rounded-lg border border-theme p-4 h-full flex items-center justify-center">
               <div className="text-center text-red-600">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
                 <p className="text-sm mb-4">{generationError}</p>
@@ -1657,13 +1657,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
           ) : (generatedWorksheet || streamingWorksheet) ? (
-            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+            <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600 font-medium">Generating worksheet...</p>
-                    <p className="text-gray-500 text-sm mt-2">The content will appear in your template shortly</p>
+                    <p className="text-theme-muted font-medium">Generating worksheet...</p>
+                    <p className="text-theme-hint text-sm mt-2">The content will appear in your template shortly</p>
                   </div>
                 </div>
               ) : parsedWorksheet ? (
@@ -1749,22 +1749,22 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               ) : (
                 <div className="p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-800">
+                  <pre className="whitespace-pre-wrap text-sm text-theme-heading">
                     {generatedWorksheet || streamingWorksheet}
                   </pre>
                 </div>
               )}
             </div>
           ) : selectedTemplate ? (
-            <div className="bg-white rounded-lg border border-gray-200 h-full overflow-y-auto">
+            <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto">
               <div className="transform scale-90 origin-top">
                 {renderTemplatePreview()}
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <div className="bg-theme-surface rounded-lg border border-theme p-4 h-full flex items-center justify-center">
+              <div className="text-center text-theme-hint">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">Select a template to preview</p>
               </div>
             </div>
@@ -1781,24 +1781,24 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             />
             
             <div
-              className="absolute top-0 right-0 h-full bg-white border-l border-gray-200 shadow-xl transition-transform duration-300 ease-in-out z-50 w-80"
+              className="absolute top-0 right-0 h-full bg-theme-surface border-l border-theme shadow-xl transition-transform duration-300 ease-in-out z-50 w-80"
               onClick={(e) => e.stopPropagation()}
             >
           <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Saved Worksheets</h3>
+              <h3 className="text-lg font-semibold text-theme-heading">Saved Worksheets</h3>
               <button
                 onClick={() => setHistoryOpen(false)}
-                className="p-1 rounded hover:bg-gray-200 transition"
+                className="p-1 rounded hover:bg-theme-hover transition"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-theme-muted" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2">
               {worksheetHistories.length === 0 ? (
-                <div className="text-center text-gray-500 mt-8">
-                  <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <div className="text-center text-theme-hint mt-8">
+                  <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                   <p className="text-sm">No saved worksheets yet</p>
                 </div>
               ) : (
@@ -1806,16 +1806,16 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   <div
                     key={history.id}
                     onClick={() => loadWorksheetFromHistory(history)}
-                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-gray-50 ${
-                      currentWorksheetId === history.id ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'
+                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                      currentWorksheetId === history.id ? 'bg-blue-50 border border-blue-200' : 'bg-theme-secondary border border-theme'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                        <p className="text-sm font-medium text-theme-heading line-clamp-2">
                           {history.title}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-theme-hint mt-1">
                           {new Date(history.timestamp).toLocaleDateString()}{' '}
                           {new Date(history.timestamp).toLocaleTimeString()}
                         </p>

@@ -20,7 +20,7 @@ export function Separator({
           ? 'h-px w-full' 
           : 'h-full w-px'
         }
-        bg-gray-200
+        bg-theme-tertiary
         ${className}
       `}
     />

@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { useSettings } from '../contexts/SettingsContext';
-import { downloadJSON, isColorDark } from '../lib/utils';
+import { downloadJSON } from '../lib/utils';
 import axios from 'axios';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -280,16 +280,16 @@ const Settings: React.FC<SettingsProps> = () => {
   };
 
   return (
-    <div className="h-full bg-gray-50" data-tutorial="settings-welcome">
+    <div className="h-full tab-content-bg" data-tutorial="settings-welcome">
       <ScrollArea className="h-full">
         <div className="max-w-4xl mx-auto p-6 pb-20">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <SettingsIcon className="w-8 h-8 text-gray-700" />
-              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+              <SettingsIcon className="w-8 h-8 text-theme-label" />
+              <h1 className="text-3xl font-bold text-theme-title">Settings</h1>
             </div>
-            <p className="text-gray-600">Customize your PEARL AI experience</p>
+            <p className="text-theme-muted">Customize your PEARL AI experience</p>
           </div>
 
           {/* Font Scaling Section */}
@@ -308,13 +308,13 @@ const Settings: React.FC<SettingsProps> = () => {
                     step="5"
                     value={settings.fontSize}
                     onChange={(e) => updateSettings({ fontSize: Number(e.target.value) })}
-                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    className="flex-1 h-2 bg-theme-tertiary rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
-                  <span className="text-lg font-semibold text-gray-700 min-w-[60px] text-right">
+                  <span className="text-lg font-semibold text-theme-label min-w-[60px] text-right">
                     {settings.fontSize}%
                   </span>
                 </div>
-                <div className="flex justify-between text-sm text-gray-500">
+                <div className="flex justify-between text-sm text-theme-hint">
                   <span>80%</span>
                   <span>100%</span>
                   <span>120%</span>
@@ -337,9 +337,9 @@ const Settings: React.FC<SettingsProps> = () => {
                       type="color"
                       value={settings.tabColors[tab.type as keyof typeof settings.tabColors] || tab.defaultColor}
                       onChange={(e) => handleTabColorChange(tab.type, e.target.value)}
-                      className="w-12 h-10 rounded border border-gray-300 cursor-pointer flex-shrink-0"
+                      className="w-12 h-10 rounded border border-theme-strong cursor-pointer flex-shrink-0"
                     />
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-theme-label">
                       {tab.label}
                     </span>
                   </div>
@@ -358,7 +358,7 @@ const Settings: React.FC<SettingsProps> = () => {
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <select
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 border border-theme-strong rounded-md bg-theme-surface text-theme-label focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                     value={selectedModel}
                     onChange={(e) => handleModelSelect(e.target.value)}
                     disabled={isSelectingModel || loadingModels || availableModels.length === 0}
@@ -408,7 +408,7 @@ const Settings: React.FC<SettingsProps> = () => {
                   </Button>
                 </div>
                 {availableModels.length > 0 && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-theme-hint">
                     {availableModels.length} model{availableModels.length !== 1 ? 's' : ''} found in models directory
                   </p>
                 )}
@@ -434,7 +434,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-hint hover:text-theme-label"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -451,10 +451,10 @@ const Settings: React.FC<SettingsProps> = () => {
             <CardContent>
               <div className="space-y-4">
                 {/* Auto-show tutorials toggle */}
-                <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+                <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Auto-show tutorials on first use</p>
-                    <p className="text-xs text-gray-500">Automatically display tutorials when you open a tool for the first time</p>
+                    <p className="text-sm font-medium text-theme-label">Auto-show tutorials on first use</p>
+                    <p className="text-xs text-theme-hint">Automatically display tutorials when you open a tool for the first time</p>
                   </div>
                   <input
                     type="checkbox"
@@ -468,15 +468,15 @@ const Settings: React.FC<SettingsProps> = () => {
                         }
                       }
                     })}
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                    className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                   />
                 </label>
 
                 {/* Show floating buttons toggle */}
-                <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+                <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Show floating tutorial buttons</p>
-                    <p className="text-xs text-gray-500">Display help buttons in the corner of each tool</p>
+                    <p className="text-sm font-medium text-theme-label">Show floating tutorial buttons</p>
+                    <p className="text-xs text-theme-hint">Display help buttons in the corner of each tool</p>
                   </div>
                   <input
                     type="checkbox"
@@ -490,13 +490,13 @@ const Settings: React.FC<SettingsProps> = () => {
                         }
                       }
                     })}
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                    className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                   />
                 </label>
 
 
                 {/* Reset all tutorials button */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="mt-6 pt-6 border-t border-theme">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -550,9 +550,9 @@ const Settings: React.FC<SettingsProps> = () => {
                   type="checkbox"
                   checked={settings.autoCloseTabsOnExit}
                   onChange={(e) => updateSettings({ autoCloseTabsOnExit: e.target.checked })}
-                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-theme-label">
                   Auto-close all tabs on app close
                 </span>
               </label>
@@ -576,9 +576,9 @@ const Settings: React.FC<SettingsProps> = () => {
                     value="queued"
                     checked={settings.generationMode === 'queued'}
                     onChange={() => updateSettings({ generationMode: 'queued' })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                    className="w-4 h-4 text-blue-600 border-theme-strong focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-sm font-medium text-gray-700">Queued (recommended)</span>
+                  <span className="text-sm font-medium text-theme-label">Queued (recommended)</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -587,9 +587,9 @@ const Settings: React.FC<SettingsProps> = () => {
                     value="simultaneous"
                     checked={settings.generationMode === 'simultaneous'}
                     onChange={() => updateSettings({ generationMode: 'simultaneous' })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                    className="w-4 h-4 text-blue-600 border-theme-strong focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-sm font-medium text-gray-700">Simultaneous (experimental)</span>
+                  <span className="text-sm font-medium text-theme-label">Simultaneous (experimental)</span>
                 </label>
               </div>
             </CardContent>
@@ -617,50 +617,12 @@ const Settings: React.FC<SettingsProps> = () => {
                       onChange={(e) => {
                         const newTheme = e.target.value as 'light' | 'dark' | 'system';
                         updateSettings({ theme: newTheme });
-                        // Auto-switch sidebar color to match theme
-                        if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                          if (!isColorDark(settings.sidebarColor)) {
-                            updateSettings({ theme: newTheme, sidebarColor: '#1e293b' });
-                          }
-                        } else if (newTheme === 'light' || (newTheme === 'system' && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                          if (isColorDark(settings.sidebarColor)) {
-                            updateSettings({ theme: newTheme, sidebarColor: '#f1f5f9' });
-                          }
-                        }
                       }}
-                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 cursor-pointer"
+                      className="w-4 h-4 text-blue-600 border-theme-strong focus:ring-blue-500 cursor-pointer"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{option.label}</span>
+                    <span className="text-sm font-medium text-theme-label">{option.label}</span>
                   </label>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Sidebar Color Section */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Sidebar Color</CardTitle>
-              <CardDescription>Customize the sidebar background color</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <input
-                  type="color"
-                  value={settings.sidebarColor}
-                  onChange={(e) => updateSettings({ sidebarColor: e.target.value })}
-                  className="w-16 h-12 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-                />
-                <div
-                  className="flex-1 h-12 rounded-md flex items-center px-4 font-medium"
-                  style={{
-                    backgroundColor: settings.sidebarColor,
-                    color: isColorDark(settings.sidebarColor) ? '#ffffff' : '#1f2937'
-                  }}
-                >
-                  Preview
-                </div>
-                <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">{settings.sidebarColor}</span>
               </div>
             </CardContent>
           </Card>
@@ -677,13 +639,13 @@ const Settings: React.FC<SettingsProps> = () => {
                   type="checkbox"
                   checked={settings.visualStudioEnabled}
                   onChange={(e) => updateSettings({ visualStudioEnabled: e.target.checked })}
-                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-theme-label">
                   Enable Visual Studio tools
                 </span>
               </label>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-theme-hint mt-2">
                 When disabled, Visual Studio tools are hidden from the sidebar and cannot be accessed.
               </p>
             </CardContent>
@@ -711,12 +673,12 @@ const Settings: React.FC<SettingsProps> = () => {
           {/* Reset Confirmation Dialog */}
           {showResetDialog && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <div className="bg-theme-surface rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
                 <div className="flex items-center gap-3 mb-4">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Reset Settings?</h3>
+                  <h3 className="text-lg font-semibold text-theme-title">Reset Settings?</h3>
                 </div>
-                <p className="text-gray-600 mb-6">
+                <p className="text-theme-muted mb-6">
                   Are you sure you want to reset all settings to their default values? This action cannot be undone.
                 </p>
                 <div className="flex gap-3 justify-end">

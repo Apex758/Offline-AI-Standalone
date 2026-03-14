@@ -210,7 +210,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-2xl h-full bg-white shadow-2xl flex flex-col animate-slideInRight">
+      <div className="relative w-full max-w-2xl h-full bg-theme-surface shadow-2xl flex flex-col animate-slideInRight">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
           <div className="flex items-center justify-between mb-4">
@@ -282,7 +282,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
-            <div className="text-center text-gray-500 mt-12">
+            <div className="text-center text-theme-hint mt-12">
               <div className="text-6xl mb-4">
                 {mode === 'chat' ? '💭' : '🪄'}
               </div>
@@ -307,7 +307,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
                 className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                   msg.role === 'user'
                     ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-800'
+                    : 'bg-theme-tertiary text-theme-heading'
                 }`}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -317,7 +317,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
 
           {streamingMessage && (
             <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-gray-100 text-gray-800">
+              <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-theme-tertiary text-theme-heading">
                 <p className="whitespace-pre-wrap">{streamingMessage}</p>
                 <span className="inline-flex items-center ml-1">
                   <span className="w-0.5 h-5 bg-purple-500 animate-pulse rounded-full"></span>
@@ -330,7 +330,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <div className="border-t border-theme p-4 bg-theme-secondary">
           <div className="flex gap-2">
             <textarea
               value={input}
@@ -341,7 +341,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
                   ? 'Ask a question about your content...'
                   : 'Describe the modifications you want...'
               }
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="flex-1 px-4 py-3 border border-theme-strong rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
               rows={3}
               disabled={isStreaming}
             />

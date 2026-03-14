@@ -672,10 +672,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // RENDER
   // ========================================
   return (
-    <div className="h-full bg-white flex flex-col" data-tutorial="image-studio-root">
+    <div className="h-full tab-content-bg flex flex-col" data-tutorial="image-studio-root">
       {/* Top Right Sliding Toggle */}
-      <div className="flex justify-end p-4 border-b border-gray-200" data-tutorial="image-studio-tab-toggle">
-        <div className="relative flex bg-gray-200 rounded-lg p-1">
+      <div className="flex justify-end p-4 border-b border-theme" data-tutorial="image-studio-tab-toggle">
+        <div className="relative flex bg-theme-tertiary rounded-lg p-1">
           <div
             className={`absolute top-1 bottom-1 w-1/2 bg-blue-600 rounded-md transition-all duration-300 ease-in-out ${
               activeTab === 'generator' ? 'left-1' : 'left-1/2'
@@ -684,7 +684,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
            <button
              onClick={() => setActiveTab('generator')}
              className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
-               activeTab === 'generator' ? 'text-white' : 'text-gray-700 hover:text-gray-900'
+               activeTab === 'generator' ? 'text-white' : 'text-theme-label hover:text-theme-title'
              }`}
            >
             <Sparkles className="w-4 h-4 mr-2" />
@@ -693,7 +693,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
            <button
              onClick={() => setActiveTab('editor')}
              className={`relative z-10 flex items-center justify-center px-4 py-2 rounded-md transition-colors duration-300 ${
-               activeTab === 'editor' ? 'text-white' : 'text-gray-700 hover:text-gray-900'
+               activeTab === 'editor' ? 'text-white' : 'text-theme-label hover:text-theme-title'
              }`}
            >
             <Eraser className="w-4 h-4 mr-2" />
@@ -729,13 +729,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   
                   {/* Visual Style Selector */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Visual Style
                     </label>
                     <select
                       value={selectedStyle}
                       onChange={(e) => setSelectedStyle(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={loadingStyles}
                     >
                       <option value="cartoon_3d">3D Cartoon</option>
@@ -744,7 +744,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <option value="realistic">Photorealistic</option>
                     </select>
                     {styleProfiles[selectedStyle] && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {styleProfiles[selectedStyle].description}
                       </p>
                     )}
@@ -752,40 +752,40 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
                   {/* Base Prompt Field */}
                   <div data-tutorial="image-studio-prompt">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Prompt <span className="text-red-500">*</span>
                     </label>
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-xs text-theme-hint mb-2">
                       Describe what you want to generate. The selected style will be applied automatically.
                     </p>
                     <textarea
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={4}
                       placeholder="E.g., A flowering plant showing roots, stem, leaves, and flower petals"
                     />
                   </div>
 
                   {/* Advanced Options */}
-                  <div className="border border-gray-200 rounded-lg">
+                  <div className="border border-theme rounded-lg">
                     <button
                       onClick={() => setShowAdvanced(!showAdvanced)}
-                      className="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition rounded-lg"
+                      className="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-theme-subtle transition rounded-lg"
                     >
-                      <span className="text-sm font-medium text-gray-700">Advanced Options</span>
-                      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                      <span className="text-sm font-medium text-theme-label">Advanced Options</span>
+                      <ChevronDown className={`w-4 h-4 text-theme-hint transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
                     </button>
                     
                     {showAdvanced && (
-                      <div className="px-4 pb-4 space-y-4 border-t border-gray-200 pt-4">
+                      <div className="px-4 pb-4 space-y-4 border-t border-theme pt-4">
                         {/* Negative Prompt */}
                         <div data-tutorial="image-studio-negative-prompt">
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-theme-label">
                               Negative Prompt
                             </label>
-                            <label className="flex items-center text-xs text-gray-500">
+                            <label className="flex items-center text-xs text-theme-hint">
                               <input
                                 type="checkbox"
                                 checked={useManualNegative}
@@ -802,10 +802,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               setNegativePrompt(e.target.value);
                               setUseManualNegative(true);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Things to avoid in the image..."
                           />
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-theme-hint mt-1">
                             {useManualNegative ? 'Custom settings' : 'Auto-filled from style profile'}
                           </p>
                         </div>
@@ -813,11 +813,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         {/* Dimensions and Steps */}
                         <div className="grid grid-cols-3 gap-4" data-tutorial="image-studio-dimensions">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
+                            <label className="block text-sm font-medium text-theme-label mb-2">Width</label>
                             <select
                               value={width}
                               onChange={(e) => setWidth(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                               <option value={512}>512</option>
                               <option value={768}>768</option>
@@ -825,11 +825,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                             </select>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
+                            <label className="block text-sm font-medium text-theme-label mb-2">Height</label>
                             <select
                               value={height}
                               onChange={(e) => setHeight(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                               <option value={512}>512</option>
                               <option value={768}>768</option>
@@ -837,11 +837,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                             </select>
                           </div>
                           <div data-tutorial="image-studio-steps">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Steps</label>
+                            <label className="block text-sm font-medium text-theme-label mb-2">Steps</label>
                             <select
                               value={numInferenceSteps}
                               onChange={(e) => setNumInferenceSteps(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                               <option value={1}>1</option>
                               <option value={2}>2</option>
@@ -856,11 +856,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
                   {/* Batch Size */}
                   <div data-tutorial="image-studio-batch">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Batch Size</label>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Batch Size</label>
                     <select
                       value={numImages}
                       onChange={(e) => setNumImages(Number(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value={1}>1 Image</option>
                       <option value={2}>2 Images</option>
@@ -898,7 +898,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                 <h2 className="text-2xl font-semibold mb-6">Generating Images...</h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {imageSlots.map((slot, i) => (
-                    <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                    <div key={i} className="border border-theme-strong rounded-lg p-4 bg-theme-secondary">
                       <div className="relative">
                         {slot.status === 'completed' && slot.imageData ? (
                           <>
@@ -911,7 +911,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 setShowImageModal(true);
                               }}
                             />
-                            <div className="text-xs text-gray-500 mb-2">
+                            <div className="text-xs text-theme-hint mb-2">
                               Seed: {slot.seed}
                             </div>
                             <div className="flex gap-2">
@@ -934,7 +934,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         ) : slot.status === 'generating' ? (
                           <div className="flex flex-col items-center justify-center h-[300px]">
                             <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
-                            <p className="text-sm text-gray-500">Generating...</p>
+                            <p className="text-sm text-theme-hint">Generating...</p>
                           </div>
                         ) : slot.status === 'error' ? (
                           <div className="flex flex-col items-center justify-center h-[300px]">
@@ -966,7 +966,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {imageSlots.map((slot, i) => (
-                    <div key={i} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                    <div key={i} className="border border-theme-strong rounded-lg p-4 bg-theme-secondary">
                       <div className="relative">
                         {slot.status === 'completed' && slot.imageData ? (
                           <>
@@ -979,7 +979,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                                 setShowImageModal(true);
                               }}
                             />
-                            <div className="text-xs text-gray-500 mb-2">
+                            <div className="text-xs text-theme-hint mb-2">
                               Seed: {slot.seed}
                             </div>
                             <div className="flex gap-2">
@@ -1002,7 +1002,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         ) : slot.status === 'generating' ? (
                           <div className="flex flex-col items-center justify-center h-[300px] cursor-pointer" onClick={() => setSelectedImage(null)}>
                             <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
-                            <p className="text-sm text-gray-500">Generating...</p>
+                            <p className="text-sm text-theme-hint">Generating...</p>
                             <p className="text-xs text-gray-400 mt-1">Click to view progress</p>
                           </div>
                         ) : slot.status === 'error' ? (
@@ -1035,7 +1035,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   <div className="text-center">
                     <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                     <h2 className="text-xl font-semibold mb-2">Upload an Image</h2>
-                    <p className="text-sm text-gray-500 mb-4">Start by uploading an image to edit</p>
+                    <p className="text-sm text-theme-hint mb-4">Start by uploading an image to edit</p>
                     <label className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
                       <input
                         type="file"
@@ -1054,7 +1054,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowBeforeAfter(!showBeforeAfter)}
-                        className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center text-sm"
+                        className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm"
                       >
                         {showBeforeAfter ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
                         {showBeforeAfter ? 'Hide Original' : 'Show Original'}
@@ -1072,7 +1072,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </div>
                   </div>
 
-                  <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-100" data-tutorial="image-studio-canvas">
+                  <div className="relative border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary" data-tutorial="image-studio-canvas">
                     {/* Original image underneath */}
                     <img
                       src={history.original}
@@ -1154,13 +1154,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
             {/* Right Sidebar - Editor Tools */}
             {uploadedImage && (
-              <div className="w-72 border-l border-gray-200 p-4 overflow-y-auto bg-gray-50" data-tutorial="image-studio-tools">
+              <div className="w-72 border-l border-theme p-4 overflow-y-auto bg-theme-secondary" data-tutorial="image-studio-tools">
                 <h3 className="text-lg font-semibold mb-4">Editor Tools</h3>
 
                 <div className="space-y-4">
                   {/* Brush Size */}
                   <div data-tutorial="image-studio-brush">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
                       Brush Size: {brushSize}px
                     </label>
                     <input
@@ -1178,7 +1178,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <button
                       onClick={handleUndo}
                       disabled={history.undoStack.length === 0}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Undo2 className="w-4 h-4 mr-1" />
                       Undo
@@ -1186,7 +1186,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <button
                       onClick={handleRedo}
                       disabled={history.redoStack.length === 0}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Redo2 className="w-4 h-4 mr-1" />
                       Redo
@@ -1225,7 +1225,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </div>
 
                   {/* History Info */}
-                  <div className="mt-4 text-xs text-gray-500">
+                  <div className="mt-4 text-xs text-theme-hint">
                     <p>Undo available: {history.undoStack.length}</p>
                     <p>Redo available: {history.redoStack.length}</p>
                   </div>

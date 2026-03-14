@@ -165,7 +165,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading page...</p>
+            <p className="text-theme-muted">Loading page...</p>
           </div>
         </div>
       );
@@ -175,8 +175,8 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       return (
         <div className="p-8">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Page</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">Current path: {location.pathname}</p>
+          <p className="text-theme-muted mb-4">{error}</p>
+          <p className="text-sm text-theme-hint">Current path: {location.pathname}</p>
           <button
             onClick={() => navigate('/curriculum')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -197,7 +197,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
         return (
           <div className="p-8">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Render Error</h2>
-            <p className="text-gray-600">Failed to render this page.</p>
+            <p className="text-theme-muted">Failed to render this page.</p>
             <p className="text-sm text-red-500 mt-2">{String(err)}</p>
           </div>
         );
@@ -206,10 +206,10 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
 
     return (
       <div className="p-8" data-tutorial="curriculum-welcome">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        <h2 className="text-2xl font-bold text-theme-heading mb-4">
           Welcome to OECS Curriculum
         </h2>
-        <p className="text-gray-600 mb-4">
+        <p className="text-theme-muted mb-4">
           Browse the curriculum using the navigation sidebar.
         </p>
         {!sidebarOpen && (
@@ -226,21 +226,21 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
   };
 
   return (
-    <div className="flex h-full bg-white relative" onClick={onPanelClick}>
+    <div className="flex h-full tab-content-bg relative" onClick={onPanelClick}>
       {/* Sidebar */}
       <div
-        className={`border-r border-gray-200 bg-gray-50 transition-all duration-300 ${
+        className={`border-r border-theme bg-theme-secondary transition-all duration-300 ${
           sidebarOpen ? 'w-50' : 'w-0'
         } overflow-hidden flex flex-col`}
         data-tutorial="curriculum-grades"
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="font-semibold text-gray-800">Curriculum</h3>
+        <div className="flex items-center justify-between p-4 border-b border-theme">
+          <h3 className="font-semibold text-theme-heading">Curriculum</h3>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="p-1 rounded hover:bg-gray-200 transition"
+            className="p-1 rounded hover:bg-theme-hover transition"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-theme-muted" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto" data-tutorial="curriculum-subjects">
@@ -251,17 +251,17 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="border-b border-gray-200 p-4 flex items-center" data-tutorial="curriculum-breadcrumb">
+        <div className="border-b border-theme p-4 flex items-center" data-tutorial="curriculum-breadcrumb">
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition mr-4"
+              className="p-2 rounded-lg hover:bg-theme-hover transition mr-4"
               title="Show navigation"
             >
-              <Menu className="w-5 h-5 text-gray-600" />
+              <Menu className="w-5 h-5 text-theme-muted" />
             </button>
           )}
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-xl font-semibold text-theme-heading">
             OECS Curriculum
           </h2>
         </div>

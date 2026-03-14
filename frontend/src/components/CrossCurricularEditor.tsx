@@ -238,48 +238,48 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-7xl mx-auto">
+    <div className="bg-theme-surface rounded-lg shadow-lg max-w-7xl mx-auto">
       {/* Header */}
-      <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-cyan-50 to-blue-50">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Cross-Curricular Plan</h2>
+      <div className="border-b border-theme p-6 bg-gradient-to-r from-cyan-50 dark:from-cyan-900/30 to-blue-50 dark:to-blue-900/30">
+        <h2 className="text-2xl font-bold text-theme-heading mb-4">Edit Cross-Curricular Plan</h2>
         
         {/* Metadata Editing */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Plan Title</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Plan Title</label>
             <input
               type="text"
               value={plan.metadata.title}
               onChange={(e) => updateMetadata('title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Enter plan title"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Big Idea/Theme</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Big Idea/Theme</label>
             <input
               type="text"
               value={plan.metadata.theme}
               onChange={(e) => updateMetadata('theme', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Central connecting concept"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Primary Subject</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Primary Subject</label>
             <input
               type="text"
               value={plan.metadata.primarySubject}
               onChange={(e) => updateMetadata('primarySubject', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Integration Model</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Integration Model</label>
             <select
               value={plan.metadata.integrationModel}
               onChange={(e) => updateMetadata('integrationModel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
             >
               <option value="Multidisciplinary">Multidisciplinary</option>
               <option value="Interdisciplinary">Interdisciplinary</option>
@@ -290,21 +290,21 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Grade Level</label>
             <input
               type="text"
               value={plan.metadata.gradeLevel}
               onChange={(e) => updateMetadata('gradeLevel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Duration</label>
             <input
               type="text"
               value={plan.metadata.duration}
               onChange={(e) => updateMetadata('duration', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="e.g., 45 minutes"
             />
           </div>
@@ -315,19 +315,19 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
       <div className="p-6 max-h-[60vh] overflow-y-auto">
         {/* Learning Standards */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Learning Standards</h3>
+          <h3 className="text-lg font-semibold text-theme-heading mb-3">Learning Standards</h3>
           <textarea
             value={plan.learningStandards}
             onChange={(e) => setPlan(prev => ({ ...prev, learningStandards: e.target.value }))}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+            className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
             placeholder="Curriculum standards from all integrated subjects"
           />
         </div>
 
         {/* Subject-Specific Objectives */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+          <h3 className="text-lg font-semibold text-theme-heading mb-3 flex items-center">
             <BookOpen className="w-5 h-5 mr-2" />
             Subject-Specific Objectives
           </h3>
@@ -358,16 +358,16 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
                     .map((objective) => (
                       <div key={objective.id} className="flex items-center gap-2">
                         <button
-                          className="p-1 hover:bg-gray-100 rounded cursor-move"
+                          className="p-1 hover:bg-theme-hover rounded cursor-move"
                           title="Drag to reorder"
                         >
-                          <GripVertical className="w-4 h-4 text-gray-400" />
+                          <GripVertical className="w-4 h-4 text-theme-hint" />
                         </button>
                         <input
                           type="text"
                           value={objective.objective}
                           onChange={(e) => updateSubjectObjective(objective.id, 'objective', e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                          className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
                           placeholder={`Objective for ${subject}`}
                         />
                         <button
@@ -380,7 +380,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
                       </div>
                     ))}
                   {plan.subjectObjectives.filter(obj => obj.subject === subject).length === 0 && (
-                    <p className="text-sm text-gray-500 italic">No objectives yet for {subject}</p>
+                    <p className="text-sm text-theme-hint italic">No objectives yet for {subject}</p>
                   )}
                 </div>
               </div>
@@ -391,16 +391,16 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
         {/* Cross-Curricular Activities */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <h3 className="text-lg font-semibold text-theme-heading flex items-center">
               <Link2 className="w-5 h-5 mr-2" />
               Cross-Curricular Activities
             </h3>
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Filter by:</label>
+              <label className="text-sm text-theme-muted">Filter by:</label>
               <select
                 value={selectedSubjectFilter}
                 onChange={(e) => setSelectedSubjectFilter(e.target.value)}
-                className="px-2 py-1 text-sm border border-gray-300 rounded"
+                className="px-2 py-1 text-sm border border-theme-strong rounded"
               >
                 <option value="all">All Subjects</option>
                 {allSubjects.map(subject => (
@@ -413,7 +413,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
             {getFilteredActivities().map((activity) => (
               <div 
                 key={activity.id} 
-                className="border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition"
+                className="border border-theme rounded-lg p-4 hover:border-cyan-300 transition"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex flex-wrap gap-2">
@@ -438,38 +438,38 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Activity Name</label>
+                    <label className="block text-sm font-medium text-theme-label mb-1">Activity Name</label>
                     <input
                       type="text"
                       value={activity.name}
                       onChange={(e) => updateActivity(activity.id, 'name', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
                       placeholder="Enter activity name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-theme-label mb-1">Description</label>
                     <textarea
                       value={activity.description}
                       onChange={(e) => updateActivity(activity.id, 'description', e.target.value)}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
                       placeholder="Describe the activity and how subjects integrate"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Duration (optional)</label>
+                      <label className="block text-sm font-medium text-theme-label mb-1">Duration (optional)</label>
                       <input
                         type="text"
                         value={activity.duration || ''}
                         onChange={(e) => updateActivity(activity.id, 'duration', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                        className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
                         placeholder="e.g., 20 minutes"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Subjects Involved</label>
+                      <label className="block text-sm font-medium text-theme-label mb-1">Subjects Involved</label>
                       <div className="flex flex-wrap gap-1 pt-1">
                         {allSubjects.map(subject => (
                           <button
@@ -478,7 +478,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
                             className={`px-2 py-1 text-xs rounded transition ${
                               activity.subjects.includes(subject)
                                 ? 'text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
                             }`}
                             style={activity.subjects.includes(subject) ? { backgroundColor: getSubjectColor(subject) } : {}}
                           >
@@ -494,7 +494,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
           </div>
           <button
             onClick={addActivity}
-            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-3 w-full py-2 border-2 border-dashed border-theme-strong rounded-lg text-theme-muted hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Cross-Curricular Activity
@@ -503,16 +503,16 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
 
         {/* Materials */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Materials Needed</h3>
+          <h3 className="text-lg font-semibold text-theme-heading mb-3">Materials Needed</h3>
           <div className="space-y-3">
             {plan.materials.map((material) => (
-              <div key={material.id} className="border border-gray-200 rounded-lg p-3 hover:border-cyan-300 transition">
+              <div key={material.id} className="border border-theme rounded-lg p-3 hover:border-cyan-300 transition">
                 <div className="flex items-start gap-2 mb-2">
                   <input
                     type="text"
                     value={material.name}
                     onChange={(e) => updateMaterial(material.id, 'name', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="Enter material or resource"
                   />
                   <button
@@ -524,9 +524,9 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2 ml-2">
-                  <span className="text-xs text-gray-600">Applies to:</span>
+                  <span className="text-xs text-theme-muted">Applies to:</span>
                   {material.subjects?.length === 0 ? (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">All Subjects</span>
+                    <span className="px-2 py-1 bg-theme-tertiary text-theme-label text-xs rounded">All Subjects</span>
                   ) : (
                     allSubjects.map(subject => (
                       <button
@@ -535,7 +535,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
                         className={`px-2 py-1 text-xs rounded transition ${
                           material.subjects?.includes(subject)
                             ? 'text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
                         }`}
                         style={material.subjects?.includes(subject) ? { backgroundColor: getSubjectColor(subject) } : {}}
                       >
@@ -549,7 +549,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
           </div>
           <button
             onClick={addMaterial}
-            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-3 w-full py-2 border-2 border-dashed border-theme-strong rounded-lg text-theme-muted hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Material
@@ -558,16 +558,16 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
 
         {/* Assessment Strategies */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Assessment Strategies</h3>
+          <h3 className="text-lg font-semibold text-theme-heading mb-3">Assessment Strategies</h3>
           <div className="space-y-2">
             {plan.assessmentStrategies.map((assessment, index) => (
               <div key={index} className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-600">•</span>
+                <span className="text-sm font-medium text-theme-muted">•</span>
                 <input
                   type="text"
                   value={assessment}
                   onChange={(e) => updateAssessment(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                  className="flex-1 px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter assessment strategy across subjects"
                 />
                 <button
@@ -582,7 +582,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
           </div>
           <button
             onClick={addAssessment}
-            className="mt-3 w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
+            className="mt-3 w-full py-2 border-2 border-dashed border-theme-strong rounded-lg text-theme-muted hover:border-cyan-400 hover:text-cyan-600 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Assessment Strategy
@@ -592,34 +592,34 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
         {/* Optional Fields */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Key Vocabulary</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Key Vocabulary</label>
             <input
               type="text"
               value={plan.keyVocabulary || ''}
               onChange={(e) => setPlan(prev => ({ ...prev, keyVocabulary: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Important terms from all subjects (comma-separated)"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Differentiation Notes</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Differentiation Notes</label>
             <textarea
               value={plan.differentiationNotes || ''}
               onChange={(e) => setPlan(prev => ({ ...prev, differentiationNotes: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="How to differentiate across learning levels and subjects"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reflection Prompts</label>
+            <label className="block text-sm font-medium text-theme-label mb-1">Reflection Prompts</label>
             <textarea
               value={plan.reflectionPrompts || ''}
               onChange={(e) => setPlan(prev => ({ ...prev, reflectionPrompts: e.target.value }))}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Questions to help students reflect on cross-curricular connections"
             />
           </div>
@@ -627,8 +627,8 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
       </div>
 
       {/* Footer Actions */}
-      <div className="border-t border-gray-200 p-4 bg-gray-50 flex justify-between items-center">
-        <div className="text-sm text-gray-600">
+      <div className="border-t border-theme p-4 bg-theme-secondary flex justify-between items-center">
+        <div className="text-sm text-theme-muted">
           {allSubjects.length} subject{allSubjects.length !== 1 ? 's' : ''} • 
           {plan.crossCurricularActivities.length} activit{plan.crossCurricularActivities.length !== 1 ? 'ies' : 'y'} • 
           {plan.materials.length} material{plan.materials.length !== 1 ? 's' : ''}
@@ -636,7 +636,7 @@ const CrossCurricularEditor: React.FC<CrossCurricularEditorProps> = ({ plan: ini
         <div className="flex gap-2">
           <button
             onClick={onCancel}
-            className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center px-4 py-2 text-theme-label bg-theme-surface border border-theme-strong rounded-lg hover:bg-theme-subtle"
           >
             <X className="w-4 h-4 mr-2" />
             Cancel

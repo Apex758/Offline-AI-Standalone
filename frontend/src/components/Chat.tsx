@@ -380,15 +380,15 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   };
 
   return (
-    <div className="flex h-full bg-white relative" data-tutorial="chat-welcome">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="chat-welcome">
       <div className="flex-1 flex flex-col" onClick={(e) => {
         e.stopPropagation();
         onPanelClick?.();
       }}>
-        <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+        <div className="border-b border-theme p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Chat with PEARL</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-xl font-semibold text-theme-heading">Chat with PEARL</h2>
+            <p className="text-sm text-theme-hint">
               {/* WebSocket connection status is not available via context API, so this is omitted or needs a new prop */}
             </p>
           </div>
@@ -398,22 +398,22 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 e.stopPropagation();
                 startNewChat();
               }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition"
+              className="p-2 rounded-lg hover:bg-theme-hover transition"
               title="New Chat"
               data-tutorial="chat-new"
             >
-              <Plus className="w-5 h-5 text-gray-600" />
+              <Plus className="w-5 h-5 text-theme-muted" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setHistoryOpen(!historyOpen);
               }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition"
+              className="p-2 rounded-lg hover:bg-theme-hover transition"
               title="Chat History"
               data-tutorial="chat-conversations"
             >
-              <History className="w-5 h-5 text-gray-600" />
+              <History className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
         </div>
@@ -425,8 +425,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                   <Send className="w-8 h-8 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Start Learning!</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-semibold text-theme-heading mb-2">Start Learning!</h3>
+                <p className="text-theme-muted">
                   Ask me anything! I'm your AI teaching assistant, here to help explain concepts and answer your questions.
                 </p>
               </div>
@@ -442,7 +442,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     className={`max-w-3xl px-4 py-3 rounded-2xl ${
                       msg.role === 'user'
                         ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-800'
+                        : 'bg-theme-tertiary text-theme-heading'
                     }`}
                   >
                     <div className="text-sm prose prose-sm max-w-none">
@@ -450,7 +450,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     </div>
                     <p
                       className={`text-xs mt-2 ${
-                        msg.role === 'user' ? 'text-blue-200' : 'text-gray-500'
+                        msg.role === 'user' ? 'text-blue-200' : 'text-theme-hint'
                       }`}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString()}
@@ -461,7 +461,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
               {streamingMessage && (
                 <div className="flex justify-start">
-                  <div className="max-w-3xl px-4 py-3 rounded-2xl bg-gray-100 text-gray-800">
+                  <div className="max-w-3xl px-4 py-3 rounded-2xl bg-theme-tertiary text-theme-heading">
                     <div className="text-sm prose prose-sm max-w-none">
                       {formatMessage(streamingMessage)}
                       <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>
@@ -472,8 +472,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
               {loading && !streamingMessage && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                    <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
+                  <div className="bg-theme-tertiary px-4 py-3 rounded-2xl">
+                    <Loader2 className="w-5 h-5 animate-spin text-theme-muted" />
                   </div>
                 </div>
               )}
@@ -494,14 +494,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           </div>
         )}
 
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-theme p-4">
           <div className="flex space-x-2">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask me anything..."
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="flex-1 px-4 py-3 border border-theme-strong rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-800 dark:text-gray-100"
               rows={1}
               style={{ minHeight: '48px', maxHeight: '120px' }}
               disabled={loading}
@@ -520,12 +520,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               )}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-2">Press Enter to send, Shift+Enter for new line</p>
+          <p className="text-xs text-theme-hint mt-2">Press Enter to send, Shift+Enter for new line</p>
         </div>
       </div>
 
       <div
-        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -533,18 +533,18 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Chat History</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">Chat History</h3>
             <button
               onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-gray-200 transition"
+              className="p-1 rounded hover:bg-theme-hover transition"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2">
             {chatHistories.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
+              <div className="text-center text-theme-hint mt-8">
                 <History className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm">No chat history yet</p>
               </div>
@@ -553,16 +553,16 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 <div
                   key={history.id}
                   onClick={() => loadChatHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
-                    currentChatId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                    currentChatId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
+                      <p className="text-sm font-medium text-theme-heading truncate">
                         {history.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">

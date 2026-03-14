@@ -166,14 +166,27 @@
 /* Tab bar with border line */
 .edge-tab-bar {
   position: relative;
-  background: #f5f5f0;
+  background: #E8E8EB;
   border-bottom: none;
   overflow: visible;  /* allow active tab SVG to extend below */
   z-index: 2;         /* sit above content so shadows render */
 }
 
 .dark .edge-tab-bar {
-  background: #58585e;
+  background: #1e293b;
+}
+
+.dark .edge-tab-bar-border {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .edge-tab .edge-tab-close {
+  color: #9ca3af;
+}
+
+.dark .edge-tab-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
 }
 
 /* Highlight bar beneath the tab strip, above content */
@@ -231,9 +244,9 @@
   transform: rotate(90deg);
 }
 
-/* Dark mode overrides */
+/* Dark mode overrides - media query fallback */
 @media (prefers-color-scheme: dark) {
   .edge-tab-bar {
-    background: #2d2d30;
+    background: #1e293b;
   }
 }

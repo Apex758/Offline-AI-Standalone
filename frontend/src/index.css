@@ -23,6 +23,33 @@
   --border: 229 231 235; /* gray-200 */
   --input: 229 231 235; /* gray-200 */
   --ring: 59 130 246; /* blue-600 */
+  --tab-content-bg: #F0F0F3;
+
+  /* Semantic theme colors — edit these to restyle the entire app */
+  --text-title: #111827;       /* gray-900 — page titles */
+  --text-heading: #1f2937;     /* gray-800 — section headings */
+  --text-label: #374151;       /* gray-700 — form labels, body */
+  --text-muted: #4b5563;       /* gray-600 — secondary text */
+  --text-hint: #6b7280;        /* gray-500 — hints, placeholders */
+  --bg-surface: #ffffff;       /* white — cards, panels */
+  --bg-secondary: #f9fafb;     /* gray-50 — sidebars, footers */
+  --bg-tertiary: #f3f4f6;      /* gray-100 — badges, inputs bg */
+  --bg-hover: #f3f4f6;         /* gray-100 — hover states */
+  --bg-hover-subtle: #f9fafb;  /* gray-50 — subtle hover */
+  --border-default: #e5e7eb;   /* gray-200 — default borders */
+  --border-strong: #d1d5db;    /* gray-300 — input borders */
+
+  --sidebar-bg: rgba(232, 232, 235, 0.82);
+  --sidebar-bg-collapsed: rgba(232, 232, 235, 0.55);
+  --sidebar-text: #1f2937;
+  --sidebar-text-muted: #6b7280;
+  --sidebar-text-faint: #9ca3af;
+  --sidebar-hover: rgba(0, 0, 0, 0.05);
+  --sidebar-active: rgba(0, 0, 0, 0.06);
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-divider: rgba(0, 0, 0, 0.08);
+  --sidebar-scrollbar: rgba(0, 0, 0, 0.1);
+  --sidebar-header-bg: rgba(0, 0, 0, 0.02);
 }
 
 .dark {
@@ -44,6 +71,33 @@
   --border: 55 65 81; /* gray-700 */
   --input: 55 65 81; /* gray-700 */
   --ring: 96 165 250; /* blue-400 */
+  --tab-content-bg: #1a2332;
+
+  /* Semantic theme colors — dark mode */
+  --text-title: #f3f4f6;       /* gray-100 */
+  --text-heading: #e5e7eb;     /* gray-200 */
+  --text-label: #d1d5db;       /* gray-300 */
+  --text-muted: #9ca3af;       /* gray-400 */
+  --text-hint: #9ca3af;        /* gray-400 */
+  --bg-surface: #1f2937;       /* gray-800 */
+  --bg-secondary: #1f2937;     /* gray-800 */
+  --bg-tertiary: #374151;      /* gray-700 */
+  --bg-hover: #374151;         /* gray-700 */
+  --bg-hover-subtle: #374151;  /* gray-700 */
+  --border-default: #374151;   /* gray-700 */
+  --border-strong: #4b5563;    /* gray-600 */
+
+  --sidebar-bg: rgba(30, 41, 59, 0.82);
+  --sidebar-bg-collapsed: rgba(30, 41, 59, 0.55);
+  --sidebar-text: #ffffff;
+  --sidebar-text-muted: #9ca3af;
+  --sidebar-text-faint: rgba(255, 255, 255, 0.25);
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-active: rgba(255, 255, 255, 0.1);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-divider: rgba(255, 255, 255, 0.08);
+  --sidebar-scrollbar: rgba(255, 255, 255, 0.1);
+  --sidebar-header-bg: rgba(255, 255, 255, 0.03);
 }
 
 @layer utilities {
@@ -54,6 +108,30 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .tab-content-bg {
+    background-color: var(--tab-content-bg);
+  }
+
+  /* Semantic text colors */
+  .text-theme-title { color: var(--text-title); }
+  .text-theme-heading { color: var(--text-heading); }
+  .text-theme-label { color: var(--text-label); }
+  .text-theme-muted { color: var(--text-muted); }
+  .text-theme-hint { color: var(--text-hint); }
+
+  /* Semantic backgrounds */
+  .bg-theme-surface { background-color: var(--bg-surface); }
+  .bg-theme-secondary { background-color: var(--bg-secondary); }
+  .bg-theme-tertiary { background-color: var(--bg-tertiary); }
+  .bg-theme-hover { background-color: var(--bg-hover); }
+
+  /* Semantic borders */
+  .border-theme { border-color: var(--border-default); }
+  .border-theme-strong { border-color: var(--border-strong); }
+
+  /* Hover variants */
+  .hover\:bg-theme-hover:hover { background-color: var(--bg-hover); }
+  .hover\:bg-theme-subtle:hover { background-color: var(--bg-hover-subtle); }
 }
 
 @layer utilities {
@@ -160,18 +238,11 @@
   background: transparent;
 }
 .glass-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: var(--sidebar-scrollbar);
   border-radius: 4px;
 }
 .glass-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-.glass-scrollbar-light::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.1);
-}
-.glass-scrollbar-light::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.15);
+  background: var(--sidebar-scrollbar);
 }
 
 

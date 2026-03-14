@@ -119,7 +119,7 @@ const formatCrossCurricularText = (text: string, accentColor: string) => {
       elements.push(
         <div key={`bullet-${currentIndex++}`} className="mb-2 flex items-start ml-4">
           <span className="mr-3 mt-1.5 font-bold text-sm" style={{ color: `${accentColor}99` }}>•</span>
-          <span className="text-gray-700 leading-relaxed">{content}</span>
+          <span className="text-theme-label leading-relaxed">{content}</span>
         </div>
       );
       return;
@@ -134,7 +134,7 @@ const formatCrossCurricularText = (text: string, accentColor: string) => {
           <span className="mr-3 font-semibold min-w-[2rem] rounded px-2 py-1 text-sm" style={{ color: `${accentColor}cc`, backgroundColor: `${accentColor}0d` }}>
             {number}
           </span>
-          <span className="text-gray-700 leading-relaxed pt-1">{content}</span>
+          <span className="text-theme-label leading-relaxed pt-1">{content}</span>
         </div>
       );
       return;
@@ -143,7 +143,7 @@ const formatCrossCurricularText = (text: string, accentColor: string) => {
     // Regular paragraphs
     if (trimmed.length > 0) {
       elements.push(
-        <p key={`p-${currentIndex++}`} className="text-gray-700 leading-relaxed mb-3">
+        <p key={`p-${currentIndex++}`} className="text-theme-label leading-relaxed mb-3">
           {trimmed}
         </p>
       );
@@ -830,8 +830,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const stepLabels = ['Basic Info', 'Subjects', 'Objectives', 'Activities', 'Assessment', 'Teaching & Learning', 'Resources'];
 
   return (
-    <div className="flex h-full bg-white relative" data-tutorial="cross-curricular-planner-welcome">
-      <div className="flex-1 flex flex-col bg-white">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="cross-curricular-planner-welcome">
+      <div className="flex-1 flex flex-col tab-content-bg">
         {(generatedPlan || streamingPlan) ? (
           <>
             {isEditing && parsedPlan ? (
@@ -844,19 +844,19 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             ) : (
               // Show generated plan (existing display code)
               <>
-                <div className="border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-theme-heading">
                       {loading ? 'Generating Cross-Curricular Plan...' : 'Generated Cross-Curricular Plan'}
                     </h2>
-                    <p className="text-sm text-gray-500">{formData.lessonTitle} - {formData.primarySubject}</p>
+                    <p className="text-sm text-theme-hint">{formData.lessonTitle} - {formData.primarySubject}</p>
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={enableEditing}
                         disabled={!parsedPlan}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                         title={!parsedPlan ? "Cross-curricular plan format not recognized" : "Edit plan"}
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -872,7 +872,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                       <button
                         onClick={savePlan}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary"
                       >
                         {saveStatus === 'saving' ? (
                           <>
@@ -904,10 +904,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition"
+                        className="p-2 rounded-lg hover:bg-theme-hover transition"
                         title="Cross-Curricular Plan History"
                       >
-                        <History className="w-5 h-5 text-gray-600" />
+                        <History className="w-5 h-5 text-theme-muted" />
                       </button>
                       <button
                         onClick={() => {
@@ -924,7 +924,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   )}
                 </div>
                 
-                <div className="flex-1 overflow-y-auto bg-white p-6">
+                <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
                   {(streamingPlan || generatedPlan) && (
                 <div className="mb-8">
                   <div className="relative overflow-hidden rounded-2xl shadow-lg">
@@ -997,7 +997,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   )}
 
                   <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div className="space-y-1 bg-theme-surface rounded-xl p-6 shadow-sm border border-theme">
                       {formatCrossCurricularText(streamingPlan || generatedPlan, tabColor)}
                       {loading && streamingPlan && (
                         <span className="inline-flex items-center ml-1">
@@ -1028,34 +1028,34 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
           </>
         ) : (
           <>
-            <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Cross-Curricular Lesson Planner</h2>
-                <p className="text-sm text-gray-500">Create integrated subject lesson plans</p>
+                <h2 className="text-xl font-semibold text-theme-heading">Cross-Curricular Lesson Planner</h2>
+                <p className="text-sm text-theme-hint">Create integrated subject lesson plans</p>
               </div>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition"
+                className="p-2 rounded-lg hover:bg-theme-hover transition"
                 title="Cross-Curricular Plan History"
               >
-                <History className="w-5 h-5 text-gray-600" />
+                <History className="w-5 h-5 text-theme-muted" />
               </button>
             </div>
 
             {/* Progress Indicator */}
-            <div className="border-b border-gray-200 px-6 py-3 overflow-x-auto">
+            <div className="border-b border-theme px-6 py-3 overflow-x-auto">
               <div className="flex items-center space-x-2 min-w-max">
                 {stepLabels.map((label, idx) => (
                   <React.Fragment key={idx}>
-                    <div className={`flex items-center ${step === idx + 1 ? 'text-teal-600' : 'text-gray-400'}`}>
+                    <div className={`flex items-center ${step === idx + 1 ? 'text-teal-600' : 'text-theme-hint'}`}>
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step > idx + 1 ? 'bg-green-500 text-white' : step === idx + 1 ? 'bg-teal-600 text-white' : 'bg-gray-300'
+                        step > idx + 1 ? 'bg-green-500 text-white' : step === idx + 1 ? 'bg-teal-600 text-white' : 'bg-theme-tertiary'
                       }`}>
                         {idx + 1}
                       </div>
                       <span className="ml-2 text-xs font-medium whitespace-nowrap">{label}</span>
                     </div>
-                    {idx < stepLabels.length - 1 && <ChevronRight className="w-4 h-4 text-gray-300" />}
+                    {idx < stepLabels.length - 1 && <ChevronRight className="w-4 h-4 text-theme-hint" />}
                   </React.Fragment>
                 ))}
               </div>
@@ -1067,35 +1067,35 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 1 && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title *</label>
                       <input type="text" value={formData.lessonTitle} onChange={(e) => handleInputChange('lessonTitle', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Enter lesson title" />
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Enter lesson title" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-grade">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Grade Level *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Grade Level *</label>
                       <select value={formData.gradeLevel} onChange={(e) => handleInputChange('gradeLevel', e.target.value)} 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select grade level</option>
                         {grades.map(g => <option key={g} value={g}>{g}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Duration *</label>
                       <input type="text" value={formData.duration} onChange={(e) => handleInputChange('duration', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="e.g., 60 minutes, 2 class periods" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-theme">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Big Idea / Driving Concept *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Big Idea / Driving Concept *</label>
                       <textarea value={formData.bigIdea} onChange={(e) => handleInputChange('bigIdea', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The central concept that connects all subjects" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Integration Model *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Integration Model *</label>
                       <select value={formData.integrationModel} onChange={(e) => handleInputChange('integrationModel', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select integration model</option>
                         {integrationModels.map(m => <option key={m} value={m}>{m}</option>)}
@@ -1108,24 +1108,24 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 2 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-subjects">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Primary Subject *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Primary Subject *</label>
                       <select value={formData.primarySubject} onChange={(e) => handleInputChange('primarySubject', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select primary subject</option>
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div data-tutorial="cross-curricular-planner-connections">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Supporting Subjects</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Supporting Subjects</label>
                       <input type="text" value={formData.supportingSubjects} onChange={(e) => handleInputChange('supportingSubjects', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Other subjects integrated (comma-separated)" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Learning Standards *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Learning Standards *</label>
                       <textarea value={formData.learningStandards} onChange={(e) => handleInputChange('learningStandards', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Curriculum standards from all integrated subjects" />
                     </div>
                   </div>
@@ -1135,33 +1135,33 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 3 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-objectives">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Primary Learning Objective *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Primary Learning Objective *</label>
                       <textarea value={formData.primaryObjective} onChange={(e) => handleInputChange('primaryObjective', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The main learning goal for this lesson" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Learning Objectives</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Secondary Learning Objectives</label>
                       <textarea value={formData.secondaryObjectives} onChange={(e) => handleInputChange('secondaryObjectives', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Additional learning goals from integrated subjects" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Students Will Know (Facts)</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Students Will Know (Facts)</label>
                       <textarea value={formData.studentsWillKnow} onChange={(e) => handleInputChange('studentsWillKnow', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Key knowledge and facts students will learn" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Students Will Be Skilled At (Actions)</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Students Will Be Skilled At (Actions)</label>
                       <textarea value={formData.studentsWillBeSkilled} onChange={(e) => handleInputChange('studentsWillBeSkilled', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Skills and abilities students will develop" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Key Vocabulary</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Key Vocabulary</label>
                       <input type="text" value={formData.keyVocabulary} onChange={(e) => handleInputChange('keyVocabulary', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Important terms from all subjects (comma-separated)" />
                     </div>
                   </div>
@@ -1171,27 +1171,27 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 4 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-activities">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Introduction/Hook *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Introduction/Hook *</label>
                       <textarea value={formData.introduction} onChange={(e) => handleInputChange('introduction', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Engaging opening activity that introduces the big idea" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Core Learning Activities *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Core Learning Activities *</label>
                       <textarea value={formData.coreActivities} onChange={(e) => handleInputChange('coreActivities', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Main activities that integrate multiple subjects" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Closure Activities</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Closure Activities</label>
                       <textarea value={formData.closureActivities} onChange={(e) => handleInputChange('closureActivities', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Activities to summarize and reflect on learning" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Differentiation Strategies</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Differentiation Strategies</label>
                       <textarea value={formData.differentiationStrategies} onChange={(e) => handleInputChange('differentiationStrategies', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll support diverse learners" />
                     </div>
                   </div>
@@ -1201,33 +1201,33 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 5 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-assessment">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Assessment Methods *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Assessment Methods *</label>
                       <textarea value={formData.assessmentMethods} onChange={(e) => handleInputChange('assessmentMethods', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll assess learning across subjects" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Most children will *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Most children will *</label>
                       <textarea value={formData.mostChildren} onChange={(e) => handleInputChange('mostChildren', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Expected learning outcomes for most students" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Some will not have made so much progress</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Some will not have made so much progress</label>
                       <textarea value={formData.someNotProgressed} onChange={(e) => handleInputChange('someNotProgressed', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Support for students who need additional help" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Some will have progressed further</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Some will have progressed further</label>
                       <textarea value={formData.someProgressedFurther} onChange={(e) => handleInputChange('someProgressedFurther', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Extensions for students who need more challenge" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Reflection Prompts</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Reflection Prompts</label>
                       <textarea value={formData.reflectionPrompts} onChange={(e) => handleInputChange('reflectionPrompts', e.target.value)} rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Questions to help students reflect on their learning" />
                     </div>
                   </div>
@@ -1237,10 +1237,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 6 && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">Teaching Strategies *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-3">Teaching Strategies *</label>
                       <div className="grid grid-cols-2 gap-2">
                         {teachingStrategiesOptions.map(s => (
-                          <label key={s} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                          <label key={s} className="flex items-center space-x-2 p-2 hover:bg-theme-subtle rounded cursor-pointer">
                             <input type="checkbox" checked={formData.teachingStrategies.includes(s)}
                               onChange={() => handleCheckboxChange('teachingStrategies', s)} className="w-4 h-4 rounded"
                               style={{ accentColor: tabColor }} />
@@ -1250,10 +1250,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">Learning Styles *</label>
+                      <label className="block text-sm font-medium text-theme-label mb-3">Learning Styles *</label>
                       <div className="grid grid-cols-3 gap-2">
                         {learningStylesOptions.map(s => (
-                          <label key={s} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                          <label key={s} className="flex items-center space-x-2 p-2 hover:bg-theme-subtle rounded cursor-pointer">
                             <input type="checkbox" checked={formData.learningStyles.includes(s)}
                               onChange={() => handleCheckboxChange('learningStyles', s)} className="w-4 h-4 rounded"
                               style={{ accentColor: tabColor }} />
@@ -1269,15 +1269,15 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 {step === 7 && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Materials and Resources</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Materials and Resources</label>
                       <textarea value={formData.materials} onChange={(e) => handleInputChange('materials', e.target.value)} rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="All materials needed across subjects" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Suggested Cross-Curricular Connections</label>
+                      <label className="block text-sm font-medium text-theme-label mb-2">Suggested Cross-Curricular Connections</label>
                       <textarea value={formData.crossCurricularConnections} onChange={(e) => handleInputChange('crossCurricularConnections', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Additional ideas for connecting subjects" />
                     </div>
                   </div>
@@ -1285,11 +1285,11 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
               </div>
             </div>
 
-            <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex justify-between">
                 <div>
                   {step > 1 && (
-                    <button onClick={() => setStep(step - 1)} className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg">
+                    <button onClick={() => setStep(step - 1)} className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg">
                       <ChevronLeft className="w-5 h-5 mr-1" />Previous
                     </button>
                   )}
@@ -1300,7 +1300,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   </button>
                   {step < 7 ? (
                     <button onClick={() => setStep(step + 1)} disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-gray-300 transition"
+                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
                       style={!validateStep() ? {} : { backgroundColor: tabColor }}
                       onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
                       onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}>
@@ -1308,7 +1308,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     </button>
                   ) : (
                     <button onClick={generatePlan} disabled={loading || !validateStep()}
-                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition"
+                      className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-theme-tertiary transition"
                       style={loading || !validateStep() ? {} : { backgroundColor: 'rgb(22 163 74)' }}
                       data-tutorial="cross-curricular-planner-generate">
                       {loading ? (
@@ -1333,26 +1333,26 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
       {/* History Panel */}
       <div
-        className={`border-l border-gray-200 bg-gray-50 transition-all duration-300 overflow-hidden ${
+        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
           historyOpen ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Saved Cross-Curricular Plans</h3>
+            <h3 className="text-lg font-semibold text-theme-heading">Saved Cross-Curricular Plans</h3>
             <button
               onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-gray-200 transition"
+              className="p-1 rounded hover:bg-theme-hover transition"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-theme-muted" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
             {crossCurricularHistories.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                <School className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <div className="text-center text-theme-hint mt-8">
+                <School className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved cross-curricular plans yet</p>
               </div>
             ) : (
@@ -1360,16 +1360,16 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 <div
                   key={history.id}
                   onClick={() => loadCrossCurricularHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-white ${
-                    currentPlanId === history.id ? 'bg-white shadow-sm' : 'bg-gray-100'
+                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                    currentPlanId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
                         {history.title}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-theme-hint mt-1">
                         {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
