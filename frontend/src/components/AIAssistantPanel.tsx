@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, MessageSquare, Wand2, Send, Sparkles } from 'lucide-react';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
@@ -33,6 +33,11 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const shouldReconnectRef = useRef(true);
+  // Use a ref to track accumulated streaming content (fixes stale closure bug)
+  const streamingContentRef = useRef('');
+  // Track current mode in a ref for use in callbacks
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -51,68 +56,58 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       if (!shouldReconnectRef.current) return;
 
       try {
-        // Determine WebSocket endpoint based on mode and content type
-        let endpoint = '';
-        if (mode === 'chat') {
-          endpoint = '/ws/chat';
-        } else {
-          switch (contentType) {
-            case 'lesson':
-              endpoint = '/ws/lesson-plan';
-              break;
-            case 'quiz':
-              endpoint = '/ws/quiz';
-              break;
-            case 'rubric':
-              endpoint = '/ws/rubric';
-              break;
-            case 'kindergarten':
-              endpoint = '/ws/kindergarten';
-              break;
-            case 'multigrade':
-              endpoint = '/ws/multigrade';
-              break;
-            case 'cross-curricular':
-              endpoint = '/ws/cross-curricular';
-              break;
-            default:
-              endpoint = '/ws/chat';
-          }
-        }
-
+        // Always use /ws/chat for both chat and modify modes
+        const endpoint = '/ws/chat';
         const wsUrl = getWebSocketUrl(endpoint, isElectronEnvironment());
         const ws = new WebSocket(wsUrl);
-        
+
         ws.onopen = () => {
           console.log('AI Assistant WebSocket connected');
         };
-        
+
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
-  
-          // Stream each token in real time
+
           if (data.type === 'token') {
-            setStreamingMessage(prev => prev + data.content);
+            // Accumulate in ref (always current) and sync to state
+            streamingContentRef.current += data.content;
+            setStreamingMessage(streamingContentRef.current);
           }
-          // When generation completes, finalize message
           else if (data.type === 'done') {
-            const finalMessage = streamingMessage || data.full_response;
-            if (mode === 'modify') onContentUpdate(finalMessage);
-            if (mode === 'chat') {
-              setChatMessages(prev => [...prev, { role: 'assistant', content: finalMessage }]);
-            } else {
-              setModifyMessages(prev => [...prev, { role: 'assistant', content: finalMessage }]);
+            // Read from ref — always has the full accumulated content
+            const finalMessage = streamingContentRef.current;
+
+            if (finalMessage.trim()) {
+              if (modeRef.current === 'modify') {
+                onContentUpdate(finalMessage);
+              }
+
+              const assistantMsg: Message = { role: 'assistant', content: finalMessage };
+              if (modeRef.current === 'chat') {
+                setChatMessages(prev => [...prev, assistantMsg]);
+              } else {
+                setModifyMessages(prev => [...prev, assistantMsg]);
+              }
             }
+
+            // Reset streaming state
+            streamingContentRef.current = '';
+            setStreamingMessage('');
+            setIsStreaming(false);
+          }
+          else if (data.type === 'error') {
+            console.error('AI Assistant error:', data.message);
+            streamingContentRef.current = '';
             setStreamingMessage('');
             setIsStreaming(false);
           }
         };
-        
+
         ws.onerror = (error) => {
           console.error('WebSocket error:', error);
           setIsStreaming(false);
         };
-        
+
         ws.onclose = () => {
           console.log('WebSocket closed');
           wsRef.current = null;
@@ -120,7 +115,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             setTimeout(connectWebSocket, 2000);
           }
         };
-        
+
         wsRef.current = ws;
       } catch (error) {
         console.error('Failed to create WebSocket:', error);
@@ -129,9 +124,9 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         }
       }
     };
-    
+
     connectWebSocket();
-    
+
     return () => {
       shouldReconnectRef.current = false;
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -141,39 +136,68 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     };
   }, [isOpen, mode, contentType]);
 
+  const getContentTypeLabel = () => {
+    const labels: Record<string, string> = {
+      'lesson': 'Lesson Plan',
+      'quiz': 'Quiz',
+      'rubric': 'Rubric',
+      'kindergarten': 'Kindergarten Plan',
+      'multigrade': 'Multigrade Plan',
+      'cross-curricular': 'Cross-Curricular Plan'
+    };
+    return labels[contentType];
+  };
+
+  const buildSystemPrompt = useCallback(() => {
+    if (mode === 'chat') {
+      return `You are a helpful AI assistant for educators. The user has generated the following ${getContentTypeLabel()} and wants to discuss it with you. Answer their questions about the content, provide insights, or offer suggestions.
+
+GENERATED CONTENT:
+${content}
+
+Provide clear, helpful responses about this content. Be specific and reference parts of the content when relevant.`;
+    } else {
+      return `You are an AI assistant that helps modify educational content. The user has generated the following ${getContentTypeLabel()} and wants you to make specific modifications to it.
+
+CURRENT CONTENT:
+${content}
+
+IMPORTANT INSTRUCTIONS:
+- When the user requests modifications, generate the COMPLETE UPDATED VERSION of the entire content with their requested changes applied.
+- Return ONLY the modified content, not explanations or commentary.
+- Preserve the overall structure and formatting of the original content.
+- Apply the requested changes precisely and thoroughly.`;
+    }
+  }, [mode, content, contentType]);
+
   const handleSend = () => {
     if (!input.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
     const userMessage: Message = { role: 'user', content: input };
+    const currentMessages = mode === 'chat' ? chatMessages : modifyMessages;
+
     if (mode === 'chat') {
       setChatMessages(prev => [...prev, userMessage]);
     } else {
       setModifyMessages(prev => [...prev, userMessage]);
     }
+
     setIsStreaming(true);
+    streamingContentRef.current = '';
     setStreamingMessage('');
 
-    let systemPrompt = '';
-    if (mode === 'chat') {
-      systemPrompt = `You are a helpful AI assistant. The user has generated the following ${contentType} plan and wants to discuss it with you. Answer their questions about the content, provide insights, or offer suggestions.
-
-GENERATED CONTENT:
-${content}
-
-Provide clear, helpful responses about this content.`;
-    } else {
-      systemPrompt = `You are an AI assistant that helps modify educational content. The user has generated the following ${contentType} plan and wants you to make specific modifications to it.
-
-CURRENT CONTENT:
-${content}
-
-When the user requests modifications, generate the COMPLETE UPDATED VERSION of the entire content with their requested changes applied. Return ONLY the modified content, not explanations.`;
-    }
-
-    const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n${systemPrompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n${input}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`;
+    // Build conversation history for multi-turn context (last 6 messages)
+    const recentHistory = currentMessages.slice(-6).map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
 
     try {
-      wsRef.current.send(JSON.stringify({ message: prompt }));
+      wsRef.current.send(JSON.stringify({
+        message: input,
+        system_prompt: buildSystemPrompt(),
+        history: recentHistory,
+      }));
       setInput('');
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -188,24 +212,12 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
     }
   };
 
-  const getContentTypeLabel = () => {
-    const labels = {
-      'lesson': 'Lesson Plan',
-      'quiz': 'Quiz',
-      'rubric': 'Rubric',
-      'kindergarten': 'Kindergarten Plan',
-      'multigrade': 'Multigrade Plan',
-      'cross-curricular': 'Cross-Curricular Plan'
-    };
-    return labels[contentType];
-  };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
@@ -232,12 +244,12 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
           </p>
 
           {/* Mode Toggle */}
-          {/* Independent Chat/Modify Tabs with persistent state */}
           <div className="flex gap-2 bg-white/10 rounded-lg p-1">
             <button
               onClick={() => {
                 if (wsRef.current) wsRef.current.close();
                 setMode('chat');
+                streamingContentRef.current = '';
                 setStreamingMessage('');
               }}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition ${
@@ -253,6 +265,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
               onClick={() => {
                 if (wsRef.current) wsRef.current.close();
                 setMode('modify');
+                streamingContentRef.current = '';
                 setStreamingMessage('');
               }}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition ${
@@ -269,29 +282,29 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
 
         {/* Info Banner */}
         <div className={`px-6 py-3 text-sm ${
-          mode === 'chat' 
-            ? 'bg-blue-50 text-blue-700' 
-            : 'bg-amber-50 text-amber-700'
+          mode === 'chat'
+            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+            : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
         }`}>
           {mode === 'chat' ? (
-            <p>💬 Ask questions about your {getContentTypeLabel().toLowerCase()} or request insights and suggestions.</p>
+            <p>Ask questions about your {getContentTypeLabel().toLowerCase()} or request insights and suggestions.</p>
           ) : (
-            <p>✨ Describe the changes you want, and AI will update your {getContentTypeLabel().toLowerCase()} accordingly.</p>
+            <p>Describe the changes you want, and AI will update your {getContentTypeLabel().toLowerCase()} accordingly.</p>
           )}
         </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.length === 0 && (
+          {messages.length === 0 && !streamingMessage && (
             <div className="text-center text-theme-hint mt-12">
               <div className="text-6xl mb-4">
-                {mode === 'chat' ? '💭' : '🪄'}
+                {mode === 'chat' ? '\uD83D\uDCAD' : '\uD83E\uDE84'}
               </div>
               <p className="text-lg font-medium mb-2">
                 {mode === 'chat' ? 'Start a Conversation' : 'Request Modifications'}
               </p>
               <p className="text-sm">
-                {mode === 'chat' 
+                {mode === 'chat'
                   ? 'Ask anything about your generated content'
                   : 'Tell me what changes you\'d like to make'
                 }
@@ -327,6 +340,14 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
             </div>
           )}
 
+          {isStreaming && !streamingMessage && (
+            <div className="flex justify-start">
+              <div className="rounded-2xl px-4 py-3 bg-theme-tertiary">
+                <HeartbeatLoader className="w-5 h-5 text-theme-muted" />
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -338,7 +359,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={
-                mode === 'chat' 
+                mode === 'chat'
                   ? 'Ask a question about your content...'
                   : 'Describe the modifications you want...'
               }

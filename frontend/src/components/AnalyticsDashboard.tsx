@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Camera } from 'lucide-react';
+import { User, Camera, BookOpen, GraduationCap, X, Check } from 'lucide-react';
+import { useSettings } from '../contexts/SettingsContext';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -523,6 +524,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 };
 
 // Profile Edit Modal Component
+const ALL_SUBJECTS = ['Math', 'Science', 'English', 'Social Studies', 'Reading', 'Writing', 'Art', 'Music', 'Physical Education'];
+const ALL_GRADE_LEVELS = ['K', '1', '2', '3', '4', '5', '6'];
+
 interface ProfileEditModalProps {
   currentName: string;
   currentImage: string | null;
@@ -536,8 +540,23 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   onSave,
   onClose
 }) => {
+  const { settings, updateSettings } = useSettings();
   const [name, setName] = useState(currentName);
   const [image, setImage] = useState<string | null>(currentImage);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(settings.teacherSubjects);
+  const [selectedGrades, setSelectedGrades] = useState<string[]>(settings.teacherGradeLevels);
+
+  const toggleSubject = (subj: string) => {
+    setSelectedSubjects(prev =>
+      prev.includes(subj) ? prev.filter(s => s !== subj) : [...prev, subj]
+    );
+  };
+
+  const toggleGrade = (grade: string) => {
+    setSelectedGrades(prev =>
+      prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]
+    );
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -552,6 +571,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   const handleSave = () => {
     if (name.trim()) {
+      updateSettings({ teacherSubjects: selectedSubjects, teacherGradeLevels: selectedGrades });
       onSave(name.trim(), image);
     }
   };
@@ -563,7 +583,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="widget-glass rounded-2xl p-8 max-w-md w-full"
+        className="widget-glass rounded-2xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--dash-text)' }}>
@@ -623,6 +643,74 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             }}
             placeholder="Enter your name"
           />
+        </div>
+
+        {/* Subjects I Teach */}
+        <div className="mb-6">
+          <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
+            <BookOpen className="w-4 h-4" />
+            Subjects I Teach
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {ALL_SUBJECTS.map(subj => {
+              const active = selectedSubjects.includes(subj);
+              return (
+                <button
+                  key={subj}
+                  onClick={() => toggleSubject(subj)}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
+                  style={{
+                    backgroundColor: active ? 'var(--dash-primary)' : 'var(--dash-card-bg)',
+                    color: active ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
+                    border: `1px solid ${active ? 'var(--dash-primary)' : 'var(--dash-border)'}`,
+                    boxShadow: active ? '0 2px 8px var(--dash-primary-a25)' : '0 1px 4px var(--dash-card-shadow)'
+                  }}
+                >
+                  {active && <Check className="w-3 h-3 inline mr-1" />}
+                  {subj}
+                </button>
+              );
+            })}
+          </div>
+          {selectedSubjects.length === 0 && (
+            <p className="text-xs mt-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
+              Select subjects to customize student report cards
+            </p>
+          )}
+        </div>
+
+        {/* Grade Levels I Teach */}
+        <div className="mb-6">
+          <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
+            <GraduationCap className="w-4 h-4" />
+            Grade Levels I Teach
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {ALL_GRADE_LEVELS.map(grade => {
+              const active = selectedGrades.includes(grade);
+              return (
+                <button
+                  key={grade}
+                  onClick={() => toggleGrade(grade)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 min-w-[60px]"
+                  style={{
+                    backgroundColor: active ? 'var(--dash-primary)' : 'var(--dash-card-bg)',
+                    color: active ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
+                    border: `1px solid ${active ? 'var(--dash-primary)' : 'var(--dash-border)'}`,
+                    boxShadow: active ? '0 2px 8px var(--dash-primary-a25)' : '0 1px 4px var(--dash-card-shadow)'
+                  }}
+                >
+                  {active && <Check className="w-3 h-3 inline mr-1" />}
+                  {grade === 'K' ? 'K' : `Grade ${grade}`}
+                </button>
+              );
+            })}
+          </div>
+          {selectedGrades.length === 0 && (
+            <p className="text-xs mt-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
+              Select the grade levels you teach
+            </p>
+          )}
         </div>
 
         {/* Actions */}

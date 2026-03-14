@@ -452,17 +452,18 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   const [generatingReport, setGeneratingReport] = useState(false);
   const [generatingBulkReport, setGeneratingBulkReport] = useState(false);
 
-  const SUBJECTS = ['Math', 'Science', 'English', 'Social Studies', 'Reading', 'Writing', 'Art', 'Music', 'Physical Education'];
-
   const buildReportCardHTML = (student: Student, accent: string) => {
     const grades = student.quiz_grades ?? [];
+    const teacherSubjects = settings.teacherSubjects;
+
     // Group grades by subject
-    const subjectGrades: Record<string, { scores: number[]; letters: string[] }> = {};
+    const subjectGrades: Record<string, { scores: number[]; letters: string[]; quizzes: QuizGrade[] }> = {};
     for (const g of grades) {
       const subj = g.subject || 'General';
-      if (!subjectGrades[subj]) subjectGrades[subj] = { scores: [], letters: [] };
+      if (!subjectGrades[subj]) subjectGrades[subj] = { scores: [], letters: [], quizzes: [] };
       subjectGrades[subj].scores.push(g.percentage);
       subjectGrades[subj].letters.push(g.letter_grade);
+      subjectGrades[subj].quizzes.push(g);
     }
 
     const getLetterGrade = (pct: number) => pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
@@ -470,13 +471,63 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       const m: Record<string, string> = { A: '#059669', B: '#2563eb', C: '#d97706', D: '#ea580c', F: '#dc2626' };
       return m[letter] || '#6b7280';
     };
+    const statusText = (avg: number) => avg >= 90 ? 'Excellent' : avg >= 80 ? 'Good' : avg >= 70 ? 'Satisfactory' : avg >= 60 ? 'Needs Improvement' : 'Failing';
 
-    const overallAvg = grades.length > 0
-      ? Math.round(grades.reduce((s, g) => s + g.percentage, 0) / grades.length) : null;
+    // Determine which subjects to show on the report card
+    const reportSubjects = teacherSubjects.length > 0 ? teacherSubjects : Object.keys(subjectGrades);
+    // Filter grades to only teacher's subjects
+    const filteredGrades = teacherSubjects.length > 0
+      ? grades.filter(g => teacherSubjects.includes(g.subject || 'General'))
+      : grades;
 
-    // Build subject rows — show subjects with data + empty rows for common subjects without data
-    const allSubjects = new Set([...Object.keys(subjectGrades), ...SUBJECTS]);
-    const subjectRows = [...allSubjects].map(subj => {
+    const overallAvg = filteredGrades.length > 0
+      ? Math.round(filteredGrades.reduce((s, g) => s + g.percentage, 0) / filteredGrades.length) : null;
+
+    const hasMultipleSubjects = reportSubjects.length > 1;
+
+    // Build per-subject tab content (for multi-subject tabbed layout)
+    const buildSubjectTabContent = (subj: string) => {
+      const data = subjectGrades[subj];
+      if (!data) {
+        return `
+          <div style="text-align:center;padding:20px 0;color:#94a3b8;">
+            <p style="font-size:11pt;">No quiz results recorded for ${subj} yet.</p>
+          </div>`;
+      }
+      const avg = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
+      const letter = getLetterGrade(avg);
+      return `
+        <div class="overall-box" style="margin-top:0">
+          <div>
+            <div class="label">${subj} Average</div>
+            <div style="font-size:9pt;color:#94a3b8;margin-top:2px">Based on ${data.quizzes.length} quiz${data.quizzes.length !== 1 ? 'zes' : ''}</div>
+          </div>
+          <div class="grade">${avg}% (${letter})</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Quiz Title</th>
+              <th>Date</th>
+              <th>Score</th>
+              <th>Grade</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.quizzes.map(g => `<tr>
+              <td style="font-weight:600">${g.quiz_title}</td>
+              <td>${new Date(g.graded_at).toLocaleDateString()}</td>
+              <td>${g.score}/${g.total_points} (${g.percentage}%)</td>
+              <td><span class="grade-badge" style="background:${gradeColor(g.letter_grade)}">${g.letter_grade}</span></td>
+              <td style="font-size:9pt;color:${g.percentage >= 70 ? '#059669' : '#dc2626'}">${statusText(g.percentage)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    };
+
+    // Build the subject overview table (summary row per subject)
+    const subjectRows = reportSubjects.map(subj => {
       const data = subjectGrades[subj];
       if (data) {
         const avg = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
@@ -485,6 +536,69 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       }
       return { subject: subj, avg: null, letter: '—', quizCount: 0, hasData: false };
     }).sort((a, b) => (b.hasData ? 1 : 0) - (a.hasData ? 1 : 0) || a.subject.localeCompare(b.subject));
+
+    // Tab styles and JS for multi-subject tabbed report cards
+    const tabStyles = hasMultipleSubjects ? `
+  .subject-tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 2px solid #e2e8f0; }
+  .subject-tab { padding: 10px 20px; font-size: 10pt; font-weight: 600; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; color: #64748b; background: #f8fafc; margin-bottom: -2px; transition: all 0.2s; }
+  .subject-tab:hover { color: #1e293b; background: #f1f5f9; }
+  .subject-tab.active { color: ${accent}; background: white; border-color: #e2e8f0; border-bottom-color: white; }
+  .tab-content { display: none; padding: 20px 0; }
+  .tab-content.active { display: block; }
+` : '';
+
+    const tabScript = hasMultipleSubjects ? `
+<script>
+  function switchTab(tabId) {
+    document.querySelectorAll('.subject-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    document.getElementById('content-' + tabId).classList.add('active');
+  }
+  // Activate first tab on load
+  document.addEventListener('DOMContentLoaded', function() {
+    var firstTab = document.querySelector('.subject-tab');
+    if (firstTab) firstTab.click();
+  });
+</script>` : '';
+
+    // Build subject detail section
+    const subjectDetailSection = hasMultipleSubjects ? `
+  <div class="section-title">Subject Details</div>
+  <div class="subject-tabs">
+    ${reportSubjects.map((subj, i) => {
+      const data = subjectGrades[subj];
+      const tabLabel = data
+        ? `${subj} (${getLetterGrade(Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length))})`
+        : subj;
+      return `<div class="subject-tab${i === 0 ? ' active' : ''}" id="tab-${i}" onclick="switchTab(${i})">${tabLabel}</div>`;
+    }).join('')}
+  </div>
+  ${reportSubjects.map((subj, i) => `<div class="tab-content${i === 0 ? ' active' : ''}" id="content-${i}">${buildSubjectTabContent(subj)}</div>`).join('')}
+` : `
+  <div class="section-title">Quiz History</div>
+  ${filteredGrades.length === 0 ? '<p style="color:#94a3b8;font-size:10pt;text-align:center;padding:16px 0">No quiz results recorded yet.</p>' : `
+  <table>
+    <thead>
+      <tr>
+        <th>Quiz Title</th>
+        <th>Subject</th>
+        <th>Date</th>
+        <th>Score</th>
+        <th>Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${filteredGrades.map(g => `<tr>
+        <td>${g.quiz_title}</td>
+        <td>${g.subject}</td>
+        <td>${new Date(g.graded_at).toLocaleDateString()}</td>
+        <td>${g.score}/${g.total_points} (${g.percentage}%)</td>
+        <td><span class="grade-badge" style="background:${gradeColor(g.letter_grade)}">${g.letter_grade}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`}
+`;
 
     return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
@@ -516,6 +630,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   .signature-row { display: flex; gap: 40px; margin-top: 30px; }
   .signature-line { flex: 1; border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 9pt; color: #94a3b8; }
   .footer { text-align: center; font-size: 8pt; color: #94a3b8; margin-top: 20px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+  ${tabStyles}
 </style></head><body>
 
 <div class="header">
@@ -554,8 +669,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   ${overallAvg !== null ? `
   <div class="overall-box">
     <div>
-      <div class="label">Overall Grade Average</div>
-      <div style="font-size:9pt;color:#94a3b8;margin-top:2px">Based on ${grades.length} quiz${grades.length !== 1 ? 'zes' : ''}</div>
+      <div class="label">Overall Grade Average${teacherSubjects.length > 0 ? ' (My Subjects)' : ''}</div>
+      <div style="font-size:9pt;color:#94a3b8;margin-top:2px">Based on ${filteredGrades.length} quiz${filteredGrades.length !== 1 ? 'zes' : ''} across ${reportSubjects.length} subject${reportSubjects.length !== 1 ? 's' : ''}</div>
     </div>
     <div class="grade">${overallAvg}% (${getLetterGrade(overallAvg)})</div>
   </div>` : ''}
@@ -577,33 +692,12 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
         <td>${r.hasData ? r.quizCount : '—'}</td>
         <td>${r.hasData ? r.avg + '%' : '—'}</td>
         <td>${r.hasData ? `<span class="grade-badge" style="background:${gradeColor(r.letter!)}">${r.letter}</span>` : '<span style="color:#cbd5e1">—</span>'}</td>
-        <td style="font-size:9pt;color:${r.hasData ? (r.avg! >= 70 ? '#059669' : '#dc2626') : '#cbd5e1'}">${r.hasData ? (r.avg! >= 90 ? 'Excellent' : r.avg! >= 80 ? 'Good' : r.avg! >= 70 ? 'Satisfactory' : r.avg! >= 60 ? 'Needs Improvement' : 'Failing') : '—'}</td>
+        <td style="font-size:9pt;color:${r.hasData ? (r.avg! >= 70 ? '#059669' : '#dc2626') : '#cbd5e1'}">${r.hasData ? statusText(r.avg!) : '—'}</td>
       </tr>`).join('')}
     </tbody>
   </table>
 
-  <div class="section-title">Quiz History</div>
-  ${grades.length === 0 ? '<p style="color:#94a3b8;font-size:10pt;text-align:center;padding:16px 0">No quiz results recorded yet.</p>' : `
-  <table>
-    <thead>
-      <tr>
-        <th>Quiz Title</th>
-        <th>Subject</th>
-        <th>Date</th>
-        <th>Score</th>
-        <th>Grade</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${grades.map(g => `<tr>
-        <td>${g.quiz_title}</td>
-        <td>${g.subject}</td>
-        <td>${new Date(g.graded_at).toLocaleDateString()}</td>
-        <td>${g.score}/${g.total_points} (${g.percentage}%)</td>
-        <td><span class="grade-badge" style="background:${gradeColor(g.letter_grade)}">${g.letter_grade}</span></td>
-      </tr>`).join('')}
-    </tbody>
-  </table>`}
+  ${subjectDetailSection}
 
   <div class="comment-section">
     <div class="section-title">Comments</div>
@@ -620,6 +714,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   <div class="footer">Generated on ${new Date().toLocaleDateString()} &bull; Report Card</div>
 </div>
 
+${tabScript}
 </body></html>`;
   };
 
@@ -1286,7 +1381,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       subjectGrades[subj].letters.push(g.letter_grade);
     }
 
-    const allSubjects = new Set([...Object.keys(subjectGrades), ...SUBJECTS]);
+    const teacherSubjects = settings.teacherSubjects || [];
+    const allSubjects = new Set([...Object.keys(subjectGrades), ...teacherSubjects]);
     const subjectRows = [...allSubjects].map(subj => {
       const data = subjectGrades[subj];
       if (data) {

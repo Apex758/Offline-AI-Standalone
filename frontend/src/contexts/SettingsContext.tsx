@@ -39,6 +39,8 @@ export interface Settings {
   tutorials: TutorialState;
   generationMode: 'queued' | 'simultaneous';
   visualStudioEnabled: boolean;
+  teacherSubjects: string[];
+  teacherGradeLevels: string[];
 }
 
 export interface SettingsContextValue {
@@ -86,6 +88,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   generationMode: 'queued',
   visualStudioEnabled: false,
+  teacherSubjects: [],
+  teacherGradeLevels: [],
 };
 
 // localStorage key

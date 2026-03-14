@@ -41,6 +41,7 @@ from config import (
     get_diffusion_model_path, scan_diffusion_models
 )
 from pathlib import Path
+from datetime import datetime
 from routes import milestones
 import student_service
 from llama_inference import LlamaInference
@@ -559,11 +560,18 @@ async def websocket_chat(websocket: WebSocket):
             message_data = json.loads(data)
             user_message = message_data.get("message", "")
             chat_id = message_data.get("chat_id", None)
+            # Support custom system prompt from AI assistant panel
+            custom_system_prompt = message_data.get("system_prompt", None)
+            # Support conversation history sent from frontend (for panels without chat_id)
+            client_history = message_data.get("history", None)
 
             if not user_message:
                 continue
 
-            base_system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
+            default_system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
+
+            # Use custom system prompt if provided, otherwise use default
+            base_system_prompt = custom_system_prompt if custom_system_prompt else default_system_prompt
 
             # Build context from SQLite (Tier 1 sliding window + Tier 2 summary)
             history = []
@@ -576,13 +584,16 @@ async def websocket_chat(websocket: WebSocket):
                     summary_block, history = memory.build_context(chat_id, n_pairs=N)
                 except Exception as e:
                     logger.error(f"Error loading chat context: {e}")
+            elif client_history:
+                # Use conversation history sent from the client (for AI assistant panel)
+                history = client_history[-8:]  # Cap at last 8 messages to avoid context overflow
 
             # Inject summary into system prompt if available
             system_prompt = base_system_prompt + summary_block
 
             prompt = build_multi_turn_prompt(system_prompt, history, user_message)
 
-            logger.info(f"Context: chat_id={chat_id}, {len(history)} messages in window, summary={'yes' if summary_block else 'no'}")
+            logger.info(f"Context: chat_id={chat_id}, {len(history)} messages in window, summary={'yes' if summary_block else 'no'}, custom_prompt={'yes' if custom_system_prompt else 'no'}")
 
             try:
                 from inference_factory import get_inference_instance
