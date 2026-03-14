@@ -1,8 +1,7 @@
-import React from 'react';
-import { Plus, CheckCircle2, Circle, Calendar, Flag, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Check, Calendar, ChevronDown, ChevronRight, Clock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import type { Task } from '../../types/task';
-import { PRIORITY_CONFIG } from '../../types/task';
 import { groupTasksByStatus } from '../../lib/analyticsHelpers';
 
 interface TaskListWidgetProps {
@@ -13,110 +12,144 @@ interface TaskListWidgetProps {
   onAddTask: () => void;
 }
 
+const priorityColors: Record<string, { dot: string; gradient: string }> = {
+  urgent: { dot: 'var(--dash-orange)', gradient: 'rgba(239, 68, 68, 0.12)' },
+  high: { dot: 'var(--dash-orange-a60, #f59e0b)', gradient: 'rgba(245, 158, 11, 0.09)' },
+  medium: { dot: 'var(--dash-primary)', gradient: 'rgba(99, 102, 241, 0.08)' },
+  low: { dot: 'var(--dash-text-faint)', gradient: 'rgba(148, 163, 184, 0.06)' },
+};
+
 const TaskListWidget: React.FC<TaskListWidgetProps> = ({
   tasks,
-  selectedDate,
   onTaskEdit,
   onTaskToggle,
   onAddTask
 }) => {
   const groupedTasks = groupTasksByStatus(tasks);
-
-  // Priority colors using CSS variables
-  const priorityStyles = {
-    urgent: { bg: 'var(--dash-brown-a12)', border: 'var(--dash-text-sub)', text: 'var(--dash-text-sub)' },
-    high: { bg: 'var(--dash-orange-a12)', border: 'var(--dash-orange)', text: 'var(--dash-orange)' },
-    medium: { bg: 'var(--dash-primary-a12)', border: 'var(--dash-primary)', text: 'var(--dash-primary)' },
-    low: { bg: 'var(--dash-border-a25)', border: 'var(--dash-text-faint)', text: 'var(--dash-text-sub)' }
-  };
+  const [showCompleted, setShowCompleted] = useState(false);
+  const hasAnyTasks = tasks.length > 0;
 
   const renderTaskItem = (task: Task, isOverdue: boolean = false) => {
-    const priority = priorityStyles[task.priority];
+    const colors = priorityColors[task.priority] || priorityColors.low;
+    const gradientBg = task.completed
+      ? 'transparent'
+      : `linear-gradient(135deg, ${colors.gradient} 0%, transparent 70%)`;
 
     return (
-      <div
-        key={task.id}
-        className="group relative p-3 rounded-xl transition-all cursor-pointer"
-        style={{
-          background: isOverdue
-            ? 'var(--dash-orange-a30)'
-            : task.completed
-            ? 'var(--dash-completed-bg)'
-            : 'var(--dash-task-bg)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: `1px solid ${isOverdue ? 'var(--dash-orange-a60)' : 'var(--dash-border)'}`,
-          boxShadow: `0 2px 8px var(--dash-card-shadow)`,
-          opacity: task.completed ? 0.6 : 1
+    <div
+      key={task.id}
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
+      style={{
+        background: gradientBg,
+        opacity: task.completed ? 0.5 : 1,
+      }}
+      onMouseEnter={(e) => {
+        if (!task.completed) {
+          e.currentTarget.style.background = `linear-gradient(135deg, ${colors.gradient} 0%, var(--dash-task-bg) 70%)`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = task.completed ? 'transparent' : gradientBg;
+      }}
+      onClick={() => onTaskEdit(task)}
+    >
+      {/* Checkbox */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onTaskToggle(task.id);
         }}
-        onClick={() => onTaskEdit(task)}
+        className="flex-shrink-0 flex items-center justify-center rounded-full transition-all"
+        style={{
+          width: 20,
+          height: 20,
+          border: task.completed
+            ? '2px solid var(--dash-primary)'
+            : `2px solid var(--dash-border)`,
+          background: task.completed ? 'var(--dash-primary)' : 'transparent',
+        }}
       >
-        <div className="flex items-start space-x-3">
-          {/* Checkbox */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onTaskToggle(task.id);
-            }}
-            className="flex-shrink-0 mt-0.5"
-          >
-            {task.completed ? (
-              <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
+        {task.completed && <Check className="w-3 h-3" style={{ color: 'white' }} strokeWidth={3} />}
+      </button>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <span
+          className={`text-sm ${task.completed ? 'line-through' : ''}`}
+          style={{
+            color: task.completed ? 'var(--dash-text-faint)' : 'var(--dash-text)',
+            fontWeight: 500,
+          }}
+        >
+          {task.title}
+        </span>
+        {(task.date || isOverdue) && (
+          <div className="flex items-center gap-1 mt-0.5">
+            {isOverdue && !task.completed ? (
+              <Clock className="w-3 h-3" style={{ color: 'var(--dash-orange)' }} />
             ) : (
-              <Circle className="w-5 h-5 transition-colors" style={{ color: 'var(--dash-border)' }} />
-            )}
-          </button>
-
-          {/* Task Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <h4
-                className={`font-semibold text-sm ${task.completed ? 'line-through' : ''}`}
-                style={{ color: task.completed ? 'var(--dash-text-faint)' : 'var(--dash-text)' }}
-              >
-                {task.title}
-              </h4>
-
-              {/* Priority Badge */}
-              <span
-                className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium"
-                style={{
-                  backgroundColor: priority.bg,
-                  color: priority.text,
-                  border: `1px solid ${priority.border}`
-                }}
-              >
-                {task.priority === 'urgent' ? '!' : task.priority === 'high' ? '↑' : task.priority === 'low' ? '↓' : '•'}
-              </span>
-            </div>
-
-            {task.description && (
-              <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--dash-text-sub)' }}>
-                {task.description}
-              </p>
-            )}
-
-            {/* Date */}
-            <div className="flex items-center space-x-2 mt-2">
               <Calendar className="w-3 h-3" style={{ color: 'var(--dash-text-faint)' }} />
-              <span className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
-                {format(parseISO(task.date), 'MMM d, yyyy')}
-              </span>
-            </div>
+            )}
+            <span
+              className="text-xs"
+              style={{ color: isOverdue && !task.completed ? 'var(--dash-orange)' : 'var(--dash-text-faint)' }}
+            >
+              {format(parseISO(task.date), 'MMM d')}
+            </span>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Overdue Indicator */}
-        {isOverdue && !task.completed && (
-          <div className="absolute top-2 right-2">
-            <AlertCircle className="w-4 h-4" style={{ color: 'var(--dash-orange)' }} />
-          </div>
+      {/* Priority dot */}
+      <div
+        className="flex-shrink-0 rounded-full"
+        style={{
+          width: 8,
+          height: 8,
+          backgroundColor: colors.dot,
+        }}
+      />
+    </div>
+    );
+  };
+
+  const renderSection = (
+    label: string,
+    taskList: Task[],
+    isOverdue: boolean = false,
+    limit?: number
+  ) => {
+    if (taskList.length === 0) return null;
+    const displayed = limit ? taskList.slice(0, limit) : taskList;
+    const remaining = limit ? taskList.length - limit : 0;
+
+    return (
+      <div>
+        <div className="flex items-center justify-between px-3 mb-1">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-wider"
+            style={{ color: isOverdue ? 'var(--dash-orange)' : 'var(--dash-text-faint)' }}
+          >
+            {label}
+          </span>
+          <span
+            className="text-[11px] tabular-nums"
+            style={{ color: 'var(--dash-text-faint)' }}
+          >
+            {taskList.length}
+          </span>
+        </div>
+        <div>
+          {displayed.map((task) => renderTaskItem(task, isOverdue))}
+        </div>
+        {remaining > 0 && (
+          <p className="text-[11px] px-3 py-1" style={{ color: 'var(--dash-text-faint)' }}>
+            +{remaining} more
+          </p>
         )}
       </div>
     );
   };
-
-  const hasAnyTasks = tasks.length > 0;
 
   return (
     <div
@@ -124,102 +157,92 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
       data-tutorial="analytics-task-widget"
     >
       {/* Header */}
-      <div
-        className="p-4 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: `1px solid var(--dash-border)` }}
-      >
-        <h3 className="font-bold flex items-center" style={{ color: 'var(--dash-text)' }}>
-          <Flag className="w-5 h-5 mr-2" style={{ color: 'var(--dash-primary)' }} />
+      <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0">
+        <h3
+          className="text-sm font-semibold tracking-tight"
+          style={{ color: 'var(--dash-text)' }}
+        >
           Tasks
+          {hasAnyTasks && (
+            <span
+              className="ml-2 text-xs font-normal"
+              style={{ color: 'var(--dash-text-faint)' }}
+            >
+              {tasks.filter(t => !t.completed).length} remaining
+            </span>
+          )}
         </h3>
         <button
           onClick={onAddTask}
           data-tutorial="analytics-add-task"
-          className="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all hover:scale-105 text-sm font-medium"
+          className="flex items-center justify-center rounded-lg transition-all hover:scale-105"
           style={{
-            backgroundColor: 'var(--dash-orange)',
-            color: 'white',
-            boxShadow: `0 2px 8px var(--dash-orange-a30)`
+            width: 32,
+            height: 32,
+            backgroundColor: 'var(--dash-primary-a12)',
+            color: 'var(--dash-primary)',
           }}
         >
-          <Plus className="w-4 h-4" />
-          <span>Add</span>
+          <Plus className="w-4 h-4" strokeWidth={2.5} />
         </button>
       </div>
 
-      {/* Task List - Scrollable */}
-      <div className="overflow-y-auto p-4 space-y-4" data-tutorial="analytics-task-list" style={{ maxHeight: '500px' }}>
+      {/* Task List */}
+      <div
+        className="overflow-y-auto px-1 pb-3 space-y-3"
+        data-tutorial="analytics-task-list"
+        style={{ maxHeight: '500px' }}
+      >
         {!hasAnyTasks ? (
-          <div className="text-center py-12">
-            <Flag className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
-            <p className="font-medium" style={{ color: 'var(--dash-text-sub)' }}>No tasks yet</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--dash-text-faint)' }}>Click "Add" to create your first task</p>
+          <div className="text-center py-10 px-4">
+            <div
+              className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center"
+              style={{ backgroundColor: 'var(--dash-primary-a12)' }}
+            >
+              <Check className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
+            </div>
+            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>
+              No tasks yet
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>
+              Add your first task to get started
+            </p>
           </div>
         ) : (
           <>
-            {/* Overdue Tasks */}
-            {groupedTasks.overdue.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <AlertCircle className="w-4 h-4" style={{ color: 'var(--dash-orange)' }} />
-                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--dash-orange)' }}>
-                    Overdue ({groupedTasks.overdue.length})
-                  </h4>
-                </div>
-                <div className="space-y-2">
-                  {groupedTasks.overdue.map((task) => renderTaskItem(task, true))}
-                </div>
-              </div>
-            )}
+            {renderSection('Overdue', groupedTasks.overdue, true)}
+            {renderSection('Today', groupedTasks.today)}
+            {renderSection('Upcoming', groupedTasks.upcoming, false, 5)}
 
-            {/* Today's Tasks */}
-            {groupedTasks.today.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="w-4 h-4" style={{ color: 'var(--dash-primary)' }} />
-                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--dash-primary)' }}>
-                    Today ({groupedTasks.today.length})
-                  </h4>
-                </div>
-                <div className="space-y-2">
-                  {groupedTasks.today.map((task) => renderTaskItem(task))}
-                </div>
-              </div>
-            )}
-
-            {/* Upcoming Tasks */}
-            {groupedTasks.upcoming.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="w-4 h-4" style={{ color: 'var(--dash-text-sub)' }} />
-                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--dash-text-sub)' }}>
-                    Upcoming ({groupedTasks.upcoming.length})
-                  </h4>
-                </div>
-                <div className="space-y-2">
-                  {groupedTasks.upcoming.slice(0, 5).map((task) => renderTaskItem(task))}
-                </div>
-                {groupedTasks.upcoming.length > 5 && (
-                  <p className="text-xs mt-2 text-center" style={{ color: 'var(--dash-text-faint)' }}>
-                    +{groupedTasks.upcoming.length - 5} more tasks
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Completed Tasks (collapsed) */}
+            {/* Completed - collapsible */}
             {groupedTasks.completed.length > 0 && (
-              <div className="pt-3" style={{ borderTop: `1px solid var(--dash-border)` }}>
-                <h4 className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--dash-text-faint)' }}>
-                  Completed ({groupedTasks.completed.length})
-                </h4>
-                <div className="space-y-2">
-                  {groupedTasks.completed.slice(0, 3).map((task) => renderTaskItem(task))}
-                </div>
-                {groupedTasks.completed.length > 3 && (
-                  <p className="text-xs mt-2 text-center" style={{ color: 'var(--dash-text-faint)' }}>
-                    +{groupedTasks.completed.length - 3} more completed
-                  </p>
+              <div>
+                <button
+                  onClick={() => setShowCompleted(!showCompleted)}
+                  className="flex items-center gap-1 px-3 py-1 w-full text-left"
+                >
+                  {showCompleted ? (
+                    <ChevronDown className="w-3 h-3" style={{ color: 'var(--dash-text-faint)' }} />
+                  ) : (
+                    <ChevronRight className="w-3 h-3" style={{ color: 'var(--dash-text-faint)' }} />
+                  )}
+                  <span
+                    className="text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ color: 'var(--dash-text-faint)' }}
+                  >
+                    Completed
+                  </span>
+                  <span
+                    className="text-[11px] ml-auto tabular-nums"
+                    style={{ color: 'var(--dash-text-faint)' }}
+                  >
+                    {groupedTasks.completed.length}
+                  </span>
+                </button>
+                {showCompleted && (
+                  <div>
+                    {groupedTasks.completed.map((task) => renderTaskItem(task))}
+                  </div>
                 )}
               </div>
             )}
