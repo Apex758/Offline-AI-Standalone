@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X } from 'lucide-react';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 
 interface ImageStudioProps {
@@ -1177,7 +1178,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   >
                     {loadingStyles ? (
                       <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        <HeartbeatLoader className="w-5 h-5 mr-2" />
                         Loading...
                       </>
                     ) : (
@@ -1231,7 +1232,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           </>
                         ) : slot.status === 'generating' ? (
                           <div className="flex flex-col items-center justify-center h-[300px]">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                            <HeartbeatLoader className="w-8 h-8 text-blue-600 mb-2" />
                             <p className="text-sm text-theme-hint">Generating...</p>
                           </div>
                         ) : slot.status === 'error' ? (
@@ -1299,7 +1300,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           </>
                         ) : slot.status === 'generating' ? (
                           <div className="flex flex-col items-center justify-center h-[300px] cursor-pointer" onClick={() => setSelectedImage(null)}>
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                            <HeartbeatLoader className="w-8 h-8 text-blue-600 mb-2" />
                             <p className="text-sm text-theme-hint">Generating...</p>
                             <p className="text-xs text-gray-400 mt-1">Click to view progress</p>
                           </div>
@@ -1380,7 +1381,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       )}
                       <button onClick={generateWorksheetImage} disabled={worksheetGenerating}
                         className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium">
-                        {worksheetGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+                        {worksheetGenerating ? <HeartbeatLoader className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         {worksheetGenerating ? 'Generating...' : 'Preview Worksheet'}
                       </button>
                       {worksheetPreview && (
@@ -1526,7 +1527,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
                           data-tutorial="image-studio-remove">
                           {isInpainting
-                            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Removing...</>
+                            ? <><HeartbeatLoader className="w-4 h-4 mr-2" />Removing...</>
                             : <><Eraser className="w-4 h-4 mr-2" />Remove Marked Area</>}
                         </button>
                         <button onClick={handleDownloadEdited}
@@ -1540,7 +1541,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         <button onClick={handleRemoveBackground} disabled={isRemovingBg}
                           className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
                           {isRemovingBg
-                            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Removing Background...</>
+                            ? <><HeartbeatLoader className="w-4 h-4 mr-2" />Removing Background...</>
                             : <><ImageOff className="w-4 h-4 mr-2" />Remove Background</>}
                         </button>
                         <button onClick={handleDownloadEdited}

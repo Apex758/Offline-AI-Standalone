@@ -7,6 +7,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { useSettings } from '../contexts/SettingsContext';
 import { downloadJSON } from '../lib/utils';
 import axios from 'axios';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -385,7 +386,7 @@ const Settings: React.FC<SettingsProps> = () => {
                     className="px-3"
                     title="Refresh model list"
                   >
-                    <RefreshCw className={`w-4 h-4 ${loadingModels ? 'animate-spin' : ''}`} />
+                    {loadingModels ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
                   </Button>
                 </div>
                 {modelChangeMessage && (

@@ -8,6 +8,7 @@ import type { MilestoneStats, Milestone } from '../types/milestone';
 import type { Task } from '../types/task';
 import type { Timeframe, CurriculumView } from '../types/analytics';
 import type { Tab } from '../types';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 // Import helper functions
 import {
@@ -323,7 +324,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     return (
       <div className="h-full flex items-center justify-center" style={{ backgroundColor: '#FDFDF8' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#F2A631' }}></div>
+          <HeartbeatLoader className="w-12 h-12 mx-auto mb-4" />
           <p style={{ color: '#552A01' }}>Loading your dashboard...</p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import CurriculumReferences from './CurriculumReferences';
 import LessonEditor from './LessonEditor';
 import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/lesson';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
@@ -732,7 +733,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       >
                         {saveStatus === 'saving' ? (
                           <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <HeartbeatLoader className="w-4 h-4 mr-2" />
                             Saving...
                           </>
                         ) : saveStatus === 'saved' ? (
@@ -841,7 +842,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         {loading && (
                           <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
                             <div className="flex items-center text-white">
-                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              <HeartbeatLoader className="w-5 h-5 mr-3" />
                               <div>
                                 <div className="text-sm font-medium">Generating...</div>
                                 <div className="text-xs text-blue-100">AI-powered lesson plan</div>
@@ -1045,7 +1046,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             </p>
                           ) : loadingCurriculum ? (
                             <div className="flex items-center justify-center py-8">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                              <HeartbeatLoader className="w-6 h-6" />
                             </div>
                           ) : curriculumMatches.length === 0 ? (
                             <p className="text-sm text-theme-hint italic">
@@ -1424,7 +1425,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          <HeartbeatLoader className="w-5 h-5 mr-2" />
                           Generating...
                         </>
                       ) : (

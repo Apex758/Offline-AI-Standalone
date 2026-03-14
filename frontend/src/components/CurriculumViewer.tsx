@@ -6,6 +6,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 interface CurriculumViewerProps {
   tabId: string;
@@ -164,7 +165,7 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <HeartbeatLoader className="w-12 h-12 mx-auto mb-4" />
             <p className="text-theme-muted">Loading page...</p>
           </div>
         </div>

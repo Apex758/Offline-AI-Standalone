@@ -14,6 +14,7 @@ import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -577,7 +578,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       >
                         {saveStatus === 'saving' ? (
                           <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <HeartbeatLoader className="w-4 h-4 mr-2" />
                             Saving...
                           </>
                         ) : saveStatus === 'saved' ? (
@@ -739,7 +740,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             {loading && (
                               <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
                                 <div className="flex items-center text-white">
-                                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                  <HeartbeatLoader className="w-5 h-5 mr-3" />
                                   <div>
                                     <div className="text-sm font-medium">Generating...</div>
                                     <div className="text-xs text-cyan-100">AI-powered quiz</div>
@@ -1138,7 +1139,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      <HeartbeatLoader className="w-5 h-5 mr-2" />
                       Generating...
                     </>
                   ) : (
@@ -1244,7 +1245,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {lessonPickerLoading ? (
                 <div className="flex items-center justify-center py-12 text-theme-hint">
-                  <Loader2 className="w-5 h-5 animate-spin mr-3" />
+                  <HeartbeatLoader className="w-5 h-5 mr-3" />
                   Loading lesson plans...
                 </div>
               ) : lessonPlanOptions.length === 0 ? (

@@ -7,6 +7,7 @@ import { ParsedQuiz, QuizQuestion } from '../types/quiz';
 import { useSettings } from '../contexts/SettingsContext';
 import axios from 'axios';
 import BulkGrader from './BulkGrader';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -260,7 +261,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
               className="w-full py-3 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ backgroundColor: accentColor }}
             >
-              {parsing ? <><Loader2 className="w-4 h-4 animate-spin" />Parsing answer key...</> : <>Load Answer Key</>}
+              {parsing ? <><HeartbeatLoader className="w-4 h-4" />Parsing answer key...</> : <>Load Answer Key</>}
             </button>
           </div>
         </div>

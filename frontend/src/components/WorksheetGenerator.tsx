@@ -14,6 +14,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
 import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
 import WorksheetStructuredEditor from './WorksheetStructuredEditor';
@@ -1061,7 +1062,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       </p>
                     ) : loadingCurriculum ? (
                       <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        <HeartbeatLoader className="w-6 h-6" />
                       </div>
                     ) : curriculumMatches.length === 0 ? (
                       <p className="text-sm text-theme-hint italic">
@@ -1202,7 +1203,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
                 {loadingPresets ? (
                   <div className="p-4 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <HeartbeatLoader className="w-8 h-8 mx-auto" />
                     <p className="text-sm text-theme-hint mt-2">Loading presets...</p>
                   </div>
                 ) : topicPresets.length > 0 ? (
@@ -1258,7 +1259,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     >
                       {generatingImages ? (
                         <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          <HeartbeatLoader className="w-5 h-5 mr-2" />
                           Generating Scene Image...
                         </>
                       ) : (
@@ -1413,7 +1414,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    <HeartbeatLoader className="w-5 h-5 mr-2" />
                     Generating...
                   </>
                 ) : (
@@ -1475,7 +1476,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 >
                   {saveStatus === 'saving' ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <HeartbeatLoader className="w-4 h-4 mr-2" />
                       Saving...
                     </>
                   ) : saveStatus === 'saved' ? (
@@ -1664,7 +1665,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               ) : loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+                    <HeartbeatLoader className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                     <p className="text-theme-muted font-medium">Generating worksheet...</p>
                     <p className="text-theme-hint text-sm mt-2">The content will appear in your template shortly</p>
                   </div>

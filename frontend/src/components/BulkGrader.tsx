@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
   X, Upload, FileText, CheckCircle, XCircle, AlertCircle,
-  Loader2, Award, ChevronDown, ChevronUp, Save, Users, Trash2
+  Award, ChevronDown, ChevronUp, Save, Users, Trash2
 } from 'lucide-react';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import axios from 'axios';
 import { ParsedQuiz } from '../types/quiz';
 import { useSettings } from '../contexts/SettingsContext';
@@ -258,7 +259,7 @@ const BulkGrader: React.FC<BulkGraderProps> = ({ quiz, onClose, embedded = false
         >
           {processing ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <HeartbeatLoader className="w-5 h-5" />
               Processing {studentFiles.length} file{studentFiles.length !== 1 ? 's' : ''}...
             </>
           ) : (

@@ -12,6 +12,7 @@ import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -854,7 +855,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       >
                         {saveStatus === 'saving' ? (
                           <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <HeartbeatLoader className="w-4 h-4 mr-2" />
                             Saving...
                           </>
                         ) : saveStatus === 'saved' ? (
@@ -943,7 +944,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                         {loading && (
                           <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
                             <div className="flex items-center text-white">
-                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              <HeartbeatLoader className="w-5 h-5 mr-3" />
                               <div>
                                 <div className="text-sm font-medium">Generating...</div>
                                 <div className="text-xs text-pink-100">AI-powered kindergarten plan</div>
@@ -1244,7 +1245,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      <HeartbeatLoader className="w-5 h-5 mr-2" />
                       Generating...
                     </>
                   ) : (

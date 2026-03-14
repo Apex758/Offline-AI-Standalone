@@ -8,6 +8,7 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
+import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
@@ -44,7 +45,7 @@ function AppContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <HeartbeatLoader className="w-12 h-12 mx-auto" />
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, MessageSquare, Wand2, Send, Loader2, Sparkles } from 'lucide-react';
+import { X, MessageSquare, Wand2, Send, Sparkles } from 'lucide-react';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 
 interface AIAssistantPanelProps {
@@ -351,7 +352,7 @@ When the user requests modifications, generate the COMPLETE UPDATED VERSION of t
               className="px-6 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isStreaming ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <HeartbeatLoader className="w-5 h-5" />
               ) : (
                 <Send className="w-5 h-5" />
               )}

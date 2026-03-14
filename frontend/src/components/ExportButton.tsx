@@ -1,6 +1,7 @@
 // components/ExportButton.tsx - UPDATED VERSION
 import React, { useState } from 'react';
 import { Download, Loader2, FileText, FileDown } from 'lucide-react';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import axios from 'axios';
 import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRenderer';
 import { prepareWorksheetForExport } from '../utils/worksheetHtmlRenderer';
@@ -164,7 +165,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       >
         {isExporting ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <HeartbeatLoader className="w-4 h-4 mr-2" />
             Exporting...
           </>
         ) : (

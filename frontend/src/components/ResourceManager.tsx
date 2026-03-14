@@ -7,6 +7,7 @@ import {
 import axios from 'axios';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTutorials } from '../contexts/TutorialContext';
@@ -306,7 +307,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     return (
       <div className="h-full flex items-center justify-center tab-content-bg">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <HeartbeatLoader className="w-12 h-12 text-blue-600 mx-auto mb-4" />
           <p className="text-theme-muted">Loading resources...</p>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import curriculumTreeData from '../data/curriculumTree.json';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, FileText } from 'lucide-react';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 interface TreeNode {
   [key: string]: TreeNode | FileInfo | any;
@@ -220,7 +221,7 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
   if (loading) {
     return (
       <div className="p-4 text-center text-gray-500">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+        <HeartbeatLoader className="w-8 h-8 mx-auto mb-2" />
         <p className="text-sm">Loading curriculum...</p>
       </div>
     );

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { CurriculumReference } from './CurriculumReferences';
 import { CurriculumReferences } from './CurriculumReferences';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 interface ChatProps {
   tabId: string;
@@ -473,7 +474,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               {loading && !streamingMessage && (
                 <div className="flex justify-start">
                   <div className="bg-theme-tertiary px-4 py-3 rounded-2xl">
-                    <Loader2 className="w-5 h-5 animate-spin text-theme-muted" />
+                    <HeartbeatLoader className="w-5 h-5 text-theme-muted" />
                   </div>
                 </div>
               )}
@@ -514,7 +515,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               data-tutorial="chat-send"
             >
               {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <HeartbeatLoader className="w-5 h-5" />
               ) : (
                 <Send className="w-5 h-5" />
               )}
