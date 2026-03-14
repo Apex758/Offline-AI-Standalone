@@ -228,6 +228,37 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
     setAttendanceDirty(true);
   };
 
+  // ── Restore saved state ──────────────────────────────────────────────────
+  const hasRestoredRef = useRef(false);
+  useEffect(() => {
+    if (savedData && !hasRestoredRef.current) {
+      hasRestoredRef.current = true;
+      if (savedData.classViewTab) setClassViewTab(savedData.classViewTab);
+      if (savedData.rightView) setRightView(savedData.rightView);
+      if (savedData.expandedGrades) setExpandedGrades(new Set(savedData.expandedGrades));
+      if (savedData.expandedClasses) setExpandedClasses(new Set(savedData.expandedClasses));
+      if (savedData.search) setSearch(savedData.search);
+      if (savedData.attendanceDate) setAttendanceDate(savedData.attendanceDate);
+      if (savedData.activeStudentId && !activeStudent) {
+        fetchStudent(savedData.activeStudentId);
+      }
+    }
+  }, [savedData]);
+
+  // ── Persist state to parent ─────────────────────────────────────────────
+  useEffect(() => {
+    onDataChange({
+      classViewTab,
+      rightView,
+      expandedGrades: [...expandedGrades],
+      expandedClasses: [...expandedClasses],
+      search,
+      attendanceDate,
+      activeStudentId: activeStudent?.id ?? null,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classViewTab, rightView, expandedGrades, expandedClasses, search, attendanceDate, activeStudent]);
+
   useEffect(() => { fetchStudents(); }, []);
 
   // Load attendance when viewing a class and date changes
