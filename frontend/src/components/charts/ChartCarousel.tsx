@@ -81,10 +81,21 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
 
   return (
     <div
-      className="relative"
+      className="relative rounded-2xl overflow-hidden"
       data-tutorial="analytics-chart-carousel"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      style={{
+        background: 'rgba(255, 255, 255, 0.35)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        boxShadow: hovered
+          ? '0 16px 48px rgba(0, 0, 0, 0.22)'
+          : '0 8px 32px rgba(0, 0, 0, 0.15)',
+        transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+      }}
     >
       {/* Chart Container */}
       <div
