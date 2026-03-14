@@ -349,15 +349,31 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     return (
       <button
         onClick={() => setIsActive(true)}
-        data-tutorial="help-button" 
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-[9998] group animate-bounce"
+        data-tutorial="help-button"
+        className="fixed bottom-6 right-6 text-white flex items-center justify-center z-[9998] group"
         title="Start Tutorial"
-        style={{ animationDuration: '2s' }}
+        style={{
+          width: '52px',
+          height: '52px',
+          borderRadius: '16px',
+          background: 'linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--primary) / 0.75) 100%)',
+          boxShadow: '0 8px 32px rgb(var(--ring) / 0.45), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          transition: 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1) translateY(-2px)';
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 40px rgb(var(--ring) / 0.6), 0 4px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgb(var(--ring) / 0.45), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)';
+        }}
       >
-        <HelpCircle className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 flex h-4 w-4">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+        <HelpCircle className="w-5 h-5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: '#f43f5e' }}></span>
+          <span className="relative inline-flex rounded-full h-3.5 w-3.5" style={{ background: 'linear-gradient(135deg, #fb7185, #f43f5e)', boxShadow: '0 0 6px rgba(244,63,94,0.6)' }}></span>
         </span>
       </button>
     );

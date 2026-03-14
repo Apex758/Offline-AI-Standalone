@@ -216,3 +216,73 @@ def get_student_grades(student_id: str) -> list[dict]:
         return [dict(r) for r in rows]
     finally:
         conn.close()
+
+
+# ── Bulk Import ──────────────────────────────────────────────────────────────
+
+def bulk_import_students(rows: list[dict]) -> dict:
+    """Import students from parsed spreadsheet rows.
+    Each row should have keys matching student fields.
+    Returns summary of created/updated/skipped counts.
+    """
+    conn = _get_conn()
+    created = 0
+    updated = 0
+    skipped = 0
+    errors = []
+    try:
+        for i, row in enumerate(rows, start=2):  # row 2 = first data row in Excel
+            name = (row.get('full_name') or row.get('Full Name') or '').strip()
+            if not name:
+                skipped += 1
+                continue
+
+            # Normalise field names (accept Title Case or snake_case)
+            data = {
+                'full_name': name,
+                'date_of_birth': str(row.get('date_of_birth') or row.get('Date of Birth') or '').strip(),
+                'class_name': str(row.get('class_name') or row.get('Class') or '').strip(),
+                'grade_level': str(row.get('grade_level') or row.get('Grade Level') or '').strip(),
+                'gender': str(row.get('gender') or row.get('Gender') or '').strip(),
+                'contact_info': str(row.get('contact_info') or row.get('Contact Info') or '').strip(),
+            }
+
+            # Check if student already exists by name + class
+            existing = conn.execute(
+                'SELECT id FROM students WHERE full_name = ? AND class_name = ?',
+                (data['full_name'], data['class_name'])
+            ).fetchone()
+
+            if existing:
+                conn.execute(
+                    '''UPDATE students
+                       SET date_of_birth=?, grade_level=?, gender=?, contact_info=?
+                       WHERE id=?''',
+                    (data['date_of_birth'], data['grade_level'],
+                     data['gender'], data['contact_info'], existing['id'])
+                )
+                updated += 1
+            else:
+                student_id = str(uuid.uuid4())
+                conn.execute(
+                    '''INSERT INTO students
+                       (id, full_name, date_of_birth, class_name, grade_level, gender, contact_info)
+                       VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                    (student_id, data['full_name'], data['date_of_birth'],
+                     data['class_name'], data['grade_level'],
+                     data['gender'], data['contact_info'])
+                )
+                created += 1
+
+        conn.commit()
+    except Exception as e:
+        errors.append(str(e))
+    finally:
+        conn.close()
+
+    return {
+        'created': created,
+        'updated': updated,
+        'skipped': skipped,
+        'errors': errors,
+    }

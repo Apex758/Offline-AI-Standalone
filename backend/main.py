@@ -1742,6 +1742,106 @@ async def get_students(class_name: Optional[str] = None):
 async def add_student(student: StudentCreate):
     return student_service.create_student(student.model_dump())
 
+@app.get("/api/students/sample-excel")
+async def download_sample_excel():
+    """Generate and return a sample Excel file with student columns and example data."""
+    import io
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Class List"
+
+    headers = ["Full Name", "Date of Birth", "Class", "Grade Level", "Gender", "Contact Info"]
+    header_fill = PatternFill(start_color="2563EB", end_color="2563EB", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+        cell.border = thin_border
+
+    sample_data = [
+        ["Jane Smith", "2015-03-12", "A", "3", "Female", "jane.parent@email.com"],
+        ["Marcus Johnson", "2014-11-05", "A", "3", "Male", "555-0123"],
+        ["Aaliyah Charles", "2015-06-22", "A", "3", "Female", "555-0456"],
+        ["Devon Williams", "2014-09-18", "B", "4", "Male", "devon.parent@email.com"],
+        ["Keisha Brown", "2013-12-01", "B", "4", "Female", "555-0789"],
+        ["Tyler Joseph", "2015-01-30", "A", "3", "Male", "tyler.mom@email.com"],
+        ["Sophia Pierre", "2014-07-14", "C", "4", "Female", "555-0321"],
+        ["Elijah Francis", "2013-04-09", "D", "5", "Male", "eli.dad@email.com"],
+    ]
+
+    for row_idx, row_data in enumerate(sample_data, 2):
+        for col_idx, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.border = thin_border
+
+    # Auto-fit column widths
+    for col in ws.columns:
+        max_len = 0
+        col_letter = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_len = max(max_len, len(str(cell.value)))
+        ws.column_dimensions[col_letter].width = max_len + 4
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    from starlette.responses import Response
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=sample_class_list.xlsx"}
+    )
+
+
+@app.post("/api/students/import-excel")
+async def import_excel(file: UploadFile = File(...)):
+    """Import students from an uploaded Excel (.xlsx/.xls) or CSV file."""
+    fname = (file.filename or "").lower()
+    content = await file.read()
+
+    rows: list[dict] = []
+
+    if fname.endswith(('.xlsx', '.xls')):
+        from openpyxl import load_workbook
+        import io
+        wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+        ws = wb.active
+        all_rows = list(ws.iter_rows(values_only=True))
+        if len(all_rows) < 2:
+            raise HTTPException(status_code=400, detail="Excel file has no data rows.")
+        headers = [str(h or '').strip() for h in all_rows[0]]
+        for data_row in all_rows[1:]:
+            row_dict = {}
+            for h, v in zip(headers, data_row):
+                row_dict[h] = str(v) if v is not None else ''
+            rows.append(row_dict)
+        wb.close()
+    elif fname.endswith('.csv'):
+        import csv, io
+        text = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text))
+        rows = [dict(r) for r in reader]
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type. Please upload .xlsx, .xls, or .csv")
+
+    if not rows:
+        raise HTTPException(status_code=400, detail="No data rows found in file.")
+
+    result = student_service.bulk_import_students(rows)
+    return result
+
 @app.get("/api/students/{student_id}")
 async def get_student_profile(student_id: str):
     s = student_service.get_student(student_id)
