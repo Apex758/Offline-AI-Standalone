@@ -47,6 +47,7 @@ import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useTutorials } from '../contexts/TutorialContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import '../styles/edge-tabs.css';
+import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
 
 
 interface DashboardProps {
@@ -227,6 +228,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [bouncingTabId, setBouncingTabId] = useState<string | null>(null);
+  const [hoveringTabId, setHoveringTabId] = useState<string | null>(null);
   const [animatingGroups, setAnimatingGroups] = useState<Set<string>>(new Set());
 
   // Check if user has seen welcome modal on mount
@@ -1742,9 +1744,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-white border-b border-gray-200 px-2 py-0 flex items-center justify-between edge-tab-bar dark:bg-gray-800 dark:border-gray-700" style={{ minHeight: '40px' }}>
+        <div className="px-2 flex items-end justify-between edge-tab-bar dark:bg-gray-800 dark:border-gray-700" style={{ height: `${TAB_H + 4}px`, paddingTop: '4px', paddingBottom: 0 }}>
+          {/* Border line at bottom */}
+          <div className="edge-tab-bar-border" />
           {/* Tabs on the left */}
-          <div className="flex-1 flex items-center gap-0 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar" style={{ marginTop: '0px' }}>
+          <div className="flex-1 flex items-end gap-0 overflow-x-auto scrollbar-hide" data-tutorial="tab-bar">
             {Object.entries(groupedTabs).map(([type, groupTabs], groupIndex) => {
               const isCollapsed = collapsedGroups.has(type);
               const totalGroups = Object.entries(groupedTabs).length;
@@ -1755,6 +1759,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               if (groupTabs.length === 1) {
                 const tab = groupTabs[0];
                 const isActive = activeTabId === tab.id;
+                const isHover = hoveringTabId === tab.id && !isActive;
                 return (
                   <div
                     key={tab.id}
@@ -1764,9 +1769,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     data-active={isActive}
                     style={{
                       '--tab-color': colors.border,
-                      '--tab-bg': isActive ? colors.border : colors.bg,
-                      '--tab-opacity': isActive ? '1' : '0.7',
-                      '--tab-z-index': baseZIndex
+                      '--tab-z-index': baseZIndex,
+                      width: TAB_W,
+                      height: TAB_H,
+                      marginRight: TAB_OVERLAP,
+                      overflow: 'visible',
                     } as React.CSSProperties}
                     onClick={() => {
                       triggerTabBounce(tab.id);
@@ -1785,10 +1792,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
                       })));
                     }}
+                    onMouseEnter={() => setHoveringTabId(tab.id)}
+                    onMouseLeave={() => setHoveringTabId(null)}
                   >
+                    <TrapezoidTabShape
+                      isActive={isActive}
+                      isHover={isHover}
+                      width={TAB_W}
+                      height={TAB_H}
+                      activeColor={colors.border}
+                      inactiveColor={colors.bg}
+                      hoverColor={colors.activeBg || colors.bg}
+                    />
                     <span
-                      className={`text-sm font-medium whitespace-nowrap overflow-hidden ${isActive ? 'text-white' : 'text-black'}`}
+                      className="edge-tab-label"
                       style={{
+                        color: isActive ? '#fff' : isHover ? '#555' : '#888',
+                        fontWeight: isActive ? 600 : 400,
                         maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                         WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                       }}
@@ -1809,7 +1829,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               }
 
               return (
-                <div key={type} className="flex items-center" data-tutorial="tab-groups" data-group-type={type}>
+                <div key={type} className="flex items-end" style={{ overflow: 'visible' }} data-tutorial="tab-groups" data-group-type={type}>
                   <button
                     onClick={() => {
                       triggerTabBounce(`${type}-group`);
@@ -1825,16 +1845,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     data-collapsed={isCollapsed}
                     style={{
                       '--group-color': colors.border,
-                      '--group-bg': activeInGroup ? colors.border : colors.bg,
-                      '--group-opacity': activeInGroup ? '1' : '0.7',
-                      '--group-z-index': baseZIndex
+                      '--group-z-index': baseZIndex,
+                      width: TAB_W,
+                      height: TAB_H,
+                      marginRight: TAB_OVERLAP,
+                      overflow: 'visible',
                     } as React.CSSProperties}
                     title="Right-click for options"
+                    onMouseEnter={() => setHoveringTabId(`${type}-group`)}
+                    onMouseLeave={() => setHoveringTabId(null)}
                   >
-                    <ChevronRight className="w-3.5 h-3.5 chevron-icon" />
+                    <TrapezoidTabShape
+                      isActive={!!activeInGroup}
+                      isHover={hoveringTabId === `${type}-group` && !activeInGroup}
+                      width={TAB_W}
+                      height={TAB_H}
+                      activeColor={colors.border}
+                      inactiveColor={colors.bg}
+                      hoverColor={colors.activeBg || colors.bg}
+                    />
+                    <ChevronRight className="w-3.5 h-3.5 chevron-icon" style={{ color: activeInGroup ? '#fff' : '#888' }} />
                     <span
-                      className={`text-sm font-medium whitespace-nowrap overflow-hidden ${activeInGroup ? 'text-white' : 'text-black'}`}
+                      className="edge-tab-label"
                       style={{
+                        color: activeInGroup ? '#fff' : '#888',
+                        fontWeight: activeInGroup ? 600 : 400,
                         maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                         WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                       }}
@@ -1854,6 +1889,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {groupTabs.map((tab, index) => {
                       const isTabActive = activeTabId === tab.id;
+                      const isTabHover = hoveringTabId === tab.id && !isTabActive;
                       const tabZIndex = baseZIndex + (groupTabs.length - index);  // Left tabs higher
                       return (
                         <div
@@ -1863,10 +1899,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           data-grouped="true"
                           style={{
                             '--tab-color': colors.border,
-                            '--tab-bg': isTabActive ? colors.border : colors.bg,
-                            '--tab-opacity': isTabActive ? '1' : '0.7',
                             '--tab-z-index': tabZIndex,
-                            maxWidth: '200px'
+                            width: TAB_W,
+                            height: TAB_H,
+                            marginRight: TAB_OVERLAP,
+                            maxWidth: '200px',
+                            overflow: 'visible',
                           } as React.CSSProperties}
                           onClick={() => {
                             triggerTabBounce(tab.id);
@@ -1885,10 +1923,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                               lastActiveTime: t.id === tab.id ? Date.now() : t.lastActiveTime
                             })));
                           }}
+                          onMouseEnter={() => setHoveringTabId(tab.id)}
+                          onMouseLeave={() => setHoveringTabId(null)}
                         >
+                          <TrapezoidTabShape
+                            isActive={isTabActive}
+                            isHover={isTabHover}
+                            width={TAB_W}
+                            height={TAB_H}
+                            activeColor={colors.border}
+                            inactiveColor={colors.bg}
+                            hoverColor={colors.activeBg || colors.bg}
+                          />
                           <span
-                            className={`text-sm whitespace-nowrap overflow-hidden ${isTabActive ? 'text-white' : 'text-black'}`}
+                            className="edge-tab-label"
                             style={{
+                              color: isTabActive ? '#fff' : isTabHover ? '#555' : '#888',
+                              fontWeight: isTabActive ? 600 : 400,
                               maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                               WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                             }}
@@ -1914,15 +1965,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
 
           {/* Split Toggle and Close All Tabs Buttons on the right */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" style={{ position: 'relative', zIndex: 50, paddingBottom: '4px' }}>
             {tabs.length >= 2 && (
               <button
                 data-tutorial="split-toggle"
                 onClick={toggleSplitView}
                 className={`p-2 rounded-lg transition group flex-shrink-0 ${
                   splitView.isActive
-                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800'
-                    : 'hover:bg-gray-100 text-gray-600 dark:hover:bg-gray-700 dark:text-gray-400'
+                    ? 'bg-white/20 text-white hover:bg-white/30'
+                    : 'hover:bg-white/10 text-gray-300'
                 }`}
                 title={splitView.isActive ? 'Exit Split View' : 'Enter Split View'}
               >
@@ -1951,10 +2002,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   console.log('Dashboard: close all tabs completed');
                 }}
                 data-tutorial="close-all-tabs"
-                className="p-2 rounded-lg hover:bg-red-50 transition group flex-shrink-0 border border-red-200 dark:border-red-800 dark:hover:bg-red-900"
+                className="p-2 rounded-lg hover:bg-red-500/20 transition group flex-shrink-0 border border-red-400/30"
                 title="Close All Tabs and Exit Split View"
               >
-                <X className="w-5 h-5 text-red-600 group-hover:text-red-700 dark:text-red-500 dark:group-hover:text-red-400" />
+                <X className="w-5 h-5 text-red-400 group-hover:text-red-300" />
               </button>
             )}
           </div>

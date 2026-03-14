@@ -1,4 +1,4 @@
-/* One-Sided Trapezoid Tabs */
+/* Trapezoid SVG Tabs */
 
 .edge-tab {
   position: relative;
@@ -6,72 +6,55 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px 8px 12px;
-  min-width: 120px;
-  max-width: 240px;
+  min-width: 160px;
+  max-width: 280px;
   height: 36px;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: var(--tab-bg, #f3f4f6);
-  opacity: var(--tab-opacity, 0.7);
-  margin-right: -8px;  /* Overlap tabs */
+  background: none;
+  border: none;
+  margin-right: -16px;  /* Overlap tabs - matches TAB_OVERLAP */
   user-select: none;
-  z-index: var(--tab-z-index, 1);  /* Stacking order */
-  
-/* Parallelogram: slanted on both sides */
-  clip-path: polygon(
-    12px 0%,              /* Top-left */
-    100% 0%,              /* Top-right */
-    calc(100% - 12px) 100%, /* Bottom-right */
-    0% 100%               /* Bottom-left */
-  );
+  z-index: var(--tab-z-index, 1);
+  overflow: visible;
+  flex-shrink: 0;
 }
 
 .edge-tab:hover {
-  opacity: 0.9;
+  /* hover handled by SVG shape */
 }
 
 .edge-tab[data-active="true"] {
-  opacity: 1 !important;
-  z-index: 100 !important;  /* Always on top */
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-  background: var(--tab-color, #3b82f6) !important;
-  
-  /* Slightly larger for active state emphasis */
-  transform: translateY(-1px);
+  z-index: 100 !important;
+  /* Active tab extends below via SVG, so allow overflow */
+  overflow: visible;
 }
 
 /* Grouped tabs indicator line */
 .edge-tab[data-grouped="true"]::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 2px;
+  left: 4px;
+  right: 30px;
   height: 3px;
   background: var(--tab-color, #3b82f6);
   opacity: 0.6;
   z-index: 200;
-  /* Match the one-sided trapezoid shape */
-  clip-path: polygon(
-    12px 0%,
-    100% 0%,
-    calc(100% - 12px) 100%,
-    0% 100%
-  );
+  border-radius: 2px;
 }
 
 .edge-tab[data-active="true"][data-grouped="true"]::before {
   opacity: 0.9;
 }
 
-.edge-tab[data-grouped="true"] {
-  background: transparent;
+/* Active tab text should be white for contrast on colored tabs, or dark for white tabs */
+.edge-tab .edge-tab-close {
+  color: #6b7280;
 }
 
-/* Active tab text should be white for contrast */
-.edge-tab[data-active="true"] .tab-text,
 .edge-tab[data-active="true"] .edge-tab-close {
-  color: white !important;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .edge-tab-close {
@@ -81,17 +64,35 @@
   padding: 4px;
   border-radius: 4px;
   transition: all 0.15s ease;
-  color: #6b7280;
   flex-shrink: 0;
+  position: relative;
+  z-index: 3;
 }
 
 .edge-tab-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
 }
 
 .edge-tab[data-active="true"] .edge-tab-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Tab label */
+.edge-tab-label {
+  position: relative;
+  z-index: 2;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  user-select: none;
+  padding-right: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease;
 }
 
 /* Group button styling */
@@ -104,54 +105,44 @@
   height: 36px;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: var(--group-bg, #f3f4f6);
-  opacity: var(--group-opacity, 0.7);
-  margin-right: -8px;  /* Overlap with next item */
+  background: none;
   border: none;
+  margin-right: -16px;
   user-select: none;
-  z-index: var(--group-z-index, 1);  /* Stacking order */
-  
-  /* Parallelogram matching tabs */
-  clip-path: polygon(
-    12px 0%,
-    100% 0%,
-    calc(100% - 12px) 100%,
-    0% 100%
-  );
+  z-index: var(--group-z-index, 1);
+  overflow: visible;
+  flex-shrink: 0;
 }
 
 .edge-tab-group:hover {
-  opacity: 0.9;
+  /* hover handled by SVG shape */
 }
 
 .edge-tab-group[data-active="true"] {
-  opacity: 1 !important;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  background: var(--group-color, #3b82f6) !important;
-  transform: translateY(-1px);
-  z-index: 100 !important;  /* Active group on top */
+  z-index: 100 !important;
 }
 
-/* Active group button text should be white */
+/* Active group button text */
 .edge-tab-group[data-active="true"] .tab-text,
 .edge-tab-group[data-active="true"] svg {
-  color: white !important;
-  stroke: white;
+  color: #2a2a2a !important;
+  stroke: #2a2a2a;
 }
 
 .edge-tab-group[data-collapsed="true"] {
-  margin-right: -8px;
+  margin-right: -16px;
 }
 
 /* Container for grouped tabs with top line */
 .edge-tab-group-container {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0;
-  z-index: 50;  /* Group container above regular tabs */
+  z-index: 50;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left center;
+  overflow: visible;
 }
 
 /* Slide animation for grouped tabs */
@@ -179,13 +170,6 @@
   z-index: 5;
 }
 
-/* Smooth transitions */
-.edge-tab,
-.edge-tab-group,
-.edge-tab-close {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 /* Focus states for accessibility */
 .edge-tab:focus-visible,
 .edge-tab-group:focus-visible {
@@ -197,25 +181,32 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  overflow-y: visible !important; /* allow active tab to extend below */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* Text fade effect for long tab titles */
-.edge-tab span {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Tab bar with border line */
+.edge-tab-bar {
+  position: relative;
+  background: #58585e;
+  border-bottom: none;
+  overflow: visible;  /* allow active tab SVG to extend below */
+  z-index: 2;         /* sit above content so shadows render */
 }
 
-/* Tab bar background */
-.edge-tab-bar {
-  background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
-  border-bottom: 1px solid #e5e7eb;
+/* Border line at bottom of tab bar */
+.edge-tab-bar-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 10;        /* above inactive tabs, below active tab (z:100) */
+  pointer-events: none;
 }
 
 /* Bounce animation for tab clicks */
@@ -236,6 +227,8 @@
 /* Smooth chevron rotation animation */
 .chevron-icon {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 2;
 }
 
 .edge-tab-group[data-collapsed="true"] .chevron-icon {
@@ -244,4 +237,11 @@
 
 .edge-tab-group[data-collapsed="false"] .chevron-icon {
   transform: rotate(90deg);
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  .edge-tab-bar {
+    background: #2d2d30;
+  }
 }
