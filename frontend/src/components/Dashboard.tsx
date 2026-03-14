@@ -1745,6 +1745,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="px-2 flex items-end justify-between edge-tab-bar dark:bg-gray-800 dark:border-gray-700" style={{ height: `${TAB_H + 4}px`, paddingTop: '4px', paddingBottom: 0 }}>
+          {/* Highlight bar at top when a tab is active */}
+          {(() => {
+            const currentActiveTab = tabs.find(t => t.id === activeTabId);
+            const activeColors = currentActiveTab ? (tabColors[currentActiveTab.type] || tabColors['split']) : null;
+            return activeColors ? (
+              <div className="edge-tab-bar-highlight" style={{ background: activeColors.border }} />
+            ) : null;
+          })()}
           {/* Border line at bottom */}
           <div className="edge-tab-bar-border" />
           {/* Tabs on the left */}

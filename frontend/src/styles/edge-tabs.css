@@ -197,6 +197,19 @@
   z-index: 2;         /* sit above content so shadows render */
 }
 
+/* Highlight bar beneath the tab strip, above content */
+.edge-tab-bar-highlight {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 150;         /* above all tabs including active (100), renders on top */
+  pointer-events: none;
+  opacity: 0.85;
+  transition: background 0.2s ease;
+}
+
 /* Border line at bottom of tab bar */
 .edge-tab-bar-border {
   position: absolute;
