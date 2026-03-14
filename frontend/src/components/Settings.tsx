@@ -35,13 +35,21 @@ const Settings: React.FC<SettingsProps> = () => {
   const [selectedModel, setSelectedModel] = useState('');
   const [isSelectingModel, setIsSelectingModel] = useState(false);
   const [modelChangeMessage, setModelChangeMessage] = useState('');
-  
+
+  // Diffusion model state
+  const [availableDiffusionModels, setAvailableDiffusionModels] = useState<ModelInfo[]>([]);
+  const [loadingDiffusionModels, setLoadingDiffusionModels] = useState(false);
+  const [selectedDiffusionModel, setSelectedDiffusionModel] = useState('');
+  const [isSelectingDiffusionModel, setIsSelectingDiffusionModel] = useState(false);
+  const [diffusionModelChangeMessage, setDiffusionModelChangeMessage] = useState('');
+
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
 
   // Fetch available models on component mount
   useEffect(() => {
     fetchAvailableModels();
+    fetchAvailableDiffusionModels();
   }, []);
 
   // Auto-show tutorial on first use
@@ -111,6 +119,64 @@ const Settings: React.FC<SettingsProps> = () => {
       setModelChangeMessage('❌ Error: Failed to communicate with backend');
     } finally {
       setIsSelectingModel(false);
+    }
+  };
+
+  // Diffusion model functions
+  const fetchAvailableDiffusionModels = async () => {
+    setLoadingDiffusionModels(true);
+    try {
+      const response = await axios.get('http://localhost:8000/api/diffusion-models');
+      if (response.data.success) {
+        setAvailableDiffusionModels(response.data.models);
+        const activeModel = response.data.models.find((m: ModelInfo) => m.is_active);
+        if (activeModel) {
+          setSelectedDiffusionModel(activeModel.name);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch diffusion models:', error);
+    } finally {
+      setLoadingDiffusionModels(false);
+    }
+  };
+
+  const handleOpenDiffusionModelsFolder = async () => {
+    try {
+      await axios.post('http://localhost:8000/api/diffusion-models/open-folder');
+    } catch (error) {
+      console.error('Failed to open diffusion models folder:', error);
+      alert('Failed to open diffusion models folder');
+    }
+  };
+
+  const handleDiffusionModelSelect = async (modelName: string) => {
+    if (modelName === selectedDiffusionModel) return;
+
+    setIsSelectingDiffusionModel(true);
+    setDiffusionModelChangeMessage('');
+
+    try {
+      const response = await fetch('http://localhost:8000/api/diffusion-models/select', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modelName }),
+      });
+
+      if (response.ok) {
+        setSelectedDiffusionModel(modelName);
+        setDiffusionModelChangeMessage(`Model changed to ${modelName}. Please restart the app for changes to take effect.`);
+      } else {
+        const error = await response.json();
+        setDiffusionModelChangeMessage(`Error: ${error.error || 'Failed to change diffusion model'}`);
+      }
+    } catch (error) {
+      console.error('Error selecting diffusion model:', error);
+      setDiffusionModelChangeMessage('Error: Failed to communicate with backend');
+    } finally {
+      setIsSelectingDiffusionModel(false);
     }
   };
 
@@ -411,6 +477,74 @@ const Settings: React.FC<SettingsProps> = () => {
                 {availableModels.length > 0 && (
                   <p className="text-sm text-theme-hint">
                     {availableModels.length} model{availableModels.length !== 1 ? 's' : ''} found in models directory
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Diffusion Model Selection Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Diffusion Model</CardTitle>
+              <CardDescription>Select the diffusion model used for image generation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <select
+                    className="flex-1 px-4 py-2 border border-theme-strong rounded-md bg-theme-surface text-theme-label focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-theme-tertiary disabled:cursor-not-allowed"
+                    value={selectedDiffusionModel}
+                    onChange={(e) => handleDiffusionModelSelect(e.target.value)}
+                    disabled={isSelectingDiffusionModel || loadingDiffusionModels || availableDiffusionModels.length === 0}
+                  >
+                    {isSelectingDiffusionModel ? (
+                      <option value="">Changing model...</option>
+                    ) : loadingDiffusionModels ? (
+                      <option>Loading models...</option>
+                    ) : availableDiffusionModels.length === 0 ? (
+                      <option>No diffusion models found</option>
+                    ) : (
+                      availableDiffusionModels.map((model) => (
+                        <option key={model.name} value={model.name}>
+                          {model.name} ({model.size_mb.toFixed(0)} MB)
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchAvailableDiffusionModels}
+                    disabled={loadingDiffusionModels}
+                    className="px-3"
+                    title="Refresh diffusion model list"
+                  >
+                    {loadingDiffusionModels ? <HeartbeatLoader className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
+                  </Button>
+                </div>
+                {diffusionModelChangeMessage && (
+                  <div className={`mt-2 p-3 rounded-lg text-sm ${
+                    diffusionModelChangeMessage.startsWith('Model changed')
+                      ? 'bg-green-100 text-green-800 border border-green-300'
+                      : 'bg-red-100 text-red-800 border border-red-300'
+                  }`}>
+                    {diffusionModelChangeMessage}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleOpenDiffusionModelsFolder}
+                    className="flex-1"
+                  >
+                    <FolderOpen className="w-4 h-4 mr-2" />
+                    Browse Diffusion Models Folder
+                  </Button>
+                </div>
+                {availableDiffusionModels.length > 0 && (
+                  <p className="text-sm text-theme-hint">
+                    {availableDiffusionModels.length} model{availableDiffusionModels.length !== 1 ? 's' : ''} found in image generation directory
                   </p>
                 )}
               </div>

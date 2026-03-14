@@ -33,10 +33,12 @@ import json
 import asyncio
 import signal
 import atexit
-from config import ( 
+from config import (
     get_model_path, get_selected_model, set_selected_model,
     LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR,
-    MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE
+    MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE,
+    IMAGE_MODELS_DIR, get_selected_diffusion_model, set_selected_diffusion_model,
+    get_diffusion_model_path, scan_diffusion_models
 )
 from pathlib import Path
 from routes import milestones
@@ -2472,6 +2474,124 @@ async def open_models_folder():
     except Exception as e:
         logger.error(f"Error opening models folder: {e}")
         raise HTTPException(status_code=500, detail=f"Error opening models folder: {str(e)}")
+
+
+# ============================================================================
+# DIFFUSION MODEL MANAGEMENT ENDPOINTS
+# ============================================================================
+
+@app.get("/api/diffusion-models")
+async def get_available_diffusion_models():
+    """Get list of available diffusion models in the image_generation directory"""
+    try:
+        models = scan_diffusion_models()
+        return {
+            "success": True,
+            "models": models,
+            "models_directory": str(IMAGE_MODELS_DIR),
+            "count": len(models)
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving diffusion models: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving diffusion models: {str(e)}")
+
+
+@app.post("/api/diffusion-models/select")
+async def select_diffusion_model(request: Request):
+    """Set the active diffusion model for image generation"""
+    try:
+        data = await request.json()
+        model_name = data.get('modelName')
+
+        if not model_name:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Model name is required"}
+            )
+
+        model_path = IMAGE_MODELS_DIR / model_name
+        if not model_path.exists():
+            return JSONResponse(
+                status_code=404,
+                content={"error": f"Diffusion model not found: {model_name}"}
+            )
+
+        if set_selected_diffusion_model(model_name):
+            # Reset the image service singleton so it picks up the new model on next use
+            try:
+                from image_service import _image_service_instance
+                import image_service as img_svc
+                if img_svc._image_service_instance is not None:
+                    img_svc._image_service_instance.cleanup()
+                    img_svc._image_service_instance = None
+                    logger.info("Image service reset for new diffusion model")
+            except Exception as e:
+                logger.warning(f"Could not reset image service: {e}")
+
+            return JSONResponse(content={
+                "success": True,
+                "message": f"Diffusion model set to {model_name}",
+                "selectedModel": model_name
+            })
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Failed to save diffusion model selection"}
+            )
+
+    except Exception as e:
+        logger.error(f"Error selecting diffusion model: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.get("/api/diffusion-models/active")
+async def get_active_diffusion_model():
+    """Get the currently active diffusion model"""
+    try:
+        selected_model = get_selected_diffusion_model()
+        model_path = get_diffusion_model_path()
+
+        return JSONResponse(content={
+            "modelName": selected_model,
+            "modelPath": model_path,
+            "exists": Path(model_path).exists()
+        })
+    except Exception as e:
+        logger.error(f"Error getting active diffusion model: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/api/diffusion-models/open-folder")
+async def open_diffusion_models_folder():
+    """Open the image generation models directory in Windows File Explorer"""
+    try:
+        models_path = str(IMAGE_MODELS_DIR.resolve())
+
+        if not IMAGE_MODELS_DIR.exists():
+            IMAGE_MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+        if os.name == 'nt':
+            subprocess.run(['explorer', models_path], check=True)
+            return {
+                "success": True,
+                "message": "Diffusion models folder opened",
+                "path": models_path
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Opening folder is only supported on Windows",
+                "path": models_path
+            }
+    except Exception as e:
+        logger.error(f"Error opening diffusion models folder: {e}")
+        raise HTTPException(status_code=500, detail=f"Error opening diffusion models folder: {str(e)}")
 
 
 @app.get("/api/health")

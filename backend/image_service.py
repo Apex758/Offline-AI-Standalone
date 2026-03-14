@@ -79,17 +79,22 @@ class ImageService:
             sdxl_model_path: Override path to SDXL model (optional, auto-detected if None)
             iopaint_port: Port for IOPaint server
         """
-        # Auto-detect SDXL model path
+        # Auto-detect SDXL model path using config
         if sdxl_model_path is None:
-            user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
-            sdxl_model_name = "sdxl-turbo-openvino"
-            user_sdxl_path = user_models_dir / sdxl_model_name
-            if user_sdxl_path.exists():
-                sdxl_model_path = str(user_sdxl_path)
-                logger.info(f"Using SDXL model from user data: {sdxl_model_path}")
-            else:
-                sdxl_model_path = get_resource_path("../models/image_generation/sdxl-turbo-openvino")
-                logger.info(f"Using bundled SDXL model: {sdxl_model_path}")
+            try:
+                from config import get_diffusion_model_path
+                sdxl_model_path = get_diffusion_model_path()
+                logger.info(f"Using diffusion model from config: {sdxl_model_path}")
+            except ImportError:
+                user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
+                sdxl_model_name = "sdxl-turbo-openvino"
+                user_sdxl_path = user_models_dir / sdxl_model_name
+                if user_sdxl_path.exists():
+                    sdxl_model_path = str(user_sdxl_path)
+                    logger.info(f"Using SDXL model from user data: {sdxl_model_path}")
+                else:
+                    sdxl_model_path = get_resource_path("../models/image_generation/sdxl-turbo-openvino")
+                    logger.info(f"Using bundled SDXL model: {sdxl_model_path}")
         else:
             sdxl_model_path = Path(sdxl_model_path)
         

@@ -58,6 +58,80 @@ def set_selected_model(model_name):
         print(f"Error saving model config: {e}", flush=True)
         return False
 
+# ============================================================================
+# DIFFUSION MODEL CONFIGURATION
+# ============================================================================
+
+IMAGE_MODELS_DIR = MODELS_DIR / "image_generation"
+DEFAULT_DIFFUSION_MODEL = "sdxl-turbo-openvino"
+DIFFUSION_CONFIG_FILE = MODELS_DIR / ".diffusion-model-config.json"
+
+def get_selected_diffusion_model():
+    """Get the currently selected diffusion model from config file."""
+    if DIFFUSION_CONFIG_FILE.exists():
+        try:
+            with open(DIFFUSION_CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                return config.get('selectedModel', DEFAULT_DIFFUSION_MODEL)
+        except Exception:
+            pass
+    return DEFAULT_DIFFUSION_MODEL
+
+def set_selected_diffusion_model(model_name):
+    """Save the selected diffusion model to config file."""
+    try:
+        DIFFUSION_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(DIFFUSION_CONFIG_FILE, 'w') as f:
+            json.dump({'selectedModel': model_name}, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving diffusion model config: {e}", flush=True)
+        return False
+
+def get_diffusion_model_path():
+    """Get the full path to the currently selected diffusion model."""
+    selected = get_selected_diffusion_model()
+    # Check user data directory first
+    user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
+    user_model_path = user_models_dir / selected
+    if user_model_path.exists():
+        print(f"✓ [CONFIG] Using diffusion model from user data: {user_model_path}", flush=True)
+        return str(user_model_path)
+    # Fall back to bundled
+    bundled_path = IMAGE_MODELS_DIR / selected
+    print(f"✓ [CONFIG] Using bundled diffusion model: {bundled_path}", flush=True)
+    return str(bundled_path)
+
+def scan_diffusion_models():
+    """Scan the image_generation directory for available diffusion models."""
+    models = []
+    if not IMAGE_MODELS_DIR.exists():
+        return models
+
+    selected = get_selected_diffusion_model()
+    # Exclude non-model directories (e.g., lama is for inpainting)
+    exclude_dirs = {'lama', '__pycache__'}
+
+    try:
+        for item in IMAGE_MODELS_DIR.iterdir():
+            if item.is_dir() and item.name not in exclude_dirs and not item.name.startswith('.'):
+                # Calculate directory size
+                total_size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
+                size_mb = total_size / (1024 * 1024)
+
+                models.append({
+                    "name": item.name,
+                    "path": str(item),
+                    "size_mb": round(size_mb, 2),
+                    "is_active": item.name == selected
+                })
+
+        models.sort(key=lambda x: x["name"])
+    except Exception as e:
+        print(f"Error scanning diffusion models: {e}", flush=True)
+
+    return models
+
 def resolve_model_path(model_filename: str) -> str:
     """Resolve model path: check user data directory first, then bundled."""
     user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
