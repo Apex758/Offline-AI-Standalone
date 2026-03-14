@@ -159,7 +159,7 @@ const Grainient = ({
       webgl: 2,
       alpha: true,
       antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+      dpr: Math.min((window.devicePixelRatio || 1) * 0.5, 1)
     });
 
     const gl = renderer.gl;
@@ -219,11 +219,19 @@ const Grainient = ({
     setSize();
 
     let raf = 0;
+    let lastFrame = 0;
+    const frameInterval = 1000 / 30; // 30fps cap
     const t0 = performance.now();
     const loop = (t: number) => {
+      raf = requestAnimationFrame(loop);
+      if (document.hidden) return;
+
+      const delta = t - lastFrame;
+      if (delta < frameInterval) return;
+      lastFrame = t - (delta % frameInterval);
+
       program.uniforms.iTime.value = (t - t0) * 0.001;
       renderer.render({ scene: mesh });
-      raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
 

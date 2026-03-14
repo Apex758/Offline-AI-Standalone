@@ -56,6 +56,7 @@ import { SearchEntry } from '../data/searchIndex';
 import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
 import Grainient from './Grainient';
+import Galaxy from './Galaxy';
 
 
 interface DashboardProps {
@@ -2291,23 +2292,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </>
           ) : (
-            <div className="h-full relative overflow-hidden" style={isDarkMode ? {
-              background: 'radial-gradient(ellipse at 25% 40%, rgba(60,140,30,0.6) 0%, transparent 55%), radial-gradient(ellipse at 70% 70%, rgba(75,160,40,0.5) 0%, transparent 50%), radial-gradient(ellipse at 50% 10%, rgba(92,184,50,0.4) 0%, transparent 45%), radial-gradient(ellipse at 55% 55%, rgba(232,170,32,0.35) 0%, transparent 40%), radial-gradient(ellipse at 80% 40%, rgba(240,180,20,0.25) 0%, transparent 35%), radial-gradient(ellipse at 35% 75%, rgba(220,150,10,0.2) 0%, transparent 30%), radial-gradient(ellipse at 85% 25%, rgba(255,255,255,0.15) 0%, transparent 30%), radial-gradient(ellipse at 20% 70%, rgba(255,255,255,0.1) 0%, transparent 25%), linear-gradient(160deg, #0a1f10 0%, #0d2a14 30%, #112a10 60%, #0a1a0c 100%)'
-            } : {}}>
+            <div className="h-full relative overflow-hidden" style={isDarkMode ? { background: '#000' } : {}}>
               {/* Background layer */}
               {isDarkMode ? (
-                <>
-                  {/* Cosmic orbs for dark mode */}
-                  <div className="cosmic-orb cosmic-orb-g1" />
-                  <div className="cosmic-orb cosmic-orb-g2" />
-                  <div className="cosmic-orb cosmic-orb-g3" />
-                  <div className="cosmic-orb cosmic-orb-y1" />
-                  <div className="cosmic-orb cosmic-orb-y2" />
-                  <div className="cosmic-orb cosmic-orb-y3" />
-                  <div className="cosmic-orb cosmic-orb-w1" />
-                  <div className="cosmic-orb cosmic-orb-w2" />
-                  <div className="cosmic-grid-overlay" />
-                </>
+                <div className="absolute inset-0" style={{ zIndex: 0 }}>
+                  <Galaxy
+                    mouseRepulsion
+                    mouseInteraction
+                    density={1}
+                    glowIntensity={0.3}
+                    saturation={0}
+                    hueShift={140}
+                    twinkleIntensity={0.3}
+                    rotationSpeed={0.1}
+                    repulsionStrength={2}
+                    autoCenterRepulsion={0}
+                    starSpeed={0.5}
+                    speed={1}
+                    transparent={false}
+                  />
+                </div>
               ) : (
                 <div className="absolute inset-0" style={{ zIndex: 0 }}>
                   <Grainient
