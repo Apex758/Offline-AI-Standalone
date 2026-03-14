@@ -35,8 +35,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     status: ''
   });
 
-  const teacherId = localStorage.getItem('user') 
-    ? JSON.parse(localStorage.getItem('user')!).username 
+  const teacherId = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user')!).username
     : 'default_teacher';
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       }
 
       const gradeNode = gradeMap.get(milestone.grade)!;
-      
+
       // Get or create subject node
       let subjectNode = gradeNode.children?.find(n => n.label === milestone.subject);
       if (!subjectNode) {
@@ -162,7 +162,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   }, [milestones]);
 
   // Get unique values for filters
-  const uniqueGrades = useMemo(() => 
+  const uniqueGrades = useMemo(() =>
     [...new Set(milestones.map(m => m.grade))].sort(),
     [milestones]
   );
@@ -201,19 +201,19 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle2 className="w-5 h-5 text-green-600" />;
-      case 'in_progress': return <PlayCircle className="w-5 h-5 text-blue-600" />;
-      case 'skipped': return <XCircle className="w-5 h-5 text-gray-400" />;
-      default: return <Circle className="w-5 h-5 text-gray-300" />;
+      case 'completed': return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
+      case 'in_progress': return <PlayCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+      case 'skipped': return <XCircle className="w-5 h-5 text-gray-400 dark:text-gray-500" />;
+      default: return <Circle className="w-5 h-5 text-gray-300 dark:text-gray-600" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-700 border-green-300';
-      case 'in_progress': return 'bg-blue-100 text-blue-700 border-blue-300';
-      case 'skipped': return 'bg-gray-100 text-gray-600 border-gray-300';
-      default: return 'bg-gray-50 text-gray-500 border-gray-200';
+      case 'completed': return 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700';
+      case 'in_progress': return 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700';
+      case 'skipped': return 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600';
+      default: return 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800/30 dark:text-gray-400 dark:border-gray-600';
     }
   };
 
@@ -222,8 +222,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       key={milestone.id}
       className={`ml-8 p-3 rounded-lg border-2 transition-all ${
         selectedMilestone?.id === milestone.id
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-200 hover:border-blue-300 bg-white'
+          ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+          : 'border-theme hover:border-blue-300 dark:hover:border-blue-600 bg-theme-surface'
       }`}
       data-tutorial="milestone-item"
     >
@@ -231,12 +231,12 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         <div className="flex items-center space-x-3 flex-1">
           {getStatusIcon(milestone.status)}
           <div className="flex-1">
-            <h4 className="font-semibold text-gray-900">{milestone.topic_title}</h4>
+            <h4 className="font-semibold text-theme-title">{milestone.topic_title}</h4>
             {milestone.notes && (
-              <p className="text-sm text-gray-600 mt-1">{milestone.notes}</p>
+              <p className="text-sm text-theme-muted mt-1">{milestone.notes}</p>
             )}
             {milestone.due_date && (
-              <div className="flex items-center space-x-1 mt-1 text-xs text-gray-500">
+              <div className="flex items-center space-x-1 mt-1 text-xs text-theme-hint">
                 <Calendar className="w-3 h-3" />
                 <span>Due: {format(parseISO(milestone.due_date), 'MMM d, yyyy')}</span>
               </div>
@@ -259,11 +259,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
           <button
             onClick={() => setSelectedMilestone(milestone)}
-            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
             title="Edit details"
             data-tutorial="edit-milestone"
           >
-            <Edit2 className="w-4 h-4 text-blue-600" />
+            <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </button>
         </div>
       </div>
@@ -277,30 +277,32 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     return (
       <div key={node.id} className="mb-2">
         <div
-          className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+          className="flex items-center space-x-2 p-3 rounded-lg hover:bg-theme-hover cursor-pointer transition-colors"
           onClick={() => hasChildren && toggleNode(node.id)}
           data-tutorial={node.type === 'grade' ? 'grade-node' : node.type === 'subject' ? 'subject-node' : 'strand-node'}
         >
           {hasChildren && (
-            isExpanded ? <ChevronDown className="w-5 h-5 text-gray-600" /> : <ChevronRight className="w-5 h-5 text-gray-600" />
+            isExpanded
+              ? <ChevronDown className="w-5 h-5 text-theme-muted" />
+              : <ChevronRight className="w-5 h-5 text-theme-muted" />
           )}
 
-          <BookOpen className="w-5 h-5 text-indigo-600" />
+          <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
 
-          <span className="font-semibold text-gray-900 flex-1">  {node.type === 'grade' ? `Grade ${node.label}` : node.label}</span>
+          <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? `Grade ${node.label}` : node.label}</span>
 
           {node.progress && (
             <div className="flex items-center space-x-2" data-tutorial="node-progress">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-theme-muted">
                 {node.progress.completed}/{node.progress.total}
               </div>
-              <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all"
+                  className="h-full bg-gradient-to-r from-green-400 to-green-600 dark:from-green-500 dark:to-green-400 transition-all"
                   style={{ width: `${node.progress.percentage}%` }}
                 />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-theme-label">
                 {node.progress.percentage}%
               </span>
             </div>
@@ -319,31 +321,31 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="h-full flex items-center justify-center bg-theme-secondary">
         <div className="text-center">
           <HeartbeatLoader className="w-12 h-12 mx-auto mb-4" />
-          <p className="text-gray-600">Loading curriculum tracker...</p>
+          <p className="text-theme-muted">Loading curriculum tracker...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-theme-secondary">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4" data-tutorial="curriculum-tracker-header">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white px-6 py-4" data-tutorial="curriculum-tracker-header">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Target className="w-8 h-8" />
             <div>
               <h1 className="text-2xl font-bold">Curriculum Tracker</h1>
-              <p className="text-indigo-100 text-sm">Track your progress through the curriculum</p>
+              <p className="text-indigo-100 dark:text-indigo-200 text-sm">Track your progress through the curriculum</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2" data-tutorial="overall-progress">
-              <div className="text-sm text-indigo-100">Overall Progress</div>
+              <div className="text-sm text-indigo-100 dark:text-indigo-200">Overall Progress</div>
               <div className="text-2xl font-bold">
                 {milestones.length > 0
                   ? Math.round((milestones.filter(m => m.status === 'completed').length / milestones.length) * 100)
@@ -355,14 +357,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4" data-tutorial="filters-section">
+      <div className="bg-theme-surface border-b border-theme px-6 py-4" data-tutorial="filters-section">
         <div className="flex items-center space-x-4">
-          <Filter className="w-5 h-5 text-gray-600" />
+          <Filter className="w-5 h-5 text-theme-muted" />
 
           <select
             value={filters.grade}
             onChange={(e) => setFilters({ ...filters, grade: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-theme-surface text-theme-label"
             data-tutorial="grade-filter"
           >
             <option value="">All Grades</option>
@@ -374,7 +376,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <select
             value={filters.subject}
             onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-theme-surface text-theme-label"
             data-tutorial="subject-filter"
           >
             <option value="">All Subjects</option>
@@ -386,7 +388,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-theme-surface text-theme-label"
             data-tutorial="status-filter"
           >
             <option value="">All Statuses</option>
@@ -399,14 +401,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <div className="ml-auto flex items-center space-x-2">
             <button
               onClick={() => setFilters({ grade: '', subject: '', status: '' })}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+              className="px-4 py-2 bg-theme-tertiary hover:bg-theme-hover text-theme-label rounded-lg font-medium transition-colors"
               data-tutorial="clear-filters"
             >
               Clear Filters
             </button>
             <button
               onClick={() => setExpandedNodes(new Set())}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center space-x-2"
+              className="px-4 py-2 bg-theme-tertiary hover:bg-theme-hover text-theme-label rounded-lg font-medium transition-colors flex items-center space-x-2"
               title="Collapse All"
               data-tutorial="collapse-all"
             >
@@ -422,9 +424,9 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         <div className="max-w-6xl mx-auto rounded-xl p-6 widget-glass">
           {treeData.length === 0 ? (
             <div className="text-center py-16">
-              <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 font-semibold">No milestones found</p>
-              <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+              <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <p className="text-theme-muted font-semibold">No milestones found</p>
+              <p className="text-theme-hint text-sm mt-2">Try adjusting your filters</p>
             </div>
           ) : (
             <div className="space-y-2" data-tutorial="curriculum-tree">
@@ -445,13 +447,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             className="rounded-2xl w-full max-w-2xl p-6 widget-glass"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-theme-title mb-4">
               {selectedMilestone.topic_title}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme-label mb-2">
                   Status
                 </label>
                 <select
@@ -459,7 +461,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   onChange={(e) => {
                     handleUpdateMilestone(selectedMilestone.id, { status: e.target.value as any });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-theme-surface text-theme-label"
                   data-tutorial="modal-status"
                 >
                   <option value="not_started">Not Started</option>
@@ -470,7 +472,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme-label mb-2">
                   Notes
                 </label>
                 <textarea
@@ -479,13 +481,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                     setSelectedMilestone({ ...selectedMilestone, notes: e.target.value });
                   }}
                   placeholder="Add notes about this milestone..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-32 resize-none"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 h-32 resize-none bg-theme-surface text-theme-label placeholder:text-theme-hint"
                   data-tutorial="modal-notes"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme-label mb-2">
                   Due Date
                 </label>
                 <input
@@ -494,7 +496,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   onChange={(e) => {
                     setSelectedMilestone({ ...selectedMilestone, due_date: e.target.value });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-theme-surface text-theme-label"
                   data-tutorial="modal-due-date"
                 />
               </div>
@@ -507,14 +509,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                       due_date: selectedMilestone.due_date
                     });
                   }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white py-3 rounded-lg font-semibold transition-colors"
                   data-tutorial="save-changes"
                 >
                   Save Changes
                 </button>
                 <button
                   onClick={() => setSelectedMilestone(null)}
-                  className="px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold transition-colors"
+                  className="px-6 bg-theme-tertiary hover:bg-theme-hover text-theme-label py-3 rounded-lg font-semibold transition-colors"
                   data-tutorial="cancel-edit"
                 >
                   Cancel
