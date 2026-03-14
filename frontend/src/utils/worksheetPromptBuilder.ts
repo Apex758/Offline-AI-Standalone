@@ -12,7 +12,6 @@ interface WorksheetFormData {
   worksheetTitle: string;
   includeImages: boolean;
   imageStyle: string;
-  imageMode: 'shared';
   imagePlacement: string;
 }
 
@@ -918,7 +917,6 @@ Generate EXACTLY ${questionCount} questions.
 IMAGE INSTRUCTIONS:
 - Include relevant images to enhance understanding
 - Image Style: ${formData.imageStyle}
-- Image Mode: ${formData.imageMode}
 - Image Placement: ${formData.imagePlacement}
 - Generate descriptive image prompts or placeholders where images should appear
 

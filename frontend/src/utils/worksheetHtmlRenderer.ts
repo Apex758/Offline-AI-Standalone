@@ -11,7 +11,6 @@ interface RenderOptions {
     worksheetTitle?: string;
     topic?: string;
     includeImages?: boolean;
-    imageMode?: string;
     imagePlacement?: string;
   };
   generatedImages?: string[];
@@ -229,8 +228,7 @@ function generateMultipleChoiceHTML(
   showAnswers: boolean
 ): string {
   const includeImages = formData.includeImages || false;
-  const imageMode = formData.imageMode || 'one-per-question';
-  
+
   return `
     <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.875rem;">
       <!-- Header -->
@@ -261,7 +259,7 @@ function generateMultipleChoiceHTML(
       </div>
 
       <!-- Shared Image -->
-      ${includeImages && imageMode === 'shared' && generatedImage ? `
+      ${includeImages && generatedImage ? `
         <div style="margin-bottom: 1.5rem; text-align: center;">
           <img src="${generatedImage}" alt="Generated worksheet image" style="width: 12rem; height: 8rem; object-fit: contain; border: 1px solid #d1d5db; border-radius: 0.25rem; display: block; margin: 0 auto;" />
         </div>
@@ -280,11 +278,6 @@ function generateMultipleChoiceHTML(
                   <p style="color: #1f2937; font-weight: 500; margin: 0 0 0.5rem 0;">
                     ${q.question}
                   </p>
-                  ${includeImages && imageMode === 'one-per-question' && generatedImage ? `
-                    <div style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
-                      <img src="${generatedImage}" alt="Question image" style="width: 8rem; height: 5rem; object-fit: contain; border: 1px solid #d1d5db; border-radius: 0.25rem;" />
-                    </div>
-                  ` : ''}
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
                    ${(q.options || []).map((option, optIndex) => {
@@ -508,9 +501,8 @@ function generateMatchingHTML(
   `;
 }
 
-function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null): string {
+function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null, showAnswers: boolean): string {
   const includeImages = formData.includeImages || false;
-  const imageMode = formData.imageMode || 'one-per-question';
   const questionType = formData.questionType || '';
   
   return `
@@ -553,7 +545,7 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
       </div>
 
       <!-- Shared Image -->
-      ${includeImages && imageMode === 'shared' && generatedImage ? `
+      ${includeImages && generatedImage ? `
         <div style="margin-bottom: 1.5rem; display: flex; justify-content: center;">
           <img src="${generatedImage}" alt="Worksheet illustration" style="max-width: 28rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" />
         </div>
@@ -569,11 +561,6 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
                 <p style="color: #1f2937; line-height: 1.6; margin: 0 0 0.5rem 0;">
                   ${q.question}
                 </p>
-                ${includeImages && imageMode === 'one-per-question' && i === 0 && generatedImage ? `
-                  <div style="margin-top: 0.75rem; margin-bottom: 0.5rem;">
-                    <img src="${generatedImage}" alt="Question illustration" style="max-width: 20rem; border-radius: 0.25rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);" />
-                  </div>
-                ` : ''}
               </div>
             </div>
           </div>

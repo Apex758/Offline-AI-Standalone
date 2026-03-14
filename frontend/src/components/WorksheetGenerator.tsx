@@ -62,7 +62,6 @@ interface WorksheetFormData {
   worksheetTitle: string;
   includeImages: boolean;
   imageStyle: string;
-  imageMode: 'shared';
   imagePlacement: string;
 }
 
@@ -152,7 +151,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     worksheetTitle: '',
     includeImages: false,
     imageStyle: 'cartoon_3d',
-    imageMode: 'shared',
     imagePlacement: 'large-centered'
   });
 
@@ -271,11 +269,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [assetId, setAssetId] = useState<string | null>(null);
   const [styleProfiles, setStyleProfiles] = useState<Record<string, StyleProfile>>({});
   const [loadingPresets, setLoadingPresets] = useState(false);
-
-  // Normalize image mode to the single supported option
-  useEffect(() => {
-    setFormData(prev => prev.imageMode === 'shared' ? prev : { ...prev, imageMode: 'shared' });
-  }, []);
 
   // Auto-select template when only one compatible option exists
   useEffect(() => {
@@ -750,7 +743,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || selectedTemplate.name,
       includeImages: formData.includeImages,
-      imageMode: 'shared' as const,
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
       showAnswers: viewMode === 'teacher'
@@ -797,7 +789,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       questionType: formData.questionType,
       worksheetTitle: formData.worksheetTitle || 'Worksheet',
       includeImages: formData.includeImages,
-      imageMode: 'shared' as const,
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
       showAnswers: viewMode === 'teacher',
@@ -1431,37 +1422,22 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
 
             {/* Template Options */}
-            {formData.selectedTemplate && formData.includeImages && (
+            {formData.selectedTemplate === 'comprehension' && formData.includeImages && (
               <div className="space-y-4" data-tutorial="worksheet-generator-template-options">
                 <h3 className="text-lg font-semibold text-theme-heading">Template-Specific Options</h3>
-                {formData.selectedTemplate === 'multiple-choice' || formData.selectedTemplate === 'list-based' ? (
-                  <div>
-                    <label className="block text-sm font-medium text-theme-label mb-2">
-                      Image Mode
-                    </label>
-                    <select
-                      value={formData.imageMode}
-                      onChange={(e) => handleInputChange('imageMode', e.target.value)}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="shared">One shared image for the entire worksheet</option>
-                    </select>
-                  </div>
-                ) : formData.selectedTemplate === 'comprehension' ? (
-                  <div>
-                    <label className="block text-sm font-medium text-theme-label mb-2">
-                      Image Placement
-                    </label>
-                    <select
-                      value={formData.imagePlacement}
-                      onChange={(e) => handleInputChange('imagePlacement', e.target.value)}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="large-centered">Large centered image above or within the passage</option>
-                      <option value="small-corner">Small image in a corner with text wrapping around it</option>
-                    </select>
-                  </div>
-                ) : null}
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">
+                    Image Placement
+                  </label>
+                  <select
+                    value={formData.imagePlacement}
+                    onChange={(e) => handleInputChange('imagePlacement', e.target.value)}
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="large-centered">Large centered image above or within the passage</option>
+                    <option value="small-corner">Small image in a corner with text wrapping around it</option>
+                  </select>
+                </div>
               </div>
             )}
           </div>
@@ -1754,7 +1730,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                        questionType={formData.questionType}
                        worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
                        includeImages={formData.includeImages}
-                       imageMode={formData.imageMode}
                        generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                        questions={parsedWorksheet.questions.map((q) => ({
                          id: q.id,
@@ -1804,7 +1779,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questionType={formData.questionType}
                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
                       includeImages={formData.includeImages}
-                      imageMode={formData.imageMode}
                       generatedImage={generatedImage}
                       questions={parsedWorksheet.questions}
                       wordBank={parsedWorksheet.wordBank}

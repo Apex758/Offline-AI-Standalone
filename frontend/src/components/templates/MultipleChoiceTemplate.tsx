@@ -9,7 +9,6 @@ interface MultipleChoiceTemplateProps {
   questionType?: string;
   worksheetTitle?: string;
   includeImages?: boolean;
-  imageMode?: 'shared';
   generatedImage?: string | null;
   questions?: Array<{
     question: string;
@@ -29,7 +28,6 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   questionType = 'Multiple Choice', // eslint-disable-line @typescript-eslint/no-unused-vars
   worksheetTitle,
   includeImages = false,
-  imageMode = 'shared',
   generatedImage = null,
   questions,
   showAnswers = false,
@@ -86,7 +84,7 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
       </div>
 
       {/* Shared Image */}
-      {includeImages && imageMode === 'shared' && (
+      {includeImages && (
         <div className="mb-6">
           {loading ? (
             <Skeleton className="w-48 h-32 mx-auto bg-gray-200" />

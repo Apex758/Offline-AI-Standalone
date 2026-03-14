@@ -1,6 +1,7 @@
 import io
 import csv
 import json
+import base64
 from typing import Any, Dict, List, Union
 from bs4 import BeautifulSoup
 from docx import Document
@@ -287,14 +288,39 @@ def export_to_docx_from_html(html: str, accent_color: str, form_data: dict) -> b
         content_div = soup.find('body')
     
     if content_div:
+        # Process images embedded as base64 data URIs
+        for img in content_div.find_all('img'):
+            src = img.get('src', '')
+            if src.startswith('data:image/'):
+                try:
+                    # Extract base64 data from data URI
+                    header, b64_data = src.split(',', 1)
+                    image_bytes = base64.b64decode(b64_data)
+                    image_stream = io.BytesIO(image_bytes)
+                    # Determine width from style if available
+                    style = img.get('style', '')
+                    width = Inches(3)  # default
+                    width_match = re.search(r'(?:width|max-width)\s*:\s*(\d+)rem', style)
+                    if width_match:
+                        rem_val = int(width_match.group(1))
+                        width = Inches(min(rem_val * 0.5, 5.5))  # cap at page width
+                    p = doc.add_paragraph()
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    run = p.add_run()
+                    run.add_picture(image_stream, width=width)
+                    doc.add_paragraph()  # spacing after image
+                except Exception as img_err:
+                    # If image fails, skip silently rather than breaking the export
+                    pass
+
         # Process each element
         for element in content_div.find_all(['h2', 'h3', 'div', 'p'], recursive=True):
             style = element.get('style', '')
             text = element.get_text(strip=True)
-            
+
             if not text:
                 continue
-            
+
             # Section headings (h2)
             if element.name == 'h2':
                 heading = doc.add_heading(text, level=1)

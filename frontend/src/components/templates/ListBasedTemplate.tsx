@@ -10,7 +10,6 @@ interface ListBasedTemplateProps {
   questionType: string;
   worksheetTitle: string;
   includeImages: boolean;
-  imageMode?: 'shared';
   imagePlacement?: string;
   generatedImage?: string | null;
   questions?: WorksheetQuestion[];
@@ -27,7 +26,6 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   questionType,
   worksheetTitle,
   includeImages,
-  imageMode,
   generatedImage,
   questions,
   wordBank,
@@ -108,7 +106,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
       </div>
 
       {/* Image (if shared mode) */}
-      {includeImages && imageMode === 'shared' && (
+      {includeImages && (
         <div className="mb-6 flex justify-center">
           {loading ? (
             <Skeleton className="max-w-md h-48 w-full bg-gray-200 rounded-lg" />
