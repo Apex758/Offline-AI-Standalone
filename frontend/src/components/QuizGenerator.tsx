@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles, FileText, Users, GraduationCap, ChevronDown } from 'lucide-react';
+import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles, FileText, Users, GraduationCap, ChevronDown, ClipboardCheck, BookOpen } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
+import QuizGrader from './QuizGrader';
 import axios from 'axios';
 import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
 import { buildQuizPrompt } from '../utils/quizPromptBuilder';
@@ -26,6 +27,22 @@ interface QuizHistory {
   formData: FormData;
   generatedQuiz: string;
   parsedQuiz?: ParsedQuiz;
+}
+
+interface LessonPlanHistoryItem {
+  id: string;
+  title: string;
+  timestamp: string;
+  formData: {
+    subject: string;
+    gradeLevel: string;
+    topic: string;
+    essentialOutcomes: string;
+    specificOutcomes: string;
+  };
+  parsedLesson?: {
+    learningObjectives: string[];
+  };
 }
 
 interface FormData {
@@ -145,11 +162,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [showTutorial, setShowTutorial] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [quizHistories, setQuizHistories] = useState<QuizHistory[]>([]);
+  const [lessonPickerOpen, setLessonPickerOpen] = useState(false);
+  const [lessonPlanOptions, setLessonPlanOptions] = useState<LessonPlanHistoryItem[]>([]);
+  const [lessonPickerLoading, setLessonPickerLoading] = useState(false);
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
+  const [isGrading, setIsGrading] = useState(false);
   const [parsedQuiz, setParsedQuiz] = useState<ParsedQuiz | null>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.parsedQuiz && typeof savedData.parsedQuiz === 'object') {
@@ -301,6 +322,39 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     } catch (error) {
       console.error('Failed to load quiz histories:', error);
     }
+  };
+
+  const loadLessonPlans = async () => {
+    setLessonPickerLoading(true);
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-plan-history');
+      setLessonPlanOptions(response.data);
+    } catch (error) {
+      console.error('Failed to load lesson plans:', error);
+    } finally {
+      setLessonPickerLoading(false);
+    }
+  };
+
+  const mapLessonPlanToQuizForm = (lesson: LessonPlanHistoryItem) => {
+    let learningOutcomes = '';
+    if (lesson.parsedLesson?.learningObjectives?.length) {
+      learningOutcomes = lesson.parsedLesson.learningObjectives.join('\n');
+    } else {
+      const parts = [lesson.formData.specificOutcomes, lesson.formData.essentialOutcomes]
+        .filter(Boolean);
+      learningOutcomes = parts.join('\n\n');
+    }
+    return {
+      subject: lesson.formData.subject || '',
+      gradeLevel: lesson.formData.gradeLevel || '',
+      learningOutcomes,
+    };
+  };
+
+  const handleSelectLessonPlan = (lesson: LessonPlanHistoryItem) => {
+    setFormData(prev => ({ ...prev, ...mapLessonPlanToQuizForm(lesson) }));
+    setLessonPickerOpen(false);
   };
 
   const saveQuiz = async () => {
@@ -458,7 +512,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="quiz-generator-welcome">
       <div className="flex-1 flex flex-col tab-content-bg">
-        {(generatedQuiz || streamingQuiz || isEditing) ? (
+        {isGrading ? (
+          // Grade Quiz — always available, even before generating
+          <QuizGrader
+            quiz={parsedQuiz}
+            onClose={() => setIsGrading(false)}
+          />
+        ) : (generatedQuiz || streamingQuiz || isEditing) ? (
           <>
             {isEditing && parsedQuiz ? (
               // Show Structured Editor
@@ -479,6 +539,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </div>
                   {!loading && (
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsGrading(true)}
+                        className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                        title="Grade this quiz"
+                      >
+                        <ClipboardCheck className="w-4 h-4 mr-2" />
+                        Grade Quiz
+                      </button>
                       <button
                         onClick={enableEditing}
                         disabled={!parsedQuiz}
@@ -617,6 +685,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           clearStreaming(tabId, ENDPOINT);
                           setParsedQuiz(null);
                           setIsEditing(false);
+                          setIsGrading(false);
                         }}
                         className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -873,14 +942,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   <h2 className="text-xl font-semibold text-theme-heading">Quiz Configuration</h2>
                   <p className="text-sm text-theme-hint">Configure your quiz parameters</p>
                 </div>
-                <button
-                  onClick={() => setHistoryOpen(!historyOpen)}
-                  className="p-2 rounded-lg hover:bg-theme-hover transition"
-                  title="Quiz History"
-                  data-tutorial="quiz-generator-history"
-                >
-                  <History className="w-5 h-5 text-theme-muted" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setLessonPickerOpen(true); loadLessonPlans(); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-sm font-medium"
+                    style={{ color: tabColor }}
+                    title="Pre-fill from a saved lesson plan"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    From Lesson Plan
+                  </button>
+                  <button
+                    onClick={() => setHistoryOpen(!historyOpen)}
+                    className="p-2 rounded-lg hover:bg-theme-hover transition"
+                    title="Quiz History"
+                    data-tutorial="quiz-generator-history"
+                  >
+                    <History className="w-5 h-5 text-theme-muted" />
+                  </button>
+                </div>
               </div>
 
             <div className="flex-1 overflow-y-auto p-6">
@@ -1023,6 +1103,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   Clear Form
                 </button>
                 <button
+                  onClick={() => setIsGrading(true)}
+                  className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                  title="Grade an existing quiz by uploading teacher and student files"
+                >
+                  <ClipboardCheck className="w-4 h-4 mr-2" />
+                  Grade Quiz
+                </button>
+                <button
                   onClick={generateQuiz}
                   disabled={!validateForm() || loading}
                   className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
@@ -1118,6 +1206,76 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           if (parsed) setParsedQuiz(parsed);
         }}
       />
+
+      {/* Lesson Plan Picker Modal */}
+      {lessonPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-theme-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-[80vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-theme">
+              <div>
+                <h3 className="text-lg font-semibold text-theme-heading">Generate from Lesson Plan</h3>
+                <p className="text-sm text-theme-hint mt-0.5">Select a saved lesson plan to pre-fill the quiz form</p>
+              </div>
+              <button onClick={() => setLessonPickerOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-theme-hover transition">
+                <X className="w-5 h-5 text-theme-muted" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {lessonPickerLoading ? (
+                <div className="flex items-center justify-center py-12 text-theme-hint">
+                  <Loader2 className="w-5 h-5 animate-spin mr-3" />
+                  Loading lesson plans...
+                </div>
+              ) : lessonPlanOptions.length === 0 ? (
+                <div className="text-center py-12">
+                  <BookOpen className="w-12 h-12 mx-auto mb-3 text-theme-hint opacity-40" />
+                  <p className="font-medium text-theme-heading">No saved lesson plans found</p>
+                  <p className="text-sm text-theme-hint mt-1">Create and save a lesson plan first, then return here.</p>
+                </div>
+              ) : (
+                lessonPlanOptions.map(lesson => (
+                  <button
+                    key={lesson.id}
+                    onClick={() => handleSelectLessonPlan(lesson)}
+                    className="w-full text-left p-3 rounded-lg border border-theme hover:bg-theme-subtle transition group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-theme-heading text-sm truncate">{lesson.title}</p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-theme-hint flex-wrap">
+                          {lesson.formData.subject && <span>{lesson.formData.subject}</span>}
+                          {lesson.formData.gradeLevel && <span>Grade {lesson.formData.gradeLevel}</span>}
+                          {lesson.formData.topic && <span className="truncate">{lesson.formData.topic}</span>}
+                        </div>
+                        <p className="text-xs text-theme-hint mt-1">
+                          {new Date(lesson.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span
+                        className="text-xs px-2 py-1 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition font-medium whitespace-nowrap"
+                        style={{ backgroundColor: `${tabColor}20`, color: tabColor }}
+                      >
+                        Use this
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-theme">
+              <p className="text-xs text-theme-hint text-center">
+                Subject, grade, and learning outcomes will be filled in. You can still adjust question types and other settings.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <TutorialOverlay
         steps={tutorials[TUTORIAL_IDS.QUIZ_GENERATOR].steps}

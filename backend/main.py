@@ -40,6 +40,7 @@ from config import (
 )
 from pathlib import Path
 from routes import milestones
+import student_service
 from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
 from llama_inference import run_llama_inference
@@ -205,6 +206,13 @@ async def lifespan(app):
         logger.info("Milestone database initialized")
     except Exception as e:
         logger.error(f"Failed to initialize milestone database: {e}")
+
+    # Initialize Student DB
+    try:
+        student_service.init_db()
+        logger.info("Student database initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize student database: {e}")
     
     logger.info("Server ready!")
     yield
@@ -296,6 +304,24 @@ class TitleGenerateResponse(BaseModel):
     generated: bool
     fallback: bool
     generationTime: float
+
+class StudentCreate(BaseModel):
+    full_name: str
+    date_of_birth: Optional[str] = None
+    class_name: Optional[str] = None
+    grade_level: Optional[str] = None
+    gender: Optional[str] = None
+    contact_info: Optional[str] = None
+
+class QuizGradeCreate(BaseModel):
+    student_id: str
+    quiz_title: str
+    subject: str
+    score: float
+    total_points: float
+    percentage: float
+    letter_grade: str
+    answers: Optional[dict] = {}
 
 
 # (Removed redundant OPTIONS handler; CORS middleware handles preflight)
@@ -1692,6 +1718,383 @@ async def delete_quiz_history(quiz_id: str):
     histories = [h for h in histories if h.get("id") != quiz_id]
     save_json_data("quiz_history.json", histories)
     return {"success": True}
+
+
+# ── Student Management ────────────────────────────────────────────────────────
+
+@app.get("/api/students")
+async def get_students(class_name: Optional[str] = None):
+    return student_service.list_students(class_name)
+
+@app.post("/api/students")
+async def add_student(student: StudentCreate):
+    return student_service.create_student(student.model_dump())
+
+@app.get("/api/students/{student_id}")
+async def get_student_profile(student_id: str):
+    s = student_service.get_student(student_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return s
+
+@app.put("/api/students/{student_id}")
+async def update_student_profile(student_id: str, student: StudentCreate):
+    s = student_service.update_student(student_id, student.model_dump())
+    if not s:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return s
+
+@app.delete("/api/students/{student_id}")
+async def remove_student(student_id: str):
+    student_service.delete_student(student_id)
+    return {"success": True}
+
+@app.get("/api/classes")
+async def get_classes():
+    return student_service.list_classes()
+
+@app.post("/api/quiz-grades")
+async def add_quiz_grade(grade: QuizGradeCreate):
+    return student_service.save_quiz_grade(grade.model_dump())
+
+@app.get("/api/quiz-grades/student/{student_id}")
+async def get_grades_for_student(student_id: str):
+    return student_service.get_student_grades(student_id)
+
+
+# ── Bulk Auto-Grading ─────────────────────────────────────────────────────────
+
+def _extract_text_from_file(content: bytes, filename: str, content_type: str) -> tuple[str, str | None]:
+    """
+    Extract plain text from an uploaded file.
+    Returns (extracted_text, error_message).
+    """
+    fname_lower = filename.lower()
+
+    # HTML
+    if fname_lower.endswith(('.html', '.htm')) or 'html' in content_type:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(content.decode('utf-8', errors='replace'), 'html.parser')
+        # Remove script/style noise
+        for tag in soup(['script', 'style']):
+            tag.decompose()
+        return soup.get_text(separator='\n', strip=True), None
+
+    # PDF
+    if fname_lower.endswith('.pdf') or 'pdf' in content_type:
+        try:
+            import io as _io
+            from pypdf import PdfReader
+            reader = PdfReader(_io.BytesIO(content))
+            pages = [page.extract_text() or '' for page in reader.pages]
+            text = '\n'.join(pages).strip()
+            if not text:
+                return '', 'PDF has no extractable text (may be a scanned image).'
+            return text, None
+        except ImportError:
+            return '', 'PDF support requires pypdf: pip install pypdf'
+        except Exception as e:
+            return '', f'PDF read error: {e}'
+
+    # Plain text / markdown
+    if fname_lower.endswith(('.txt', '.md')) or 'text' in content_type:
+        return content.decode('utf-8', errors='replace'), None
+
+    # Image — no reliable OCR without tesseract
+    if fname_lower.endswith(('.jpg', '.jpeg', '.png', '.webp', '.bmp')):
+        return '', 'Image files cannot be read automatically. Please use HTML or PDF exports from the app.'
+
+    return content.decode('utf-8', errors='replace'), None
+
+
+def _build_extraction_prompt(quiz_questions: list, text: str) -> str:
+    """Build LLM prompt that extracts student answers from quiz text."""
+    question_hints = []
+    for i, q in enumerate(quiz_questions, 1):
+        qtype = q.get('type', '')
+        if qtype == 'multiple-choice':
+            options = q.get('options', [])
+            letters = ', '.join(chr(65 + j) for j in range(len(options)))
+            question_hints.append(f"Q{i} (Multiple Choice – answer is one of: {letters})")
+        elif qtype == 'true-false':
+            question_hints.append(f"Q{i} (True/False – answer is exactly True or False)")
+        elif qtype == 'fill-blank':
+            question_hints.append(f"Q{i} (Fill in the blank – answer is a word or phrase)")
+        # open-ended: skip
+
+    hints_block = '\n'.join(question_hints)
+
+    return f"""You are a quiz grading assistant. A student's completed quiz is shown below.
+
+Quiz question types to look for:
+{hints_block}
+
+Rules:
+- For Multiple Choice, return only the letter (A, B, C, or D).
+- For True/False, return exactly "True" or "False".
+- For Fill in the blank, return the word or phrase the student wrote.
+- If a question has no visible answer, return null.
+- If a student name is visible on the paper, extract it; otherwise return null.
+
+Student quiz text:
+\"\"\"
+{text[:3000]}
+\"\"\"
+
+Return ONLY valid JSON in this exact structure, no explanation:
+{{
+  "student_name": null,
+  "answers": {{
+    "1": "A",
+    "2": "True",
+    "3": "photosynthesis"
+  }}
+}}"""
+
+
+def _grade_extracted_answers(quiz_questions: list, extracted_answers: dict) -> dict:
+    """Grade extracted student answers against the answer key."""
+    results = []
+    total = 0
+    earned = 0
+
+    for i, q in enumerate(quiz_questions, 1):
+        qtype = q.get('type', '')
+        if qtype == 'open-ended':
+            continue  # skip
+
+        pts = q.get('points', 1) or 1
+        total += pts
+        student_raw = extracted_answers.get(str(i))
+
+        correct = False
+        if student_raw is not None:
+            correct_answer = q.get('correctAnswer')
+            if qtype == 'multiple-choice':
+                try:
+                    letter_index = ord(str(student_raw).strip().upper()) - 65
+                    correct = letter_index == int(correct_answer)
+                except Exception:
+                    correct = False
+            elif qtype == 'true-false':
+                correct = str(student_raw).strip().lower() == str(correct_answer).strip().lower()
+            elif qtype == 'fill-blank':
+                student_norm = str(student_raw).strip().lower()
+                accepted = [a.strip().lower() for a in str(correct_answer or '').split(',')]
+                correct = student_norm in accepted
+
+        points_earned = pts if correct else 0
+        earned += points_earned
+        results.append({
+            'question_number': i,
+            'question': q.get('question', ''),
+            'type': qtype,
+            'student_answer': student_raw,
+            'correct_answer': q.get('correctAnswer'),
+            'correct': correct,
+            'points_earned': points_earned,
+            'points_possible': pts,
+        })
+
+    percentage = round((earned / total * 100), 1) if total > 0 else 0
+    return {
+        'results': results,
+        'score': earned,
+        'total_points': total,
+        'percentage': percentage,
+        'letter_grade': student_service.get_letter_grade(percentage),
+    }
+
+
+@app.post("/api/parse-teacher-quiz")
+async def parse_teacher_quiz(teacher_file: UploadFile = File(...)):
+    """
+    Parse a teacher version quiz file (HTML or PDF) and extract the answer key
+    as a ParsedQuiz-compatible JSON structure.
+    """
+    content = await teacher_file.read()
+    filename = teacher_file.filename or ''
+    content_type = teacher_file.content_type or ''
+
+    text, extract_error = _extract_text_from_file(content, filename, content_type)
+    if extract_error:
+        raise HTTPException(status_code=422, detail=extract_error)
+    if not text.strip():
+        raise HTTPException(status_code=422, detail="No text could be extracted from this file.")
+
+    prompt = f"""You are a quiz parser. Extract all questions and answers from this teacher quiz.
+
+Return ONLY valid JSON in this exact format (no markdown, no explanation):
+{{
+  "metadata": {{
+    "title": "Quiz Title",
+    "subject": "Subject",
+    "gradeLevel": "5",
+    "totalQuestions": 5
+  }},
+  "questions": [
+    {{
+      "id": "q_1",
+      "type": "multiple-choice",
+      "question": "Question text here",
+      "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
+      "correctAnswer": 0,
+      "points": 1
+    }},
+    {{
+      "id": "q_2",
+      "type": "true-false",
+      "question": "Statement here",
+      "options": ["True", "False"],
+      "correctAnswer": "true",
+      "points": 1
+    }},
+    {{
+      "id": "q_3",
+      "type": "fill-blank",
+      "question": "The ___ is the powerhouse of the cell.",
+      "correctAnswer": "mitochondria",
+      "points": 1
+    }}
+  ]
+}}
+
+Rules:
+- For multiple-choice: correctAnswer is a 0-based index (0=A, 1=B, 2=C, 3=D)
+- For true-false: correctAnswer is "true" or "false" (lowercase string)
+- For fill-blank: correctAnswer is the expected word or phrase
+- Skip open-ended questions entirely
+- Extract the subject and grade level from the quiz header if present
+
+Quiz text:
+\"\"\"
+{text[:4000]}
+\"\"\"
+"""
+
+    from inference_factory import get_inference_instance
+    inference = get_inference_instance()
+    llm_result = await inference.generate(
+        tool_name='parse_teacher_quiz',
+        input_data=text[:200],
+        prompt_template=prompt,
+        max_tokens=2000,
+        temperature=0.1,
+        stop=['```'],
+    )
+
+    raw = llm_result.get('result') or ''
+
+    import re as _re
+    json_match = _re.search(r'\{[\s\S]*\}', raw)
+    if not json_match:
+        raise HTTPException(status_code=422, detail="Could not extract quiz structure. Make sure the file is a teacher version with answers marked.")
+
+    try:
+        parsed = json.loads(json_match.group())
+        # Ensure required structure
+        if 'questions' not in parsed or not isinstance(parsed['questions'], list):
+            raise ValueError("Missing questions array")
+        if 'metadata' not in parsed:
+            parsed['metadata'] = {'title': 'Uploaded Quiz', 'subject': '', 'gradeLevel': '', 'totalQuestions': len(parsed['questions'])}
+        return parsed
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Parsed output was not valid quiz JSON: {e}")
+
+
+@app.post("/api/bulk-grade")
+async def bulk_grade(
+    quiz_json: str = Form(...),
+    student_files: List[UploadFile] = File(...),
+):
+    """
+    Accept a quiz answer key (as JSON) and multiple student files.
+    Extract student answers from each file using LLM, then auto-grade.
+    """
+    try:
+        quiz_data = json.loads(quiz_json)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid quiz_json")
+
+    quiz_questions = quiz_data.get('questions', [])
+    if not quiz_questions:
+        raise HTTPException(status_code=400, detail="Quiz has no questions")
+
+    from inference_factory import get_inference_instance
+
+    graded_results = []
+
+    for upload in student_files:
+        file_result = {
+            'file_name': upload.filename,
+            'student_name': None,
+            'error': None,
+            'score': 0,
+            'total_points': 0,
+            'percentage': 0,
+            'letter_grade': 'F',
+            'details': [],
+        }
+
+        try:
+            content = await upload.read()
+            content_type = upload.content_type or ''
+
+            text, extract_error = _extract_text_from_file(content, upload.filename or '', content_type)
+            if extract_error:
+                file_result['error'] = extract_error
+                graded_results.append(file_result)
+                continue
+
+            if not text.strip():
+                file_result['error'] = 'No text could be extracted from this file.'
+                graded_results.append(file_result)
+                continue
+
+            # Call LLM to extract student answers
+            prompt = _build_extraction_prompt(quiz_questions, text)
+            inference = get_inference_instance()
+            llm_result = await inference.generate(
+                tool_name='bulk_grade_extract',
+                input_data=text[:500],
+                prompt_template=prompt,
+                max_tokens=600,
+                temperature=0.1,
+                stop=['```', '\n\n\n'],
+            )
+
+            raw_output = llm_result.get('result') or ''
+
+            # Parse JSON from LLM output (it may include markdown fences)
+            json_match = None
+            import re as _re
+            json_match = _re.search(r'\{[\s\S]*\}', raw_output)
+            if not json_match:
+                file_result['error'] = 'LLM could not extract answers from this file.'
+                graded_results.append(file_result)
+                continue
+
+            extracted = json.loads(json_match.group())
+            student_name = extracted.get('student_name')
+            extracted_answers = extracted.get('answers', {})
+
+            grading = _grade_extracted_answers(quiz_questions, extracted_answers)
+
+            file_result.update({
+                'student_name': student_name,
+                'score': grading['score'],
+                'total_points': grading['total_points'],
+                'percentage': grading['percentage'],
+                'letter_grade': grading['letter_grade'],
+                'details': grading['results'],
+            })
+
+        except Exception as e:
+            file_result['error'] = f'Processing error: {str(e)}'
+
+        graded_results.append(file_result)
+
+    return graded_results
 
 
 @app.get("/api/rubric-history")

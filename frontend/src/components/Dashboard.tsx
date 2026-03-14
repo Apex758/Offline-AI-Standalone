@@ -39,6 +39,7 @@ import Settings from './Settings';
 import CurriculumTracker from './CurriculumTracker';
 import WorksheetGenerator from './WorksheetGenerator';
 import ImageStudio from './ImageStudio';
+import ClassManagement from './ClassManagement';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -108,6 +109,14 @@ const tools: Tool[] = [
     icon: 'FileText',
     type: 'rubric-generator',
     description: 'Generate grading rubrics',
+    group: 'tools'
+  },
+  {
+    id: 'class-management',
+    name: 'Class Management',
+    icon: 'School',
+    type: 'class-management',
+    description: 'Manage students, classes, and quiz grades',
     group: 'tools'
   },
   // Lesson Planner Group
@@ -1037,6 +1046,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'settings':
         return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'class-management':
+        return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       default:
         return null;
     }
@@ -1856,7 +1867,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               const totalGroups = Object.entries(groupedTabs).length;
               const baseZIndex = (totalGroups - groupIndex) * 10;  // Left = higher z-index
               const activeInGroup = groupTabs.find(t => t.id === activeTabId);
-              const colors = tabColors[type] || tabColors['split'];
+              const colors = tabColors[type] || tabColors['split'] || { border: '#6b7280', bg: '#6b7280', activeBg: '#4b5563' };
               
               if (groupTabs.length === 1) {
                 const tab = groupTabs[0];
