@@ -5,6 +5,8 @@ import Dashboard from './components/Dashboard';
 import { User } from './types';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 
 function AppContent() {
@@ -63,9 +65,12 @@ function AppContent() {
 function App() {
   return (
     <SettingsProvider>
-      <WebSocketProvider>
-        <AppContent />
-      </WebSocketProvider>
+      <NotificationProvider>
+        <WebSocketProvider>
+          <AppContent />
+          <ToastContainer />
+        </WebSocketProvider>
+      </NotificationProvider>
     </SettingsProvider>
   );
 }

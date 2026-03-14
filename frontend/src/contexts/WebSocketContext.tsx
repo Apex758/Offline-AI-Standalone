@@ -1,4 +1,15 @@
 import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
+import { useNotification } from './NotificationContext';
+
+const TOOL_NAMES: Record<string, string> = {
+  '/ws/quiz': 'Quiz',
+  '/ws/rubric': 'Rubric',
+  '/ws/lesson-plan': 'Lesson Plan',
+  '/ws/kindergarten': 'Kindergarten Plan',
+  '/ws/multigrade': 'Multigrade Plan',
+  '/ws/cross-curricular': 'Cross-Curricular Plan',
+  '/ws/worksheet': 'Worksheet',
+};
 
 interface WebSocketConnection {
   ws: WebSocket;
@@ -26,6 +37,9 @@ const getConnectionKey = (tabId: string, endpoint: string): string => {
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const connectionsRef = useRef<Map<string, WebSocketConnection>>(new Map());
   const [, forceUpdate] = useState({});
+  const { notify } = useNotification();
+  const notifyRef = useRef(notify);
+  notifyRef.current = notify;
 
   // ✅ Debounce re-renders to avoid render storm
   const updateTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -96,11 +110,15 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           }
           conn.listeners.forEach(listener => listener());
           forceUpdate({});
+          const toolName = TOOL_NAMES[endpoint];
+          if (toolName) notifyRef.current(`${toolName} generated!`);
         } else if (data.type === 'error') {
           console.error(`[WebSocket ${key}] Error:`, data.message);
           conn.isStreaming = false;
           conn.listeners.forEach(listener => listener());
           forceUpdate({});
+          const toolName = TOOL_NAMES[endpoint];
+          if (toolName) notifyRef.current(`${toolName} generation failed`, 'error');
         }
       };
 

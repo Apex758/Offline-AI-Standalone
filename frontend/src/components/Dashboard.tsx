@@ -20,7 +20,8 @@ import {
   Settings as SettingsIcon,
   Target,
   FileSpreadsheet,
-  Palette
+  Palette,
+  Bell
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
@@ -46,6 +47,8 @@ import { generateColorVariants } from '../lib/utils';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useTutorials } from '../contexts/TutorialContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useNotification } from '../contexts/NotificationContext';
+import NotificationPanel from './NotificationPanel';
 import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
 
@@ -191,6 +194,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
   const { closeConnection } = useWebSocket();
+  const { unreadCount } = useNotification();
+  const [notifPanelOpen, setNotifPanelOpen] = useState(false);
 
   // Generate dynamic tab colors based on settings
   const tabColors = useMemo(() => {
@@ -2062,7 +2067,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             })}
           </div>
 
-          {/* Split Toggle and Close All Tabs Buttons on the right */}
+          {/* Split Toggle, Bell, and Close All Tabs Buttons on the right */}
           <div className="flex items-center gap-2" style={{ position: 'relative', zIndex: 50, paddingBottom: '4px' }}>
             {tabs.length >= 2 && (
               <button
@@ -2106,6 +2111,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <X className="w-5 h-5 text-red-400 group-hover:text-red-300" />
               </button>
             )}
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-white/20 flex-shrink-0" />
+
+            {/* Bell / Notification button */}
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setNotifPanelOpen(prev => !prev); }}
+                className="relative p-2 rounded-lg hover:bg-white/10 transition text-gray-300 flex-shrink-0"
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-400" />
+                )}
+              </button>
+              <NotificationPanel open={notifPanelOpen} onClose={() => setNotifPanelOpen(false)} />
+            </div>
           </div>
         </div>
 
