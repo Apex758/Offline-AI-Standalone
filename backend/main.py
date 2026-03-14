@@ -14,7 +14,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, File, UploadFile
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, File, UploadFile, Form
 from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from image_service import get_image_service
@@ -213,24 +213,20 @@ async def lifespan(app):
         logger.info("Student database initialized")
     except Exception as e:
         logger.error(f"Failed to initialize student database: {e}")
-    
-    logger.info("Server ready!")
-    yield
-    
+
     # Initialize Image Service
     try:
         from image_service import get_image_service
         image_service = get_image_service()
         logger.info("Image service initialized")
-        
-        # Start IOPaint on startup 
-        image_service.start_iopaint()  
+
+        # Start IOPaint on startup
+        image_service.start_iopaint()
     except Exception as e:
         logger.error(f"Failed to initialize image service: {e}")
-    
-    
+
     logger.info("Server ready!")
-    yield    
+    yield
 
     # Shutdown logic
     try:
@@ -670,21 +666,27 @@ class LessonPlanRequest(BaseModel):
 LESSON_PLAN_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "lesson_plan_history.json")
 
 class LessonPlanHistory(BaseModel):
+    model_config = {"extra": "allow"}
+
     id: str
     title: str
     timestamp: str
     formData: dict
-    generatedPlan: str
+    generatedPlan: Optional[str] = None
+    parsedLesson: Optional[dict] = None
+    curriculumMatches: Optional[list] = None
 
 @app.get("/api/lesson-plan-history")
 async def get_lesson_plan_history():
     """Get all lesson plan histories"""
     try:
         if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-            with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
+            with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
                 histories = json.load(f)
             histories.sort(key=lambda x: x['timestamp'], reverse=True)
             return histories
+        return []
+    except (json.JSONDecodeError, ValueError):
         return []
     except Exception as e:
         logger.error(f"Error loading lesson plan history: {e}")
@@ -696,8 +698,11 @@ async def save_lesson_plan_history(plan: LessonPlanHistory):
     try:
         histories = []
         if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-            with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
-                histories = json.load(f)
+            try:
+                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    histories = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                histories = []
         
         existing_index = None
         for i, h in enumerate(histories):
@@ -705,16 +710,18 @@ async def save_lesson_plan_history(plan: LessonPlanHistory):
                 existing_index = i
                 break
         
-        plan_dict = plan.dict()
+        plan_dict = plan.model_dump()
         
         if existing_index is not None:
             histories[existing_index] = plan_dict
         else:
             histories.append(plan_dict)
         
-        with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
-            json.dump(histories, f, indent=2)
-        
+        tmp_file = LESSON_PLAN_HISTORY_FILE + ".tmp"
+        with open(tmp_file, 'w', encoding='utf-8') as f:
+            json.dump(histories, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_file, LESSON_PLAN_HISTORY_FILE)
+
         return {"success": True, "id": plan.id}
     except Exception as e:
         logger.error(f"Error saving lesson plan history: {e}")
@@ -725,13 +732,18 @@ async def delete_lesson_plan_history(plan_id: str):
     """Delete a lesson plan history"""
     try:
         if os.path.exists(LESSON_PLAN_HISTORY_FILE):
-            with open(LESSON_PLAN_HISTORY_FILE, 'r') as f:
-                histories = json.load(f)
-            
+            try:
+                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    histories = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                histories = []
+
             histories = [h for h in histories if h['id'] != plan_id]
-            
-            with open(LESSON_PLAN_HISTORY_FILE, 'w') as f:
-                json.dump(histories, f, indent=2)
+
+            tmp_file = LESSON_PLAN_HISTORY_FILE + ".tmp"
+            with open(tmp_file, 'w', encoding='utf-8') as f:
+                json.dump(histories, f, indent=2, ensure_ascii=False)
+            os.replace(tmp_file, LESSON_PLAN_HISTORY_FILE)
             
             return {"success": True}
         

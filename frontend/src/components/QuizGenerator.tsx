@@ -43,6 +43,7 @@ interface LessonPlanHistoryItem {
   parsedLesson?: {
     learningObjectives: string[];
   };
+  generatedPlan?: string;
 }
 
 interface FormData {
@@ -165,6 +166,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [lessonPickerOpen, setLessonPickerOpen] = useState(false);
   const [lessonPlanOptions, setLessonPlanOptions] = useState<LessonPlanHistoryItem[]>([]);
   const [lessonPickerLoading, setLessonPickerLoading] = useState(false);
+  const [lockedLessonPlan, setLockedLessonPlan] = useState<LessonPlanHistoryItem | null>(null);
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
@@ -354,6 +356,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   const handleSelectLessonPlan = (lesson: LessonPlanHistoryItem) => {
     setFormData(prev => ({ ...prev, ...mapLessonPlanToQuizForm(lesson) }));
+    setLockedLessonPlan(lesson);
     setLessonPickerOpen(false);
   };
 
@@ -437,7 +440,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       return;
     }
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-    const prompt = buildQuizPrompt(formData);
+    const prompt = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan);
 
     try {
       ws.send(JSON.stringify({
@@ -457,6 +460,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     setParsedQuiz(null);
     setCurrentQuizId(null);
     setIsEditing(false);
+    setLockedLessonPlan(null);
     localStorage.removeItem(`quiz_state_${tabId}`);
   };
 
@@ -943,15 +947,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   <p className="text-sm text-theme-hint">Configure your quiz parameters</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => { setLessonPickerOpen(true); loadLessonPlans(); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-sm font-medium"
-                    style={{ color: tabColor }}
-                    title="Pre-fill from a saved lesson plan"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    From Lesson Plan
-                  </button>
+                  {lockedLessonPlan ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border" style={{ borderColor: `${tabColor}44`, color: tabColor, backgroundColor: `${tabColor}10` }}>
+                      <BookOpen className="w-4 h-4 shrink-0" />
+                      <span className="max-w-[160px] truncate">{lockedLessonPlan.title}</span>
+                      <button onClick={() => setLockedLessonPlan(null)} className="ml-1 hover:opacity-60 transition shrink-0" title="Remove lesson plan">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setLessonPickerOpen(true); loadLessonPlans(); }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-sm font-medium"
+                      style={{ color: tabColor }}
+                      title="Generate quiz from a saved lesson plan"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      From Lesson Plan
+                    </button>
+                  )}
                   <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-theme-hover transition"
@@ -1270,7 +1284,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             {/* Footer */}
             <div className="p-4 border-t border-theme">
               <p className="text-xs text-theme-hint text-center">
-                Subject, grade, and learning outcomes will be filled in. You can still adjust question types and other settings.
+                The full lesson plan will be sent to the AI. You can still adjust question types and other settings.
               </p>
             </div>
           </div>

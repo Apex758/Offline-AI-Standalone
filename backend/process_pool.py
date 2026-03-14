@@ -23,16 +23,23 @@ def get_executor() -> ProcessPoolExecutor:
 def submit_task(fn: Callable[..., Any], *args, **kwargs) -> Future:
     """
     Submit a function to the process pool.
- 
+
     Args:
         fn: The callable to execute.
         *args: Positional arguments for the callable.
         **kwargs: Keyword arguments for the callable.
- 
+
     Returns:
         concurrent.futures.Future: Future representing the execution.
     """
-    return get_executor().submit(fn, *args, **kwargs)
+    global _executor
+    try:
+        return get_executor().submit(fn, *args, **kwargs)
+    except RuntimeError:
+        # Executor was shut down without going through shutdown_executor()
+        # (e.g. due to a lifespan error). Reinitialize and retry once.
+        _executor = ProcessPoolExecutor(max_workers=DEFAULT_WORKERS)
+        return _executor.submit(fn, *args, **kwargs)
 
 def shutdown_executor():
     """

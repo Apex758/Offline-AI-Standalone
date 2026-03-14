@@ -179,7 +179,7 @@ Subject-Specific Guidance for Social Studies (Grades K-6):
   return guidance[subject] || '';
 }
 
-export function buildQuizPrompt(formData: QuizFormData): string {
+export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
 
   // Build format instructions based on selected question types
@@ -237,7 +237,32 @@ Explanation: [Additional context or rubric guidance]
   }
 
 
-  const prompt = `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students, specifically focusing on these learning outcomes: ${formData.learningOutcomes}.
+  const prompt = lessonPlanText
+    ? `Generate a ${formData.numberOfQuestions}-question quiz based on the following lesson plan. Questions must assess what was taught in the lesson.
+
+LESSON PLAN:
+${lessonPlanText}
+
+QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
+
+GRADE LEVEL REQUIREMENTS:
+- Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
+- Learning Objective Depth: ${gradeSpec.learningObjectiveDepth}
+- Reading Level: ${gradeSpec.readingLevel}
+- Vocabulary: ${gradeSpec.vocabulary}
+
+${formatInstructions}
+
+CRITICAL REQUIREMENTS:
+- Generate EXACTLY ${formData.numberOfQuestions} questions
+- Number questions from 1 to ${formData.numberOfQuestions}
+- Stop after Question ${formData.numberOfQuestions}
+- Base all questions directly on the lesson plan content above
+- Include correct answer and explanation for each question
+- Align questions to: ${formData.cognitiveLevels.join(', ')}
+
+Generate questions 1-${formData.numberOfQuestions} now:`
+    : `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students, specifically focusing on these learning outcomes: ${formData.learningOutcomes}.
 
 SUBJECT: ${formData.subject}
 
