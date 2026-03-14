@@ -1031,19 +1031,102 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <label className="block text-sm font-medium text-theme-label mb-2">
                       Visual Style
                     </label>
-                    <select
-                      value={selectedStyle}
-                      onChange={(e) => setSelectedStyle(e.target.value)}
-                      className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={loadingStyles}
-                    >
-                      <option value="cartoon_3d">3D Cartoon</option>
-                      <option value="line_art_bw">Black & White Line Art</option>
-                      <option value="illustrated_painting">Illustrated Painting</option>
-                      <option value="realistic">Photorealistic</option>
-                    </select>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      {[
+                        {
+                          id: 'cartoon_3d',
+                          label: '3D Cartoon',
+                          icon: (
+                            <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none">
+                              <circle cx="32" cy="28" r="18" fill="#7DD3FC" stroke="#0284C7" strokeWidth="2"/>
+                              <ellipse cx="32" cy="50" rx="18" ry="8" fill="#BAE6FD" stroke="#0284C7" strokeWidth="2"/>
+                              <circle cx="25" cy="25" r="4" fill="white"/>
+                              <circle cx="39" cy="25" r="4" fill="white"/>
+                              <circle cx="26" cy="26" r="2" fill="#1E40AF"/>
+                              <circle cx="40" cy="26" r="2" fill="#1E40AF"/>
+                              <path d="M26 35 Q32 40 38 35" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                            </svg>
+                          ),
+                          hint: 'Colorful & friendly, Pixar-like 3D look',
+                        },
+                        {
+                          id: 'line_art_bw',
+                          label: 'Line Art',
+                          icon: (
+                            <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none">
+                              <rect x="8" y="8" width="48" height="48" rx="4" fill="white" stroke="#374151" strokeWidth="2"/>
+                              <path d="M16 24 Q32 16 48 24" stroke="#111827" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                              <path d="M16 32 Q32 40 48 32" stroke="#111827" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                              <circle cx="32" cy="20" r="6" stroke="#111827" strokeWidth="2" fill="none"/>
+                              <line x1="16" y1="44" x2="48" y2="44" stroke="#111827" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                          ),
+                          hint: 'Clean B&W lines, coloring-book style',
+                        },
+                        {
+                          id: 'illustrated_painting',
+                          label: 'Painting',
+                          icon: (
+                            <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none">
+                              <rect x="8" y="8" width="48" height="48" rx="4" fill="#FEF9C3"/>
+                              <path d="M8 36 Q20 20 32 30 Q44 40 56 24" stroke="#D97706" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                              <circle cx="20" cy="18" r="7" fill="#FCA5A5" opacity="0.8"/>
+                              <circle cx="44" cy="46" r="7" fill="#6EE7B7" opacity="0.8"/>
+                              <circle cx="44" cy="18" r="5" fill="#93C5FD" opacity="0.8"/>
+                              <path d="M10 52 Q30 44 54 52" stroke="#92400E" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                            </svg>
+                          ),
+                          hint: 'Textured brushstrokes, illustrated look',
+                        },
+                        {
+                          id: 'realistic',
+                          label: 'Realistic',
+                          icon: (
+                            <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none">
+                              <rect x="8" y="8" width="48" height="48" rx="4" fill="#1E293B"/>
+                              <rect x="8" y="8" width="48" height="48" rx="4" fill="url(#realGrad)"/>
+                              <defs>
+                                <linearGradient id="realGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                                  <stop offset="0%" stopColor="#0F172A"/>
+                                  <stop offset="100%" stopColor="#334155"/>
+                                </linearGradient>
+                              </defs>
+                              <circle cx="32" cy="28" r="12" fill="#475569" stroke="#94A3B8" strokeWidth="1"/>
+                              <circle cx="32" cy="28" r="8" fill="#64748B"/>
+                              <circle cx="35" cy="25" r="3" fill="#94A3B8" opacity="0.6"/>
+                              <ellipse cx="32" cy="48" rx="16" ry="5" fill="#334155" stroke="#475569" strokeWidth="1"/>
+                            </svg>
+                          ),
+                          hint: 'Photorealistic, high-detail rendering',
+                        },
+                      ].map((style) => (
+                        <button
+                          key={style.id}
+                          type="button"
+                          disabled={loadingStyles}
+                          onClick={() => setSelectedStyle(style.id)}
+                          className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer text-center
+                            ${selectedStyle === style.id
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md scale-[1.03]'
+                              : 'border-theme hover:border-blue-300 hover:bg-theme-subtle'
+                            }
+                            ${loadingStyles ? 'opacity-50 cursor-not-allowed' : ''}
+                          `}
+                        >
+                          <div className={`rounded-lg p-1 transition-all ${selectedStyle === style.id ? 'ring-2 ring-blue-400' : ''}`}>
+                            {style.icon}
+                          </div>
+                          <span className={`text-xs font-semibold leading-tight ${selectedStyle === style.id ? 'text-blue-600 dark:text-blue-400' : 'text-theme-label'}`}>
+                            {style.label}
+                          </span>
+                          {selectedStyle === style.id && (
+                            <span className="text-[10px] text-blue-500 leading-tight">{style.hint}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                     {styleProfiles[selectedStyle] && (
-                      <p className="text-xs text-theme-hint mt-1">
+                      <p className="text-xs text-theme-hint mt-2">
                         {styleProfiles[selectedStyle].description}
                       </p>
                     )}
