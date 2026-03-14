@@ -13,6 +13,7 @@ import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
 import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
+import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
 import WorksheetStructuredEditor from './WorksheetStructuredEditor';
@@ -1656,9 +1657,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </button>
               </div>
             </div>
-          ) : (generatedWorksheet || streamingWorksheet) ? (
+          ) : (generatedWorksheet || streamingWorksheet || loading) ? (
             <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto">
-              {loading ? (
+              {loading && !streamingWorksheet && !generatedWorksheet ? (
+                <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />
+              ) : loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />

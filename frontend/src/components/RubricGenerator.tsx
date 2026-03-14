@@ -12,6 +12,7 @@ import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 
 const ENDPOINT = '/ws/rubric';
 
@@ -767,7 +768,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="rubric-generator-welcome">
       <div className="flex-1 flex flex-col tab-content-bg">
-        {(generatedRubric || streamingRubric) ? (
+        {(generatedRubric || streamingRubric || loading) ? (
           <>
             {isEditing && parsedRubric ? (
               // Show Structured Editor
@@ -776,7 +777,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 onSave={saveEditedRubric}
                 onCancel={cancelEditing}
               />
-            ) : (   
+            ) : loading && !streamingRubric && !generatedRubric ? (
+              <GeneratorSkeleton accentColor={tabColor} type="rubric" />
+            ) : (
               <>
                 <div className="border-b border-theme p-4 flex items-center justify-between flex-shrink-0">
                   <div>

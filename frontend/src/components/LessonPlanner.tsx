@@ -7,6 +7,7 @@ import curriculumIndex from '../data/curriculumIndex.json';
 import CurriculumReferences from './CurriculumReferences';
 import LessonEditor from './LessonEditor';
 import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/lesson';
+import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
@@ -685,7 +686,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="lesson-planner-welcome">
       <div className="flex-1 flex flex-col tab-content-bg">
-        {(generatedPlan || streamingPlan) ? (
+        {(generatedPlan || streamingPlan || loading) ? (
           <>
             {isEditing && parsedLesson ? (
               // Show Structured Editor
@@ -694,6 +695,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 onSave={saveLessonEdit}
                 onCancel={cancelEditing}
               />
+            ) : loading && !streamingPlan && !generatedPlan ? (
+              <GeneratorSkeleton accentColor={tabColor} type="lesson" />
             ) : (
               // Show generated lesson plan (existing display code)
               <>

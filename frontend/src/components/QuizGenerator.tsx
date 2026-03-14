@@ -13,6 +13,7 @@ import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -522,7 +523,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             quiz={parsedQuiz}
             onClose={() => setIsGrading(false)}
           />
-        ) : (generatedQuiz || streamingQuiz || isEditing) ? (
+        ) : (generatedQuiz || streamingQuiz || isEditing || loading) ? (
           <>
             {isEditing && parsedQuiz ? (
               // Show Structured Editor
@@ -531,6 +532,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 onSave={saveEditedQuiz}
                 onCancel={cancelEditing}
               />
+            ) : loading && !streamingQuiz && !generatedQuiz ? (
+              <GeneratorSkeleton accentColor={tabColor} type="quiz" />
             ) : (
               // Show generated quiz (existing display code)
               <>

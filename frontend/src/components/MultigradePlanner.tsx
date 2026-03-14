@@ -11,6 +11,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -636,7 +637,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="multigrade-planner-welcome">
       <div className="flex-1 flex flex-col tab-content-bg">
-        {(generatedPlan || streamingPlan) ? (
+        {(generatedPlan || streamingPlan || loading) ? (
           <>
             {isEditing && parsedPlan ? (
               // Show Structured Editor
@@ -645,6 +646,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 onSave={saveMultigradeEdit}
                 onCancel={cancelEditing}
               />
+            ) : loading && !streamingPlan && !generatedPlan ? (
+              <GeneratorSkeleton accentColor={tabColor} type="plan" />
             ) : (
               // Show generated plan (existing display code)
               <>

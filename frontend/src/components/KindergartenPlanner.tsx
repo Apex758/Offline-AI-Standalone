@@ -11,6 +11,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -805,7 +806,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="kinder-planner-welcome">
       <div className="flex-1 flex flex-col tab-content-bg">
-        {(generatedPlan || streamingPlan) ? (
+        {(generatedPlan || streamingPlan || loading) ? (
           <>
             {isEditing && parsedPlan ? (
               // Show Structured Editor - wrap in a container with proper height
@@ -816,6 +817,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   onCancel={cancelEditing}
                 />
               </div>
+            ) : loading && !streamingPlan && !generatedPlan ? (
+              <GeneratorSkeleton accentColor={tabColor} type="plan" />
             ) : (
               // Show generated plan (existing display code)
               <>
