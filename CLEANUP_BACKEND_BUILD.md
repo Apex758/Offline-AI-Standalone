@@ -589,3 +589,90 @@ So the old bundle is always wiped before a fresh build — not just in `manual-p
 | Recommendation | Consolidate `build-all.ps1` + `build-release.ps1` into one | ✅ Safe | Build scripts |
 | Recommendation | Pin Python deps to exact versions | ✅ Safe | `backend/requirements.txt` |
 | Recommendation | Add `backend-bundle/` cleanup to `pre-build-cleanup.ps1` | ✅ Safe | `pre-build-cleanup.ps1` |
+
+---
+
+## Audit Notes (Added 2026-03-13)
+
+All items in this document were independently verified against the live codebase. Findings:
+
+### Confirmed Issues
+
+1. **Double `yield` (§1)** — CONFIRMED at `main.py:209` and `main.py:224`. The image service init block sits between them and runs at the wrong time (after server starts, not at startup). The proposed fix (move image service init before the first yield, delete second yield) is correct and safe.
+
+2. **Duplicate config block (§13)** — CONFIRMED at `config.py:144-160` vs `162-187`. First block is dead code (immediately overwritten). First block also lacks OpenRouter config. Safe to delete lines 144-160.
+
+3. **Duplicate imports (§2)** — CONFIRMED: `os` at lines 2 and 25, `sys` at lines 3 and 27.
+
+4. **CHAT_HISTORY_FILE (§11)** — CONFIRMED at `main.py:156`. Uses `os.path.dirname(__file__)` which is read-only in packaged app. The migration approach is correct — check for old file, move to `get_data_directory()`, then update the path.
+
+5. **Image asset store path bug (§20)** — CONFIRMED at `image_asset_store.py:51`. Hardcoded `"backend/data/image_assets"` is CWD-dependent. The `Path(__file__).parent` fix is correct.
+
+6. **TEMP DEBUG block (§16)** — CONFIRMED at `main.py:608-620`. Fires on every WebSocket message. Logs full conversation content including user messages — also a privacy concern in production.
+
+7. **DevTools enabled (§5)** — CONFIRMED at `electron/main.js:385`. Additionally, lines 397-403 add a Ctrl+Shift+I keyboard shortcut that opens DevTools unconditionally — this should also be wrapped in `if (isDev)`.
+
+8. **Duplicate downloadFile (§14)** — CONFIRMED at `preload.js:19` and `22-23`. The comment "✅ ADD: File download handler" on line 21 reveals it was a copy-paste error.
+
+9. **Dead getAppInfo (§15)** — CONFIRMED: no handler in `main.js`, no frontend usage.
+
+10. **Redundant frontend/src/data extraResource (§7)** — CONFIRMED UNNECESSARY. `electron/main.js` never reads from `resources/frontend/src/data/`. Vite bundles these JSON files (`curriculumIndex.json`, `curriculumRoutes.json`, `curriculumTree.json`) into the JS during build. Safe to remove.
+
+### Additional Packaging Issues Not In Original Doc
+
+11. **extraResources denylist (§6) should also exclude these patterns:**
+    - `!**/*.ps1` — no PowerShell scripts are needed at runtime in the packaged app
+    - `!**/*.md` — no markdown documentation needed at runtime
+    - `!**/*.jpg` and `!**/*.jpeg` — catches stray test images like `X.jpg` and `wmremove-transformed.jpeg` with a glob instead of individual filenames
+    - `!**/*.txt` — catches `notes.txt` and other dev text files (the backend doesn't read any .txt files at runtime)
+    - `!**/*.bat` — `start_backend.py` handles startup in production, no batch files needed
+
+    Updated recommended filter:
+    ```json
+    "filter": [
+      "**/*",
+      "!**/__pycache__/**",
+      "!**/*.pyc",
+      "!**/venv/**",
+      "!**/.venv/**",
+      "!chat_history.json",
+      "!lesson_plan_history.json",
+      "!data/**",
+      "!**/*.ps1",
+      "!**/*.md",
+      "!**/*.txt",
+      "!**/*.bat",
+      "!**/*.jpg",
+      "!**/*.jpeg",
+      "!validation/**",
+      "!var/**",
+      "!audit_preset_coverage.py",
+      "!blip_executor.py",
+      "!build_enhanced_presets.py",
+      "!build_full_presets.py",
+      "!generate_comprehensive_presets.py",
+      "!check_specific_strand.py",
+      "!flow.yml",
+      "!run_flow.py",
+      "!run_pipeline.py",
+      "!process_cleanup_patch.py",
+      "!test_presets.py",
+      "!requirements.txt",
+      "!requirements-lock.txt",
+      "!config/topic_presets_comprehensive.json"
+    ]
+    ```
+
+12. **`backend/backend/` nested directory** — If this directory exists at packaging time, it will also be bundled into the release as part of the backend extraResource. Fix the path bug (§20) AND delete the nested directory before building.
+
+13. **Electron DevTools keyboard shortcut** — `electron/main.js:397-403` registers a `Ctrl+Shift+I` handler that opens DevTools unconditionally, even in production. This should be wrapped in `if (isDev)` alongside the `devTools: true` fix in §5.
+
+### Priority Order for Packaging Impact
+
+For reducing unnecessary bundle size, fix these in order:
+1. **§6 + additions above** — tighten extraResources filter (removes dozens of dev files from backend bundle)
+2. **§7** — remove redundant `frontend/src/data` extraResource entry
+3. **§8** — delete root-level junk files (especially `llama-model-temp.gguf` at 2.2GB)
+4. **§9** — delete backend dev files
+5. **§20** — fix path bug to prevent `backend/backend/` from being bundled
+6. **§19** — delete stale `backend-bundle/` before fresh build

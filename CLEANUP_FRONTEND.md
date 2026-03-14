@@ -513,3 +513,17 @@ The frontend has `.env.example` but no actual `.env` file. Since `VITE_API_URL` 
 | Recommendation | Lazy-load heavy Dashboard tabs | ✅ Safe | `Dashboard.tsx` |
 | Recommendation | Centralize API URL config | ✅ Safe | All components |
 | Recommendation | Move splashscreen to `electron/` | ✅ Safe | `public/splashscreen/` |
+
+---
+
+## Audit Notes (Added 2026-03-13)
+
+All items in this document were independently verified against the live codebase. Findings:
+
+1. **All claims confirmed accurate** — dead files, dead code blocks, duplicate IPC handlers, eager glob, hardcoded URLs, and unused public images all verified.
+
+2. **Additional packaging concern:** The `frontend/src/data` extraResources entry in root `package.json` copies JSON files (`curriculumIndex.json`, `curriculumRoutes.json`, `curriculumTree.json`) into the packaged app at `resources/frontend/src/data/`. However, `electron/main.js` never reads from this path — Vite bundles these files into the JS during build. This entry adds ~unnecessary weight to the installer. See `CLEANUP_BACKEND_BUILD.md` §7 for the corresponding backend-side note. **Action:** Remove this extraResources entry after confirming no runtime code reads from `process.resourcesPath + '/frontend/src/data/'`.
+
+3. **Priority recommendation for packaging:** Items §4a (eager glob), §4b (manualChunks), and §5 (unused public images) have the biggest impact on final app size. The eager glob alone pulls ~400 curriculum `.tsx` files into one JS chunk. Combined with `manualChunks: undefined` disabling code splitting, the frontend bundle is unnecessarily large. Fix these first for the biggest packaging win.
+
+4. **GRADE_SPECS extraction (§3a):** The doc correctly warns this is complex. Each file has different extra fields. Skip this unless you have time — the duplication is annoying but won't affect packaging or runtime.
