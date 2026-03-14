@@ -1,25 +1,34 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Bell, Trash2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Bell, Trash2, ListOrdered, Loader2, Clock, GripVertical, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNotification } from '../contexts/NotificationContext';
+import { useQueue, QueueItem } from '../contexts/QueueContext';
 
 interface NotificationPanelProps {
   open: boolean;
   onClose: () => void;
 }
 
+type PanelTab = 'notifications' | 'queue';
+
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) => {
   const { history, unreadCount, markAllRead, clearHistory } = useNotification();
+  const { queue, removeFromQueue, reorderQueue, clearCompleted, queueEnabled } = useQueue();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<PanelTab>('notifications');
+
+  // Drag state for reordering
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // Mark all as read when the panel is opened
   useEffect(() => {
     if (open && unreadCount > 0) markAllRead();
   }, [open]);
 
-  // Close when clicking outside (bell button uses stopPropagation so it won't trigger this)
+  // Close when clicking outside
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
@@ -31,6 +40,60 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
     return () => document.removeEventListener('click', handleClick);
   }, [open, onClose]);
 
+  const waitingItems = queue.filter(item => item.status === 'waiting');
+  const queueCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
+
+  const getStatusIcon = (status: QueueItem['status']) => {
+    switch (status) {
+      case 'waiting':
+        return <Clock size={15} className="text-yellow-500 shrink-0 mt-0.5" />;
+      case 'generating':
+        return <Loader2 size={15} className="text-blue-500 shrink-0 mt-0.5 animate-spin" />;
+      case 'completed':
+        return <CheckCircle2 size={15} className="text-green-500 shrink-0 mt-0.5" />;
+      case 'error':
+        return <XCircle size={15} className="text-red-500 shrink-0 mt-0.5" />;
+    }
+  };
+
+  const getStatusLabel = (status: QueueItem['status']) => {
+    switch (status) {
+      case 'waiting': return 'Waiting';
+      case 'generating': return 'Generating...';
+      case 'completed': return 'Completed';
+      case 'error': return 'Failed';
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    // Make the drag image slightly transparent
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    if (dragIndex !== null && dragIndex !== toIndex) {
+      reorderQueue(dragIndex, toIndex);
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -40,65 +103,232 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -6, scale: 0.97 }}
           transition={{ duration: 0.15 }}
-          className="fixed top-11 right-2 w-80 rounded-xl shadow-2xl overflow-hidden z-[99999]"
+          className="fixed top-11 right-2 w-96 rounded-xl shadow-2xl overflow-hidden z-[99999]"
           style={{
             backgroundColor: 'var(--notif-bg)',
             border: '1px solid var(--notif-border)',
           }}
         >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
-              <div className="flex items-center gap-2">
-                <Bell size={14} style={{ color: 'var(--notif-text-muted)' }} />
-                <span className="text-sm font-semibold" style={{ color: 'var(--notif-text)' }}>Notifications</span>
-              </div>
-              {history.length > 0 && (
-                <button
-                  onClick={clearHistory}
-                  className="flex items-center gap-1 text-xs hover:text-red-400 transition"
-                  style={{ color: 'var(--notif-text-muted)' }}
-                >
-                  <Trash2 size={12} />
-                  Clear all
-                </button>
+          {/* Tab Header */}
+          <div className="flex" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors relative"
+              style={{
+                color: activeTab === 'notifications' ? 'var(--notif-text)' : 'var(--notif-text-muted)',
+                backgroundColor: activeTab === 'notifications' ? 'var(--notif-unread-bg)' : 'transparent',
+              }}
+            >
+              <Bell size={14} />
+              Notifications
+              {unreadCount > 0 && (
+                <span className="px-1.5 py-0.5 text-xs rounded-full bg-blue-500 text-white leading-none">
+                  {unreadCount}
+                </span>
               )}
-            </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('queue')}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors relative"
+              style={{
+                color: activeTab === 'queue' ? 'var(--notif-text)' : 'var(--notif-text-muted)',
+                backgroundColor: activeTab === 'queue' ? 'var(--notif-unread-bg)' : 'transparent',
+              }}
+            >
+              <ListOrdered size={14} />
+              Queue
+              {queueCount > 0 && (
+                <span className="px-1.5 py-0.5 text-xs rounded-full bg-amber-500 text-white leading-none">
+                  {queueCount}
+                </span>
+              )}
+            </button>
+          </div>
 
-            {/* List */}
-            <div className="max-h-72 overflow-y-auto">
-              {history.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
-                  <Bell size={26} className="opacity-25" />
-                  <span className="text-sm">No notifications yet</span>
-                </div>
-              ) : (
-                history.map(item => (
-                  <div
-                    key={item.id}
-                    className="flex items-start gap-3 px-4 py-3 last:border-0"
-                    style={{
-                      borderBottom: '1px solid var(--notif-divider)',
-                      backgroundColor: !item.read ? 'var(--notif-unread-bg)' : 'transparent',
-                    }}
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <>
+              {/* Clear all button */}
+              {history.length > 0 && (
+                <div className="flex justify-end px-4 py-2" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
+                  <button
+                    onClick={clearHistory}
+                    className="flex items-center gap-1 text-xs hover:text-red-400 transition"
+                    style={{ color: 'var(--notif-text-muted)' }}
                   >
-                    {item.type === 'success' ? (
-                      <CheckCircle2 size={15} className="text-green-500 shrink-0 mt-0.5" />
-                    ) : (
-                      <XCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>{item.message}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
-                        {formatDistanceToNow(item.timestamp, { addSuffix: true })}
-                      </p>
-                    </div>
-                    {!item.read && (
-                      <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />
-                    )}
-                  </div>
-                ))
+                    <Trash2 size={12} />
+                    Clear all
+                  </button>
+                </div>
               )}
-            </div>
+
+              <div className="max-h-72 overflow-y-auto">
+                {history.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
+                    <Bell size={26} className="opacity-25" />
+                    <span className="text-sm">No notifications yet</span>
+                  </div>
+                ) : (
+                  history.map(item => (
+                    <div
+                      key={item.id}
+                      className="flex items-start gap-3 px-4 py-3 last:border-0"
+                      style={{
+                        borderBottom: '1px solid var(--notif-divider)',
+                        backgroundColor: !item.read ? 'var(--notif-unread-bg)' : 'transparent',
+                      }}
+                    >
+                      {item.type === 'success' ? (
+                        <CheckCircle2 size={15} className="text-green-500 shrink-0 mt-0.5" />
+                      ) : (
+                        <XCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>{item.message}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
+                          {formatDistanceToNow(item.timestamp, { addSuffix: true })}
+                        </p>
+                      </div>
+                      {!item.read && (
+                        <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Queue Tab */}
+          {activeTab === 'queue' && (
+            <>
+              {/* Queue actions bar */}
+              {queue.length > 0 && (
+                <div className="flex justify-between items-center px-4 py-2" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
+                  <span className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
+                    {queueCount} pending
+                  </span>
+                  <button
+                    onClick={clearCompleted}
+                    className="flex items-center gap-1 text-xs hover:text-red-400 transition"
+                    style={{ color: 'var(--notif-text-muted)' }}
+                  >
+                    <Trash2 size={12} />
+                    Clear finished
+                  </button>
+                </div>
+              )}
+
+              <div className="max-h-80 overflow-y-auto">
+                {!queueEnabled ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2 px-4" style={{ color: 'var(--notif-text-faint)' }}>
+                    <ListOrdered size={26} className="opacity-25" />
+                    <span className="text-sm text-center">Queuing is disabled</span>
+                    <span className="text-xs text-center opacity-75">Enable it in Settings &gt; Generation Behavior</span>
+                  </div>
+                ) : queue.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
+                    <ListOrdered size={26} className="opacity-25" />
+                    <span className="text-sm">Queue is empty</span>
+                    <span className="text-xs opacity-75">Tasks will appear here when you generate</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* Currently generating */}
+                    {queue.filter(item => item.status === 'generating').map(item => (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-3 px-4 py-3"
+                        style={{
+                          borderBottom: '1px solid var(--notif-divider)',
+                          backgroundColor: 'var(--notif-unread-bg)',
+                        }}
+                      >
+                        {getStatusIcon(item.status)}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium leading-snug" style={{ color: 'var(--notif-text)' }}>
+                            {item.label}
+                          </p>
+                          <p className="text-xs mt-0.5 text-blue-500 font-medium">
+                            {getStatusLabel(item.status)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Waiting items - draggable */}
+                    {waitingItems.length > 0 && (
+                      <div>
+                        {waitingItems.length > 1 && (
+                          <div className="px-4 py-1.5" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
+                            <p className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
+                              Drag to reorder waiting tasks
+                            </p>
+                          </div>
+                        )}
+                        {waitingItems.map((item, index) => (
+                          <div
+                            key={item.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, index)}
+                            onDragOver={(e) => handleDragOver(e, index)}
+                            onDrop={(e) => handleDrop(e, index)}
+                            onDragEnd={handleDragEnd}
+                            className="flex items-start gap-2 px-4 py-3 cursor-grab active:cursor-grabbing transition-colors"
+                            style={{
+                              borderBottom: '1px solid var(--notif-divider)',
+                              backgroundColor: dragOverIndex === index ? 'var(--notif-unread-bg)' : 'transparent',
+                              opacity: dragIndex === index ? 0.5 : 1,
+                            }}
+                          >
+                            <GripVertical size={14} className="shrink-0 mt-0.5 opacity-40" style={{ color: 'var(--notif-text-muted)' }} />
+                            {getStatusIcon(item.status)}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>
+                                {item.label}
+                              </p>
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
+                                #{index + 1} in queue &middot; {formatDistanceToNow(item.addedAt, { addSuffix: true })}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => removeFromQueue(item.id)}
+                              className="shrink-0 p-0.5 rounded hover:bg-red-500/20 transition"
+                              title="Remove from queue"
+                            >
+                              <X size={14} className="text-red-400" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Completed / Error items */}
+                    {queue.filter(item => item.status === 'completed' || item.status === 'error').map(item => (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-3 px-4 py-3 opacity-60"
+                        style={{
+                          borderBottom: '1px solid var(--notif-divider)',
+                        }}
+                      >
+                        {getStatusIcon(item.status)}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>
+                            {item.label}
+                          </p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
+                            {getStatusLabel(item.status)}
+                            {item.completedAt && ` · ${formatDistanceToNow(item.completedAt, { addSuffix: true })}`}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </motion.div>
       )}
     </AnimatePresence>,

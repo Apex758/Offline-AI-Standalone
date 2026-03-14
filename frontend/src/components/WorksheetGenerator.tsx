@@ -11,6 +11,7 @@ import {
 
 import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
 import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
@@ -136,6 +137,7 @@ const ENDPOINT = '/ws/worksheet';
 
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
 
   const getDefaultFormData = (): WorksheetFormData => ({
@@ -579,6 +581,31 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     const jobId = `worksheet-${Date.now()}`;
     console.log('Built prompt, jobId:', jobId);
     console.log('Using sceneSpec:', currentSceneSpec ? currentSceneSpec.scene_id : 'none');
+
+    if (queueEnabled) {
+      enqueue({
+        label: `Worksheet - ${formData.topic || formData.subject || 'Untitled'}`,
+        toolType: 'Worksheet',
+        tabId: tabId || '',
+        endpoint: ENDPOINT,
+        prompt,
+        generationMode: 'queued',
+        extraMessageData: {
+          formData: {
+            ...formData,
+            sceneSpec: currentSceneSpec,
+            assetId: currentAssetId,
+          },
+          jobId,
+        },
+      });
+      setLocalLoadingMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[tabId || ''];
+        return newMap;
+      });
+      return;
+    }
 
     const message = {
       prompt,

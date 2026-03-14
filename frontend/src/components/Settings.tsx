@@ -198,6 +198,8 @@ const Settings: React.FC<SettingsProps> = () => {
     { type: 'kindergarten-planner', label: 'Kindergarten', defaultColor: '#ec4899' },
     { type: 'multigrade-planner', label: 'Multigrade', defaultColor: '#06b6d4' },
     { type: 'cross-curricular-planner', label: 'Cross-Curricular', defaultColor: '#6366f1' },
+    { type: 'class-management', label: 'Class Management', defaultColor: '#f97316' },
+    { type: 'settings', label: 'Settings', defaultColor: '#6b7280' },
     ...(settings.visualStudioEnabled ? [
       { type: 'worksheet-generator', label: 'Worksheet Generator', defaultColor: '#8b5cf6' },
       { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
@@ -694,12 +696,12 @@ const Settings: React.FC<SettingsProps> = () => {
             </CardContent>
           </Card>
 
-          {/* Generation Behavior Section - Hidden */}
-          {false && <Card className="mb-6">
+          {/* Generation Behavior Section */}
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle>Generation Behavior</CardTitle>
               <CardDescription>
-                Control how AI generations are processed. "Queued" is recommended for stability; "Simultaneous" is experimental and may cause issues.
+                Control how AI generations are processed. "Queued" processes one at a time and lets you reorder pending tasks; "Simultaneous" is experimental and may cause issues.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -713,7 +715,10 @@ const Settings: React.FC<SettingsProps> = () => {
                     onChange={() => updateSettings({ generationMode: 'queued' })}
                     className="w-4 h-4 text-blue-600 border-theme-strong focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-sm font-medium text-theme-label">Queued (recommended)</span>
+                  <div>
+                    <span className="text-sm font-medium text-theme-label">Queued (recommended)</span>
+                    <p className="text-xs text-theme-hint mt-0.5">Tasks are processed one at a time. You can view and reorder the queue from the notification panel.</p>
+                  </div>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -724,11 +729,14 @@ const Settings: React.FC<SettingsProps> = () => {
                     onChange={() => updateSettings({ generationMode: 'simultaneous' })}
                     className="w-4 h-4 text-blue-600 border-theme-strong focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-sm font-medium text-theme-label">Simultaneous (experimental)</span>
+                  <div>
+                    <span className="text-sm font-medium text-theme-label">Simultaneous (experimental)</span>
+                    <p className="text-xs text-theme-hint mt-0.5">All tasks generate immediately without queuing.</p>
+                  </div>
                 </label>
               </div>
             </CardContent>
-          </Card>}
+          </Card>
 
           {/* Theme Section */}
           <Card className="mb-6" data-tutorial="settings-appearance">

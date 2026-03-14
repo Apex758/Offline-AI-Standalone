@@ -11,6 +11,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
@@ -365,6 +366,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
 
   // ✅ WebSocketContext integration
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
 
   // ✅ Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
@@ -760,14 +762,6 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   const generatePlan = () => {
-    const ws = getConnection(tabId, ENDPOINT);
-    if (ws.readyState !== WebSocket.OPEN) {
-      alert('Connection not established. Please wait and try again.');
-      return;
-    }
-
-    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -776,6 +770,26 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     };
 
     const prompt = buildKindergartenPrompt(mappedData);
+
+    if (queueEnabled) {
+      enqueue({
+        label: `Kindergarten Plan - ${formData.lessonTopic || 'Untitled'}`,
+        toolType: 'Kindergarten Plan',
+        tabId,
+        endpoint: ENDPOINT,
+        prompt,
+        generationMode: settings.generationMode,
+      });
+      return;
+    }
+
+    const ws = getConnection(tabId, ENDPOINT);
+    if (ws.readyState !== WebSocket.OPEN) {
+      alert('Connection not established. Please wait and try again.');
+      return;
+    }
+
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
 
     try {
       ws.send(JSON.stringify({

@@ -12,6 +12,7 @@ import StepProgressBar from './ui/StepProgressBar';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
@@ -224,6 +225,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // WebSocketContext integration
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
 
   // Get streaming state from context
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
@@ -577,14 +579,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   };
 
   const generatePlan = () => {
-    const ws = getConnection(tabId, ENDPOINT);
-    if (ws.readyState !== WebSocket.OPEN) {
-      alert('Connection not established. Please wait and try again.');
-      return;
-    }
-
-    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-
     // Transform FormData to MultigradeFormData format
     const multigradeFormData = {
       topic: formData.topic,
@@ -595,6 +589,26 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     };
 
     const prompt = buildMultigradePrompt(multigradeFormData);
+
+    if (queueEnabled) {
+      enqueue({
+        label: `Multigrade Plan - ${formData.topic || formData.subject}`,
+        toolType: 'Multigrade Plan',
+        tabId,
+        endpoint: ENDPOINT,
+        prompt,
+        generationMode: settings.generationMode,
+      });
+      return;
+    }
+
+    const ws = getConnection(tabId, ENDPOINT);
+    if (ws.readyState !== WebSocket.OPEN) {
+      alert('Connection not established. Please wait and try again.');
+      return;
+    }
+
+    setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
 
     // Set a timeout to force completion if stuck (2 minutes)
     const timeout = setTimeout(() => {

@@ -6,6 +6,7 @@ import { User } from './types';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { QueueProvider } from './contexts/QueueContext';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
@@ -68,8 +69,10 @@ function App() {
     <SettingsProvider>
       <NotificationProvider>
         <WebSocketProvider>
-          <AppContent />
-          <ToastContainer />
+          <QueueProvider>
+            <AppContent />
+            <ToastContainer />
+          </QueueProvider>
         </WebSocketProvider>
       </NotificationProvider>
     </SettingsProvider>

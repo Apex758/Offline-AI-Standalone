@@ -11,6 +11,7 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -430,6 +431,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
   const tabColor = settings.tabColors['rubric-generator'];
   
   const streamingRubric = getStreamingContent(tabId, ENDPOINT);
@@ -726,6 +728,20 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
   
   const generateRubric = () => {
+    const prompt = buildRubricPrompt(formData);
+
+    if (queueEnabled) {
+      enqueue({
+        label: `Rubric - ${formData.assignmentTitle || formData.subject}`,
+        toolType: 'Rubric',
+        tabId,
+        endpoint: ENDPOINT,
+        prompt,
+        generationMode: settings.generationMode,
+      });
+      return;
+    }
+
     const ws = getConnection(tabId, ENDPOINT);
     if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
@@ -733,8 +749,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     }
 
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-
-    const prompt = buildRubricPrompt(formData);
 
     try {
       ws.send(JSON.stringify({

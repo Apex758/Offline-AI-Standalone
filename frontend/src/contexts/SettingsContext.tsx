@@ -15,6 +15,8 @@ export interface TabColors {
   'curriculum-tracker': string;
   'worksheet-generator': string;
   'image-studio': string;
+  'class-management': string;
+  settings: string;
 }
 
 export interface TutorialState {
@@ -65,7 +67,9 @@ export const DEFAULT_SETTINGS: Settings = {
     'resource-manager': '#84cc16',
     'curriculum-tracker': '#22c55e',
     'worksheet-generator': '#8b5cf6',
-    'image-studio': '#ec4899'
+    'image-studio': '#ec4899',
+    'class-management': '#f97316',
+    'settings': '#6b7280'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',

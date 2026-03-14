@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useQueue } from '../contexts/QueueContext';
 import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
@@ -205,6 +206,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // WebSocketContext API and streaming state logic
   const ENDPOINT = '/ws/lesson-plan';
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
 
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
   // Per-tab local loading state
@@ -578,6 +580,21 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   }, [streamingPlan, curriculumReferences, isStreaming, tabId, ENDPOINT, clearStreaming, formData]);
 
   const generateLessonPlan = () => {
+    setCurriculumReferences(curriculumMatches);
+    const prompt = buildLessonPrompt(formData, curriculumMatches);
+
+    if (queueEnabled) {
+      enqueue({
+        label: `Lesson Plan - ${formData.topic || formData.subject}`,
+        toolType: 'Lesson Plan',
+        tabId,
+        endpoint: ENDPOINT,
+        prompt,
+        generationMode: settings.generationMode,
+      });
+      return;
+    }
+
     const ws = getConnection(tabId, ENDPOINT);
     if (ws.readyState !== WebSocket.OPEN) {
       alert('Connection not established. Please wait and try again.');
@@ -585,9 +602,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
 
     setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
-    setCurriculumReferences(curriculumMatches);
-
-    const prompt = buildLessonPrompt(formData, curriculumMatches);
 
     try {
       ws.send(JSON.stringify({

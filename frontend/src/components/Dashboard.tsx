@@ -49,6 +49,7 @@ import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useTutorials } from '../contexts/TutorialContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { useQueue } from '../contexts/QueueContext';
 import NotificationPanel from './NotificationPanel';
 import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
@@ -197,6 +198,7 @@ const iconMap: { [key: string]: React.ElementType } = {
 };
 
 const MAX_TABS_PER_TYPE = 3;
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
@@ -204,6 +206,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { startTutorial } = useTutorials();
   const { closeConnection } = useWebSocket();
   const { unreadCount } = useNotification();
+  const { queue } = useQueue();
+  const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
 
   // Generate dynamic tab colors based on settings
@@ -441,13 +445,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       }
     }
 
-    // Special handling for Visual Studio tools - only allow 1 instance each
-    const maxTabsForTool = (tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE;
+    // Special handling for single-instance tabs - only allow 1 instance each
+    const maxTabsForTool = SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE;
 
     const currentCount = getTabCountByType(tool.type);
     if (currentCount >= maxTabsForTool) {
-      // For Visual Studio tools, don't show alert - just silently don't open
-      if (tool.type !== 'worksheet-generator' && tool.type !== 'image-studio') {
+      if (SINGLE_INSTANCE_TABS.has(tool.type)) {
+        const existingTab = tabs.find(t => t.type === tool.type);
+        if (existingTab) setActiveTabId(existingTab.id);
+      } else {
         alert(`Maximum of ${maxTabsForTool} ${tool.name} tab${maxTabsForTool === 1 ? '' : 's'} allowed at once.`);
       }
       return;
@@ -1301,13 +1307,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
             const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+            const isSingleReg = SINGLE_INSTANCE_TABS.has(tool.type);
+            const maxForReg = isSingleReg ? 1 : MAX_TABS_PER_TYPE;
+            const isMaxedReg = count >= maxForReg && !isSingleReg;
 
             return (
               <button
                 key={tool.id}
                 data-tool-type={tool.type}
                 onClick={() => openTool(tool)}
-                disabled={count >= ((tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE)}
+                disabled={isMaxedReg}
                 data-tutorial={
                   tool.type === 'analytics'
                     ? 'tool-analytics'
@@ -1318,13 +1327,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     : undefined
                 }
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group ${
-                  count >= MAX_TABS_PER_TYPE
+                  isMaxedReg
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                 }`}
-                title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
+                title={!sidebarOpen ? `${tool.name}${!isSingleReg ? ` (${count}/${maxForReg} open)` : ''}` : ''}
                 style={{
-                  ...(count < MAX_TABS_PER_TYPE
+                  ...(!isMaxedReg
                     ? {
                         backgroundColor: isActiveToolType
                           ? ('var(--sidebar-active)')
@@ -1335,12 +1344,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   animationDelay: `${i * 40}ms`
                 }}
                 onMouseEnter={(e) => {
-                  if (count < MAX_TABS_PER_TYPE) {
+                  if (!isMaxedReg) {
                     e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (count < MAX_TABS_PER_TYPE) {
+                  if (!isMaxedReg) {
                     e.currentTarget.style.backgroundColor = isActiveToolType
                       ? ('var(--sidebar-active)')
                       : 'transparent';
@@ -1397,13 +1406,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
             const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+            const isSingle = SINGLE_INSTANCE_TABS.has(tool.type);
+            const maxForTool = isSingle ? 1 : MAX_TABS_PER_TYPE;
+            const isMaxed = count >= maxForTool && !isSingle;
 
             return (
               <button
                 key={tool.id}
                 data-tool-type={tool.type}
                 onClick={() => openTool(tool)}
-                disabled={count >= MAX_TABS_PER_TYPE}
+                disabled={isMaxed}
                 data-tutorial={
                   tool.type === 'quiz-generator'
                     ? 'tool-quiz'
@@ -1412,23 +1424,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     : undefined
                 }
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group ${
-                  count >= MAX_TABS_PER_TYPE
+                  isMaxed
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                 }`}
-                title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
+                title={!sidebarOpen ? `${tool.name}${!isSingle ? ` (${count}/${maxForTool} open)` : ''}` : ''}
                 style={{
                   backgroundColor: 'transparent',
                   transition: 'background-color 0.25s, box-shadow 0.25s',
                   animationDelay: `${(i + regularTools.length) * 40}ms`
                 }}
                 onMouseEnter={(e) => {
-                  if (count < MAX_TABS_PER_TYPE) {
+                  if (!isMaxed) {
                     e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (count < MAX_TABS_PER_TYPE) {
+                  if (!isMaxed) {
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }
                 }}
@@ -1460,12 +1472,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {tool.name}
                   </p>
-                  <p
-                    className="text-xs whitespace-nowrap"
-                    style={{ color: 'var(--sidebar-text-muted)' }}
-                  >
-                    {count}/{MAX_TABS_PER_TYPE} open
-                  </p>
+                  {!SINGLE_INSTANCE_TABS.has(tool.type) && (
+                    <p
+                      className="text-xs whitespace-nowrap"
+                      style={{ color: 'var(--sidebar-text-muted)' }}
+                    >
+                      {count}/{maxForTool} open
+                    </p>
+                  )}
                 </div>
               </button>
             );
@@ -1602,7 +1616,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           className="text-xs"
                           style={{ color: 'var(--sidebar-text-muted)' }}
                         >
-                          {count}/{(tool.type === 'worksheet-generator' || tool.type === 'image-studio') ? 1 : MAX_TABS_PER_TYPE}
+                          {count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}
                         </p>
                       </div>
                     </button>
@@ -1690,15 +1704,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   const activeTab = tabs.find(t => t.id === activeTabId);
                   const isActiveToolType = activeTab?.type === tool.type;
                   const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+                  const isSingleVS = SINGLE_INSTANCE_TABS.has(tool.type);
+                  const isMaxedVS = count >= (isSingleVS ? 1 : MAX_TABS_PER_TYPE) && !isSingleVS;
 
                   return (
                     <button
                       key={tool.id}
                       data-tool-type={tool.type}
                       onClick={() => openTool(tool)}
-                      disabled={count >= MAX_TABS_PER_TYPE}
+                      disabled={isMaxedVS}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm ${
-                        count >= MAX_TABS_PER_TYPE
+                        isMaxedVS
                           ? 'opacity-50 cursor-not-allowed'
                           : ''
                       }`}
@@ -1707,12 +1723,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         transition: 'background-color 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        if (count < MAX_TABS_PER_TYPE) {
+                        if (!isMaxedVS) {
                           e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                         }
                       }}
                       onMouseLeave={(e) => {
-                        if (count < MAX_TABS_PER_TYPE) {
+                        if (!isMaxedVS) {
                           e.currentTarget.style.backgroundColor = 'transparent';
                         }
                       }}
@@ -2134,8 +2150,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 title="Notifications"
               >
                 <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-400" />
+                {(unreadCount > 0 || queueActiveCount > 0) && (
+                  <span className={`absolute top-1 right-1 w-2 h-2 rounded-full ${queueActiveCount > 0 ? 'bg-amber-400' : 'bg-blue-400'}`} />
                 )}
               </button>
               <NotificationPanel open={notifPanelOpen} onClose={() => setNotifPanelOpen(false)} />
