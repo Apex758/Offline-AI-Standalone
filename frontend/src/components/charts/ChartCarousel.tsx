@@ -71,9 +71,9 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
     borderRadius: '50%',
     border: 'none',
     cursor: 'pointer',
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    backgroundColor: 'var(--dash-edge-btn)',
     backdropFilter: 'blur(10px)',
-    boxShadow: '0 2px 10px rgba(29,54,45,0.15)',
+    boxShadow: `0 2px 10px var(--dash-primary-a25)`,
     transition: 'opacity 0.2s, transform 0.2s',
     opacity: hovered ? 1 : 0,
     pointerEvents: hovered ? 'auto' : 'none',
@@ -81,18 +81,14 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden"
+      className="widget-glass relative rounded-2xl overflow-hidden"
       data-tutorial="analytics-chart-carousel"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: 'rgba(255, 255, 255, 0.35)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
         boxShadow: hovered
-          ? '0 16px 48px rgba(0, 0, 0, 0.22)'
-          : '0 8px 32px rgba(0, 0, 0, 0.15)',
+          ? `0 16px 48px var(--dash-card-shadow)`
+          : `0 8px 32px var(--dash-card-shadow)`,
         transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
         transition: 'transform 0.25s ease, box-shadow 0.25s ease',
       }}
@@ -108,9 +104,9 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
           <div
             className="flex items-center space-x-1 rounded-lg p-1"
             style={{
-              backgroundColor: 'rgba(255,255,255,0.9)',
+              backgroundColor: 'var(--dash-timeframe-bg)',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 2px 8px rgba(29, 54, 45, 0.1)',
+              boxShadow: `0 2px 8px var(--dash-card-shadow)`,
             }}
           >
             {TIMEFRAME_BUTTONS.map((btn) => (
@@ -119,9 +115,9 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
                 onClick={() => onTimeframeChange(btn.value)}
                 className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
                 style={{
-                  backgroundColor: timeframe === btn.value ? '#1D362D' : 'transparent',
-                  color: timeframe === btn.value ? '#F8E59D' : '#552A01',
-                  boxShadow: timeframe === btn.value ? '0 2px 4px rgba(29, 54, 45, 0.2)' : 'none',
+                  backgroundColor: timeframe === btn.value ? 'var(--dash-primary)' : 'transparent',
+                  color: timeframe === btn.value ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
+                  boxShadow: timeframe === btn.value ? `0 2px 4px var(--dash-primary-a25)` : 'none',
                 }}
               >
                 {btn.label}
@@ -159,7 +155,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         aria-label="Previous View"
         style={{ ...edgeBtn, left: 10 }}
       >
-        <ChevronLeft className="w-4 h-4" style={{ color: '#552A01' }} />
+        <ChevronLeft className="w-4 h-4" style={{ color: 'var(--dash-text-sub)' }} />
       </button>
 
       {/* Right edge button */}
@@ -168,7 +164,7 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         aria-label="Next View"
         style={{ ...edgeBtn, right: 10 }}
       >
-        <ChevronRight className="w-4 h-4" style={{ color: '#552A01' }} />
+        <ChevronRight className="w-4 h-4" style={{ color: 'var(--dash-text-sub)' }} />
       </button>
     </div>
   );

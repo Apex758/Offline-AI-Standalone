@@ -76,7 +76,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     const storedUser = localStorage.getItem('user');
     const storedImage = localStorage.getItem('user-profile-image');
     let teacherId: string | null = null;
-    
+
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
@@ -86,11 +86,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         console.error('Error parsing user:', e);
       }
     }
-    
+
     if (storedImage) {
       setUserImage(storedImage);
     }
-    
+
     loadAllData(teacherId);
   }, []);
 
@@ -165,7 +165,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ...worksheets.data.map((r: any) => ({ ...r, type: 'worksheet' })),
         ...images.data.map((r: any) => ({ ...r, type: 'image' }))
       ];
-      
+
       setAllResourcesData(allResources);
 
       // Load milestone stats if teacherId is available
@@ -302,7 +302,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const handleProfileSave = (name: string, image: string | null) => {
     setUserName(name);
     setUserImage(image);
-    
+
     // Update localStorage
     try {
       const storedUser = localStorage.getItem('user');
@@ -311,7 +311,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         user.name = name;
         localStorage.setItem('user', JSON.stringify(user));
       }
-      
+
       if (image) {
         localStorage.setItem('user-profile-image', image);
       } else {
@@ -320,27 +320,27 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     } catch (error) {
       console.error('Error saving profile:', error);
     }
-    
+
     setShowProfileEdit(false);
   };
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center" style={{ backgroundColor: '#FDFDF8' }}>
+      <div className="h-full flex items-center justify-center" style={{ backgroundColor: 'var(--dash-bg)' }}>
         <div className="text-center">
           <HeartbeatLoader className="w-12 h-12 mx-auto mb-4" />
-          <p style={{ color: '#552A01' }}>Loading your dashboard...</p>
+          <p style={{ color: 'var(--dash-text-sub)' }}>Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-y-auto" style={{ backgroundColor: '#FDFDF8' }} data-tutorial="main-content">
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--dash-bg)' }} data-tutorial="main-content">
       {/* Header */}
-      <header className="sticky top-0 z-20 backdrop-blur-sm" style={{ 
-        backgroundColor: 'rgba(253, 253, 248, 0.9)',
-        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.06)'
+      <header className="sticky top-0 z-20 backdrop-blur-sm" style={{
+        backgroundColor: 'var(--dash-bg-alpha)',
+        boxShadow: `0 4px 16px var(--dash-shadow)`
       }}>
         <div className="px-8 py-5 flex items-center justify-between">
           {/* Profile Section */}
@@ -350,32 +350,32 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               className="relative group"
               data-tutorial="analytics-profile-edit"
             >
-              <div 
+              <div
                 className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-105"
                 style={{
-                  backgroundColor: '#1D362D',
-                  boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
+                  backgroundColor: 'var(--dash-primary)',
+                  boxShadow: `0 4px 12px var(--dash-primary-a25)`
                 }}
               >
                 {userImage ? (
                   <img src={userImage} alt={userName} className="w-full h-full rounded-full object-cover" />
                 ) : (
-                  <User className="w-7 h-7" style={{ color: '#F8E59D' }} />
+                  <User className="w-7 h-7" style={{ color: 'var(--dash-primary-fg)' }} />
                 )}
               </div>
-              <div 
+              <div
                 className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ backgroundColor: '#F2A631' }}
+                style={{ backgroundColor: 'var(--dash-orange)' }}
               >
                 <Camera className="w-3 h-3 text-white" />
               </div>
             </button>
-            
+
             <div>
-              <h1 className="text-2xl font-bold" style={{ color: '#020D03' }}>
+              <h1 className="text-2xl font-bold" style={{ color: 'var(--dash-text)' }}>
                 {userName}
               </h1>
-              <p className="text-sm" style={{ color: '#552A01' }}>
+              <p className="text-sm" style={{ color: 'var(--dash-text-sub)' }}>
                 Your Teaching Hub
               </p>
             </div>
@@ -384,34 +384,34 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           {/* Quick Stats - Minimal */}
           <div className="flex items-center space-x-6" data-tutorial="analytics-quick-stats">
             <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: '#1D362D' }}>
+              <div className="text-2xl font-bold" style={{ color: 'var(--dash-primary)' }}>
                 {quickStats.totalResources}
               </div>
-              <div className="text-xs" style={{ color: '#552A01' }}>
+              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
                 Resources
               </div>
             </div>
-            <div 
-              className="w-px h-10" 
-              style={{ backgroundColor: '#E8EAE3' }}
+            <div
+              className="w-px h-10"
+              style={{ backgroundColor: 'var(--dash-border)' }}
             />
             <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: '#1D362D' }}>
+              <div className="text-2xl font-bold" style={{ color: 'var(--dash-primary)' }}>
                 {quickStats.activeDays}
               </div>
-              <div className="text-xs" style={{ color: '#552A01' }}>
+              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
                 Active Days
               </div>
             </div>
-            <div 
-              className="w-px h-10" 
-              style={{ backgroundColor: '#E8EAE3' }}
+            <div
+              className="w-px h-10"
+              style={{ backgroundColor: 'var(--dash-border)' }}
             />
             <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: '#F2A631' }}>
+              <div className="text-2xl font-bold" style={{ color: 'var(--dash-orange)' }}>
                 {quickStats.completionRate}%
               </div>
-              <div className="text-xs" style={{ color: '#552A01' }}>
+              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
                 Tasks Done
               </div>
             </div>
@@ -559,46 +559,39 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(2, 13, 3, 0.5)' }}
+      style={{ backgroundColor: 'var(--dash-overlay)' }}
       onClick={onClose}
     >
       <div
-        className="rounded-2xl p-8 max-w-md w-full"
-        style={{
-          background: 'rgba(255, 255, 255, 0.35)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-        }}
+        className="widget-glass rounded-2xl p-8 max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold mb-6" style={{ color: '#020D03' }}>
+        <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--dash-text)' }}>
           Edit Profile
         </h2>
 
         {/* Image Upload */}
         <div className="flex flex-col items-center mb-6">
-          <div 
+          <div
             className="w-24 h-24 rounded-full flex items-center justify-center mb-3"
             style={{
-              backgroundColor: '#1D362D',
-              boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
+              backgroundColor: 'var(--dash-primary)',
+              boxShadow: `0 4px 12px var(--dash-primary-a25)`
             }}
           >
             {image ? (
               <img src={image} alt="Profile" className="w-full h-full rounded-full object-cover" />
             ) : (
-              <User className="w-12 h-12" style={{ color: '#F8E59D' }} />
+              <User className="w-12 h-12" style={{ color: 'var(--dash-primary-fg)' }} />
             )}
           </div>
-          
-          <label 
+
+          <label
             className="px-4 py-2 rounded-lg cursor-pointer transition-all hover:scale-105"
             style={{
-              backgroundColor: '#F2A631',
+              backgroundColor: 'var(--dash-orange)',
               color: 'white',
-              boxShadow: '0 2px 8px rgba(242, 166, 49, 0.3)'
+              boxShadow: `0 2px 8px var(--dash-orange-a30)`
             }}
           >
             <Camera className="w-4 h-4 inline mr-2" />
@@ -614,7 +607,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
         {/* Name Input */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--dash-text-sub)' }}>
             Display Name
           </label>
           <input
@@ -623,10 +616,10 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             onChange={(e) => setName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl outline-none transition-all"
             style={{
-              backgroundColor: 'white',
-              border: '1px solid #E8EAE3',
-              color: '#020D03',
-              boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+              backgroundColor: 'var(--dash-card-bg)',
+              border: `1px solid var(--dash-border)`,
+              color: 'var(--dash-text)',
+              boxShadow: `0 2px 8px var(--dash-card-shadow)`
             }}
             placeholder="Enter your name"
           />
@@ -638,10 +631,10 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             onClick={onClose}
             className="flex-1 px-4 py-3 rounded-xl transition-all hover:scale-105"
             style={{
-              backgroundColor: 'white',
-              border: '1px solid #E8EAE3',
-              color: '#552A01',
-              boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+              backgroundColor: 'var(--dash-card-bg)',
+              border: `1px solid var(--dash-border)`,
+              color: 'var(--dash-text-sub)',
+              boxShadow: `0 2px 8px var(--dash-card-shadow)`
             }}
           >
             Cancel
@@ -650,9 +643,9 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             onClick={handleSave}
             className="flex-1 px-4 py-3 rounded-xl transition-all hover:scale-105"
             style={{
-              backgroundColor: '#1D362D',
-              color: '#F8E59D',
-              boxShadow: '0 4px 12px rgba(29, 54, 45, 0.2)'
+              backgroundColor: 'var(--dash-primary)',
+              color: 'var(--dash-primary-fg)',
+              boxShadow: `0 4px 12px var(--dash-primary-a25)`
             }}
           >
             Save Changes

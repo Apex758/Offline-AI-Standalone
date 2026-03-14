@@ -17,60 +17,53 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       case 'resource_created':
         switch (activity.resourceType) {
           case 'lesson':
-            return { Icon: BookMarked, color: '#1D362D' };
+            return { Icon: BookMarked, color: 'var(--dash-primary)' };
           case 'quiz':
-            return { Icon: ListChecks, color: '#F2A631' };
+            return { Icon: ListChecks, color: 'var(--dash-orange)' };
           case 'rubric':
-            return { Icon: FileText, color: '#552A01' };
+            return { Icon: FileText, color: 'var(--dash-text-sub)' };
           case 'kindergarten':
-            return { Icon: GraduationCap, color: '#1D362D' };
+            return { Icon: GraduationCap, color: 'var(--dash-primary)' };
           case 'multigrade':
-            return { Icon: Users, color: '#552A01' };
+            return { Icon: Users, color: 'var(--dash-text-sub)' };
           case 'cross-curricular':
-            return { Icon: School, color: '#F2A631' };
+            return { Icon: School, color: 'var(--dash-orange)' };
           default:
-            return { Icon: BookMarked, color: '#1D362D' };
+            return { Icon: BookMarked, color: 'var(--dash-primary)' };
         }
       case 'task_completed':
-        return { Icon: CheckCircle2, color: '#1D362D' };
+        return { Icon: CheckCircle2, color: 'var(--dash-primary)' };
       case 'milestone_reached':
-        return { Icon: Target, color: '#F2A631' };
+        return { Icon: Target, color: 'var(--dash-orange)' };
       default:
-        return { Icon: Clock, color: '#552A01' };
+        return { Icon: Clock, color: 'var(--dash-text-sub)' };
     }
   };
 
   const getActivityBg = (activity: Activity) => {
     switch (activity.type) {
       case 'resource_created':
-        return { bg: '#1D362D20', border: '#1D362D40' };
+        return { bg: 'var(--dash-primary-a12)', border: 'var(--dash-primary-a25)' };
       case 'task_completed':
-        return { bg: '#1D362D20', border: '#1D362D40' };
+        return { bg: 'var(--dash-primary-a12)', border: 'var(--dash-primary-a25)' };
       case 'milestone_reached':
-        return { bg: '#F2A63120', border: '#F2A63140' };
+        return { bg: 'var(--dash-orange-a12)', border: 'var(--dash-orange-a25)' };
       default:
-        return { bg: '#E8EAE340', border: '#E8EAE3' };
+        return { bg: 'var(--dash-border-a25)', border: 'var(--dash-border)' };
     }
   };
 
   const displayedActivities = activities.slice(0, limit);
 
   return (
-    <div 
-      className="rounded-2xl overflow-hidden"
-      style={{
-        background: 'rgba(255, 255, 255, 0.35)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-      }}
+    <div
+      className="widget-glass rounded-2xl overflow-hidden"
     >
       {/* Header */}
-      <div className="p-4" style={{ borderBottom: '1px solid #E8EAE3' }}>
+      <div className="p-4" style={{ borderBottom: `1px solid var(--dash-border)` }}>
         <div className="flex items-center space-x-2">
-          <Clock className="w-5 h-5" style={{ color: '#552A01' }} />
-          <h3 className="font-bold" style={{ color: '#020D03' }}>Recent Activity</h3>
+          <Clock className="w-5 h-5" style={{ color: 'var(--dash-text-sub)' }} />
+          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Recent Activity</h3>
         </div>
       </div>
 
@@ -78,9 +71,9 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       <div className="p-4">
         {displayedActivities.length === 0 ? (
           <div className="text-center py-8">
-            <Clock className="w-12 h-12 mx-auto mb-3" style={{ color: '#E8EAE3' }} />
-            <p className="text-sm font-medium" style={{ color: '#552A01' }}>No recent activity</p>
-            <p className="text-xs mt-1" style={{ color: '#A8AFA3' }}>Create resources to see your activity</p>
+            <Clock className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
+            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>No recent activity</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>Create resources to see your activity</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -93,9 +86,9 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
                 <div key={activity.id} className="relative">
                   {/* Timeline Line */}
                   {!isLast && (
-                    <div 
-                      className="absolute left-4 top-10 bottom-0 w-0.5" 
-                      style={{ backgroundColor: '#E8EAE3' }}
+                    <div
+                      className="absolute left-4 top-10 bottom-0 w-0.5"
+                      style={{ backgroundColor: 'var(--dash-border)' }}
                     />
                   )}
 
@@ -103,7 +96,7 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
                     {/* Icon */}
                     <div
                       className="relative z-10 flex-shrink-0 p-2 rounded-lg"
-                      style={{ 
+                      style={{
                         backgroundColor: bg,
                         border: `1px solid ${border}`
                       }}
@@ -113,10 +106,10 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
 
                     {/* Content */}
                     <div className="flex-1 min-w-0 pt-1">
-                      <p className="text-sm font-medium line-clamp-2" style={{ color: '#020D03' }}>
+                      <p className="text-sm font-medium line-clamp-2" style={{ color: 'var(--dash-text)' }}>
                         {activity.description}
                       </p>
-                      <p className="text-xs mt-1" style={{ color: '#552A01' }}>
+                      <p className="text-xs mt-1" style={{ color: 'var(--dash-text-sub)' }}>
                         {formatDistanceToNow(parseISO(activity.timestamp), { addSuffix: true })}
                       </p>
                     </div>
@@ -131,7 +124,7 @@ const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       {/* View All Link */}
       {activities.length > limit && (
         <div className="px-4 pb-4">
-          <button className="w-full text-sm font-medium" style={{ color: '#F2A631' }}>
+          <button className="w-full text-sm font-medium" style={{ color: 'var(--dash-orange)' }}>
             View all {activities.length} activities
           </button>
         </div>

@@ -64,48 +64,41 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="widget-glass rounded-2xl overflow-hidden"
       data-tutorial="analytics-calendar-widget"
-      style={{
-        background: 'rgba(255, 255, 255, 0.35)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-      }}
     >
       {/* Header */}
       <div
         className="px-4 py-3 flex items-center justify-between"
         data-tutorial="analytics-calendar-navigation"
         style={{
-          backgroundColor: '#1D362D'
+          backgroundColor: 'var(--dash-primary)'
         }}
       >
         <button
           onClick={goToPreviousMonth}
           className="p-1 rounded-lg hover:bg-white/10 transition-colors"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: '#F8E59D' }} />
+          <ChevronLeft className="w-5 h-5" style={{ color: 'var(--dash-primary-fg)' }} />
         </button>
-        
-        <h3 className="text-base font-bold" style={{ color: '#F8E59D' }}>
+
+        <h3 className="text-base font-bold" style={{ color: 'var(--dash-primary-fg)' }}>
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
-        
+
         <div className="flex items-center space-x-1">
           <button
             onClick={onExpandClick}
             className="p-1 rounded-lg hover:bg-white/10 transition-colors"
             title="Expand calendar"
           >
-            <Maximize2 className="w-4 h-4" style={{ color: '#F8E59D' }} />
+            <Maximize2 className="w-4 h-4" style={{ color: 'var(--dash-primary-fg)' }} />
           </button>
           <button
             onClick={goToNextMonth}
             className="p-1 rounded-lg hover:bg-white/10 transition-colors"
           >
-            <ChevronRight className="w-5 h-5" style={{ color: '#F8E59D' }} />
+            <ChevronRight className="w-5 h-5" style={{ color: 'var(--dash-primary-fg)' }} />
           </button>
         </div>
       </div>
@@ -115,10 +108,10 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="text-center text-xs font-semibold"
-              style={{ color: '#552A01' }}
+              style={{ color: 'var(--dash-text-sub)' }}
             >
               {day}
             </div>
@@ -141,55 +134,53 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
                 disabled={!isCurrentMonth}
                 className="aspect-square relative rounded-lg text-sm font-medium transition-all"
                 style={{
-                  color: !isCurrentMonth 
-                    ? '#E8EAE3' 
-                    : isSelected 
-                    ? '#F8E59D'
-                    : isTodayDate
-                    ? '#020D03'
-                    : '#020D03',
+                  color: !isCurrentMonth
+                    ? 'var(--dash-border)'
+                    : isSelected
+                    ? 'var(--dash-primary-fg)'
+                    : 'var(--dash-text)',
                   backgroundColor: isSelected
-                    ? '#1D362D'
+                    ? 'var(--dash-primary)'
                     : isTodayDate && !isSelected
-                    ? '#F2A631'
+                    ? 'var(--dash-orange)'
                     : hasActivity && !isSelected && isCurrentMonth
-                    ? '#F8E59D40'
+                    ? 'var(--dash-gold-a25)'
                     : 'transparent',
-                  boxShadow: isSelected 
-                    ? '0 4px 12px rgba(29, 54, 45, 0.2)' 
+                  boxShadow: isSelected
+                    ? `0 4px 12px var(--dash-primary-a25)`
                     : isTodayDate && !isSelected
-                    ? '0 2px 8px rgba(242, 166, 49, 0.3)'
+                    ? `0 2px 8px var(--dash-orange-a30)`
                     : 'none',
                   cursor: isCurrentMonth ? 'pointer' : 'default'
                 }}
               >
                 <span className="relative z-10">{format(day, 'd')}</span>
-                
+
                 {/* Activity Indicators */}
                 {hasActivity && isCurrentMonth && (
                   <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
                     {resourceCount > 0 && (
-                      <div 
-                        className="w-1 h-1 rounded-full" 
-                        style={{ 
-                          backgroundColor: isSelected ? '#F8E59D' : '#1D362D' 
-                        }} 
+                      <div
+                        className="w-1 h-1 rounded-full"
+                        style={{
+                          backgroundColor: isSelected ? 'var(--dash-primary-fg)' : 'var(--dash-primary)'
+                        }}
                       />
                     )}
                     {taskCount > 0 && (
-                      <div 
-                        className="w-1 h-1 rounded-full" 
-                        style={{ 
-                          backgroundColor: isSelected ? '#F8E59D' : '#F2A631' 
-                        }} 
+                      <div
+                        className="w-1 h-1 rounded-full"
+                        style={{
+                          backgroundColor: isSelected ? 'var(--dash-primary-fg)' : 'var(--dash-orange)'
+                        }}
                       />
                     )}
                     {milestoneCount > 0 && (
-                      <div 
-                        className="w-1 h-1 rounded-full" 
-                        style={{ 
-                          backgroundColor: isSelected ? '#F8E59D' : '#552A01' 
-                        }} 
+                      <div
+                        className="w-1 h-1 rounded-full"
+                        style={{
+                          backgroundColor: isSelected ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)'
+                        }}
                       />
                     )}
                   </div>
@@ -200,19 +191,19 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
         </div>
 
         {/* Legend */}
-        <div className="mt-4 pt-3" data-tutorial="analytics-calendar-legend" style={{ borderTop: '1px solid #E8EAE3' }}>
+        <div className="mt-4 pt-3" data-tutorial="analytics-calendar-legend" style={{ borderTop: `1px solid var(--dash-border)` }}>
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1D362D' }} />
-              <span style={{ color: '#552A01' }}>Resources</span>
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--dash-primary)' }} />
+              <span style={{ color: 'var(--dash-text-sub)' }}>Resources</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F2A631' }} />
-              <span style={{ color: '#552A01' }}>Tasks</span>
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--dash-orange)' }} />
+              <span style={{ color: 'var(--dash-text-sub)' }}>Tasks</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#552A01' }} />
-              <span style={{ color: '#552A01' }}>Milestones</span>
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--dash-text-sub)' }} />
+              <span style={{ color: 'var(--dash-text-sub)' }}>Milestones</span>
             </div>
           </div>
         </div>

@@ -58,6 +58,39 @@
   --notif-text-faint: #9ca3af;
   --notif-divider: rgba(0, 0, 0, 0.08);
   --notif-unread-bg: rgba(0, 0, 0, 0.04);
+
+  /* Dashboard / Analytics palette */
+  --dash-bg: #FDFDF8;
+  --dash-bg-alpha: rgba(253, 253, 248, 0.9);
+  --dash-text: #020D03;
+  --dash-text-sub: #552A01;
+  --dash-text-faint: #A8AFA3;
+  --dash-primary: #1D362D;
+  --dash-primary-fg: #F8E59D;
+  --dash-orange: #F2A631;
+  --dash-border: #E8EAE3;
+  --dash-shadow: rgba(29, 54, 45, 0.06);
+  --dash-card-bg: #ffffff;
+  --dash-card-shadow: rgba(29, 54, 45, 0.08);
+  --dash-overlay: rgba(2, 13, 3, 0.5);
+  --dash-primary-a12: rgba(29, 54, 45, 0.12);
+  --dash-primary-a25: rgba(29, 54, 45, 0.25);
+  --dash-orange-a12: rgba(242, 166, 49, 0.12);
+  --dash-orange-a25: rgba(242, 166, 49, 0.25);
+  --dash-orange-a30: rgba(242, 166, 49, 0.3);
+  --dash-orange-a60: rgba(242, 166, 49, 0.6);
+  --dash-brown-a12: rgba(85, 42, 1, 0.12);
+  --dash-brown-a25: rgba(85, 42, 1, 0.25);
+  --dash-gold-a25: rgba(248, 229, 157, 0.25);
+  --dash-border-a25: rgba(232, 234, 227, 0.25);
+  --dash-edge-btn: rgba(255, 255, 255, 0.92);
+  --dash-timeframe-bg: rgba(255, 255, 255, 0.9);
+  --dash-task-bg: rgba(255, 255, 255, 0.3);
+  --dash-completed-bg: rgba(253, 253, 248, 0.3);
+  --dash-radial-track: rgba(29, 54, 45, 0.05);
+  --dash-axis-tick: #7a8c7e;
+  --dash-hidden-dot: #d1d5db;
+  --dash-hidden-text: #9ca3af;
 }
 
 .dark {
@@ -114,6 +147,39 @@
   --notif-text-faint: #6b7280;
   --notif-divider: rgba(255, 255, 255, 0.05);
   --notif-unread-bg: rgba(255, 255, 255, 0.05);
+
+  /* Dashboard / Analytics palette — dark */
+  --dash-bg: #111827;
+  --dash-bg-alpha: rgba(17, 24, 39, 0.9);
+  --dash-text: #f3f4f6;
+  --dash-text-sub: #9ca3af;
+  --dash-text-faint: #6b7280;
+  --dash-primary: #4a9070;
+  --dash-primary-fg: #F8E59D;
+  --dash-orange: #F2A631;
+  --dash-border: #374151;
+  --dash-shadow: rgba(0, 0, 0, 0.2);
+  --dash-card-bg: #1f2937;
+  --dash-card-shadow: rgba(0, 0, 0, 0.25);
+  --dash-overlay: rgba(0, 0, 0, 0.6);
+  --dash-primary-a12: rgba(74, 144, 112, 0.15);
+  --dash-primary-a25: rgba(74, 144, 112, 0.25);
+  --dash-orange-a12: rgba(242, 166, 49, 0.15);
+  --dash-orange-a25: rgba(242, 166, 49, 0.25);
+  --dash-orange-a30: rgba(242, 166, 49, 0.2);
+  --dash-orange-a60: rgba(242, 166, 49, 0.4);
+  --dash-brown-a12: rgba(156, 163, 175, 0.15);
+  --dash-brown-a25: rgba(156, 163, 175, 0.25);
+  --dash-gold-a25: rgba(248, 229, 157, 0.15);
+  --dash-border-a25: rgba(55, 65, 81, 0.25);
+  --dash-edge-btn: rgba(31, 41, 55, 0.92);
+  --dash-timeframe-bg: rgba(31, 41, 55, 0.9);
+  --dash-task-bg: rgba(255, 255, 255, 0.06);
+  --dash-completed-bg: rgba(31, 41, 55, 0.3);
+  --dash-radial-track: rgba(255, 255, 255, 0.08);
+  --dash-axis-tick: #9ca3af;
+  --dash-hidden-dot: #4b5563;
+  --dash-hidden-text: #6b7280;
 }
 
 /* ── Global modern scrollbars ── */

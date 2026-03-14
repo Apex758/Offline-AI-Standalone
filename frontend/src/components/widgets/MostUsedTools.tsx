@@ -31,11 +31,11 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
 
   const getToolColor = (index: number): { bg: string; color: string; shadow: string } => {
     const colors = [
-      { bg: '#1D362D20', color: '#1D362D', shadow: 'rgba(29, 54, 45, 0.15)' },
-      { bg: '#F2A63120', color: '#F2A631', shadow: 'rgba(242, 166, 49, 0.15)' },
-      { bg: '#552A0120', color: '#552A01', shadow: 'rgba(85, 42, 1, 0.15)' },
-      { bg: '#1D362D20', color: '#1D362D', shadow: 'rgba(29, 54, 45, 0.15)' },
-      { bg: '#F8E59D40', color: '#552A01', shadow: 'rgba(248, 229, 157, 0.15)' }
+      { bg: 'var(--dash-primary-a12)', color: 'var(--dash-primary)', shadow: 'var(--dash-primary-a25)' },
+      { bg: 'var(--dash-orange-a12)', color: 'var(--dash-orange)', shadow: 'var(--dash-orange-a25)' },
+      { bg: 'var(--dash-brown-a12)', color: 'var(--dash-text-sub)', shadow: 'var(--dash-brown-a25)' },
+      { bg: 'var(--dash-primary-a12)', color: 'var(--dash-primary)', shadow: 'var(--dash-primary-a25)' },
+      { bg: 'var(--dash-gold-a25)', color: 'var(--dash-text-sub)', shadow: 'var(--dash-gold-a25)' }
     ];
     return colors[index % colors.length];
   };
@@ -45,24 +45,17 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="widget-glass rounded-2xl overflow-hidden"
       data-tutorial="analytics-most-used-tools"
-      style={{
-        background: 'rgba(255, 255, 255, 0.35)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-      }}
     >
       {/* Header */}
-      <div 
+      <div
         className="p-4"
-        style={{ borderBottom: '1px solid #E8EAE3' }}
+        style={{ borderBottom: `1px solid var(--dash-border)` }}
       >
         <div className="flex items-center space-x-2">
-          <Sparkles className="w-5 h-5" style={{ color: '#F2A631' }} />
-          <h3 className="font-bold" style={{ color: '#020D03' }}>Most Used Tools</h3>
+          <Sparkles className="w-5 h-5" style={{ color: 'var(--dash-orange)' }} />
+          <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Most Used Tools</h3>
         </div>
       </div>
 
@@ -70,9 +63,9 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
       <div className="p-4">
         {limitedToolUsage.length === 0 ? (
           <div className="text-center py-8">
-            <Sparkles className="w-12 h-12 mx-auto mb-3" style={{ color: '#E8EAE3' }} />
-            <p className="text-sm font-medium" style={{ color: '#552A01' }}>No tool usage data yet</p>
-            <p className="text-xs mt-1" style={{ color: '#A8AFA3' }}>Start using tools to see stats</p>
+            <Sparkles className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
+            <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>No tool usage data yet</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>Start using tools to see stats</p>
           </div>
         ) : (
           <div className="grid grid-cols-5 gap-3" data-tutorial="analytics-tools-grid">
@@ -86,10 +79,10 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
                   onClick={() => onToolClick(tool.type)}
                   className="flex flex-col items-center p-3 rounded-xl transition-all hover:scale-105 group"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.3)',
+                    background: 'var(--dash-task-bg)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.5)',
+                    border: `1px solid var(--dash-border)`,
                     boxShadow: `0 2px 8px ${shadow}`
                   }}
                   title={tool.name}
@@ -100,11 +93,11 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
                     style={{ backgroundColor: bg }}
                   >
                     <Icon className="w-6 h-6" style={{ color }} />
-                    
+
                     {/* Rank Badge */}
                     <div
                       className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{ 
+                      style={{
                         backgroundColor: color,
                         color: 'white',
                         boxShadow: `0 2px 4px ${shadow}`
@@ -115,9 +108,9 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
                   </div>
 
                   {/* Tool Name */}
-                  <p 
+                  <p
                     className="text-xs font-semibold text-center line-clamp-2"
-                    style={{ color: '#020D03' }}
+                    style={{ color: 'var(--dash-text)' }}
                   >
                     {tool.name}
                   </p>
@@ -131,4 +124,4 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
   );
 };
 
-export default MostUsedTools; 
+export default MostUsedTools;

@@ -53,18 +53,18 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
       <div
         className="rounded-xl p-3"
         style={{
-          backgroundColor: 'white',
-          border: '1px solid #E8EAE3',
-          boxShadow: '0 8px 24px rgba(29, 54, 45, 0.15)',
+          backgroundColor: 'var(--dash-card-bg)',
+          border: `1px solid var(--dash-border)`,
+          boxShadow: `0 8px 24px var(--dash-card-shadow)`,
           minWidth: 150,
         }}
       >
         <p className="font-semibold mb-1 text-xs" style={{ color: d.fill }}>{d.name}</p>
-        <p className="text-xs" style={{ color: '#552A01' }}>
-          Count: <span className="font-semibold" style={{ color: '#020D03' }}>{d.count}</span>
+        <p className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
+          Count: <span className="font-semibold" style={{ color: 'var(--dash-text)' }}>{d.count}</span>
         </p>
-        <p className="text-xs" style={{ color: '#552A01' }}>
-          Share: <span className="font-semibold" style={{ color: '#020D03' }}>{d.percentage}%</span>
+        <p className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
+          Share: <span className="font-semibold" style={{ color: 'var(--dash-text)' }}>{d.percentage}%</span>
         </p>
       </div>
     );
@@ -73,12 +73,12 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
   return (
     <div
       className="rounded-2xl p-6 h-full flex flex-col"
-      style={{ backgroundColor: 'white', boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)' }}
+      style={{ backgroundColor: 'var(--dash-card-bg)', boxShadow: `0 4px 16px var(--dash-card-shadow)` }}
     >
       {/* Header */}
       <div className="flex items-center space-x-2 mb-4">
-        <BarChart2 className="w-5 h-5" style={{ color: '#1D362D' }} />
-        <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Type Distribution</h3>
+        <BarChart2 className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
+        <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Resource Type Distribution</h3>
       </div>
 
       {/* Chart + Legend */}
@@ -99,7 +99,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
               <RadialBar
                 dataKey="value"
                 cornerRadius={5}
-                background={{ fill: 'rgba(29, 54, 45, 0.05)' }}
+                background={{ fill: 'var(--dash-radial-track)' }}
               />
               <Tooltip content={<CustomTooltip />} />
             </RadialBarChart>
@@ -109,8 +109,8 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
         {/* Toggleable Legend */}
         <div className="w-44 space-y-2.5">
           <div className="text-center mb-3">
-            <div className="text-2xl font-bold" style={{ color: '#020D03' }}>{total}</div>
-            <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--dash-text)' }}>{total}</div>
+            <div className="text-xs font-medium" style={{ color: 'var(--dash-text-sub)' }}>Total</div>
           </div>
           {allRadialData.map((entry, i) => {
             const hidden = hiddenItems.has(entry.name);
@@ -123,18 +123,18 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
               >
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%',
-                  background: hidden ? '#d1d5db' : entry.fill,
+                  background: hidden ? 'var(--dash-hidden-dot)' : entry.fill,
                   flexShrink: 0, display: 'inline-block',
                   transition: 'background 0.2s',
                 }} />
                 <span className="text-xs truncate" style={{
-                  color: hidden ? '#9ca3af' : '#552A01',
+                  color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
                   textDecoration: hidden ? 'line-through' : 'none',
                   transition: 'color 0.2s',
                 }}>
                   {entry.name}
                 </span>
-                <span className="text-xs font-semibold ml-auto" style={{ color: hidden ? '#9ca3af' : '#020D03' }}>
+                <span className="text-xs font-semibold ml-auto" style={{ color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text)' }}>
                   {entry.count}
                 </span>
               </button>

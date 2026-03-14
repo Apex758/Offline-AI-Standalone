@@ -22,31 +22,31 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
 }) => {
   const groupedTasks = groupTasksByStatus(tasks);
 
-  // Natural priority colors
+  // Priority colors using CSS variables
   const priorityStyles = {
-    urgent: { bg: '#552A0120', border: '#552A01', text: '#552A01' },
-    high: { bg: '#F2A63120', border: '#F2A631', text: '#F2A631' },
-    medium: { bg: '#1D362D20', border: '#1D362D', text: '#1D362D' },
-    low: { bg: '#E8EAE340', border: '#A8AFA3', text: '#552A01' }
+    urgent: { bg: 'var(--dash-brown-a12)', border: 'var(--dash-text-sub)', text: 'var(--dash-text-sub)' },
+    high: { bg: 'var(--dash-orange-a12)', border: 'var(--dash-orange)', text: 'var(--dash-orange)' },
+    medium: { bg: 'var(--dash-primary-a12)', border: 'var(--dash-primary)', text: 'var(--dash-primary)' },
+    low: { bg: 'var(--dash-border-a25)', border: 'var(--dash-text-faint)', text: 'var(--dash-text-sub)' }
   };
 
   const renderTaskItem = (task: Task, isOverdue: boolean = false) => {
     const priority = priorityStyles[task.priority];
-    
+
     return (
       <div
         key={task.id}
         className="group relative p-3 rounded-xl transition-all cursor-pointer"
         style={{
           background: isOverdue
-            ? 'rgba(242, 166, 49, 0.3)'
+            ? 'var(--dash-orange-a30)'
             : task.completed
-            ? 'rgba(253, 253, 248, 0.3)'
-            : 'rgba(255, 255, 255, 0.3)',
+            ? 'var(--dash-completed-bg)'
+            : 'var(--dash-task-bg)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          border: `1px solid ${isOverdue ? 'rgba(242, 166, 49, 0.6)' : 'rgba(255, 255, 255, 0.5)'}`,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          border: `1px solid ${isOverdue ? 'var(--dash-orange-a60)' : 'var(--dash-border)'}`,
+          boxShadow: `0 2px 8px var(--dash-card-shadow)`,
           opacity: task.completed ? 0.6 : 1
         }}
         onClick={() => onTaskEdit(task)}
@@ -61,9 +61,9 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             className="flex-shrink-0 mt-0.5"
           >
             {task.completed ? (
-              <CheckCircle2 className="w-5 h-5" style={{ color: '#1D362D' }} />
+              <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
             ) : (
-              <Circle className="w-5 h-5 transition-colors" style={{ color: '#E8EAE3' }} />
+              <Circle className="w-5 h-5 transition-colors" style={{ color: 'var(--dash-border)' }} />
             )}
           </button>
 
@@ -72,11 +72,11 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             <div className="flex items-start justify-between gap-2">
               <h4
                 className={`font-semibold text-sm ${task.completed ? 'line-through' : ''}`}
-                style={{ color: task.completed ? '#A8AFA3' : '#020D03' }}
+                style={{ color: task.completed ? 'var(--dash-text-faint)' : 'var(--dash-text)' }}
               >
                 {task.title}
               </h4>
-              
+
               {/* Priority Badge */}
               <span
                 className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium"
@@ -91,15 +91,15 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             </div>
 
             {task.description && (
-              <p className="text-xs mt-1 line-clamp-2" style={{ color: '#552A01' }}>
+              <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--dash-text-sub)' }}>
                 {task.description}
               </p>
             )}
 
             {/* Date */}
             <div className="flex items-center space-x-2 mt-2">
-              <Calendar className="w-3 h-3" style={{ color: '#A8AFA3' }} />
-              <span className="text-xs" style={{ color: '#552A01' }}>
+              <Calendar className="w-3 h-3" style={{ color: 'var(--dash-text-faint)' }} />
+              <span className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
                 {format(parseISO(task.date), 'MMM d, yyyy')}
               </span>
             </div>
@@ -109,7 +109,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
         {/* Overdue Indicator */}
         {isOverdue && !task.completed && (
           <div className="absolute top-2 right-2">
-            <AlertCircle className="w-4 h-4" style={{ color: '#F2A631' }} />
+            <AlertCircle className="w-4 h-4" style={{ color: 'var(--dash-orange)' }} />
           </div>
         )}
       </div>
@@ -120,23 +120,16 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden flex flex-col"
+      className="widget-glass rounded-2xl overflow-hidden flex flex-col"
       data-tutorial="analytics-task-widget"
-      style={{
-        background: 'rgba(255, 255, 255, 0.35)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-      }}
     >
       {/* Header */}
-      <div 
+      <div
         className="p-4 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: '1px solid #E8EAE3' }}
+        style={{ borderBottom: `1px solid var(--dash-border)` }}
       >
-        <h3 className="font-bold flex items-center" style={{ color: '#020D03' }}>
-          <Flag className="w-5 h-5 mr-2" style={{ color: '#1D362D' }} />
+        <h3 className="font-bold flex items-center" style={{ color: 'var(--dash-text)' }}>
+          <Flag className="w-5 h-5 mr-2" style={{ color: 'var(--dash-primary)' }} />
           Tasks
         </h3>
         <button
@@ -144,9 +137,9 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
           data-tutorial="analytics-add-task"
           className="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all hover:scale-105 text-sm font-medium"
           style={{
-            backgroundColor: '#F2A631',
+            backgroundColor: 'var(--dash-orange)',
             color: 'white',
-            boxShadow: '0 2px 8px rgba(242, 166, 49, 0.3)'
+            boxShadow: `0 2px 8px var(--dash-orange-a30)`
           }}
         >
           <Plus className="w-4 h-4" />
@@ -158,9 +151,9 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
       <div className="overflow-y-auto p-4 space-y-4" data-tutorial="analytics-task-list" style={{ maxHeight: '500px' }}>
         {!hasAnyTasks ? (
           <div className="text-center py-12">
-            <Flag className="w-12 h-12 mx-auto mb-3" style={{ color: '#E8EAE3' }} />
-            <p className="font-medium" style={{ color: '#552A01' }}>No tasks yet</p>
-            <p className="text-sm mt-1" style={{ color: '#A8AFA3' }}>Click "Add" to create your first task</p>
+            <Flag className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
+            <p className="font-medium" style={{ color: 'var(--dash-text-sub)' }}>No tasks yet</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--dash-text-faint)' }}>Click "Add" to create your first task</p>
           </div>
         ) : (
           <>
@@ -168,8 +161,8 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             {groupedTasks.overdue.length > 0 && (
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  <AlertCircle className="w-4 h-4" style={{ color: '#F2A631' }} />
-                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: '#F2A631' }}>
+                  <AlertCircle className="w-4 h-4" style={{ color: 'var(--dash-orange)' }} />
+                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--dash-orange)' }}>
                     Overdue ({groupedTasks.overdue.length})
                   </h4>
                 </div>
@@ -183,8 +176,8 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             {groupedTasks.today.length > 0 && (
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="w-4 h-4" style={{ color: '#1D362D' }} />
-                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: '#1D362D' }}>
+                  <Calendar className="w-4 h-4" style={{ color: 'var(--dash-primary)' }} />
+                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--dash-primary)' }}>
                     Today ({groupedTasks.today.length})
                   </h4>
                 </div>
@@ -198,8 +191,8 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
             {groupedTasks.upcoming.length > 0 && (
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="w-4 h-4" style={{ color: '#552A01' }} />
-                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: '#552A01' }}>
+                  <Calendar className="w-4 h-4" style={{ color: 'var(--dash-text-sub)' }} />
+                  <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--dash-text-sub)' }}>
                     Upcoming ({groupedTasks.upcoming.length})
                   </h4>
                 </div>
@@ -207,7 +200,7 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
                   {groupedTasks.upcoming.slice(0, 5).map((task) => renderTaskItem(task))}
                 </div>
                 {groupedTasks.upcoming.length > 5 && (
-                  <p className="text-xs mt-2 text-center" style={{ color: '#A8AFA3' }}>
+                  <p className="text-xs mt-2 text-center" style={{ color: 'var(--dash-text-faint)' }}>
                     +{groupedTasks.upcoming.length - 5} more tasks
                   </p>
                 )}
@@ -216,15 +209,15 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
 
             {/* Completed Tasks (collapsed) */}
             {groupedTasks.completed.length > 0 && (
-              <div className="pt-3" style={{ borderTop: '1px solid #E8EAE3' }}>
-                <h4 className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: '#A8AFA3' }}>
+              <div className="pt-3" style={{ borderTop: `1px solid var(--dash-border)` }}>
+                <h4 className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--dash-text-faint)' }}>
                   Completed ({groupedTasks.completed.length})
                 </h4>
                 <div className="space-y-2">
                   {groupedTasks.completed.slice(0, 3).map((task) => renderTaskItem(task))}
                 </div>
                 {groupedTasks.completed.length > 3 && (
-                  <p className="text-xs mt-2 text-center" style={{ color: '#A8AFA3' }}>
+                  <p className="text-xs mt-2 text-center" style={{ color: 'var(--dash-text-faint)' }}>
                     +{groupedTasks.completed.length - 3} more completed
                   </p>
                 )}

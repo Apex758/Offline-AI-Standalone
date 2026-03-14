@@ -52,20 +52,20 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
       <div
         className="rounded-xl p-3"
         style={{
-          backgroundColor: 'white',
-          border: '1px solid #E8EAE3',
-          boxShadow: '0 8px 24px rgba(29, 54, 45, 0.15)',
+          backgroundColor: 'var(--dash-card-bg)',
+          border: `1px solid var(--dash-border)`,
+          boxShadow: `0 8px 24px var(--dash-card-shadow)`,
           minWidth: 160,
         }}
       >
-        <p className="font-semibold mb-2 text-xs" style={{ color: '#020D03' }}>
+        <p className="font-semibold mb-2 text-xs" style={{ color: 'var(--dash-text)' }}>
           {format(parseISO(label), 'MMM d, yyyy')}
         </p>
         {payload.map((entry: any, i: number) => (
           <div key={i} className="flex items-center gap-2 text-xs mb-1">
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
-            <span style={{ color: '#552A01' }}>{entry.name}</span>
-            <span className="font-semibold ml-auto" style={{ color: '#020D03' }}>{entry.value}</span>
+            <span style={{ color: 'var(--dash-text-sub)' }}>{entry.name}</span>
+            <span className="font-semibold ml-auto" style={{ color: 'var(--dash-text)' }}>{entry.value}</span>
           </div>
         ))}
       </div>
@@ -75,12 +75,12 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   return (
     <div
       className="rounded-2xl p-6 h-full flex flex-col"
-      style={{ backgroundColor: 'white', boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)' }}
+      style={{ backgroundColor: 'var(--dash-card-bg)', boxShadow: `0 4px 16px var(--dash-card-shadow)` }}
     >
       {/* Header */}
       <div className="flex items-center space-x-2 mb-4">
-        <TrendingUp className="w-5 h-5" style={{ color: '#1D362D' }} />
-        <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Creation Trends</h3>
+        <TrendingUp className="w-5 h-5" style={{ color: 'var(--dash-primary)' }} />
+        <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Resource Creation Trends</h3>
       </div>
 
       {/* Stacked Area Chart */}
@@ -97,16 +97,16 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
               );
             })}
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E8EAE3" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border)" vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={formatXAxis}
-            tick={{ fontSize: 11, fill: '#7a8c7e' }}
+            tick={{ fontSize: 11, fill: 'var(--dash-axis-tick)' }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: '#7a8c7e' }}
+            tick={{ fontSize: 11, fill: 'var(--dash-axis-tick)' }}
             axisLine={false}
             tickLine={false}
           />
@@ -147,13 +147,13 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
             >
               <span style={{
                 width: 8, height: 8, borderRadius: '50%',
-                background: hidden ? '#d1d5db' : color,
+                background: hidden ? 'var(--dash-hidden-dot)' : color,
                 flexShrink: 0, display: 'inline-block',
                 transition: 'background 0.2s',
               }} />
               <span style={{
                 fontSize: 11,
-                color: hidden ? '#9ca3af' : '#552A01',
+                color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
                 textDecoration: hidden ? 'line-through' : 'none',
                 transition: 'color 0.2s',
               }}>
