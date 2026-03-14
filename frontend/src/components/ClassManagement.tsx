@@ -3,7 +3,7 @@ import {
   Users, Plus, Trash2, Edit, Search, X, Save,
   ChevronRight, Award, BookOpen, Calendar, Phone,
   User, AlertCircle, Upload, Download, FileSpreadsheet,
-  CheckCircle, GraduationCap, BarChart2
+  CheckCircle, GraduationCap, BarChart2, ClipboardCheck, Zap
 } from 'lucide-react';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
@@ -55,6 +55,33 @@ const EMPTY_FORM: StudentFormData = {
 const GRADE_LEVELS = ['K', '1', '2', '3', '4', '5', '6'];
 const GENDERS = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
+const ATTENDANCE_STATUSES = ['Present', 'Absent', 'Late', 'Excused'] as const;
+type AttendanceStatus = typeof ATTENDANCE_STATUSES[number];
+const ENGAGEMENT_LEVELS = ['Highly Engaged', 'Engaged', 'Partially Engaged', 'Disengaged'] as const;
+type EngagementLevel = typeof ENGAGEMENT_LEVELS[number];
+
+interface AttendanceRecord {
+  student_id: string;
+  full_name: string;
+  status: AttendanceStatus;
+  engagement_level: EngagementLevel;
+  notes: string;
+}
+
+const STATUS_COLORS: Record<AttendanceStatus, string> = {
+  Present: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700',
+  Absent: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700',
+  Late: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700',
+  Excused: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700',
+};
+
+const ENGAGEMENT_MAP: Record<EngagementLevel, number> = {
+  'Highly Engaged': 4,
+  'Engaged': 3,
+  'Partially Engaged': 2,
+  'Disengaged': 1,
+};
+
 type RightView =
   | { type: 'empty' }
   | { type: 'grade'; grade: string }
@@ -101,6 +128,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [attendanceDate, setAttendanceDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attendanceSaving, setAttendanceSaving] = useState(false);
+  const [attendanceDirty, setAttendanceDirty] = useState(false);
+  const [attendanceSaved, setAttendanceSaved] = useState(false);
+
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ created: number; updated: number; skipped: number; errors: string[] } | null>(null);
@@ -131,7 +165,79 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
     }
   };
 
+  const fetchAttendance = async (className: string, date: string, classStudents: Student[]) => {
+    setAttendanceLoading(true);
+    setAttendanceSaved(false);
+    let savedMap: Record<string, any> = {};
+    try {
+      const r = await axios.get(`${API_BASE}/api/attendance`, { params: { class_name: className, date } });
+      for (const rec of r.data) {
+        savedMap[rec.student_id] = rec;
+      }
+    } catch {
+      // API may not be available yet — still show defaults
+    }
+    const records: AttendanceRecord[] = classStudents.map(s => {
+      const existing = savedMap[s.id];
+      return {
+        student_id: s.id,
+        full_name: s.full_name,
+        status: existing?.status ?? 'Present',
+        engagement_level: existing?.engagement_level ?? 'Engaged',
+        notes: existing?.notes ?? '',
+      };
+    });
+    setAttendanceRecords(records);
+    setAttendanceDirty(false);
+    setAttendanceLoading(false);
+  };
+
+  const saveAttendance = async (className: string, date: string) => {
+    setAttendanceSaving(true);
+    try {
+      await axios.post(`${API_BASE}/api/attendance`, {
+        records: attendanceRecords.map(r => ({
+          student_id: r.student_id,
+          class_name: className,
+          date,
+          status: r.status,
+          engagement_level: r.engagement_level,
+          notes: r.notes,
+        })),
+      });
+      setAttendanceDirty(false);
+      setAttendanceSaved(true);
+      setTimeout(() => setAttendanceSaved(false), 2000);
+    } catch {
+      setError('Failed to save attendance.');
+    } finally {
+      setAttendanceSaving(false);
+    }
+  };
+
+  const updateAttendanceField = (studentId: string, field: 'status' | 'engagement_level' | 'notes', value: string) => {
+    setAttendanceRecords(prev => prev.map(r => r.student_id === studentId ? { ...r, [field]: value } : r));
+    setAttendanceDirty(true);
+    setAttendanceSaved(false);
+  };
+
+  const markAllPresent = () => {
+    setAttendanceRecords(prev => prev.map(r => ({ ...r, status: 'Present' as AttendanceStatus })));
+    setAttendanceDirty(true);
+  };
+
   useEffect(() => { fetchStudents(); }, []);
+
+  // Load attendance when viewing a class and date changes
+  useEffect(() => {
+    if (rightView.type === 'class' && students.length > 0) {
+      const gradeNode = tree.find(g => g.grade === rightView.grade);
+      const classNode = gradeNode?.classes.find(c => c.cls === rightView.cls);
+      if (classNode) {
+        fetchAttendance(rightView.cls, attendanceDate, classNode.students);
+      }
+    }
+  }, [rightView, attendanceDate, students]);
 
   // ── Tree structure ────────────────────────────────────────────────────────
 
@@ -663,6 +769,148 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
             <StatCard icon={<User className="w-5 h-5" />} label="Male" value={male} color={accentColor} />
             <StatCard icon={<User className="w-5 h-5" />} label="Female" value={female} color={accentColor} />
           </div>
+
+          {/* Attendance & Engagement */}
+          {cs.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-theme-hint uppercase tracking-wider mb-3 flex items-center gap-2">
+                <ClipboardCheck className="w-4 h-4" /> Attendance & Engagement
+              </h2>
+
+              {/* Controls */}
+              <div className="rounded-xl p-4 widget-glass mb-4">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-theme-muted" />
+                    <input
+                      type="date"
+                      value={attendanceDate}
+                      onChange={e => setAttendanceDate(e.target.value)}
+                      className="px-3 py-1.5 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': accentColor } as any}
+                    />
+                  </div>
+                  <button
+                    onClick={markAllPresent}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition hover:opacity-90 text-white"
+                    style={{ backgroundColor: '#10b981' }}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" /> Mark All Present
+                  </button>
+                  <div className="flex-1" />
+                  {attendanceSaved && (
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                      <CheckCircle className="w-3.5 h-3.5" /> Saved
+                    </span>
+                  )}
+                  <button
+                    onClick={() => saveAttendance(cls, attendanceDate)}
+                    disabled={!attendanceDirty || attendanceSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    {attendanceSaving ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5" />
+                    )}
+                    {attendanceSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Summary Stats */}
+              {(() => {
+                const present = attendanceRecords.filter(r => r.status === 'Present').length;
+                const absent = attendanceRecords.filter(r => r.status === 'Absent').length;
+                const late = attendanceRecords.filter(r => r.status === 'Late').length;
+                const avgEng = attendanceRecords.length > 0
+                  ? (attendanceRecords.reduce((sum, r) => sum + ENGAGEMENT_MAP[r.engagement_level], 0) / attendanceRecords.length).toFixed(1)
+                  : '—';
+                const engLabel = Number(avgEng) >= 3.5 ? 'High' : Number(avgEng) >= 2.5 ? 'Moderate' : Number(avgEng) >= 1.5 ? 'Low' : typeof avgEng === 'string' ? '—' : 'Very Low';
+
+                return (
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="rounded-xl p-3 widget-glass text-center">
+                      <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{present}</p>
+                      <p className="text-[11px] text-theme-muted">Present</p>
+                    </div>
+                    <div className="rounded-xl p-3 widget-glass text-center">
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{absent}</p>
+                      <p className="text-[11px] text-theme-muted">Absent</p>
+                    </div>
+                    <div className="rounded-xl p-3 widget-glass text-center">
+                      <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{late}</p>
+                      <p className="text-[11px] text-theme-muted">Late</p>
+                    </div>
+                    <div className="rounded-xl p-3 widget-glass text-center">
+                      <p className="text-lg font-bold" style={{ color: accentColor }}>{avgEng}</p>
+                      <p className="text-[11px] text-theme-muted">Avg Engagement ({engLabel})</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Attendance Table */}
+              {attendanceLoading ? (
+                <div className="text-center py-8 text-theme-muted text-sm">Loading attendance...</div>
+              ) : (
+                <div className="space-y-1.5">
+                  {attendanceRecords.map(rec => (
+                    <div
+                      key={rec.student_id}
+                      className="rounded-xl px-4 py-3 flex items-center gap-4 widget-glass"
+                    >
+                      {/* Avatar */}
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                        style={{ backgroundColor: accentColor }}
+                      >
+                        {rec.full_name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Name */}
+                      <span className="text-sm font-semibold text-theme-heading flex-shrink-0 w-36 truncate" title={rec.full_name}>
+                        {rec.full_name}
+                      </span>
+
+                      {/* Status buttons */}
+                      <div className="flex gap-1">
+                        {ATTENDANCE_STATUSES.map(st => (
+                          <button
+                            key={st}
+                            onClick={() => updateAttendanceField(rec.student_id, 'status', st)}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                              rec.status === st
+                                ? STATUS_COLORS[st]
+                                : 'border-transparent text-theme-hint hover:bg-theme-hover'
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Engagement dropdown */}
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <Zap className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                        <select
+                          value={rec.engagement_level}
+                          onChange={e => updateAttendanceField(rec.student_id, 'engagement_level', e.target.value)}
+                          className="px-2 py-1 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-xs focus:outline-none focus:ring-1"
+                          style={{ '--tw-ring-color': accentColor } as any}
+                        >
+                          {ENGAGEMENT_LEVELS.map(lvl => (
+                            <option key={lvl} value={lvl}>{lvl}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Student list */}
           <div>

@@ -51,6 +51,8 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useQueue } from '../contexts/QueueContext';
 import NotificationPanel from './NotificationPanel';
+import CommandPalette from './CommandPalette';
+import { SearchEntry } from '../data/searchIndex';
 import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
 
@@ -209,6 +211,64 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { queue } = useQueue();
   const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
+  // Ctrl+K / Cmd+K to open command palette
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
+  const handleCommandPaletteNavigate = (entry: SearchEntry) => {
+    // Handle direct actions
+    if (entry.action) {
+      switch (entry.action) {
+        case 'toggleSplitView':
+          toggleSplitView();
+          return;
+        case 'toggleNotifications':
+          setNotifPanelOpen(prev => !prev);
+          return;
+        case 'closeAllTabs':
+          setSplitView({ isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' });
+          setTabs([]);
+          setActiveTabId(null);
+          localStorage.removeItem('dashboard-tabs');
+          localStorage.removeItem('dashboard-active-tab');
+          localStorage.removeItem('dashboard-split-view');
+          return;
+      }
+    }
+
+    // Handle tool navigation
+    if (entry.toolType) {
+      const tool = tools.find(t => t.type === entry.toolType);
+      if (tool) {
+        openTool(tool);
+
+        // If navigating to a settings section, scroll to it after the tab renders
+        if (entry.settingsSection) {
+          const sectionId = entry.settingsSection;
+          setTimeout(() => {
+            const el = document.querySelector(`[data-tutorial="${sectionId}"]`) ||
+                       document.querySelector(`[data-search-section="${sectionId}"]`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Flash highlight
+              el.classList.add('search-highlight-flash');
+              setTimeout(() => el.classList.remove('search-highlight-flash'), 2000);
+            }
+          }, 300);
+        }
+      }
+    }
+  };
 
   // Generate dynamic tab colors based on settings
   const tabColors = useMemo(() => {
@@ -953,6 +1013,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <TutorialButton
                 tutorialId={TUTORIAL_IDS.RESOURCE_MANAGER}
                 onStartTutorial={() => setShowResourceManagerTutorial(true)}
+                onOpenSearch={() => setCommandPaletteOpen(true)}
                 position="bottom-right"
               />
             )}
@@ -1294,7 +1355,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             style={{
               color: 'var(--sidebar-text-faint)',
               textAlign: sidebarOpen ? 'left' : 'center',
-              padding: sidebarOpen ? '14px 12px 6px' : '14px 0 6px'
+              padding: sidebarOpen ? '36px 12px 6px' : '36px 0 6px'
             }}
           >
             Tools
@@ -2249,6 +2310,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       </div>
 
       {/* Welcome Modal for first-time users */}
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onNavigate={handleCommandPaletteNavigate}
+      />
+
       {showWelcomeModal && (
         <WelcomeModal
           onClose={handleWelcomeSkip}
@@ -2300,6 +2368,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <TutorialButton
           tutorialId={TUTORIAL_IDS.DASHBOARD_MAIN}
           onStartTutorial={() => startTutorial(TUTORIAL_IDS.DASHBOARD_MAIN)}
+          onOpenSearch={() => setCommandPaletteOpen(true)}
           position="bottom-right"
         />
       );
@@ -2311,6 +2380,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <TutorialButton
           tutorialId={TUTORIAL_IDS.ANALYTICS}
           onStartTutorial={() => startTutorial(TUTORIAL_IDS.ANALYTICS)}
+          onOpenSearch={() => setCommandPaletteOpen(true)}
           position="bottom-right"
         />
       );
@@ -2318,16 +2388,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     // Otherwise, use the mapped tutorial for the tab type, or fallback to dashboard tutorial
     const tutorialId = tutorialIdsByTabType[activeTab.type] || TUTORIAL_IDS.DASHBOARD_MAIN;
-  
+
     // Don't show tutorial button for chat tab
     if (activeTab.type === 'chat') {
       return null;
     }
-  
+
     return (
       <TutorialButton
         tutorialId={tutorialId as TutorialId}
         onStartTutorial={() => startTutorial(tutorialId as TutorialId)}
+        onOpenSearch={() => setCommandPaletteOpen(true)}
         position="bottom-right"
       />
     );

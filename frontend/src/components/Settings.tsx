@@ -362,7 +362,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </div>
 
           {/* Font Scaling Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-search-section="font-size">
             <CardHeader>
               <CardTitle>Font Size</CardTitle>
               <CardDescription>Adjust the font size for better readability</CardDescription>
@@ -418,7 +418,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Model Selection Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-search-section="ai-model">
             <CardHeader>
               <CardTitle>AI Model</CardTitle>
               <CardDescription>Select the AI model to use for generation</CardDescription>
@@ -486,7 +486,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Diffusion Model Selection Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-search-section="diffusion-model">
             <CardHeader>
               <CardTitle>Diffusion Model</CardTitle>
               <CardDescription>Select the diffusion model used for image generation</CardDescription>
@@ -697,7 +697,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Generation Behavior Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-search-section="generation-mode">
             <CardHeader>
               <CardTitle>Generation Behavior</CardTitle>
               <CardDescription>
@@ -771,7 +771,7 @@ const Settings: React.FC<SettingsProps> = () => {
           </Card>
 
           {/* Visual Studio Section */}
-          <Card className="mb-6">
+          <Card className="mb-6" data-search-section="visual-studio">
             <CardHeader>
               <CardTitle>Visual Studio</CardTitle>
               <CardDescription>Control access to Visual Studio tools</CardDescription>

@@ -321,6 +321,17 @@ class QuizGradeCreate(BaseModel):
     letter_grade: str
     answers: Optional[dict] = {}
 
+class AttendanceRecord(BaseModel):
+    student_id: str
+    class_name: str
+    date: str
+    status: str
+    engagement_level: str
+    notes: Optional[str] = ''
+
+class AttendanceSave(BaseModel):
+    records: list[AttendanceRecord]
+
 
 # (Removed redundant OPTIONS handler; CORS middleware handles preflight)
     
@@ -1874,6 +1885,14 @@ async def add_quiz_grade(grade: QuizGradeCreate):
 @app.get("/api/quiz-grades/student/{student_id}")
 async def get_grades_for_student(student_id: str):
     return student_service.get_student_grades(student_id)
+
+@app.get("/api/attendance")
+async def get_attendance(class_name: str, date: str):
+    return student_service.get_attendance(class_name, date)
+
+@app.post("/api/attendance")
+async def save_attendance(body: AttendanceSave):
+    return student_service.save_attendance([r.model_dump() for r in body.records])
 
 
 # ── Bulk Auto-Grading ─────────────────────────────────────────────────────────

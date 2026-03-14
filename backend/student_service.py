@@ -63,6 +63,23 @@ def init_db():
             except Exception:
                 pass
         conn.execute('''
+            CREATE TABLE IF NOT EXISTS attendance (
+                id               TEXT PRIMARY KEY,
+                student_id       TEXT NOT NULL,
+                class_name       TEXT NOT NULL,
+                date             TEXT NOT NULL,
+                status           TEXT NOT NULL DEFAULT 'Present',
+                engagement_level TEXT DEFAULT 'Engaged',
+                notes            TEXT DEFAULT '',
+                recorded_at      TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+            )
+        ''')
+        conn.execute('''
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_attendance_student_date
+            ON attendance(student_id, date)
+        ''')
+        conn.execute('''
             CREATE TABLE IF NOT EXISTS quiz_grades (
                 id           TEXT PRIMARY KEY,
                 student_id   TEXT NOT NULL,
@@ -320,3 +337,53 @@ def bulk_import_students(rows: list[dict]) -> dict:
         'skipped': skipped,
         'errors': errors,
     }
+
+
+# ── Attendance ───────────────────────────────────────────────────────────────
+
+def get_attendance(class_name: str, date: str) -> list[dict]:
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            '''SELECT a.*, s.full_name
+               FROM attendance a
+               JOIN students s ON s.id = a.student_id
+               WHERE a.class_name = ? AND a.date = ?
+               ORDER BY s.full_name''',
+            (class_name, date)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def save_attendance(records: list[dict]) -> dict:
+    conn = _get_conn()
+    saved = 0
+    try:
+        for rec in records:
+            record_id = str(uuid.uuid4())
+            conn.execute(
+                '''INSERT INTO attendance
+                   (id, student_id, class_name, date, status, engagement_level, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(student_id, date) DO UPDATE SET
+                       status = excluded.status,
+                       engagement_level = excluded.engagement_level,
+                       notes = excluded.notes,
+                       recorded_at = CURRENT_TIMESTAMP''',
+                (
+                    record_id,
+                    rec.get('student_id'),
+                    rec.get('class_name'),
+                    rec.get('date'),
+                    rec.get('status', 'Present'),
+                    rec.get('engagement_level', 'Engaged'),
+                    rec.get('notes', ''),
+                )
+            )
+            saved += 1
+        conn.commit()
+    finally:
+        conn.close()
+    return {'saved': saved}
