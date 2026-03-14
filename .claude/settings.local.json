@@ -4,7 +4,9 @@
       "Bash(wmic logicaldisk:*)",
       "Bash(mkdir:*)",
       "Bash(\"C:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\":*)",
-      "Bash(find \"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend\\\\src\" -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) | xargs grep -l \"export.*interface.*Tab\\\\|export.*type.*Tab\" 2>/dev/null | head -5)"
+      "Bash(find \"C:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone\\\\frontend\\\\src\" -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) | xargs grep -l \"export.*interface.*Tab\\\\|export.*type.*Tab\" 2>/dev/null | head -5)",
+      "Bash(find:*)",
+      "Bash(cd:*)"
     ]
   }
 }

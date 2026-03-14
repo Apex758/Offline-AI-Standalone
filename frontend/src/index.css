@@ -117,4 +117,221 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+/* ── Glass Sidebar Styles ── */
+.sidebar-glass {
+  position: relative;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
+.sidebar-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sidebar-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Glass nav items */
+.glass-nav-item {
+  border-radius: 12px;
+  transition: background 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s;
+}
+
+.glass-nav-item:hover {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Glass section divider */
+.glass-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  margin: 8px 12px;
+}
+
+.glass-divider-dark {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+}
+
+/* Glass section label */
+.glass-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 14px 12px 6px;
+}
+
+/* Sidebar thin scrollbar */
+.glass-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.glass-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.glass-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+.glass-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.glass-scrollbar-light::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1);
+}
+.glass-scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.15);
+}
+
+/* Stagger slide-in animation */
+.stagger-slide {
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: sidebarSlideIn 0.35s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+@keyframes sidebarSlideIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Empty Dashboard Glass Scene ── */
+.dashboard-empty {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(30,60,120,0.85) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(80,40,100,0.65) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(20,80,80,0.55) 0%, transparent 50%),
+    linear-gradient(160deg, #0a0e1a 0%, #111827 40%, #0c1322 100%);
+}
+
+.dashboard-empty .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: orbDrift 20s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.dashboard-empty .orb-1 {
+  width: 400px; height: 400px;
+  background: #3b82f6;
+  top: -10%; left: 10%;
+}
+
+.dashboard-empty .orb-2 {
+  width: 300px; height: 300px;
+  background: #8b5cf6;
+  bottom: -5%; right: 20%;
+  animation-delay: -7s;
+}
+
+.dashboard-empty .orb-3 {
+  width: 250px; height: 250px;
+  background: #06b6d4;
+  top: 50%; left: 40%;
+  animation-delay: -14s;
+}
+
+@keyframes orbDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(30px, -20px) scale(1.05); }
+  66%  { transform: translate(-20px, 30px) scale(0.95); }
+  100% { transform: translate(10px, -10px) scale(1.02); }
+}
+
+.dashboard-empty .grid-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.glass-card {
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  border-radius: 24px 24px 0 0;
+}
+
+.glass-action-btn {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  color: rgba(255,255,255,0.85);
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-action-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.glass-action-btn:hover {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.glass-action-btn:hover::before {
+  opacity: 1;
+}
+
+/* Dashboard welcome fade-in */
+.dashboard-welcome-enter {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: dashWelcomeFadeIn 0.6s cubic-bezier(.4,0,.2,1) 0.2s forwards;
+}
+
+@keyframes dashWelcomeFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
 

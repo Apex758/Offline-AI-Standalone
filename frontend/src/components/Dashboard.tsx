@@ -1152,7 +1152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       {/* Sidebar */}
       <div
-        className={`${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col`}
+        className={`${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col sidebar-glass`}
         style={{
           backgroundColor: settings.sidebarColor,
           color: sidebarIsDark ? '#ffffff' : '#1f2937',
@@ -1162,10 +1162,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         onMouseEnter={() => setSidebarOpen(true)}
         onMouseLeave={() => setSidebarOpen(false)}
       >
+        {/* Glass header */}
         <div
-          className="p-4 border-b"
+          className="p-4"
           style={{
-            borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+            borderBottom: `1px solid ${sidebarIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+            background: sidebarIsDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
           }}
         >
           <div className="flex items-center justify-center">
@@ -1178,7 +1180,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   pointerEvents: sidebarOpen ? 'none' : 'auto'
                 }}
               >
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(96,165,250,0.5), rgba(139,92,246,0.5))',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.15)'
+                  }}
+                >
                   {userProfileImage ? (
                     <img
                       src={userProfileImage}
@@ -1197,34 +1206,54 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   pointerEvents: sidebarOpen ? 'auto' : 'none'
                 }}
               >
-                <h2 className="text-xl font-bold whitespace-nowrap">OECS Learning Hub</h2>
-                <p
-                  className="text-sm whitespace-nowrap"
-                  style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
-                >
-                  {user.name}
-                </p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-semibold text-sm overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(96,165,250,0.4), rgba(139,92,246,0.4))',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                    }}
+                  >
+                    {userProfileImage ? (
+                      <img src={userProfileImage} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      user.name.charAt(0)
+                    )}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <h2 className="text-sm font-bold whitespace-nowrap" style={{ letterSpacing: '0.01em' }}>OECS Learning Hub</h2>
+                    <p
+                      className="text-xs whitespace-nowrap overflow-hidden"
+                      style={{
+                        color: sidebarIsDark ? 'rgba(255,255,255,0.45)' : '#6b7280',
+                        textOverflow: 'ellipsis'
+                      }}
+                    >
+                      {user.name}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide">
-          <h3
-            className="text-xs font-semibold uppercase tracking-wider mb-3"
-            style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
+        <div className={`flex-1 p-4 space-y-1 overflow-y-auto ${sidebarIsDark ? 'glass-scrollbar' : 'glass-scrollbar glass-scrollbar-light'}`}>
+          <div
+            className="glass-section-label"
+            style={{ color: sidebarIsDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }}
           >
             Tools
-          </h3>
+          </div>
           
           {/* Regular Tools */}
-          {regularTools.map((tool) => {
+          {regularTools.map((tool, i) => {
             const Icon = iconMap[tool.icon];
             const count = getTabCountByType(tool.type);
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
             const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-            
+
             return (
               <button
                 key={tool.id}
@@ -1235,24 +1264,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ? 'tool-analytics'
                     : tool.type === 'chat'
                     ? 'tool-chat'
-                    : tool.type === 'curriculum' // Add this check
+                    : tool.type === 'curriculum'
                     ? 'tool-curriculum'
                     : undefined
                 }
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group ${
                   count >= MAX_TABS_PER_TYPE
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                 }`}
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
-                style={
-                  count < MAX_TABS_PER_TYPE
+                style={{
+                  ...(count < MAX_TABS_PER_TYPE
                     ? {
-                        backgroundColor: 'transparent',
-                        transition: 'background-color 0.2s'
+                        backgroundColor: isActiveToolType
+                          ? (sidebarIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')
+                          : 'transparent',
+                        transition: 'background-color 0.25s, box-shadow 0.25s'
                       }
-                    : {}
-                }
+                    : {}),
+                  animationDelay: `${i * 40}ms`
+                }}
                 onMouseEnter={(e) => {
                   if (count < MAX_TABS_PER_TYPE) {
                     e.currentTarget.style.backgroundColor = sidebarIsDark
@@ -1262,7 +1294,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }}
                 onMouseLeave={(e) => {
                   if (count < MAX_TABS_PER_TYPE) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.backgroundColor = isActiveToolType
+                      ? (sidebarIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')
+                      : 'transparent';
                   }
                 }}
               >
@@ -1306,14 +1340,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             );
           })}
 
+          {/* Glass divider */}
+          <div className={`glass-divider ${!sidebarIsDark ? 'glass-divider-dark' : ''}`} />
+
           {/* Other Grouped Tools */}
-          {otherGroupedTools.map((tool) => {
+          {otherGroupedTools.map((tool, i) => {
             const Icon = iconMap[tool.icon];
             const count = getTabCountByType(tool.type);
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
             const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-            
+
             return (
               <button
                 key={tool.id}
@@ -1326,7 +1363,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ? 'tool-rubric'
                     : undefined
                 }
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group ${
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group ${
                   count >= MAX_TABS_PER_TYPE
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
@@ -1334,7 +1371,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 title={!sidebarOpen ? `${tool.name} (${count}/${MAX_TABS_PER_TYPE} open)` : ''}
                 style={{
                   backgroundColor: 'transparent',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.25s, box-shadow 0.25s',
+                  animationDelay: `${(i + regularTools.length) * 40}ms`
                 }}
                 onMouseEnter={(e) => {
                   if (count < MAX_TABS_PER_TYPE) {
@@ -1387,15 +1425,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             );
           })}
 
+          {/* Glass divider */}
+          <div className={`glass-divider ${!sidebarIsDark ? 'glass-divider-dark' : ''}`} />
+
           {/* Lesson Planners Dropdown */}
-          <div className="mt-4" data-tutorial="lesson-planners-group">
+          <div className="mt-2" data-tutorial="lesson-planners-group">
             <button
               onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
               data-tutorial-click="lesson-planners-group"
-              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition`}
+              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
               style={{
                 backgroundColor: 'transparent',
-                transition: 'background-color 0.2s'
+                transition: 'background-color 0.25s, box-shadow 0.25s'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = sidebarIsDark
@@ -1517,13 +1558,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* Visual Studio Dropdown */}
           {settings.visualStudioEnabled && (
-            <div className="mt-4">
+            <div className="mt-2">
               <button
                 onClick={() => setVisualStudioExpanded(!visualStudioExpanded)}
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition`}
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
                 style={{
                   backgroundColor: 'transparent',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.25s, box-shadow 0.25s'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = sidebarIsDark
@@ -1638,22 +1679,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </div>
           )}
 
+          {/* Glass divider */}
+          <div className={`glass-divider ${!sidebarIsDark ? 'glass-divider-dark' : ''}`} />
+
           {/* Settings Tool */}
           {settingsTool && (
-            <div className="mt-4">
+            <div className="mt-2">
               {(() => {
                 const Icon = iconMap[settingsTool.icon];
                 const activeTab = tabs.find(t => t.id === activeTabId);
                 const isActiveToolType = activeTab?.type === settingsTool.type;
-                
+
                 return (
                   <button
                     onClick={() => openTool(settingsTool)}
-                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} rounded-lg transition group`}
+                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
                     title={!sidebarOpen ? settingsTool.name : ''}
                     style={{
                       backgroundColor: 'transparent',
-                      transition: 'background-color 0.2s'
+                      transition: 'background-color 0.25s, box-shadow 0.25s'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = sidebarIsDark
@@ -1700,9 +1744,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
 
         <div
-          className="p-4 border-t"
+          className="p-4"
           style={{
-            borderColor: sidebarIsDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+            borderTop: `1px solid ${sidebarIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
             opacity: sidebarOpen ? 1 : 0,
             transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             pointerEvents: sidebarOpen ? 'auto' : 'none'
@@ -2034,12 +2078,66 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </>
           ) : (
-            <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-              <div className="text-center">
-                <Plus className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No tools open</h3>
-                <p className="text-gray-500 dark:text-gray-500">Select a tool from the sidebar to get started</p>
-                <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">Tip: Right-click on tabs to split them side-by-side</p>
+            <div className="h-full flex items-center justify-center dashboard-empty">
+              {/* Floating orbs */}
+              <div className="orb orb-1" />
+              <div className="orb orb-2" />
+              <div className="orb orb-3" />
+              <div className="grid-pattern" />
+
+              {/* Glass welcome card */}
+              <div className="glass-card p-10 max-w-lg w-full mx-6 dashboard-welcome-enter" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="text-center">
+                  {/* Logo / icon */}
+                  <div
+                    className="mx-auto mb-6 w-16 h-16 rounded-2xl flex items-center justify-center"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(96,165,250,0.25), rgba(139,92,246,0.25))',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      boxShadow: '0 4px 24px rgba(59,130,246,0.15)'
+                    }}
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(160,210,255,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+                      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+                    </svg>
+                  </div>
+
+                  <h3
+                    className="text-2xl font-bold mb-2"
+                    style={{ color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.02em' }}
+                  >
+                    OECS Learning Hub
+                  </h3>
+                  <p
+                    className="text-sm mb-8"
+                    style={{ color: 'rgba(255,255,255,0.4)' }}
+                  >
+                    Select a tool from the sidebar to get started
+                  </p>
+
+                  {/* Quick action buttons */}
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    {[
+                      { icon: BarChart3, label: 'Dashboard', tool: tools.find(t => t.type === 'analytics') },
+                      { icon: MessageSquare, label: 'Chat', tool: tools.find(t => t.type === 'chat') },
+                      { icon: BookOpen, label: 'Curriculum', tool: tools.find(t => t.type === 'curriculum') },
+                    ].map((item) => (
+                      <button
+                        key={item.label}
+                        className="glass-action-btn flex flex-col items-center gap-2 p-4"
+                        onClick={() => item.tool && openTool(item.tool)}
+                      >
+                        <item.icon className="w-5 h-5" style={{ color: 'rgba(160,210,255,0.7)' }} />
+                        <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                    Tip: Right-click on tabs to split them side-by-side
+                  </p>
+                </div>
               </div>
             </div>
           )}
