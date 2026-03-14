@@ -159,7 +159,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-6xl mx-auto">
+    <div className="rounded-lg max-w-6xl mx-auto widget-glass">
       {/* COMPACT Header */}
       <div className="border-b border-gray-200 p-4 bg-gradient-to-r from-cyan-50 to-blue-50">
         <div className="flex items-center justify-between mb-3">

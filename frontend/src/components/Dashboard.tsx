@@ -1169,7 +1169,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Context Menu */}
       {contextMenu && contextMenu.groupType && (
         <div
-          className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 dark:bg-gray-800 dark:border-gray-700"
+          className="fixed rounded-lg py-2 z-50 widget-glass"
           style={{ left: contextMenu.x, top: contextMenu.y + 20}}
           onClick={(e) => e.stopPropagation()}
         >

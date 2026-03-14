@@ -105,7 +105,7 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-5xl mx-auto max-h-[90vh] flex flex-col">
+    <div className="rounded-lg max-w-5xl mx-auto max-h-[90vh] flex flex-col widget-glass">
       {/* Gradient Header - BLUE theme for worksheets */}
       <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Worksheet</h2>

@@ -151,7 +151,7 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-7xl mx-auto">
+    <div className="rounded-lg max-w-7xl mx-auto widget-glass">
       {/* Header */}
       <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-cyan-50 to-blue-50">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Rubric</h2>

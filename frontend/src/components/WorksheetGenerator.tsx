@@ -1510,7 +1510,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         onClick={() => setShowVersionMenu(false)}
                       />
 
-                      <div className="absolute left-0 mt-2 w-56 bg-theme-surface rounded-lg shadow-xl border border-theme z-20 overflow-hidden">
+                      <div className="absolute left-0 mt-2 w-56 rounded-lg z-20 overflow-hidden widget-glass">
                         <div className="py-1">
                           <button
                             onClick={() => {
@@ -1618,7 +1618,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             </div>
           ) : null}
           {isEditing ? (
-            <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto p-4 space-y-4">
+            <div className="rounded-lg h-full overflow-y-auto p-4 space-y-4 widget-glass">
               <h4 className="text-lg font-semibold text-theme-heading">Edit Worksheet Text</h4>
               <textarea
                 value={editBuffer}
@@ -1646,7 +1646,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
           ) : generationError ? (
-            <div className="bg-theme-surface rounded-lg border border-theme p-4 h-full flex items-center justify-center">
+            <div className="rounded-lg p-4 h-full flex items-center justify-center widget-glass">
               <div className="text-center text-red-600">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-red-300" />
                 <p className="text-sm mb-4">{generationError}</p>
@@ -1659,7 +1659,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
           ) : (generatedWorksheet || streamingWorksheet || loading) ? (
-            <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto">
+            <div className="rounded-lg h-full overflow-y-auto widget-glass">
               {loading && !streamingWorksheet && !generatedWorksheet ? (
                 <GeneratorSkeleton accentColor="#3b82f6" type="worksheet" />
               ) : loading ? (
@@ -1760,13 +1760,13 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               )}
             </div>
           ) : selectedTemplate ? (
-            <div className="bg-theme-surface rounded-lg border border-theme h-full overflow-y-auto">
+            <div className="rounded-lg h-full overflow-y-auto widget-glass">
               <div className="transform scale-90 origin-top">
                 {renderTemplatePreview()}
               </div>
             </div>
           ) : (
-            <div className="bg-theme-surface rounded-lg border border-theme p-4 h-full flex items-center justify-center">
+            <div className="rounded-lg p-4 h-full flex items-center justify-center widget-glass">
               <div className="text-center text-theme-hint">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">Select a template to preview</p>

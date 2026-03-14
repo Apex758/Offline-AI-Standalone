@@ -570,7 +570,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowDeleteConfirm(null)}>
-          <div className="bg-theme-surface rounded-xl p-6 max-w-md w-full mx-4 border border-theme" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-xl p-6 max-w-md w-full mx-4 widget-glass" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-theme-title">Confirm Delete</h3>
               <button
@@ -613,7 +613,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
           onClick={closeImageModal}
         >
           <div
-            className={`bg-theme-surface rounded-xl p-4 max-w-4xl w-full mx-4 border border-theme transition-all duration-300 ${
+            className={`rounded-xl p-4 max-w-4xl w-full mx-4 widget-glass transition-all duration-300 ${
               isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
             }`}
             onClick={(e) => e.stopPropagation()}

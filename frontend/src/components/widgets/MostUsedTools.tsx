@@ -48,8 +48,11 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
       className="rounded-2xl overflow-hidden"
       data-tutorial="analytics-most-used-tools"
       style={{
-        backgroundColor: 'white',
-        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
+        background: 'rgba(255, 255, 255, 0.35)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
       }}
     >
       {/* Header */}
@@ -83,8 +86,10 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
                   onClick={() => onToolClick(tool.type)}
                   className="flex flex-col items-center p-3 rounded-xl transition-all hover:scale-105 group"
                   style={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E8EAE3',
+                    background: 'rgba(255, 255, 255, 0.3)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.5)',
                     boxShadow: `0 2px 8px ${shadow}`
                   }}
                   title={tool.name}

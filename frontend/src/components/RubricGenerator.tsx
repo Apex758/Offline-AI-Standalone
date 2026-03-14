@@ -930,7 +930,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     )}
 
                   <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 bg-theme-surface rounded-xl p-6 shadow-sm border border-theme">
+                    <div className="space-y-1 rounded-xl p-6 widget-glass">
                       {formatRubricText(streamingRubric || generatedRubric, tabColor, !!streamingRubric)}
                       {loading && streamingRubric && (
                         <span className="inline-flex items-center ml-1">

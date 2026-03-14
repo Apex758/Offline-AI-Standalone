@@ -419,7 +419,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
       {/* Tree View */}
       <div className="flex-1 overflow-y-auto p-6" data-tutorial="tree-view">
-        <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="max-w-6xl mx-auto rounded-xl p-6 widget-glass">
           {treeData.length === 0 ? (
             <div className="text-center py-16">
               <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -442,7 +442,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           data-tutorial="edit-modal"
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6"
+            className="rounded-2xl w-full max-w-2xl p-6 widget-glass"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl font-bold text-gray-900 mb-4">

@@ -42,7 +42,7 @@ export function DailyPlan({
   const selectedColor = color ?? "blue";
 
   return (
-    <div className={`bg-white rounded-lg shadow-md border border-${selectedColor}-200 p-6 ${className}`}>
+    <div className={`rounded-lg p-6 widget-glass ${className}`}>
       <div className="mb-6">
         <h2 className={`text-2xl font-bold text-${selectedColor}-700 mb-2`}>{day}</h2>
         <p className={`text-${selectedColor}-600 flex items-center`}>

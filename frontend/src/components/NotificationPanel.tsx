@@ -39,19 +39,23 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -6, scale: 0.97 }}
           transition={{ duration: 0.15 }}
-          className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl border border-white/10 overflow-hidden z-[9999]"
-          style={{ backgroundColor: 'var(--sidebar-bg, #1e2131)' }}
+          className="fixed top-11 right-2 w-80 rounded-xl shadow-2xl overflow-hidden z-[99999]"
+          style={{
+            backgroundColor: 'var(--notif-bg)',
+            border: '1px solid var(--notif-border)',
+          }}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
               <div className="flex items-center gap-2">
-                <Bell size={14} className="text-gray-400" />
-                <span className="text-sm font-semibold text-white">Notifications</span>
+                <Bell size={14} style={{ color: 'var(--notif-text-muted)' }} />
+                <span className="text-sm font-semibold" style={{ color: 'var(--notif-text)' }}>Notifications</span>
               </div>
               {history.length > 0 && (
                 <button
                   onClick={clearHistory}
-                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition"
+                  className="flex items-center gap-1 text-xs hover:text-red-400 transition"
+                  style={{ color: 'var(--notif-text-muted)' }}
                 >
                   <Trash2 size={12} />
                   Clear all
@@ -62,7 +66,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
             {/* List */}
             <div className="max-h-72 overflow-y-auto">
               {history.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-gray-500 gap-2">
+                <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
                   <Bell size={26} className="opacity-25" />
                   <span className="text-sm">No notifications yet</span>
                 </div>
@@ -70,18 +74,20 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                 history.map(item => (
                   <div
                     key={item.id}
-                    className={`flex items-start gap-3 px-4 py-3 border-b border-white/5 last:border-0 ${
-                      !item.read ? 'bg-white/5' : ''
-                    }`}
+                    className="flex items-start gap-3 px-4 py-3 last:border-0"
+                    style={{
+                      borderBottom: '1px solid var(--notif-divider)',
+                      backgroundColor: !item.read ? 'var(--notif-unread-bg)' : 'transparent',
+                    }}
                   >
                     {item.type === 'success' ? (
-                      <CheckCircle2 size={15} className="text-green-400 shrink-0 mt-0.5" />
+                      <CheckCircle2 size={15} className="text-green-500 shrink-0 mt-0.5" />
                     ) : (
-                      <XCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
+                      <XCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-200 leading-snug">{item.message}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-sm leading-snug" style={{ color: 'var(--notif-text)' }}>{item.message}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--notif-text-muted)' }}>
                         {formatDistanceToNow(item.timestamp, { addSuffix: true })}
                       </p>
                     </div>

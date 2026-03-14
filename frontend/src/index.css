@@ -50,6 +50,14 @@
   --sidebar-divider: rgba(0, 0, 0, 0.08);
   --sidebar-scrollbar: rgba(0, 0, 0, 0.1);
   --sidebar-header-bg: rgba(0, 0, 0, 0.02);
+
+  --notif-bg: rgba(248, 248, 250, 0.97);
+  --notif-border: rgba(0, 0, 0, 0.12);
+  --notif-text: #111827;
+  --notif-text-muted: #6b7280;
+  --notif-text-faint: #9ca3af;
+  --notif-divider: rgba(0, 0, 0, 0.08);
+  --notif-unread-bg: rgba(0, 0, 0, 0.04);
 }
 
 .dark {
@@ -98,6 +106,14 @@
   --sidebar-divider: rgba(255, 255, 255, 0.08);
   --sidebar-scrollbar: rgba(255, 255, 255, 0.1);
   --sidebar-header-bg: rgba(255, 255, 255, 0.03);
+
+  --notif-bg: rgba(22, 27, 48, 0.97);
+  --notif-border: rgba(255, 255, 255, 0.1);
+  --notif-text: #e5e7eb;
+  --notif-text-muted: #9ca3af;
+  --notif-text-faint: #6b7280;
+  --notif-divider: rgba(255, 255, 255, 0.05);
+  --notif-unread-bg: rgba(255, 255, 255, 0.05);
 }
 
 /* ── Global modern scrollbars ── */
@@ -337,6 +353,21 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
   border-radius: 24px 24px 0 0;
+}
+
+/* ── Widget / Card Glassmorphism ── */
+.widget-glass {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.dark .widget-glass {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 .glass-action-btn {

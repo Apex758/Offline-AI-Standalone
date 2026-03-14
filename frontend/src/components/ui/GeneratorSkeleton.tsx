@@ -41,7 +41,7 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
         {/* Content blocks skeleton */}
         <div className="space-y-6">
           {/* Section 1 */}
-          <div className="bg-theme-surface rounded-xl p-6 shadow-sm border border-theme space-y-4">
+          <div className="rounded-xl p-6 widget-glass space-y-4">
             <Skeleton className="h-5 w-40" />
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
@@ -51,7 +51,7 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
           </div>
 
           {/* Section 2 */}
-          <div className="bg-theme-surface rounded-xl p-6 shadow-sm border border-theme space-y-4">
+          <div className="rounded-xl p-6 widget-glass space-y-4">
             <Skeleton className="h-5 w-48" />
             <div className="space-y-3">
               {type === 'quiz' ? (
@@ -95,7 +95,7 @@ export const GeneratorSkeleton: React.FC<GeneratorSkeletonProps> = ({
           </div>
 
           {/* Section 3 */}
-          <div className="bg-theme-surface rounded-xl p-6 shadow-sm border border-theme space-y-4">
+          <div className="rounded-xl p-6 widget-glass space-y-4">
             <Skeleton className="h-5 w-36" />
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />

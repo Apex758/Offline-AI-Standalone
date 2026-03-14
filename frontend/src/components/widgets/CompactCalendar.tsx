@@ -67,8 +67,11 @@ const CompactCalendar: React.FC<CompactCalendarProps> = ({
       className="rounded-2xl overflow-hidden"
       data-tutorial="analytics-calendar-widget"
       style={{
-        backgroundColor: 'white',
-        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
+        background: 'rgba(255, 255, 255, 0.35)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
       }}
     >
       {/* Header */}

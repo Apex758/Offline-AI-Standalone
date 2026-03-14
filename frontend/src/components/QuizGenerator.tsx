@@ -1228,7 +1228,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       {/* Lesson Plan Picker Modal */}
       {lessonPickerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-theme-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-[80vh]">
+          <div className="rounded-xl w-full max-w-lg mx-4 flex flex-col max-h-[80vh] widget-glass">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-theme">
               <div>

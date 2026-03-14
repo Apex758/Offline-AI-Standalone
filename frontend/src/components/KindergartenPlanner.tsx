@@ -976,7 +976,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   )}
 
                   <div className="prose prose-lg max-w-none">
-                    <div className="space-y-1 bg-theme-surface rounded-xl p-6 shadow-sm border border-theme">
+                    <div className="space-y-1 rounded-xl p-6 widget-glass">
                       {formatKindergartenText(streamingPlan || generatedPlan, tabColor)}
                       {loading && streamingPlan && (
                         <span className="inline-flex items-center ml-1">

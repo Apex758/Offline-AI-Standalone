@@ -1330,7 +1330,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             {/* Worksheet Modal */}
             {showWorksheet && (
               <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+                <div className="rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col widget-glass">
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                       <FileText className="w-5 h-5 text-blue-600" />

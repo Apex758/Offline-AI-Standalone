@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Camera } from 'lucide-react';
+import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import axios from 'axios';
 import { format } from 'date-fns';
 import TutorialOverlay, { analyticsDashboardSteps } from './TutorialOverlay';
@@ -257,6 +258,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     }
     return [];
   }, []);
+
+  // Alert for overdue / due-today / due-tomorrow tasks
+  useTaskNotifications(tasks);
 
   // Task handlers
   const handleAddTask = () => {
@@ -561,9 +565,11 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       <div
         className="rounded-2xl p-8 max-w-md w-full"
         style={{
-          backgroundColor: 'rgba(253, 253, 248, 0.95)',
+          background: 'rgba(255, 255, 255, 0.35)',
           backdropFilter: 'blur(20px)',
-          boxShadow: '0 20px 60px rgba(29, 54, 45, 0.2)'
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
         }}
         onClick={(e) => e.stopPropagation()}
       >

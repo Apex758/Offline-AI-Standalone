@@ -575,7 +575,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
                 <button
                   key={cls}
                   onClick={() => selectClass(grade, cls)}
-                  className="rounded-xl border border-theme bg-theme-card p-4 text-left hover:shadow-md hover:border-current transition-all group"
+                  className="rounded-xl p-4 text-left widget-glass hover:shadow-md transition-all group"
                   style={{ '--tw-border-opacity': 1 } as any}
                 >
                   <div
@@ -748,7 +748,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
                 { label: 'Middle Name', value: activeStudent.middle_name || '—' },
                 { label: 'Last Name', value: activeStudent.last_name },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl border border-theme bg-theme-card px-4 py-3">
+                <div key={label} className="rounded-xl px-4 py-3 widget-glass">
                   <p className="text-[11px] text-theme-muted uppercase tracking-wide">{label}</p>
                   <p className="text-sm font-semibold text-theme-label mt-0.5">{value || '—'}</p>
                 </div>
@@ -759,7 +759,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
           {/* Info cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {activeStudent.date_of_birth && (
-              <div className="rounded-xl border border-theme bg-theme-card p-4 flex items-start gap-3">
+              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
                   <Calendar className="w-4 h-4" style={{ color: accentColor }} />
                 </div>
@@ -770,7 +770,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
               </div>
             )}
             {activeStudent.gender && (
-              <div className="rounded-xl border border-theme bg-theme-card p-4 flex items-start gap-3">
+              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
                   <User className="w-4 h-4" style={{ color: accentColor }} />
                 </div>
@@ -781,7 +781,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
               </div>
             )}
             {activeStudent.contact_info && (
-              <div className="rounded-xl border border-theme bg-theme-card p-4 flex items-start gap-3">
+              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
                   <Phone className="w-4 h-4" style={{ color: accentColor }} />
                 </div>
@@ -792,7 +792,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
               </div>
             )}
             {avgPct !== null && (
-              <div className="rounded-xl border border-theme bg-theme-card p-4 flex items-start gap-3">
+              <div className="rounded-xl p-4 flex items-start gap-3 widget-glass">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentColor}15` }}>
                   <Award className="w-4 h-4" style={{ color: accentColor }} />
                 </div>
@@ -816,7 +816,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
             ) : (
               <div className="space-y-2">
                 {grades.map(g => (
-                  <div key={g.id} className="rounded-xl border border-theme bg-theme-card px-4 py-3 flex items-center gap-4">
+                  <div key={g.id} className="rounded-xl px-4 py-3 flex items-center gap-4 widget-glass">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-theme-label text-sm truncate">{g.quiz_title}</p>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-theme-muted">
@@ -1027,7 +1027,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-theme-surface rounded-2xl border border-theme shadow-2xl p-6 max-w-sm w-full">
+          <div className="rounded-2xl p-6 max-w-sm w-full widget-glass">
             <h3 className="font-semibold text-theme-heading mb-2">Delete Student?</h3>
             <p className="text-sm text-theme-muted mb-6">
               This will permanently delete{activeStudent ? <> <strong>{activeStudent.full_name}</strong> and</> : null} all their quiz grades. This cannot be undone.
@@ -1052,7 +1052,7 @@ const StatCard: React.FC<{
   color: string;
   small?: boolean;
 }> = ({ icon, label, value, color, small }) => (
-  <div className="rounded-xl border border-theme bg-theme-card p-4 flex items-center gap-3">
+  <div className="rounded-xl p-4 flex items-center gap-3 widget-glass">
     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}15`, color }}>
       {icon}
     </div>
@@ -1071,7 +1071,7 @@ const StudentRow: React.FC<{
   onDelete: () => void;
 }> = ({ student, accentColor, onClick, onEdit, onDelete }) => (
   <div
-    className="flex items-center gap-3 px-4 py-3 rounded-xl border border-theme bg-theme-card hover:shadow-sm hover:border-current transition-all cursor-pointer group"
+    className="flex items-center gap-3 px-4 py-3 rounded-xl widget-glass hover:shadow-sm transition-all cursor-pointer group"
     onClick={onClick}
   >
     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0"

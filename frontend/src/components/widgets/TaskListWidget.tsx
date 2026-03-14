@@ -38,13 +38,15 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
         key={task.id}
         className="group relative p-3 rounded-xl transition-all cursor-pointer"
         style={{
-          backgroundColor: isOverdue
-            ? '#F2A63120'
+          background: isOverdue
+            ? 'rgba(242, 166, 49, 0.3)'
             : task.completed
-            ? '#FDFDF8'
-            : 'white',
-          border: `1px solid ${isOverdue ? '#F2A631' : '#E8EAE3'}`,
-          boxShadow: '0 2px 8px rgba(29, 54, 45, 0.04)',
+            ? 'rgba(253, 253, 248, 0.3)'
+            : 'rgba(255, 255, 255, 0.3)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: `1px solid ${isOverdue ? 'rgba(242, 166, 49, 0.6)' : 'rgba(255, 255, 255, 0.5)'}`,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           opacity: task.completed ? 0.6 : 1
         }}
         onClick={() => onTaskEdit(task)}
@@ -121,8 +123,11 @@ const TaskListWidget: React.FC<TaskListWidgetProps> = ({
       className="rounded-2xl overflow-hidden flex flex-col"
       data-tutorial="analytics-task-widget"
       style={{
-        backgroundColor: 'white',
-        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
+        background: 'rgba(255, 255, 255, 0.35)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
       }}
     >
       {/* Header */}
