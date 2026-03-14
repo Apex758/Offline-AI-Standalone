@@ -72,20 +72,20 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
 
   return (
     <div
-      className="rounded-2xl p-6"
+      className="rounded-2xl p-6 h-full flex flex-col"
       style={{ backgroundColor: 'white', boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)' }}
     >
       {/* Header */}
-      <div className="flex items-center space-x-2 mb-6">
+      <div className="flex items-center space-x-2 mb-4">
         <BarChart2 className="w-5 h-5" style={{ color: '#1D362D' }} />
         <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Type Distribution</h3>
       </div>
 
       {/* Chart + Legend */}
-      <div className="flex gap-6 items-center">
+      <div className="flex gap-6 items-center flex-1 min-h-0">
         {/* Radial Bar Chart */}
         <div className="flex-1">
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={380}>
             <RadialBarChart
               cx="50%"
               cy="50%"

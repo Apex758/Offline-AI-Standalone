@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import type { ResourceTrendData, Timeframe } from '../../types/analytics';
 
 interface ResourceTrendChartProps {
   data: ResourceTrendData[];
   timeframe: Timeframe;
-  onTimeframeChange: (timeframe: Timeframe) => void;
   tabColors?: { [key: string]: string };
 }
 
@@ -24,7 +23,6 @@ const SERIES = [
 const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   data,
   timeframe,
-  onTimeframeChange,
   tabColors = {}
 }) => {
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
@@ -43,14 +41,6 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   });
 
   const getColor = (toolType: string): string => tabColors[toolType] || '#6b7280';
-
-  const timeframeButtons: { value: Timeframe; label: string }[] = [
-    { value: 'week',    label: '1 Week' },
-    { value: '2weeks',  label: '2 Weeks' },
-    { value: '4weeks',  label: '4 Weeks' },
-    { value: 'month',   label: 'Month' },
-    { value: 'all',     label: 'All Time' },
-  ];
 
   const formatXAxis = (dateString: string) => {
     try { return format(parseISO(dateString), 'MMM d'); } catch { return dateString; }
@@ -84,41 +74,17 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
 
   return (
     <div
-      className="rounded-2xl p-6"
+      className="rounded-2xl p-6 h-full flex flex-col"
       style={{ backgroundColor: 'white', boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-2">
-          <TrendingUp className="w-5 h-5" style={{ color: '#1D362D' }} />
-          <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Creation Trends</h3>
-        </div>
-
-        {/* Timeframe Toggle */}
-        <div
-          className="flex items-center space-x-1 rounded-lg p-1"
-          data-tutorial="analytics-timeframe-selector"
-          style={{ backgroundColor: '#F8E59D40' }}
-        >
-          {timeframeButtons.map((btn) => (
-            <button
-              key={btn.value}
-              onClick={() => onTimeframeChange(btn.value)}
-              className="px-3 py-1.5 rounded-md text-sm font-medium transition-all"
-              style={{
-                backgroundColor: timeframe === btn.value ? '#1D362D' : 'transparent',
-                color: timeframe === btn.value ? '#F8E59D' : '#552A01',
-                boxShadow: timeframe === btn.value ? '0 2px 4px rgba(29, 54, 45, 0.2)' : 'none',
-              }}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center space-x-2 mb-4">
+        <TrendingUp className="w-5 h-5" style={{ color: '#1D362D' }} />
+        <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Creation Trends</h3>
       </div>
 
       {/* Stacked Area Chart */}
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={340}>
         <AreaChart data={filteredData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
           <defs>
             {SERIES.map((s) => {

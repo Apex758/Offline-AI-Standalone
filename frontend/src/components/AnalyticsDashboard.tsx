@@ -198,8 +198,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   }, [allResourcesData, timeframe]);
 
   const distributionData = useMemo(() => {
-    return calculateDistribution(allResourcesData, tabColors);
-  }, [allResourcesData, tabColors]);
+    return calculateDistribution(allResourcesData, tabColors, timeframe);
+  }, [allResourcesData, tabColors, timeframe]);
 
 
   const quickStats = useMemo(() => {

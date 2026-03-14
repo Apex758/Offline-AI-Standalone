@@ -109,7 +109,7 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
 /**
  * Calculate resource type distribution
  */
-export function calculateDistribution(resources: any[], tabColors: { [key: string]: string } = {}): DistributionData[] {
+export function calculateDistribution(resources: any[], tabColors: { [key: string]: string } = {}, timeframe: Timeframe = 'all'): DistributionData[] {
   const typeCounts: { [key: string]: number } = {};
   const typeLabels: { [key: string]: string } = {
     lesson: 'Standard Lessons',
@@ -140,12 +140,19 @@ export function calculateDistribution(resources: any[], tabColors: { [key: strin
     return tabColors[toolType] || '#6b7280'; // fallback color
   };
 
-  resources.forEach(resource => {
+  const { start, end } = getDateRange(timeframe);
+  const filtered = resources.filter(r => {
+    const raw = r.timestamp || r.createdAt;
+    const d = raw ? new Date(raw) : null;
+    return d && !isBefore(d, start) && !isAfter(d, end);
+  });
+
+  filtered.forEach(resource => {
     const type = resource.type || 'lesson';
     typeCounts[type] = (typeCounts[type] || 0) + 1;
   });
 
-  const total = resources.length || 1;
+  const total = filtered.length || 1;
 
   return Object.entries(typeCounts).map(([type, count]) => ({
     type,
