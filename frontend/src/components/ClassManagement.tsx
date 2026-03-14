@@ -134,6 +134,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
   const [attendanceSaving, setAttendanceSaving] = useState(false);
   const [attendanceDirty, setAttendanceDirty] = useState(false);
   const [attendanceSaved, setAttendanceSaved] = useState(false);
+  const [classViewTab, setClassViewTab] = useState<'students' | 'attendance'>('students');
 
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -762,6 +763,34 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
           </button>
         </div>
 
+        {/* Tab bar */}
+        <div className="flex-shrink-0 border-b border-theme px-6">
+          <div className="flex gap-1 -mb-px">
+            <button
+              onClick={() => setClassViewTab('students')}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                classViewTab === 'students'
+                  ? 'border-current text-theme-heading'
+                  : 'border-transparent text-theme-muted hover:text-theme-label'
+              }`}
+              style={classViewTab === 'students' ? { color: accentColor } : {}}
+            >
+              <Users className="w-4 h-4" /> Students ({cs.length})
+            </button>
+            <button
+              onClick={() => setClassViewTab('attendance')}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                classViewTab === 'attendance'
+                  ? 'border-current text-theme-heading'
+                  : 'border-transparent text-theme-muted hover:text-theme-label'
+              }`}
+              style={classViewTab === 'attendance' ? { color: accentColor } : {}}
+            >
+              <ClipboardCheck className="w-4 h-4" /> Attendance & Engagement
+            </button>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
@@ -770,169 +799,175 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
             <StatCard icon={<User className="w-5 h-5" />} label="Female" value={female} color={accentColor} />
           </div>
 
-          {/* Attendance & Engagement */}
-          {cs.length > 0 && (
+          {/* ── Students Tab ── */}
+          {classViewTab === 'students' && (
             <div>
-              <h2 className="text-sm font-semibold text-theme-hint uppercase tracking-wider mb-3 flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4" /> Attendance & Engagement
+              <h2 className="text-sm font-semibold text-theme-hint uppercase tracking-wider mb-3">
+                Students
               </h2>
-
-              {/* Controls */}
-              <div className="rounded-xl p-4 widget-glass mb-4">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-theme-muted" />
-                    <input
-                      type="date"
-                      value={attendanceDate}
-                      onChange={e => setAttendanceDate(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': accentColor } as any}
-                    />
-                  </div>
-                  <button
-                    onClick={markAllPresent}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition hover:opacity-90 text-white"
-                    style={{ backgroundColor: '#10b981' }}
-                  >
-                    <CheckCircle className="w-3.5 h-3.5" /> Mark All Present
-                  </button>
-                  <div className="flex-1" />
-                  {attendanceSaved && (
-                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
-                      <CheckCircle className="w-3.5 h-3.5" /> Saved
-                    </span>
-                  )}
-                  <button
-                    onClick={() => saveAttendance(cls, attendanceDate)}
-                    disabled={!attendanceDirty || attendanceSaving}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: accentColor }}
-                  >
-                    {attendanceSaving ? (
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Save className="w-3.5 h-3.5" />
-                    )}
-                    {attendanceSaving ? 'Saving...' : 'Save'}
-                  </button>
+              {cs.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-theme p-8 text-center text-theme-muted text-sm">
+                  No students in this class yet.
                 </div>
-              </div>
-
-              {/* Summary Stats */}
-              {(() => {
-                const present = attendanceRecords.filter(r => r.status === 'Present').length;
-                const absent = attendanceRecords.filter(r => r.status === 'Absent').length;
-                const late = attendanceRecords.filter(r => r.status === 'Late').length;
-                const avgEng = attendanceRecords.length > 0
-                  ? (attendanceRecords.reduce((sum, r) => sum + ENGAGEMENT_MAP[r.engagement_level], 0) / attendanceRecords.length).toFixed(1)
-                  : '—';
-                const engLabel = Number(avgEng) >= 3.5 ? 'High' : Number(avgEng) >= 2.5 ? 'Moderate' : Number(avgEng) >= 1.5 ? 'Low' : typeof avgEng === 'string' ? '—' : 'Very Low';
-
-                return (
-                  <div className="grid grid-cols-4 gap-3 mb-4">
-                    <div className="rounded-xl p-3 widget-glass text-center">
-                      <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{present}</p>
-                      <p className="text-[11px] text-theme-muted">Present</p>
-                    </div>
-                    <div className="rounded-xl p-3 widget-glass text-center">
-                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{absent}</p>
-                      <p className="text-[11px] text-theme-muted">Absent</p>
-                    </div>
-                    <div className="rounded-xl p-3 widget-glass text-center">
-                      <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{late}</p>
-                      <p className="text-[11px] text-theme-muted">Late</p>
-                    </div>
-                    <div className="rounded-xl p-3 widget-glass text-center">
-                      <p className="text-lg font-bold" style={{ color: accentColor }}>{avgEng}</p>
-                      <p className="text-[11px] text-theme-muted">Avg Engagement ({engLabel})</p>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Attendance Table */}
-              {attendanceLoading ? (
-                <div className="text-center py-8 text-theme-muted text-sm">Loading attendance...</div>
               ) : (
                 <div className="space-y-1.5">
-                  {attendanceRecords.map(rec => (
-                    <div
-                      key={rec.student_id}
-                      className="rounded-xl px-4 py-3 flex items-center gap-4 widget-glass"
-                    >
-                      {/* Avatar */}
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                        style={{ backgroundColor: accentColor }}
-                      >
-                        {rec.full_name.charAt(0).toUpperCase()}
-                      </div>
-
-                      {/* Name */}
-                      <span className="text-sm font-semibold text-theme-heading flex-shrink-0 w-36 truncate" title={rec.full_name}>
-                        {rec.full_name}
-                      </span>
-
-                      {/* Status buttons */}
-                      <div className="flex gap-1">
-                        {ATTENDANCE_STATUSES.map(st => (
-                          <button
-                            key={st}
-                            onClick={() => updateAttendanceField(rec.student_id, 'status', st)}
-                            className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
-                              rec.status === st
-                                ? STATUS_COLORS[st]
-                                : 'border-transparent text-theme-hint hover:bg-theme-hover'
-                            }`}
-                          >
-                            {st}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Engagement dropdown */}
-                      <div className="flex items-center gap-1.5 ml-auto">
-                        <Zap className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
-                        <select
-                          value={rec.engagement_level}
-                          onChange={e => updateAttendanceField(rec.student_id, 'engagement_level', e.target.value)}
-                          className="px-2 py-1 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-xs focus:outline-none focus:ring-1"
-                          style={{ '--tw-ring-color': accentColor } as any}
-                        >
-                          {ENGAGEMENT_LEVELS.map(lvl => (
-                            <option key={lvl} value={lvl}>{lvl}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
+                  {cs.map(s => (
+                    <StudentRow key={s.id} student={s} accentColor={accentColor}
+                      onClick={() => selectStudent(s)}
+                      onEdit={() => openEdit(s)}
+                      onDelete={() => setConfirmDelete(s.id)}
+                    />
                   ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* Student list */}
-          <div>
-            <h2 className="text-sm font-semibold text-theme-hint uppercase tracking-wider mb-3">
-              Students
-            </h2>
-            {cs.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-theme p-8 text-center text-theme-muted text-sm">
-                No students in this class yet.
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                {cs.map(s => (
-                  <StudentRow key={s.id} student={s} accentColor={accentColor}
-                    onClick={() => selectStudent(s)}
-                    onEdit={() => openEdit(s)}
-                    onDelete={() => setConfirmDelete(s.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          {/* ── Attendance & Engagement Tab ── */}
+          {classViewTab === 'attendance' && (
+            <div>
+              {cs.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-theme p-8 text-center text-theme-muted text-sm">
+                  Add students to this class to track attendance.
+                </div>
+              ) : (
+                <>
+                  {/* Controls */}
+                  <div className="rounded-xl p-4 widget-glass mb-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-theme-muted" />
+                        <input
+                          type="date"
+                          value={attendanceDate}
+                          onChange={e => setAttendanceDate(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-sm focus:outline-none focus:ring-2"
+                          style={{ '--tw-ring-color': accentColor } as any}
+                        />
+                      </div>
+                      <button
+                        onClick={markAllPresent}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition hover:opacity-90 text-white"
+                        style={{ backgroundColor: '#10b981' }}
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" /> Mark All Present
+                      </button>
+                      <div className="flex-1" />
+                      {attendanceSaved && (
+                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                          <CheckCircle className="w-3.5 h-3.5" /> Saved
+                        </span>
+                      )}
+                      <button
+                        onClick={() => saveAttendance(cls, attendanceDate)}
+                        disabled={!attendanceDirty || attendanceSaving}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: accentColor }}
+                      >
+                        {attendanceSaving ? (
+                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Save className="w-3.5 h-3.5" />
+                        )}
+                        {attendanceSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Summary Stats */}
+                  {(() => {
+                    const present = attendanceRecords.filter(r => r.status === 'Present').length;
+                    const absent = attendanceRecords.filter(r => r.status === 'Absent').length;
+                    const late = attendanceRecords.filter(r => r.status === 'Late').length;
+                    const avgEng = attendanceRecords.length > 0
+                      ? (attendanceRecords.reduce((sum, r) => sum + ENGAGEMENT_MAP[r.engagement_level], 0) / attendanceRecords.length).toFixed(1)
+                      : '—';
+                    const engLabel = Number(avgEng) >= 3.5 ? 'High' : Number(avgEng) >= 2.5 ? 'Moderate' : Number(avgEng) >= 1.5 ? 'Low' : typeof avgEng === 'string' ? '—' : 'Very Low';
+
+                    return (
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        <div className="rounded-xl p-3 widget-glass text-center">
+                          <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{present}</p>
+                          <p className="text-[11px] text-theme-muted">Present</p>
+                        </div>
+                        <div className="rounded-xl p-3 widget-glass text-center">
+                          <p className="text-lg font-bold text-red-600 dark:text-red-400">{absent}</p>
+                          <p className="text-[11px] text-theme-muted">Absent</p>
+                        </div>
+                        <div className="rounded-xl p-3 widget-glass text-center">
+                          <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{late}</p>
+                          <p className="text-[11px] text-theme-muted">Late</p>
+                        </div>
+                        <div className="rounded-xl p-3 widget-glass text-center">
+                          <p className="text-lg font-bold" style={{ color: accentColor }}>{avgEng}</p>
+                          <p className="text-[11px] text-theme-muted">Avg Engagement ({engLabel})</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Attendance Table */}
+                  {attendanceLoading ? (
+                    <div className="text-center py-8 text-theme-muted text-sm">Loading attendance...</div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {attendanceRecords.map(rec => (
+                        <div
+                          key={rec.student_id}
+                          className="rounded-xl px-4 py-3 flex items-center gap-4 widget-glass"
+                        >
+                          {/* Avatar */}
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                            style={{ backgroundColor: accentColor }}
+                          >
+                            {rec.full_name.charAt(0).toUpperCase()}
+                          </div>
+
+                          {/* Name */}
+                          <span className="text-sm font-semibold text-theme-heading flex-shrink-0 w-36 truncate" title={rec.full_name}>
+                            {rec.full_name}
+                          </span>
+
+                          {/* Status buttons */}
+                          <div className="flex gap-1">
+                            {ATTENDANCE_STATUSES.map(st => (
+                              <button
+                                key={st}
+                                onClick={() => updateAttendanceField(rec.student_id, 'status', st)}
+                                className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                                  rec.status === st
+                                    ? STATUS_COLORS[st]
+                                    : 'border-transparent text-theme-hint hover:bg-theme-hover'
+                                }`}
+                              >
+                                {st}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Engagement dropdown */}
+                          <div className="flex items-center gap-1.5 ml-auto">
+                            <Zap className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                            <select
+                              value={rec.engagement_level}
+                              onChange={e => updateAttendanceField(rec.student_id, 'engagement_level', e.target.value)}
+                              className="px-2 py-1 rounded-lg border border-theme-strong bg-theme-surface text-theme-label text-xs focus:outline-none focus:ring-1"
+                              style={{ '--tw-ring-color': accentColor } as any}
+                            >
+                              {ENGAGEMENT_LEVELS.map(lvl => (
+                                <option key={lvl} value={lvl}>{lvl}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
