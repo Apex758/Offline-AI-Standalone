@@ -1430,27 +1430,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* Lesson Planners Dropdown */}
           <div className="mt-2" data-tutorial="lesson-planners-group">
-            <button
-              onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
-              data-tutorial-click="lesson-planners-group"
-              className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
-              style={{
-                backgroundColor: 'transparent',
-                transition: 'background-color 0.25s, box-shadow 0.25s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = sidebarIsDark
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <BookOpen
-                className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'}`}
-                style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
-              />
+            {(() => {
+              const activeTab = tabs.find(t => t.id === activeTabId);
+              const activeLPTool = !sidebarOpen && activeTab ? lessonPlannerTools.find(t => t.type === activeTab.type) : null;
+              const LPIcon = activeLPTool ? iconMap[activeLPTool.icon] : BookOpen;
+              const lpToolColor = activeLPTool ? settings.tabColors[activeLPTool.type as keyof typeof settings.tabColors] : undefined;
+              return (
+                <button
+                  onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
+                  data-tutorial-click="lesson-planners-group"
+                  className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
+                  title={!sidebarOpen ? (activeLPTool ? activeLPTool.name : 'Lesson Planners') : ''}
+                  style={{
+                    backgroundColor: 'transparent',
+                    transition: 'background-color 0.25s, box-shadow 0.25s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = sidebarIsDark
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <LPIcon
+                    className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeLPTool ? 'icon-glow' : ''}`}
+                    style={{
+                      color: activeLPTool && lpToolColor ? lpToolColor : (sidebarIsDark ? '#9ca3af' : '#6b7280'),
+                      transition: 'color 0.3s, filter 0.3s'
+                    }}
+                  />
               <div
                 className="flex-1 text-left overflow-hidden"
                 style={{
@@ -1478,7 +1488,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   />
                 </div>
               </div>
-            </button>
+                </button>
+              );
+            })()}
 
             <div
               className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
@@ -1559,9 +1571,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           {/* Visual Studio Dropdown */}
           {settings.visualStudioEnabled && (
             <div className="mt-2">
+              {(() => {
+                const activeTab = tabs.find(t => t.id === activeTabId);
+                const activeVSTool = !sidebarOpen && activeTab ? visualStudioTools.find(t => t.type === activeTab.type) : null;
+                const VSIcon = activeVSTool ? iconMap[activeVSTool.icon] : Palette;
+                const vsToolColor = activeVSTool ? settings.tabColors[activeVSTool.type as keyof typeof settings.tabColors] : undefined;
+                return (
               <button
                 onClick={() => setVisualStudioExpanded(!visualStudioExpanded)}
                 className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
+                title={!sidebarOpen ? (activeVSTool ? activeVSTool.name : 'Visual Studio') : ''}
                 style={{
                   backgroundColor: 'transparent',
                   transition: 'background-color 0.25s, box-shadow 0.25s'
@@ -1575,10 +1594,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
-                <Palette
-                  className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'}`}
-                  style={{ color: sidebarIsDark ? '#9ca3af' : '#6b7280' }}
-                />
+                    <VSIcon
+                      className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeVSTool ? 'icon-glow' : ''}`}
+                      style={{
+                        color: activeVSTool && vsToolColor ? vsToolColor : (sidebarIsDark ? '#9ca3af' : '#6b7280'),
+                        transition: 'color 0.3s, filter 0.3s'
+                      }}
+                    />
                 <div
                   className="flex-1 text-left overflow-hidden"
                   style={{
@@ -1607,6 +1629,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   </div>
                 </div>
               </button>
+                );
+              })()}
 
               <div
                 className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
