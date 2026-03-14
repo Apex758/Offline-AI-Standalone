@@ -2,6 +2,8 @@ import sqlite3
 import uuid
 import json
 import os
+import random
+import string
 from pathlib import Path
 
 
@@ -22,6 +24,20 @@ def _get_conn() -> sqlite3.Connection:
     return conn
 
 
+def _generate_student_id(conn: sqlite3.Connection,
+                          first_name: str = '', last_name: str = '',
+                          full_name: str = '') -> str:
+    first = first_name[0].upper() if first_name.strip() else (full_name.strip().split() or ['X'])[0][0].upper()
+    parts = full_name.strip().split()
+    last = last_name[0].upper() if last_name.strip() else (parts[-1][0].upper() if len(parts) > 1 else first)
+    for _ in range(100):
+        digits = ''.join(random.choices(string.digits, k=5))
+        sid = f"{first}{last}{digits}"
+        if not conn.execute('SELECT 1 FROM students WHERE id = ?', (sid,)).fetchone():
+            return sid
+    return str(uuid.uuid4())
+
+
 def init_db():
     conn = _get_conn()
     try:
@@ -29,6 +45,9 @@ def init_db():
             CREATE TABLE IF NOT EXISTS students (
                 id          TEXT PRIMARY KEY,
                 full_name   TEXT NOT NULL,
+                first_name  TEXT,
+                middle_name TEXT,
+                last_name   TEXT,
                 date_of_birth TEXT,
                 class_name  TEXT,
                 grade_level TEXT,
@@ -37,6 +56,12 @@ def init_db():
                 created_at  TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        # Migrate existing tables that lack the new name columns
+        for col in ('first_name', 'middle_name', 'last_name'):
+            try:
+                conn.execute(f'ALTER TABLE students ADD COLUMN {col} TEXT')
+            except Exception:
+                pass
         conn.execute('''
             CREATE TABLE IF NOT EXISTS quiz_grades (
                 id           TEXT PRIMARY KEY,
@@ -110,14 +135,18 @@ def get_student(student_id: str) -> dict | None:
 def create_student(data: dict) -> dict:
     conn = _get_conn()
     try:
-        student_id = str(uuid.uuid4())
+        first_name = (data.get('first_name') or '').strip()
+        middle_name = (data.get('middle_name') or '').strip()
+        last_name = (data.get('last_name') or '').strip()
+        full_name = ' '.join(filter(None, [first_name, middle_name, last_name])) or data.get('full_name', '')
+        student_id = _generate_student_id(conn, first_name=first_name, last_name=last_name, full_name=full_name)
         conn.execute(
             '''INSERT INTO students
-               (id, full_name, date_of_birth, class_name, grade_level, gender, contact_info)
-               VALUES (?, ?, ?, ?, ?, ?, ?)''',
+               (id, full_name, first_name, middle_name, last_name,
+                date_of_birth, class_name, grade_level, gender, contact_info)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
-                student_id,
-                data.get('full_name'),
+                student_id, full_name, first_name, middle_name, last_name,
                 data.get('date_of_birth'),
                 data.get('class_name'),
                 data.get('grade_level'),
@@ -137,12 +166,17 @@ def create_student(data: dict) -> dict:
 def update_student(student_id: str, data: dict) -> dict | None:
     conn = _get_conn()
     try:
+        first_name = (data.get('first_name') or '').strip()
+        middle_name = (data.get('middle_name') or '').strip()
+        last_name = (data.get('last_name') or '').strip()
+        full_name = ' '.join(filter(None, [first_name, middle_name, last_name])) or data.get('full_name', '')
         conn.execute(
             '''UPDATE students
-               SET full_name=?, date_of_birth=?, class_name=?, grade_level=?, gender=?, contact_info=?
+               SET full_name=?, first_name=?, middle_name=?, last_name=?,
+                   date_of_birth=?, class_name=?, grade_level=?, gender=?, contact_info=?
                WHERE id=?''',
             (
-                data.get('full_name'),
+                full_name, first_name, middle_name, last_name,
                 data.get('date_of_birth'),
                 data.get('class_name'),
                 data.get('grade_level'),
@@ -263,7 +297,7 @@ def bulk_import_students(rows: list[dict]) -> dict:
                 )
                 updated += 1
             else:
-                student_id = str(uuid.uuid4())
+                student_id = _generate_student_id(data['full_name'], conn)
                 conn.execute(
                     '''INSERT INTO students
                        (id, full_name, date_of_birth, class_name, grade_level, gender, contact_info)
