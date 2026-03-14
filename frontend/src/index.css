@@ -120,29 +120,6 @@
 /* ── Glass Sidebar Styles ── */
 .sidebar-glass {
   position: relative;
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-}
-
-.sidebar-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.sidebar-glass::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-right: 1px solid rgba(255,255,255,0.08);
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* Glass nav items */
@@ -197,72 +174,40 @@
   background: rgba(0,0,0,0.15);
 }
 
-/* Stagger slide-in animation */
-.stagger-slide {
-  opacity: 0;
-  transform: translateX(-8px);
-  animation: sidebarSlideIn 0.35s cubic-bezier(.4,0,.2,1) forwards;
-}
 
-@keyframes sidebarSlideIn {
-  to { opacity: 1; transform: translateX(0); }
-}
-
-/* ── Empty Dashboard Glass Scene ── */
-.dashboard-empty {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(30,60,120,0.85) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(80,40,100,0.65) 0%, transparent 50%),
-    radial-gradient(ellipse at 60% 80%, rgba(20,80,80,0.55) 0%, transparent 50%),
-    linear-gradient(160deg, #0a0e1a 0%, #111827 40%, #0c1322 100%);
-}
-
-.dashboard-empty .orb {
+/* ── Cosmic Dashboard Background ── */
+.cosmic-orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.35;
-  animation: orbDrift 20s ease-in-out infinite alternate;
+  animation: cosmicDrift 20s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-.dashboard-empty .orb-1 {
-  width: 400px; height: 400px;
-  background: #3b82f6;
-  top: -10%; left: 10%;
-}
+.cosmic-orb-g1 { width: 500px; height: 500px; background: #4da82e; top: -15%; left: 5%; opacity: 0.45; }
+.cosmic-orb-g2 { width: 400px; height: 400px; background: #5cb832; bottom: 10%; right: 10%; opacity: 0.35; animation-delay: -5s; }
+.cosmic-orb-g3 { width: 300px; height: 300px; background: #3d8c1e; top: 40%; left: 50%; opacity: 0.3; animation-delay: -12s; }
+.cosmic-orb-y1 { width: 280px; height: 280px; background: #e8a020; top: 50%; right: 15%; opacity: 0.35; animation-delay: -14s; }
+.cosmic-orb-y2 { width: 220px; height: 220px; background: #f0b818; top: 10%; left: 55%; opacity: 0.25; animation-delay: -9s; }
+.cosmic-orb-y3 { width: 180px; height: 180px; background: #dca00a; bottom: 30%; left: 30%; opacity: 0.2; animation-delay: -2s; }
+.cosmic-orb-w1 { width: 250px; height: 250px; background: #ffffff; top: 12%; right: 8%; opacity: 0.08; animation-delay: -10s; }
+.cosmic-orb-w2 { width: 180px; height: 180px; background: #ffffff; bottom: 20%; left: 45%; opacity: 0.06; animation-delay: -3s; }
 
-.dashboard-empty .orb-2 {
-  width: 300px; height: 300px;
-  background: #8b5cf6;
-  bottom: -5%; right: 20%;
-  animation-delay: -7s;
-}
-
-.dashboard-empty .orb-3 {
-  width: 250px; height: 250px;
-  background: #06b6d4;
-  top: 50%; left: 40%;
-  animation-delay: -14s;
-}
-
-@keyframes orbDrift {
+@keyframes cosmicDrift {
   0%   { transform: translate(0, 0) scale(1); }
   33%  { transform: translate(30px, -20px) scale(1.05); }
   66%  { transform: translate(-20px, 30px) scale(0.95); }
   100% { transform: translate(10px, -10px) scale(1.02); }
 }
 
-.dashboard-empty .grid-pattern {
+.cosmic-grid-overlay {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    linear-gradient(rgba(92,184,50,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92,184,50,0.035) 1px, transparent 1px);
   background-size: 60px 60px;
+  pointer-events: none;
 }
 
 .glass-card {
