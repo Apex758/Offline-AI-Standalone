@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Flag, AlignLeft, Trash2 } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Task, TaskFormData, TaskPriority } from '../../types/task';
 
@@ -10,6 +10,13 @@ interface TaskEditModalProps {
   onDelete?: (taskId: string) => void;
   onClose: () => void;
 }
+
+const priorityOptions: { value: TaskPriority; label: string; dot: string }[] = [
+  { value: 'low', label: 'Low', dot: 'var(--dash-text-faint)' },
+  { value: 'medium', label: 'Medium', dot: 'var(--dash-primary)' },
+  { value: 'high', label: 'High', dot: 'var(--dash-orange)' },
+  { value: 'urgent', label: 'Urgent', dot: '#ef4444' },
+];
 
 const TaskEditModal: React.FC<TaskEditModalProps> = ({
   task,
@@ -27,41 +34,21 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Natural priority colors
-  const priorityStyles: { [key in TaskPriority]: { bg: string; border: string; text: string } } = {
-    urgent: { bg: '#552A0120', border: '#552A01', text: '#552A01' },
-    high: { bg: '#F2A63120', border: '#F2A631', text: '#F2A631' },
-    medium: { bg: '#1D362D20', border: '#1D362D', text: '#1D362D' },
-    low: { bg: '#E8EAE340', border: '#A8AFA3', text: '#552A01' }
-  };
-
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
-    }
-
-    if (!formData.date) {
-      newErrors.date = 'Date is required';
-    }
-
+    if (!formData.title.trim()) newErrors.title = 'Title is required';
+    if (!formData.date) newErrors.date = 'Date is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validate()) return;
 
     const now = new Date().toISOString();
     const savedTask: Task = task
-      ? {
-          ...task,
-          ...formData,
-          updatedAt: now
-        }
+      ? { ...task, ...formData, updatedAt: now }
       : {
           id: `task-${Date.now()}`,
           ...formData,
@@ -81,187 +68,189 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
     }
   };
 
+  const selectedPriority = priorityOptions.find(p => p.value === formData.priority)!;
+
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{
-        backgroundColor: 'rgba(2, 13, 3, 0.6)',
-        backdropFilter: 'blur(8px)'
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backdropFilter: 'blur(6px)',
       }}
       onClick={onClose}
     >
       <div
-        className="rounded-2xl w-full max-w-md"
+        className="rounded-2xl w-full max-w-sm overflow-hidden"
         data-tutorial="task-edit-modal"
         style={{
-          backgroundColor: 'rgba(253, 253, 248, 0.95)',
+          backgroundColor: 'var(--dash-card-bg, rgba(253, 253, 248, 0.97))',
           backdropFilter: 'blur(20px)',
-          boxShadow: '0 20px 60px rgba(29, 54, 45, 0.25)'
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--dash-border)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div 
-          className="flex items-center justify-between p-6"
-          style={{ borderBottom: '1px solid #E8EAE3' }}
-        >
-          <h2 className="text-2xl font-bold" style={{ color: '#020D03' }}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4">
+          <h2 className="text-base font-semibold" style={{ color: 'var(--dash-text)' }}>
             {task ? 'Edit Task' : 'New Task'}
           </h2>
           <button
             onClick={onClose}
             data-tutorial="task-modal-close"
-            className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: 'var(--dash-text-faint)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--dash-task-bg)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
-            <X className="w-5 h-5" style={{ color: '#552A01' }} />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="px-5 pb-5 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
-              Title *
-            </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg outline-none transition-all"
+              className="w-full px-3 py-2.5 rounded-lg outline-none text-sm transition-all"
               style={{
-                backgroundColor: 'white',
-                border: errors.title ? '1px solid #F2A631' : '1px solid #E8EAE3',
-                color: '#020D03',
-                boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+                backgroundColor: 'var(--dash-task-bg)',
+                border: errors.title ? '1.5px solid #ef4444' : '1.5px solid transparent',
+                color: 'var(--dash-text)',
               }}
-              placeholder="Enter task title"
+              onFocus={(e) => { if (!errors.title) e.currentTarget.style.borderColor = 'var(--dash-primary)'; }}
+              onBlur={(e) => { if (!errors.title) e.currentTarget.style.borderColor = 'transparent'; }}
+              placeholder="Task name"
               autoFocus
             />
             {errors.title && (
-              <p className="mt-1 text-sm" style={{ color: '#F2A631' }}>{errors.title}</p>
+              <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.title}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <label className="flex items-center text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
-              <AlignLeft className="w-4 h-4 mr-1" />
-              Description
-            </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg outline-none resize-none transition-all"
+              className="w-full px-3 py-2.5 rounded-lg outline-none resize-none text-sm transition-all"
               style={{
-                backgroundColor: 'white',
-                border: '1px solid #E8EAE3',
-                color: '#020D03',
-                boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+                backgroundColor: 'var(--dash-task-bg)',
+                border: '1.5px solid transparent',
+                color: 'var(--dash-text)',
               }}
-              placeholder="Add details about this task (optional)"
-              rows={3}
+              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--dash-primary)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = 'transparent'; }}
+              placeholder="Add a description (optional)"
+              rows={2}
             />
           </div>
 
-          {/* Date */}
-          <div>
-            <label className="flex items-center text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
-              <Calendar className="w-4 h-4 mr-1" />
-              Due Date *
-            </label>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg outline-none transition-all"
-              style={{
-                backgroundColor: 'white',
-                border: errors.date ? '1px solid #F2A631' : '1px solid #E8EAE3',
-                color: '#020D03',
-                boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
-              }}
-            />
-            {errors.date && (
-              <p className="mt-1 text-sm" style={{ color: '#F2A631' }}>{errors.date}</p>
-            )}
+          {/* Date & Priority row */}
+          <div className="flex gap-3">
+            {/* Date */}
+            <div className="flex-1">
+              <label className="block text-[11px] font-medium uppercase tracking-wider mb-1.5" style={{ color: 'var(--dash-text-faint)' }}>
+                Due date
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg outline-none text-sm transition-all"
+                style={{
+                  backgroundColor: 'var(--dash-task-bg)',
+                  border: errors.date ? '1.5px solid #ef4444' : '1.5px solid transparent',
+                  color: 'var(--dash-text)',
+                }}
+                onFocus={(e) => { if (!errors.date) e.currentTarget.style.borderColor = 'var(--dash-primary)'; }}
+                onBlur={(e) => { if (!errors.date) e.currentTarget.style.borderColor = 'transparent'; }}
+              />
+              {errors.date && (
+                <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.date}</p>
+              )}
+            </div>
           </div>
 
           {/* Priority */}
           <div>
-            <label className="flex items-center text-sm font-semibold mb-2" style={{ color: '#552A01' }}>
-              <Flag className="w-4 h-4 mr-1" />
+            <label className="block text-[11px] font-medium uppercase tracking-wider mb-1.5" style={{ color: 'var(--dash-text-faint)' }}>
               Priority
             </label>
-            <div className="grid grid-cols-4 gap-2">
-              {(Object.keys(priorityStyles) as TaskPriority[]).map((priority) => {
-                const style = priorityStyles[priority];
-                const isSelected = formData.priority === priority;
-                
+            <div className="flex gap-1.5">
+              {priorityOptions.map((p) => {
+                const isSelected = formData.priority === p.value;
                 return (
                   <button
-                    key={priority}
+                    key={p.value}
                     type="button"
-                    onClick={() => setFormData({ ...formData, priority })}
-                    className="px-3 py-2 rounded-lg font-medium text-sm transition-all"
+                    onClick={() => setFormData({ ...formData, priority: p.value })}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all"
                     style={{
-                      backgroundColor: isSelected ? style.bg : 'white',
-                      border: `2px solid ${isSelected ? style.border : '#E8EAE3'}`,
-                      color: isSelected ? style.text : '#552A01',
-                      transform: isSelected ? 'scale(1.05)' : 'scale(1)'
+                      backgroundColor: isSelected ? 'var(--dash-task-bg)' : 'transparent',
+                      border: isSelected ? '1.5px solid var(--dash-border)' : '1.5px solid transparent',
+                      color: isSelected ? 'var(--dash-text)' : 'var(--dash-text-faint)',
                     }}
                   >
-                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                    <div
+                      className="rounded-full flex-shrink-0"
+                      style={{
+                        width: 8,
+                        height: 8,
+                        backgroundColor: p.dot,
+                        opacity: isSelected ? 1 : 0.5,
+                      }}
+                    />
+                    {p.label}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4">
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-2">
             {task && onDelete ? (
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
-                style={{
-                  color: '#F2A631',
-                  backgroundColor: '#F2A63120'
-                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                style={{ color: '#ef4444' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
-                <Trash2 className="w-4 h-4" />
-                <span className="font-medium">Delete</span>
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
               </button>
             ) : (
-              <div></div>
+              <div />
             )}
 
-            <div className="flex items-center space-x-3">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 rounded-lg transition-all hover:scale-105 font-medium"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
-                  backgroundColor: 'white',
-                  border: '1px solid #E8EAE3',
-                  color: '#552A01',
-                  boxShadow: '0 2px 8px rgba(29, 54, 45, 0.05)'
+                  color: 'var(--dash-text-sub)',
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--dash-task-bg)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 data-tutorial="task-create-button"
-                className="px-6 py-2 rounded-lg transition-all hover:scale-105 font-medium"
+                className="px-5 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-90"
                 style={{
-                  backgroundColor: '#1D362D',
-                  color: '#F8E59D',
-                  boxShadow: '0 4px 12px rgba(29, 54, 45, 0.2)'
+                  backgroundColor: 'var(--dash-primary)',
+                  color: 'var(--dash-primary-fg, white)',
                 }}
               >
-                {task ? 'Save Changes' : 'Create Task'}
+                {task ? 'Save' : 'Create'}
               </button>
             </div>
           </div>

@@ -13,10 +13,10 @@ interface TaskListWidgetProps {
 }
 
 const priorityColors: Record<string, { dot: string; gradient: string }> = {
-  urgent: { dot: 'var(--dash-orange)', gradient: 'var(--dash-orange-a25)' },
-  high: { dot: 'var(--dash-orange-a60)', gradient: 'var(--dash-orange-a12)' },
-  medium: { dot: 'var(--dash-primary)', gradient: 'var(--dash-primary-a25)' },
-  low: { dot: 'var(--dash-text-faint)', gradient: 'var(--dash-primary-a12)' },
+  urgent: { dot: '#ef4444', gradient: 'rgba(239, 68, 68, 0.15)' },
+  high: { dot: 'var(--dash-orange)', gradient: 'var(--dash-orange-a12)' },
+  medium: { dot: 'var(--dash-primary)', gradient: 'var(--dash-primary-a12)' },
+  low: { dot: 'var(--dash-text-faint)', gradient: 'rgba(148, 163, 184, 0.06)' },
 };
 
 const TaskListWidget: React.FC<TaskListWidgetProps> = ({
