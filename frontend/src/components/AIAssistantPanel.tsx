@@ -141,9 +141,9 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       'lesson': 'Lesson Plan',
       'quiz': 'Quiz',
       'rubric': 'Rubric',
-      'kindergarten': 'Kindergarten Plan',
-      'multigrade': 'Multigrade Plan',
-      'cross-curricular': 'Cross-Curricular Plan'
+      'kindergarten': 'Early Childhood Plan',
+      'multigrade': 'Multi-Level Plan',
+      'cross-curricular': 'Integrated Lesson Plan'
     };
     return labels[contentType];
   };

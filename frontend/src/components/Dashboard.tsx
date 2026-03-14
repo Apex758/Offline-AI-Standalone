@@ -77,59 +77,59 @@ interface DashboardProps {
 const tools: Tool[] = [
   {
     id: 'analytics',
-    name: 'Dashboard',
-    icon: 'BarChart3',
+    name: 'My Overview',
+    icon: 'LayoutDashboard',
     type: 'analytics',
     description: 'View your teaching analytics and quick access'
   },
   {
     id: 'curriculum-tracker',
-    name: 'Curriculum Tracker',
-    icon: 'Target',
+    name: 'Progress Tracker',
+    icon: 'TrendingUp',
     type: 'curriculum-tracker',
     description: 'Monitor your curriculum progress'
   },
   {
     id: 'resource-manager',
-    name: 'Resource Manager',
-    icon: 'Library',
+    name: 'My Resources',
+    icon: 'FolderOpen',
     type: 'resource-manager',
     description: 'View, edit, and manage all your saved resources'
   },
   {
     id: 'chat',
-    name: 'Chat with PEARL',
+    name: 'Ask PEARL',
     icon: 'MessageSquare',
     type: 'chat',
     description: 'Have a conversation with the AI assistant'
   },
   {
     id: 'curriculum',
-    name: 'Curriculum',
-    icon: 'BookOpen',
+    name: 'Curriculum Browser',
+    icon: 'Search',
     type: 'curriculum',
     description: 'Browse OECS curriculum content'
   },
   {
     id: 'quiz-generator',
-    name: 'Quiz Generator',
-    icon: 'ListChecks',
+    name: 'Quiz Builder',
+    icon: 'PenTool',
     type: 'quiz-generator',
-    description: 'Generate customized quizzes',
+    description: 'Build customized quizzes',
     group: 'tools'
   },
   {
     id: 'rubric-generator',
-    name: 'Rubric Generator',
-    icon: 'FileText',
+    name: 'Rubric Builder',
+    icon: 'ClipboardList',
     type: 'rubric-generator',
-    description: 'Generate grading rubrics',
+    description: 'Build grading rubrics',
     group: 'tools'
   },
   {
     id: 'class-management',
-    name: 'Class Management',
-    icon: 'School',
+    name: 'My Classes',
+    icon: 'UsersRound',
     type: 'class-management',
     description: 'Manage students, classes, and quiz grades',
     group: 'tools'
@@ -137,7 +137,7 @@ const tools: Tool[] = [
   // Lesson Planner Group
   {
     id: 'lesson-planner',
-    name: 'Standard Lesson',
+    name: 'Lesson Plan',
     icon: 'BookMarked',
     type: 'lesson-planner',
     description: 'Create comprehensive lesson plans',
@@ -145,24 +145,24 @@ const tools: Tool[] = [
   },
   {
     id: 'kindergarten-planner',
-    name: 'Kindergarten',
-    icon: 'GraduationCap',
+    name: 'Early Childhood',
+    icon: 'Baby',
     type: 'kindergarten-planner',
-    description: 'Kindergarten-specific lesson plans',
+    description: 'Early childhood lesson plans',
     group: 'lesson-planners'
   },
   {
     id: 'multigrade-planner',
-    name: 'Multigrade',
-    icon: 'Users',
+    name: 'Multi-Level',
+    icon: 'Layers',
     type: 'multigrade-planner',
     description: 'Plans for multiple grade levels',
     group: 'lesson-planners'
   },
   {
     id: 'cross-curricular-planner',
-    name: 'Cross-Curricular',
-    icon: 'School',
+    name: 'Integrated Lesson',
+    icon: 'Merge',
     type: 'cross-curricular-planner',
     description: 'Integrated subject lesson plans',
     group: 'lesson-planners'
@@ -177,10 +177,10 @@ const tools: Tool[] = [
   // Visual Studio Group
   {
     id: 'worksheet-generator',
-    name: 'Worksheet Generator',
+    name: 'Worksheet Builder',
     icon: 'FileSpreadsheet',
     type: 'worksheet-generator',
-    description: 'Generate custom worksheets',
+    description: 'Build custom worksheets',
     group: 'visual-studio'
   },
   {
@@ -208,23 +208,33 @@ const iconMap: { [key: string]: React.ElementType } = {
   Settings: SettingsIcon,
   Target,
   FileSpreadsheet,
-  Palette
+  Palette,
+  LayoutDashboard,
+  TrendingUp,
+  FolderOpen,
+  Search,
+  PenTool,
+  ClipboardList,
+  UsersRound,
+  Baby,
+  Layers,
+  Merge
 };
 
 const WELCOME_TIPS = [
   'Right-click on tabs to split them side-by-side',
   'Use Ctrl+K to open the command palette',
   'Drag tabs to reorder them in the toolbar',
-  'The Chat tool can help you plan lessons instantly',
-  'Generate worksheets tailored to any grade level',
-  'Track curriculum coverage from the Analytics dashboard',
-  'Use the Rubric Generator to create assessment criteria',
-  'The Curriculum Viewer covers all OECS subject areas',
-  'Create multigrade lesson plans for combined classes',
+  'Ask PEARL can help you plan lessons instantly',
+  'Build worksheets tailored to any grade level',
+  'Track curriculum coverage from My Overview',
+  'Use the Rubric Builder to create assessment criteria',
+  'The Curriculum Browser covers all OECS subject areas',
+  'Create multi-level lesson plans for combined classes',
   'Export your lesson plans and worksheets as PDFs',
   'Use the Image Studio to create visual aids for lessons',
-  'Manage your classes and student groups from one place',
-  'The Quiz Generator supports multiple question types',
+  'Manage your classes and student groups from My Classes',
+  'The Quiz Builder supports multiple question types',
   'Pin your most-used tools for quick access',
   'Keyboard shortcuts make navigation faster — try them out',
 ];
@@ -2390,9 +2400,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
                     <div className="grid grid-cols-3 gap-3 mb-6">
                       {[
-                        { icon: BarChart3, label: 'Dashboard', tool: tools.find(t => t.type === 'analytics') },
-                        { icon: MessageSquare, label: 'Chat', tool: tools.find(t => t.type === 'chat') },
-                        { icon: BookOpen, label: 'Curriculum', tool: tools.find(t => t.type === 'curriculum') },
+                        { icon: LayoutDashboard, label: 'My Overview', tool: tools.find(t => t.type === 'analytics') },
+                        { icon: MessageSquare, label: 'Ask PEARL', tool: tools.find(t => t.type === 'chat') },
+                        { icon: Search, label: 'Curriculum', tool: tools.find(t => t.type === 'curriculum') },
                       ].map((item) => (
                         <button
                           key={item.label}

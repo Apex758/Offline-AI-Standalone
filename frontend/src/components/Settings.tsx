@@ -187,21 +187,21 @@ const Settings: React.FC<SettingsProps> = () => {
 
   // Tab types and their default colors (matching sidebar order)
   const tabTypes = [
-    { type: 'analytics', label: 'Dashboard', defaultColor: '#3b82f6' },
-    { type: 'resource-manager', label: 'Resource Manager', defaultColor: '#84cc16' },
-    { type: 'chat', label: 'Chat', defaultColor: '#3b82f6' },
-    { type: 'curriculum', label: 'Curriculum', defaultColor: '#8b5cf6' },
-    { type: 'curriculum-tracker', label: 'Curriculum Tracker', defaultColor: '#10b981' },
-    { type: 'quiz-generator', label: 'Quiz Generator', defaultColor: '#14b8a6' },
-    { type: 'rubric-generator', label: 'Rubric Generator', defaultColor: '#f97316' },
-    { type: 'lesson-planner', label: 'Standard Lesson', defaultColor: '#f59e0b' },
-    { type: 'kindergarten-planner', label: 'Kindergarten', defaultColor: '#ec4899' },
-    { type: 'multigrade-planner', label: 'Multigrade', defaultColor: '#06b6d4' },
-    { type: 'cross-curricular-planner', label: 'Cross-Curricular', defaultColor: '#6366f1' },
-    { type: 'class-management', label: 'Class Management', defaultColor: '#f97316' },
+    { type: 'analytics', label: 'My Overview', defaultColor: '#3b82f6' },
+    { type: 'resource-manager', label: 'My Resources', defaultColor: '#84cc16' },
+    { type: 'chat', label: 'Ask PEARL', defaultColor: '#3b82f6' },
+    { type: 'curriculum', label: 'Curriculum Browser', defaultColor: '#8b5cf6' },
+    { type: 'curriculum-tracker', label: 'Progress Tracker', defaultColor: '#10b981' },
+    { type: 'quiz-generator', label: 'Quiz Builder', defaultColor: '#14b8a6' },
+    { type: 'rubric-generator', label: 'Rubric Builder', defaultColor: '#f97316' },
+    { type: 'lesson-planner', label: 'Lesson Plan', defaultColor: '#f59e0b' },
+    { type: 'kindergarten-planner', label: 'Early Childhood', defaultColor: '#ec4899' },
+    { type: 'multigrade-planner', label: 'Multi-Level', defaultColor: '#06b6d4' },
+    { type: 'cross-curricular-planner', label: 'Integrated Lesson', defaultColor: '#6366f1' },
+    { type: 'class-management', label: 'My Classes', defaultColor: '#f97316' },
     { type: 'settings', label: 'Settings', defaultColor: '#6b7280' },
     ...(settings.visualStudioEnabled ? [
-      { type: 'worksheet-generator', label: 'Worksheet Generator', defaultColor: '#8b5cf6' },
+      { type: 'worksheet-generator', label: 'Worksheet Builder', defaultColor: '#8b5cf6' },
       { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
     ] : [])
   ];

@@ -693,13 +693,13 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   },
   {
     target: '[data-tutorial="tool-quiz"]',
-    title: 'Quiz Generator',
-    description: 'Quickly generate customized quizzes with multiple question types and cognitive levels.',
+    title: 'Quiz Builder',
+    description: 'Quickly build customized quizzes with multiple question types and cognitive levels.',
     position: 'right',
   },
   {
     target: '[data-tutorial="tool-rubric"]',
-    title: 'Rubric Generator',
+    title: 'Rubric Builder',
     description: 'Create detailed grading rubrics for any assignment with performance levels and criteria.',
     position: 'right',
   },

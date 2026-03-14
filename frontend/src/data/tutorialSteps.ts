@@ -136,7 +136,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
 
   [TUTORIAL_IDS.CURRICULUM_TRACKER]: {
     id: TUTORIAL_IDS.CURRICULUM_TRACKER,
-    name: 'Curriculum Tracker',
+    name: 'Progress Tracker',
     description: 'Track your progress through the curriculum milestones',
     steps: [
       {
@@ -338,8 +338,8 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   
   [TUTORIAL_IDS.KINDERGARTEN_PLANNER]: {
     id: TUTORIAL_IDS.KINDERGARTEN_PLANNER,
-    name: 'Kindergarten Planner',
-    description: 'Create kindergarten-specific lesson plans',
+    name: 'Early Childhood Planner',
+    description: 'Create early childhood lesson plans',
     steps: [
       {
         target: '[data-tutorial="kinder-welcome"]',
@@ -409,7 +409,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   
   [TUTORIAL_IDS.MULTIGRADE_PLANNER]: {
     id: TUTORIAL_IDS.MULTIGRADE_PLANNER,
-    name: 'Multigrade Planner',
+    name: 'Multi-Level Planner',
     description: 'Plan lessons for multiple grade levels',
     steps: [
       {
@@ -483,7 +483,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   
   [TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER]: {
     id: TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER,
-    name: 'Cross-Curricular Planner',
+    name: 'Integrated Lesson Planner',
     description: 'Create integrated subject lesson plans',
     steps: [
       {
@@ -557,8 +557,8 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   
   [TUTORIAL_IDS.QUIZ_GENERATOR]: {
     id: TUTORIAL_IDS.QUIZ_GENERATOR,
-    name: 'Quiz Generator',
-    description: 'Generate customized quizzes',
+    name: 'Quiz Builder',
+    description: 'Build customized quizzes',
     steps: [
       {
         target: '[data-tutorial="quiz-generator-welcome"]',
@@ -620,8 +620,8 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   
   [TUTORIAL_IDS.RUBRIC_GENERATOR]: {
     id: TUTORIAL_IDS.RUBRIC_GENERATOR,
-    name: 'Rubric Generator',
-    description: 'Create grading rubrics',
+    name: 'Rubric Builder',
+    description: 'Build grading rubrics',
     steps: [
       {
         target: '[data-tutorial="rubric-generator-welcome"]',
@@ -700,7 +700,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
 
   [TUTORIAL_IDS.WORKSHEET_GENERATOR]: {
     id: TUTORIAL_IDS.WORKSHEET_GENERATOR,
-    name: 'Worksheet Generator',
+    name: 'Worksheet Builder',
     description: 'Create and preview AI-assisted worksheets',
     steps: [
       { target: '[data-tutorial="worksheet-generator-welcome"]', title: 'Welcome to Worksheet Generator', description: 'Configure subject, grade, and scope to create aligned worksheets.', position: 'center' },

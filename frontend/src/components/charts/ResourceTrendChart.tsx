@@ -11,11 +11,11 @@ interface ResourceTrendChartProps {
 }
 
 const SERIES = [
-  { key: 'lessonPlans',  name: 'Standard Lessons',    toolType: 'lesson-planner' },
+  { key: 'lessonPlans',  name: 'Lesson Plans',           toolType: 'lesson-planner' },
   { key: 'quizzes',      name: 'Quizzes',              toolType: 'quiz-generator' },
   { key: 'rubrics',      name: 'Rubrics',              toolType: 'rubric-generator' },
-  { key: 'kindergarten', name: 'Kindergarten Plans',   toolType: 'kindergarten-planner' },
-  { key: 'multigrade',   name: 'Multigrade Plans',     toolType: 'multigrade-planner' },
+  { key: 'kindergarten', name: 'Early Childhood Plans', toolType: 'kindergarten-planner' },
+  { key: 'multigrade',   name: 'Multi-Level Plans',    toolType: 'multigrade-planner' },
   { key: 'worksheets',   name: 'Worksheets',           toolType: 'worksheet-generator' },
   { key: 'images',       name: 'Images',               toolType: 'image-studio' },
 ];

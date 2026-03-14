@@ -154,9 +154,9 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
       lesson: { icon: BookMarked, color: '#1D362D', bg: '#1D362D15', label: 'Lesson' },
       quiz: { icon: ListChecks, color: '#F2A631', bg: '#F2A63115', label: 'Quiz' },
       rubric: { icon: FileText, color: '#552A01', bg: '#552A0115', label: 'Rubric' },
-      kindergarten: { icon: GraduationCap, color: '#1D362D', bg: '#1D362D15', label: 'Kindergarten' },
-      multigrade: { icon: Users, color: '#552A01', bg: '#552A0115', label: 'Multigrade' },
-      'cross-curricular': { icon: School, color: '#F2A631', bg: '#F2A63115', label: 'Cross-Curricular' }
+      kindergarten: { icon: GraduationCap, color: '#1D362D', bg: '#1D362D15', label: 'Early Childhood' },
+      multigrade: { icon: Users, color: '#552A01', bg: '#552A0115', label: 'Multi-Level' },
+      'cross-curricular': { icon: School, color: '#F2A631', bg: '#F2A63115', label: 'Integrated Lesson' }
     };
     return configs[type] || configs.lesson;
   };

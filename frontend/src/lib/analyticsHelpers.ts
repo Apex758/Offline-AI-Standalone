@@ -139,12 +139,12 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
 export function calculateDistribution(resources: any[], tabColors: { [key: string]: string } = {}, timeframe: Timeframe = 'all'): DistributionData[] {
   const typeCounts: { [key: string]: number } = {};
   const typeLabels: { [key: string]: string } = {
-    lesson: 'Standard Lessons',
+    lesson: 'Lesson Plans',
     quiz: 'Quizzes',
     rubric: 'Rubrics',
-    kindergarten: 'Kindergarten Plans',
-    multigrade: 'Multigrade Plans',
-    'cross-curricular': 'Cross-Curricular Plans',
+    kindergarten: 'Early Childhood Plans',
+    multigrade: 'Multi-Level Plans',
+    'cross-curricular': 'Integrated Lesson Plans',
     worksheet: 'Worksheets',
     image: 'Images'
   };

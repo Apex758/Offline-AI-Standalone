@@ -13,9 +13,9 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
   // Natural color palette
   const colorMap: { [key: string]: string } = {
     'Standard': '#1D362D',
-    'Kindergarten': '#F2A631',
-    'Multigrade': '#552A01',
-    'Cross-Curricular': '#F8E59D'
+    'Early Childhood': '#F2A631',
+    'Multi-Level': '#552A01',
+    'Integrated Lesson': '#F8E59D'
   };
 
   const CustomTooltip = ({ active, payload }: any) => {
