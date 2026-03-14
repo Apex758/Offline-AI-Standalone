@@ -32,28 +32,52 @@ async def initialize_milestones(teacher_id: str):
     """Generate milestones for all curriculum topics"""
     if not curriculum_matcher:
         raise HTTPException(status_code=500, detail="Curriculum matcher not available")
-    
+
     db = get_milestone_db()
-    
+
     # Check if already initialized
-    existing = db.get_milestones(teacher_id)
+    existing = db.get_milestones(teacher_id, include_hidden=True)
     if existing:
+        # Sync with current curriculum data (adds new, removes stale, updates metadata)
+        result = db.sync_milestones_with_curriculum(
+            teacher_id=teacher_id,
+            curriculum_pages=curriculum_matcher.pages
+        )
+        synced = db.get_milestones(teacher_id)
         return {
             "success": True,
-            "message": "Milestones already initialized",
-            "count": len(existing)
+            "message": f"Synced milestones: {result['added']} added, {result['updated']} updated, {result['removed']} removed",
+            "count": len(synced)
         }
-    
+
     # Generate from curriculum
     count = db.generate_milestones_from_curriculum(
         teacher_id=teacher_id,
         curriculum_pages=curriculum_matcher.pages
     )
-    
+
     return {
         "success": True,
         "message": f"Generated {count} milestones",
         "count": count
+    }
+
+@router.post("/sync/{teacher_id}")
+async def sync_milestones(teacher_id: str):
+    """Sync milestones with updated curriculum data, preserving progress"""
+    if not curriculum_matcher:
+        raise HTTPException(status_code=500, detail="Curriculum matcher not available")
+
+    db = get_milestone_db()
+    result = db.sync_milestones_with_curriculum(
+        teacher_id=teacher_id,
+        curriculum_pages=curriculum_matcher.pages
+    )
+
+    return {
+        "success": True,
+        "message": f"Synced: {result['added']} added, {result['updated']} updated, {result['removed']} removed",
+        **result
     }
 
 @router.get("/{teacher_id}")

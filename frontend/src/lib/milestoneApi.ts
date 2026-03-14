@@ -61,5 +61,11 @@ export const milestoneApi = {
   getStats: async (teacherId: string) => {
     const response = await axios.get(`${API_URL}/${teacherId}/stats`);
     return response.data as MilestoneStats;
+  },
+
+  // Sync milestones with updated curriculum data (preserves progress)
+  sync: async (teacherId: string) => {
+    const response = await axios.post(`${API_URL}/sync/${teacherId}`);
+    return response.data;
   }
 };

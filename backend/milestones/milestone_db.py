@@ -323,8 +323,87 @@ class MilestoneDB:
                 count += 1
             except Exception as e:
                 logger.error(f"Error creating milestone for {page.get('id')}: {e}")
-        
+
         return count
+
+    def sync_milestones_with_curriculum(
+        self,
+        teacher_id: str,
+        curriculum_pages: List[Dict[str, Any]]
+    ) -> Dict[str, int]:
+        """Sync milestones with updated curriculum data.
+
+        - Adds new milestones for pages that don't have one yet
+        - Removes milestones whose topic_id no longer exists in curriculum
+        - Updates topic_title, grade, subject, strand, route for existing milestones
+
+        Returns dict with counts: added, updated, removed
+        """
+        conn = self.get_connection()
+        added = 0
+        updated = 0
+        removed = 0
+
+        try:
+            # Get current milestones for this teacher
+            existing = conn.execute(
+                "SELECT * FROM milestones WHERE teacher_id = ?", (teacher_id,)
+            ).fetchall()
+            existing_map = {row['topic_id']: dict(row) for row in existing}
+
+            # Build set of current curriculum page IDs
+            curriculum_ids = set()
+            for page in curriculum_pages:
+                page_id = page.get('id', '')
+                if not page_id:
+                    continue
+                curriculum_ids.add(page_id)
+
+                if page_id in existing_map:
+                    # Update existing milestone metadata (preserve status, notes, due_date)
+                    milestone_id = existing_map[page_id]['id']
+                    conn.execute("""
+                        UPDATE milestones
+                        SET topic_title = ?, grade = ?, subject = ?, strand = ?, route = ?,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                    """, (
+                        page.get('displayName', ''),
+                        page.get('grade', ''),
+                        page.get('subject', ''),
+                        page.get('strand', ''),
+                        page.get('route', ''),
+                        milestone_id
+                    ))
+                    updated += 1
+                else:
+                    # Add new milestone (inline to reuse existing connection)
+                    milestone_id = f"{teacher_id}_{page_id}"
+                    conn.execute("""
+                        INSERT OR IGNORE INTO milestones
+                        (id, teacher_id, topic_id, topic_title, grade, subject, strand, route, status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'not_started')
+                    """, (
+                        milestone_id, teacher_id, page_id,
+                        page.get('displayName', ''),
+                        page.get('grade', ''),
+                        page.get('subject', ''),
+                        page.get('strand', ''),
+                        page.get('route', '')
+                    ))
+                    added += 1
+
+            # Remove milestones for pages that no longer exist
+            for topic_id, milestone in existing_map.items():
+                if topic_id not in curriculum_ids:
+                    conn.execute("DELETE FROM milestones WHERE id = ?", (milestone['id'],))
+                    removed += 1
+
+            conn.commit()
+            logger.info(f"Synced milestones for {teacher_id}: added={added}, updated={updated}, removed={removed}")
+            return {"added": added, "updated": updated, "removed": removed}
+        finally:
+            conn.close()
 
 # Global instance
 _milestone_db = None

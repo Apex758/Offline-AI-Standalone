@@ -155,7 +155,7 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
             <div key={grade} className="space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold" style={{ color: 'var(--dash-text)' }}>
-                  Grade {grade}
+                  {grade === 'K' ? 'Kindergarten' : `Grade ${grade}`}
                 </h4>
                 <span className="text-xs font-medium" style={{ color: 'var(--dash-text-sub)' }}>
                   {percentage}%

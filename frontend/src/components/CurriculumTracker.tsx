@@ -59,24 +59,23 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     setShowTutorial(false);
   };
 
+  const [hasSynced, setHasSynced] = useState(false);
+
   const loadMilestones = async () => {
     setLoading(true);
     try {
-      // Try to get milestones
+      // On first load, always initialize/sync to pick up curriculum changes
+      if (!hasSynced && !filters.grade && !filters.subject && !filters.status) {
+        await milestoneApi.initialize(teacherId);
+        setHasSynced(true);
+      }
+
       const data = await milestoneApi.getMilestones(teacherId, {
         grade: filters.grade || undefined,
         subject: filters.subject || undefined,
         status: filters.status || undefined
       });
-
-      if (data.length === 0 && !filters.grade && !filters.subject && !filters.status) {
-        // No milestones exist, initialize
-        await milestoneApi.initialize(teacherId);
-        const initialized = await milestoneApi.getMilestones(teacherId);
-        setMilestones(initialized);
-      } else {
-        setMilestones(data);
-      }
+      setMilestones(data);
     } catch (error) {
       console.error('Failed to load milestones:', error);
     } finally {
@@ -159,12 +158,24 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     };
 
     tree.forEach(calculateProgress);
+
+    // Sort grades: Kindergarten first, then numeric order
+    tree.sort((a, b) => {
+      if (a.label === 'K') return -1;
+      if (b.label === 'K') return 1;
+      return Number(a.label) - Number(b.label);
+    });
+
     return tree;
   }, [milestones]);
 
   // Get unique values for filters
   const uniqueGrades = useMemo(() =>
-    [...new Set(milestones.map(m => m.grade))].sort(),
+    [...new Set(milestones.map(m => m.grade))].sort((a, b) => {
+      if (a === 'K') return -1;
+      if (b === 'K') return 1;
+      return Number(a) - Number(b);
+    }),
     [milestones]
   );
 
@@ -298,7 +309,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
           <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
 
-          <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? `Grade ${node.label}` : node.label}</span>
+          <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? (node.label === 'K' ? 'Kindergarten' : `Grade ${node.label}`) : node.label}</span>
 
           {node.progress && (
             <div className="flex items-center space-x-2" data-tutorial="node-progress">
@@ -379,7 +390,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           >
             <option value="">All Grades</option>
             {uniqueGrades.map(grade => (
-              <option key={grade} value={grade}>{grade}</option>
+              <option key={grade} value={grade}>{grade === 'K' ? 'Kindergarten' : `Grade ${grade}`}</option>
             ))}
           </select>
 

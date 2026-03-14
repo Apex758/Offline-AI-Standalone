@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "filename": "OHPC Kindergarten Guidelines 14November2024_curriculum.html",
+    "curriculum": "",
+    "grade": "Kindergarten",
+    "subject": "Social Studies"
+  },
+  "strands": [
+    {
+      "strand_name": "Strand 2: Operations with Numbers",
+      "essential_learning_outcomes": [
+        {
+          "elo_code": "ELO-1",
+          "elo_description": "2.1",
+          "specific_curriculum_outcomes": [],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": []
+        }
+      ],
+      "resources": {}
+    },
+    {
+      "strand_name": "Strand 3: Pattern and Relationship",
+      "essential_learning_outcomes": [
+        {
+          "elo_code": "ELO-2",
+          "elo_description": "Recognizing, Describing and Extending Patterns - Describe, create, extend and generalise patterns \n For Kindergarten, the Grade Level Expectations are expanded to Specific Curriculum Outcomes (SCOs) \n Link to OECS Learning Standard NP4",
+          "specific_curriculum_outcomes": [],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": []
+        }
+      ],
+      "resources": {}
+    },
+    {
+      "strand_name": "Strand 5: Measurement",
+      "essential_learning_outcomes": [
+        {
+          "elo_code": "ELO-3",
+          "elo_description": "Understanding what and how we measure \n Essential Learning Outcome 5.2: Developing and applying non-standard and standard units of measure \n For Kindergarten, the Grade Level Expectations are expanded to Specific Curriculum Outcomes (SCOs) \n Link to OECS Learning Standards LM3, LM5, LM6, MC2, MC3, MM2, MM3",
+          "specific_curriculum_outcomes": [],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": []
+        }
+      ],
+      "resources": {}
+    },
+    {
+      "strand_name": "Strand 1: Myself – Historical and Cultural Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_code": "ELO-4",
+          "elo_description": "& Specific Learning Outcomes(SCOs)",
+          "specific_curriculum_outcomes": [],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": []
+        }
+      ],
+      "resources": {}
+    }
+  ]
+}
