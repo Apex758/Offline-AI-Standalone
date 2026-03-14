@@ -1,16 +1,104 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import ResourceTrendChart from './ResourceTrendChart';
 import ResourceDistributionChart from './ResourceDistributionChart';
 import type { ResourceTrendData, DistributionData, Timeframe } from '../../types/analytics';
 
-const TIMEFRAME_BUTTONS: { value: Timeframe; label: string }[] = [
-  { value: 'week',   label: '1 Week' },
-  { value: '2weeks', label: '2 Weeks' },
-  { value: '4weeks', label: '4 Weeks' },
-  { value: 'month',  label: 'Month' },
-  { value: 'all',    label: 'All Time' },
+const TIMEFRAME_OPTIONS: { value: Timeframe; label: string }[] = [
+  { value: 'week',    label: '1 Week' },
+  { value: '2weeks',  label: '2 Weeks' },
+  { value: '4weeks',  label: '4 Weeks' },
+  { value: 'month',   label: 'Month' },
+  { value: '3months', label: '3 Months' },
+  { value: '6months', label: '6 Months' },
+  { value: 'all',     label: 'All Time' },
 ];
+
+const TimeframeDropdown: React.FC<{
+  timeframe: Timeframe;
+  onTimeframeChange: (tf: Timeframe) => void;
+}> = ({ timeframe, onTimeframeChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const selectedLabel = TIMEFRAME_OPTIONS.find(o => o.value === timeframe)?.label || 'Month';
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="absolute top-4 right-4 z-10" data-tutorial="analytics-timeframe-selector" ref={ref}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+        style={{
+          backgroundColor: 'var(--dash-timeframe-bg)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 8px var(--dash-card-shadow)',
+          color: 'var(--dash-text-sub)',
+        }}
+      >
+        <span style={{ color: 'var(--dash-primary)' }}>{selectedLabel}</span>
+        <ChevronDown
+          className="w-3.5 h-3.5 transition-transform"
+          style={{
+            color: 'var(--dash-text-sub)',
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full right-0 mt-1 rounded-lg py-1 min-w-[130px] overflow-hidden"
+          style={{
+            backgroundColor: 'var(--dash-timeframe-bg)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 4px 16px var(--dash-card-shadow)',
+          }}
+        >
+          {TIMEFRAME_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                onTimeframeChange(opt.value);
+                setOpen(false);
+              }}
+              className="w-full text-left px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                backgroundColor: timeframe === opt.value ? 'var(--dash-primary)' : 'transparent',
+                color: timeframe === opt.value ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
+              }}
+              onMouseEnter={(e) => {
+                if (timeframe !== opt.value) {
+                  e.currentTarget.style.backgroundColor = 'var(--dash-primary)';
+                  e.currentTarget.style.color = 'var(--dash-primary-fg)';
+                  e.currentTarget.style.opacity = '0.7';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (timeframe !== opt.value) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--dash-text-sub)';
+                  e.currentTarget.style.opacity = '1';
+                }
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface ChartCarouselProps {
   trendData: ResourceTrendData[];
@@ -100,31 +188,10 @@ const ChartCarousel: React.FC<ChartCarouselProps> = ({
         style={{ height: '500px' }}
       >
         {/* Timeframe Selector — overlaid top-right */}
-        <div className="absolute top-4 right-4 z-10" data-tutorial="analytics-timeframe-selector">
-          <div
-            className="flex items-center space-x-1 rounded-lg p-1"
-            style={{
-              backgroundColor: 'var(--dash-timeframe-bg)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: `0 2px 8px var(--dash-card-shadow)`,
-            }}
-          >
-            {TIMEFRAME_BUTTONS.map((btn) => (
-              <button
-                key={btn.value}
-                onClick={() => onTimeframeChange(btn.value)}
-                className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-                style={{
-                  backgroundColor: timeframe === btn.value ? 'var(--dash-primary)' : 'transparent',
-                  color: timeframe === btn.value ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
-                  boxShadow: timeframe === btn.value ? `0 2px 4px var(--dash-primary-a25)` : 'none',
-                }}
-              >
-                {btn.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <TimeframeDropdown
+          timeframe={timeframe}
+          onTimeframeChange={onTimeframeChange}
+        />
 
         {/* Trend Chart View */}
         <div

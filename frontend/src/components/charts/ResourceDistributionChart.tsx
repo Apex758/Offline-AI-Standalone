@@ -82,7 +82,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
       </div>
 
       {/* Chart + Legend */}
-      <div className="flex gap-6 items-center flex-1 min-h-0">
+      <div className="flex gap-0 items-center flex-1 min-h-0">
         {/* Radial Bar Chart */}
         <div className="flex-1">
           <ResponsiveContainer width="100%" height={380}>
@@ -107,7 +107,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
         </div>
 
         {/* Toggleable Legend */}
-        <div className="w-44 space-y-2.5">
+        <div className="w-44 space-y-2.5 -ml-6 -mt-4">
           <div className="text-center mb-3">
             <div className="text-2xl font-bold" style={{ color: 'var(--dash-text)' }}>{total}</div>
             <div className="text-xs font-medium" style={{ color: 'var(--dash-text-sub)' }}>Total</div>
@@ -122,19 +122,19 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
                 style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
               >
                 <span style={{
-                  width: 8, height: 8, borderRadius: '50%',
+                  width: 10, height: 10, borderRadius: '50%',
                   background: hidden ? 'var(--dash-hidden-dot)' : entry.fill,
                   flexShrink: 0, display: 'inline-block',
                   transition: 'background 0.2s',
                 }} />
-                <span className="text-xs truncate" style={{
+                <span className="text-sm truncate" style={{
                   color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
                   textDecoration: hidden ? 'line-through' : 'none',
                   transition: 'color 0.2s',
                 }}>
                   {entry.name}
                 </span>
-                <span className="text-xs font-semibold ml-auto" style={{ color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text)' }}>
+                <span className="text-sm font-semibold ml-auto" style={{ color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text)' }}>
                   {entry.count}
                 </span>
               </button>

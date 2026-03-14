@@ -1,4 +1,4 @@
-import { format, subDays, subWeeks, startOfMonth, endOfMonth, isToday, isBefore, startOfDay, parseISO, isAfter } from 'date-fns';
+import { format, subDays, subWeeks, subMonths, startOfMonth, startOfWeek, endOfMonth, isToday, isBefore, startOfDay, parseISO, isAfter } from 'date-fns';
 import type { ResourceTrendData, DistributionData, ToolUsage, Activity, Timeframe } from '../types/analytics';
 import type { Task, TasksByStatus } from '../types/task';
 import type { Tab } from '../types';
@@ -23,8 +23,14 @@ export function getDateRange(timeframe: Timeframe): { start: Date; end: Date } {
     case 'month':
       start = startOfMonth(end);
       break;
+    case '3months':
+      start = subMonths(end, 3);
+      break;
+    case '6months':
+      start = subMonths(end, 6);
+      break;
     case 'all':
-      start = new Date(2020, 0, 1); // Far back date
+      start = new Date(2025, 0, 1); // January 1, 2025
       break;
     default:
       start = startOfMonth(end);
@@ -34,42 +40,63 @@ export function getDateRange(timeframe: Timeframe): { start: Date; end: Date } {
 }
 
 /**
- * Process resources into trend data for charting
+ * Process resources into trend data for charting.
+ * Uses daily buckets for short timeframes, weekly for 3months/6months/all.
  */
 export function processResourceTrends(resources: any[], timeframe: Timeframe): ResourceTrendData[] {
   const { start, end } = getDateRange(timeframe);
+  const useWeekly = timeframe === '3months' || timeframe === '6months' || timeframe === 'all';
   const dataMap = new Map<string, ResourceTrendData>();
 
-  // Initialize all dates in range
-  let currentDate = new Date(start);
-  while (currentDate <= end) {
-    const dateKey = format(currentDate, 'yyyy-MM-dd');
-    dataMap.set(dateKey, {
-      date: dateKey,
-      total: 0,
-      lessonPlans: 0,
-      quizzes: 0,
-      rubrics: 0,
-      kindergarten: 0,
-      multigrade: 0,
-      crossCurricular: 0,
-      worksheets: 0,
-      images: 0
-    });
-    currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+  const emptyBucket = (dateKey: string): ResourceTrendData => ({
+    date: dateKey,
+    total: 0,
+    lessonPlans: 0,
+    quizzes: 0,
+    rubrics: 0,
+    kindergarten: 0,
+    multigrade: 0,
+    crossCurricular: 0,
+    worksheets: 0,
+    images: 0
+  });
+
+  // Initialize buckets across the range
+  if (useWeekly) {
+    let cur = startOfWeek(start, { weekStartsOn: 1 });
+    while (cur <= end) {
+      const dateKey = format(cur, 'yyyy-MM-dd');
+      dataMap.set(dateKey, emptyBucket(dateKey));
+      cur = new Date(cur.getTime() + 7 * 24 * 60 * 60 * 1000);
+    }
+  } else {
+    let cur = new Date(start);
+    while (cur <= end) {
+      const dateKey = format(cur, 'yyyy-MM-dd');
+      dataMap.set(dateKey, emptyBucket(dateKey));
+      cur = new Date(cur.setDate(cur.getDate() + 1));
+    }
   }
 
-  // Aggregate resources by date
+  // Helper to find the right weekly bucket key for a date
+  const getWeekKey = (d: Date): string => {
+    const weekStart = startOfWeek(d, { weekStartsOn: 1 });
+    return format(weekStart, 'yyyy-MM-dd');
+  };
+
+  // Aggregate resources into buckets
   resources.forEach(resource => {
     try {
       const resourceDate = new Date(resource.timestamp);
       if (resourceDate >= start && resourceDate <= end) {
-        const dateKey = format(resourceDate, 'yyyy-MM-dd');
+        const dateKey = useWeekly
+          ? getWeekKey(resourceDate)
+          : format(resourceDate, 'yyyy-MM-dd');
         const data = dataMap.get(dateKey);
-        
+
         if (data) {
           data.total++;
-          
+
           switch (resource.type) {
             case 'lesson':
               data.lessonPlans++;

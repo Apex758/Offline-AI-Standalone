@@ -34,16 +34,14 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
       return next;
     });
 
-  const minDate = new Date('2025-06-01');
-  const filteredData = data.filter(d => {
-    const entryDate = typeof d.date === 'string' ? new Date(d.date) : d.date;
-    return entryDate >= minDate;
-  });
+  const isWeekly = timeframe === '3months' || timeframe === '6months' || timeframe === 'all';
 
   const getColor = (toolType: string): string => tabColors[toolType] || '#6b7280';
 
   const formatXAxis = (dateString: string) => {
-    try { return format(parseISO(dateString), 'MMM d'); } catch { return dateString; }
+    try {
+      return format(parseISO(dateString), 'MMM d');
+    } catch { return dateString; }
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -59,7 +57,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
         }}
       >
         <p className="font-semibold mb-2 text-xs" style={{ color: 'var(--dash-text)' }}>
-          {format(parseISO(label), 'MMM d, yyyy')}
+          {isWeekly ? `Week of ${format(parseISO(label), 'MMM d, yyyy')}` : format(parseISO(label), 'MMM d, yyyy')}
         </p>
         {payload.map((entry: any, i: number) => (
           <div key={i} className="flex items-center gap-2 text-xs mb-1">
@@ -85,7 +83,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
 
       {/* Stacked Area Chart */}
       <ResponsiveContainer width="100%" height={340}>
-        <AreaChart data={filteredData} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
           <defs>
             {SERIES.map((s) => {
               const color = getColor(s.toolType);
@@ -104,6 +102,14 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
             tick={{ fontSize: 11, fill: 'var(--dash-axis-tick)' }}
             axisLine={false}
             tickLine={false}
+            interval={
+              timeframe === '6months' ? 3
+              : timeframe === 'all' ? 3
+              : timeframe === '3months' ? 1
+              : timeframe === '4weeks' ? 3
+              : timeframe === '2weeks' ? 1
+              : 0
+            }
           />
           <YAxis
             tick={{ fontSize: 11, fill: 'var(--dash-axis-tick)' }}
@@ -146,13 +152,13 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
               style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
             >
               <span style={{
-                width: 8, height: 8, borderRadius: '50%',
+                width: 10, height: 10, borderRadius: '50%',
                 background: hidden ? 'var(--dash-hidden-dot)' : color,
                 flexShrink: 0, display: 'inline-block',
                 transition: 'background 0.2s',
               }} />
               <span style={{
-                fontSize: 11,
+                fontSize: 13,
                 color: hidden ? 'var(--dash-hidden-text)' : 'var(--dash-text-sub)',
                 textDecoration: hidden ? 'line-through' : 'none',
                 transition: 'color 0.2s',

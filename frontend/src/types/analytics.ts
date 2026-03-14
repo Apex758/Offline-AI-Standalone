@@ -35,7 +35,7 @@ export interface Activity {
   resourceType?: string;
 }
 
-export type Timeframe = 'week' | '2weeks' | '4weeks' | 'month' | 'all';
+export type Timeframe = 'week' | '2weeks' | '4weeks' | 'month' | '3months' | '6months' | 'all';
 export type CurriculumView = 'overall' | 'grade' | 'subject';
 
 export interface QuickStat {
