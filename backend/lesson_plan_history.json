@@ -898,5 +898,230 @@
         "summary": "Build on foundational listening and speaking skills with increased complexity in comprehension, expression, and language conventions for effective communication."
       }
     ]
+  },
+  {
+    "id": "plan_1773472074213",
+    "title": "Language Arts - sgf (Grade 2)",
+    "timestamp": "2026-03-14T07:07:54.213Z",
+    "formData": {
+      "subject": "Language Arts",
+      "gradeLevel": "2",
+      "topic": "sgf",
+      "strand": "listening-speaking",
+      "essentialOutcomes": "fawe",
+      "specificOutcomes": "frge",
+      "studentCount": "200",
+      "duration": "4",
+      "pedagogicalStrategies": [
+        "Direct Instruction"
+      ],
+      "learningStyles": [
+        "Kinesthetic"
+      ],
+      "learningPreferences": [],
+      "multipleIntelligences": [],
+      "customLearningStyles": "",
+      "materials": "tet",
+      "prerequisiteSkills": "frie",
+      "specialNeeds": false,
+      "specialNeedsDetails": "",
+      "additionalInstructions": "",
+      "referenceUrl": ""
+    },
+    "generatedPlan": "**Lesson Plan:**\n\n**Grade 2 Language Arts**\n\n**Topic:** Understanding Sentences (sgf)\n\n**Duration:** 4 days\n\n**Class Size:** 200 students\n\n**Learning Styles:** Kinesthetic\n\n**Learning Objectives:**\n\n* By the end of this lesson, students will be able to:\n\t+ Identify and write simple sentences using basic grammar (Bloom: Understand, Apply)\n\t+ Use visual aids to represent sentences (Bloom: Apply)\n\t+ Demonstrate understanding of sentence structure through peer discussion (Bloom: Understand)\n\n**Materials and Resources:**\n\n* Whiteboard and markers\n* Sentence frames (printable and digital)\n* Sentence building blocks (wooden or plastic)\n* Simple texts (e.g., \"The cat sat on the mat.\")\n* Graphic organizer for sentence structure\n* Sentence writing worksheets\n* Audio recordings of simple stories\n\n**Lesson Procedures:**\n\n**A. Introduction/Hook (10 minutes)**\n\n* Begin with a kinesthetic activity: \" Sentence Building Challenge\" - Divide students into small groups of 3-4 and provide building blocks, sentence frames, and simple texts. Ask them to build sentences together, using the blocks and frames to represent the structure of a sentence.\n* Connect to prior knowledge: Review the concept of sentences and their importance in communication.\n\n**B. Direct Instruction (20 minutes)**\n\n* Explain the concept of sentence structure: \"A sentence is a group of words that expresses a complete thought.\" Use visual aids to illustrate the basic parts of a sentence (subject, verb, object).\n* Show examples of simple sentences using audio recordings and display on the board.\n* Use multi-step instructions with visual supports:\n\t1. Identify the parts of a sentence.\n\t2. Write a simple sentence using the parts of a sentence.\n\t3. Use sentence building blocks to represent the sentence structure.\n* Demonstrate how to use graphic organizers to plan and write sentences.\n\n**C. Guided Practice (20 minutes)**\n\n* Distribute graphic organizers for sentence structure and sentence writing worksheets.\n* Have students work in pairs to write simple sentences using the graphic organizer. Circulate and provide support as needed.\n* Ask students to share their sentences with the class and discuss the structure of the sentences.\n\n**D. Independent Practice/Application (15 minutes)**\n\n* Divide students into small groups and provide sentence building blocks and simple texts.\n* Ask students to create their own sentences using the blocks and texts, then present their sentences to the class.\n* Encourage peer discussion and feedback on sentence structure.\n\n**E. Closure (5-7 minutes)**\n\n* Review key concepts and ask students to share one thing they learned about sentences.\n* Distribute an exit ticket or formative assessment to check for understanding.\n\n**Assessment:**\n\n* Formative assessment strategies:\n\t+ Observe student participation during guided and independent practice.\n\t+ Review graphic organizers and sentence writing worksheets.\n\t+ Use rubrics to assess sentence structure and writing quality.\n* Success criteria:\n\t+ Can identify and write simple sentences using basic grammar.\n\t+ Can use visual aids to represent sentence structure.\n\t+ Can demonstrate understanding of sentence structure through peer discussion.\n* Differentiation for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\n**Differentiation for Kinesthetic Learners:**\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\n**Reflection:**\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers.",
+    "parsedLesson": {
+      "metadata": {
+        "title": "Understanding Sentences (sgf)",
+        "subject": "Language Arts",
+        "gradeLevel": "2",
+        "strand": "listening-speaking",
+        "topic": "Understanding Sentences (sgf)",
+        "duration": "4",
+        "studentCount": "200",
+        "date": "14/03/2026"
+      },
+      "learningObjectives": [
+        "By the end of this lesson, students will be able to:"
+      ],
+      "materials": [
+        "Whiteboard and markers",
+        "Sentence frames (printable and digital)",
+        "Sentence building blocks (wooden or plastic)",
+        "Simple texts (e.g., \"The cat sat on the mat.\")",
+        "Graphic organizer for sentence structure",
+        "Sentence writing worksheets",
+        "Audio recordings of simple stories",
+        "Begin with a kinesthetic activity: \" Sentence Building Challenge\" - Divide students into small groups of 3-4 and provide building blocks, sentence frames, and simple texts. Ask them to build sentences together, using the blocks and frames to represent the structure of a sentence.",
+        "Connect to prior knowledge: Review the concept of sentences and their importance in communication.",
+        "Explain the concept of sentence structure: \"A sentence is a group of words that expresses a complete thought.\" Use visual aids to illustrate the basic parts of a sentence (subject, verb, object).",
+        "Show examples of simple sentences using audio recordings and display on the board.",
+        "Use multi-step instructions with visual supports:",
+        "Demonstrate how to use graphic organizers to plan and write sentences.",
+        "Distribute graphic organizers for sentence structure and sentence writing worksheets.",
+        "Have students work in pairs to write simple sentences using the graphic organizer. Circulate and provide support as needed.",
+        "Ask students to share their sentences with the class and discuss the structure of the sentences.",
+        "Divide students into small groups and provide sentence building blocks and simple texts.",
+        "Ask students to create their own sentences using the blocks and texts, then present their sentences to the class.",
+        "Encourage peer discussion and feedback on sentence structure.",
+        "Review key concepts and ask students to share one thing they learned about sentences.",
+        "Distribute an exit ticket or formative assessment to check for understanding.",
+        "Formative assessment strategies:",
+        "Success criteria:",
+        "Differentiation for various learning levels:",
+        "Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.",
+        "Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.",
+        "Teacher reflection prompts:",
+        "Modifications for next time:"
+      ],
+      "sections": [
+        {
+          "id": "section_0",
+          "name": "Introduction/Hook",
+          "content": "* Begin with a kinesthetic activity: \" Sentence Building Challenge\" - Divide students into small groups of 3-4 and provide building blocks, sentence frames, and simple texts. Ask them to build sentences together, using the blocks and frames to represent the structure of a sentence.\n* Connect to prior knowledge: Review the concept of sentences and their importance in communication.\n\nB. Direct Instruction (20 minutes)\n\n* Explain the concept of sentence structure: \"A sentence is a group of words that expresses a complete thought.\" Use visual aids to illustrate the basic parts of a sentence (subject, verb, object).\n* Show examples of simple sentences using audio recordings and display on the board.\n* Use multi-step instructions with visual supports:\n\t1. Identify the parts of a sentence.\n\t2. Write a simple sentence using the parts of a sentence.\n\t3. Use sentence building blocks to represent the sentence structure.\n* Demonstrate how to use graphic organizers to plan and write sentences.\n\nC. Guided Practice (20 minutes)\n\n* Distribute graphic organizers for sentence structure and sentence writing worksheets.\n* Have students work in pairs to write simple sentences using the graphic organizer. Circulate and provide support as needed.\n* Ask students to share their sentences with the class and discuss the structure of the sentences.\n\nD. Independent Practice/Application (15 minutes)\n\n* Divide students into small groups and provide sentence building blocks and simple texts.\n* Ask students to create their own sentences using the blocks and texts, then present their sentences to the class.\n* Encourage peer discussion and feedback on sentence structure.\n\nE. Closure (5-7 minutes)\n\n* Review key concepts and ask students to share one thing they learned about sentences.\n* Distribute an exit ticket or formative assessment to check for understanding.\n\nAssessment:\n\n* Formative assessment strategies:\n\t+ Observe student participation during guided and independent practice.\n\t+ Review graphic organizers and sentence writing worksheets.\n\t+ Use rubrics to assess sentence structure and writing quality.\n* Success criteria:\n\t+ Can identify and write simple sentences using basic grammar.\n\t+ Can use visual aids to represent sentence structure.\n\t+ Can demonstrate understanding of sentence structure through peer discussion.\n* Differentiation for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\nDifferentiation for Kinesthetic Learners:\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\nReflection:\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        },
+        {
+          "id": "section_1",
+          "name": "Direct Instruction",
+          "content": "* Explain the concept of sentence structure: \"A sentence is a group of words that expresses a complete thought.\" Use visual aids to illustrate the basic parts of a sentence (subject, verb, object).\n* Show examples of simple sentences using audio recordings and display on the board.\n* Use multi-step instructions with visual supports:\n\t1. Identify the parts of a sentence.\n\t2. Write a simple sentence using the parts of a sentence.\n\t3. Use sentence building blocks to represent the sentence structure.\n* Demonstrate how to use graphic organizers to plan and write sentences.\n\nC. Guided Practice (20 minutes)\n\n* Distribute graphic organizers for sentence structure and sentence writing worksheets.\n* Have students work in pairs to write simple sentences using the graphic organizer. Circulate and provide support as needed.\n* Ask students to share their sentences with the class and discuss the structure of the sentences.\n\nD. Independent Practice/Application (15 minutes)\n\n* Divide students into small groups and provide sentence building blocks and simple texts.\n* Ask students to create their own sentences using the blocks and texts, then present their sentences to the class.\n* Encourage peer discussion and feedback on sentence structure.\n\nE. Closure (5-7 minutes)\n\n* Review key concepts and ask students to share one thing they learned about sentences.\n* Distribute an exit ticket or formative assessment to check for understanding.\n\nAssessment:\n\n* Formative assessment strategies:\n\t+ Observe student participation during guided and independent practice.\n\t+ Review graphic organizers and sentence writing worksheets.\n\t+ Use rubrics to assess sentence structure and writing quality.\n* Success criteria:\n\t+ Can identify and write simple sentences using basic grammar.\n\t+ Can use visual aids to represent sentence structure.\n\t+ Can demonstrate understanding of sentence structure through peer discussion.\n* Differentiation for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\nDifferentiation for Kinesthetic Learners:\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\nReflection:\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        },
+        {
+          "id": "section_2",
+          "name": "Guided Practice",
+          "content": "* Distribute graphic organizers for sentence structure and sentence writing worksheets.\n* Have students work in pairs to write simple sentences using the graphic organizer. Circulate and provide support as needed.\n* Ask students to share their sentences with the class and discuss the structure of the sentences.\n\nD. Independent Practice/Application (15 minutes)\n\n* Divide students into small groups and provide sentence building blocks and simple texts.\n* Ask students to create their own sentences using the blocks and texts, then present their sentences to the class.\n* Encourage peer discussion and feedback on sentence structure.\n\nE. Closure (5-7 minutes)\n\n* Review key concepts and ask students to share one thing they learned about sentences.\n* Distribute an exit ticket or formative assessment to check for understanding.\n\nAssessment:\n\n* Formative assessment strategies:\n\t+ Observe student participation during guided and independent practice.\n\t+ Review graphic organizers and sentence writing worksheets.\n\t+ Use rubrics to assess sentence structure and writing quality.\n* Success criteria:\n\t+ Can identify and write simple sentences using basic grammar.\n\t+ Can use visual aids to represent sentence structure.\n\t+ Can demonstrate understanding of sentence structure through peer discussion.\n* Differentiation for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\nDifferentiation for Kinesthetic Learners:\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\nReflection:\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        },
+        {
+          "id": "section_3",
+          "name": "Independent Practice",
+          "content": "/Application (15 minutes)\n\n* Divide students into small groups and provide sentence building blocks and simple texts.\n* Ask students to create their own sentences using the blocks and texts, then present their sentences to the class.\n* Encourage peer discussion and feedback on sentence structure.\n\nE. Closure (5-7 minutes)\n\n* Review key concepts and ask students to share one thing they learned about sentences.\n* Distribute an exit ticket or formative assessment to check for understanding.\n\nAssessment:\n\n* Formative assessment strategies:\n\t+ Observe student participation during guided and independent practice.\n\t+ Review graphic organizers and sentence writing worksheets.\n\t+ Use rubrics to assess sentence structure and writing quality.\n* Success criteria:\n\t+ Can identify and write simple sentences using basic grammar.\n\t+ Can use visual aids to represent sentence structure.\n\t+ Can demonstrate understanding of sentence structure through peer discussion.\n* Differentiation for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\nDifferentiation for Kinesthetic Learners:\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\nReflection:\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        },
+        {
+          "id": "section_4",
+          "name": "Closure",
+          "content": "* Review key concepts and ask students to share one thing they learned about sentences.\n* Distribute an exit ticket or formative assessment to check for understanding.\n\nAssessment:\n\n* Formative assessment strategies:\n\t+ Observe student participation during guided and independent practice.\n\t+ Review graphic organizers and sentence writing worksheets.\n\t+ Use rubrics to assess sentence structure and writing quality.\n* Success criteria:\n\t+ Can identify and write simple sentences using basic grammar.\n\t+ Can use visual aids to represent sentence structure.\n\t+ Can demonstrate understanding of sentence structure through peer discussion.\n* Differentiation for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\nDifferentiation for Kinesthetic Learners:\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\nReflection:\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        },
+        {
+          "id": "section_6",
+          "name": "Extension Activities",
+          "content": "can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        },
+        {
+          "id": "section_7",
+          "name": "Differentiation",
+          "content": "for various learning levels:\n\t+ For struggling learners: Provide additional support with sentence building blocks and graphic organizers.\n\t+ For advanced learners: Offer more complex sentence structures and texts to work with.\n\nDifferentiation for Kinesthetic Learners:\n\n* Provide hands-on materials like sentence building blocks and manipulatives to engage kinesthetic learners.\n* Offer kinesthetic activities, such as building sentences with blocks, to reinforce understanding.\n\nReflection:\n\n* Teacher reflection prompts:\n\t+ What strategies worked well for this lesson?\n\t+ What challenges did students face, and how did you address them?\n\t+ What modifications or extensions can I make for future lessons?\n* Modifications for next time:\n\t+ Add more complex sentence structures for advanced learners.\n\t+ Provide additional support for struggling learners with sentence building blocks and graphic organizers."
+        }
+      ],
+      "assessmentMethods": [
+        "Formative assessment strategies:",
+        "Success criteria:",
+        "Differentiation for various learning levels:"
+      ],
+      "pedagogicalStrategies": [
+        "Direct Instruction"
+      ],
+      "learningStyles": [
+        "Kinesthetic"
+      ],
+      "prerequisites": "frie",
+      "curriculumReferences": [
+        {
+          "id": "grade2-language-arts-listening-speaking",
+          "route": "/curriculum/grade2-subjects/language-arts/listening-speaking",
+          "displayName": "Listening & Speaking",
+          "grade": "2",
+          "subject": "Language Arts",
+          "strand": "listening-speaking",
+          "keywords": [
+            "oral communication",
+            "listening comprehension",
+            "speaking fluency",
+            "conversation skills",
+            "questioning",
+            "retelling",
+            "expressing opinions",
+            "turn-taking",
+            "standard English",
+            "home language",
+            "phonological awareness",
+            "descriptive language"
+          ],
+          "essentialOutcomes": [
+            "Continue developing listening and speaking as foundational skills for learning, social contribution, and cognitive development through increasingly complex communication tasks."
+          ],
+          "specificOutcomes": [
+            "Listen to diverse music, poetry, stories for pleasure and meaning",
+            "Connect sounds to meaning with deeper understanding",
+            "Use varied voices in role play for tone/mood/character",
+            "Analyze how sounds affect emotions and atmosphere",
+            "Apply listening strategies independently: questioning, recalling, predicting, visualizing, connecting",
+            "Listen, retell stories with detail, express reasoned opinions",
+            "Distinguish fact from fiction with examples",
+            "Follow/give multi-step directions (3-5 steps)",
+            "Respond to Standard English with confidence and accuracy",
+            "Practice advanced turn-taking and discussion protocols",
+            "Interpret/use non-verbal cues purposefully",
+            "Share information, formulate/answer complex questions on topics",
+            "Use home language(s) for expanded purposes: storytelling, explaining, persuading",
+            "Expand vocabulary, sentence complexity in both languages",
+            "Describe with specific details using varied descriptive vocabulary",
+            "Construct complete, varied sentences appropriate to context",
+            "Strengthen phonological awareness: complex sound manipulation, multi-syllable words, advanced phoneme work",
+            "Use subject-verb agreement consistently (singular/plural)",
+            "Apply irregular forms correctly in context",
+            "Use pronouns with clear antecedents and appropriate cases"
+          ],
+          "summary": "Build on foundational listening and speaking skills with increased complexity in comprehension, expression, and language conventions for effective communication."
+        }
+      ]
+    },
+    "curriculumMatches": [
+      {
+        "id": "grade2-language-arts-listening-speaking",
+        "route": "/curriculum/grade2-subjects/language-arts/listening-speaking",
+        "displayName": "Listening & Speaking",
+        "grade": "2",
+        "subject": "Language Arts",
+        "strand": "listening-speaking",
+        "keywords": [
+          "oral communication",
+          "listening comprehension",
+          "speaking fluency",
+          "conversation skills",
+          "questioning",
+          "retelling",
+          "expressing opinions",
+          "turn-taking",
+          "standard English",
+          "home language",
+          "phonological awareness",
+          "descriptive language"
+        ],
+        "essentialOutcomes": [
+          "Continue developing listening and speaking as foundational skills for learning, social contribution, and cognitive development through increasingly complex communication tasks."
+        ],
+        "specificOutcomes": [
+          "Listen to diverse music, poetry, stories for pleasure and meaning",
+          "Connect sounds to meaning with deeper understanding",
+          "Use varied voices in role play for tone/mood/character",
+          "Analyze how sounds affect emotions and atmosphere",
+          "Apply listening strategies independently: questioning, recalling, predicting, visualizing, connecting",
+          "Listen, retell stories with detail, express reasoned opinions",
+          "Distinguish fact from fiction with examples",
+          "Follow/give multi-step directions (3-5 steps)",
+          "Respond to Standard English with confidence and accuracy",
+          "Practice advanced turn-taking and discussion protocols",
+          "Interpret/use non-verbal cues purposefully",
+          "Share information, formulate/answer complex questions on topics",
+          "Use home language(s) for expanded purposes: storytelling, explaining, persuading",
+          "Expand vocabulary, sentence complexity in both languages",
+          "Describe with specific details using varied descriptive vocabulary",
+          "Construct complete, varied sentences appropriate to context",
+          "Strengthen phonological awareness: complex sound manipulation, multi-syllable words, advanced phoneme work",
+          "Use subject-verb agreement consistently (singular/plural)",
+          "Apply irregular forms correctly in context",
+          "Use pronouns with clear antecedents and appropriate cases"
+        ],
+        "summary": "Build on foundational listening and speaking skills with increased complexity in comprehension, expression, and language conventions for effective communication."
+      }
+    ]
   }
 ]
