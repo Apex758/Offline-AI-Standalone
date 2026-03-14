@@ -2675,6 +2675,42 @@ async def inpaint_image_base64(request: Request):
         )
 
 
+@app.post("/api/remove-background-base64")
+async def remove_background_base64(request: Request):
+    """Remove image background using rembg. Returns transparent PNG as base64."""
+    try:
+        try:
+            from rembg import remove as rembg_remove
+        except ImportError:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "rembg is not installed. Run: pip install rembg"}
+            )
+
+        import io
+        from PIL import Image as PILImage
+
+        data = await request.json()
+        image_data_uri = data.get("image", "")
+
+        image_b64 = image_data_uri.split(",", 1)[1] if "," in image_data_uri else image_data_uri
+        img_bytes = base64.b64decode(image_b64)
+        img = PILImage.open(io.BytesIO(img_bytes)).convert("RGBA")
+
+        result = rembg_remove(img)
+
+        output = io.BytesIO()
+        result.save(output, format="PNG")
+        output.seek(0)
+
+        result_b64 = base64.b64encode(output.read()).decode("utf-8")
+        return JSONResponse(content={"success": True, "imageData": f"data:image/png;base64,{result_b64}"})
+
+    except Exception as e:
+        logger.error(f"Background removal error: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 @app.get("/api/image-service/status")
 async def get_image_service_status():
     """

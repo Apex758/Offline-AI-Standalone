@@ -18,6 +18,7 @@ iopaint==1.6.0
 optimum-intel[openvino]
 Pillow
 requests>=2.31.0
+rembg[gpu]
 
 # --- Document / Rendering ---
 python-docx>=1.0.0

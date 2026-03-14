@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown } from 'lucide-react';
+import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X } from 'lucide-react';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 
 interface ImageStudioProps {
@@ -13,6 +13,19 @@ interface ImageHistory {
   current: string;
   undoStack: string[];
   redoStack: string[];
+}
+
+type EditorTool = 'remove-object' | 'remove-background' | 'annotate' | 'coloring-page' | 'worksheet';
+
+interface Annotation {
+  id: string;
+  type: 'arrow' | 'box' | 'number';
+  x1: number; y1: number;
+  x2: number; y2: number;
+  label?: number;
+  color: string;
+  head1x?: number; head1y?: number;
+  head2x?: number; head2y?: number;
 }
 
 interface StyleProfile {
@@ -96,6 +109,33 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [showBrushCursor, setShowBrushCursor] = useState(false);
 
   // ========================================
+  // New editor tool state
+  // ========================================
+  const [editorTool, setEditorTool] = useState<EditorTool>('remove-object');
+
+  // Annotation state
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [annotationType, setAnnotationType] = useState<'arrow' | 'box' | 'number'>('arrow');
+  const [annotationColor, setAnnotationColor] = useState('#ef4444');
+  const [numberCounter, setNumberCounter] = useState(1);
+  const [annotationDragging, setAnnotationDragging] = useState(false);
+  const [annotationStart, setAnnotationStart] = useState<{ x: number; y: number } | null>(null);
+  const [liveAnnotation, setLiveAnnotation] = useState<Annotation | null>(null);
+
+  // Background removal
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+
+  // Worksheet
+  const [showWorksheet, setShowWorksheet] = useState(false);
+  const [worksheetTitle, setWorksheetTitle] = useState('');
+  const [worksheetSubject, setWorksheetSubject] = useState('');
+  const [worksheetQuestions, setWorksheetQuestions] = useState(5);
+  const [worksheetIncludeImage, setWorksheetIncludeImage] = useState(true);
+  const [worksheetImageSize, setWorksheetImageSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [worksheetGenerating, setWorksheetGenerating] = useState(false);
+  const [worksheetPreview, setWorksheetPreview] = useState<string | null>(null);
+
+  // ========================================
   // Auto-save image to backend
   // ========================================
   const autoSaveImage = async (imageData: string, type: 'uploaded' | 'edited') => {
@@ -125,6 +165,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Canvas refs
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // ========================================
   // Load style profiles from backend
@@ -669,6 +710,263 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   };
 
   // ========================================
+  // EDITOR: Background Removal
+  // ========================================
+  const handleRemoveBackground = async () => {
+    if (!history.current) return;
+    setIsRemovingBg(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:8000/api/remove-background-base64', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: history.current }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to remove background');
+      setHistory(prev => ({
+        ...prev,
+        undoStack: [...prev.undoStack, prev.current],
+        current: data.imageData,
+        redoStack: [],
+      }));
+      drawImageOnCanvas(data.imageData);
+    } catch (err: any) {
+      setError(err.message || 'Background removal failed');
+    } finally {
+      setIsRemovingBg(false);
+    }
+  };
+
+  // ========================================
+  // EDITOR: Coloring Page Generator
+  // ========================================
+  const handleColoringPage = () => {
+    const canvas = imageCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const w = canvas.width, h = canvas.height;
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const d = imageData.data;
+
+    // Grayscale
+    const gray = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      gray[i] = Math.round(0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]);
+    }
+
+    // Sobel edge detection
+    const edges = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        const gx = -gray[(y - 1) * w + (x - 1)] - 2 * gray[y * w + (x - 1)] - gray[(y + 1) * w + (x - 1)]
+                  + gray[(y - 1) * w + (x + 1)] + 2 * gray[y * w + (x + 1)] + gray[(y + 1) * w + (x + 1)];
+        const gy = -gray[(y - 1) * w + (x - 1)] - 2 * gray[(y - 1) * w + x] - gray[(y - 1) * w + (x + 1)]
+                  + gray[(y + 1) * w + (x - 1)] + 2 * gray[(y + 1) * w + x] + gray[(y + 1) * w + (x + 1)];
+        edges[idx] = Math.min(255, Math.sqrt(gx * gx + gy * gy));
+      }
+    }
+
+    // Threshold: edges → black, rest → white
+    const threshold = 25;
+    for (let i = 0; i < w * h; i++) {
+      const c = edges[i] > threshold ? 0 : 255;
+      d[i * 4] = c; d[i * 4 + 1] = c; d[i * 4 + 2] = c; d[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    const newDataUrl = canvas.toDataURL('image/png');
+    setHistory(prev => ({
+      ...prev,
+      undoStack: [...prev.undoStack, prev.current],
+      current: newDataUrl,
+      redoStack: [],
+    }));
+  };
+
+  // ========================================
+  // EDITOR: Annotation Tool
+  // ========================================
+  const getAnnotationCoords = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    };
+  };
+
+  const computeArrowhead = (
+    e: React.MouseEvent<SVGSVGElement>,
+    start: { x: number; y: number },
+    end: { x: number; y: number }
+  ) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const sx = (start.x / 100) * rect.width, sy = (start.y / 100) * rect.height;
+    const ex = (end.x / 100) * rect.width, ey = (end.y / 100) * rect.height;
+    const angle = Math.atan2(ey - sy, ex - sx);
+    const len = 14, spread = Math.PI / 6;
+    return {
+      head1x: ((ex - len * Math.cos(angle - spread)) / rect.width) * 100,
+      head1y: ((ey - len * Math.sin(angle - spread)) / rect.height) * 100,
+      head2x: ((ex - len * Math.cos(angle + spread)) / rect.width) * 100,
+      head2y: ((ey - len * Math.sin(angle + spread)) / rect.height) * 100,
+    };
+  };
+
+  const onAnnotationMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    const coords = getAnnotationCoords(e);
+    if (annotationType === 'number') {
+      setAnnotations(prev => [...prev, {
+        id: `ann-${Date.now()}`, type: 'number',
+        x1: coords.x, y1: coords.y, x2: coords.x, y2: coords.y,
+        label: numberCounter, color: annotationColor,
+      }]);
+      setNumberCounter(n => n + 1);
+      return;
+    }
+    setAnnotationDragging(true);
+    setAnnotationStart(coords);
+  };
+
+  const onAnnotationMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!annotationDragging || !annotationStart) return;
+    const end = getAnnotationCoords(e);
+    const ann: Annotation = {
+      id: 'live', type: annotationType,
+      x1: annotationStart.x, y1: annotationStart.y,
+      x2: end.x, y2: end.y, color: annotationColor,
+    };
+    if (annotationType === 'arrow') {
+      const heads = computeArrowhead(e, annotationStart, end);
+      ann.head1x = heads.head1x; ann.head1y = heads.head1y;
+      ann.head2x = heads.head2x; ann.head2y = heads.head2y;
+    }
+    setLiveAnnotation(ann);
+  };
+
+  const onAnnotationMouseUp = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!annotationDragging || !annotationStart) return;
+    const end = getAnnotationCoords(e);
+    const ann: Annotation = {
+      id: `ann-${Date.now()}`, type: annotationType,
+      x1: annotationStart.x, y1: annotationStart.y,
+      x2: end.x, y2: end.y, color: annotationColor,
+    };
+    if (annotationType === 'arrow') {
+      const heads = computeArrowhead(e, annotationStart, end);
+      ann.head1x = heads.head1x; ann.head1y = heads.head1y;
+      ann.head2x = heads.head2x; ann.head2y = heads.head2y;
+    }
+    setAnnotations(prev => [...prev, ann]);
+    setLiveAnnotation(null);
+    setAnnotationDragging(false);
+    setAnnotationStart(null);
+  };
+
+  const handleFlattenAnnotations = () => {
+    const canvas = imageCanvasRef.current;
+    const svg = svgRef.current;
+    if (!canvas || !svg || annotations.length === 0) return;
+    const cloned = svg.cloneNode(true) as SVGSVGElement;
+    cloned.setAttribute('width', String(canvas.width));
+    cloned.setAttribute('height', String(canvas.height));
+    const svgStr = new XMLSerializer().serializeToString(cloned);
+    const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      const newDataUrl = canvas.toDataURL('image/png');
+      setHistory(prev => ({
+        ...prev, undoStack: [...prev.undoStack, prev.current], current: newDataUrl, redoStack: [],
+      }));
+      setAnnotations([]);
+      setNumberCounter(1);
+      setLiveAnnotation(null);
+    };
+    img.src = url;
+  };
+
+  // ========================================
+  // EDITOR: Worksheet Generator
+  // ========================================
+  const generateWorksheetImage = async () => {
+    setWorksheetGenerating(true);
+    const W = 794, H = 1123, M = 50;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 1;
+    ctx.strokeRect(M, M, W - M * 2, H - M * 2);
+
+    ctx.fillStyle = '#111111';
+    ctx.font = 'bold 28px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(worksheetTitle || 'Worksheet', W / 2, M + 42);
+
+    if (worksheetSubject) {
+      ctx.font = '15px Arial, sans-serif';
+      ctx.fillStyle = '#555555';
+      ctx.fillText(worksheetSubject, W / 2, M + 68);
+    }
+
+    let y = M + (worksheetSubject ? 95 : 78);
+    ctx.font = '13px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#333333';
+    ctx.fillText('Name:', M + 10, y);
+    ctx.strokeStyle = '#aaaaaa'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(M + 58, y); ctx.lineTo(M + 280, y); ctx.stroke();
+    ctx.fillText('Date:', W / 2 + 10, y);
+    ctx.beginPath(); ctx.moveTo(W / 2 + 52, y); ctx.lineTo(W - M - 10, y); ctx.stroke();
+
+    y += 18;
+    ctx.strokeStyle = '#dddddd'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(M, y); ctx.lineTo(W - M, y); ctx.stroke();
+    y += 18;
+
+    if (worksheetIncludeImage && history.current) {
+      const maxH = worksheetImageSize === 'small' ? 180 : worksheetImageSize === 'medium' ? 270 : 370;
+      const maxW = W - M * 2;
+      await new Promise<void>(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const ratio = Math.min(maxW / img.width, maxH / img.height);
+          const iw = img.width * ratio, ih = img.height * ratio;
+          const ix = (W - iw) / 2;
+          ctx.drawImage(img, ix, y, iw, ih);
+          ctx.strokeStyle = '#eeeeee'; ctx.lineWidth = 1;
+          ctx.strokeRect(ix, y, iw, ih);
+          y += ih + 22;
+          resolve();
+        };
+        img.src = history.current!;
+      });
+    }
+
+    for (let i = 0; i < worksheetQuestions; i++) {
+      if (y > H - M - 50) break;
+      ctx.font = '13px Arial, sans-serif'; ctx.fillStyle = '#222222'; ctx.textAlign = 'left';
+      ctx.fillText(`${i + 1}.`, M + 10, y); y += 22;
+      for (let j = 0; j < 2; j++) {
+        ctx.strokeStyle = '#dddddd'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(M + 25, y); ctx.lineTo(W - M - 10, y); ctx.stroke();
+        y += 24;
+      }
+      y += 6;
+    }
+
+    setWorksheetPreview(canvas.toDataURL('image/png'));
+    setWorksheetGenerating(false);
+  };
+
+  // ========================================
   // RENDER
   // ========================================
   return (
@@ -1027,212 +1325,469 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             EDITOR TAB
         ======================================== */}
         {activeTab === 'editor' && (
-          <div className="h-full flex" data-tutorial="image-studio-editor-panel">
-            {/* Main Canvas Area */}
-            <div className="flex-1 p-6 overflow-y-auto">
-              {!uploadedImage ? (
-                <div className="h-full flex items-center justify-center" data-tutorial="image-studio-upload">
-                  <div className="text-center">
-                    <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <h2 className="text-xl font-semibold mb-2">Upload an Image</h2>
-                    <p className="text-sm text-theme-hint mb-4">Start by uploading an image to edit</p>
-                    <label className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      Choose File
-                    </label>
+          <>
+            {/* Worksheet Modal */}
+            {showWorksheet && (
+              <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                      Worksheet Maker
+                    </h2>
+                    <button onClick={() => { setShowWorksheet(false); setWorksheetPreview(null); }}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold">Image Editor</h2>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowBeforeAfter(!showBeforeAfter)}
-                        className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm"
-                      >
-                        {showBeforeAfter ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                        {showBeforeAfter ? 'Hide Original' : 'Show Original'}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Settings panel */}
+                    <div className="w-72 border-r border-gray-200 dark:border-gray-700 p-5 overflow-y-auto space-y-4 flex-shrink-0">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Worksheet Title</label>
+                        <input type="text" value={worksheetTitle} onChange={e => setWorksheetTitle(e.target.value)}
+                          placeholder="e.g. Parts of a Plant"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject / Topic</label>
+                        <input type="text" value={worksheetSubject} onChange={e => setWorksheetSubject(e.target.value)}
+                          placeholder="e.g. Science - Grade 4"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Number of Questions: {worksheetQuestions}
+                        </label>
+                        <input type="range" min={1} max={10} value={worksheetQuestions}
+                          onChange={e => setWorksheetQuestions(Number(e.target.value))} className="w-full" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" id="wsIncludeImg" checked={worksheetIncludeImage}
+                          onChange={e => setWorksheetIncludeImage(e.target.checked)} className="rounded" />
+                        <label htmlFor="wsIncludeImg" className="text-sm text-gray-700 dark:text-gray-300">Include current image</label>
+                      </div>
+                      {worksheetIncludeImage && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Size</label>
+                          <select value={worksheetImageSize} onChange={e => setWorksheetImageSize(e.target.value as 'small' | 'medium' | 'large')}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white">
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                          </select>
+                        </div>
+                      )}
+                      <button onClick={generateWorksheetImage} disabled={worksheetGenerating}
+                        className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium">
+                        {worksheetGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+                        {worksheetGenerating ? 'Generating...' : 'Preview Worksheet'}
                       </button>
-                      <label className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center text-sm">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                        <Upload className="w-4 h-4 mr-1" />
-                        New Image
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="relative border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary" data-tutorial="image-studio-canvas">
-                    {/* Original image underneath */}
-                    <img
-                      src={history.original}
-                      alt="Original"
-                      className="absolute top-0 left-0 w-full h-full object-contain"
-                      style={{ pointerEvents: 'none', zIndex: 1 }}
-                    />
-                    {/* Edited image on top, slides horizontally */}
-                    <div
-                      className="relative transition-transform duration-500 ease-in-out"
-                      style={{
-                        transform: showBeforeAfter ? 'translateX(100%)' : 'translateX(0%)',
-                        zIndex: 2
-                      }}
-                    >
-                      <canvas
-                        ref={imageCanvasRef}
-                        className="max-w-full h-auto"
-                        style={{ display: 'block' }}
-                      />
-                      <canvas
-                        ref={maskCanvasRef}
-                        className="absolute top-0 left-0 max-w-full h-auto"
-                        style={{ mixBlendMode: 'normal', cursor: 'none' }}
-                        onMouseDown={startDrawing}
-                        onMouseMove={drawOnMask}
-                        onMouseUp={stopDrawing}
-                        onMouseLeave={() => { stopDrawing(); setShowBrushCursor(false); }}
-                        onMouseEnter={() => setShowBrushCursor(true)}
-                      />
-                      {showBrushCursor && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            left: mousePos.x - brushSize,
-                            top: mousePos.y - brushSize,
-                            width: brushSize * 2,
-                            height: brushSize * 2,
-                            border: '2px solid rgba(255, 255, 255, 0.8)',
-                            borderRadius: '50%',
-                            pointerEvents: 'none',
-                            zIndex: 10
-                          }}
-                        />
+                      {worksheetPreview && (
+                        <button onClick={() => downloadImage(worksheetPreview!, `worksheet-${Date.now()}.png`)}
+                          className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 text-sm font-medium">
+                          <Download className="w-4 h-4" />
+                          Download PNG
+                        </button>
                       )}
                     </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleRemoveObject}
-                      disabled={isInpainting}
-                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
-                      data-tutorial="image-studio-remove"
-                    >
-                      {isInpainting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Removing...
-                        </>
+                    {/* Preview panel */}
+                    <div className="flex-1 flex items-center justify-center overflow-auto p-6 bg-gray-100 dark:bg-gray-800">
+                      {worksheetPreview ? (
+                        <img src={worksheetPreview} alt="Worksheet preview"
+                          className="max-w-full max-h-full shadow-xl rounded border border-gray-200" />
                       ) : (
-                        <>
-                          <Eraser className="w-4 h-4 mr-2" />
-                          Remove Marked Area
-                        </>
+                        <div className="text-center text-gray-400">
+                          <FileText className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">Configure settings and click Preview to generate your worksheet</p>
+                        </div>
                       )}
-                    </button>
-                    <button
-                      onClick={handleDownloadEdited}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right Sidebar - Editor Tools */}
-            {uploadedImage && (
-              <div className="w-72 border-l border-theme p-4 overflow-y-auto bg-theme-secondary" data-tutorial="image-studio-tools">
-                <h3 className="text-lg font-semibold mb-4">Editor Tools</h3>
-
-                <div className="space-y-4">
-                  {/* Brush Size */}
-                  <div data-tutorial="image-studio-brush">
-                    <label className="block text-sm font-medium text-theme-label mb-2">
-                      Brush Size: {brushSize}px
-                    </label>
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      value={brushSize}
-                      onChange={(e) => setBrushSize(Number(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Undo/Redo */}
-                  <div className="flex gap-2" data-tutorial="image-studio-undo">
-                    <button
-                      onClick={handleUndo}
-                      disabled={history.undoStack.length === 0}
-                      className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      <Undo2 className="w-4 h-4 mr-1" />
-                      Undo
-                    </button>
-                    <button
-                      onClick={handleRedo}
-                      disabled={history.redoStack.length === 0}
-                      className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      <Redo2 className="w-4 h-4 mr-1" />
-                      Redo
-                    </button>
-                  </div>
-
-                  {/* Clear Mask */}
-                  <button
-                    onClick={handleClearMask}
-                    className="w-full px-3 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 flex items-center justify-center"
-                  >
-                    <Eraser className="w-4 h-4 mr-1" />
-                    Clear Mask
-                  </button>
-
-                  {/* Save to Resource Manager */}
-                  <button
-                    onClick={handleSaveEdited}
-                    className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
-                    data-tutorial="image-studio-save-edited"
-                  >
-                    <Save className="w-4 h-4 mr-1" />
-                    Save
-                  </button>
-
-                  {/* Instructions */}
-                  <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="text-sm font-semibold text-blue-900 mb-2">How to Use:</h4>
-                    <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
-                      <li>Draw white marks over objects to remove</li>
-                      <li>Adjust brush size as needed</li>
-                      <li>Click "Remove Marked Area"</li>
-                      <li>Wait 3-5 seconds for processing</li>
-                      <li>Use Undo if needed</li>
-                    </ol>
-                  </div>
-
-                  {/* History Info */}
-                  <div className="mt-4 text-xs text-theme-hint">
-                    <p>Undo available: {history.undoStack.length}</p>
-                    <p>Redo available: {history.redoStack.length}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-          </div>
+
+            <div className="h-full flex" data-tutorial="image-studio-editor-panel">
+              {/* Main Canvas Area */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                {!uploadedImage ? (
+                  <div className="h-full flex items-center justify-center" data-tutorial="image-studio-upload">
+                    <div className="text-center">
+                      <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                      <h2 className="text-xl font-semibold mb-2">Upload an Image</h2>
+                      <p className="text-sm text-theme-hint mb-4">Start by uploading an image to edit</p>
+                      <label className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        Choose File
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-xl font-semibold">Image Editor</h2>
+                      <div className="flex gap-2">
+                        <button onClick={() => setShowBeforeAfter(!showBeforeAfter)}
+                          className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm">
+                          {showBeforeAfter ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+                          {showBeforeAfter ? 'Hide Original' : 'Show Original'}
+                        </button>
+                        <label className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center text-sm">
+                          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                          <Upload className="w-4 h-4 mr-1" />New Image
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="relative border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary" data-tutorial="image-studio-canvas">
+                      <img src={history.original} alt="Original"
+                        className="absolute top-0 left-0 w-full h-full object-contain"
+                        style={{ pointerEvents: 'none', zIndex: 1 }} />
+                      <div className="relative transition-transform duration-500 ease-in-out"
+                        style={{ transform: showBeforeAfter ? 'translateX(100%)' : 'translateX(0%)', zIndex: 2 }}>
+                        <canvas ref={imageCanvasRef} className="max-w-full h-auto" style={{ display: 'block' }} />
+                        <canvas ref={maskCanvasRef}
+                          className="absolute top-0 left-0 max-w-full h-auto"
+                          style={{
+                            mixBlendMode: 'normal',
+                            cursor: editorTool === 'remove-object' ? 'none' : 'default',
+                            pointerEvents: editorTool === 'remove-object' ? 'auto' : 'none',
+                          }}
+                          onMouseDown={editorTool === 'remove-object' ? startDrawing : undefined}
+                          onMouseMove={editorTool === 'remove-object' ? drawOnMask : undefined}
+                          onMouseUp={editorTool === 'remove-object' ? stopDrawing : undefined}
+                          onMouseLeave={editorTool === 'remove-object' ? () => { stopDrawing(); setShowBrushCursor(false); } : undefined}
+                          onMouseEnter={editorTool === 'remove-object' ? () => setShowBrushCursor(true) : undefined}
+                        />
+                        {showBrushCursor && editorTool === 'remove-object' && (
+                          <div style={{
+                            position: 'absolute', left: mousePos.x - brushSize, top: mousePos.y - brushSize,
+                            width: brushSize * 2, height: brushSize * 2,
+                            border: '2px solid rgba(255,255,255,0.8)', borderRadius: '50%',
+                            pointerEvents: 'none', zIndex: 10,
+                          }} />
+                        )}
+                        {/* Annotation SVG overlay */}
+                        {editorTool === 'annotate' && (
+                          <svg ref={svgRef}
+                            className="absolute top-0 left-0 w-full h-full"
+                            style={{ zIndex: 20, cursor: 'crosshair' }}
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                            onMouseDown={onAnnotationMouseDown}
+                            onMouseMove={onAnnotationMouseMove}
+                            onMouseUp={onAnnotationMouseUp}
+                            onMouseLeave={() => {
+                              if (annotationDragging && liveAnnotation) {
+                                setAnnotations(prev => [...prev, { ...liveAnnotation, id: `ann-${Date.now()}` }]);
+                              }
+                              setAnnotationDragging(false);
+                              setAnnotationStart(null);
+                              setLiveAnnotation(null);
+                            }}
+                          >
+                            {[...annotations, ...(liveAnnotation ? [liveAnnotation] : [])].map(ann => {
+                              if (ann.type === 'arrow') return (
+                                <g key={ann.id}>
+                                  <line x1={ann.x1} y1={ann.y1} x2={ann.x2} y2={ann.y2}
+                                    stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                                  {ann.head1x !== undefined && (
+                                    <polyline
+                                      points={`${ann.head1x},${ann.head1y} ${ann.x2},${ann.y2} ${ann.head2x},${ann.head2y}`}
+                                      fill="none" stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                                  )}
+                                </g>
+                              );
+                              if (ann.type === 'box') return (
+                                <rect key={ann.id}
+                                  x={Math.min(ann.x1, ann.x2)} y={Math.min(ann.y1, ann.y2)}
+                                  width={Math.abs(ann.x2 - ann.x1)} height={Math.abs(ann.y2 - ann.y1)}
+                                  fill="none" stroke={ann.color} strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                              );
+                              if (ann.type === 'number') return (
+                                <g key={ann.id}>
+                                  <circle cx={ann.x1} cy={ann.y1} r="3" fill={ann.color} />
+                                  <text x={ann.x1} y={ann.y1} textAnchor="middle" dominantBaseline="central"
+                                    fill="white" fontSize="3.2" fontWeight="bold">{ann.label}</text>
+                                </g>
+                              );
+                              return null;
+                            })}
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Per-tool action buttons */}
+                    {editorTool === 'remove-object' && (
+                      <div className="flex gap-2">
+                        <button onClick={handleRemoveObject} disabled={isInpainting}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                          data-tutorial="image-studio-remove">
+                          {isInpainting
+                            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Removing...</>
+                            : <><Eraser className="w-4 h-4 mr-2" />Remove Marked Area</>}
+                        </button>
+                        <button onClick={handleDownloadEdited}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
+                          <Download className="w-4 h-4 mr-2" />Download
+                        </button>
+                      </div>
+                    )}
+                    {editorTool === 'remove-background' && (
+                      <div className="flex gap-2">
+                        <button onClick={handleRemoveBackground} disabled={isRemovingBg}
+                          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                          {isRemovingBg
+                            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Removing Background...</>
+                            : <><ImageOff className="w-4 h-4 mr-2" />Remove Background</>}
+                        </button>
+                        <button onClick={handleDownloadEdited}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
+                          <Download className="w-4 h-4 mr-2" />Download
+                        </button>
+                      </div>
+                    )}
+                    {editorTool === 'annotate' && (
+                      <div className="flex gap-2">
+                        <button onClick={handleFlattenAnnotations} disabled={annotations.length === 0}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                          <Layers className="w-4 h-4 mr-2" />Apply Annotations
+                        </button>
+                        <button onClick={handleDownloadEdited}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
+                          <Download className="w-4 h-4 mr-2" />Download
+                        </button>
+                      </div>
+                    )}
+                    {editorTool === 'coloring-page' && (
+                      <div className="flex gap-2">
+                        <button onClick={handleColoringPage}
+                          className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center">
+                          <Palette className="w-4 h-4 mr-2" />Convert to Coloring Page
+                        </button>
+                        <button onClick={handleDownloadEdited}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
+                          <Download className="w-4 h-4 mr-2" />Download
+                        </button>
+                      </div>
+                    )}
+                    {editorTool === 'worksheet' && (
+                      <div className="flex gap-2">
+                        <button onClick={() => setShowWorksheet(true)}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                          <FileText className="w-4 h-4 mr-2" />Open Worksheet Maker
+                        </button>
+                        <button onClick={handleDownloadEdited}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center">
+                          <Download className="w-4 h-4 mr-2" />Download Image
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Sidebar */}
+              {uploadedImage && (
+                <div className="w-72 border-l border-theme p-4 overflow-y-auto bg-theme-secondary" data-tutorial="image-studio-tools">
+                  <h3 className="text-sm font-semibold text-theme-label uppercase tracking-wide mb-3">Editor Tools</h3>
+
+                  {/* Tool selector */}
+                  <div className="grid grid-cols-5 gap-1 mb-1 p-1 bg-theme-tertiary rounded-lg">
+                    {([
+                      { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover' },
+                      { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover' },
+                      { id: 'annotate' as EditorTool, icon: Pencil, label: 'Annotate' },
+                      { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page' },
+                      { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker' },
+                    ]).map(({ id, icon: Icon, label }) => (
+                      <button key={id} onClick={() => setEditorTool(id)} title={label}
+                        className={`p-2 rounded-md flex items-center justify-center transition ${
+                          editorTool === id ? 'bg-blue-600 text-white shadow' : 'text-theme-label hover:bg-theme-hover'
+                        }`}>
+                        <Icon className="w-4 h-4" />
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-theme-hint text-center mb-4">
+                    {editorTool === 'remove-object' && 'Object Remover'}
+                    {editorTool === 'remove-background' && 'Background Remover'}
+                    {editorTool === 'annotate' && 'Annotation Tool'}
+                    {editorTool === 'coloring-page' && 'Coloring Page Generator'}
+                    {editorTool === 'worksheet' && 'Worksheet Maker'}
+                  </p>
+
+                  <div className="space-y-4">
+                    {/* Object Remover */}
+                    {editorTool === 'remove-object' && (
+                      <>
+                        <div data-tutorial="image-studio-brush">
+                          <label className="block text-sm font-medium text-theme-label mb-2">Brush Size: {brushSize}px</label>
+                          <input type="range" min="5" max="50" value={brushSize}
+                            onChange={(e) => setBrushSize(Number(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="flex gap-2" data-tutorial="image-studio-undo">
+                          <button onClick={handleUndo} disabled={history.undoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            <Undo2 className="w-4 h-4 mr-1" />Undo
+                          </button>
+                          <button onClick={handleRedo} disabled={history.redoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            <Redo2 className="w-4 h-4 mr-1" />Redo
+                          </button>
+                        </div>
+                        <button onClick={handleClearMask}
+                          className="w-full px-3 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 flex items-center justify-center">
+                          <Eraser className="w-4 h-4 mr-1" />Clear Mask
+                        </button>
+                        <button onClick={handleSaveEdited}
+                          className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                          data-tutorial="image-studio-save-edited">
+                          <Save className="w-4 h-4 mr-1" />Save
+                        </button>
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                          <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">How to Use:</h4>
+                          <ol className="text-xs text-blue-800 dark:text-blue-400 space-y-1 list-decimal list-inside">
+                            <li>Paint over the object to remove</li>
+                            <li>Click "Remove Marked Area"</li>
+                            <li>Use Undo to revert</li>
+                          </ol>
+                        </div>
+                        <div className="text-xs text-theme-hint">
+                          Undo: {history.undoStack.length} &nbsp; Redo: {history.redoStack.length}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Background Remover */}
+                    {editorTool === 'remove-background' && (
+                      <>
+                        <div className="flex gap-2">
+                          <button onClick={handleUndo} disabled={history.undoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Undo2 className="w-4 h-4 mr-1" />Undo
+                          </button>
+                          <button onClick={handleRedo} disabled={history.redoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Redo2 className="w-4 h-4 mr-1" />Redo
+                          </button>
+                        </div>
+                        <button onClick={handleSaveEdited}
+                          className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                          <Save className="w-4 h-4 mr-1" />Save
+                        </button>
+                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                          <h4 className="text-xs font-semibold text-purple-900 dark:text-purple-300 mb-1">How to Use:</h4>
+                          <p className="text-xs text-purple-800 dark:text-purple-400">Click "Remove Background" below the canvas. The AI will automatically detect and remove the background, producing a transparent PNG.</p>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Annotation Tool */}
+                    {editorTool === 'annotate' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-theme-label mb-2">Annotation Type</label>
+                          <div className="grid grid-cols-3 gap-1">
+                            {([
+                              { type: 'arrow' as const, icon: ArrowRight, label: 'Arrow' },
+                              { type: 'box' as const, icon: Square, label: 'Box' },
+                              { type: 'number' as const, icon: Hash, label: 'Number' },
+                            ]).map(({ type, icon: Icon, label }) => (
+                              <button key={type} onClick={() => setAnnotationType(type)}
+                                className={`py-2 rounded-lg flex flex-col items-center gap-1 text-xs transition ${
+                                  annotationType === type
+                                    ? 'bg-blue-600 text-white'
+                                    : 'border border-theme-strong hover:bg-theme-hover text-theme-label'
+                                }`}>
+                                <Icon className="w-4 h-4" />{label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-theme-label mb-2">Color</label>
+                          <div className="flex gap-2 flex-wrap items-center">
+                            {['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#000000'].map(c => (
+                              <button key={c} onClick={() => setAnnotationColor(c)}
+                                className={`w-6 h-6 rounded-full border-2 transition ${annotationColor === c ? 'border-white scale-110 shadow' : 'border-transparent'}`}
+                                style={{ backgroundColor: c }} />
+                            ))}
+                            <input type="color" value={annotationColor}
+                              onChange={e => setAnnotationColor(e.target.value)}
+                              className="w-6 h-6 rounded-full cursor-pointer" title="Custom color" />
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={handleUndo} disabled={history.undoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Undo2 className="w-4 h-4 mr-1" />Undo
+                          </button>
+                          <button onClick={() => { setAnnotations([]); setNumberCounter(1); }}
+                            disabled={annotations.length === 0}
+                            className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Trash2 className="w-4 h-4 mr-1" />Clear
+                          </button>
+                        </div>
+                        <p className="text-xs text-theme-hint">
+                          {annotationType === 'arrow' && 'Click and drag to draw arrows.'}
+                          {annotationType === 'box' && 'Click and drag to draw boxes.'}
+                          {annotationType === 'number' && 'Click to place numbered markers.'}
+                          {annotations.length > 0 && ` ${annotations.length} annotation(s) placed.`}
+                        </p>
+                      </>
+                    )}
+
+                    {/* Coloring Page */}
+                    {editorTool === 'coloring-page' && (
+                      <>
+                        <div className="flex gap-2">
+                          <button onClick={handleUndo} disabled={history.undoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Undo2 className="w-4 h-4 mr-1" />Undo
+                          </button>
+                          <button onClick={handleRedo} disabled={history.redoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Redo2 className="w-4 h-4 mr-1" />Redo
+                          </button>
+                        </div>
+                        <button onClick={handleSaveEdited}
+                          className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                          <Save className="w-4 h-4 mr-1" />Save
+                        </button>
+                        <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                          <h4 className="text-xs font-semibold text-orange-900 dark:text-orange-300 mb-1">How to Use:</h4>
+                          <p className="text-xs text-orange-800 dark:text-orange-400">Click "Convert to Coloring Page" below. Edge detection will produce black outlines on a white background — perfect for printing and colouring.</p>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Worksheet Maker */}
+                    {editorTool === 'worksheet' && (
+                      <>
+                        <div className="flex gap-2">
+                          <button onClick={handleUndo} disabled={history.undoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Undo2 className="w-4 h-4 mr-1" />Undo
+                          </button>
+                          <button onClick={handleRedo} disabled={history.redoStack.length === 0}
+                            className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
+                            <Redo2 className="w-4 h-4 mr-1" />Redo
+                          </button>
+                        </div>
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                          <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">Worksheet Maker</h4>
+                          <p className="text-xs text-blue-800 dark:text-blue-400">Build a printable A4 worksheet featuring the current image with a title, name/date fields, and numbered question lines. Click "Open Worksheet Maker" below.</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
