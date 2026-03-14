@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Bell, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,7 +31,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
     return () => document.removeEventListener('click', handleClick);
   }, [open, onClose]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -100,7 +101,8 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
             </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
