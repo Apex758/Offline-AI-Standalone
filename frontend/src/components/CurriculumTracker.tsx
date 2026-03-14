@@ -24,6 +24,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   onDataChange
 }) => {
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
+  const accentColor = settings.tabColors['curriculum-tracker'] ?? '#22c55e';
   const [showTutorial, setShowTutorial] = useState(false);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,7 +203,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
-      case 'in_progress': return <PlayCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+      case 'in_progress': return <PlayCircle className="w-5 h-5" style={{ color: accentColor }} />;
       case 'skipped': return <XCircle className="w-5 h-5 text-gray-400 dark:text-gray-500" />;
       default: return <Circle className="w-5 h-5 text-gray-300 dark:text-gray-600" />;
     }
@@ -211,7 +212,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700';
-      case 'in_progress': return 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700';
+      case 'in_progress': return 'border-2 font-medium';
       case 'skipped': return 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600';
       default: return 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800/30 dark:text-gray-400 dark:border-gray-600';
     }
@@ -222,9 +223,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       key={milestone.id}
       className={`ml-8 p-3 rounded-lg border-2 transition-all ${
         selectedMilestone?.id === milestone.id
-          ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-          : 'border-theme hover:border-blue-300 dark:hover:border-blue-600 bg-theme-surface'
+          ? 'bg-theme-surface'
+          : 'border-theme bg-theme-surface'
       }`}
+      style={selectedMilestone?.id === milestone.id
+        ? { borderColor: accentColor, backgroundColor: `${accentColor}08` }
+        : {}
+      }
       data-tutorial="milestone-item"
     >
       <div className="flex items-center justify-between">
@@ -249,6 +254,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             value={milestone.status}
             onChange={(e) => handleUpdateMilestone(milestone.id, { status: e.target.value as any })}
             className={`px-3 py-1 rounded-lg border-2 font-medium text-sm ${getStatusColor(milestone.status)}`}
+            style={milestone.status === 'in_progress' ? { backgroundColor: `${accentColor}18`, color: accentColor, borderColor: `${accentColor}50` } : {}}
             data-tutorial="milestone-status"
           >
             <option value="not_started">Not Started</option>
@@ -259,11 +265,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
           <button
             onClick={() => setSelectedMilestone(milestone)}
-            className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: accentColor }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${accentColor}18`}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             title="Edit details"
             data-tutorial="edit-milestone"
           >
-            <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <Edit2 className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -287,7 +296,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               : <ChevronRight className="w-5 h-5 text-theme-muted" />
           )}
 
-          <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
 
           <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? `Grade ${node.label}` : node.label}</span>
 
@@ -298,8 +307,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
               </div>
               <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-green-400 to-green-600 dark:from-green-500 dark:to-green-400 transition-all"
-                  style={{ width: `${node.progress.percentage}%` }}
+                  className="h-full transition-all rounded-full"
+                  style={{ width: `${node.progress.percentage}%`, background: `linear-gradient(90deg, ${accentColor}bb, ${accentColor})` }}
                 />
               </div>
               <span className="text-sm font-semibold text-theme-label">
@@ -333,19 +342,19 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   return (
     <div className="h-full flex flex-col bg-theme-secondary">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white px-6 py-4" data-tutorial="curriculum-tracker-header">
+      <div className="text-white px-6 py-4" style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}bb)` }} data-tutorial="curriculum-tracker-header">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Target className="w-8 h-8" />
             <div>
               <h1 className="text-2xl font-bold">Curriculum Tracker</h1>
-              <p className="text-indigo-100 dark:text-indigo-200 text-sm">Track your progress through the curriculum</p>
+              <p className="text-white/80 text-sm">Track your progress through the curriculum</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2" data-tutorial="overall-progress">
-              <div className="text-sm text-indigo-100 dark:text-indigo-200">Overall Progress</div>
+              <div className="text-sm text-white/80">Overall Progress</div>
               <div className="text-2xl font-bold">
                 {milestones.length > 0
                   ? Math.round((milestones.filter(m => m.status === 'completed').length / milestones.length) * 100)
@@ -364,7 +373,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <select
             value={filters.grade}
             onChange={(e) => setFilters({ ...filters, grade: e.target.value })}
-            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-theme-surface text-theme-label"
+            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
+            style={{ '--tw-ring-color': accentColor } as any}
             data-tutorial="grade-filter"
           >
             <option value="">All Grades</option>
@@ -376,7 +386,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <select
             value={filters.subject}
             onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-theme-surface text-theme-label"
+            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
+            style={{ '--tw-ring-color': accentColor } as any}
             data-tutorial="subject-filter"
           >
             <option value="">All Subjects</option>
@@ -388,7 +399,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-theme-surface text-theme-label"
+            className="px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
+            style={{ '--tw-ring-color': accentColor } as any}
             data-tutorial="status-filter"
           >
             <option value="">All Statuses</option>
@@ -461,7 +473,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   onChange={(e) => {
                     handleUpdateMilestone(selectedMilestone.id, { status: e.target.value as any });
                   }}
-                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-theme-surface text-theme-label"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
+                  style={{ '--tw-ring-color': accentColor } as any}
                   data-tutorial="modal-status"
                 >
                   <option value="not_started">Not Started</option>
@@ -481,7 +494,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                     setSelectedMilestone({ ...selectedMilestone, notes: e.target.value });
                   }}
                   placeholder="Add notes about this milestone..."
-                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 h-32 resize-none bg-theme-surface text-theme-label placeholder:text-theme-hint"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent h-32 resize-none bg-theme-surface text-theme-label placeholder:text-theme-hint"
+                  style={{ '--tw-ring-color': accentColor } as any}
                   data-tutorial="modal-notes"
                 />
               </div>
@@ -496,7 +510,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   onChange={(e) => {
                     setSelectedMilestone({ ...selectedMilestone, due_date: e.target.value });
                   }}
-                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-theme-surface text-theme-label"
+                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent bg-theme-surface text-theme-label"
+                  style={{ '--tw-ring-color': accentColor } as any}
                   data-tutorial="modal-due-date"
                 />
               </div>
@@ -509,7 +524,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                       due_date: selectedMilestone.due_date
                     });
                   }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white py-3 rounded-lg font-semibold transition-colors"
+                  className="flex-1 text-white py-3 rounded-lg font-semibold transition-colors"
+                  style={{ backgroundColor: accentColor }}
                   data-tutorial="save-changes"
                 >
                   Save Changes

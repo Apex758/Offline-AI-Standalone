@@ -113,7 +113,7 @@ interface ClassManagementProps {
 
 const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings } = useSettings();
-  const accentColor = settings.tabColors['quiz-generator'] ?? '#3b82f6';
+  const accentColor = settings.tabColors['class-management'] ?? '#f97316';
 
   const [rightView, setRightView] = useState<RightView>({ type: 'empty' });
   const [students, setStudents] = useState<Student[]>([]);
@@ -1753,8 +1753,9 @@ ${tabScript}
               </div>
             )}
             {importing && (
-              <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
+                style={{ backgroundColor: `${accentColor}12`, border: `1px solid ${accentColor}30`, color: accentColor }}>
+                <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${accentColor} transparent transparent ${accentColor}` }} />
                 Importing students...
               </div>
             )}
@@ -1772,8 +1773,8 @@ ${tabScript}
 
       {/* Drag overlay */}
       {dragging && (
-        <div className="absolute inset-0 z-40 bg-blue-50/90 border-4 border-dashed rounded-xl flex flex-col items-center justify-center pointer-events-none"
-          style={{ borderColor: accentColor }}>
+        <div className="absolute inset-0 z-40 border-4 border-dashed rounded-xl flex flex-col items-center justify-center pointer-events-none"
+          style={{ borderColor: accentColor, backgroundColor: `${accentColor}12` }}>
           <FileSpreadsheet className="w-16 h-16 mb-4" style={{ color: accentColor }} />
           <p className="text-xl font-semibold" style={{ color: accentColor }}>Drop Excel or CSV file here</p>
           <p className="text-sm text-theme-muted mt-2">Supported: .xlsx, .xls, .csv</p>
