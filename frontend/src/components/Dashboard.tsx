@@ -1152,11 +1152,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       {/* Sidebar */}
       <div
-        className={`${sidebarOpen ? 'w-64' : 'w-16'} overflow-hidden relative flex flex-col sidebar-glass`}
+        className="w-16 overflow-hidden relative flex flex-col sidebar-glass"
         style={{
-          backgroundColor: settings.sidebarColor,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: sidebarOpen ? '256px' : '64px',
+          zIndex: 40,
+          background: (() => {
+            const hex = settings.sidebarColor.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `rgba(${r},${g},${b},0.75)`;
+          })(),
           color: sidebarIsDark ? '#ffffff' : '#1f2937',
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s',
+          backdropFilter: 'blur(24px) saturate(1.5)',
+          WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
+          borderRight: `1px solid ${sidebarIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+          boxShadow: sidebarOpen ? '4px 0 32px rgba(0,0,0,0.2)' : 'none',
         }}
         data-tutorial="main-sidebar"
         onMouseEnter={() => setSidebarOpen(true)}
@@ -1810,7 +1826,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginLeft: '64px' }}>
         {/* Top Bar */}
         <div className="px-2 flex items-end justify-between edge-tab-bar dark:bg-gray-800 dark:border-gray-700" style={{ height: `${TAB_H + 4}px`, paddingTop: '4px', paddingBottom: 0 }}>
           {/* Highlight bar at top when a tab is active */}
