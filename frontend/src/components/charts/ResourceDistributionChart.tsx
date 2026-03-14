@@ -1,6 +1,6 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { PieChart as PieChartIcon } from 'lucide-react';
+import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart2 } from 'lucide-react';
 import type { DistributionData } from '../../types/analytics';
 
 interface ResourceDistributionChartProps {
@@ -8,119 +8,103 @@ interface ResourceDistributionChartProps {
   tabColors?: { [key: string]: string };
 }
 
+const resourceToToolType: { [key: string]: string } = {
+  lesson: 'lesson-planner',
+  quiz: 'quiz-generator',
+  rubric: 'rubric-generator',
+  kindergarten: 'kindergarten-planner',
+  multigrade: 'multigrade-planner',
+  'cross-curricular': 'cross-curricular-planner',
+  worksheet: 'worksheet-generator',
+  image: 'image-studio',
+};
+
 const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data, tabColors = {} }) => {
   const total = data.reduce((sum, item) => sum + item.count, 0);
+  const max = Math.max(...data.map((d) => d.count), 1);
 
-  // Map resource types to tool types for color lookup
-  const resourceToToolType: { [key: string]: string } = {
-    lesson: 'lesson-planner',
-    quiz: 'quiz-generator',
-    rubric: 'rubric-generator',
-    kindergarten: 'kindergarten-planner',
-    multigrade: 'multigrade-planner',
-    'cross-curricular': 'cross-curricular-planner',
-    worksheet: 'worksheet-generator',
-    image: 'image-studio'
-  };
+  const getColor = (type: string): string => tabColors[resourceToToolType[type]] || '#6b7280';
 
-  // Get color for a resource type
-  const getResourceColor = (resourceType: string): string => {
-    const toolType = resourceToToolType[resourceType];
-    return tabColors[toolType] || '#6b7280'; // fallback color
-  };
-
-  const dataWithColors = data.map((item) => ({
-    ...item,
-    color: getResourceColor(item.type)
-  }));
+  const radialData = data
+    .filter((d) => d.count > 0)
+    .map((d) => ({
+      name: d.label,
+      value: Math.round((d.count / max) * 100),
+      count: d.count,
+      percentage: d.percentage,
+      fill: getColor(d.type),
+    }));
 
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div 
-          className="rounded-lg p-3"
-          style={{
-            backgroundColor: 'white',
-            border: '1px solid #E8EAE3',
-            boxShadow: '0 4px 12px rgba(29, 54, 45, 0.15)'
-          }}
-        >
-          <p className="font-semibold mb-1" style={{ color: '#020D03' }}>{data.label}</p>
-          <p className="text-sm" style={{ color: '#552A01' }}>
-            Count: <span className="font-semibold">{data.count}</span>
-          </p>
-          <p className="text-sm" style={{ color: '#552A01' }}>
-            Percentage: <span className="font-semibold">{data.percentage}%</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const renderCustomLabel = (entry: any) => {
-    return `${entry.percentage}%`;
+    if (!active || !payload?.[0]) return null;
+    const d = payload[0].payload;
+    return (
+      <div
+        className="rounded-xl p-3"
+        style={{
+          backgroundColor: 'white',
+          border: '1px solid #E8EAE3',
+          boxShadow: '0 8px 24px rgba(29, 54, 45, 0.15)',
+          minWidth: 150,
+        }}
+      >
+        <p className="font-semibold mb-1 text-xs" style={{ color: d.fill }}>{d.name}</p>
+        <p className="text-xs" style={{ color: '#552A01' }}>
+          Count: <span className="font-semibold" style={{ color: '#020D03' }}>{d.count}</span>
+        </p>
+        <p className="text-xs" style={{ color: '#552A01' }}>
+          Share: <span className="font-semibold" style={{ color: '#020D03' }}>{d.percentage}%</span>
+        </p>
+      </div>
+    );
   };
 
   return (
-    <div 
+    <div
       className="rounded-2xl p-6"
-      style={{
-        backgroundColor: 'white',
-        boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)'
-      }}
+      style={{ backgroundColor: 'white', boxShadow: '0 4px 16px rgba(29, 54, 45, 0.08)' }}
     >
       {/* Header */}
       <div className="flex items-center space-x-2 mb-6">
-        <PieChartIcon className="w-5 h-5" style={{ color: '#1D362D' }} />
+        <BarChart2 className="w-5 h-5" style={{ color: '#1D362D' }} />
         <h3 className="font-bold" style={{ color: '#020D03' }}>Resource Type Distribution</h3>
       </div>
 
-      {/* Chart and Legend */}
-      <div className="flex gap-6">
-        {/* Chart */}
-        <div className="flex-1 relative">
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={dataWithColors}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={renderCustomLabel}
-                outerRadius={120}
-                innerRadius={80}
-                fill="#8884d8"
-                dataKey="count"
-                paddingAngle={2}
-              >
-                {dataWithColors.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
+      {/* Chart + Legend */}
+      <div className="flex gap-6 items-center">
+        {/* Radial Bar Chart */}
+        <div className="flex-1">
+          <ResponsiveContainer width="100%" height={320}>
+            <RadialBarChart
+              cx="50%"
+              cy="50%"
+              innerRadius={28}
+              outerRadius={130}
+              barSize={10}
+              startAngle={90}
+              endAngle={-270}
+              data={radialData}
+            >
+              <RadialBar
+                dataKey="value"
+                cornerRadius={5}
+                background={{ fill: 'rgba(29, 54, 45, 0.05)' }}
+              />
               <Tooltip content={<CustomTooltip />} />
-            </PieChart>
+            </RadialBarChart>
           </ResponsiveContainer>
-
-          {/* Center Label */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center">
-              <div className="text-3xl font-bold" style={{ color: '#020D03' }}>{total}</div>
-              <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
-            </div>
-          </div>
         </div>
 
         {/* Legend */}
-        <div className="w-48 space-y-2">
-          {dataWithColors.map((entry, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-xs" style={{ color: '#552A01' }}>{entry.label}</span>
+        <div className="w-44 space-y-2.5">
+          <div className="text-center mb-3">
+            <div className="text-2xl font-bold" style={{ color: '#020D03' }}>{total}</div>
+            <div className="text-xs font-medium" style={{ color: '#552A01' }}>Total</div>
+          </div>
+          {radialData.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.fill, flexShrink: 0, display: 'inline-block' }} />
+              <span className="text-xs truncate" style={{ color: '#552A01' }}>{entry.name}</span>
               <span className="text-xs font-semibold ml-auto" style={{ color: '#020D03' }}>{entry.count}</span>
             </div>
           ))}
