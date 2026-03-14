@@ -44,6 +44,7 @@ from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
 from llama_inference import run_llama_inference
 from curriculum_matcher import CurriculumMatcher
+from chat_memory import get_chat_memory
 sys.stdout.reconfigure(encoding='utf-8')
 
 # Set up logging
@@ -171,10 +172,10 @@ async def lifespan(app):
     else:
         logger.info(f"llama-cli.exe found: {LLAMA_CLI_PATH}")
     
-    # Initialize chat history file
-    if not os.path.exists(CHAT_HISTORY_FILE):
-        with open(CHAT_HISTORY_FILE, 'w') as f:
-            json.dump([], f)
+    # Initialize SQLite chat memory and migrate old JSON data if present
+    memory = get_chat_memory()
+    memory.import_from_json(CHAT_HISTORY_FILE)
+    logger.info(f"Chat memory initialized (SQLite): {memory.db_path}")
     
     # Initialize Llama model singleton
     try:
@@ -316,43 +317,22 @@ async def login(credentials: dict):
 
 @app.get("/api/chat-history")
 async def get_chat_history():
-    """Get all chat histories"""
+    """Get all chat histories from SQLite"""
     try:
-        if os.path.exists(CHAT_HISTORY_FILE):
-            with open(CHAT_HISTORY_FILE, 'r') as f:
-                histories = json.load(f)
-            histories.sort(key=lambda x: x['timestamp'], reverse=True)
-            return histories
-        return []
+        memory = get_chat_memory()
+        return memory.get_all_chats_with_messages()
     except Exception as e:
         logger.error(f"Error loading chat history: {e}")
         return []
 
 @app.post("/api/chat-history")
 async def save_chat_history(chat: ChatHistory):
-    """Save or update a chat history"""
+    """Save or update a chat history in SQLite"""
     try:
-        histories = []
-        if os.path.exists(CHAT_HISTORY_FILE):
-            with open(CHAT_HISTORY_FILE, 'r') as f:
-                histories = json.load(f)
-        
-        existing_index = None
-        for i, h in enumerate(histories):
-            if h['id'] == chat.id:
-                existing_index = i
-                break
-        
-        chat_dict = chat.dict()
-        
-        if existing_index is not None:
-            histories[existing_index] = chat_dict
-        else:
-            histories.append(chat_dict)
-        
-        with open(CHAT_HISTORY_FILE, 'w') as f:
-            json.dump(histories, f, indent=2)
-        
+        memory = get_chat_memory()
+        memory.ensure_chat(chat.id, chat.title)
+        memory.update_chat_title(chat.id, chat.title)
+        memory.save_messages_bulk(chat.id, [m.dict() for m in chat.messages])
         return {"success": True, "id": chat.id}
     except Exception as e:
         logger.error(f"Error saving chat history: {e}")
@@ -360,20 +340,11 @@ async def save_chat_history(chat: ChatHistory):
 
 @app.delete("/api/chat-history/{chat_id}")
 async def delete_chat_history(chat_id: str):
-    """Delete a chat history"""
+    """Delete a chat history from SQLite"""
     try:
-        if os.path.exists(CHAT_HISTORY_FILE):
-            with open(CHAT_HISTORY_FILE, 'r') as f:
-                histories = json.load(f)
-            
-            histories = [h for h in histories if h['id'] != chat_id]
-            
-            with open(CHAT_HISTORY_FILE, 'w') as f:
-                json.dump(histories, f, indent=2)
-            
-            return {"success": True}
-        
-        raise HTTPException(status_code=404, detail="Chat history not found")
+        memory = get_chat_memory()
+        memory.delete_chat(chat_id)
+        return {"success": True}
     except Exception as e:
         logger.error(f"Error deleting chat history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -547,29 +518,6 @@ async def websocket_chat(websocket: WebSocket):
         prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
         return prompt
 
-    def get_last_n_message_pairs(messages, n_pairs):
-        """
-        Extract the last N user+assistant message pairs from the message list.
-        Only complete pairs are included. If the last message is a user message without a following assistant,
-        it is not included in the window.
-        TODO: In the future, consider implementing token-based windowing for more precise context control.
-        """
-        # Filter only user/assistant messages
-        filtered = [m for m in messages if m["role"] in ("user", "assistant")]
-        # Group into pairs: (user, assistant)
-        pairs = []
-        i = 0
-        while i < len(filtered) - 1:
-            if filtered[i]["role"] == "user" and filtered[i+1]["role"] == "assistant":
-                pairs.append([filtered[i], filtered[i+1]])
-                i += 2
-            else:
-                i += 1  # skip to next, looking for a user/assistant pair
-        # Take the last n_pairs
-        last_pairs = pairs[-n_pairs:] if n_pairs > 0 else []
-        # Flatten back to a list of messages
-        return [msg for pair in last_pairs for msg in pair]
-
     try:
         while True:
             data = await websocket.receive_text()
@@ -580,44 +528,26 @@ async def websocket_chat(websocket: WebSocket):
             if not user_message:
                 continue
 
-            system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
+            base_system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
 
-            # Default: stateless (old behavior)
+            # Build context from SQLite (Tier 1 sliding window + Tier 2 summary)
             history = []
+            summary_block = ""
 
-            # If chat_id is provided, try to load last N message pairs from chat history
             if chat_id:
-                chat_history_file = os.path.join(os.path.dirname(__file__), "chat_history.json")
-                if os.path.exists(chat_history_file):
-                    try:
-                        with open(chat_history_file, "r", encoding="utf-8") as f:
-                            histories = json.load(f)
-                        chat = next((h for h in histories if h.get("id") == chat_id), None)
-                        if chat and "messages" in chat:
-                            # Use sliding window: keep only the most recent N user+assistant pairs
-                            N = LLAMA_PARAMS.get("conversation_history_length", 4)
-                            # Exclude the current user message (not yet in history)
-                            prev_msgs = [m for m in chat["messages"] if m["role"] in ("user", "assistant")]
-                            history = get_last_n_message_pairs(prev_msgs, N)
-                            # Note: This is message-pair based windowing. For future: implement token-based windowing.
-                    except Exception as e:
-                        logger.error(f"Error loading chat history for context: {e}")
+                try:
+                    memory = get_chat_memory()
+                    N = LLAMA_PARAMS.get("conversation_history_length", 4)
+                    summary_block, history = memory.build_context(chat_id, n_pairs=N)
+                except Exception as e:
+                    logger.error(f"Error loading chat context: {e}")
+
+            # Inject summary into system prompt if available
+            system_prompt = base_system_prompt + summary_block
 
             prompt = build_multi_turn_prompt(system_prompt, history, user_message)
 
-            # === TEMP DEBUG LOGGING FOR CONTEXT WINDOW TEST ===
-            try:
-                logger.info("=== CONTEXT WINDOW DEBUG ===")
-                logger.info(f"chat_id: {chat_id}")
-                logger.info(f"conversation_history_length: {LLAMA_PARAMS.get('conversation_history_length', 4)}")
-                logger.info(f"Number of messages in context: {len(history)}")
-                logger.info("Message roles in context: " + str([m['role'] for m in history]))
-                logger.info("Message contents in context: " + str([m['content'][:60] for m in history]))
-                logger.info(f"Current user message: {user_message[:60]}")
-                logger.info(f"Prompt preview: {prompt[:500]}")
-            except Exception as e:
-                logger.error(f"Error in context window debug logging: {e}")
-            # === END TEMP DEBUG LOGGING ===
+            logger.info(f"Context: chat_id={chat_id}, {len(history)} messages in window, summary={'yes' if summary_block else 'no'}")
 
             try:
                 from inference_factory import get_inference_instance
@@ -625,6 +555,7 @@ async def websocket_chat(websocket: WebSocket):
 
                 # Use streaming method for real-time generation
                 token_buffer = []
+                full_response_tokens = []  # Accumulate full response for memory
                 last_send = time.time()
                 async for chunk in inference.generate_stream(
                     tool_name="chat",
@@ -660,11 +591,21 @@ async def websocket_chat(websocket: WebSocket):
                             await asyncio.sleep(0)  # Force flush
                         except:
                             logger.error("Could not send done message - connection closed")
+
+                        # Trigger background summary update if needed (fire-and-forget)
+                        if chat_id:
+                            try:
+                                memory = get_chat_memory()
+                                asyncio.create_task(memory.maybe_update_summary(chat_id))
+                            except Exception as e:
+                                logger.warning(f"Summary trigger failed: {e}")
+
                         break
 
                     # Batch tokens before sending
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
+                        full_response_tokens.append(chunk["token"])
 
                         # Send every 50ms or 5 tokens (whichever comes first)
                         if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
@@ -2024,7 +1965,7 @@ async def health():
         "status": "healthy",
         "model_found": os.path.exists(get_model_path()),
         "llama_cli_found": os.path.exists(LLAMA_CLI_PATH),
-        "chat_history_file": os.path.exists(CHAT_HISTORY_FILE)
+        "chat_memory_db": os.path.exists(get_chat_memory().db_path)
     }
 
 @app.post("/api/shutdown")

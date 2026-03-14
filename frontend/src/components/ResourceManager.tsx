@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Search, Filter, Star, Trash2, Edit, Download, Calendar, Eye,
+  Search, Star, Trash2, Edit, Download, Calendar, Eye,
   FileText, ListChecks, BookMarked, GraduationCap, Users,
   Link2, RefreshCw, ArrowUpDown, X, Image, FileSpreadsheet
 } from 'lucide-react';
@@ -32,6 +32,18 @@ interface Resource {
   imageUrl?: string;
 }
 
+const resourceTypes = [
+  { key: 'all', label: 'All Resources', icon: FileText },
+  { key: 'lesson', label: 'Lesson Plans', icon: BookMarked },
+  { key: 'quiz', label: 'Quizzes', icon: ListChecks },
+  { key: 'worksheet', label: 'Worksheets', icon: FileSpreadsheet },
+  { key: 'rubric', label: 'Rubrics', icon: FileText },
+  { key: 'kindergarten', label: 'Kindergarten', icon: GraduationCap },
+  { key: 'multigrade', label: 'Multigrade', icon: Users },
+  { key: 'cross-curricular', label: 'Cross-Curricular', icon: Link2 },
+  { key: 'images', label: 'Images', icon: Image }
+];
+
 const ResourceManager: React.FC<ResourceManagerProps> = ({
   tabId,
   savedData,
@@ -43,10 +55,12 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const { settings } = useSettings();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'title' | 'type'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Restore persisted state from savedData
+  const [searchQuery, setSearchQuery] = useState(savedData?.searchQuery || '');
+  const [filterType, setFilterType] = useState<string>(savedData?.filterType || 'all');
+  const [sortBy, setSortBy] = useState<'date' | 'title' | 'type'>(savedData?.sortBy || 'date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(savedData?.sortOrder || 'desc');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageResource, setSelectedImageResource] = useState<Resource | null>(null);
@@ -54,17 +68,10 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedResources, setSelectedResources] = useState<Set<string>>(new Set());
 
-  const resourceTypes = [
-    { key: 'all', label: 'All Resources', icon: FileText },
-    { key: 'lesson', label: 'Lesson Plans', icon: BookMarked },
-    { key: 'quiz', label: 'Quizzes', icon: ListChecks },
-    { key: 'worksheet', label: 'Worksheets', icon: FileText },
-    { key: 'rubric', label: 'Rubrics', icon: FileText },
-    { key: 'kindergarten', label: 'Kindergarten', icon: GraduationCap },
-    { key: 'multigrade', label: 'Multigrade', icon: Users },
-    { key: 'cross-curricular', label: 'Cross-Curricular', icon: Link2 },
-    { key: 'images', label: 'Images', icon: Image }
-  ];
+  // Persist filter/sort state to tab data
+  useEffect(() => {
+    onDataChange({ searchQuery, filterType, sortBy, sortOrder });
+  }, [searchQuery, filterType, sortBy, sortOrder]);
 
   const loadAllResources = async () => {
     setLoading(true);
@@ -126,7 +133,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       setShowImageModal(false);
       setSelectedImageResource(null);
       setIsClosing(false);
-    }, 300); // Match animation duration
+    }, 300);
   };
 
   const toggleSelectionMode = () => {
@@ -241,27 +248,41 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
   const getTypeColor = (type: string) => {
     const colors: { [key: string]: string } = {
-      'lesson': 'bg-purple-100 text-purple-700 border-purple-200',
-      'quiz': 'bg-cyan-100 text-cyan-700 border-cyan-200',
-      'worksheet': 'bg-blue-100 text-blue-700 border-blue-200',
-      'rubric': 'bg-amber-100 text-amber-700 border-amber-200',
-      'kindergarten': 'bg-pink-100 text-pink-700 border-pink-200',
-      'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200',
-      'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200',
-      'images': 'bg-green-100 text-green-700 border-green-200'
+      'lesson': 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
+      'quiz': 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-700',
+      'worksheet': 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+      'rubric': 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700',
+      'kindergarten': 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-700',
+      'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700',
+      'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700',
+      'images': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700'
     };
-    return colors[type] || 'bg-gray-100 text-gray-700 border-gray-200';
+    return colors[type] || 'bg-theme-tertiary text-theme-label border-theme';
+  };
+
+  const getTypeDotColor = (type: string) => {
+    const colors: { [key: string]: string } = {
+      'lesson': 'bg-purple-500',
+      'quiz': 'bg-cyan-500',
+      'worksheet': 'bg-blue-500',
+      'rubric': 'bg-amber-500',
+      'kindergarten': 'bg-pink-500',
+      'multigrade': 'bg-indigo-500',
+      'cross-curricular': 'bg-teal-500',
+      'images': 'bg-green-500'
+    };
+    return colors[type] || 'bg-gray-500';
   };
 
   const filteredAndSortedResources = resources
     .filter(r => filterType === 'all' || r.type === filterType)
-    .filter(r => 
-      searchQuery === '' || 
+    .filter(r =>
+      searchQuery === '' ||
       r.title.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       let comparison = 0;
-      
+
       if (sortBy === 'date') {
         comparison = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
       } else if (sortBy === 'title') {
@@ -269,260 +290,302 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       } else if (sortBy === 'type') {
         comparison = a.type.localeCompare(b.type);
       }
-      
+
       return sortOrder === 'asc' ? -comparison : comparison;
     });
 
   const favoriteResources = filteredAndSortedResources.filter(r => r.favorite);
 
+  // Count resources per type
+  const getCountForType = (key: string) => {
+    if (key === 'all') return resources.length;
+    return resources.filter(r => r.type === key).length;
+  };
+
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="h-full flex items-center justify-center tab-content-bg">
         <div className="text-center">
           <RefreshCw className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading resources...</p>
+          <p className="text-theme-muted">Loading resources...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-6" data-tutorial="resource-welcome">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Resource Manager</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Manage all your generated educational resources
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleSelectionMode}
-              className={`flex items-center px-4 py-2 rounded-lg transition ${
-                selectionMode
-                  ? 'bg-gray-600 text-white hover:bg-gray-700'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {selectionMode ? 'Cancel' : 'Select'}
-            </button>
-            <button
-              onClick={loadAllResources}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </button>
-          </div>
+    <div className="h-full flex tab-content-bg">
+      {/* ── Left Sidebar: Category Filters ── */}
+      <div className="w-60 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-theme">
+          <h2 className="text-sm font-semibold text-theme-heading uppercase tracking-wider">Categories</h2>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex gap-4">
-          <div className="flex-1 relative" data-tutorial="resource-search">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search resources..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-              title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-            >
-              <ArrowUpDown className="w-5 h-5 text-gray-600" />
-            </button>
-            
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'type')}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              data-tutorial="resource-sort"
-            >
-              <option value="date">Sort by Date</option>
-              <option value="title">Sort by Title</option>
-              <option value="type">Sort by Type</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Type Filters */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 overflow-x-auto" data-tutorial="resource-filters">
-        <div className="flex gap-2 min-w-max">
+        {/* Category List */}
+        <nav className="flex-1 overflow-y-auto p-2 space-y-0.5" data-tutorial="resource-filters">
           {resourceTypes.map(({ key, label, icon: Icon }) => {
-            const count = key === 'all' 
-              ? resources.length 
-              : resources.filter(r => r.type === key).length;
-            
+            const count = getCountForType(key);
+            const isActive = filterType === key;
+
             return (
               <button
                 key={key}
                 onClick={() => setFilterType(key)}
-                className={`flex items-center px-4 py-2 rounded-lg transition ${
-                  filterType === key
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'text-theme-label hover:bg-theme-hover'
                 }`}
               >
-                <Icon className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">{label}</span>
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                  filterType === key 
-                    ? 'bg-white/20 text-white' 
-                    : 'bg-gray-200 text-gray-600'
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1 text-left truncate">{label}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
+                  isActive
+                    ? 'bg-white/20 text-white'
+                    : 'bg-theme-tertiary text-theme-muted'
                 }`}>
                   {count}
                 </span>
               </button>
             );
           })}
+        </nav>
+
+        {/* Sidebar Footer: Stats */}
+        <div className="p-4 border-t border-theme">
+          <div className="text-xs text-theme-hint space-y-1">
+            <div className="flex justify-between">
+              <span>Total</span>
+              <span className="font-medium text-theme-label">{resources.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Favorites</span>
+              <span className="font-medium text-theme-label">{resources.filter(r => r.favorite).length}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Selection Controls */}
-      {selectionMode && (
-        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-blue-900">
-                {selectedResources.size} of {filteredAndSortedResources.length} selected
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={selectAllVisible}
-                  className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
-                >
-                  Select All
-                </button>
-                <button
-                  onClick={clearSelection}
-                  className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
-                >
-                  Clear
-                </button>
-              </div>
+      {/* ── Main Content Area ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header Bar */}
+        <div className="bg-theme-surface border-b border-theme p-4" data-tutorial="resource-welcome">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-xl font-bold text-theme-title">
+                {filterType === 'all' ? 'All Resources' : resourceTypes.find(t => t.key === filterType)?.label}
+              </h1>
+              <p className="text-xs text-theme-hint mt-0.5">
+                {filteredAndSortedResources.length} resource{filteredAndSortedResources.length !== 1 ? 's' : ''}
+              </p>
             </div>
-            <button
-              onClick={bulkDelete}
-              disabled={selectedResources.size === 0}
-              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Selected ({selectedResources.size})
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleSelectionMode}
+                className={`flex items-center px-3 py-1.5 text-sm rounded-lg transition ${
+                  selectionMode
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-theme-tertiary text-theme-label hover:bg-theme-hover'
+                }`}
+              >
+                {selectionMode ? 'Cancel' : 'Select'}
+              </button>
+              <button
+                onClick={loadAllResources}
+                className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {/* Search + Sort Row */}
+          <div className="flex gap-3">
+            <div className="flex-1 relative" data-tutorial="resource-search">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-hint" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search resources..."
+                className="w-full pl-9 pr-4 py-2 text-sm border border-theme-strong rounded-lg bg-theme-surface text-theme-title placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-hint hover:text-theme-label"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="p-2 border border-theme-strong rounded-lg hover:bg-theme-hover transition"
+                title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+              >
+                <ArrowUpDown className="w-4 h-4 text-theme-muted" />
+              </button>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'type')}
+                className="px-3 py-2 text-sm border border-theme-strong rounded-lg bg-theme-surface text-theme-label focus:ring-2 focus:ring-blue-500"
+                data-tutorial="resource-sort"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="title">Sort by Title</option>
+                <option value="type">Sort by Type</option>
+              </select>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Resources Grid */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* Favorites Section */}
-        {favoriteResources.length > 0 && (
-          <div className="mb-8" data-tutorial="resource-favorites">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Star className="w-5 h-5 mr-2 text-yellow-500 fill-yellow-500" />
-              Favorite Resources ({favoriteResources.length})
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {favoriteResources.map(resource => (
-                <ResourceCard
-                  key={resource.id}
-                  resource={resource}
-                  onToggleFavorite={() => toggleFavorite(resource)}
-                  onDelete={() => setShowDeleteConfirm(resource.id)}
-                  onExport={() => exportResource(resource)}
-                  onView={() => {
-                    if (resource.type === 'images') {
-                      setSelectedImageResource(resource);
-                      setShowImageModal(true);
-                    } else {
-                      onViewResource?.(resource.type, resource);
-                    }
-                  }}
-                  onEdit={() => onEditResource?.(resource.type, resource)}
-                  getTypeIcon={getTypeIcon}
-                  getTypeColor={getTypeColor}
-                  selectionMode={selectionMode}
-                  isSelected={selectedResources.has(resource.id)}
-                  onToggleSelection={() => toggleResourceSelection(resource.id)}
-                />
-              ))}
+        {/* Selection Controls */}
+        {selectionMode && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 px-4 py-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
+                  {selectedResources.size} of {filteredAndSortedResources.length} selected
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={selectAllVisible}
+                    className="text-xs px-2.5 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-700 transition"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearSelection}
+                    className="text-xs px-2.5 py-1 bg-theme-tertiary text-theme-label rounded hover:bg-theme-hover transition"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={bulkDelete}
+                disabled={selectedResources.size === 0}
+                className="flex items-center px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                Delete ({selectedResources.size})
+              </button>
             </div>
           </div>
         )}
 
-        {/* All Resources */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            {filterType === 'all' ? 'All Resources' : resourceTypes.find(t => t.key === filterType)?.label} ({filteredAndSortedResources.length})
-          </h2>
-          
-          {filteredAndSortedResources.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No resources found</p>
-              <p className="text-sm text-gray-400 mt-1">
-                {searchQuery ? 'Try adjusting your search query' : 'Start creating resources to see them here'}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredAndSortedResources.map(resource => (
-                <ResourceCard
-                  key={`${resource.type}-${resource.id}`}  
-                  resource={resource}
-                  onToggleFavorite={() => toggleFavorite(resource)}
-                  onDelete={() => setShowDeleteConfirm(resource.id)}
-                  onExport={() => exportResource(resource)}
-                  onView={() => {
-                    if (resource.type === 'images') {
-                      setSelectedImageResource(resource);
-                      setShowImageModal(true);
-                    } else {
-                      onViewResource?.(resource.type, resource);
-                    }
-                  }}
-                  onEdit={() => onEditResource?.(resource.type, resource)}
-                  getTypeIcon={getTypeIcon}
-                  getTypeColor={getTypeColor}
-                  selectionMode={selectionMode}
-                  isSelected={selectedResources.has(resource.id)}
-                  onToggleSelection={() => toggleResourceSelection(resource.id)}
-                />
-              ))}
+        {/* Resources Grid */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Favorites Section */}
+          {favoriteResources.length > 0 && (
+            <div className="mb-6" data-tutorial="resource-favorites">
+              <h2 className="text-sm font-semibold text-theme-heading mb-3 flex items-center">
+                <Star className="w-4 h-4 mr-2 text-yellow-500 fill-yellow-500" />
+                Favorites ({favoriteResources.length})
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {favoriteResources.map(resource => (
+                  <ResourceCard
+                    key={resource.id}
+                    resource={resource}
+                    onToggleFavorite={() => toggleFavorite(resource)}
+                    onDelete={() => setShowDeleteConfirm(resource.id)}
+                    onExport={() => exportResource(resource)}
+                    onView={() => {
+                      if (resource.type === 'images') {
+                        setSelectedImageResource(resource);
+                        setShowImageModal(true);
+                      } else {
+                        onViewResource?.(resource.type, resource);
+                      }
+                    }}
+                    onEdit={() => onEditResource?.(resource.type, resource)}
+                    getTypeIcon={getTypeIcon}
+                    getTypeColor={getTypeColor}
+                    getTypeDotColor={getTypeDotColor}
+                    selectionMode={selectionMode}
+                    isSelected={selectedResources.has(resource.id)}
+                    onToggleSelection={() => toggleResourceSelection(resource.id)}
+                  />
+                ))}
+              </div>
             </div>
           )}
+
+          {/* All Resources */}
+          <div>
+            {favoriteResources.length > 0 && filteredAndSortedResources.length > favoriteResources.length && (
+              <h2 className="text-sm font-semibold text-theme-heading mb-3">
+                All ({filteredAndSortedResources.length})
+              </h2>
+            )}
+
+            {filteredAndSortedResources.length === 0 ? (
+              <div className="text-center py-16">
+                <FileText className="w-14 h-14 text-theme-hint mx-auto mb-3 opacity-40" />
+                <p className="text-theme-muted font-medium">No resources found</p>
+                <p className="text-sm text-theme-hint mt-1">
+                  {searchQuery ? 'Try adjusting your search query' : 'Start creating resources to see them here'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {filteredAndSortedResources.map(resource => (
+                  <ResourceCard
+                    key={`${resource.type}-${resource.id}`}
+                    resource={resource}
+                    onToggleFavorite={() => toggleFavorite(resource)}
+                    onDelete={() => setShowDeleteConfirm(resource.id)}
+                    onExport={() => exportResource(resource)}
+                    onView={() => {
+                      if (resource.type === 'images') {
+                        setSelectedImageResource(resource);
+                        setShowImageModal(true);
+                      } else {
+                        onViewResource?.(resource.type, resource);
+                      }
+                    }}
+                    onEdit={() => onEditResource?.(resource.type, resource)}
+                    getTypeIcon={getTypeIcon}
+                    getTypeColor={getTypeColor}
+                    getTypeDotColor={getTypeDotColor}
+                    selectionMode={selectionMode}
+                    isSelected={selectedResources.has(resource.id)}
+                    onToggleSelection={() => toggleResourceSelection(resource.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowDeleteConfirm(null)}>
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-theme-surface rounded-xl p-6 max-w-md w-full mx-4 border border-theme" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Confirm Delete</h3>
+              <h3 className="text-lg font-semibold text-theme-title">Confirm Delete</h3>
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="p-1 rounded hover:bg-gray-100 transition"
+                className="p-1 rounded hover:bg-theme-hover transition"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-theme-hint" />
               </button>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-theme-muted mb-6">
               Are you sure you want to delete this resource? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="px-4 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover transition text-theme-label"
               >
                 Cancel
               </button>
@@ -549,7 +612,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
           onClick={closeImageModal}
         >
           <div
-            className={`bg-white rounded-xl p-4 max-w-4xl w-full mx-4 transition-all duration-300 ${
+            className={`bg-theme-surface rounded-xl p-4 max-w-4xl w-full mx-4 border border-theme transition-all duration-300 ${
               isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
             }`}
             onClick={(e) => e.stopPropagation()}
@@ -557,9 +620,9 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
             <div className="flex justify-end mb-2">
               <button
                 onClick={closeImageModal}
-                className="p-1 rounded hover:bg-gray-100 transition"
+                className="p-1 rounded hover:bg-theme-hover transition"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-theme-hint" />
               </button>
             </div>
             <div className="flex justify-center">
@@ -588,6 +651,7 @@ interface ResourceCardProps {
   onEdit: () => void;
   getTypeIcon: (type: string) => any;
   getTypeColor: (type: string) => string;
+  getTypeDotColor: (type: string) => string;
   selectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelection?: () => void;
@@ -602,18 +666,21 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   onEdit,
   getTypeIcon,
   getTypeColor,
+  getTypeDotColor,
   selectionMode = false,
   isSelected = false,
   onToggleSelection
 }) => {
   const Icon = getTypeIcon(resource.type);
-  
+
   return (
     <div
-      className={`rounded-xl border border-gray-200 p-4 hover:shadow-lg transition group ${
+      className={`rounded-xl border p-4 hover:shadow-lg transition group ${
         selectionMode ? 'cursor-pointer' : ''
       } ${
-        isSelected ? 'bg-blue-100 border-blue-300' : 'bg-white'
+        isSelected
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700'
+          : 'bg-theme-surface border-theme'
       }`}
       data-tutorial="resource-card"
       onClick={selectionMode ? onToggleSelection : undefined}
@@ -621,7 +688,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           {resource.type === 'images' && resource.imageUrl ? (
-            <div className="w-12 h-12 rounded-lg border border-gray-200 overflow-hidden">
+            <div className="w-10 h-10 rounded-lg border border-theme overflow-hidden">
               <img
                 src={resource.imageUrl}
                 alt=""
@@ -630,7 +697,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
             </div>
           ) : (
             <div className={`p-2 rounded-lg ${getTypeColor(resource.type)} border`}>
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4" />
             </div>
           )}
         </div>
@@ -640,55 +707,55 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
               e.stopPropagation();
               onToggleFavorite();
             }}
-            className="p-1 rounded hover:bg-gray-100 transition"
+            className="p-1 rounded hover:bg-theme-hover transition"
           >
             <Star
-              className={`w-5 h-5 ${
+              className={`w-4 h-4 ${
                 resource.favorite
                   ? 'text-yellow-500 fill-yellow-500'
-                  : 'text-gray-400'
+                  : 'text-theme-hint'
               }`}
             />
           </button>
         )}
       </div>
 
-      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+      <h3 className="font-semibold text-sm text-theme-title mb-1.5 line-clamp-2">
         {resource.title}
       </h3>
 
-      <div className="flex items-center text-xs text-gray-500 mb-4">
+      <div className="flex items-center text-xs text-theme-hint mb-3">
         <Calendar className="w-3 h-3 mr-1" />
         {new Date(resource.timestamp).toLocaleDateString()}
+        <span className={`ml-2 w-2 h-2 rounded-full ${getTypeDotColor(resource.type)}`} />
+        <span className="ml-1 capitalize">{resource.type === 'cross-curricular' ? 'Cross-Curr.' : resource.type}</span>
       </div>
 
       {!selectionMode && (
-        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
-          {/* "View" Button - shows if there's generated content */}
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity" data-tutorial="resource-actions">
           {(resource.generatedQuiz || resource.generatedPlan || resource.generatedRubric || resource.type === 'images') && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onView();
               }}
-              className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-              title="View generated content"
+              className="flex-1 flex items-center justify-center px-2 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition"
+              title="View"
             >
-              <Eye className="w-4 h-4 mr-1" />
+              <Eye className="w-3.5 h-3.5 mr-1" />
               View
             </button>
           )}
 
-          {/* "Edit" Button - always available */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
             }}
-            className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
-            title="Edit generated content"
+            className="flex-1 flex items-center justify-center px-2 py-1.5 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 transition"
+            title="Edit"
           >
-            <Edit className="w-4 h-4 mr-1" />
+            <Edit className="w-3.5 h-3.5 mr-1" />
             Edit
           </button>
 
@@ -697,20 +764,20 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
               e.stopPropagation();
               onExport();
             }}
-            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            className="p-1.5 border border-theme-strong rounded-lg hover:bg-theme-hover transition"
             title="Export"
           >
-            <Download className="w-4 h-4 text-gray-600" />
+            <Download className="w-3.5 h-3.5 text-theme-muted" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
             }}
-            className="p-2 border border-red-300 rounded-lg hover:bg-red-50 transition"
+            className="p-1.5 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition"
             title="Delete"
           >
-            <Trash2 className="w-4 h-4 text-red-600" />
+            <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
           </button>
         </div>
       )}
