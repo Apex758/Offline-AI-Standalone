@@ -251,9 +251,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       await fetchStudents();
       setActiveStudent(null);
       setRightView({ type: 'empty' });
-      setConfirmDelete(null);
     } catch {
       setError('Failed to delete student.');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -706,7 +707,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
           className="flex-shrink-0 px-8 py-6 relative overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}88)` }}
         >
-          <div className="absolute right-4 -bottom-4 opacity-10">
+          <div className="absolute right-4 -bottom-4 opacity-10 pointer-events-none">
             <User className="w-28 h-28 text-white" />
           </div>
           <div className="flex items-end gap-5">
@@ -840,20 +841,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
           </div>
         </div>
 
-        {confirmDelete && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-theme-surface rounded-2xl border border-theme shadow-2xl p-6 max-w-sm w-full">
-              <h3 className="font-semibold text-theme-heading mb-2">Delete Student?</h3>
-              <p className="text-sm text-theme-muted mb-6">
-                This will permanently delete <strong>{activeStudent.full_name}</strong> and all their quiz grades.
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm">Cancel</button>
-                <button onClick={() => handleDelete(confirmDelete)} className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium">Delete</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   };
@@ -1037,15 +1024,17 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
         </div>
       )}
 
-      {/* Delete modal (for non-student-profile context) */}
-      {confirmDelete && rightView.type !== 'student' && (
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-theme-surface rounded-2xl border border-theme shadow-2xl p-6 max-w-sm w-full">
             <h3 className="font-semibold text-theme-heading mb-2">Delete Student?</h3>
-            <p className="text-sm text-theme-muted mb-6">This will permanently delete the student and all their quiz grades.</p>
+            <p className="text-sm text-theme-muted mb-6">
+              This will permanently delete{activeStudent ? <> <strong>{activeStudent.full_name}</strong> and</> : null} all their quiz grades. This cannot be undone.
+            </p>
             <div className="flex gap-3">
               <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 rounded-xl border border-theme text-theme-label hover:bg-theme-hover transition text-sm">Cancel</button>
-              <button onClick={() => handleDelete(confirmDelete)} className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium">Delete</button>
+              <button onClick={() => handleDelete(confirmDelete!)} className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium">Delete</button>
             </div>
           </div>
         </div>
