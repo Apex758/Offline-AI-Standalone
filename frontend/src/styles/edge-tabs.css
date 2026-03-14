@@ -30,23 +30,6 @@
   overflow: visible;
 }
 
-/* Grouped tabs indicator line */
-.edge-tab[data-grouped="true"]::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 4px;
-  right: 30px;
-  height: 3px;
-  background: var(--tab-color, #3b82f6);
-  opacity: 0.6;
-  z-index: 200;
-  border-radius: 2px;
-}
-
-.edge-tab[data-active="true"][data-grouped="true"]::before {
-  opacity: 0.9;
-}
 
 /* Active tab text should be white for contrast on colored tabs, or dark for white tabs */
 .edge-tab .edge-tab-close {
@@ -158,17 +141,6 @@
   pointer-events: auto;
 }
 
-.edge-tab-group-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 6px;
-  right: -8px;
-  height: 3px;
-  background: var(--group-line-color, #3b82f6);
-  border-radius: 3px;
-  z-index: 5;
-}
 
 /* Focus states for accessibility */
 .edge-tab:focus-visible,
