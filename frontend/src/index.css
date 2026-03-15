@@ -479,6 +479,189 @@
   background: rgba(255, 255, 255, 0.28);
 }
 
+/* ── Global gradient for all primary buttons ── */
+.btn-gradient {
+  background: linear-gradient(135deg, rgb(59,130,246), rgb(37,99,235)) !important;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, rgb(37,99,235), rgb(29,78,216)) !important;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+}
+
+.btn-gradient:disabled {
+  background: linear-gradient(135deg, rgb(59,130,246), rgb(37,99,235)) !important;
+  opacity: 0.5;
+}
+
+/* Apply gradient to all button elements with blue backgrounds */
+button.bg-blue-600,
+button.bg-blue-500,
+button.bg-blue-700,
+[type="button"].bg-blue-600,
+[type="submit"].bg-blue-600,
+[role="button"].bg-blue-600 {
+  background: linear-gradient(135deg, rgb(59,130,246), rgb(37,99,235)) !important;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+
+button.bg-blue-600:hover,
+button.bg-blue-500:hover,
+button.bg-blue-700:hover,
+[type="button"].bg-blue-600:hover,
+[type="submit"].bg-blue-600:hover,
+[role="button"].bg-blue-600:hover {
+  background: linear-gradient(135deg, rgb(37,99,235), rgb(29,78,216)) !important;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+}
+
+/* Apply gradient to buttons with purple backgrounds */
+button.bg-purple-600,
+button.bg-purple-500,
+button.bg-purple-700 {
+  background: linear-gradient(135deg, rgb(147,51,234), rgb(126,34,206)) !important;
+  box-shadow: 0 2px 8px rgba(147,51,234,0.3);
+}
+
+button.bg-purple-600:hover,
+button.bg-purple-500:hover,
+button.bg-purple-700:hover {
+  background: linear-gradient(135deg, rgb(126,34,206), rgb(107,33,168)) !important;
+  box-shadow: 0 4px 12px rgba(147,51,234,0.4);
+}
+
+/* Apply gradient to buttons with green backgrounds */
+button.bg-green-600,
+button.bg-green-500,
+button.bg-green-700 {
+  background: linear-gradient(135deg, rgb(22,163,74), rgb(21,128,61)) !important;
+  box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+}
+
+button.bg-green-600:hover,
+button.bg-green-500:hover,
+button.bg-green-700:hover {
+  background: linear-gradient(135deg, rgb(21,128,61), rgb(22,101,52)) !important;
+  box-shadow: 0 4px 12px rgba(22,163,74,0.4);
+}
+
+/* Apply gradient to buttons with red backgrounds */
+button.bg-red-600,
+button.bg-red-500,
+button.bg-red-700 {
+  background: linear-gradient(135deg, rgb(220,38,38), rgb(185,28,28)) !important;
+  box-shadow: 0 2px 8px rgba(220,38,38,0.3);
+}
+
+button.bg-red-600:hover,
+button.bg-red-500:hover,
+button.bg-red-700:hover {
+  background: linear-gradient(135deg, rgb(185,28,28), rgb(153,27,27)) !important;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.4);
+}
+
+/* Apply gradient to buttons with indigo backgrounds */
+button.bg-indigo-600,
+button.bg-indigo-500,
+button.bg-indigo-700 {
+  background: linear-gradient(135deg, rgb(79,70,229), rgb(67,56,202)) !important;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+}
+
+button.bg-indigo-600:hover,
+button.bg-indigo-500:hover,
+button.bg-indigo-700:hover {
+  background: linear-gradient(135deg, rgb(67,56,202), rgb(55,48,163)) !important;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.4);
+}
+
+/* Apply gradient to buttons with teal backgrounds */
+button.bg-teal-600,
+button.bg-teal-500,
+button.bg-teal-700 {
+  background: linear-gradient(135deg, rgb(13,148,136), rgb(15,118,110)) !important;
+  box-shadow: 0 2px 8px rgba(13,148,136,0.3);
+}
+
+button.bg-teal-600:hover,
+button.bg-teal-500:hover,
+button.bg-teal-700:hover {
+  background: linear-gradient(135deg, rgb(15,118,110), rgb(17,94,89)) !important;
+  box-shadow: 0 4px 12px rgba(13,148,136,0.4);
+}
+
+/* Apply gradient to buttons with cyan backgrounds */
+button.bg-cyan-600,
+button.bg-cyan-500,
+button.bg-cyan-700 {
+  background: linear-gradient(135deg, rgb(8,145,178), rgb(14,116,144)) !important;
+  box-shadow: 0 2px 8px rgba(8,145,178,0.3);
+}
+
+button.bg-cyan-600:hover,
+button.bg-cyan-500:hover,
+button.bg-cyan-700:hover {
+  background: linear-gradient(135deg, rgb(14,116,144), rgb(21,94,117)) !important;
+  box-shadow: 0 4px 12px rgba(8,145,178,0.4);
+}
+
+/* Apply gradient to buttons with emerald backgrounds */
+button.bg-emerald-600,
+button.bg-emerald-500,
+button.bg-emerald-700 {
+  background: linear-gradient(135deg, rgb(5,150,105), rgb(4,120,87)) !important;
+  box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+}
+
+button.bg-emerald-600:hover,
+button.bg-emerald-500:hover,
+button.bg-emerald-700:hover {
+  background: linear-gradient(135deg, rgb(4,120,87), rgb(6,95,70)) !important;
+  box-shadow: 0 4px 12px rgba(5,150,105,0.4);
+}
+
+/* Dark mode gradient overrides — use green accent */
+.dark .btn-gradient {
+  background: linear-gradient(135deg, #63d72a, #4caf20) !important;
+  box-shadow: 0 2px 8px rgba(99,215,42,0.3);
+  color: #21201e;
+}
+
+.dark .btn-gradient:hover {
+  background: linear-gradient(135deg, #4caf20, #3d8c1e) !important;
+  box-shadow: 0 4px 12px rgba(99,215,42,0.4);
+}
+
+.dark button.bg-blue-600,
+.dark button.bg-blue-500,
+.dark button.bg-blue-700,
+.dark [type="button"].bg-blue-600,
+.dark [type="submit"].bg-blue-600 {
+  background: linear-gradient(135deg, #63d72a, #4caf20) !important;
+  box-shadow: 0 2px 8px rgba(99,215,42,0.3);
+  color: #21201e;
+}
+
+.dark button.bg-blue-600:hover,
+.dark button.bg-blue-500:hover,
+.dark button.bg-blue-700:hover,
+.dark [type="button"].bg-blue-600:hover,
+.dark [type="submit"].bg-blue-600:hover {
+  background: linear-gradient(135deg, #4caf20, #3d8c1e) !important;
+  box-shadow: 0 4px 12px rgba(99,215,42,0.4);
+}
+
+/* Buttons with inline blue background styles */
+button[style*="background"][style*="blue"],
+button[style*="background: rgb(59"],
+button[style*="background: #3b82f6"],
+button[style*="background-color: rgb(59"] {
+  background: linear-gradient(135deg, rgb(59,130,246), rgb(37,99,235)) !important;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;

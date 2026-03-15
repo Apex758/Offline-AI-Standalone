@@ -52,8 +52,7 @@ import CurriculumTracker from './CurriculumTracker';
 import WorksheetGenerator from './WorksheetGenerator';
 import ImageStudio from './ImageStudio';
 import ClassManagement from './ClassManagement';
-import SupportCenter from './SupportCenter';
-import ReportingCenter from './ReportingCenter';
+import SupportReporting from './SupportReporting';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -173,17 +172,10 @@ const tools: Tool[] = [
   },
   {
     id: 'support',
-    name: 'Support',
+    name: 'Support & Reporting',
     icon: 'HelpCircle',
     type: 'support',
-    description: 'FAQ and help center for common questions'
-  },
-  {
-    id: 'reporting',
-    name: 'Reporting',
-    icon: 'AlertTriangle',
-    type: 'reporting',
-    description: 'Submit and track support tickets'
+    description: 'FAQ help center and issue reporting'
   },
   {
     id: 'settings',
@@ -288,7 +280,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
@@ -382,7 +374,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     // Add default colors for support & reporting
     if (!colors['support']) colors['support'] = generateColorVariants('#3b82f6'); // blue-500
-    if (!colors['reporting']) colors['reporting'] = generateColorVariants('#ef4444'); // red-500
 
     return colors;
   }, [settings.tabColors]);
@@ -570,7 +561,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'reporting'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -619,30 +610,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       });
       const screenshotData = canvas.toDataURL('image/png');
 
-      // Open the reporting tab with the screenshot
-      const reportingTool = tools.find(t => t.type === 'reporting');
-      if (reportingTool) {
-        const existingTab = tabs.find(t => t.type === 'reporting');
+      // Open the support tab flipped to reporting side with the screenshot
+      const supportTool = tools.find(t => t.type === 'support');
+      if (supportTool) {
+        const existingTab = tabs.find(t => t.type === 'support');
         if (existingTab) {
-          updateTabData(existingTab.id, { initialScreenshot: screenshotData, view: 'create' });
+          updateTabData(existingTab.id, { initialScreenshot: screenshotData, flipped: true, reportView: 'create' });
           navigateToExistingTab(existingTab);
         } else {
-          const newReportTab: Tab = {
-            id: `reporting-${Date.now()}`,
-            title: reportingTool.name,
-            type: 'reporting',
+          const newSupportTab: Tab = {
+            id: `support-${Date.now()}`,
+            title: supportTool.name,
+            type: 'support',
             active: true,
-            data: { initialScreenshot: screenshotData, view: 'create' }
+            data: { initialScreenshot: screenshotData, flipped: true, reportView: 'create' }
           };
-          setTabs(prev => [...prev, newReportTab]);
-          setActiveTabId(newReportTab.id);
+          setTabs(prev => [...prev, newSupportTab]);
+          setActiveTabId(newSupportTab.id);
         }
       }
     } catch (err) {
-      // If screenshot capture fails, just open reporting tab
-      const reportingTool = tools.find(t => t.type === 'reporting');
-      if (reportingTool) {
-        openTool(reportingTool);
+      // If screenshot capture fails, just open support tab on reporting side
+      const supportTool = tools.find(t => t.type === 'support');
+      if (supportTool) {
+        openTool(supportTool);
       }
     }
   }, [tabs, openTool]);
@@ -1234,9 +1225,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       case 'class-management':
         return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'support':
-        return <SupportCenter tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
-      case 'reporting':
-        return <ReportingCenter tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} initialScreenshot={tab.data?.initialScreenshot || null} />;
+        return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} initialScreenshot={tab.data?.initialScreenshot || null} />;
       default:
         return null;
     }
@@ -1343,10 +1332,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, {} as { [key: string]: Tab[] });
 
   // Group tools by category
-  const regularTools = tools.filter(t => !t.group && t.type !== 'settings');
+  const regularTools = tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support');
   const lessonPlannerTools = tools.filter(t => t.group === 'lesson-planners');
   const visualStudioTools = tools.filter(t => t.group === 'visual-studio');
   const otherGroupedTools = tools.filter(t => t.group === 'tools');
+  const supportTool = tools.find(t => t.type === 'support');
   const settingsTool = tools.find(t => t.type === 'settings');
 
   return (
@@ -1911,6 +1901,60 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* Glass divider */}
           <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
+
+          {/* Support & Reporting Tool */}
+          {supportTool && (
+            <div className="mt-2">
+              {(() => {
+                const SupportIcon = iconMap[supportTool.icon];
+                const activeTab = tabs.find(t => t.id === activeTabId);
+                const isActiveToolType = activeTab?.type === supportTool.type;
+                const toolColor = settings.tabColors[supportTool.type as keyof typeof settings.tabColors] || '#3b82f6';
+
+                return (
+                  <button
+                    data-tool-type={supportTool.type}
+                    onClick={() => openTool(supportTool)}
+                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
+                    title={!sidebarOpen ? supportTool.name : ''}
+                    style={{
+                      backgroundColor: 'transparent',
+                      transition: 'background-color 0.25s, box-shadow 0.25s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <SupportIcon
+                      className={`w-5 h-5 flex-shrink-0 ${isActiveToolType ? 'icon-glow' : ''}`}
+                      style={isActiveToolType ? { color: toolColor } : { color: 'var(--sidebar-text-muted)' }}
+                    />
+                    <div
+                      className="flex-1 text-left overflow-hidden"
+                      style={{
+                        opacity: sidebarOpen ? 1 : 0,
+                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        pointerEvents: sidebarOpen ? 'auto' : 'none'
+                      }}
+                    >
+                      <p
+                        className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                        style={{
+                          maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                          WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                        }}
+                      >
+                        {supportTool.name}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })()}
+            </div>
+          )}
 
           {/* Settings Tool */}
           {settingsTool && (
@@ -2490,7 +2534,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'chat': TUTORIAL_IDS.CHAT,
       'class-management': TUTORIAL_IDS.CLASS_MANAGEMENT,
       'support': TUTORIAL_IDS.DASHBOARD_MAIN,
-      'reporting': TUTORIAL_IDS.DASHBOARD_MAIN,
     };
 
     if (splitView.isActive || !settings.tutorials.tutorialPreferences.showFloatingButtons) return null;

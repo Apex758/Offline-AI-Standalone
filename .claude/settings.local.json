@@ -14,7 +14,9 @@
       "Bash(\"C:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\" -m pip install \"diffusers==0.37.0\" --no-deps 2>&1)",
       "WebSearch",
       "WebFetch(domain:medium.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(/tmp/button_report.txt:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

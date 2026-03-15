@@ -16,6 +16,7 @@ export interface TabColors {
   'worksheet-generator': string;
   'image-studio': string;
   'class-management': string;
+  support: string;
   settings: string;
 }
 
@@ -80,6 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
     'worksheet-generator': '#8b5cf6',
     'image-studio': '#ec4899',
     'class-management': '#f97316',
+    'support': '#3b82f6',
     'settings': '#6b7280'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
