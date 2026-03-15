@@ -1,6 +1,7 @@
 # Enforce UTF-8 encoding for all std streams and environment
 import os
 import sys
+import uuid
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -3733,6 +3734,160 @@ async def start_iopaint_service():
             status_code=500,
             content={"error": str(e)}
         )
+
+
+# ── Bulk Export / Import ──────────────────────────────────────────────────────
+
+@app.get("/api/export-data")
+async def export_data(categories: str = ""):
+    """Export selected data categories.
+    categories is a comma-separated string of: chats, lesson_plans, quizzes, rubrics,
+    kindergarten, multigrade, cross_curricular, worksheets, images, students, settings
+    """
+    cats = [c.strip() for c in categories.split(",") if c.strip()]
+    result: dict = {}
+
+    if "chats" in cats:
+        try:
+            memory = get_chat_memory()
+            result["chats"] = memory.get_all_chats_with_messages()
+        except Exception:
+            result["chats"] = []
+
+    if "lesson_plans" in cats:
+        try:
+            plans = []
+            if os.path.exists(LESSON_PLAN_HISTORY_FILE):
+                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    plans = json.load(f)
+            result["lesson_plans"] = plans
+        except Exception:
+            result["lesson_plans"] = []
+
+    if "quizzes" in cats:
+        result["quizzes"] = load_json_data("quiz_history.json")
+
+    if "rubrics" in cats:
+        result["rubrics"] = load_json_data("rubric_history.json")
+
+    if "kindergarten" in cats:
+        result["kindergarten"] = load_json_data("kindergarten_history.json")
+
+    if "multigrade" in cats:
+        result["multigrade"] = load_json_data("multigrade_history.json")
+
+    if "cross_curricular" in cats:
+        result["cross_curricular"] = load_json_data("cross_curricular_history.json")
+
+    if "worksheets" in cats:
+        result["worksheets"] = load_json_data("worksheet_history.json")
+
+    if "images" in cats:
+        result["images"] = load_json_data("images_history.json")
+
+    if "students" in cats:
+        try:
+            result["students"] = student_service.list_students()
+        except Exception:
+            result["students"] = []
+
+    return {
+        "exportDate": datetime.now().isoformat(),
+        "version": "1.0.0",
+        "categories": cats,
+        "data": result
+    }
+
+
+@app.post("/api/import-data")
+async def import_data(payload: dict):
+    """Import data from a previously exported bundle.
+    payload.categories: list of category keys to import
+    payload.data: dict mapping category key -> array of records
+    """
+    cats = payload.get("categories", [])
+    data = payload.get("data", {})
+    imported: dict = {}
+    errors: list = []
+
+    if "chats" in cats and "chats" in data:
+        try:
+            memory = get_chat_memory()
+            count = 0
+            for chat in data["chats"]:
+                cid = chat.get("id") or str(uuid.uuid4())
+                title = chat.get("title", "Imported Chat")
+                messages = chat.get("messages", [])
+                memory.ensure_chat(cid, title)
+                memory.update_chat_title(cid, title)
+                if messages:
+                    memory.save_messages_bulk(cid, messages)
+                count += 1
+            imported["chats"] = count
+        except Exception as e:
+            errors.append(f"chats: {e}")
+
+    if "lesson_plans" in cats and "lesson_plans" in data:
+        try:
+            existing = []
+            if os.path.exists(LESSON_PLAN_HISTORY_FILE):
+                with open(LESSON_PLAN_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    existing = json.load(f)
+            existing_ids = {h.get("id") for h in existing}
+            added = 0
+            for plan in data["lesson_plans"]:
+                if plan.get("id") not in existing_ids:
+                    existing.append(plan)
+                    added += 1
+            with open(LESSON_PLAN_HISTORY_FILE, 'w', encoding='utf-8') as f:
+                json.dump(existing, f, indent=2)
+            imported["lesson_plans"] = added
+        except Exception as e:
+            errors.append(f"lesson_plans: {e}")
+
+    # Generic JSON history imports
+    json_map = {
+        "quizzes": "quiz_history.json",
+        "rubrics": "rubric_history.json",
+        "kindergarten": "kindergarten_history.json",
+        "multigrade": "multigrade_history.json",
+        "cross_curricular": "cross_curricular_history.json",
+        "worksheets": "worksheet_history.json",
+        "images": "images_history.json",
+    }
+    for cat_key, filename in json_map.items():
+        if cat_key in cats and cat_key in data:
+            try:
+                existing = load_json_data(filename)
+                existing_ids = {h.get("id") for h in existing}
+                added = 0
+                for item in data[cat_key]:
+                    if item.get("id") not in existing_ids:
+                        existing.append(item)
+                        added += 1
+                save_json_data(filename, existing)
+                imported[cat_key] = added
+            except Exception as e:
+                errors.append(f"{cat_key}: {e}")
+
+    if "students" in cats and "students" in data:
+        try:
+            count = 0
+            for student in data["students"]:
+                try:
+                    student_service.create_student(student)
+                    count += 1
+                except Exception:
+                    pass  # skip duplicates
+            imported["students"] = count
+        except Exception as e:
+            errors.append(f"students: {e}")
+
+    return {
+        "success": len(errors) == 0,
+        "imported": imported,
+        "errors": errors
+    }
 
 
 @app.post("/api/factory-reset")

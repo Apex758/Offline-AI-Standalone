@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X, SpellCheck, PenTool, Zap, BookA } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X, SpellCheck, PenTool, Zap, BookA, Download, Upload, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -45,6 +45,30 @@ const Settings: React.FC<SettingsProps> = () => {
   const [selectedDiffusionModel, setSelectedDiffusionModel] = useState('');
   const [isSelectingDiffusionModel, setIsSelectingDiffusionModel] = useState(false);
   const [diffusionModelChangeMessage, setDiffusionModelChangeMessage] = useState('');
+
+  // Export / Import state
+  const DATA_CATEGORIES = [
+    { key: 'chats', label: 'Chat Conversations' },
+    { key: 'lesson_plans', label: 'Lesson Plans' },
+    { key: 'kindergarten', label: 'Early Childhood Plans' },
+    { key: 'multigrade', label: 'Multi-Level Plans' },
+    { key: 'cross_curricular', label: 'Integrated Lesson Plans' },
+    { key: 'quizzes', label: 'Quizzes' },
+    { key: 'rubrics', label: 'Rubrics' },
+    { key: 'worksheets', label: 'Worksheets' },
+    { key: 'images', label: 'Generated Images' },
+    { key: 'students', label: 'Student Records' },
+    { key: 'settings', label: 'App Settings' },
+  ] as const;
+  const [exportSelected, setExportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));
+  const [importSelected, setImportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState('');
+  const [importMessage, setImportMessage] = useState('');
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
@@ -261,7 +285,7 @@ const Settings: React.FC<SettingsProps> = () => {
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
     { id: 'features' as const, label: 'Features', icon: Sparkles, description: 'Writing assistant & tools' },
     { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
-    { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Reset & wipe data' },
+    { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Export, import & reset' },
   ];
 
   // Tab types and their default colors (matching sidebar order)
@@ -449,6 +473,174 @@ const Settings: React.FC<SettingsProps> = () => {
       console.error('Failed to export rubrics:', error);
       alert('Failed to export rubrics');
     }
+  };
+
+  const toggleExportCategory = (key: string) => {
+    setExportSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleImportCategory = (key: string) => {
+    setImportSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  const handleBulkExport = async () => {
+    if (exportSelected.size === 0) return;
+    setIsExporting(true);
+    setExportMessage('');
+    try {
+      // Separate backend categories from frontend-only ones
+      const backendCats = [...exportSelected].filter(c => c !== 'settings');
+      const includeSettings = exportSelected.has('settings');
+
+      let backendData: Record<string, unknown> = {};
+      if (backendCats.length > 0) {
+        const response = await axios.get('http://localhost:8000/api/export-data', {
+          params: { categories: backendCats.join(',') }
+        });
+        backendData = response.data.data || {};
+      }
+
+      // Add frontend settings if selected
+      if (includeSettings) {
+        backendData['settings'] = {
+          appSettings: settings,
+          user: JSON.parse(localStorage.getItem('user') || 'null'),
+          profileImage: localStorage.getItem('user-profile-image'),
+          dashboardTabs: JSON.parse(localStorage.getItem('dashboard-tabs') || 'null'),
+          dashboardActiveTab: localStorage.getItem('dashboard-active-tab'),
+          dashboardSplitView: JSON.parse(localStorage.getItem('dashboard-split-view') || 'null'),
+        };
+      }
+
+      const exportPayload = {
+        exportDate: new Date().toISOString(),
+        version: '1.0.0',
+        categories: [...exportSelected],
+        data: backendData
+      };
+
+      const filename = `oecs-backup-${new Date().toISOString().split('T')[0]}.json`;
+      downloadJSON(exportPayload, filename);
+      setExportMessage(`Exported ${exportSelected.size} categor${exportSelected.size === 1 ? 'y' : 'ies'} successfully`);
+      setTimeout(() => setExportMessage(''), 4000);
+    } catch (error) {
+      console.error('Export failed:', error);
+      setExportMessage('Export failed. Please try again.');
+      setTimeout(() => setExportMessage(''), 4000);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const processImportFile = async (file: File) => {
+    setIsImporting(true);
+    setImportMessage('');
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      if (!parsed.data || !parsed.categories) {
+        setImportMessage('Invalid backup file format.');
+        setTimeout(() => setImportMessage(''), 4000);
+        return;
+      }
+
+      // Filter to only import the categories the user has selected
+      const catsToImport = parsed.categories.filter((c: string) => importSelected.has(c));
+      const filteredData: Record<string, unknown> = {};
+      for (const cat of catsToImport) {
+        if (parsed.data[cat]) filteredData[cat] = parsed.data[cat];
+      }
+
+      // Import settings locally
+      if (catsToImport.includes('settings') && filteredData['settings']) {
+        const s = filteredData['settings'] as Record<string, unknown>;
+        if (s.appSettings) updateSettings(s.appSettings as Record<string, unknown>);
+        if (s.user) localStorage.setItem('user', JSON.stringify(s.user));
+        if (s.profileImage) localStorage.setItem('user-profile-image', s.profileImage as string);
+        if (s.dashboardTabs) localStorage.setItem('dashboard-tabs', JSON.stringify(s.dashboardTabs));
+        if (s.dashboardActiveTab) localStorage.setItem('dashboard-active-tab', s.dashboardActiveTab as string);
+        if (s.dashboardSplitView) localStorage.setItem('dashboard-split-view', JSON.stringify(s.dashboardSplitView));
+      }
+
+      // Send backend categories to import endpoint
+      const backendCats = catsToImport.filter((c: string) => c !== 'settings');
+      const backendData: Record<string, unknown> = {};
+      for (const cat of backendCats) {
+        if (filteredData[cat]) backendData[cat] = filteredData[cat];
+      }
+
+      let importedSummary = '';
+      if (backendCats.length > 0) {
+        const response = await axios.post('http://localhost:8000/api/import-data', {
+          categories: backendCats,
+          data: backendData
+        });
+        const counts = response.data.imported || {};
+        const parts = Object.entries(counts).map(([k, v]) => `${v} ${k.replace(/_/g, ' ')}`);
+        if (parts.length > 0) importedSummary = parts.join(', ');
+      }
+
+      if (catsToImport.includes('settings')) {
+        importedSummary = importedSummary ? importedSummary + ', settings restored' : 'Settings restored';
+      }
+
+      setImportMessage(importedSummary ? `Imported: ${importedSummary}` : 'Import complete (no new records)');
+      setTimeout(() => setImportMessage(''), 6000);
+    } catch (error) {
+      console.error('Import failed:', error);
+      setImportMessage('Import failed. Check the file format.');
+      setTimeout(() => setImportMessage(''), 4000);
+    } finally {
+      setIsImporting(false);
+      if (importFileRef.current) importFileRef.current.value = '';
+    }
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processImportFile(file);
+  };
+
+  const handleImportDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.name.endsWith('.json')) {
+      processImportFile(file);
+    } else {
+      setImportMessage('Please drop a .json backup file.');
+      setTimeout(() => setImportMessage(''), 4000);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   return (
@@ -1303,7 +1495,170 @@ const Settings: React.FC<SettingsProps> = () => {
               <div className="space-y-6">
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">Danger Zone</h2>
-                  <p className="text-sm text-red-600/70 dark:text-red-400/60 mt-1">Irreversible actions -- proceed with caution</p>
+                  <p className="text-sm text-red-600/70 dark:text-red-400/60 mt-1">Export, import, reset &amp; wipe your data</p>
+                </div>
+
+                {/* Export Data */}
+                <Card className="border-theme-strong/20">
+                  <CardHeader>
+                    <CardTitle className="text-theme-title flex items-center gap-2">
+                      <Download className="w-5 h-5 text-blue-500" />
+                      Export Data
+                    </CardTitle>
+                    <CardDescription>Download a backup of your selected data as a JSON file.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-theme-muted uppercase tracking-wider">Select categories</span>
+                      <button
+                        className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                        onClick={() => {
+                          if (exportSelected.size === DATA_CATEGORIES.length) {
+                            setExportSelected(new Set());
+                          } else {
+                            setExportSelected(new Set(DATA_CATEGORIES.map(c => c.key)));
+                          }
+                        }}
+                      >
+                        {exportSelected.size === DATA_CATEGORIES.length ? 'Deselect All' : 'Select All'}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {DATA_CATEGORIES.map(cat => (
+                        <label
+                          key={cat.key}
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all text-sm ${
+                            exportSelected.has(cat.key)
+                              ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 text-blue-700 dark:text-blue-300'
+                              : 'bg-theme-surface/50 border border-theme-strong/10 text-theme-muted hover:bg-theme-surface'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
+                            exportSelected.has(cat.key) ? 'bg-blue-500 text-white' : 'border-2 border-theme-strong/30'
+                          }`}>
+                            {exportSelected.has(cat.key) && <Check className="w-3 h-3" />}
+                          </div>
+                          {cat.label}
+                        </label>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3 pt-1">
+                      <Button
+                        onClick={handleBulkExport}
+                        disabled={isExporting || exportSelected.size === 0}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isExporting ? 'Exporting...' : `Export ${exportSelected.size} Categor${exportSelected.size === 1 ? 'y' : 'ies'}`}
+                      </Button>
+                      {exportMessage && (
+                        <span className={`text-sm ${exportMessage.includes('fail') ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
+                          {exportMessage}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Import Data */}
+                <Card
+                  className={`transition-colors ${isDragging ? 'border-emerald-400 dark:border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20' : 'border-theme-strong/20'}`}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleImportDrop}
+                >
+                  <CardHeader>
+                    <CardTitle className="text-theme-title flex items-center gap-2">
+                      <Upload className="w-5 h-5 text-emerald-500" />
+                      Import Data
+                    </CardTitle>
+                    <CardDescription>Restore data from a previously exported backup file. Select which categories you want to import.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-theme-muted uppercase tracking-wider">Import categories</span>
+                      <button
+                        className="text-xs text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium"
+                        onClick={() => {
+                          if (importSelected.size === DATA_CATEGORIES.length) {
+                            setImportSelected(new Set());
+                          } else {
+                            setImportSelected(new Set(DATA_CATEGORIES.map(c => c.key)));
+                          }
+                        }}
+                      >
+                        {importSelected.size === DATA_CATEGORIES.length ? 'Deselect All' : 'Select All'}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {DATA_CATEGORIES.map(cat => (
+                        <label
+                          key={cat.key}
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all text-sm ${
+                            importSelected.has(cat.key)
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300'
+                              : 'bg-theme-surface/50 border border-theme-strong/10 text-theme-muted hover:bg-theme-surface'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
+                            importSelected.has(cat.key) ? 'bg-emerald-500 text-white' : 'border-2 border-theme-strong/30'
+                          }`}>
+                            {importSelected.has(cat.key) && <Check className="w-3 h-3" />}
+                          </div>
+                          {cat.label}
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Drop zone / file picker */}
+                    <div
+                      className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                        isDragging
+                          ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 scale-[1.01]'
+                          : 'border-theme-strong/20 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/10'
+                      }`}
+                      onClick={() => !isImporting && importSelected.size > 0 && importFileRef.current?.click()}
+                    >
+                      <div className="flex flex-col items-center justify-center py-8 gap-2 pointer-events-none">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                          isDragging ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-theme-surface/80'
+                        }`}>
+                          <Upload className={`w-6 h-6 transition-colors ${isDragging ? 'text-emerald-500' : 'text-theme-muted'}`} />
+                        </div>
+                        <p className={`text-sm font-medium ${isDragging ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-label'}`}>
+                          {isDragging ? 'Drop your backup file here' : 'Drag & drop your backup file here'}
+                        </p>
+                        <p className="text-xs text-theme-muted">or click to browse</p>
+                        <p className="text-[11px] text-theme-hint mt-1">.json files only</p>
+                      </div>
+                    </div>
+
+                    <input
+                      ref={importFileRef}
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={handleImportFile}
+                    />
+
+                    <div className="flex items-center gap-3">
+                      {isImporting && (
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Importing...</span>
+                      )}
+                      {importMessage && (
+                        <span className={`text-sm ${importMessage.includes('fail') || importMessage.includes('Invalid') || importMessage.includes('Please') ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
+                          {importMessage}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="flex-1 h-px bg-red-200 dark:bg-red-800/40" />
+                  <span className="text-xs font-medium text-red-400 dark:text-red-500 uppercase tracking-wider">Destructive Actions</span>
+                  <div className="flex-1 h-px bg-red-200 dark:bg-red-800/40" />
                 </div>
 
                 {/* Reset Settings */}
