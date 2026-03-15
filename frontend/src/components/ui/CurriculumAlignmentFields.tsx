@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { getStrands, getELOs, getSCOs } from '../../utils/curriculumHelpers';
+import SmartTextArea from '../SmartTextArea';
 
 interface CurriculumAlignmentFieldsProps {
   subject: string;
@@ -232,9 +233,9 @@ export default function CurriculumAlignmentFields({
             <label className="block text-sm font-medium text-theme-label mb-2">
               Essential Learning Outcome <span className="text-red-500">*</span>
             </label>
-            <textarea
+            <SmartTextArea
               value={essentialOutcomes}
-              onChange={(e) => onELOChange(e.target.value)}
+              onChange={(val) => onELOChange(val)}
               rows={4}
               className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={ringStyle}
@@ -245,9 +246,9 @@ export default function CurriculumAlignmentFields({
             <label className="block text-sm font-medium text-theme-label mb-2">
               Specific Curriculum Outcomes <span className="text-red-500">*</span>
             </label>
-            <textarea
+            <SmartTextArea
               value={specificOutcomes}
-              onChange={(e) => onSCOsChange(e.target.value)}
+              onChange={(val) => onSCOsChange(val)}
               rows={5}
               className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={ringStyle}

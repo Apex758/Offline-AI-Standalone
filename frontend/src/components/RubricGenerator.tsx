@@ -17,6 +17,8 @@ import { useQueue } from '../contexts/QueueContext';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 const ENDPOINT = '/ws/rubric';
 
@@ -1030,10 +1032,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Assignment Title <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={formData.assignmentTitle}
-                    onChange={(e) => handleInputChange('assignmentTitle', e.target.value)}
+                    onChange={(val) => handleInputChange('assignmentTitle', val)}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Persuasive Essay on Climate Change"
@@ -1122,9 +1123,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Learning Objectives <span className="text-red-500">*</span>
                   </label>
-                  <textarea
+                  <SmartTextArea
                     value={formData.learningObjectives}
-                    onChange={(e) => handleInputChange('learningObjectives', e.target.value)}
+                    onChange={(val) => handleInputChange('learningObjectives', val)}
                     rows={4}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1136,9 +1137,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Specific Requirements
                   </label>
-                  <textarea
+                  <SmartTextArea
                     value={formData.specificRequirements}
-                    onChange={(e) => handleInputChange('specificRequirements', e.target.value)}
+                    onChange={(val) => handleInputChange('specificRequirements', val)}
                     rows={3}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}

@@ -17,6 +17,8 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -1041,10 +1043,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Topic <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
+                      <SmartInput
                         value={formData.topic}
-                        onChange={(e) => handleInputChange('topic', e.target.value)}
+                        onChange={(val) => handleInputChange('topic', val)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
@@ -1081,9 +1082,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Prerequisite Skills
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.prerequisiteSkills}
-                        onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
+                        onChange={(val) => handleInputChange('prerequisiteSkills', val)}
                         rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1094,9 +1095,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Materials <span className="text-red-500">*</span>
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.materials}
-                        onChange={(e) => handleInputChange('materials', e.target.value)}
+                        onChange={(val) => handleInputChange('materials', val)}
                         rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1174,9 +1175,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Custom Learning Styles (Optional)
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.customLearningStyles}
-                        onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
+                        onChange={(val) => handleInputChange('customLearningStyles', val)}
                         rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1250,9 +1251,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           Special Needs Details
                         </label>
-                        <textarea
+                        <SmartTextArea
                           value={formData.specialNeedsDetails}
-                          onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
+                          onChange={(val) => handleInputChange('specialNeedsDetails', val)}
                           rows={3}
                           className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1264,9 +1265,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Differentiation Notes
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.differentiationNotes}
-                        onChange={(e) => handleInputChange('differentiationNotes', e.target.value)}
+                        onChange={(val) => handleInputChange('differentiationNotes', val)}
                         rows={4}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}

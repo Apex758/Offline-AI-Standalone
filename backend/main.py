@@ -304,6 +304,10 @@ class TitleGenerateResponse(BaseModel):
     fallback: bool
     generationTime: float
 
+class AutocompleteRequest(BaseModel):
+    text: str
+    max_tokens: int = 20
+
 class StudentCreate(BaseModel):
     full_name: str
     date_of_birth: Optional[str] = None
@@ -532,6 +536,54 @@ async def generate_title(request: TitleGenerateRequest):
             fallback=True,
             generationTime=generation_time
         )
+
+
+@app.post("/api/autocomplete")
+async def autocomplete(request: AutocompleteRequest):
+    """Generate a short text completion for the auto-finish sentence feature."""
+    try:
+        text = request.text.strip()
+        if not text or len(text) < 10:
+            return {"completion": ""}
+
+        prompt = f"Continue this text naturally with a few more words. Only output the continuation, nothing else:\n\n{text}"
+
+        from inference_factory import get_inference_instance
+        inference = get_inference_instance()
+        result = inference.generate(
+            tool_name="autocomplete",
+            input_data=text,
+            prompt_template=prompt,
+            max_tokens=min(request.max_tokens, 30),
+            temperature=0.7
+        )
+
+        if result["metadata"]["status"] == "error":
+            return {"completion": ""}
+
+        completion = result["result"].strip()
+        # Remove any text that repeats the original input
+        if completion.lower().startswith(text.lower()[-20:]):
+            completion = completion[len(text[-20:]):]
+
+        # Clean up: only return a short, clean continuation
+        # Stop at sentence boundaries
+        for stop_char in ['.', '!', '?', '\n']:
+            idx = completion.find(stop_char)
+            if idx >= 0:
+                completion = completion[:idx + 1]
+                break
+
+        # Limit length
+        words = completion.split()
+        if len(words) > 15:
+            completion = ' '.join(words[:15])
+
+        return {"completion": completion}
+
+    except Exception as e:
+        logger.error(f"Autocomplete error: {e}")
+        return {"completion": ""}
 
 
 @app.websocket("/ws/chat")
@@ -3000,6 +3052,50 @@ Generate {num_panels} sequential comic panel image prompts as a JSON array:<|eot
             status_code=500,
             content={"error": str(e)}
         )
+
+
+# ============================================================================
+# TEXT-TO-SPEECH (Piper TTS — fully offline)
+# ============================================================================
+
+@app.post("/api/tts")
+async def text_to_speech(request: Request):
+    """
+    Synthesize text to speech using Piper TTS (offline).
+    Returns WAV audio bytes.
+    """
+    try:
+        data = await request.json()
+        text = data.get("text", "").strip()
+        speed = float(data.get("speed", 1.0))
+
+        if not text:
+            return JSONResponse(status_code=400, content={"error": "Text is required"})
+
+        from tts_service import get_tts_service
+        tts = get_tts_service()
+
+        # Run synthesis in thread pool to avoid blocking the event loop
+        loop = asyncio.get_event_loop()
+        wav_bytes = await loop.run_in_executor(None, tts.synthesize, text, speed)
+
+        return Response(content=wav_bytes, media_type="audio/wav")
+
+    except Exception as e:
+        logger.error(f"TTS error: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/api/tts/status")
+async def tts_status():
+    """Check if TTS voice model is loaded and ready."""
+    try:
+        from tts_service import get_tts_service
+        tts = get_tts_service()
+        return JSONResponse(content=tts.get_voice_info())
+    except Exception as e:
+        return JSONResponse(content={"loaded": False, "error": str(e)})
+
 
 @app.post("/api/generate-image")
 async def generate_image(request: Request):

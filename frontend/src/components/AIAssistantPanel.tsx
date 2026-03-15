@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, MessageSquare, Wand2, Send, Sparkles } from 'lucide-react';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
+import SmartTextArea from './SmartTextArea';
 
 interface AIAssistantPanelProps {
   isOpen: boolean;
@@ -354,9 +355,9 @@ IMPORTANT INSTRUCTIONS:
         {/* Input */}
         <div className="border-t border-theme p-4 bg-theme-secondary">
           <div className="flex gap-2">
-            <textarea
+            <SmartTextArea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={setInput}
               onKeyPress={handleKeyPress}
               placeholder={
                 mode === 'chat'

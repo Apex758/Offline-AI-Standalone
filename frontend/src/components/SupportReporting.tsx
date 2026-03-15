@@ -9,6 +9,8 @@ import {
   Zap, Camera
 } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -595,7 +597,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                     {/* Subject */}
                     <div>
                       <label className="text-sm font-medium block mb-2" style={{ color: 'var(--text-primary)' }}>Subject</label>
-                      <input type="text" value={subject} onChange={e => setSubject(e.target.value)}
+                      <SmartInput value={subject} onChange={val => setSubject(val)}
                         placeholder="Brief summary of the issue..."
                         className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
@@ -605,7 +607,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                     {/* Description */}
                     <div>
                       <label className="text-sm font-medium block mb-2" style={{ color: 'var(--text-primary)' }}>Description</label>
-                      <textarea value={description} onChange={e => setDescription(e.target.value)}
+                      <SmartTextArea value={description} onChange={val => setDescription(val)}
                         placeholder="Please describe the issue in detail. What were you trying to do? What happened instead?"
                         className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)', minHeight: '120px' }}

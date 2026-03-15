@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Trash2, CalendarDays, Type, AlignLeft, Flag } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Task, TaskFormData, TaskPriority } from '../../types/task';
+import SmartTextArea from '../SmartTextArea';
+import SmartInput from '../SmartInput';
 
 interface TaskEditModalProps {
   task?: Task | null;
@@ -126,10 +128,9 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
             <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--dash-text-faint)' }}>
               <Type className="w-4 h-4" />
             </div>
-            <input
-              type="text"
+            <SmartInput
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(val) => setFormData({ ...formData, title: val })}
               className="w-full pl-10 pr-3 py-3 rounded-xl outline-none text-sm font-medium transition-all"
               style={{
                 backgroundColor: 'var(--dash-task-bg)',
@@ -157,9 +158,9 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({
             <div className="absolute left-3 top-3 pointer-events-none" style={{ color: 'var(--dash-text-faint)' }}>
               <AlignLeft className="w-4 h-4" />
             </div>
-            <textarea
+            <SmartTextArea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(val) => setFormData({ ...formData, description: val })}
               className="w-full pl-10 pr-3 py-3 rounded-xl outline-none resize-none text-sm transition-all"
               style={{
                 backgroundColor: 'var(--dash-task-bg)',

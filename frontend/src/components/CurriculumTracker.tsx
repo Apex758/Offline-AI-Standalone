@@ -8,6 +8,7 @@ import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
+import SmartTextArea from './SmartTextArea';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -601,10 +602,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                 <label className="block text-sm font-medium text-theme-label mb-2">
                   Notes
                 </label>
-                <textarea
+                <SmartTextArea
                   value={selectedMilestone.notes || ''}
-                  onChange={(e) => {
-                    setSelectedMilestone({ ...selectedMilestone, notes: e.target.value });
+                  onChange={(val) => {
+                    setSelectedMilestone({ ...selectedMilestone, notes: val });
                   }}
                   placeholder="Add notes about this milestone..."
                   className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent h-32 resize-none bg-theme-surface text-theme-label placeholder:text-theme-hint"

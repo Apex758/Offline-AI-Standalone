@@ -1,6 +1,8 @@
 // components/RubricEditor.tsx
 import React, { useState } from 'react';
 import { Plus, Trash2, Check, X, GripVertical } from 'lucide-react';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 // Define the rubric data structure
 export interface CriteriaRow {
@@ -160,37 +162,33 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Rubric Title</label>
-            <input
-              type="text"
+            <SmartInput
               value={rubric.metadata.title}
-              onChange={(e) => updateMetadata('title', e.target.value)}
+              onChange={(val) => updateMetadata('title', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Assignment Type</label>
-            <input
-              type="text"
+            <SmartInput
               value={rubric.metadata.assignmentType}
-              onChange={(e) => updateMetadata('assignmentType', e.target.value)}
+              onChange={(val) => updateMetadata('assignmentType', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-            <input
-              type="text"
+            <SmartInput
               value={rubric.metadata.subject}
-              onChange={(e) => updateMetadata('subject', e.target.value)}
+              onChange={(val) => updateMetadata('subject', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-            <input
-              type="text"
+            <SmartInput
               value={rubric.metadata.gradeLevel}
-              onChange={(e) => updateMetadata('gradeLevel', e.target.value)}
+              onChange={(val) => updateMetadata('gradeLevel', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
@@ -214,10 +212,9 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {rubric.performanceLevels.map((level, index) => (
               <div key={index} className="flex items-center gap-2">
-                <input
-                  type="text"
+                <SmartInput
                   value={level}
-                  onChange={(e) => updatePerformanceLevel(index, e.target.value)}
+                  onChange={(val) => updatePerformanceLevel(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Level name"
                 />
@@ -253,10 +250,9 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Criterion {index + 1}
                     </label>
-                    <input
-                      type="text"
+                    <SmartInput
                       value={criterion.criterion}
-                      onChange={(e) => updateCriterion(criterion.id, 'criterion', e.target.value)}
+                      onChange={(val) => updateCriterion(criterion.id, 'criterion', val)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                       placeholder="Enter criterion name (e.g., Content Knowledge, Organization)"
                     />
@@ -306,9 +302,9 @@ const RubricEditor: React.FC<RubricEditorProps> = ({ rubric: initialRubric, onSa
                         />
                       )}
                     </div>
-                    <textarea
+                    <SmartTextArea
                       value={criterion.levels[levelName] || ''}
-                      onChange={(e) => updateCriterionLevel(criterion.id, levelName, e.target.value)}
+                      onChange={(val) => updateCriterionLevel(criterion.id, levelName, val)}
                       rows={3}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                       placeholder={`Description for ${levelName} level`}

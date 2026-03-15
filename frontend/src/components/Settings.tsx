@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X, SpellCheck, PenTool, Zap, BookA } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -259,7 +259,7 @@ const Settings: React.FC<SettingsProps> = () => {
     { id: 'appearance' as const, label: 'Appearance', icon: Palette, description: 'Theme, fonts & tab colors' },
     { id: 'models' as const, label: 'AI Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
-    { id: 'features' as const, label: 'Features', icon: Sparkles, description: 'Visual Studio & tools' },
+    { id: 'features' as const, label: 'Features', icon: Sparkles, description: 'Writing assistant & tools' },
     { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
     { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Reset & wipe data' },
   ];
@@ -1201,6 +1201,93 @@ const Settings: React.FC<SettingsProps> = () => {
                         className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                       />
                     </label>
+                  </CardContent>
+                </Card>
+
+                {/* Writing Assistant */}
+                <Card data-search-section="writing-assistant">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <PenTool className="w-4.5 h-4.5 text-theme-secondary" />
+                      Writing Assistant
+                    </CardTitle>
+                    <CardDescription>Spell check, autocorrect, and smart text features for all text inputs</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-1">
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <SpellCheck className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Spell Check</p>
+                            <p className="text-xs text-theme-hint">Highlight misspelled words with a red underline as you type</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.spellCheckEnabled}
+                          onChange={(e) => updateSettings({ spellCheckEnabled: e.target.checked })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <BookA className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Dictionary Suggestions</p>
+                            <p className="text-xs text-theme-hint">Click on misspelled words to see a popup with spelling suggestions</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.dictionaryEnabled}
+                          onChange={(e) => updateSettings({ dictionaryEnabled: e.target.checked })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                          disabled={!settings.spellCheckEnabled}
+                        />
+                      </label>
+
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <Zap className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Autocorrect</p>
+                            <p className="text-xs text-theme-hint">Automatically fix common spelling mistakes and typos as you type</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.autocorrectEnabled}
+                          onChange={(e) => updateSettings({ autocorrectEnabled: e.target.checked })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <Sparkles className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Auto-Finish Sentence</p>
+                            <p className="text-xs text-theme-hint">AI suggests how to finish your sentence after a brief pause. Press Tab to accept.</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.autoFinishEnabled}
+                          onChange={(e) => updateSettings({ autoFinishEnabled: e.target.checked })}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+
+                      {settings.autoFinishEnabled && (
+                        <div className="mt-2 mx-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
+                          <p className="text-xs text-amber-700 dark:text-amber-400">
+                            Auto-finish uses your AI model to suggest completions. If the model is busy generating content, suggestions may be delayed.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </div>

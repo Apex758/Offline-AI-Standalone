@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useSettings } from '../contexts/SettingsContext';
+import SmartInput from './SmartInput';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -1630,24 +1631,24 @@ ${tabScript}
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium text-theme-label mb-1.5">First Name <span className="text-red-500">*</span></label>
-              <input type="text" value={form.first_name}
-                onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+              <SmartInput value={form.first_name}
+                onChange={val => setForm(f => ({ ...f, first_name: val }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
                 placeholder="e.g. Jane"
                 style={{ '--tw-ring-color': accentColor } as any} />
             </div>
             <div>
               <label className="block text-sm font-medium text-theme-label mb-1.5">Middle Name</label>
-              <input type="text" value={form.middle_name}
-                onChange={e => setForm(f => ({ ...f, middle_name: e.target.value }))}
+              <SmartInput value={form.middle_name}
+                onChange={val => setForm(f => ({ ...f, middle_name: val }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
                 placeholder="e.g. Marie"
                 style={{ '--tw-ring-color': accentColor } as any} />
             </div>
             <div>
               <label className="block text-sm font-medium text-theme-label mb-1.5">Last Name</label>
-              <input type="text" value={form.last_name}
-                onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+              <SmartInput value={form.last_name}
+                onChange={val => setForm(f => ({ ...f, last_name: val }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
                 placeholder="e.g. Smith"
                 style={{ '--tw-ring-color': accentColor } as any} />
@@ -1685,8 +1686,8 @@ ${tabScript}
             </div>
             <div>
               <label className="block text-sm font-medium text-theme-label mb-1.5">Class</label>
-              <input type="text" value={form.class_name}
-                onChange={e => setForm(f => ({ ...f, class_name: e.target.value }))}
+              <SmartInput value={form.class_name}
+                onChange={val => setForm(f => ({ ...f, class_name: val }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
                 placeholder="e.g. A, B, C, D"
                 list="class-suggestions"
@@ -1699,8 +1700,8 @@ ${tabScript}
 
           <div>
             <label className="block text-sm font-medium text-theme-label mb-1.5">Contact Info</label>
-            <input type="text" value={form.contact_info}
-              onChange={e => setForm(f => ({ ...f, contact_info: e.target.value }))}
+            <SmartInput value={form.contact_info}
+              onChange={val => setForm(f => ({ ...f, contact_info: val }))}
               className="w-full px-4 py-2.5 rounded-xl border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2"
               placeholder="Parent phone / email"
               style={{ '--tw-ring-color': accentColor } as any} />

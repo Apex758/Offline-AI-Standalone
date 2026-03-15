@@ -12,6 +12,7 @@ import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
+import { initSpellCheck } from './utils/spellCheck';
 
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
@@ -19,6 +20,11 @@ function AppContent() {
 
   // Apply theme
   useTheme();
+
+  // Pre-warm spell check dictionary in background
+  useEffect(() => {
+    requestIdleCallback?.(() => initSpellCheck()) ?? setTimeout(() => initSpellCheck(), 2000);
+  }, []);
 
   useEffect(() => {
     // Check if user is already logged in

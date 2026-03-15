@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
-import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
@@ -13,12 +13,15 @@ import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/l
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import StepProgressBar from './ui/StepProgressBar';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { useTTS } from '../hooks/useVoice';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 interface LessonPlannerProps {
   tabId: string;
@@ -204,6 +207,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // TTS for reading lesson plans aloud
+  const tts = useTTS();
 
   // WebSocketContext API and streaming state logic
   const ENDPOINT = '/ws/lesson-plan';
@@ -921,6 +927,25 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 </div>
               )}
 
+                {/* Read Aloud Button */}
+                {(generatedPlan || streamingPlan) && !loading && (
+                  <div className="flex justify-end mb-2">
+                    <button
+                      onClick={() => tts.toggle(streamingPlan || generatedPlan)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                        tts.isSpeaking
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50'
+                          : 'bg-theme-tertiary text-theme-label hover:bg-theme-hover border border-theme'
+                      }`}
+                      title={tts.isSpeaking ? 'Stop reading' : 'Read lesson plan aloud'}
+                    >
+                      {tts.isSpeaking
+                        ? <><VolumeX className="w-3.5 h-3.5" /> Stop Reading</>
+                        : <><Volume2 className="w-3.5 h-3.5" /> Read Aloud</>}
+                    </button>
+                  </div>
+                )}
+
                 {/* Formatted content */}
                 {/* Add an id for HTML export */}
                 <div id="lesson-plan-html-export" className="prose prose-lg max-w-none">
@@ -1086,10 +1111,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Topic <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
+                      <SmartInput
                         value={formData.topic}
-                        onChange={(e) => handleInputChange('topic', e.target.value)}
+                        onChange={(val) => handleInputChange('topic', val)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="e.g., Water Cycle"
@@ -1230,9 +1254,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Custom Learning Styles (Optional)
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.customLearningStyles}
-                        onChange={(e) => handleInputChange('customLearningStyles', e.target.value)}
+                        onChange={(val) => handleInputChange('customLearningStyles', val)}
                         rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1244,9 +1268,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Materials <span className="text-red-500">*</span>
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.materials}
-                        onChange={(e) => handleInputChange('materials', e.target.value)}
+                        onChange={(val) => handleInputChange('materials', val)}
                         rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1258,9 +1282,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Prerequisite Skills <span className="text-red-500">*</span>
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.prerequisiteSkills}
-                        onChange={(e) => handleInputChange('prerequisiteSkills', e.target.value)}
+                        onChange={(val) => handleInputChange('prerequisiteSkills', val)}
                         rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1293,9 +1317,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           Special Needs Details
                         </label>
-                        <textarea
+                        <SmartTextArea
                           value={formData.specialNeedsDetails}
-                          onChange={(e) => handleInputChange('specialNeedsDetails', e.target.value)}
+                          onChange={(val) => handleInputChange('specialNeedsDetails', val)}
                           rows={3}
                           className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1308,9 +1332,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Additional Instructions
                       </label>
-                      <textarea
+                      <SmartTextArea
                         value={formData.additionalInstructions}
-                        onChange={(e) => handleInputChange('additionalInstructions', e.target.value)}
+                        onChange={(val) => handleInputChange('additionalInstructions', val)}
                         rows={4}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Any additional context or specific requirements for the lesson plan"

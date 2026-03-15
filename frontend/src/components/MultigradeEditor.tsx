@@ -1,6 +1,8 @@
 // components/MultigradeEditor.tsx
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 import { ParsedMultigrade } from '../types/multigrade';
 
 interface MultigradeEditorProps {
@@ -124,39 +126,35 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Plan Title/Topic</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.title}
-              onChange={(e) => updateMetadata('title', e.target.value)}
+              onChange={(val) => updateMetadata('title', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Enter plan title or topic"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.subject}
-              onChange={(e) => updateMetadata('subject', e.target.value)}
+              onChange={(val) => updateMetadata('subject', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.duration}
-              onChange={(e) => updateMetadata('duration', e.target.value)}
+              onChange={(val) => updateMetadata('duration', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="e.g., 45 minutes"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Total Students</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.totalStudents}
-              onChange={(e) => updateMetadata('totalStudents', e.target.value)}
+              onChange={(val) => updateMetadata('totalStudents', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
@@ -168,9 +166,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
         {/* Common Objective */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">Common Learning Objective (All Grades)</h3>
-          <textarea
+          <SmartTextArea
             value={plan.sharedObjectives.common}
-            onChange={(e) => updateCommonObjective(e.target.value)}
+            onChange={(val) => updateCommonObjective(val)}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             placeholder="Enter the common conceptual understanding for all grades"
@@ -186,9 +184,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
                 <label className="block text-sm font-medium mb-2" style={{ color: getGradeColor(gradeObj.grade) }}>
                   {gradeObj.grade}
                 </label>
-                <textarea
+                <SmartTextArea
                   value={gradeObj.objective}
-                  onChange={(e) => updateGradeObjective(gradeObj.grade, e.target.value)}
+                  onChange={(val) => updateGradeObjective(gradeObj.grade, val)}
                   rows={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder={`Objective for ${gradeObj.grade}`}
@@ -205,10 +203,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
             {plan.materials.shared.map((material, index) => (
               <div key={index} className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-600">•</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={material}
-                  onChange={(e) => updateSharedMaterial(index, e.target.value)}
+                  onChange={(val) => updateSharedMaterial(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter shared material"
                 />
@@ -224,9 +221,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
             {plan.sections.map((section) => (
               <div key={section.id} className="border border-gray-200 rounded-lg p-4">
                 <h5 className="font-semibold text-gray-700 mb-2">{section.name}</h5>
-                <textarea
+                <SmartTextArea
                   value={section.content}
-                  onChange={(e) => updateSection(section.id, e.target.value)}
+                  onChange={(val) => updateSection(section.id, val)}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Section content"
@@ -243,10 +240,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
             {plan.assessmentStrategies.common.map((assessment, index) => (
               <div key={index} className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-600">•</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={assessment}
-                  onChange={(e) => updateCommonAssessment(index, e.target.value)}
+                  onChange={(val) => updateCommonAssessment(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter assessment strategy"
                 />
@@ -264,9 +260,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
                 <label className="block text-sm font-medium mb-2" style={{ color: getGradeColor(gradeAssess.grade) }}>
                   {gradeAssess.grade}
                 </label>
-                <textarea
+                <SmartTextArea
                   value={gradeAssess.criteria}
-                  onChange={(e) => updateGradeAssessment(gradeAssess.grade, e.target.value)}
+                  onChange={(val) => updateGradeAssessment(gradeAssess.grade, val)}
                   rows={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder={`Success criteria for ${gradeAssess.grade}`}
@@ -285,9 +281,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
                 <label className="block text-sm font-medium mb-2" style={{ color: getGradeColor(diffNote.grade) }}>
                   {diffNote.grade}
                 </label>
-                <textarea
+                <SmartTextArea
                   value={diffNote.notes}
-                  onChange={(e) => updateDifferentiationNote(diffNote.grade, e.target.value)}
+                  onChange={(val) => updateDifferentiationNote(diffNote.grade, val)}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder={`Differentiation notes for ${diffNote.grade}`}
@@ -302,9 +298,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
           {plan.classroomManagement && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Classroom Management Strategies</label>
-              <textarea
+              <SmartTextArea
                 value={plan.classroomManagement || ''}
-                onChange={(e) => setPlan(prev => ({ ...prev, classroomManagement: e.target.value }))}
+                onChange={(val) => setPlan(prev => ({ ...prev, classroomManagement: val }))}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                 placeholder="Classroom management strategies"
@@ -315,9 +311,9 @@ const MultigradeEditor: React.FC<MultigradeEditorProps> = ({ plan: initialPlan, 
           {plan.extensionsAndModifications && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Extensions and Modifications</label>
-              <textarea
+              <SmartTextArea
                 value={plan.extensionsAndModifications || ''}
-                onChange={(e) => setPlan(prev => ({ ...prev, extensionsAndModifications: e.target.value }))}
+                onChange={(val) => setPlan(prev => ({ ...prev, extensionsAndModifications: val }))}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                 placeholder="Extensions and modifications"

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 import { ParsedWorksheet, WorksheetQuestion } from '../types/worksheet';
 
 interface WorksheetStructuredEditorProps {
@@ -116,10 +118,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
             <label className="text-sm font-semibold text-gray-700 mb-2">
               Worksheet Title
             </label>
-            <input
-              type="text"
+            <SmartInput
               value={worksheet.metadata.title}
-              onChange={(e) => updateMetadata('title', e.target.value)}
+              onChange={(val) => updateMetadata('title', val)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               placeholder="Enter worksheet title"
             />
@@ -129,10 +130,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
             <label className="text-sm font-semibold text-gray-700 mb-2">
               Subject
             </label>
-            <input
-              type="text"
+            <SmartInput
               value={worksheet.metadata.subject}
-              onChange={(e) => updateMetadata('subject', e.target.value)}
+              onChange={(val) => updateMetadata('subject', val)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               placeholder="e.g., Science"
             />
@@ -142,10 +142,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
             <label className="text-sm font-semibold text-gray-700 mb-2">
               Grade Level
             </label>
-            <input
-              type="text"
+            <SmartInput
               value={worksheet.metadata.gradeLevel}
-              onChange={(e) => updateMetadata('gradeLevel', e.target.value)}
+              onChange={(val) => updateMetadata('gradeLevel', val)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               placeholder="e.g., Grade 4"
             />
@@ -155,10 +154,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
             <label className="text-sm font-semibold text-gray-700 mb-2">
               Instructions (Optional)
             </label>
-            <input
-              type="text"
+            <SmartInput
               value={worksheet.metadata.instructions || ''}
-              onChange={(e) => updateMetadata('instructions', e.target.value)}
+              onChange={(val) => updateMetadata('instructions', val)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               placeholder="e.g., Use the word bank to fill in the blanks"
             />
@@ -206,9 +204,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
             {/* Question text */}
             <div className="mb-3">
               <label className="block text-sm text-gray-600 mb-1">Question Text</label>
-              <textarea
+              <SmartTextArea
                 value={question.question}
-                onChange={(e) => updateQuestion(index, { question: e.target.value })}
+                onChange={(val) => updateQuestion(index, { question: val })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={2}
                 placeholder="Enter question text..."
@@ -225,10 +223,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
                       <span className="text-sm font-medium text-gray-500 mt-2">
                         {String.fromCharCode(65 + optIndex)})
                       </span>
-                      <input
-                        type="text"
+                      <SmartInput
                         value={option}
-                        onChange={(e) => updateOption(index, optIndex, e.target.value)}
+                        onChange={(val) => updateOption(index, optIndex, val)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
                       />
@@ -257,10 +254,9 @@ const WorksheetStructuredEditor: React.FC<WorksheetStructuredEditorProps> = ({
                 <label className="text-sm text-gray-600 mb-1 block">
                   Correct Answer {question.options ? '(Letter or Full Answer)' : ''}:
                 </label>
-                <input
-                  type="text"
+                <SmartInput
                   value={question.correctAnswer}
-                  onChange={(e) => updateQuestion(index, { correctAnswer: e.target.value })}
+                  onChange={(val) => updateQuestion(index, { correctAnswer: val })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter correct answer..."
                 />

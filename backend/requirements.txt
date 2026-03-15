@@ -20,6 +20,9 @@ Pillow
 requests>=2.31.0
 rembg[gpu]
 
+# --- Text-to-Speech (offline) ---
+piper-tts>=1.2.0
+
 # --- Document / Rendering ---
 openpyxl>=3.1.0
 python-docx>=1.0.0

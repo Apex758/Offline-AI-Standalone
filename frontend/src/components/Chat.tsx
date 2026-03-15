@@ -1,11 +1,13 @@
                     import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, History, X, Trash2, Plus } from 'lucide-react';
+import { Send, Loader2, History, X, Trash2, Plus, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { Message } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { CurriculumReference } from './CurriculumReferences';
 import { CurriculumReferences } from './CurriculumReferences';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { useTTS, useSTT } from '../hooks/useVoice';
+import SmartTextArea from './SmartTextArea';
 
 interface ChatProps {
   tabId: string;
@@ -38,6 +40,38 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [generatingTitle, setGeneratingTitle] = useState(false);
   const [curriculumSuggestions, setCurriculumSuggestions] = useState<CurriculumReference[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+
+  // TTS & STT
+  const tts = useTTS();
+  const stt = useSTT(
+    // onResult — final transcript replaces input and auto-sends
+    (finalText) => {
+      setInput(finalText);
+    },
+    // onInterim — live preview in input
+    (interimText) => {
+      setInput(interimText);
+    }
+  );
+
+  // Track which message TTS is speaking
+  const handleToggleTTS = (msgId: string, content: string) => {
+    if (speakingMessageId === msgId && tts.isSpeaking) {
+      tts.stop();
+      setSpeakingMessageId(null);
+    } else {
+      tts.speak(content);
+      setSpeakingMessageId(msgId);
+    }
+  };
+
+  // Reset speaking state when TTS stops
+  useEffect(() => {
+    if (!tts.isSpeaking) {
+      setSpeakingMessageId(null);
+    }
+  }, [tts.isSpeaking]);
 
   // WebSocketContext API
   const ENDPOINT = '/ws/chat';
@@ -449,13 +483,22 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     <div className="text-sm prose prose-sm max-w-none">
                       {formatMessage(msg.content)}
                     </div>
-                    <p
-                      className={`text-xs mt-2 ${
-                        msg.role === 'user' ? 'text-blue-200' : 'text-theme-hint'
-                      }`}
-                    >
-                      {new Date(msg.timestamp).toLocaleTimeString()}
-                    </p>
+                    <div className={`flex items-center gap-2 mt-2 ${msg.role === 'user' ? 'text-blue-200' : 'text-theme-hint'}`}>
+                      <p className="text-xs">
+                        {new Date(msg.timestamp).toLocaleTimeString()}
+                      </p>
+                      {msg.role === 'assistant' && (
+                        <button
+                          onClick={() => handleToggleTTS(msg.id, msg.content)}
+                          className="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition"
+                          title={speakingMessageId === msg.id && tts.isSpeaking ? 'Stop reading' : 'Read aloud'}
+                        >
+                          {speakingMessageId === msg.id && tts.isSpeaking
+                            ? <VolumeX className="w-3.5 h-3.5" />
+                            : <Volume2 className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -497,12 +540,26 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
         <div className="border-t border-theme p-4">
           <div className="flex space-x-2">
-            <textarea
+            <button
+              onClick={stt.toggleListening}
+              disabled={loading}
+              className={`px-3 py-3 rounded-xl transition flex items-center justify-center ${
+                stt.isListening
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'bg-theme-tertiary text-theme-label hover:bg-theme-hover border border-theme-strong'
+              }`}
+              title={stt.isListening ? 'Stop listening' : 'Voice input'}
+            >
+              {stt.isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
+            <SmartTextArea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={setInput}
               onKeyPress={handleKeyPress}
-              placeholder="Ask me anything..."
-              className="flex-1 px-4 py-3 border border-theme-strong rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-800 dark:text-gray-100"
+              placeholder={stt.isListening ? 'Listening...' : 'Ask me anything...'}
+              className={`flex-1 px-4 py-3 border rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-800 dark:text-gray-100 ${
+                stt.isListening ? 'border-red-400 bg-red-50 dark:bg-red-900/10' : 'border-theme-strong'
+              }`}
               rows={1}
               style={{ minHeight: '48px', maxHeight: '120px' }}
               disabled={loading}
@@ -521,7 +578,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               )}
             </button>
           </div>
-          <p className="text-xs text-theme-hint mt-2">Press Enter to send, Shift+Enter for new line</p>
+          <p className="text-xs text-theme-hint mt-2">
+            {stt.isListening ? 'Speak now — your words will appear above' : 'Press Enter to send, Shift+Enter for new line'}
+          </p>
         </div>
       </div>
 

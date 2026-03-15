@@ -51,6 +51,11 @@ export interface Settings {
   teacherSubjects: string[];
   teacherGradeLevels: string[];
   profile: UserProfile;
+  // Writing assistant features
+  spellCheckEnabled: boolean;
+  autocorrectEnabled: boolean;
+  autoFinishEnabled: boolean;
+  dictionaryEnabled: boolean;
 }
 
 export interface SettingsContextValue {
@@ -108,6 +113,11 @@ export const DEFAULT_SETTINGS: Settings = {
     subjects: [],
     filterContentByProfile: false,
   },
+  // Writing assistant defaults
+  spellCheckEnabled: true,
+  autocorrectEnabled: true,
+  autoFinishEnabled: false,
+  dictionaryEnabled: true,
 };
 
 // localStorage key

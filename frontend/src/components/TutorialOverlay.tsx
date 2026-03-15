@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { HelpCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { HelpCircle, X, ChevronLeft, ChevronRight, Volume2, VolumeX, PlayCircle } from 'lucide-react';
+import { useTTS } from '../hooks/useVoice';
 
 export interface TutorialStep {
   target: string;
@@ -41,6 +42,89 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const highlightedElementRef = useRef<Element | null>(null);
+
+  // TTS for tutorial tooltips
+  // Mode: 'off' | 'single' | 'auto'
+  //  - 1st click (off) → 'single': speak this card only
+  //  - 2nd click (single, speaking) → 'auto': don't restart, just upgrade mode
+  //  - 3rd click (auto, speaking) → 'off': stop everything
+  const tts = useTTS();
+  const [ttsMode, setTtsMode] = useState<'off' | 'single' | 'auto'>('off');
+  const ttsModeRef = useRef(ttsMode);
+  useEffect(() => { ttsModeRef.current = ttsMode; }, [ttsMode]);
+
+  const currentStepRef = useRef(currentStep);
+  useEffect(() => { currentStepRef.current = currentStep; }, [currentStep]);
+
+  // The shared onEnd callback — checks mode ref to decide what to do
+  const handleSpeechEnd = useCallback(() => {
+    const mode = ttsModeRef.current;
+    if (mode === 'single') {
+      // Single mode: just reset to off when done
+      setTtsMode('off');
+    } else if (mode === 'auto') {
+      // Auto mode: advance to next step
+      if (currentStepRef.current < steps.length - 1) {
+        setTimeout(() => {
+          setHighlightRect(null);
+          setTooltipPosition({});
+          setWaitingForAction(false);
+          const nextStep = currentStepRef.current + 1;
+          setCurrentStep(nextStep);
+          onStepChange?.(nextStep);
+        }, 400);
+      } else {
+        // Last step — done
+        setTtsMode('off');
+      }
+    }
+  }, [steps.length, onStepChange]);
+
+  const speakCard = useCallback((stepIndex: number) => {
+    const step = steps[stepIndex];
+    if (!step) return;
+    const text = `${step.title}. ${step.description}`;
+    tts.speak(text, handleSpeechEnd);
+  }, [steps, tts, handleSpeechEnd]);
+
+  // When step changes while in auto mode, speak the new card
+  const lastSpokenStepRef = useRef(-1);
+  useEffect(() => {
+    if (ttsMode === 'auto' && isActive && steps[currentStep] && lastSpokenStepRef.current !== currentStep) {
+      lastSpokenStepRef.current = currentStep;
+      speakCard(currentStep);
+    }
+  }, [currentStep, ttsMode, isActive, steps, speakCard]);
+
+  const handleTTSClick = useCallback(() => {
+    if (ttsMode === 'off') {
+      // 1st click: speak this card only
+      setTtsMode('single');
+      lastSpokenStepRef.current = currentStep;
+      speakCard(currentStep);
+    } else if (ttsMode === 'single') {
+      // 2nd click while in single mode: upgrade to auto — don't restart speech
+      setTtsMode('auto');
+      // If speech already finished (mode was single but not speaking), start speaking
+      if (!tts.isSpeaking) {
+        lastSpokenStepRef.current = currentStep;
+        speakCard(currentStep);
+      }
+    } else if (ttsMode === 'auto') {
+      // 3rd click: stop everything
+      tts.stop();
+      setTtsMode('off');
+    }
+  }, [ttsMode, tts, currentStep, speakCard]);
+
+  // Stop TTS when tutorial closes or deactivates
+  useEffect(() => {
+    if (!isActive) {
+      tts.stop();
+      setTtsMode('off');
+      lastSpokenStepRef.current = -1;
+    }
+  }, [isActive]);
 
   useEffect(() => {
     if (!isActive || !steps[currentStep]) return;
@@ -290,7 +374,15 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      // Check if current step has a clickTarget to trigger before moving
+      // In single mode, stop speech on manual nav
+      // In auto mode, let it continue — the step change will trigger new speech
+      if (ttsMode === 'single') {
+        tts.stop();
+        setTtsMode('off');
+      } else if (ttsMode === 'auto') {
+        tts.stop(); // Stop current card speech, new step will auto-speak
+      }
+
       const step = steps[currentStep];
       if (step.clickTarget) {
         const targetElement = document.querySelector(step.clickTarget);
@@ -312,17 +404,26 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
   const handlePrevious = () => {
     if (currentStep > 0) {
+      if (ttsMode === 'single') {
+        tts.stop();
+        setTtsMode('off');
+      } else if (ttsMode === 'auto') {
+        tts.stop(); // Stop current, new step will auto-speak
+      }
+
       setHighlightRect(null);
       setWaitingForAction(false);
       setTimeout(() => {
         const prevStep = currentStep - 1;
         setCurrentStep(prevStep);
-        onStepChange?.(prevStep); // Add this
+        onStepChange?.(prevStep);
       }, 100);
     }
   };
 
   const handleClose = () => {
+    tts.stop();
+    setTtsMode('off');
     setIsActive(false);
     setCurrentStep(0);
     setTooltipPosition({});
@@ -491,8 +592,38 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                Step {currentStep + 1} of {steps.length}
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-gray-500">
+                  Step {currentStep + 1} of {steps.length}
+                </div>
+                <button
+                  onClick={handleTTSClick}
+                  className={`p-1.5 rounded-lg transition flex items-center gap-1 text-xs font-medium ${
+                    ttsMode === 'auto'
+                      ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
+                      : ttsMode === 'single' && tts.isSpeaking
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title={
+                    ttsMode === 'off'
+                      ? 'Read this step aloud'
+                      : ttsMode === 'single'
+                      ? 'Click again to auto-read all steps'
+                      : 'Stop reading'
+                  }
+                >
+                  {ttsMode === 'auto' ? (
+                    <>
+                      <PlayCircle className="w-4 h-4" />
+                      <span>Auto</span>
+                    </>
+                  ) : ttsMode === 'single' && tts.isSpeaking ? (
+                    <Volume2 className="w-4 h-4 animate-pulse" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
               </div>
 
               <div className="flex gap-2">

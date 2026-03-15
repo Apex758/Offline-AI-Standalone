@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Eye, Save, Plus, Trash2, GripVertical, Users, GraduationCap, Check } from 'lucide-react';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 interface Question {
   id: string;
@@ -167,10 +169,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
               <label className="block text-sm font-medium text-theme-label mb-1">
                 Title
               </label>
-              <input
-                type="text"
+              <SmartInput
                 value={worksheetData.title}
-                onChange={(e) => handleWorksheetChange('title', e.target.value)}
+                onChange={(val) => handleWorksheetChange('title', val)}
                 className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Worksheet Title"
               />
@@ -180,10 +181,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
               <label className="block text-sm font-medium text-theme-label mb-1">
                 Subject
               </label>
-              <input
-                type="text"
+              <SmartInput
                 value={worksheetData.subject}
-                onChange={(e) => handleWorksheetChange('subject', e.target.value)}
+                onChange={(val) => handleWorksheetChange('subject', val)}
                 className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., Mathematics"
               />
@@ -193,10 +193,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
               <label className="block text-sm font-medium text-theme-label mb-1">
                 Grade Level
               </label>
-              <input
-                type="text"
+              <SmartInput
                 value={worksheetData.gradeLevel}
-                onChange={(e) => handleWorksheetChange('gradeLevel', e.target.value)}
+                onChange={(val) => handleWorksheetChange('gradeLevel', val)}
                 className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., 3"
               />
@@ -261,9 +260,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                   <label className="block text-sm font-medium text-theme-label mb-1">
                     Question Text
                   </label>
-                  <textarea
+                  <SmartTextArea
                     value={question.text}
-                    onChange={(e) => updateQuestion(question.id, { text: e.target.value })}
+                    onChange={(val) => updateQuestion(question.id, { text: val })}
                     rows={2}
                     className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your question here..."
@@ -276,9 +275,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                     <label className="block text-sm font-medium text-theme-label mb-1">
                       Passage
                     </label>
-                    <textarea
+                    <SmartTextArea
                       value={question.passage || ''}
-                      onChange={(e) => updateQuestion(question.id, { passage: e.target.value })}
+                      onChange={(val) => updateQuestion(question.id, { passage: val })}
                       rows={4}
                       className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter the reading passage..."
@@ -314,10 +313,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                         <span className="font-medium text-theme-muted w-6">
                           {String.fromCharCode(65 + optIndex)})
                         </span>
-                        <input
-                          type="text"
+                        <SmartInput
                           value={option}
-                          onChange={(e) => updateOption(question.id, optIndex, e.target.value)}
+                          onChange={(val) => updateOption(question.id, optIndex, val)}
                           className="flex-1 px-3 py-2 border border-theme-strong rounded focus:ring-2 focus:ring-blue-500"
                           placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
                         />
@@ -340,9 +338,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                     <label className="block text-sm font-medium text-theme-label mb-1">
                       Matching Pairs (format: term1|definition1, term2|definition2)
                     </label>
-                    <textarea
+                    <SmartTextArea
                       value={question.options?.join(', ') || ''}
-                      onChange={(e) => updateQuestion(question.id, { options: e.target.value.split(', ').map(s => s.trim()) })}
+                      onChange={(val) => updateQuestion(question.id, { options: val.split(', ').map(s => s.trim()) })}
                       className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                       rows={3}
                       placeholder="apple|fruit, dog|animal"
@@ -356,10 +354,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                     <label className="block text-sm font-medium text-theme-label mb-1">
                       Word Bank (comma-separated)
                     </label>
-                    <input
-                      type="text"
+                    <SmartInput
                       value={question.options?.join(', ') || ''}
-                      onChange={(e) => updateQuestion(question.id, { options: e.target.value.split(',').map(s => s.trim()) })}
+                      onChange={(val) => updateQuestion(question.id, { options: val.split(',').map(s => s.trim()) })}
                       className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="word1, word2, word3"
                     />
@@ -372,10 +369,9 @@ const WorksheetEditor: React.FC<WorksheetEditorProps> = ({ tabId, savedData, onD
                     <label className="block text-sm font-medium text-theme-label mb-1">
                       Correct Answer
                     </label>
-                    <input
-                      type="text"
+                    <SmartInput
                       value={question.correctAnswer || ''}
-                      onChange={(e) => updateQuestion(question.id, { correctAnswer: e.target.value })}
+                      onChange={(val) => updateQuestion(question.id, { correctAnswer: val })}
                       className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder={question.type === 'Fill in the Blank' ? 'Enter the word/phrase' : 'Enter sample answer'}
                     />

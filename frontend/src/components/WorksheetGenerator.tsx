@@ -22,6 +22,8 @@ import WorksheetStructuredEditor from './WorksheetStructuredEditor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 
 interface CurriculumPage {
@@ -1094,10 +1096,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     <label className="block text-sm font-medium text-theme-label mb-2">
                       Worksheet Title <span className="text-theme-hint">(optional)</span>
                     </label>
-                    <input
-                      type="text"
+                    <SmartInput
                       value={formData.worksheetTitle}
-                      onChange={(e) => handleInputChange('worksheetTitle', e.target.value)}
+                      onChange={(val) => handleInputChange('worksheetTitle', val)}
                       className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Leave blank to use template name"
                     />
@@ -1606,9 +1607,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           {isEditing ? (
             <div className="rounded-lg h-full overflow-y-auto p-4 space-y-4 widget-glass">
               <h4 className="text-lg font-semibold text-theme-heading">Edit Worksheet Text</h4>
-              <textarea
+              <SmartTextArea
                 value={editBuffer}
-                onChange={(e) => setEditBuffer(e.target.value)}
+                onChange={(val) => setEditBuffer(val)}
                 className="w-full h-96 border border-theme-strong rounded-lg p-3 font-mono text-sm"
               />
               <div className="flex justify-end gap-2">

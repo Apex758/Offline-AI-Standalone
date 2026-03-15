@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react';
 import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 import { ParsedLesson, LessonSection } from '../types/lesson';
 
 interface LessonEditorProps {
@@ -177,56 +179,50 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Topic</label>
-            <input
-              type="text"
+            <SmartInput
               value={lesson.metadata.title}
-              onChange={(e) => updateMetadata('title', e.target.value)}
+              onChange={(val) => updateMetadata('title', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Subject</label>
-            <input
-              type="text"
+            <SmartInput
               value={lesson.metadata.subject}
-              onChange={(e) => updateMetadata('subject', e.target.value)}
+              onChange={(val) => updateMetadata('subject', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Grade</label>
-            <input
-              type="text"
+            <SmartInput
               value={lesson.metadata.gradeLevel}
-              onChange={(e) => updateMetadata('gradeLevel', e.target.value)}
+              onChange={(val) => updateMetadata('gradeLevel', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Strand</label>
-            <input
-              type="text"
+            <SmartInput
               value={lesson.metadata.strand}
-              onChange={(e) => updateMetadata('strand', e.target.value)}
+              onChange={(val) => updateMetadata('strand', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Duration</label>
-            <input
-              type="text"
+            <SmartInput
               value={lesson.metadata.duration}
-              onChange={(e) => updateMetadata('duration', e.target.value)}
+              onChange={(val) => updateMetadata('duration', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
               placeholder="mins"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Students</label>
-            <input
-              type="text"
+            <SmartInput
               value={lesson.metadata.studentCount}
-              onChange={(e) => updateMetadata('studentCount', e.target.value)}
+              onChange={(val) => updateMetadata('studentCount', val)}
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
             />
           </div>
@@ -248,10 +244,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
                 <span className="text-sm font-medium text-gray-600 min-w-[1.5rem]">{index + 1}.</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={objective}
-                  onChange={(e) => updateObjective(index, e.target.value)}
+                  onChange={(val) => updateObjective(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter learning objective"
                 />
@@ -305,10 +300,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
                 <span className="text-sm font-medium text-gray-600">•</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={material}
-                  onChange={(e) => updateMaterial(index, e.target.value)}
+                  onChange={(val) => updateMaterial(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter material or resource"
                 />
@@ -396,10 +390,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                 {/* Section Name */}
                 <div className="mb-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Section Name</label>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={section.name}
-                    onChange={(e) => updateSection(section.id, 'name', e.target.value)}
+                    onChange={(val) => updateSection(section.id, 'name', val)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="e.g., Introduction, Main Activity, Conclusion"
                   />
@@ -408,9 +401,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                 {/* Section Content */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                  <textarea
+                  <SmartTextArea
                     value={section.content}
-                    onChange={(e) => updateSection(section.id, 'content', e.target.value)}
+                    onChange={(val) => updateSection(section.id, 'content', val)}
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="Describe the activities, steps, and details for this section"
@@ -441,10 +434,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
                 <span className="text-sm font-medium text-gray-600">•</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={assessment}
-                  onChange={(e) => updateAssessment(index, e.target.value)}
+                  onChange={(val) => updateAssessment(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter assessment method"
                 />
@@ -489,9 +481,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Prerequisites</label>
-            <textarea
+            <SmartTextArea
               value={lesson.prerequisites || ''}
-              onChange={(e) => setLesson(prev => ({ ...prev, prerequisites: e.target.value }))}
+              onChange={(val) => setLesson(prev => ({ ...prev, prerequisites: val }))}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Skills or knowledge students should have before this lesson"
@@ -500,9 +492,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Special Needs Accommodations</label>
-            <textarea
+            <SmartTextArea
               value={lesson.specialNeeds || ''}
-              onChange={(e) => setLesson(prev => ({ ...prev, specialNeeds: e.target.value }))}
+              onChange={(val) => setLesson(prev => ({ ...prev, specialNeeds: val }))}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Accommodations for students with special needs"
@@ -511,9 +503,9 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ lesson: initialLesson, onSa
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-            <textarea
+            <SmartTextArea
               value={lesson.additionalNotes || ''}
-              onChange={(e) => setLesson(prev => ({ ...prev, additionalNotes: e.target.value }))}
+              onChange={(val) => setLesson(prev => ({ ...prev, additionalNotes: val }))}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Any additional notes or instructions"

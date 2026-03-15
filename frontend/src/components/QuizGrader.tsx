@@ -8,6 +8,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import axios from 'axios';
 import BulkGrader from './BulkGrader';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import SmartInput from './SmartInput';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -414,7 +415,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
 
                           {q.type === 'fill-blank' && (
                             <div className="ml-10">
-                              <input type="text" placeholder="Enter student's answer..." value={ans?.value as string ?? ''} onChange={e => setAnswer(q.id, e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2 text-sm" style={{ '--tw-ring-color': accentColor } as any} />
+                              <SmartInput placeholder="Enter student's answer..." value={ans?.value as string ?? ''} onChange={val => setAnswer(q.id, val)} className="w-full px-4 py-2.5 rounded-lg border border-theme bg-theme-input text-theme-label focus:outline-none focus:ring-2 text-sm" style={{ '--tw-ring-color': accentColor } as any} />
                             </div>
                           )}
                         </div>

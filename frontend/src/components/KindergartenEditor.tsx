@@ -1,6 +1,8 @@
 // components/KindergartenEditor.tsx
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, Check, X, Palette, Music, Book, Footprints, Users, Apple } from 'lucide-react';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 // Activity type with corresponding icon and color
 export interface ActivityType {
@@ -228,39 +230,35 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Lesson Topic/Title</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.title}
-              onChange={(e) => updateMetadata('title', e.target.value)}
+              onChange={(val) => updateMetadata('title', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Enter lesson topic"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Curriculum Unit</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.curriculumUnit}
-              onChange={(e) => updateMetadata('curriculumUnit', e.target.value)}
+              onChange={(val) => updateMetadata('curriculumUnit', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Age Group</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.ageGroup}
-              onChange={(e) => updateMetadata('ageGroup', e.target.value)}
+              onChange={(val) => updateMetadata('ageGroup', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="e.g., 4-5 years"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.duration}
-              onChange={(e) => updateMetadata('duration', e.target.value)}
+              onChange={(val) => updateMetadata('duration', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="e.g., 60 minutes"
             />
@@ -268,17 +266,15 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Week/Day</label>
             <div className="flex gap-2">
-              <input
-                type="text"
+              <SmartInput
                 value={plan.metadata.week}
-                onChange={(e) => updateMetadata('week', e.target.value)}
+                onChange={(val) => updateMetadata('week', val)}
                 className="w-1/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                 placeholder="Week"
               />
-              <input
-                type="text"
+              <SmartInput
                 value={plan.metadata.dayOfWeek}
-                onChange={(e) => updateMetadata('dayOfWeek', e.target.value)}
+                onChange={(val) => updateMetadata('dayOfWeek', val)}
                 className="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                 placeholder="Day of Week"
               />
@@ -286,10 +282,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Number of Students</label>
-            <input
-              type="text"
+            <SmartInput
               value={plan.metadata.students}
-              onChange={(e) => updateMetadata('students', e.target.value)}
+              onChange={(val) => updateMetadata('students', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
@@ -331,10 +326,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
                   <GripVertical className="w-4 h-4 text-gray-400" />
                 </button>
                 <span className="text-sm font-medium text-gray-600 min-w-[1.5rem]">{index + 1}.</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={objective}
-                  onChange={(e) => updateObjective(index, e.target.value)}
+                  onChange={(val) => updateObjective(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="Enter developmentally appropriate learning objective"
                 />
@@ -442,19 +436,18 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Activity Name</label>
-                      <input
-                        type="text"
+                      <SmartInput
                         value={activity.name}
-                        onChange={(e) => updateActivity(activity.id, 'name', e.target.value)}
+                        onChange={(val) => updateActivity(activity.id, 'name', val)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                         placeholder="Enter activity name"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                      <textarea
+                      <SmartTextArea
                         value={activity.description}
-                        onChange={(e) => updateActivity(activity.id, 'description', e.target.value)}
+                        onChange={(val) => updateActivity(activity.id, 'description', val)}
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                         placeholder="Describe the activity steps and instructions"
@@ -463,20 +456,18 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                        <input
-                          type="text"
+                        <SmartInput
                           value={activity.duration || ''}
-                          onChange={(e) => updateActivity(activity.id, 'duration', e.target.value)}
+                          onChange={(val) => updateActivity(activity.id, 'duration', val)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                           placeholder="e.g., 15 minutes"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Learning Goals</label>
-                        <input
-                          type="text"
+                        <SmartInput
                           value={activity.learningGoals || ''}
-                          onChange={(e) => updateActivity(activity.id, 'learningGoals', e.target.value)}
+                          onChange={(val) => updateActivity(activity.id, 'learningGoals', val)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                           placeholder="What children will learn"
                         />
@@ -499,10 +490,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
             {plan.materials.map((material) => (
               <div key={material.id} className="border border-gray-200 rounded-lg p-3 hover:border-cyan-300 transition">
                 <div className="flex items-start gap-2 mb-2">
-                  <input
-                    type="text"
+                  <SmartInput
                     value={material.name}
-                    onChange={(e) => updateMaterial(material.id, 'name', e.target.value)}
+                    onChange={(val) => updateMaterial(material.id, 'name', val)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="Enter material or resource"
                   />
@@ -524,10 +514,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
                   </button>
                 </div>
                 <div>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={material.safetyNotes || ''}
-                    onChange={(e) => updateMaterial(material.id, 'safetyNotes', e.target.value)}
+                    onChange={(val) => updateMaterial(material.id, 'safetyNotes', val)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="Safety notes (optional)"
                   />
@@ -551,10 +540,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
             {plan.assessmentObservations.map((assessment, index) => (
               <div key={index} className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-600">•</span>
-                <input
-                  type="text"
+                <SmartInput
                   value={assessment}
-                  onChange={(e) => updateAssessment(index, e.target.value)}
+                  onChange={(val) => updateAssessment(index, val)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                   placeholder="What to observe or assess"
                 />
@@ -581,9 +569,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Differentiation Notes</label>
-            <textarea
+            <SmartTextArea
               value={plan.differentiationNotes || ''}
-              onChange={(e) => setPlan(prev => ({ ...prev, differentiationNotes: e.target.value }))}
+              onChange={(val) => setPlan(prev => ({ ...prev, differentiationNotes: val }))}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="How to adapt for different learning levels and needs"
@@ -592,9 +580,9 @@ const KindergartenEditor: React.FC<KindergartenEditorProps> = ({ plan: initialPl
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Prerequisites</label>
-            <textarea
+            <SmartTextArea
               value={plan.prerequisites || ''}
-              onChange={(e) => setPlan(prev => ({ ...prev, prerequisites: e.target.value }))}
+              onChange={(val) => setPlan(prev => ({ ...prev, prerequisites: val }))}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Skills or knowledge children should have"

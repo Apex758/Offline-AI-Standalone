@@ -1,6 +1,8 @@
 // components/QuizEditor.tsx
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 import { ParsedQuiz, QuizQuestion } from '../types/quiz';
 
 interface QuizEditorProps {
@@ -84,19 +86,17 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
-            <input
-              type="text"
+            <SmartInput
               value={quiz.metadata.title}
-              onChange={(e) => updateMetadata('title', e.target.value)}
+              onChange={(val) => updateMetadata('title', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
-            <input
-              type="text"
+            <SmartInput
               value={quiz.metadata.instructions || ''}
-              onChange={(e) => updateMetadata('instructions', e.target.value)}
+              onChange={(val) => updateMetadata('instructions', val)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
               placeholder="Optional instructions for students"
             />
@@ -167,13 +167,13 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Question {question.type === 'true-false' ? '(Statement)' : ''}
                 </label>
-                <textarea
+                <SmartTextArea
                   value={question.question}
-                  onChange={(e) => updateQuestion(index, { question: e.target.value })}
+                  onChange={(val) => updateQuestion(index, { question: val })}
                   rows={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                  placeholder={question.type === 'true-false' 
-                    ? "Write a statement that is true or false" 
+                  placeholder={question.type === 'true-false'
+                    ? "Write a statement that is true or false"
                     : "Enter your question here"}
                 />
               </div>
@@ -195,10 +195,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
                       <span className="font-medium text-gray-600 w-6">
                         {String.fromCharCode(65 + optIndex)})
                       </span>
-                      <input
-                        type="text"
+                      <SmartInput
                         value={option}
-                        onChange={(e) => updateOption(index, optIndex, e.target.value)}
+                        onChange={(val) => updateOption(index, optIndex, val)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500"
                         placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
                       />
@@ -240,10 +239,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Correct Answer
                   </label>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={String(question.correctAnswer || '')}
-                    onChange={(e) => updateQuestion(index, { correctAnswer: e.target.value })}
+                    onChange={(val) => updateQuestion(index, { correctAnswer: val })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="Enter the word/phrase that fills the blank"
                   />
@@ -258,9 +256,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Sample Answer / Key Points
                   </label>
-                  <textarea
+                  <SmartTextArea
                     value={String(question.correctAnswer || '')}
-                    onChange={(e) => updateQuestion(index, { correctAnswer: e.target.value })}
+                    onChange={(val) => updateQuestion(index, { correctAnswer: val })}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
                     placeholder="Provide a sample answer or list key points students should include"
@@ -272,10 +270,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
               <div className="grid grid-cols-3 gap-3 mt-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Cognitive Level</label>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={question.cognitiveLevel || ''}
-                    onChange={(e) => updateQuestion(index, { cognitiveLevel: e.target.value })}
+                    onChange={(val) => updateQuestion(index, { cognitiveLevel: val })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
                     placeholder="e.g., Knowledge"
                   />
@@ -292,10 +289,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ quiz: initialQuiz, onSave, onCa
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Explanation</label>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={question.explanation || ''}
-                    onChange={(e) => updateQuestion(index, { explanation: e.target.value })}
+                    onChange={(val) => updateQuestion(index, { explanation: val })}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
                     placeholder="Optional"
                   />

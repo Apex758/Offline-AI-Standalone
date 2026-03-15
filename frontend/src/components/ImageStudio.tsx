@@ -4,6 +4,8 @@ import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 interface ImageStudioProps {
   tabId: string;
@@ -1769,9 +1771,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <p className="text-xs text-theme-hint mb-2">
                       Describe what you want to generate. The selected style will be applied automatically.
                     </p>
-                    <textarea
+                    <SmartTextArea
                       value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
+                      onChange={(val) => setPrompt(val)}
                       className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={4}
                       placeholder="E.g., A flowering plant showing roots, stem, leaves, and flower petals"
@@ -2635,9 +2637,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                           <label className="block text-xs font-medium text-theme-label mb-1">
                             Story Description
                           </label>
-                          <textarea
+                          <SmartTextArea
                             value={comicDescription}
-                            onChange={(e) => setComicDescription(e.target.value)}
+                            onChange={(val) => setComicDescription(val)}
                             className="w-full p-2 border border-theme-strong rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                             placeholder="A cat discovers a hidden garden, explores the flowers, and befriends a butterfly..."
@@ -2714,13 +2716,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               <div className="w-72 border-r border-gray-200 dark:border-gray-700 p-5 overflow-y-auto space-y-4 flex-shrink-0">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Worksheet Title</label>
-                  <input type="text" value={worksheetTitle} onChange={e => setWorksheetTitle(e.target.value)}
+                  <SmartInput value={worksheetTitle} onChange={val => setWorksheetTitle(val)}
                     placeholder="e.g. Parts of a Plant"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject / Topic</label>
-                  <input type="text" value={worksheetSubject} onChange={e => setWorksheetSubject(e.target.value)}
+                  <SmartInput value={worksheetSubject} onChange={val => setWorksheetSubject(val)}
                     placeholder="e.g. Science - Grade 4"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
                 </div>
@@ -2864,9 +2866,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                 <label className="block text-sm font-medium text-theme-label mb-2">
                   Prompt <span className="text-red-500">*</span>
                 </label>
-                <textarea
+                <SmartTextArea
                   value={queuePrompt}
-                  onChange={(e) => setQueuePrompt(e.target.value)}
+                  onChange={(val) => setQueuePrompt(val)}
                   className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   rows={3}
                   placeholder="Describe the image you want to generate..."

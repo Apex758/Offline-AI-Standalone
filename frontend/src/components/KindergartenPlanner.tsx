@@ -16,6 +16,8 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -1070,10 +1072,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Lesson Topic <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <SmartInput
                     value={formData.lessonTopic}
-                    onChange={(e) => handleInputChange('lessonTopic', e.target.value)}
+                    onChange={(val) => handleInputChange('lessonTopic', val)}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Exploring Colors"
@@ -1275,9 +1276,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Additional Requirements
                   </label>
-                  <textarea
+                  <SmartTextArea
                     value={formData.additionalRequirements}
-                    onChange={(e) => handleInputChange('additionalRequirements', e.target.value)}
+                    onChange={(val) => handleInputChange('additionalRequirements', val)}
                     rows={3}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}

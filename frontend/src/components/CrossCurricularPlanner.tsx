@@ -17,6 +17,8 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import SmartTextArea from './SmartTextArea';
+import SmartInput from './SmartInput';
 
 interface CrossCurricularPlannerProps {
   tabId: string;
@@ -1146,7 +1148,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title *</label>
-                      <input type="text" value={formData.lessonTitle} onChange={(e) => handleInputChange('lessonTitle', e.target.value)}
+                      <SmartInput value={formData.lessonTitle} onChange={(val) => handleInputChange('lessonTitle', val)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Enter lesson title" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-grade">
@@ -1160,13 +1162,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Duration *</label>
-                      <input type="text" value={formData.duration} onChange={(e) => handleInputChange('duration', e.target.value)}
+                      <SmartInput value={formData.duration} onChange={(val) => handleInputChange('duration', val)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="e.g., 60 minutes, 2 class periods" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">Big Idea / Driving Concept *</label>
-                      <textarea value={formData.bigIdea} onChange={(e) => handleInputChange('bigIdea', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.bigIdea} onChange={(val) => handleInputChange('bigIdea', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The central concept that connects all subjects" />
                     </div>
@@ -1218,7 +1220,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     </div>
                     <div data-tutorial="cross-curricular-planner-connections">
                       <label className="block text-sm font-medium text-theme-label mb-2">Supporting Subjects</label>
-                      <input type="text" value={formData.supportingSubjects} onChange={(e) => handleInputChange('supportingSubjects', e.target.value)}
+                      <SmartInput value={formData.supportingSubjects} onChange={(val) => handleInputChange('supportingSubjects', val)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Other subjects integrated (comma-separated)" />
                     </div>
@@ -1230,31 +1232,31 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-objectives">
                       <label className="block text-sm font-medium text-theme-label mb-2">Primary Learning Objective *</label>
-                      <textarea value={formData.primaryObjective} onChange={(e) => handleInputChange('primaryObjective', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.primaryObjective} onChange={(val) => handleInputChange('primaryObjective', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The main learning goal for this lesson" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Secondary Learning Objectives</label>
-                      <textarea value={formData.secondaryObjectives} onChange={(e) => handleInputChange('secondaryObjectives', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.secondaryObjectives} onChange={(val) => handleInputChange('secondaryObjectives', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Additional learning goals from integrated subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Students Will Know (Facts)</label>
-                      <textarea value={formData.studentsWillKnow} onChange={(e) => handleInputChange('studentsWillKnow', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.studentsWillKnow} onChange={(val) => handleInputChange('studentsWillKnow', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Key knowledge and facts students will learn" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Students Will Be Skilled At (Actions)</label>
-                      <textarea value={formData.studentsWillBeSkilled} onChange={(e) => handleInputChange('studentsWillBeSkilled', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.studentsWillBeSkilled} onChange={(val) => handleInputChange('studentsWillBeSkilled', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Skills and abilities students will develop" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Key Vocabulary</label>
-                      <input type="text" value={formData.keyVocabulary} onChange={(e) => handleInputChange('keyVocabulary', e.target.value)}
+                      <SmartInput value={formData.keyVocabulary} onChange={(val) => handleInputChange('keyVocabulary', val)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Important terms from all subjects (comma-separated)" />
                     </div>
@@ -1266,25 +1268,25 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-activities">
                       <label className="block text-sm font-medium text-theme-label mb-2">Introduction/Hook *</label>
-                      <textarea value={formData.introduction} onChange={(e) => handleInputChange('introduction', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.introduction} onChange={(val) => handleInputChange('introduction', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Engaging opening activity that introduces the big idea" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Core Learning Activities *</label>
-                      <textarea value={formData.coreActivities} onChange={(e) => handleInputChange('coreActivities', e.target.value)} rows={4}
+                      <SmartTextArea value={formData.coreActivities} onChange={(val) => handleInputChange('coreActivities', val)} rows={4}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Main activities that integrate multiple subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Closure Activities</label>
-                      <textarea value={formData.closureActivities} onChange={(e) => handleInputChange('closureActivities', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.closureActivities} onChange={(val) => handleInputChange('closureActivities', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Activities to summarize and reflect on learning" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Differentiation Strategies</label>
-                      <textarea value={formData.differentiationStrategies} onChange={(e) => handleInputChange('differentiationStrategies', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.differentiationStrategies} onChange={(val) => handleInputChange('differentiationStrategies', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll support diverse learners" />
                     </div>
@@ -1296,31 +1298,31 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-assessment">
                       <label className="block text-sm font-medium text-theme-label mb-2">Assessment Methods *</label>
-                      <textarea value={formData.assessmentMethods} onChange={(e) => handleInputChange('assessmentMethods', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.assessmentMethods} onChange={(val) => handleInputChange('assessmentMethods', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll assess learning across subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Most children will *</label>
-                      <textarea value={formData.mostChildren} onChange={(e) => handleInputChange('mostChildren', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.mostChildren} onChange={(val) => handleInputChange('mostChildren', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Expected learning outcomes for most students" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Some will not have made so much progress</label>
-                      <textarea value={formData.someNotProgressed} onChange={(e) => handleInputChange('someNotProgressed', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.someNotProgressed} onChange={(val) => handleInputChange('someNotProgressed', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Support for students who need additional help" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Some will have progressed further</label>
-                      <textarea value={formData.someProgressedFurther} onChange={(e) => handleInputChange('someProgressedFurther', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.someProgressedFurther} onChange={(val) => handleInputChange('someProgressedFurther', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Extensions for students who need more challenge" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Reflection Prompts</label>
-                      <textarea value={formData.reflectionPrompts} onChange={(e) => handleInputChange('reflectionPrompts', e.target.value)} rows={2}
+                      <SmartTextArea value={formData.reflectionPrompts} onChange={(val) => handleInputChange('reflectionPrompts', val)} rows={2}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Questions to help students reflect on their learning" />
                     </div>
@@ -1364,13 +1366,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Materials and Resources</label>
-                      <textarea value={formData.materials} onChange={(e) => handleInputChange('materials', e.target.value)} rows={3}
+                      <SmartTextArea value={formData.materials} onChange={(val) => handleInputChange('materials', val)} rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="All materials needed across subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Suggested Cross-Curricular Connections</label>
-                      <textarea value={formData.crossCurricularConnections} onChange={(e) => handleInputChange('crossCurricularConnections', e.target.value)} rows={4}
+                      <SmartTextArea value={formData.crossCurricularConnections} onChange={(val) => handleInputChange('crossCurricularConnections', val)} rows={4}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Additional ideas for connecting subjects" />
                     </div>
