@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { HelpCircle, Search, GraduationCap, X } from 'lucide-react';
+import { HelpCircle, Search, GraduationCap, X, Camera } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 interface TutorialButtonProps {
   tutorialId: string;
   onStartTutorial: () => void;
   onOpenSearch?: () => void;
+  onScreenshotTicket?: () => void;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 }
 
@@ -13,6 +14,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   tutorialId,
   onStartTutorial,
   onOpenSearch,
+  onScreenshotTicket,
   position = 'bottom-right'
 }) => {
   const { settings, isTutorialCompleted } = useSettings();
@@ -73,6 +75,11 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
     onOpenSearch?.();
   };
 
+  const handleScreenshotClick = async () => {
+    setExpanded(false);
+    onScreenshotTicket?.();
+  };
+
   const mainButtonStyle: React.CSSProperties = {
     width: '52px',
     height: '52px',
@@ -114,7 +121,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               opacity: expanded ? 1 : 0,
               transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
               pointerEvents: expanded ? 'auto' : 'none',
-              transitionDelay: expanded ? '0.08s' : '0s',
+              transitionDelay: expanded ? '0.12s' : '0s',
             }}
             title="Search (Ctrl+K)"
             aria-label="Search"
@@ -137,6 +144,45 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
             </span>
           </button>
+
+          {/* Screenshot Ticket button */}
+          {onScreenshotTicket && (
+            <button
+              onClick={handleScreenshotClick}
+              className="rounded-2xl flex items-center justify-center text-white group/sub relative"
+              style={{
+                ...subButtonBase,
+                background: 'linear-gradient(135deg, rgba(239,68,68,0.92), rgba(220,38,38,0.92))',
+                boxShadow: expanded
+                  ? '0 6px 24px rgba(239,68,68,0.45), 0 2px 8px rgba(0,0,0,0.15)'
+                  : '0 0 0 rgba(0,0,0,0)',
+                opacity: expanded ? 1 : 0,
+                transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+                pointerEvents: expanded ? 'auto' : 'none',
+                transitionDelay: expanded ? '0.06s' : '0.02s',
+              }}
+              title="Screenshot & Report Issue"
+              aria-label="Screenshot and create ticket"
+            >
+              <Camera className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+              {/* Tooltip */}
+              <span
+                className="absolute right-full mr-3 px-3 py-1.5 text-white text-xs rounded-xl opacity-0 group-hover/sub:opacity-100 whitespace-nowrap pointer-events-none"
+                style={{
+                  background: 'rgba(15,15,25,0.9)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                  transition: 'opacity 0.15s ease',
+                  fontWeight: 500,
+                  letterSpacing: '0.01em',
+                }}
+              >
+                Report Issue (Screenshot)
+                <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
+              </span>
+            </button>
+          )}
 
           {/* Tutorial button */}
           <button

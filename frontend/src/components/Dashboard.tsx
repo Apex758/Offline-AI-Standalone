@@ -31,7 +31,9 @@ import {
   UsersRound,
   Baby,
   Layers,
-  Merge
+  Merge,
+  HelpCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
@@ -50,6 +52,8 @@ import CurriculumTracker from './CurriculumTracker';
 import WorksheetGenerator from './WorksheetGenerator';
 import ImageStudio from './ImageStudio';
 import ClassManagement from './ClassManagement';
+import SupportCenter from './SupportCenter';
+import ReportingCenter from './ReportingCenter';
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -168,6 +172,20 @@ const tools: Tool[] = [
     group: 'lesson-planners'
   },
   {
+    id: 'support',
+    name: 'Support',
+    icon: 'HelpCircle',
+    type: 'support',
+    description: 'FAQ and help center for common questions'
+  },
+  {
+    id: 'reporting',
+    name: 'Reporting',
+    icon: 'AlertTriangle',
+    type: 'reporting',
+    description: 'Submit and track support tickets'
+  },
+  {
     id: 'settings',
     name: 'Settings',
     icon: 'Settings',
@@ -218,7 +236,9 @@ const iconMap: { [key: string]: React.ElementType } = {
   UsersRound,
   Baby,
   Layers,
-  Merge
+  Merge,
+  HelpCircle,
+  AlertTriangle
 };
 
 const WELCOME_TIPS = [
@@ -359,7 +379,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     
     // Add default color for settings
     colors['settings'] = generateColorVariants('#64748b'); // slate-500
-    
+
+    // Add default colors for support & reporting
+    if (!colors['support']) colors['support'] = generateColorVariants('#3b82f6'); // blue-500
+    if (!colors['reporting']) colors['reporting'] = generateColorVariants('#ef4444'); // red-500
+
     return colors;
   }, [settings.tabColors]);
   
@@ -546,7 +570,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'reporting'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -578,6 +602,50 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     setTabs([...tabs, newTab]);
     setActiveTabId(newTab.id);
   };
+
+  // Screenshot & create ticket handler for floating button
+  const handleScreenshotTicket = useCallback(async () => {
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 1,
+        logging: false,
+        ignoreElements: (el) => {
+          // Ignore the floating button itself to get a clean screenshot
+          return el.classList?.contains('z-[9999]') || false;
+        }
+      });
+      const screenshotData = canvas.toDataURL('image/png');
+
+      // Open the reporting tab with the screenshot
+      const reportingTool = tools.find(t => t.type === 'reporting');
+      if (reportingTool) {
+        const existingTab = tabs.find(t => t.type === 'reporting');
+        if (existingTab) {
+          updateTabData(existingTab.id, { initialScreenshot: screenshotData, view: 'create' });
+          navigateToExistingTab(existingTab);
+        } else {
+          const newReportTab: Tab = {
+            id: `reporting-${Date.now()}`,
+            title: reportingTool.name,
+            type: 'reporting',
+            active: true,
+            data: { initialScreenshot: screenshotData, view: 'create' }
+          };
+          setTabs(prev => [...prev, newReportTab]);
+          setActiveTabId(newReportTab.id);
+        }
+      }
+    } catch (err) {
+      // If screenshot capture fails, just open reporting tab
+      const reportingTool = tools.find(t => t.type === 'reporting');
+      if (reportingTool) {
+        openTool(reportingTool);
+      }
+    }
+  }, [tabs, openTool]);
 
   const toggleSplitView = () => {
     if (splitView.isActive) {
@@ -1063,6 +1131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 tutorialId={TUTORIAL_IDS.RESOURCE_MANAGER}
                 onStartTutorial={() => setShowResourceManagerTutorial(true)}
                 onOpenSearch={() => setCommandPaletteOpen(true)}
+                onScreenshotTicket={handleScreenshotTicket}
                 position="bottom-right"
               />
             )}
@@ -1164,6 +1233,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'class-management':
         return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'support':
+        return <SupportCenter tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'reporting':
+        return <ReportingCenter tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} initialScreenshot={tab.data?.initialScreenshot || null} />;
       default:
         return null;
     }
@@ -2416,6 +2489,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'settings': TUTORIAL_IDS.SETTINGS,
       'chat': TUTORIAL_IDS.CHAT,
       'class-management': TUTORIAL_IDS.CLASS_MANAGEMENT,
+      'support': TUTORIAL_IDS.DASHBOARD_MAIN,
+      'reporting': TUTORIAL_IDS.DASHBOARD_MAIN,
     };
 
     if (splitView.isActive || !settings.tutorials.tutorialPreferences.showFloatingButtons) return null;
@@ -2429,6 +2504,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           tutorialId={TUTORIAL_IDS.DASHBOARD_MAIN}
           onStartTutorial={() => startTutorial(TUTORIAL_IDS.DASHBOARD_MAIN)}
           onOpenSearch={() => setCommandPaletteOpen(true)}
+          onScreenshotTicket={handleScreenshotTicket}
           position="bottom-right"
         />
       );
@@ -2441,6 +2517,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           tutorialId={TUTORIAL_IDS.ANALYTICS}
           onStartTutorial={() => startTutorial(TUTORIAL_IDS.ANALYTICS)}
           onOpenSearch={() => setCommandPaletteOpen(true)}
+          onScreenshotTicket={handleScreenshotTicket}
           position="bottom-right"
         />
       );
@@ -2454,6 +2531,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         tutorialId={tutorialId as TutorialId}
         onStartTutorial={() => startTutorial(tutorialId as TutorialId)}
         onOpenSearch={() => setCommandPaletteOpen(true)}
+        onScreenshotTicket={handleScreenshotTicket}
         position="bottom-right"
       />
     );

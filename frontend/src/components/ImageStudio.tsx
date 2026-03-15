@@ -105,6 +105,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     redoStack: []
   });
   const [isInpainting, setIsInpainting] = useState(false);
+  const [bgRemovalStrength, setBgRemovalStrength] = useState(100);
 
   // Add new state for tracking saved image
   const [savedImageId, setSavedImageId] = useState<string | null>(null);
@@ -761,7 +762,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       const response = await fetch('http://localhost:8000/api/remove-background-base64', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: history.current }),
+        body: JSON.stringify({ image: history.current, strength: bgRemovalStrength }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to remove background');
@@ -1708,13 +1709,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       </div>
                     </div>
 
-                    <div className="relative border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary" data-tutorial="image-studio-canvas">
-                      <img src={history.original} alt="Original"
-                        className="absolute top-0 left-0 w-full h-full object-contain"
-                        style={{ pointerEvents: 'none', zIndex: 1 }} />
+                    <div className="relative flex items-center justify-center border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary" data-tutorial="image-studio-canvas">
+                      {showBeforeAfter && (
+                        <img src={history.original} alt="Original"
+                          className="absolute top-0 left-0 w-full h-full object-contain"
+                          style={{ pointerEvents: 'none', zIndex: 1 }} />
+                      )}
                       <div className="relative transition-opacity duration-500 ease-in-out"
                         style={{ opacity: showBeforeAfter ? 0 : 1, zIndex: 2 }}>
-                        <canvas ref={imageCanvasRef} className="max-w-full h-auto" style={{ display: 'block' }} />
+                        <canvas ref={imageCanvasRef} className="max-w-full h-auto" style={{ display: 'block', margin: '0 auto' }} />
                         <canvas ref={maskCanvasRef}
                           className="absolute top-0 left-0 max-w-full h-auto"
                           style={{
@@ -1932,6 +1935,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     {/* Background Remover */}
                     {editorTool === 'remove-background' && (
                       <>
+                        <div>
+                          <label className="block text-sm font-medium text-theme-label mb-1">Strength: {bgRemovalStrength}%</label>
+                          <input type="range" min={10} max={100} step={5} value={bgRemovalStrength}
+                            onChange={e => setBgRemovalStrength(Number(e.target.value))}
+                            className="w-full accent-purple-600" />
+                          <div className="flex justify-between text-xs text-theme-label-secondary mt-0.5">
+                            <span>Subtle</span><span>Full</span>
+                          </div>
+                        </div>
                         <div className="flex gap-2">
                           <button onClick={handleUndo} disabled={history.undoStack.length === 0}
                             className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
@@ -1948,7 +1960,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         </button>
                         <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                           <h4 className="text-xs font-semibold text-purple-900 dark:text-purple-300 mb-1">How to Use:</h4>
-                          <p className="text-xs text-purple-800 dark:text-purple-400">Click "Remove Background" below the canvas. The AI will automatically detect and remove the background, producing a transparent PNG.</p>
+                          <p className="text-xs text-purple-800 dark:text-purple-400">Adjust the strength slider, then click "Remove Background" below the canvas. Lower strength keeps more of the semi-transparent edges.</p>
                         </div>
                       </>
                     )}

@@ -3437,12 +3437,25 @@ async def remove_background_base64(request: Request):
 
         data = await request.json()
         image_data_uri = data.get("image", "")
+        strength = max(0, min(100, int(data.get("strength", 100))))
 
         image_b64 = image_data_uri.split(",", 1)[1] if "," in image_data_uri else image_data_uri
         img_bytes = base64.b64decode(image_b64)
         img = PILImage.open(io.BytesIO(img_bytes)).convert("RGBA")
 
         result = rembg_remove(img)
+
+        # Blend with original based on strength (100 = full removal, 0 = no removal)
+        if strength < 100:
+            # Get the alpha channel from the result and blend it toward fully opaque
+            r_r, r_g, r_b, r_a = result.split()
+            import numpy as np
+            alpha_arr = np.array(r_a, dtype=np.float32)
+            # Blend alpha toward 255 (opaque) based on inverse strength
+            blend_factor = strength / 100.0
+            blended_alpha = alpha_arr * blend_factor + 255.0 * (1.0 - blend_factor)
+            r_a = PILImage.fromarray(blended_alpha.astype(np.uint8))
+            result = PILImage.merge("RGBA", (r_r, r_g, r_b, r_a))
 
         output = io.BytesIO()
         result.save(output, format="PNG")
