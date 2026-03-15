@@ -2091,6 +2091,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     }`}
                     style={{
                       '--group-line-color': colors.border,
+                      '--group-container-z': baseZIndex - 1,
                       display: isCollapsed && !animatingGroups.has(type) ? 'none' : 'flex'
                     } as React.CSSProperties}
                   >
