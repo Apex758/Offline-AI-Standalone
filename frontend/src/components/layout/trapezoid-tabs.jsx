@@ -20,14 +20,28 @@ function tabPath(w, h) {
   ].join(" ");
 }
 
+// Darken a hex color by a percentage (0-1)
+function darkenHex(hex, amount) {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.max(0, Math.round(((num >> 16) & 0xff) * (1 - amount)));
+  const g = Math.max(0, Math.round(((num >> 8) & 0xff) * (1 - amount)));
+  const b = Math.max(0, Math.round((num & 0xff) * (1 - amount)));
+  return `rgb(${r},${g},${b})`;
+}
+
+let gradientCounter = 0;
+
 export function TrapezoidTabShape({ isActive, isHover, width, height, activeColor, inactiveColor, hoverColor }) {
+  const gradientId = React.useMemo(() => `tab-grad-${gradientCounter++}`, []);
+
+  const drawH = isActive ? height + TAB_EXTEND : height;
+  const darkerColor = activeColor ? darkenHex(activeColor, 0.18) : "#1e40af";
+
   const fill = isActive
-    ? (activeColor || "#ffffff")
+    ? `url(#${gradientId})`
     : isHover
       ? (hoverColor || "#ededf0")
       : (inactiveColor || "#e4e3e8");
-
-  const drawH = isActive ? height + TAB_EXTEND : height;
 
   return (
     <svg
@@ -48,6 +62,12 @@ export function TrapezoidTabShape({ isActive, isHover, width, height, activeColo
       }}
       xmlns="http://www.w3.org/2000/svg"
     >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={activeColor || "#3b82f6"} />
+          <stop offset="100%" stopColor={darkerColor} />
+        </linearGradient>
+      </defs>
       <path d={tabPath(width, drawH)} fill={fill} />
     </svg>
   );
