@@ -105,187 +105,344 @@
 }
 
 .dark {
-  /* Dark mode colors */
-  --background: 17 24 39; /* gray-900 */
-  --foreground: 243 244 246; /* gray-100 */
-  --card: 31 41 55; /* gray-800 */
-  --card-foreground: 243 244 246; /* gray-100 */
-  --primary: 96 165 250; /* blue-400 */
-  --primary-foreground: 17 24 39; /* gray-900 */
-  --secondary: 55 65 81; /* gray-700 */
-  --secondary-foreground: 243 244 246; /* gray-100 */
-  --muted: 55 65 81; /* gray-700 */
-  --muted-foreground: 156 163 175; /* gray-400 */
-  --accent: 55 65 81; /* gray-700 */
-  --accent-foreground: 243 244 246; /* gray-100 */
+  /* Dark mode colors — warm earth palette */
+  --background: 33 32 30; /* #21201e */
+  --foreground: 249 248 246; /* #f9f8f6 */
+  --card: 42 41 38; /* #2a2926 */
+  --card-foreground: 249 248 246; /* #f9f8f6 */
+  --primary: 99 215 42; /* #63d72a */
+  --primary-foreground: 33 32 30; /* #21201e */
+  --secondary: 54 51 48; /* #363330 */
+  --secondary-foreground: 249 248 246; /* #f9f8f6 */
+  --muted: 54 51 48; /* #363330 */
+  --muted-foreground: 168 166 162; /* #a8a6a2 */
+  --accent: 122 92 52; /* #7a5c34 brown */
+  --accent-foreground: 249 248 246; /* #f9f8f6 */
   --destructive: 239 68 68; /* red-500 */
-  --destructive-foreground: 243 244 246; /* gray-100 */
-  --border: 55 65 81; /* gray-700 */
-  --input: 55 65 81; /* gray-700 */
-  --ring: 96 165 250; /* blue-400 */
-  --tab-content-bg: #1a2332;
+  --destructive-foreground: 249 248 246; /* #f9f8f6 */
+  --border: 61 59 55; /* #3d3b37 */
+  --input: 61 59 55; /* #3d3b37 */
+  --ring: 99 215 42; /* #63d72a */
+  --tab-content-bg: #252422;
 
   /* Semantic theme colors — dark mode */
-  --text-title: #f3f4f6;       /* gray-100 */
-  --text-heading: #e5e7eb;     /* gray-200 */
-  --text-label: #d1d5db;       /* gray-300 */
-  --text-muted: #9ca3af;       /* gray-400 */
-  --text-hint: #9ca3af;        /* gray-400 */
-  --bg-surface: #1f2937;       /* gray-800 */
-  --bg-secondary: #1f2937;     /* gray-800 */
-  --bg-tertiary: #374151;      /* gray-700 */
-  --bg-hover: #374151;         /* gray-700 */
-  --bg-hover-subtle: #374151;  /* gray-700 */
-  --border-default: #374151;   /* gray-700 */
-  --border-strong: #4b5563;    /* gray-600 */
+  --text-title: #f9f8f6;
+  --text-heading: #eeedeb;
+  --text-label: #d5d4d1;
+  --text-muted: #a8a6a2;
+  --text-hint: #8a8884;
+  --bg-surface: #2a2926;
+  --bg-secondary: #2a2926;
+  --bg-tertiary: #363330;
+  --bg-hover: #363330;
+  --bg-hover-subtle: #2f2d2a;
+  --border-default: #3d3b37;
+  --border-strong: #504d48;
 
-  --sidebar-bg: rgba(30, 41, 59, 0.82);
-  --sidebar-bg-collapsed: rgba(30, 41, 59, 0.55);
-  --sidebar-text: #ffffff;
-  --sidebar-text-muted: #9ca3af;
-  --sidebar-text-faint: rgba(255, 255, 255, 0.25);
-  --sidebar-hover: rgba(255, 255, 255, 0.1);
-  --sidebar-active: rgba(255, 255, 255, 0.1);
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-divider: rgba(255, 255, 255, 0.08);
-  --sidebar-scrollbar: rgba(255, 255, 255, 0.1);
-  --sidebar-header-bg: rgba(255, 255, 255, 0.03);
+  --sidebar-bg: rgba(33, 32, 30, 0.82);
+  --sidebar-bg-collapsed: rgba(33, 32, 30, 0.55);
+  --sidebar-text: #f9f8f6;
+  --sidebar-text-muted: #a8a6a2;
+  --sidebar-text-faint: rgba(249, 248, 246, 0.25);
+  --sidebar-hover: rgba(249, 248, 246, 0.08);
+  --sidebar-active: rgba(249, 248, 246, 0.1);
+  --sidebar-border: rgba(249, 248, 246, 0.1);
+  --sidebar-divider: rgba(249, 248, 246, 0.08);
+  --sidebar-scrollbar: rgba(249, 248, 246, 0.1);
+  --sidebar-header-bg: rgba(249, 248, 246, 0.03);
 
-  --notif-bg: rgba(22, 27, 48, 0.97);
-  --notif-border: rgba(255, 255, 255, 0.1);
-  --notif-text: #e5e7eb;
-  --notif-text-muted: #9ca3af;
-  --notif-text-faint: #6b7280;
-  --notif-divider: rgba(255, 255, 255, 0.05);
-  --notif-unread-bg: rgba(255, 255, 255, 0.05);
+  --notif-bg: rgba(33, 32, 30, 0.97);
+  --notif-border: rgba(249, 248, 246, 0.1);
+  --notif-text: #eeedeb;
+  --notif-text-muted: #a8a6a2;
+  --notif-text-faint: #6b6966;
+  --notif-divider: rgba(249, 248, 246, 0.05);
+  --notif-unread-bg: rgba(99, 215, 42, 0.05);
 
   /* Dashboard / Analytics palette — dark */
-  --dash-bg: #111827;
-  --dash-bg-alpha: rgba(17, 24, 39, 0.9);
-  --dash-text: #f3f4f6;
-  --dash-text-sub: #9ca3af;
-  --dash-text-faint: #6b7280;
-  --dash-primary: #4a9070;
-  --dash-primary-fg: #F8E59D;
-  --dash-orange: #F2A631;
-  --dash-border: #374151;
-  --dash-shadow: rgba(0, 0, 0, 0.2);
-  --dash-card-bg: #1f2937;
-  --dash-card-shadow: rgba(0, 0, 0, 0.25);
-  --dash-overlay: rgba(0, 0, 0, 0.6);
-  --dash-primary-a12: rgba(74, 144, 112, 0.15);
-  --dash-primary-a25: rgba(74, 144, 112, 0.25);
-  --dash-orange-a12: rgba(242, 166, 49, 0.15);
-  --dash-orange-a25: rgba(242, 166, 49, 0.25);
-  --dash-orange-a30: rgba(242, 166, 49, 0.2);
-  --dash-orange-a60: rgba(242, 166, 49, 0.4);
-  --dash-brown-a12: rgba(156, 163, 175, 0.15);
-  --dash-brown-a25: rgba(156, 163, 175, 0.25);
-  --dash-gold-a25: rgba(248, 229, 157, 0.15);
-  --dash-border-a25: rgba(55, 65, 81, 0.25);
-  --dash-edge-btn: rgba(31, 41, 55, 0.92);
-  --dash-timeframe-bg: rgba(31, 41, 55, 0.9);
-  --dash-task-bg: rgba(255, 255, 255, 0.06);
-  --dash-completed-bg: rgba(31, 41, 55, 0.3);
-  --dash-radial-track: rgba(255, 255, 255, 0.08);
-  --dash-axis-tick: #9ca3af;
-  --dash-hidden-dot: #4b5563;
-  --dash-hidden-text: #6b7280;
+  --dash-bg: #21201e;
+  --dash-bg-alpha: rgba(33, 32, 30, 0.9);
+  --dash-text: #f9f8f6;
+  --dash-text-sub: #a8a6a2;
+  --dash-text-faint: #6b6966;
+  --dash-primary: #63d72a;
+  --dash-primary-fg: #21201e;
+  --dash-orange: #7a5c34;
+  --dash-border: #3d3b37;
+  --dash-shadow: rgba(0, 0, 0, 0.25);
+  --dash-card-bg: #2a2926;
+  --dash-card-shadow: rgba(0, 0, 0, 0.3);
+  --dash-overlay: rgba(33, 32, 30, 0.6);
+  --dash-primary-a12: rgba(99, 215, 42, 0.12);
+  --dash-primary-a25: rgba(99, 215, 42, 0.25);
+  --dash-orange-a12: rgba(122, 92, 52, 0.15);
+  --dash-orange-a25: rgba(122, 92, 52, 0.25);
+  --dash-orange-a30: rgba(122, 92, 52, 0.3);
+  --dash-orange-a60: rgba(122, 92, 52, 0.6);
+  --dash-brown-a12: rgba(122, 92, 52, 0.15);
+  --dash-brown-a25: rgba(122, 92, 52, 0.25);
+  --dash-gold-a25: rgba(99, 215, 42, 0.15);
+  --dash-border-a25: rgba(61, 59, 55, 0.25);
+  --dash-edge-btn: rgba(42, 41, 38, 0.92);
+  --dash-timeframe-bg: rgba(42, 41, 38, 0.9);
+  --dash-task-bg: rgba(249, 248, 246, 0.06);
+  --dash-completed-bg: rgba(42, 41, 38, 0.3);
+  --dash-radial-track: rgba(249, 248, 246, 0.08);
+  --dash-axis-tick: #8a8884;
+  --dash-hidden-dot: #504d48;
+  --dash-hidden-text: #6b6966;
 }
 
 /* ── Global dark mode for form inputs ── */
 .dark input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="file"]):not([type="color"]),
 .dark textarea,
 .dark select {
-  background-color: #1f2937;
-  color: #f3f4f6;
-  border-color: #4b5563;
+  background-color: #2a2926;
+  color: #f9f8f6;
+  border-color: #504d48;
 }
 
 .dark input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="file"]):not([type="color"])::placeholder,
 .dark textarea::placeholder {
-  color: #9ca3af;
+  color: #8a8884;
 }
 
 .dark input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="file"]):not([type="color"]):focus,
 .dark textarea:focus,
 .dark select:focus {
-  border-color: #6b7280;
+  border-color: #63d72a;
 }
 
-/* Dark mode for labels and surrounding text in editors */
-.dark .border-gray-200 {
-  border-color: #374151;
+/* ── Dark mode overrides for text colors ── */
+.dark .text-black {
+  color: #f9f8f6;
 }
 
-.dark .bg-gray-50 {
-  background-color: #111827;
-}
-
-.dark .bg-gradient-to-r.from-cyan-50.to-blue-50 {
-  background: linear-gradient(to right, #1a2332, #1e293b);
+.dark .text-gray-900 {
+  color: #f9f8f6;
 }
 
 .dark .text-gray-800 {
-  color: #f3f4f6;
+  color: #f9f8f6;
 }
 
 .dark .text-gray-700 {
-  color: #d1d5db;
+  color: #d5d4d1;
 }
 
 .dark .text-gray-600 {
-  color: #9ca3af;
+  color: #a8a6a2;
 }
 
 .dark .text-gray-500 {
-  color: #9ca3af;
+  color: #a8a6a2;
 }
 
+.dark .text-gray-400 {
+  color: #8a8884;
+}
+
+/* ── Dark mode overrides for backgrounds ── */
 .dark .bg-white {
-  background-color: #1f2937;
+  background-color: #2a2926;
 }
 
-.dark .hover\:bg-gray-100:hover {
-  background-color: #374151;
+.dark .bg-gray-50 {
+  background-color: #21201e;
 }
 
-.dark .hover\:bg-gray-50:hover {
-  background-color: #1f2937;
+.dark .bg-gray-100 {
+  background-color: #2a2926;
+}
+
+.dark .bg-gray-200 {
+  background-color: #363330;
+}
+
+/* ── Dark mode overrides for borders ── */
+.dark .border-gray-100 {
+  border-color: #363330;
+}
+
+.dark .border-gray-200 {
+  border-color: #3d3b37;
+}
+
+.dark .border-gray-300 {
+  border-color: #504d48;
+}
+
+.dark .border-gray-400 {
+  border-color: #504d48;
 }
 
 .dark .border-dashed.border-gray-300 {
-  border-color: #4b5563;
+  border-color: #504d48;
+}
+
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #3d3b37;
+}
+
+/* ── Dark mode overrides for gradients ── */
+.dark .bg-gradient-to-r.from-cyan-50.to-blue-50 {
+  background: linear-gradient(to right, #252422, #2a2926);
+}
+
+.dark .bg-gradient-to-r.from-blue-50.to-indigo-50 {
+  background: linear-gradient(to right, #252422, #2a2926);
+}
+
+.dark .bg-gradient-to-br.from-blue-50.to-indigo-100 {
+  background: linear-gradient(to bottom right, #21201e, #2a2926);
+}
+
+.dark .bg-gradient-to-r.from-gray-50.to-white {
+  background: linear-gradient(to right, #21201e, #2a2926);
+}
+
+/* ── Dark mode overrides for hover states ── */
+.dark .hover\:bg-gray-50:hover {
+  background-color: #2a2926;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #363330;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: #3d3b37;
+}
+
+.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(99, 215, 42, 0.08);
+}
+
+.dark .hover\:bg-blue-100:hover {
+  background-color: rgba(99, 215, 42, 0.12);
 }
 
 .dark .hover\:bg-red-50:hover {
   background-color: rgba(127, 29, 29, 0.3);
 }
 
+.dark .hover\:text-gray-800:hover {
+  color: #f9f8f6;
+}
+
+.dark .hover\:text-gray-700:hover {
+  color: #d5d4d1;
+}
+
+/* ── Dark mode overrides for focus/ring states ── */
+.dark .focus\:ring-cyan-500:focus {
+  --tw-ring-color: #63d72a;
+}
+
+.dark .focus\:ring-blue-500:focus {
+  --tw-ring-color: #63d72a;
+}
+
+.dark .focus\:ring-blue-400:focus {
+  --tw-ring-color: #63d72a;
+}
+
+.dark .focus\:border-transparent:focus {
+  border-color: #63d72a;
+}
+
+/* ── Dark mode overrides for blue accent elements ── */
+.dark .bg-blue-50 {
+  background-color: rgba(99, 215, 42, 0.08);
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(99, 215, 42, 0.12);
+}
+
+.dark .border-blue-100 {
+  border-color: rgba(99, 215, 42, 0.15);
+}
+
+.dark .border-blue-200 {
+  border-color: rgba(99, 215, 42, 0.2);
+}
+
+.dark .hover\:border-cyan-400:hover,
+.dark .hover\:border-blue-500:hover {
+  border-color: #63d72a;
+}
+
+.dark .hover\:text-cyan-600:hover,
+.dark .hover\:text-blue-600:hover {
+  color: #63d72a;
+}
+
+.dark .text-blue-600 {
+  color: #63d72a;
+}
+
+.dark .text-cyan-600 {
+  color: #63d72a;
+}
+
+/* ── Dark mode overrides for buttons ── */
+.dark .bg-gray-100.text-gray-700 {
+  background-color: #363330;
+  color: #d5d4d1;
+}
+
+.dark .disabled\:bg-gray-400:disabled {
+  background-color: #504d48;
+}
+
+/* ── Dark mode overrides for placeholder text ── */
+.dark .placeholder-gray-400::placeholder,
+.dark .placeholder\:text-gray-400::placeholder {
+  color: #8a8884;
+}
+
+/* ── Dark mode overrides for shadows ── */
+.dark .shadow-sm,
+.dark .shadow,
+.dark .shadow-md,
+.dark .shadow-lg {
+  --tw-shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* ── Dark mode overrides for ring colors ── */
+.dark .ring-gray-200 {
+  --tw-ring-color: #3d3b37;
+}
+
+.dark .ring-gray-300 {
+  --tw-ring-color: #504d48;
+}
+
 /* Dark mode checkboxes */
 .dark input[type="checkbox"] {
-  accent-color: #60a5fa;
+  accent-color: #63d72a;
 }
 
 .dark input[type="checkbox"]:not(:checked) {
-  background-color: #374151;
-  border-color: #4b5563;
+  background-color: #363330;
+  border-color: #504d48;
   -webkit-appearance: none;
   appearance: none;
   width: 1rem;
   height: 1rem;
-  border: 2px solid #4b5563;
+  border: 2px solid #504d48;
   border-radius: 3px;
   cursor: pointer;
 }
 
 .dark input[type="radio"] {
-  accent-color: #60a5fa;
+  accent-color: #63d72a;
 }
 
 /* Dark mode text for checkbox/radio labels */
 .dark label {
-  color: #d1d5db;
+  color: #d5d4d1;
 }
 
 /* ── Global modern scrollbars ── */

@@ -117,28 +117,13 @@ def _load_loras(pipe, model_path: Path):
 # ── pipeline loaders ─────────────────────────────────────────────────────────
 
 def _load_openvino(model_path: Path):
-    """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder, INT8 UNet, and LoRAs."""
+    """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder and INT8 UNet."""
     from optimum.intel.openvino import OVStableDiffusionXLPipeline
     import openvino as ov
 
     pipe = OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=False)
 
     core = ov.Core()
-
-    # Use Tiny Autoencoder (TAE) for faster VAE decoding if available
-    tae_decoder_path = model_path / "tae_decoder" / "openvino_model.xml"
-    if tae_decoder_path.exists():
-        logger.info("Loading Tiny Autoencoder (TAE) decoder for faster image decoding...")
-        pipe.vae_decoder.model = core.read_model(str(tae_decoder_path))
-        pipe.vae_decoder.request = None
-        logger.info("TAE decoder loaded.")
-
-    tae_encoder_path = model_path / "tae_encoder" / "openvino_model.xml"
-    if tae_encoder_path.exists():
-        logger.info("Loading Tiny Autoencoder (TAE) encoder for faster image encoding...")
-        pipe.vae_encoder.model = core.read_model(str(tae_encoder_path))
-        pipe.vae_encoder.request = None
-        logger.info("TAE encoder loaded.")
 
     # Use INT8 quantized UNet if available
     int8_unet_path = model_path / "optimized_unet" / "openvino_model.xml"
@@ -148,8 +133,9 @@ def _load_openvino(model_path: Path):
         pipe.unet.request = None
         logger.info("INT8 UNet loaded.")
 
-    # Load LoRA adapters before compiling
-    _load_loras(pipe, model_path)
+    # NOTE: LoRA loading is not supported by OVStableDiffusionXLPipeline (OpenVINO IR).
+    # LoRAs must be fused into model weights before OpenVINO conversion, or use
+    # openvino_genai.Text2ImagePipeline which supports runtime LoRA adapters.
 
     pipe.compile()
     return pipe
@@ -164,25 +150,11 @@ def _load_openvino_img2img(model_path: Path):
 
     core = ov.Core()
 
-    # Use Tiny Autoencoder if available
-    tae_decoder_path = model_path / "tae_decoder" / "openvino_model.xml"
-    if tae_decoder_path.exists():
-        pipe.vae_decoder.model = core.read_model(str(tae_decoder_path))
-        pipe.vae_decoder.request = None
-
-    tae_encoder_path = model_path / "tae_encoder" / "openvino_model.xml"
-    if tae_encoder_path.exists():
-        pipe.vae_encoder.model = core.read_model(str(tae_encoder_path))
-        pipe.vae_encoder.request = None
-
     # Use INT8 quantized UNet if available
     int8_unet_path = model_path / "optimized_unet" / "openvino_model.xml"
     if int8_unet_path.exists():
         pipe.unet.model = core.read_model(str(int8_unet_path))
         pipe.unet.request = None
-
-    # Load LoRA adapters before compiling
-    _load_loras(pipe, model_path)
 
     pipe.compile()
     return pipe

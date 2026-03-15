@@ -173,7 +173,7 @@
 }
 
 .dark .edge-tab-bar {
-  background: #1e293b;
+  background: #21201e;
 }
 
 .dark .edge-tab-bar-border {
@@ -181,12 +181,12 @@
 }
 
 .dark .edge-tab .edge-tab-close {
-  color: #9ca3af;
+  color: #8a8884;
 }
 
 .dark .edge-tab-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
+  background: rgba(249, 248, 246, 0.1);
+  color: #eeedeb;
 }
 
 /* Highlight bar beneath the tab strip, above content */
@@ -247,6 +247,6 @@
 /* Dark mode overrides - media query fallback */
 @media (prefers-color-scheme: dark) {
   .edge-tab-bar {
-    background: #1e293b;
+    background: #21201e;
   }
 }

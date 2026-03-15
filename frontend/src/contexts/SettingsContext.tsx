@@ -86,7 +86,7 @@ export const DEFAULT_SETTINGS: Settings = {
   oakKey: '',
   autoCloseTabsOnExit: false,
   theme: 'system',
-  sidebarColor: '#1e293b',
+  sidebarColor: '#21201e',
   tutorials: {
     completedTutorials: [],
     hasSeenWelcome: false,
