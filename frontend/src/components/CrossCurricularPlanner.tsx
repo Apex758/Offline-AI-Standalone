@@ -637,6 +637,15 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     'Experiential Learning', 'Culturally Responsive Teaching', 'Universal Design for Learning'
   ];
 
+  // Auto-select when only one option from profile filtering
+  useEffect(() => {
+    if (!settings.profile.filterContentByProfile) return;
+    const updates: Partial<FormData> = {};
+    if (subjects.length === 1 && !formData.primarySubject) updates.primarySubject = subjects[0];
+    if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
+  }, [subjects, grades, settings.profile.filterContentByProfile]);
+
   const learningStylesOptions = ['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic', 'Social', 'Solitary'];
   const learningPreferencesOptions = ['Individual Work', 'Group Work', 'Pair Work', 'Whole Class', 'Independent Study'];
   const multipleIntelligencesOptions = ['Linguistic', 'Logical-Mathematical', 'Spatial', 'Musical',

@@ -425,6 +425,15 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       })
     : allGradeRanges;
 
+  // Auto-select when only one option from profile filtering
+  useEffect(() => {
+    if (!settings.profile.filterContentByProfile) return;
+    const updates: Partial<FormData> = {};
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
+    if (gradeRanges.length === 1 && !formData.gradeRange) updates.gradeRange = gradeRanges[0];
+    if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
+  }, [subjects, gradeRanges, settings.profile.filterContentByProfile]);
+
   const learningStylesOptions = ['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic', 'Mixed'];
   const learningPreferencesOptions = ['Individual Work', 'Group Work', 'Pair Work', 'Whole Class', 'Independent Study'];
   const multipleIntelligencesOptions = [

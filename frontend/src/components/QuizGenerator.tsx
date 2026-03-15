@@ -236,6 +236,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
     ? allGrades.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()))
     : allGrades;
+  // Auto-select when only one option from profile filtering
+  useEffect(() => {
+    if (!settings.profile.filterContentByProfile) return;
+    const updates: Partial<FormData> = {};
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
+    if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
+  }, [subjects, grades, settings.profile.filterContentByProfile]);
+
   const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
   const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
 

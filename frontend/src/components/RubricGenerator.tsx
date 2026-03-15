@@ -538,6 +538,15 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     'Technical Skills', 'Presentation Skills'
   ];
 
+  // Auto-select when only one option from profile filtering
+  useEffect(() => {
+    if (!settings.profile.filterContentByProfile) return;
+    const updates: Partial<FormData> = {};
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
+    if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
+  }, [subjects, grades, settings.profile.filterContentByProfile]);
+
   // Try to parse rubric when generated (for restored/loaded rubrics)
   useEffect(() => {
     if (generatedRubric && !parsedRubric) {
