@@ -891,9 +891,18 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
   const handleDownloadImage = (imageData: string) => {
+    const slug = imagePrompt
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 6)
+      .join('-');
+    const ts = new Date().toISOString().slice(0, 10);
+    const filename = slug ? `image-${slug}-${ts}.png` : `image-${ts}-${Date.now()}.png`;
     const link = document.createElement('a');
     link.href = imageData;
-    link.download = `generated-image-${Date.now()}.png`;
+    link.download = filename;
     link.click();
   };
 

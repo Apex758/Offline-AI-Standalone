@@ -152,7 +152,9 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       const imageId = savedImageId || `img-${Date.now()}`;
       const imageRecord: SavedImageRecord = {
         id: imageId,
-        title: `${type === 'uploaded' ? 'Uploaded' : 'Edited'} Image - ${new Date().toLocaleString()}`,
+        title: type === 'uploaded'
+          ? `Uploaded — ${new Date().toLocaleString()}`
+          : buildImageTitle('Edited'),
         timestamp: new Date().toISOString(),
         type: 'images',
         imageUrl: imageData,
@@ -430,8 +432,26 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setImageSlots([]);
   };
 
+  // Build a descriptive filename from the prompt
+  const buildImageFilename = (prefix: string, ext: string = 'png') => {
+    const slug = prompt
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 6)
+      .join('-');
+    const ts = new Date().toISOString().slice(0, 10);
+    return slug ? `${prefix}-${slug}-${ts}.${ext}` : `${prefix}-${ts}-${Date.now()}.${ext}`;
+  };
+
+  const buildImageTitle = (prefix: string) => {
+    const short = prompt.length > 60 ? prompt.slice(0, 57) + '...' : prompt;
+    return short ? `${prefix} — ${short}` : `${prefix} — ${new Date().toLocaleString()}`;
+  };
+
   const handleDownloadGenerated = (imageData: string) => {
-    downloadImage(imageData, `generated-${Date.now()}.png`);
+    downloadImage(imageData, buildImageFilename('generated'));
   };
 
   const handleSaveGenerated = async (imageData: string) => {
@@ -439,7 +459,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       const imageId = `img-${Date.now()}`;
       const imageRecord = {
         id: imageId,
-        title: `Generated Image - ${new Date().toLocaleString()}`,
+        title: buildImageTitle('Generated'),
         timestamp: new Date().toISOString(),
         type: 'images',
         imageUrl: imageData,
@@ -711,7 +731,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
   const handleDownloadEdited = () => {
     if (history.current) {
-      downloadImage(history.current, `edited-${Date.now()}.png`);
+      downloadImage(history.current, buildImageFilename('edited'));
     }
   };
 
@@ -1591,7 +1611,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         {worksheetGenerating ? 'Generating...' : 'Preview Worksheet'}
                       </button>
                       {worksheetPreview && (
-                        <button onClick={() => downloadImage(worksheetPreview!, `worksheet-${Date.now()}.png`)}
+                        <button onClick={() => downloadImage(worksheetPreview!, buildImageFilename('worksheet'))}
                           className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 text-sm font-medium">
                           <Download className="w-4 h-4" />
                           Download PNG
