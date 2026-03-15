@@ -2907,6 +2907,100 @@ PROMPT:"""
             content={"error": str(e)}
         )
 
+@app.post("/api/generate-comic-prompts")
+async def generate_comic_prompts(request: Request):
+    """
+    Generate scene prompts for a comic page using LLaMA.
+    Takes a short description and number of panels, returns per-panel prompts.
+    """
+    try:
+        data = await request.json()
+        description = data.get('description', '')
+        num_panels = data.get('numPanels', 4)
+        style = data.get('style', 'cartoon_3d')
+
+        if not description:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Description is required"}
+            )
+
+        llama_prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You are an expert comic book writer. Given a short story description, break it into exactly {num_panels} sequential comic panel scenes. Each scene should be a vivid, visual image prompt suitable for AI image generation. Focus on action, composition, and visual storytelling. Do NOT include dialogue or text in the prompts.
+
+IMPORTANT: Return ONLY a JSON array of strings, one per panel. No explanation, no markdown, no extra text. Example format:
+["scene 1 prompt", "scene 2 prompt", "scene 3 prompt", "scene 4 prompt"]<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+Story description: {description}
+Number of panels: {num_panels}
+
+Generate {num_panels} sequential comic panel image prompts as a JSON array:<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+["""
+
+        settings = {
+            "model_path": get_model_path(),
+            "n_ctx": MODEL_N_CTX,
+            "max_tokens": 600,
+            "temperature": 0.7,
+            "tool_name": "comic_prompts",
+            "prompt_template": llama_prompt,
+        }
+        future = submit_task(run_llama_inference, description, settings)
+        result = await asyncio.wrap_future(future)
+
+        if result.get("metadata", {}).get("status") != "success":
+            error_msg = result.get("metadata", {}).get("error_message", "Generation failed")
+            return JSONResponse(
+                status_code=500,
+                content={"error": error_msg}
+            )
+
+        generated_text = result.get("result", "").strip()
+
+        # Try to parse the JSON array from the response
+        # The model might return it with or without the leading [
+        text_to_parse = generated_text
+        if not text_to_parse.startswith("["):
+            text_to_parse = "[" + text_to_parse
+
+        # Find the closing bracket
+        bracket_idx = text_to_parse.rfind("]")
+        if bracket_idx != -1:
+            text_to_parse = text_to_parse[:bracket_idx + 1]
+        else:
+            text_to_parse = text_to_parse + "]"
+
+        try:
+            prompts = json.loads(text_to_parse)
+            if not isinstance(prompts, list):
+                raise ValueError("Not a list")
+            # Ensure we have exactly num_panels prompts
+            prompts = [str(p) for p in prompts[:num_panels]]
+            while len(prompts) < num_panels:
+                prompts.append(f"Scene {len(prompts) + 1} of: {description}")
+        except (json.JSONDecodeError, ValueError):
+            # Fallback: split by newlines or create generic prompts
+            logger.warning(f"Failed to parse comic prompts JSON, using fallback. Raw: {generated_text[:200]}")
+            prompts = []
+            for i in range(num_panels):
+                prompts.append(f"Scene {i + 1} of a comic story: {description}, panel {i + 1} of {num_panels}")
+
+        logger.info(f"Generated {len(prompts)} comic panel prompts")
+
+        return JSONResponse(content={
+            "success": True,
+            "prompts": prompts
+        })
+
+    except Exception as e:
+        logger.error(f"Error generating comic prompts: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
 @app.post("/api/generate-image")
 async def generate_image(request: Request):
     """

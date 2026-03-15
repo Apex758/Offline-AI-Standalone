@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, ArrowLeft, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X, FolderOpen } from 'lucide-react';
+import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, ArrowLeft, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X, FolderOpen, BookOpen } from 'lucide-react';
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
@@ -17,7 +17,7 @@ interface ImageHistory {
   redoStack: string[];
 }
 
-type EditorTool = 'remove-object' | 'remove-background' | 'annotate' | 'coloring-page' | 'worksheet';
+type EditorTool = 'remove-object' | 'remove-background' | 'annotate' | 'coloring-page' | 'worksheet' | 'comic-maker';
 
 interface Annotation {
   id: string;
@@ -143,6 +143,31 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [worksheetImageSize, setWorksheetImageSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [worksheetGenerating, setWorksheetGenerating] = useState(false);
   const [worksheetPreview, setWorksheetPreview] = useState<string | null>(null);
+
+  // ========================================
+  // Comic Page Maker States
+  // ========================================
+  type ComicTemplate = 'grid-2x2' | 'strip-3' | 'hero-3' | 'asymmetric-4';
+
+  interface ComicPanelSlot {
+    imageData: string | null;
+    prompt: string;
+    status: 'idle' | 'generating' | 'completed' | 'error';
+  }
+
+  const [comicTemplate, setComicTemplate] = useState<ComicTemplate>('grid-2x2');
+  const [comicDescription, setComicDescription] = useState('');
+  const [comicPanels, setComicPanels] = useState<ComicPanelSlot[]>([]);
+  const [comicState, setComicState] = useState<'input' | 'generating-prompts' | 'generating-images' | 'done'>('input');
+  const [comicError, setComicError] = useState<string | null>(null);
+  const [comicFinalImage, setComicFinalImage] = useState<string | null>(null);
+
+  const comicTemplateConfig: Record<ComicTemplate, { name: string; panels: number; description: string }> = {
+    'grid-2x2': { name: '2x2 Grid', panels: 4, description: 'Classic 4-panel grid layout' },
+    'strip-3': { name: '3-Panel Strip', panels: 3, description: 'Horizontal comic strip' },
+    'hero-3': { name: 'Hero + 3 Small', panels: 4, description: 'One large panel + 3 smaller ones' },
+    'asymmetric-4': { name: 'Asymmetric 4', panels: 4, description: 'Mixed sizes for dynamic layouts' },
+  };
 
   // ========================================
   // Auto-save image to backend
@@ -454,6 +479,255 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setSelectedImage(null);
     setError(null);
     setImageSlots([]);
+  };
+
+  // ========================================
+  // COMIC: Generate Comic Page
+  // ========================================
+  const handleComicGenerate = async () => {
+    if (!comicDescription.trim()) {
+      setComicError('Please enter a story description');
+      return;
+    }
+
+    const templateCfg = comicTemplateConfig[comicTemplate];
+    const numPanels = templateCfg.panels;
+
+    setComicState('generating-prompts');
+    setComicError(null);
+    setComicFinalImage(null);
+
+    // Initialize panels
+    const initialPanels: ComicPanelSlot[] = Array.from({ length: numPanels }, () => ({
+      imageData: null,
+      prompt: '',
+      status: 'idle',
+    }));
+    setComicPanels(initialPanels);
+
+    try {
+      // Step 1: Get scene prompts from LLM
+      const promptResponse = await axios.post('http://localhost:8000/api/generate-comic-prompts', {
+        description: comicDescription,
+        numPanels,
+      });
+
+      if (!promptResponse.data.success) {
+        throw new Error(promptResponse.data.error || 'Failed to generate scene prompts');
+      }
+
+      const scenePrompts: string[] = promptResponse.data.prompts;
+
+      // Update panels with prompts
+      const panelsWithPrompts = scenePrompts.map((p: string) => ({
+        imageData: null,
+        prompt: p,
+        status: 'idle' as const,
+      }));
+      setComicPanels(panelsWithPrompts);
+      setComicState('generating-images');
+
+      // Step 2: Generate images one at a time (queued)
+      // Use low strength to keep the reference image's style/characters closely
+      for (let i = 0; i < panelsWithPrompts.length; i++) {
+        // Mark current panel as generating
+        setComicPanels(prev => {
+          const next = [...prev];
+          next[i] = { ...next[i], status: 'generating' };
+          return next;
+        });
+
+        try {
+          const response = await imageApi.generateImageBase64({
+            prompt: panelsWithPrompts[i].prompt,
+            negativePrompt,
+            width: 512,
+            height: 512,
+            numInferenceSteps,
+            ...(history.current && { initImage: history.current, strength: 0.35 }),
+          });
+
+          if (response.success && response.imageData) {
+            setComicPanels(prev => {
+              const next = [...prev];
+              next[i] = { ...next[i], imageData: response.imageData, status: 'completed' };
+              return next;
+            });
+          } else {
+            setComicPanels(prev => {
+              const next = [...prev];
+              next[i] = { ...next[i], status: 'error' };
+              return next;
+            });
+          }
+        } catch (genError) {
+          console.error(`Error generating comic panel ${i + 1}:`, genError);
+          setComicPanels(prev => {
+            const next = [...prev];
+            next[i] = { ...next[i], status: 'error' };
+            return next;
+          });
+        }
+      }
+
+      setComicState('done');
+    } catch (err: any) {
+      console.error('Comic generation error:', err);
+      setComicError(err.response?.data?.error || err.message || 'Failed to generate comic');
+      setComicState('input');
+    }
+  };
+
+  // Stitch comic panels into a single image using canvas
+  const stitchComicPage = (panels: ComicPanelSlot[], template: ComicTemplate): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const gap = 12;
+      const border = 24;
+      const panelSize = 512;
+
+      let canvasW: number, canvasH: number;
+      interface PanelRect { x: number; y: number; w: number; h: number }
+      let rects: PanelRect[] = [];
+
+      if (template === 'grid-2x2') {
+        canvasW = border * 2 + panelSize * 2 + gap;
+        canvasH = border * 2 + panelSize * 2 + gap;
+        rects = [
+          { x: border, y: border, w: panelSize, h: panelSize },
+          { x: border + panelSize + gap, y: border, w: panelSize, h: panelSize },
+          { x: border, y: border + panelSize + gap, w: panelSize, h: panelSize },
+          { x: border + panelSize + gap, y: border + panelSize + gap, w: panelSize, h: panelSize },
+        ];
+      } else if (template === 'strip-3') {
+        canvasW = border * 2 + panelSize * 3 + gap * 2;
+        canvasH = border * 2 + panelSize;
+        rects = [
+          { x: border, y: border, w: panelSize, h: panelSize },
+          { x: border + panelSize + gap, y: border, w: panelSize, h: panelSize },
+          { x: border + (panelSize + gap) * 2, y: border, w: panelSize, h: panelSize },
+        ];
+      } else if (template === 'hero-3') {
+        const heroW = panelSize * 2 + gap;
+        const heroH = panelSize;
+        const smallW = Math.floor((heroW - gap * 2) / 3);
+        canvasW = border * 2 + heroW;
+        canvasH = border * 2 + heroH + gap + smallW;
+        rects = [
+          { x: border, y: border, w: heroW, h: heroH },
+          { x: border, y: border + heroH + gap, w: smallW, h: smallW },
+          { x: border + smallW + gap, y: border + heroH + gap, w: smallW, h: smallW },
+          { x: border + (smallW + gap) * 2, y: border + heroH + gap, w: smallW, h: smallW },
+        ];
+      } else {
+        // asymmetric-4: tall left + 3 stacked right
+        const tallW = Math.floor(panelSize * 1.2);
+        const tallH = panelSize * 2 + gap;
+        const smallW = panelSize;
+        const smallH = Math.floor((tallH - gap * 2) / 3);
+        canvasW = border * 2 + tallW + gap + smallW;
+        canvasH = border * 2 + tallH;
+        rects = [
+          { x: border, y: border, w: tallW, h: tallH },
+          { x: border + tallW + gap, y: border, w: smallW, h: smallH },
+          { x: border + tallW + gap, y: border + smallH + gap, w: smallW, h: smallH },
+          { x: border + tallW + gap, y: border + (smallH + gap) * 2, w: smallW, h: smallH },
+        ];
+      }
+
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasW, canvasH);
+
+      // Draw borders for all panels first
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 3;
+      rects.forEach(r => {
+        ctx.strokeRect(r.x, r.y, r.w, r.h);
+      });
+
+      // Load and draw each panel image
+      let loaded = 0;
+      const total = panels.filter(p => p.imageData).length;
+
+      if (total === 0) {
+        resolve(canvas.toDataURL('image/png'));
+        return;
+      }
+
+      panels.forEach((panel, i) => {
+        if (!panel.imageData || !rects[i]) return;
+        const img = new Image();
+        img.onload = () => {
+          const r = rects[i];
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(r.x, r.y, r.w, r.h);
+          ctx.clip();
+          // Cover-fit the image
+          const scale = Math.max(r.w / img.width, r.h / img.height);
+          const drawW = img.width * scale;
+          const drawH = img.height * scale;
+          const drawX = r.x + (r.w - drawW) / 2;
+          const drawY = r.y + (r.h - drawH) / 2;
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+          ctx.restore();
+          // Redraw border on top
+          ctx.strokeStyle = '#1a1a1a';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+          loaded++;
+          if (loaded === total) {
+            resolve(canvas.toDataURL('image/png'));
+          }
+        };
+        img.src = panel.imageData;
+      });
+    });
+  };
+
+  const handleDownloadComic = async () => {
+    if (comicPanels.some(p => p.imageData)) {
+      const stitched = await stitchComicPage(comicPanels, comicTemplate);
+      downloadImage(stitched, `comic-page-${Date.now()}.png`);
+    }
+  };
+
+  const handleSaveComic = async () => {
+    if (!comicPanels.some(p => p.imageData)) return;
+    try {
+      const stitched = await stitchComicPage(comicPanels, comicTemplate);
+      const imageId = `img-${Date.now()}`;
+      const imageRecord = {
+        id: imageId,
+        title: `Comic Page — ${comicDescription.slice(0, 50)}`,
+        timestamp: new Date().toISOString(),
+        type: 'images',
+        imageUrl: stitched,
+        formData: { type: 'comic', comicDescription, comicTemplate },
+      };
+      await fetch('http://localhost:8000/api/images-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(imageRecord),
+      });
+      alert('Comic page saved to Resource Manager!');
+    } catch (error) {
+      console.error('Error saving comic:', error);
+      alert('Failed to save comic page');
+    }
+  };
+
+  const resetComic = () => {
+    setComicState('input');
+    setComicPanels([]);
+    setComicError(null);
+    setComicFinalImage(null);
   };
 
   // Build a descriptive filename from the prompt
@@ -1134,6 +1408,57 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   };
 
   // ========================================
+  // Comic Panel Card Component
+  // ========================================
+  const ComicPanelCard = ({ panel, index, isHero }: { panel?: ComicPanelSlot; index: number; isHero?: boolean }) => {
+    if (!panel) {
+      return (
+        <div className={`border-2 border-dashed border-theme rounded-lg flex items-center justify-center bg-theme-tertiary ${isHero ? 'h-[350px]' : 'h-[280px]'}`}>
+          <p className="text-sm text-gray-400">Panel {index + 1}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`border-2 border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900 ${isHero ? 'h-[350px]' : 'h-[280px]'} relative`}>
+        {panel.status === 'completed' && panel.imageData ? (
+          <>
+            <img
+              src={panel.imageData}
+              alt={`Panel ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            {panel.prompt && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                <p className="text-white text-[10px] leading-tight line-clamp-2">{panel.prompt}</p>
+              </div>
+            )}
+          </>
+        ) : panel.status === 'generating' ? (
+          <div className="flex flex-col items-center justify-center h-full bg-theme-tertiary">
+            <HeartbeatLoader className="w-8 h-8 text-blue-600 mb-2" />
+            <p className="text-sm text-theme-hint">Generating Panel {index + 1}...</p>
+            {panel.prompt && (
+              <p className="text-[10px] text-theme-hint mt-2 px-4 text-center line-clamp-2">{panel.prompt}</p>
+            )}
+          </div>
+        ) : panel.status === 'error' ? (
+          <div className="flex flex-col items-center justify-center h-full bg-red-50 dark:bg-red-900/20">
+            <p className="text-sm text-red-500">Panel {index + 1} failed</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full bg-theme-tertiary">
+            <p className="text-sm text-gray-400">Panel {index + 1}</p>
+            {panel.prompt && (
+              <p className="text-[10px] text-theme-hint mt-2 px-4 text-center line-clamp-2">{panel.prompt}</p>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ========================================
   // RENDER
   // ========================================
   return (
@@ -1180,13 +1505,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         </div>
       )}
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-hidden">
+      {/* Tab Content — Card Flip */}
+      <div className="flex-1 overflow-hidden image-studio-flip-container">
+        <div className={`image-studio-flip-inner ${activeTab === 'editor' ? 'flipped' : ''}`}>
         {/* ========================================
-            GENERATOR TAB
+            GENERATOR TAB (Front Face)
         ======================================== */}
-         {activeTab === 'generator' && (
-          <div className="h-full p-6 overflow-y-auto" data-tutorial="image-studio-generator-panel">
+          <div className="image-studio-flip-front h-full p-6 overflow-y-auto" data-tutorial="image-studio-generator-panel">
             {generationState === 'input' && (
               <div className="max-w-3xl mx-auto">
                 <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">AI Image Generator</h2>
@@ -1570,141 +1895,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               </div>
             )}
           </div>
-        )}
 
         {/* ========================================
-            EDITOR TAB
+            EDITOR TAB (Back Face)
         ======================================== */}
-        {activeTab === 'editor' && (
-          <>
-            {/* Worksheet Modal */}
-            {showWorksheet && (
-              <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-                <div className="rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col widget-glass">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-blue-600" />
-                      Worksheet Maker
-                    </h2>
-                    <button onClick={() => { setShowWorksheet(false); setWorksheetPreview(null); }}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="flex flex-1 overflow-hidden">
-                    {/* Settings panel */}
-                    <div className="w-72 border-r border-gray-200 dark:border-gray-700 p-5 overflow-y-auto space-y-4 flex-shrink-0">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Worksheet Title</label>
-                        <input type="text" value={worksheetTitle} onChange={e => setWorksheetTitle(e.target.value)}
-                          placeholder="e.g. Parts of a Plant"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject / Topic</label>
-                        <input type="text" value={worksheetSubject} onChange={e => setWorksheetSubject(e.target.value)}
-                          placeholder="e.g. Science - Grade 4"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Number of Questions: {worksheetQuestions}
-                        </label>
-                        <input type="range" min={1} max={10} value={worksheetQuestions}
-                          onChange={e => setWorksheetQuestions(Number(e.target.value))} className="w-full" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input type="checkbox" id="wsIncludeImg" checked={worksheetIncludeImage}
-                          onChange={e => setWorksheetIncludeImage(e.target.checked)} className="rounded" />
-                        <label htmlFor="wsIncludeImg" className="text-sm text-gray-700 dark:text-gray-300">Include current image</label>
-                      </div>
-                      {worksheetIncludeImage && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Size</label>
-                          <select value={worksheetImageSize} onChange={e => setWorksheetImageSize(e.target.value as 'small' | 'medium' | 'large')}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white">
-                            <option value="small">Small</option>
-                            <option value="medium">Medium</option>
-                            <option value="large">Large</option>
-                          </select>
-                        </div>
-                      )}
-                      <button onClick={generateWorksheetImage} disabled={worksheetGenerating}
-                        className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium">
-                        {worksheetGenerating ? <HeartbeatLoader className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        {worksheetGenerating ? 'Generating...' : 'Preview Worksheet'}
-                      </button>
-                      {worksheetPreview && (
-                        <button onClick={() => downloadImage(worksheetPreview!, buildImageFilename('worksheet'))}
-                          className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 text-sm font-medium">
-                          <Download className="w-4 h-4" />
-                          Download PNG
-                        </button>
-                      )}
-                    </div>
-                    {/* Preview panel */}
-                    <div className="flex-1 flex items-center justify-center overflow-auto p-6 bg-gray-100 dark:bg-gray-800">
-                      {worksheetPreview ? (
-                        <img src={worksheetPreview} alt="Worksheet preview"
-                          className="max-w-full max-h-full shadow-xl rounded border border-gray-200" />
-                      ) : (
-                        <div className="text-center text-gray-400">
-                          <FileText className="w-16 h-16 mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">Configure settings and click Preview to generate your worksheet</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Resource Picker Modal */}
-            {showResourcePicker && (
-              <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-                <div className="rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col widget-glass">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <FolderOpen className="w-5 h-5 text-purple-600" />
-                      Pick from My Resources
-                    </h2>
-                    <button onClick={() => setShowResourcePicker(false)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4">
-                    {loadingResources ? (
-                      <div className="flex items-center justify-center py-16">
-                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                      </div>
-                    ) : resourceImages.length === 0 ? (
-                      <div className="text-center py-16 text-gray-400">
-                        <ImageOff className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                        <p className="text-sm">No saved images found</p>
-                        <p className="text-xs mt-1">Generate or upload images first, then they'll appear here</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                        {resourceImages.map((img) => (
-                          <button key={img.id} onClick={() => loadResourceImage(img)}
-                            className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-purple-500 transition-all bg-gray-100 dark:bg-gray-800">
-                            <img src={img.imageUrl} alt={img.title || 'Saved image'}
-                              className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-end">
-                              <div className="w-full p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                <p className="text-white text-xs truncate">{img.title || 'Untitled'}</p>
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
+          <div className="image-studio-flip-back h-full">
             <div className="h-full flex" data-tutorial="image-studio-editor-panel">
               {/* Main Canvas Area */}
               <div className="flex-1 p-6 overflow-y-auto">
@@ -1753,7 +1948,45 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       </div>
                     </div>
 
-                    <div className="relative flex items-center justify-center border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary" data-tutorial="image-studio-canvas">
+                    {/* Comic Panel Grid (shown when comic-maker is active and has panels) */}
+                    {editorTool === 'comic-maker' && comicPanels.length > 0 && (
+                      <div className="border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary p-4">
+                        {comicState === 'generating-prompts' && (
+                          <div className="flex items-center justify-center py-12">
+                            <HeartbeatLoader className="w-8 h-8 text-blue-600 mr-3" />
+                            <span className="text-theme-hint">AI is writing scene prompts...</span>
+                          </div>
+                        )}
+                        {(comicState === 'generating-images' || comicState === 'done') && (
+                          <div className={`grid gap-3 ${
+                            comicTemplate === 'strip-3' ? 'grid-cols-3' :
+                            comicTemplate === 'grid-2x2' ? 'grid-cols-2' :
+                            comicTemplate === 'hero-3' ? 'grid-cols-1' :
+                            'grid-cols-2'
+                          }`}>
+                            {comicTemplate === 'hero-3' ? (
+                              <>
+                                <div className="col-span-1">
+                                  <ComicPanelCard panel={comicPanels[0]} index={0} isHero />
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                  {comicPanels.slice(1).map((panel, i) => (
+                                    <ComicPanelCard key={i + 1} panel={panel} index={i + 1} />
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
+                              comicPanels.map((panel, i) => (
+                                <ComicPanelCard key={i} panel={panel} index={i} />
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Regular Canvas (hidden when comic panel grid is visible) */}
+                    <div className={`relative flex items-center justify-center border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary ${editorTool === 'comic-maker' && comicPanels.length > 0 ? 'hidden' : ''}`} data-tutorial="image-studio-canvas">
                       {showBeforeAfter && (
                         <img src={history.original} alt="Original"
                           className="absolute top-0 left-0 w-full h-full object-contain"
@@ -1900,6 +2133,35 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         </button>
                       </div>
                     )}
+                    {editorTool === 'comic-maker' && comicState === 'input' && (
+                      <div className="flex gap-2">
+                        <button onClick={handleComicGenerate}
+                          disabled={!comicDescription.trim() || comicState !== 'input'}
+                          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                          <BookOpen className="w-4 h-4 mr-2" />Generate Comic Page
+                        </button>
+                      </div>
+                    )}
+                    {editorTool === 'comic-maker' && comicState !== 'input' && (
+                      <div className="flex gap-2">
+                        {comicState === 'done' && (
+                          <>
+                            <button onClick={handleDownloadComic}
+                              className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center text-sm">
+                              <Download className="w-4 h-4 mr-1" />Download
+                            </button>
+                            <button onClick={handleSaveComic}
+                              className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center text-sm">
+                              <Save className="w-4 h-4 mr-1" />Save
+                            </button>
+                          </>
+                        )}
+                        <button onClick={resetComic}
+                          className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center text-sm">
+                          New
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1910,13 +2172,14 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   <h3 className="text-sm font-semibold text-theme-label uppercase tracking-wide mb-3">Editor Tools</h3>
 
                   {/* Tool selector */}
-                  <div className="grid grid-cols-5 gap-1 mb-1 p-1 bg-theme-tertiary rounded-lg">
+                  <div className="grid grid-cols-6 gap-1 mb-1 p-1 bg-theme-tertiary rounded-lg">
                     {([
                       { id: 'remove-object' as EditorTool, icon: Eraser, label: 'Object Remover' },
                       { id: 'remove-background' as EditorTool, icon: ImageOff, label: 'Background Remover' },
                       { id: 'annotate' as EditorTool, icon: Pencil, label: 'Annotate' },
                       { id: 'coloring-page' as EditorTool, icon: Palette, label: 'Coloring Page' },
                       { id: 'worksheet' as EditorTool, icon: FileText, label: 'Worksheet Maker' },
+                      { id: 'comic-maker' as EditorTool, icon: BookOpen, label: 'Comic Maker' },
                     ]).map(({ id, icon: Icon, label }) => (
                       <button key={id} onClick={() => setEditorTool(id)} title={label}
                         className={`p-2 rounded-md flex items-center justify-center transition ${
@@ -1932,6 +2195,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     {editorTool === 'annotate' && 'Annotation Tool'}
                     {editorTool === 'coloring-page' && 'Coloring Page Generator'}
                     {editorTool === 'worksheet' && 'Worksheet Maker'}
+                    {editorTool === 'comic-maker' && 'Comic Page Maker'}
                   </p>
 
                   <div className="space-y-4">
@@ -2116,13 +2380,254 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         </div>
                       </>
                     )}
+
+                    {/* Comic Maker */}
+                    {editorTool === 'comic-maker' && (
+                      <>
+                        {/* Template Selector */}
+                        <div>
+                          <label className="block text-xs font-medium text-theme-label mb-2">Page Template</label>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {([
+                              { id: 'grid-2x2' as ComicTemplate, label: '2x2 Grid',
+                                svg: (<svg viewBox="0 0 40 40" className="w-8 h-8" fill="none">
+                                  <rect x="2" y="2" width="16" height="16" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="22" y="2" width="16" height="16" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="2" y="22" width="16" height="16" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="22" y="22" width="16" height="16" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                </svg>)
+                              },
+                              { id: 'strip-3' as ComicTemplate, label: '3 Strip',
+                                svg: (<svg viewBox="0 0 40 40" className="w-8 h-8" fill="none">
+                                  <rect x="1" y="6" width="11" height="28" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="14.5" y="6" width="11" height="28" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="28" y="6" width="11" height="28" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                </svg>)
+                              },
+                              { id: 'hero-3' as ComicTemplate, label: 'Hero+3',
+                                svg: (<svg viewBox="0 0 40 40" className="w-8 h-8" fill="none">
+                                  <rect x="2" y="2" width="36" height="20" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="2" y="26" width="10" height="12" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="15" y="26" width="10" height="12" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="28" y="26" width="10" height="12" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                </svg>)
+                              },
+                              { id: 'asymmetric-4' as ComicTemplate, label: 'Asymmetric',
+                                svg: (<svg viewBox="0 0 40 40" className="w-8 h-8" fill="none">
+                                  <rect x="2" y="2" width="18" height="36" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="24" y="2" width="14" height="10" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="24" y="15" width="14" height="10" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                  <rect x="24" y="28" width="14" height="10" rx="1" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="1.5"/>
+                                </svg>)
+                              },
+                            ]).map((tpl) => (
+                              <button key={tpl.id} onClick={() => setComicTemplate(tpl.id)}
+                                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all text-center
+                                  ${comicTemplate === tpl.id
+                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+                                    : 'border-theme hover:border-blue-300'
+                                  }`}>
+                                {tpl.svg}
+                                <span className="text-[10px] font-medium">{tpl.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-theme-hint mt-1">
+                            {comicTemplateConfig[comicTemplate].panels} panels
+                          </p>
+                        </div>
+
+                        {/* Story Description */}
+                        <div>
+                          <label className="block text-xs font-medium text-theme-label mb-1">
+                            Story Description
+                          </label>
+                          <textarea
+                            value={comicDescription}
+                            onChange={(e) => setComicDescription(e.target.value)}
+                            className="w-full p-2 border border-theme-strong rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            rows={3}
+                            placeholder="A cat discovers a hidden garden, explores the flowers, and befriends a butterfly..."
+                          />
+                        </div>
+
+                        {/* Status when generating */}
+                        {comicState === 'generating-prompts' && (
+                          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <HeartbeatLoader className="w-4 h-4 text-blue-600" />
+                              <span className="text-xs text-blue-700 dark:text-blue-300">Writing scene prompts...</span>
+                            </div>
+                          </div>
+                        )}
+                        {comicState === 'generating-images' && (
+                          <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <HeartbeatLoader className="w-4 h-4 text-indigo-600" />
+                              <span className="text-xs text-indigo-700 dark:text-indigo-300">
+                                Panel {comicPanels.filter(p => p.status === 'completed').length + 1} of {comicPanels.length}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {comicState === 'done' && (
+                          <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <span className="text-xs text-green-700 dark:text-green-300 font-medium">Comic page ready!</span>
+                          </div>
+                        )}
+
+                        {comicError && (
+                          <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <span className="text-xs text-red-700 dark:text-red-300">{comicError}</span>
+                          </div>
+                        )}
+
+                        <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+                          <h4 className="text-xs font-semibold text-indigo-900 dark:text-indigo-300 mb-1">How to Use:</h4>
+                          <ol className="text-xs text-indigo-800 dark:text-indigo-400 space-y-1 list-decimal list-inside">
+                            <li>Choose a template layout</li>
+                            <li>Describe your story</li>
+                            <li>Click "Generate Comic Page"</li>
+                          </ol>
+                          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-1.5">
+                            The current image is used as a reference — panels will match its style and characters.
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </div>
+
+      {/* Worksheet Modal (outside flip container for proper z-index) */}
+      {showWorksheet && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col widget-glass">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                Worksheet Maker
+              </h2>
+              <button onClick={() => { setShowWorksheet(false); setWorksheetPreview(null); }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex flex-1 overflow-hidden">
+              <div className="w-72 border-r border-gray-200 dark:border-gray-700 p-5 overflow-y-auto space-y-4 flex-shrink-0">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Worksheet Title</label>
+                  <input type="text" value={worksheetTitle} onChange={e => setWorksheetTitle(e.target.value)}
+                    placeholder="e.g. Parts of a Plant"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject / Topic</label>
+                  <input type="text" value={worksheetSubject} onChange={e => setWorksheetSubject(e.target.value)}
+                    placeholder="e.g. Science - Grade 4"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Number of Questions: {worksheetQuestions}
+                  </label>
+                  <input type="range" min={1} max={10} value={worksheetQuestions}
+                    onChange={e => setWorksheetQuestions(Number(e.target.value))} className="w-full" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="wsIncludeImg" checked={worksheetIncludeImage}
+                    onChange={e => setWorksheetIncludeImage(e.target.checked)} className="rounded" />
+                  <label htmlFor="wsIncludeImg" className="text-sm text-gray-700 dark:text-gray-300">Include current image</label>
+                </div>
+                {worksheetIncludeImage && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Size</label>
+                    <select value={worksheetImageSize} onChange={e => setWorksheetImageSize(e.target.value as 'small' | 'medium' | 'large')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white">
+                      <option value="small">Small</option>
+                      <option value="medium">Medium</option>
+                      <option value="large">Large</option>
+                    </select>
+                  </div>
+                )}
+                <button onClick={generateWorksheetImage} disabled={worksheetGenerating}
+                  className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium">
+                  {worksheetGenerating ? <HeartbeatLoader className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {worksheetGenerating ? 'Generating...' : 'Preview Worksheet'}
+                </button>
+                {worksheetPreview && (
+                  <button onClick={() => downloadImage(worksheetPreview!, buildImageFilename('worksheet'))}
+                    className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 text-sm font-medium">
+                    <Download className="w-4 h-4" />
+                    Download PNG
+                  </button>
+                )}
+              </div>
+              <div className="flex-1 flex items-center justify-center overflow-auto p-6 bg-gray-100 dark:bg-gray-800">
+                {worksheetPreview ? (
+                  <img src={worksheetPreview} alt="Worksheet preview"
+                    className="max-w-full max-h-full shadow-xl rounded border border-gray-200" />
+                ) : (
+                  <div className="text-center text-gray-400">
+                    <FileText className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">Configure settings and click Preview to generate your worksheet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resource Picker Modal (outside flip container for proper z-index) */}
+      {showResourcePicker && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col widget-glass">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <FolderOpen className="w-5 h-5 text-purple-600" />
+                Pick from My Resources
+              </h2>
+              <button onClick={() => setShowResourcePicker(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {loadingResources ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                </div>
+              ) : resourceImages.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                  <ImageOff className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No saved images found</p>
+                  <p className="text-xs mt-1">Generate or upload images first, then they'll appear here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {resourceImages.map((img) => (
+                    <button key={img.id} onClick={() => loadResourceImage(img)}
+                      className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-purple-500 transition-all bg-gray-100 dark:bg-gray-800">
+                      <img src={img.imageUrl} alt={img.title || 'Saved image'}
+                        className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-end">
+                        <div className="w-full p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                          <p className="text-white text-xs truncate">{img.title || 'Untitled'}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Image Modal */}
       {showImageModal && selectedImage && (
