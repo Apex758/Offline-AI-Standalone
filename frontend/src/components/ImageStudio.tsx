@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X } from 'lucide-react';
+import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, ArrowLeft, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X, FolderOpen } from 'lucide-react';
+import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
 
@@ -93,6 +94,10 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushSize, setBrushSize] = useState(20);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+  const [coloringDetail, setColoringDetail] = useState(50); // 0-100 detail level
+  const [showResourcePicker, setShowResourcePicker] = useState(false);
+  const [resourceImages, setResourceImages] = useState<SavedImageRecord[]>([]);
+  const [loadingResources, setLoadingResources] = useState(false);
   const [history, setHistory] = useState<ImageHistory>({
     original: '',
     current: '',
@@ -496,6 +501,38 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     reader.readAsDataURL(file);
   };
 
+  const openResourcePicker = async () => {
+    setShowResourcePicker(true);
+    setLoadingResources(true);
+    try {
+      const response = await axios.get('http://localhost:8000/api/images-history');
+      setResourceImages(response.data || []);
+    } catch (error) {
+      console.error('Failed to load resource images:', error);
+      setResourceImages([]);
+    } finally {
+      setLoadingResources(false);
+    }
+  };
+
+  const loadResourceImage = (image: SavedImageRecord) => {
+    if (!image.imageUrl) return;
+    setUploadedImage(image.imageUrl);
+    setIsNewUpload(false);
+    setSavedImageId(image.id);
+    setHistory({
+      original: image.imageUrl,
+      current: image.imageUrl,
+      undoStack: [],
+      redoStack: []
+    });
+    setShowResourcePicker(false);
+    setTimeout(() => {
+      drawImageOnCanvas(image.imageUrl!);
+      clearMaskCanvas();
+    }, 100);
+  };
+
   const drawImageOnCanvas = (imageData: string) => {
     const canvas = imageCanvasRef.current;
     if (!canvas) return;
@@ -754,29 +791,110 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     const imageData = ctx.getImageData(0, 0, w, h);
     const d = imageData.data;
 
-    // Grayscale
-    const gray = new Uint8Array(w * h);
+    // Step 1: Convert to grayscale
+    const gray = new Float32Array(w * h);
     for (let i = 0; i < w * h; i++) {
-      gray[i] = Math.round(0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]);
+      gray[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
     }
 
-    // Sobel edge detection
-    const edges = new Uint8Array(w * h);
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        const idx = y * w + x;
-        const gx = -gray[(y - 1) * w + (x - 1)] - 2 * gray[y * w + (x - 1)] - gray[(y + 1) * w + (x - 1)]
-                  + gray[(y - 1) * w + (x + 1)] + 2 * gray[y * w + (x + 1)] + gray[(y + 1) * w + (x + 1)];
-        const gy = -gray[(y - 1) * w + (x - 1)] - 2 * gray[(y - 1) * w + x] - gray[(y - 1) * w + (x + 1)]
-                  + gray[(y + 1) * w + (x - 1)] + 2 * gray[(y + 1) * w + x] + gray[(y + 1) * w + (x + 1)];
-        edges[idx] = Math.min(255, Math.sqrt(gx * gx + gy * gy));
+    // Step 2: Gaussian blur to remove noise/texture (radius scales with detail)
+    // Lower detail = more blur = fewer lines; higher detail = less blur = more lines
+    const blurRadius = Math.max(1, Math.round(4 - (coloringDetail / 100) * 3)); // 4 at 0%, 1 at 100%
+    const blurred = new Float32Array(w * h);
+
+    // Build 1D Gaussian kernel
+    const kernelSize = blurRadius * 2 + 1;
+    const kernel = new Float32Array(kernelSize);
+    const sigma = blurRadius / 2;
+    let kernelSum = 0;
+    for (let i = 0; i < kernelSize; i++) {
+      const x = i - blurRadius;
+      kernel[i] = Math.exp(-(x * x) / (2 * sigma * sigma));
+      kernelSum += kernel[i];
+    }
+    for (let i = 0; i < kernelSize; i++) kernel[i] /= kernelSum;
+
+    // Horizontal pass
+    const temp = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let sum = 0;
+        for (let k = -blurRadius; k <= blurRadius; k++) {
+          const sx = Math.min(w - 1, Math.max(0, x + k));
+          sum += gray[y * w + sx] * kernel[k + blurRadius];
+        }
+        temp[y * w + x] = sum;
+      }
+    }
+    // Vertical pass
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let sum = 0;
+        for (let k = -blurRadius; k <= blurRadius; k++) {
+          const sy = Math.min(h - 1, Math.max(0, y + k));
+          sum += temp[sy * w + x] * kernel[k + blurRadius];
+        }
+        blurred[y * w + x] = sum;
       }
     }
 
-    // Threshold: edges → black, rest → white
-    const threshold = 25;
+    // Step 3: Sobel edge detection on blurred image
+    const edgeMag = new Float32Array(w * h);
+    let maxEdge = 0;
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        const gx = -blurred[(y - 1) * w + (x - 1)] - 2 * blurred[y * w + (x - 1)] - blurred[(y + 1) * w + (x - 1)]
+                  + blurred[(y - 1) * w + (x + 1)] + 2 * blurred[y * w + (x + 1)] + blurred[(y + 1) * w + (x + 1)];
+        const gy = -blurred[(y - 1) * w + (x - 1)] - 2 * blurred[(y - 1) * w + x] - blurred[(y - 1) * w + (x + 1)]
+                  + blurred[(y + 1) * w + (x - 1)] + 2 * blurred[(y + 1) * w + x] + blurred[(y + 1) * w + (x + 1)];
+        const mag = Math.sqrt(gx * gx + gy * gy);
+        edgeMag[idx] = mag;
+        if (mag > maxEdge) maxEdge = mag;
+      }
+    }
+
+    // Step 4: Adaptive threshold based on detail level
+    // Normalize edges, then threshold
+    const threshold = 0.08 + (1 - coloringDetail / 100) * 0.15; // 0.08 at 100% detail, 0.23 at 0%
+    const edges = new Uint8Array(w * h);
     for (let i = 0; i < w * h; i++) {
-      const c = edges[i] > threshold ? 0 : 255;
+      edges[i] = (maxEdge > 0 && edgeMag[i] / maxEdge > threshold) ? 1 : 0;
+    }
+
+    // Step 5: Remove isolated noise pixels (if a black pixel has fewer than 2 black neighbors, remove it)
+    const cleaned = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        if (!edges[idx]) continue;
+        let neighbors = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dy === 0 && dx === 0) continue;
+            if (edges[(y + dy) * w + (x + dx)]) neighbors++;
+          }
+        }
+        cleaned[idx] = neighbors >= 2 ? 1 : 0;
+      }
+    }
+
+    // Step 6: Thicken lines slightly for a more printable coloring page
+    const final = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        if (cleaned[y * w + x]) {
+          // Set this pixel and immediate neighbors for thicker lines
+          final[y * w + x] = 1;
+          final[y * w + (x + 1)] = 1;
+          final[(y + 1) * w + x] = 1;
+        }
+      }
+    }
+
+    // Step 7: Write result — black lines on white background
+    for (let i = 0; i < w * h; i++) {
+      const c = final[i] ? 0 : 255;
       d[i * 4] = c; d[i * 4 + 1] = c; d[i * 4 + 2] = c; d[i * 4 + 3] = 255;
     }
     ctx.putImageData(imageData, 0, 0);
@@ -1496,6 +1614,52 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               </div>
             )}
 
+            {/* Resource Picker Modal */}
+            {showResourcePicker && (
+              <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+                <div className="rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col widget-glass">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <FolderOpen className="w-5 h-5 text-purple-600" />
+                      Pick from My Resources
+                    </h2>
+                    <button onClick={() => setShowResourcePicker(false)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    {loadingResources ? (
+                      <div className="flex items-center justify-center py-16">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div>
+                    ) : resourceImages.length === 0 ? (
+                      <div className="text-center py-16 text-gray-400">
+                        <ImageOff className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                        <p className="text-sm">No saved images found</p>
+                        <p className="text-xs mt-1">Generate or upload images first, then they'll appear here</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        {resourceImages.map((img) => (
+                          <button key={img.id} onClick={() => loadResourceImage(img)}
+                            className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-purple-500 transition-all bg-gray-100 dark:bg-gray-800">
+                            <img src={img.imageUrl} alt={img.title || 'Saved image'}
+                              className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-end">
+                              <div className="w-full p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                <p className="text-white text-xs truncate">{img.title || 'Untitled'}</p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="h-full flex" data-tutorial="image-studio-editor-panel">
               {/* Main Canvas Area */}
               <div className="flex-1 p-6 overflow-y-auto">
@@ -1504,22 +1668,38 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     <div className="text-center">
                       <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                       <h2 className="text-xl font-semibold mb-2">Upload an Image</h2>
-                      <p className="text-sm text-theme-hint mb-4">Start by uploading an image to edit</p>
-                      <label className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
-                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                        Choose File
-                      </label>
+                      <p className="text-sm text-theme-hint mb-4">Start by uploading an image or pick one from your resources</p>
+                      <div className="flex gap-3 justify-center">
+                        <label className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+                          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                          <Upload className="w-4 h-4 mr-2" />Choose File
+                        </label>
+                        <button onClick={openResourcePicker}
+                          className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                          <FolderOpen className="w-4 h-4 mr-2" />My Resources
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-xl font-semibold">Image Editor</h2>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => { setUploadedImage(null); setHistory({ original: '', current: '', undoStack: [], redoStack: [] }); setShowBeforeAfter(false); }}
+                          className="p-1.5 rounded-lg hover:bg-theme-hover text-theme-secondary" title="Back">
+                          <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <h2 className="text-xl font-semibold">Image Editor</h2>
+                      </div>
                       <div className="flex gap-2">
                         <button onClick={() => setShowBeforeAfter(!showBeforeAfter)}
                           className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm">
                           {showBeforeAfter ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
                           {showBeforeAfter ? 'Hide Original' : 'Show Original'}
+                        </button>
+                        <button onClick={openResourcePicker}
+                          className="px-3 py-1.5 border border-theme-strong rounded-lg hover:bg-theme-subtle flex items-center text-sm">
+                          <FolderOpen className="w-4 h-4 mr-1" />My Resources
                         </button>
                         <label className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center text-sm">
                           <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -1532,8 +1712,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <img src={history.original} alt="Original"
                         className="absolute top-0 left-0 w-full h-full object-contain"
                         style={{ pointerEvents: 'none', zIndex: 1 }} />
-                      <div className="relative transition-transform duration-500 ease-in-out"
-                        style={{ transform: showBeforeAfter ? 'translateX(100%)' : 'translateX(0%)', zIndex: 2 }}>
+                      <div className="relative transition-opacity duration-500 ease-in-out"
+                        style={{ opacity: showBeforeAfter ? 0 : 1, zIndex: 2 }}>
                         <canvas ref={imageCanvasRef} className="max-w-full h-auto" style={{ display: 'block' }} />
                         <canvas ref={maskCanvasRef}
                           className="absolute top-0 left-0 max-w-full h-auto"
@@ -1831,6 +2011,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     {/* Coloring Page */}
                     {editorTool === 'coloring-page' && (
                       <>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Detail Level: {coloringDetail}%</label>
+                          <input type="range" min="0" max="100" value={coloringDetail}
+                            onChange={e => setColoringDetail(Number(e.target.value))}
+                            className="w-full accent-orange-500" />
+                          <div className="flex justify-between text-[10px] text-theme-secondary mt-0.5">
+                            <span>Simple</span><span>Detailed</span>
+                          </div>
+                        </div>
                         <div className="flex gap-2">
                           <button onClick={handleUndo} disabled={history.undoStack.length === 0}
                             className="flex-1 px-3 py-2 border border-theme-strong rounded-lg hover:bg-theme-hover disabled:opacity-50 flex items-center justify-center text-sm">
@@ -1847,7 +2036,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         </button>
                         <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
                           <h4 className="text-xs font-semibold text-orange-900 dark:text-orange-300 mb-1">How to Use:</h4>
-                          <p className="text-xs text-orange-800 dark:text-orange-400">Click "Convert to Coloring Page" below. Edge detection will produce black outlines on a white background — perfect for printing and colouring.</p>
+                          <p className="text-xs text-orange-800 dark:text-orange-400">Adjust the detail slider, then click "Convert to Coloring Page". Use Undo to revert and try different detail levels.</p>
                         </div>
                       </>
                     )}
