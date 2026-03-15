@@ -7,6 +7,7 @@ import type { ParsedRubric, CriteriaRow } from './RubricEditor';
 import axios from 'axios';
 import { buildRubricPrompt } from '../utils/rubricPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -1072,19 +1073,27 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </select>
                 </div>
 
-                <CurriculumAlignmentFields
-                  subject={formData.subject}
-                  gradeLevel={formData.gradeLevel}
-                  strand={formData.strand}
-                  essentialOutcomes={formData.essentialOutcomes}
-                  specificOutcomes={formData.specificOutcomes}
-                  useCurriculum={useCurriculum}
-                  onStrandChange={(v) => handleInputChange('strand', v)}
-                  onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
-                  onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
-                  onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
-                  accentColor={tabColor}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <CurriculumAlignmentFields
+                    subject={formData.subject}
+                    gradeLevel={formData.gradeLevel}
+                    strand={formData.strand}
+                    essentialOutcomes={formData.essentialOutcomes}
+                    specificOutcomes={formData.specificOutcomes}
+                    useCurriculum={useCurriculum}
+                    onStrandChange={(v) => handleInputChange('strand', v)}
+                    onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                    onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                    onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                    accentColor={tabColor}
+                  />
+                  <RelatedCurriculumBox
+                    subject={formData.subject}
+                    gradeLevel={formData.gradeLevel}
+                    strand={formData.strand}
+                    useCurriculum={useCurriculum}
+                  />
+                </div>
 
                 <div data-tutorial="rubric-generator-criteria">
                   <label className="block text-sm font-medium text-theme-label mb-2">

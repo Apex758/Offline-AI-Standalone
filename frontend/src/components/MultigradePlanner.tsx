@@ -10,6 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -970,19 +971,27 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       </div>
                     </div>
 
-                    <CurriculumAlignmentFields
-                      subject={formData.subject}
-                      gradeLevel={formData.gradeRange ? formData.gradeRange.split('-')[0].trim().replace(/^Kindergarten$/, 'K').replace(/^Grade\s+/, '') : ''}
-                      strand={formData.strand}
-                      essentialOutcomes={formData.essentialOutcomes}
-                      specificOutcomes={formData.specificOutcomes}
-                      useCurriculum={useCurriculum}
-                      onStrandChange={(v) => handleInputChange('strand', v)}
-                      onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
-                      onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
-                      onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
-                      accentColor={tabColor}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <CurriculumAlignmentFields
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeRange ? formData.gradeRange.split('-')[0].trim().replace(/^Kindergarten$/, 'K').replace(/^Grade\s+/, '') : ''}
+                        strand={formData.strand}
+                        essentialOutcomes={formData.essentialOutcomes}
+                        specificOutcomes={formData.specificOutcomes}
+                        useCurriculum={useCurriculum}
+                        onStrandChange={(v) => handleInputChange('strand', v)}
+                        onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                        onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                        onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                        accentColor={tabColor}
+                      />
+                      <RelatedCurriculumBox
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeRange ? formData.gradeRange.split('-')[0].trim().replace(/^Kindergarten$/, 'K').replace(/^Grade\s+/, '') : ''}
+                        strand={formData.strand}
+                        useCurriculum={useCurriculum}
+                      />
+                    </div>
 
                     <div data-tutorial="multigrade-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">

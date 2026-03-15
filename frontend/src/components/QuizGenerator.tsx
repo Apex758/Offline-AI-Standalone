@@ -8,6 +8,7 @@ import axios from 'axios';
 import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
 import { buildQuizPrompt } from '../utils/quizPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -1072,19 +1073,27 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </select>
                 </div>
 
-                <CurriculumAlignmentFields
-                  subject={formData.subject}
-                  gradeLevel={formData.gradeLevel}
-                  strand={formData.strand}
-                  essentialOutcomes={formData.essentialOutcomes}
-                  specificOutcomes={formData.specificOutcomes}
-                  useCurriculum={useCurriculum}
-                  onStrandChange={(v) => handleInputChange('strand', v)}
-                  onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
-                  onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
-                  onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
-                  accentColor={tabColor}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <CurriculumAlignmentFields
+                    subject={formData.subject}
+                    gradeLevel={formData.gradeLevel}
+                    strand={formData.strand}
+                    essentialOutcomes={formData.essentialOutcomes}
+                    specificOutcomes={formData.specificOutcomes}
+                    useCurriculum={useCurriculum}
+                    onStrandChange={(v) => handleInputChange('strand', v)}
+                    onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                    onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                    onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                    accentColor={tabColor}
+                  />
+                  <RelatedCurriculumBox
+                    subject={formData.subject}
+                    gradeLevel={formData.gradeLevel}
+                    strand={formData.strand}
+                    useCurriculum={useCurriculum}
+                  />
+                </div>
 
                 <div data-tutorial="quiz-generator-question-count">
                   <label className="block text-sm font-medium text-theme-label mb-2">

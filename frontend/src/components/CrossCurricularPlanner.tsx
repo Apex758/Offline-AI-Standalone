@@ -10,6 +10,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -1170,19 +1171,27 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                    <CurriculumAlignmentFields
-                      subject={formData.primarySubject}
-                      gradeLevel={formData.gradeLevel}
-                      strand={formData.strand}
-                      essentialOutcomes={formData.essentialOutcomes}
-                      specificOutcomes={formData.specificOutcomes}
-                      useCurriculum={useCurriculum}
-                      onStrandChange={(v) => handleInputChange('strand', v)}
-                      onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
-                      onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
-                      onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
-                      accentColor={tabColor}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <CurriculumAlignmentFields
+                        subject={formData.primarySubject}
+                        gradeLevel={formData.gradeLevel}
+                        strand={formData.strand}
+                        essentialOutcomes={formData.essentialOutcomes}
+                        specificOutcomes={formData.specificOutcomes}
+                        useCurriculum={useCurriculum}
+                        onStrandChange={(v) => handleInputChange('strand', v)}
+                        onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                        onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                        onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                        accentColor={tabColor}
+                      />
+                      <RelatedCurriculumBox
+                        subject={formData.primarySubject}
+                        gradeLevel={formData.gradeLevel}
+                        strand={formData.strand}
+                        useCurriculum={useCurriculum}
+                      />
+                    </div>
                     <div data-tutorial="cross-curricular-planner-connections">
                       <label className="block text-sm font-medium text-theme-label mb-2">Supporting Subjects</label>
                       <input type="text" value={formData.supportingSubjects} onChange={(e) => handleInputChange('supportingSubjects', e.target.value)}

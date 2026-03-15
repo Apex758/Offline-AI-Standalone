@@ -7,6 +7,7 @@ import type { ParsedKindergartenPlan } from './KindergartenEditor';
 import axios from 'axios';
 import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -1213,19 +1214,27 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   </select>
                 </div>
 
-                <CurriculumAlignmentFields
-                  subject={formData.curriculumSubject}
-                  gradeLevel="K"
-                  strand={formData.strand}
-                  essentialOutcomes={formData.essentialOutcomes}
-                  specificOutcomes={formData.specificOutcomes}
-                  useCurriculum={useCurriculum}
-                  onStrandChange={(v) => handleInputChange('strand', v)}
-                  onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
-                  onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
-                  onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
-                  accentColor={tabColor}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <CurriculumAlignmentFields
+                    subject={formData.curriculumSubject}
+                    gradeLevel="K"
+                    strand={formData.strand}
+                    essentialOutcomes={formData.essentialOutcomes}
+                    specificOutcomes={formData.specificOutcomes}
+                    useCurriculum={useCurriculum}
+                    onStrandChange={(v) => handleInputChange('strand', v)}
+                    onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                    onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                    onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                    accentColor={tabColor}
+                  />
+                  <RelatedCurriculumBox
+                    subject={formData.curriculumSubject}
+                    gradeLevel="K"
+                    strand={formData.strand}
+                    useCurriculum={useCurriculum}
+                  />
+                </div>
 
                 <div data-tutorial="kinder-planner-circle-time">
                   <label className="block text-sm font-medium text-theme-label mb-2">
