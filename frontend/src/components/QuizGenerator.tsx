@@ -58,7 +58,6 @@ interface FormData {
   questionTypes: string[];
   cognitiveLevels: string[];
   timeLimitPerQuestion: string;
-  randomizeQuestions: boolean;
   numberOfQuestions: string;
   strand: string;
   essentialOutcomes: string;
@@ -193,6 +192,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [selectedVersion, setSelectedVersion] = useState<'teacher' | 'student'>('teacher');
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [useCurriculum, setUseCurriculum] = useState(true);
+
+  // Class quiz mode state
+  const [classQuizMode, setClassQuizMode] = useState(false);
+  const [selectedClassName, setSelectedClassName] = useState('');
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [classStudents, setClassStudents] = useState<Array<{id: string, full_name: string}>>([]);
+  const [randomizeClassQuestions, setRandomizeClassQuestions] = useState(false);
+  const [classQuizData, setClassQuizData] = useState<Array<{id: string, name: string, questionOrder: number[]}> | null>(null);
+  const [selectedStudentIdx, setSelectedStudentIdx] = useState<number | null>(null);
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     subject: '',
@@ -201,7 +209,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     questionTypes: [],
     cognitiveLevels: [],
     timeLimitPerQuestion: '',
-    randomizeQuestions: false,
     numberOfQuestions: '10',
     strand: '',
     essentialOutcomes: '',
@@ -226,6 +233,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   const loading = !!localLoadingMap[tabId] || contextLoading;
 
+  // Computed values for class quiz display
+  const viewingStudent = selectedStudentIdx !== null && classQuizData ? classQuizData[selectedStudentIdx] : null;
+  const displayParsedQuiz: ParsedQuiz | null = viewingStudent && parsedQuiz ? {
+    ...parsedQuiz,
+    questions: viewingStudent.questionOrder.map(i => parsedQuiz.questions[i])
+  } : parsedQuiz;
+  const effectiveVersion: 'teacher' | 'student' = viewingStudent ? 'student' : selectedVersion;
+
   const allSubjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Music', 'Physical Education'];
   const allGrades = ['K', '1', '2', '3', '4', '5', '6'];
 
@@ -244,6 +259,26 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
   }, [subjects, grades, settings.profile.filterContentByProfile]);
+
+  // Fetch available classes when class quiz mode is enabled
+  useEffect(() => {
+    if (classQuizMode) {
+      axios.get('http://localhost:8000/api/classes').then(r => {
+        setAvailableClasses(r.data.map((c: any) => c.class_name));
+      }).catch(() => {});
+    }
+  }, [classQuizMode]);
+
+  // Fetch students when class is selected
+  useEffect(() => {
+    if (selectedClassName) {
+      axios.get(`http://localhost:8000/api/students?class_name=${encodeURIComponent(selectedClassName)}`).then(r => {
+        setClassStudents(r.data);
+      }).catch(() => {});
+    } else {
+      setClassStudents([]);
+    }
+  }, [selectedClassName]);
 
   const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
   const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
@@ -504,6 +539,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     setCurrentQuizId(null);
     setIsEditing(false);
     setLockedLessonPlan(null);
+    setClassQuizData(null);
+    setSelectedStudentIdx(null);
     localStorage.removeItem(`quiz_state_${tabId}`);
   };
 
@@ -557,11 +594,80 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         delete newMap[tabId];
         return newMap;
       });
+
+      // Generate class quiz data if in class mode
+      const finalParsed = parsed || parsedQuiz;
+      if (classQuizMode && classStudents.length > 0 && finalParsed) {
+        const studentData = classStudents.map(student => {
+          const numQuestions = finalParsed.questions.length;
+          const order = Array.from({length: numQuestions}, (_, i) => i);
+          if (randomizeClassQuestions) {
+            // Fisher-Yates shuffle
+            for (let i = order.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [order[i], order[j]] = [order[j], order[i]];
+            }
+          }
+          return { id: student.id, name: student.full_name, questionOrder: order };
+        });
+        setClassQuizData(studentData);
+        setSelectedStudentIdx(null);
+      }
     }
   }, [streamingQuiz, contextLoading]);
 
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="quiz-generator-welcome">
+      {/* Student Quiz Panel (left side) - only when class quiz is generated */}
+      {classQuizData && (generatedQuiz || streamingQuiz) && !loading && (
+        <div className="border-r border-theme bg-theme-secondary flex flex-col flex-shrink-0" style={{ width: '260px' }}>
+          <div className="p-3 border-b border-theme">
+            <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
+            <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
+            {/* Teacher version option */}
+            <button
+              onClick={() => setSelectedStudentIdx(null)}
+              className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
+                selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
+                <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
+              </div>
+            </button>
+
+            <div className="border-t border-theme my-1.5" />
+
+            {/* Student entries */}
+            {classQuizData.map((student, idx) => (
+              <button
+                key={student.id}
+                onClick={() => setSelectedStudentIdx(idx)}
+                className={`w-full text-left p-2 rounded-lg transition text-sm ${
+                  selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
+                    style={{ backgroundColor: tabColor }}
+                  >
+                    {student.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
+                    <div className="text-[10px] text-theme-hint">{student.id}</div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col tab-content-bg overflow-hidden" style={{ perspective: '2000px' }}>
         {/* Card Flip Container */}
         <div
@@ -726,10 +832,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       <ExportButton
                         dataType="quiz"
                         data={{
-                          content: parsedQuiz ? quizToDisplayText(parsedQuiz) : generatedQuiz,
+                          content: displayParsedQuiz ? quizToDisplayText(displayParsedQuiz) : generatedQuiz,
                           formData: formData,
                           accentColor: tabColor,
-                          exportOptions: selectedVersion === 'student' ? {
+                          exportOptions: effectiveVersion === 'student' ? {
                             showAnswerKey: false,
                             showExplanations: false,
                             boldCorrectAnswers: false
@@ -739,7 +845,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             boldCorrectAnswers: true
                           }
                         }}
-                        filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${selectedVersion}`}
+                        filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${viewingStudent ? viewingStudent.name.replace(/\s+/g, '-') : effectiveVersion}`}
                         className="ml-2"
                       />
                       <button
@@ -756,6 +862,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           setParsedQuiz(null);
                           setIsEditing(false);
                           setIsGrading(false);
+                          setClassQuizData(null);
+                          setSelectedStudentIdx(null);
                         }}
                         className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
@@ -835,10 +943,25 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
                   <div className="prose prose-lg max-w-none">
                     <div className="space-y-1">
-                      {parsedQuiz && !loading ? (
-                        // ✅ Conditionally render based on selectedVersion
+                      {displayParsedQuiz && !loading ? (
+                        // ✅ Conditionally render based on effectiveVersion (student view when viewing class quiz student)
                         <div className="space-y-6">
-                          {parsedQuiz.questions.map((question, qIndex) => {
+                          {/* Student info banner */}
+                          {viewingStudent && (
+                            <div className="p-4 rounded-xl border-2 mb-2" style={{ borderColor: `${tabColor}44`, backgroundColor: `${tabColor}08` }}>
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: tabColor }}>
+                                  {viewingStudent.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-theme-heading text-base">{viewingStudent.name}</div>
+                                  <div className="text-sm text-theme-muted">Student ID: {viewingStudent.id}</div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {displayParsedQuiz.questions.map((question, qIndex) => {
                             const correctAnswerIndex = question.correctAnswer as number;
                             const correctLetter = question.type === 'multiple-choice' && typeof correctAnswerIndex === 'number'
                               ? String.fromCharCode(65 + correctAnswerIndex)
@@ -854,7 +977,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <div className="ml-6 space-y-2">
                                     {question.options.map((option, oIndex) => {
                                       const letter = String.fromCharCode(65 + oIndex);
-                                      const isCorrect = selectedVersion === 'teacher' && correctAnswerIndex === oIndex;
+                                      const isCorrect = effectiveVersion === 'teacher' && correctAnswerIndex === oIndex;
                                       return (
                                         <div key={oIndex} className="flex items-start">
                                           <span 
@@ -875,7 +998,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                     })}
                                     
                                     {/* Show answer only in teacher version */}
-                                    {selectedVersion === 'teacher' && (
+                                    {effectiveVersion === 'teacher' && (
                                       <div className="mt-3 text-sm">
                                         <span className="font-semibold text-green-700">
                                           Correct Answer: {correctLetter}
@@ -888,36 +1011,36 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 {question.type === 'true-false' && (
                                   <div className="ml-6 space-y-2">
                                     <div className="flex items-start">
-                                      <span 
-                                        className={`mr-3 font-semibold ${selectedVersion === 'teacher' && question.correctAnswer === 'true' ? 'px-2 py-0.5 rounded' : ''}`}
-                                        style={{ 
-                                          color: selectedVersion === 'teacher' && question.correctAnswer === 'true' ? tabColor : `${tabColor}cc`,
-                                          backgroundColor: selectedVersion === 'teacher' && question.correctAnswer === 'true' ? `${tabColor}15` : 'transparent'
+                                      <span
+                                        className={`mr-3 font-semibold ${effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? 'px-2 py-0.5 rounded' : ''}`}
+                                        style={{
+                                          color: effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? tabColor : `${tabColor}cc`,
+                                          backgroundColor: effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? `${tabColor}15` : 'transparent'
                                         }}
                                       >
                                         A)
                                       </span>
-                                      <span className={`text-theme-label ${selectedVersion === 'teacher' && question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
+                                      <span className={`text-theme-label ${effectiveVersion === 'teacher' && question.correctAnswer === 'true' ? 'font-medium' : ''}`}>
                                         True
                                       </span>
                                     </div>
                                     <div className="flex items-start">
-                                      <span 
-                                        className={`mr-3 font-semibold ${selectedVersion === 'teacher' && question.correctAnswer === 'false' ? 'px-2 py-0.5 rounded' : ''}`}
-                                        style={{ 
-                                          color: selectedVersion === 'teacher' && question.correctAnswer === 'false' ? tabColor : `${tabColor}cc`,
-                                          backgroundColor: selectedVersion === 'teacher' && question.correctAnswer === 'false' ? `${tabColor}15` : 'transparent'
+                                      <span
+                                        className={`mr-3 font-semibold ${effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? 'px-2 py-0.5 rounded' : ''}`}
+                                        style={{
+                                          color: effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? tabColor : `${tabColor}cc`,
+                                          backgroundColor: effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? `${tabColor}15` : 'transparent'
                                         }}
                                       >
                                         B)
                                       </span>
-                                      <span className={`text-theme-label ${selectedVersion === 'teacher' && question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
+                                      <span className={`text-theme-label ${effectiveVersion === 'teacher' && question.correctAnswer === 'false' ? 'font-medium' : ''}`}>
                                         False
                                       </span>
                                     </div>
-                                    
+
                                     {/* Show answer only in teacher version */}
-                                    {selectedVersion === 'teacher' && (
+                                    {effectiveVersion === 'teacher' && (
                                       <div className="mt-3 text-sm">
                                         <span className="font-semibold text-green-700">
                                           Correct Answer: {question.correctAnswer === 'true' ? 'True' : 'False'}
@@ -927,7 +1050,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   </div>
                                 )}
                                 
-                                {question.type === 'fill-blank' && selectedVersion === 'teacher' && (
+                                {question.type === 'fill-blank' && effectiveVersion === 'teacher' && (
                                   <div className="ml-6 space-y-2">
                                     <div className="text-sm">
                                       <span className="font-semibold text-green-700">
@@ -937,7 +1060,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   </div>
                                 )}
                                 
-                                {question.type === 'open-ended' && selectedVersion === 'teacher' && (
+                                {question.type === 'open-ended' && effectiveVersion === 'teacher' && (
                                   <div className="ml-6 space-y-2">
                                     <div className="text-sm">
                                       <span className="font-semibold text-theme-label">Sample Answer:</span>
@@ -947,14 +1070,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 )}
                                 
                                 {/* Show explanation only in teacher version */}
-                                {selectedVersion === 'teacher' && question.explanation && (
+                                {effectiveVersion === 'teacher' && question.explanation && (
                                   <div className="ml-6 mt-3 p-3 bg-blue-50 rounded-lg">
                                     <span className="text-sm font-semibold text-blue-900">Explanation: </span>
                                     <span className="text-sm text-blue-800">{question.explanation}</span>
                                   </div>
                                 )}
                                 
-                                {selectedVersion === 'teacher' && (question.cognitiveLevel || question.points) && (
+                                {effectiveVersion === 'teacher' && (question.cognitiveLevel || question.points) && (
                                   <div className="ml-6 mt-2 flex gap-4 text-xs text-theme-hint">
                                     {question.cognitiveLevel && (
                                       <span>Cognitive Level: {question.cognitiveLevel}</span>
@@ -1267,17 +1390,62 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   />
                 </div>
 
-                <div>
+                <div className="space-y-3">
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.randomizeQuestions}
-                      onChange={(e) => handleInputChange('randomizeQuestions', e.target.checked)}
+                      checked={classQuizMode}
+                      onChange={(e) => {
+                        setClassQuizMode(e.target.checked);
+                        if (!e.target.checked) {
+                          setSelectedClassName('');
+                          setClassStudents([]);
+                          setRandomizeClassQuestions(false);
+                        }
+                      }}
                       className="w-4 h-4 rounded"
                       style={{ accentColor: tabColor }}
                     />
-                    <span className="text-sm font-medium text-theme-label">Randomize Questions</span>
+                    <span className="text-sm font-medium text-theme-label">Generate for Class</span>
                   </label>
+
+                  {classQuizMode && (
+                    <div className="ml-6 space-y-3 p-3 rounded-lg border border-theme bg-theme-subtle">
+                      <div>
+                        <label className="block text-xs font-medium text-theme-hint mb-1">Select Class</label>
+                        <select
+                          value={selectedClassName}
+                          onChange={(e) => setSelectedClassName(e.target.value)}
+                          className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm focus:ring-2"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        >
+                          <option value="">Choose a class...</option>
+                          {availableClasses.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+
+                      {classStudents.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs" style={{ color: tabColor }}>
+                          <Users className="w-3.5 h-3.5" />
+                          <span className="font-medium">{classStudents.length} student{classStudents.length !== 1 ? 's' : ''} in class</span>
+                        </div>
+                      )}
+
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={randomizeClassQuestions}
+                          onChange={(e) => setRandomizeClassQuestions(e.target.checked)}
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
+                        />
+                        <span className="text-sm text-theme-label">Randomize Question Order</span>
+                      </label>
+                      {randomizeClassQuestions && (
+                        <p className="text-xs text-theme-hint ml-6">Each student will receive questions in a different random order.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

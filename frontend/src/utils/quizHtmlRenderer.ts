@@ -15,6 +15,7 @@ interface RenderOptions {
   showAnswerKey?: boolean;
   showExplanations?: boolean;
   boldCorrectAnswers?: boolean;
+  studentInfo?: { name: string; id: string };
 }
 
 interface ParsedQuiz {
@@ -193,12 +194,13 @@ function parseQuizContent(text: string): ParsedQuiz {
 export function generateQuizHTML(text: string, options: RenderOptions): string {
   if (!text) return '';
 
-  const { 
-    accentColor, 
+  const {
+    accentColor,
     formData,
     showAnswerKey = true,
     showExplanations = true,
-    boldCorrectAnswers = false
+    boldCorrectAnswers = false,
+    studentInfo
   } = options;
 
   // Parse the quiz
@@ -469,6 +471,37 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
     </div>
   </div>
+
+  ${studentInfo ? `
+  <!-- Student Info -->
+  <div style="
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    border: 2px solid ${accentColor}44;
+    border-radius: 0.5rem;
+    background-color: ${accentColor}08;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  ">
+    <div style="
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background-color: ${accentColor};
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.125rem;
+    ">${studentInfo.name.charAt(0)}</div>
+    <div>
+      <div style="font-weight: 600; color: #1f2937; font-size: 1rem;">${studentInfo.name}</div>
+      <div style="color: #6b7280; font-size: 0.875rem;">Student ID: ${studentInfo.id}</div>
+    </div>
+  </div>
+  ` : ''}
 
   <!-- Content -->
   <div style="margin-top: 2rem;">

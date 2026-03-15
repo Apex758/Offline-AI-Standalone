@@ -2072,29 +2072,35 @@ def _build_extraction_prompt(quiz_questions: list, text: str) -> str:
     question_hints = []
     for i, q in enumerate(quiz_questions, 1):
         qtype = q.get('type', '')
+        q_text = q.get('question', '')[:80]
         if qtype == 'multiple-choice':
             options = q.get('options', [])
             letters = ', '.join(chr(65 + j) for j in range(len(options)))
-            question_hints.append(f"Q{i} (Multiple Choice – answer is one of: {letters})")
+            question_hints.append(f"Q{i} (Multiple Choice – answer is one of: {letters}): {q_text}")
         elif qtype == 'true-false':
-            question_hints.append(f"Q{i} (True/False – answer is exactly True or False)")
+            question_hints.append(f"Q{i} (True/False – answer is exactly True or False): {q_text}")
         elif qtype == 'fill-blank':
-            question_hints.append(f"Q{i} (Fill in the blank – answer is a word or phrase)")
+            question_hints.append(f"Q{i} (Fill in the blank – answer is a word or phrase): {q_text}")
         # open-ended: skip
 
     hints_block = '\n'.join(question_hints)
 
     return f"""You are a quiz grading assistant. A student's completed quiz is shown below.
 
-Quiz question types to look for:
+IMPORTANT: The student's quiz may have questions in a DIFFERENT ORDER than the teacher's version.
+You must match each student question to the correct teacher question by its content/text, not by its number.
+
+Teacher's question list (use these to match):
 {hints_block}
 
 Rules:
+- For each question on the student's paper, find the matching teacher question by content.
+- Use the TEACHER's question number (Q1, Q2, etc.) as the key in your response, NOT the student's question number.
 - For Multiple Choice, return only the letter (A, B, C, or D).
 - For True/False, return exactly "True" or "False".
 - For Fill in the blank, return the word or phrase the student wrote.
 - If a question has no visible answer, return null.
-- If a student name is visible on the paper, extract it; otherwise return null.
+- If a student name or ID is visible on the paper, extract them; otherwise return null.
 
 Student quiz text:
 \"\"\"
@@ -2104,6 +2110,7 @@ Student quiz text:
 Return ONLY valid JSON in this exact structure, no explanation:
 {{
   "student_name": null,
+  "student_id": null,
   "answers": {{
     "1": "A",
     "2": "True",

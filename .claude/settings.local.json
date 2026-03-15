@@ -16,7 +16,8 @@
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:github.com)",
       "Bash(/tmp/button_report.txt:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(du:*)"
     ]
   }
 }
