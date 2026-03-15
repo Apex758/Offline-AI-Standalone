@@ -328,7 +328,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         setCurrentPlanId(parsed.currentPlanId || null);
         setIsEditing(parsed.isEditing || false);
         setCurriculumReferences(parsed.curriculumReferences || []);
-        setLocalLoadingMap(parsed.localLoadingMap || {});
+        // localLoadingMap intentionally NOT restored — runtime-only state
         setStep(parsed.step || 1);  // ✅ RESTORE STEP STATE
         console.log('[LessonPlanner] State restored from localStorage for tab:', tabId);
       } catch (e) {
@@ -384,11 +384,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       currentPlanId,
       isEditing,
       curriculumReferences,
-      localLoadingMap,
+      // localLoadingMap intentionally NOT persisted — runtime-only state
       step  // ✅ SAVE STEP STATE
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [tabId, formData, generatedPlan, parsedLesson, currentPlanId, isEditing, curriculumReferences, localLoadingMap, step]);
+  }, [tabId, formData, generatedPlan, parsedLesson, currentPlanId, isEditing, curriculumReferences, step]);
 
   // Try to parse lesson when generated (for restored/loaded lessons)
   useEffect(() => {

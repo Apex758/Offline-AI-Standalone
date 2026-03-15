@@ -1,4 +1,4 @@
-/* @refresh reset */
+// @refresh reset
 import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
 import { useNotification } from './NotificationContext';
 

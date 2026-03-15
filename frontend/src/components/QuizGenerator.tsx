@@ -331,7 +331,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         setParsedQuiz(parsed.parsedQuiz || null);
         setCurrentQuizId(parsed.currentQuizId || null);
         setIsEditing(parsed.isEditing || false);
-        setLocalLoadingMap(parsed.localLoadingMap || {});  // ✅ RESTORE LOADING STATE
+        // localLoadingMap intentionally NOT restored — runtime-only state
       } catch (e) {
         console.error('Failed to parse saved state:', e);
         setFormData(getDefaultFormData());
@@ -359,9 +359,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       parsedQuiz,
       currentQuizId,
       isEditing,
-      localLoadingMap  // ✅ SAVE LOADING STATE
+      // localLoadingMap intentionally NOT persisted — runtime-only state
     }));
-  }, [formData, generatedQuiz, parsedQuiz, currentQuizId, isEditing, localLoadingMap]);
+  }, [formData, generatedQuiz, parsedQuiz, currentQuizId, isEditing]);
 
 
   // Enable structured editing mode

@@ -231,18 +231,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const streamingWorksheet = getStreamingContent(tabId || '', ENDPOINT);
   const contextLoading = getIsStreaming(tabId || '', ENDPOINT);
   // Per-tab local loading state
-  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>(() => {
-    try {
-      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        return parsed.localLoadingMap || {};
-      }
-    } catch (e) {
-      console.error('Failed to restore localLoadingMap:', e);
-    }
-    return {};
-  });
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   const loading = !!localLoadingMap[tabId || ''] || contextLoading;
 
   // ✅ Finalization logic - when streaming completes, update generatedWorksheet
@@ -641,8 +630,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   // Persist to localStorage
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet, viewMode }));
-  }, [formData, generatedWorksheet, parsedWorksheet, localLoadingMap, clearedWorksheet, clearedParsedWorksheet, viewMode]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet, viewMode }));
+  }, [formData, generatedWorksheet, parsedWorksheet, clearedWorksheet, clearedParsedWorksheet, viewMode]);
 
   // Notify parent
   useEffect(() => {

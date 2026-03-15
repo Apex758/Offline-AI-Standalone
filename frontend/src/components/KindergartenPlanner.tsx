@@ -445,7 +445,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         setParsedPlan(parsed.parsedPlan || null);
         setCurrentPlanId(parsed.currentPlanId || null);
         setIsEditing(parsed.isEditing || false);
-        setLocalLoadingMap(parsed.localLoadingMap || {});  // ✅ RESTORE LOADING STATE
+        // localLoadingMap intentionally NOT restored — runtime-only state
         console.log('[KindergartenPlanner] State restored from localStorage for tab:', tabId);
       } catch (e) {
         console.error('[KindergartenPlanner] Failed to restore state:', e);
@@ -468,10 +468,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       parsedPlan,
       currentPlanId,
       isEditing,
-      localLoadingMap  // ✅ SAVE LOADING STATE
+      // localLoadingMap intentionally NOT persisted — runtime-only state
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [tabId, formData, generatedPlan, parsedPlan, currentPlanId, isEditing, localLoadingMap]);
+  }, [tabId, formData, generatedPlan, parsedPlan, currentPlanId, isEditing]);
 
   const curriculumUnits = ['Belonging', 'Weather', 'Celebrations', 'Plants and animals', 'Games'];
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];

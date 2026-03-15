@@ -1,4 +1,4 @@
-/* @refresh reset */
+// @refresh reset
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { useWebSocket } from './WebSocketContext';
 import { useSettings } from './SettingsContext';
