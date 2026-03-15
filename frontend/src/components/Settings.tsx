@@ -669,6 +669,52 @@ const Settings: React.FC<SettingsProps> = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Content Filtering Toggle */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Content Filtering</CardTitle>
+                    <CardDescription>Control what content is shown based on your profile</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                      <div>
+                        <p className="text-sm font-medium text-theme-label">Only show my grades & subjects</p>
+                        <p className="text-xs text-theme-hint mt-0.5">
+                          When enabled, curriculum, lesson plans, and other content will be filtered to only show items related to your selected grade levels and subjects.
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={settings.profile.filterContentByProfile}
+                        onChange={(e) => updateSettings({ profile: { ...settings.profile, filterContentByProfile: e.target.checked } })}
+                        className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+
+                      />
+                    </label>
+                    {settings.profile.filterContentByProfile && settings.profile.gradeLevels.length === 0 && settings.profile.subjects.length === 0 && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 px-3">
+                        Select at least one grade level or subject above for filtering to take effect.
+                      </p>
+                    )}
+                    {settings.profile.filterContentByProfile && (settings.profile.gradeLevels.length > 0 || settings.profile.subjects.length > 0) && (
+                      <div className="mt-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
+                        <p className="text-xs text-blue-700 dark:text-blue-400">
+                          Showing content for{' '}
+                          {settings.profile.gradeLevels.length > 0 && (
+                            <span className="font-medium">
+                              {settings.profile.gradeLevels.map(g => g === 'k' ? 'Kindergarten' : `Grade ${g}`).join(', ')}
+                            </span>
+                          )}
+                          {settings.profile.gradeLevels.length > 0 && settings.profile.subjects.length > 0 && ' in '}
+                          {settings.profile.subjects.length > 0 && (
+                            <span className="font-medium">{settings.profile.subjects.join(', ')}</span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
 

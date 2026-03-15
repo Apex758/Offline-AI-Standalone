@@ -33,6 +33,7 @@ export interface UserProfile {
   school: string;
   gradeLevels: string[];
   subjects: string[];
+  filterContentByProfile: boolean;
 }
 
 export interface Settings {
@@ -103,6 +104,7 @@ export const DEFAULT_SETTINGS: Settings = {
     school: '',
     gradeLevels: [],
     subjects: [],
+    filterContentByProfile: false,
   },
 };
 
