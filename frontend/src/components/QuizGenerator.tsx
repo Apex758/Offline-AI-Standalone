@@ -532,14 +532,31 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="quiz-generator-welcome">
-      <div className="flex-1 flex flex-col tab-content-bg">
-        {isGrading ? (
-          // Grade Quiz — always available, even before generating
-          <QuizGrader
-            quiz={parsedQuiz}
-            onClose={() => setIsGrading(false)}
-          />
-        ) : (generatedQuiz || streamingQuiz || isEditing || loading) ? (
+      <div className="flex-1 flex flex-col tab-content-bg overflow-hidden" style={{ perspective: '2000px' }}>
+        {/* Card Flip Container */}
+        <div
+          className="flex-1 flex flex-col"
+          style={{
+            transformStyle: 'preserve-3d',
+            transition: 'transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1)',
+            transform: isGrading ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            position: 'relative',
+            minHeight: 0,
+          }}
+        >
+          {/* FRONT FACE — Quiz Builder / Generated Quiz */}
+          <div
+            className="flex-1 flex flex-col tab-content-bg"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              position: isGrading ? 'absolute' : 'relative',
+              inset: 0,
+              minHeight: 0,
+              pointerEvents: isGrading ? 'none' : 'auto',
+            }}
+          >
+        {(generatedQuiz || streamingQuiz || isEditing || loading) ? (
           <>
             {isEditing && parsedQuiz ? (
               // Show Structured Editor
@@ -986,6 +1003,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                     </button>
                   )}
                   <button
+                    onClick={() => setIsGrading(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition text-sm font-medium text-emerald-600 border border-emerald-200"
+                    title="Grade an existing quiz"
+                  >
+                    <ClipboardCheck className="w-4 h-4" />
+                    Grade Quiz
+                  </button>
+                  <button
                     onClick={() => setHistoryOpen(!historyOpen)}
                     className="p-2 rounded-lg hover:bg-theme-hover transition"
                     title="Quiz History"
@@ -1136,14 +1161,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   Clear Form
                 </button>
                 <button
-                  onClick={() => setIsGrading(true)}
-                  className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
-                  title="Grade an existing quiz by uploading teacher and student files"
-                >
-                  <ClipboardCheck className="w-4 h-4 mr-2" />
-                  Grade Quiz
-                </button>
-                <button
                   onClick={generateQuiz}
                   disabled={!validateForm() || loading}
                   className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
@@ -1168,6 +1185,29 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             </div>
           </>
         )}
+          </div>
+
+          {/* BACK FACE — Quiz Grader */}
+          <div
+            className="flex-1 flex flex-col tab-content-bg"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              position: isGrading ? 'relative' : 'absolute',
+              inset: 0,
+              minHeight: 0,
+              pointerEvents: isGrading ? 'auto' : 'none',
+            }}
+          >
+            {isGrading && (
+              <QuizGrader
+                quiz={parsedQuiz}
+                onClose={() => setIsGrading(false)}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* History Panel */}

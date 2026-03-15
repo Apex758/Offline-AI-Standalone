@@ -201,8 +201,9 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
             <p className="text-sm text-theme-hint">Upload the teacher version to get started</p>
           )}
         </div>
-        <button onClick={onClose} className="p-2 rounded-lg hover:bg-theme-hover transition text-theme-muted">
-          <X className="w-5 h-5" />
+        <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme">
+          <RotateCcw className="w-4 h-4" />
+          Back to Quiz
         </button>
       </div>
 
