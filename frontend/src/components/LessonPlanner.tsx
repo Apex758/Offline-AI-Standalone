@@ -453,6 +453,75 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     return Array.from(strandsSet);
   };
 
+  // Get ELOs matching subject, grade, and strand
+  const getELOs = (subject: string, grade: string, strand: string): string[] => {
+    if (!subject || !grade || !strand) return [];
+    const pages = (curriculumIndex as any).indexedPages || [];
+    const elosSet = new Set<string>();
+    pages.forEach((page: any) => {
+      if (
+        page.subject?.toLowerCase() === subject.toLowerCase() &&
+        page.grade?.toString() === grade.toString() &&
+        page.strand?.toLowerCase() === strand.toLowerCase() &&
+        page.essentialOutcomes
+      ) {
+        page.essentialOutcomes.forEach((elo: string) => elosSet.add(elo));
+      }
+    });
+    return Array.from(elosSet);
+  };
+
+  // Get SCOs matching subject, grade, strand, and optionally ELO
+  const getSCOs = (subject: string, grade: string, strand: string, elo: string): string[] => {
+    if (!subject || !grade || !strand || !elo) return [];
+    const pages = (curriculumIndex as any).indexedPages || [];
+    const scosSet = new Set<string>();
+    pages.forEach((page: any) => {
+      if (
+        page.subject?.toLowerCase() === subject.toLowerCase() &&
+        page.grade?.toString() === grade.toString() &&
+        page.strand?.toLowerCase() === strand.toLowerCase() &&
+        page.essentialOutcomes?.some((e: string) => e === elo) &&
+        page.specificOutcomes
+      ) {
+        page.specificOutcomes.forEach((sco: string) => scosSet.add(sco));
+      }
+    });
+    return Array.from(scosSet);
+  };
+
+  // State for SCO dropdown visibility
+  const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
+  const scoDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Parse selected SCOs from the stored string
+  const selectedSCOs: string[] = formData.specificOutcomes
+    ? formData.specificOutcomes.split('\n').filter(s => s.trim())
+    : [];
+
+  // Toggle a SCO selection
+  const toggleSCO = (sco: string) => {
+    const current = selectedSCOs;
+    let updated: string[];
+    if (current.includes(sco)) {
+      updated = current.filter(s => s !== sco);
+    } else {
+      updated = [...current, sco];
+    }
+    handleInputChange('specificOutcomes', updated.join('\n'));
+  };
+
+  // Close SCO dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (scoDropdownRef.current && !scoDropdownRef.current.contains(e.target as Node)) {
+        setScoDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const pedagogicalStrategiesOptions = [
     'Inquiry-Based Learning', 'Project-Based Learning', 'Direct Instruction',
     'Cooperative Learning', 'Differentiated Instruction', 'Flipped Classroom',
@@ -976,6 +1045,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             onChange={(e) => {
                               handleInputChange('subject', e.target.value);
                               handleInputChange('strand', '');
+                              handleInputChange('essentialOutcomes', '');
+                              handleInputChange('specificOutcomes', '');
                             }}
                             className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -995,6 +1066,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             value={formData.gradeLevel}
                             onChange={(e) => {
                               handleInputChange('gradeLevel', e.target.value);
+                              handleInputChange('essentialOutcomes', '');
+                              handleInputChange('specificOutcomes', '');
                             }}
                             className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1015,6 +1088,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               value={formData.strand}
                               onChange={(e) => {
                                 handleInputChange('strand', e.target.value);
+                                handleInputChange('essentialOutcomes', '');
+                                handleInputChange('specificOutcomes', '');
                               }}
                               className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
                               style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
@@ -1112,33 +1187,130 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         placeholder="e.g., Water Cycle"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Essential Learning Outcome <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={formData.essentialOutcomes}
-                        onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        placeholder="The broad, overarching curriculum outcomes from curriculum standards"
-                      />
-                    </div>
+                    {formData.strand && (
+                      <div>
+                        <label className="block text-sm font-medium text-theme-label mb-2">
+                          Essential Learning Outcome <span className="text-red-500">*</span>
+                        </label>
+                        {(() => {
+                          const elos = getELOs(formData.subject, formData.gradeLevel, formData.strand);
+                          return elos.length > 0 ? (
+                            <select
+                              value={formData.essentialOutcomes}
+                              onChange={(e) => {
+                                handleInputChange('essentialOutcomes', e.target.value);
+                                handleInputChange('specificOutcomes', '');
+                              }}
+                              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                              style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                            >
+                              <option value="">Select an Essential Learning Outcome</option>
+                              {elos.map((elo, idx) => (
+                                <option key={idx} value={elo} title={elo}>
+                                  {elo.length > 120 ? elo.substring(0, 120) + '...' : elo}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <p className="text-sm text-theme-hint italic px-4 py-2">
+                              No ELOs found for the selected strand
+                            </p>
+                          );
+                        })()}
+                        {formData.essentialOutcomes && (
+                          <p className="mt-1 text-xs text-theme-muted line-clamp-2">{formData.essentialOutcomes}</p>
+                        )}
+                      </div>
+                    )}
 
-                    <div data-tutorial="lesson-planner-objectives">
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Specific Curriculum Outcomes <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={formData.specificOutcomes}
-                        onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        placeholder="What students should know or be able to do by the end of the lesson"
-                      />
-                    </div>
+                    {formData.essentialOutcomes && (
+                      <div data-tutorial="lesson-planner-objectives" ref={scoDropdownRef}>
+                        <label className="block text-sm font-medium text-theme-label mb-2">
+                          Specific Curriculum Outcomes <span className="text-red-500">*</span>
+                        </label>
+                        {(() => {
+                          const scos = getSCOs(formData.subject, formData.gradeLevel, formData.strand, formData.essentialOutcomes);
+                          return scos.length > 0 ? (
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() => setScoDropdownOpen(!scoDropdownOpen)}
+                                className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800"
+                                style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                              >
+                                <span className={selectedSCOs.length === 0 ? 'text-gray-400' : 'text-theme-heading'}>
+                                  {selectedSCOs.length === 0
+                                    ? 'Select Specific Curriculum Outcomes'
+                                    : `${selectedSCOs.length} outcome${selectedSCOs.length > 1 ? 's' : ''} selected`}
+                                </span>
+                                <svg className={`w-4 h-4 transition-transform ${scoDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                              {scoDropdownOpen && (
+                                <div className="absolute z-50 w-full mt-1 border border-theme-strong rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-y-auto">
+                                  <div className="p-2 border-b border-theme flex justify-between items-center">
+                                    <span className="text-xs text-theme-muted font-medium">
+                                      {selectedSCOs.length} of {scos.length} selected
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (selectedSCOs.length === scos.length) {
+                                          handleInputChange('specificOutcomes', '');
+                                        } else {
+                                          handleInputChange('specificOutcomes', scos.join('\n'));
+                                        }
+                                      }}
+                                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                      {selectedSCOs.length === scos.length ? 'Deselect All' : 'Select All'}
+                                    </button>
+                                  </div>
+                                  {scos.map((sco, idx) => (
+                                    <label
+                                      key={idx}
+                                      className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedSCOs.includes(sco)}
+                                        onChange={() => toggleSCO(sco)}
+                                        className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
+                                      />
+                                      <span className="text-sm text-theme-heading">{sco}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-theme-hint italic px-4 py-2">
+                              No SCOs found for the selected ELO
+                            </p>
+                          );
+                        })()}
+                        {selectedSCOs.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {selectedSCOs.map((sco, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
+                              >
+                                <span className="max-w-[200px] truncate">{sco}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSCO(sco)}
+                                  className="hover:text-blue-600"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>

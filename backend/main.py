@@ -873,7 +873,25 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     curriculum_context = "\n\n".join(context_blocks)
 
             system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
-            if curriculum_context:
+
+            # Prefer user-selected ELO/SCOs from the form over generic curriculum context
+            user_elo = ""
+            user_scos = ""
+            if isinstance(form_data, dict) and form_data:
+                user_elo = str(form_data.get("essentialOutcomes", "")).strip()
+                user_scos = str(form_data.get("specificOutcomes", "")).strip()
+
+            if user_elo or user_scos:
+                selected_context = "\n\nTeacher-Selected Curriculum Outcomes (align lesson to these):"
+                if user_elo:
+                    selected_context += f"\n\nEssential Learning Outcome:\n{user_elo}"
+                if user_scos:
+                    sco_list = [s.strip() for s in user_scos.split("\n") if s.strip()]
+                    selected_context += "\n\nSpecific Curriculum Outcomes:"
+                    for i, sco in enumerate(sco_list, 1):
+                        selected_context += f"\n  {i}. {sco}"
+                system_prompt += selected_context
+            elif curriculum_context:
                 system_prompt += "\n\nCurriculum Alignment Context:\n" + curriculum_context
 
             full_prompt = "<|begin_of_text|>"

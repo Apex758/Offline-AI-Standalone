@@ -159,6 +159,7 @@ TOPIC: ${formData.topic}
 STRAND: ${formData.strand}
 DURATION: ${formData.duration}
 CLASS SIZE: ${formData.studentCount} students
+${formData.essentialOutcomes ? `\nESSENTIAL LEARNING OUTCOME:\n${formData.essentialOutcomes}\n` : ''}${formData.specificOutcomes ? `\nSPECIFIC CURRICULUM OUTCOMES (selected by teacher - align lesson objectives to these):\n${formData.specificOutcomes.split('\n').filter((s: string) => s.trim()).map((s: string, i: number) => `  ${i + 1}. ${s}`).join('\n')}\n` : ''}
 ${formData.learningStyles ? `LEARNING STYLES: ${formData.learningStyles}\n` : ''}${formData.specialNeeds ? `SPECIAL NEEDS/ACCOMMODATIONS: ${formData.specialNeeds}\n` : ''}`;
 
 
@@ -196,6 +197,7 @@ REQUIRED LESSON PLAN STRUCTURE:
 1. LEARNING OBJECTIVES
    - Write 2-3 clear, measurable objectives aligned with ${gradeSpec.learningObjectiveDepth}
    - Use action verbs appropriate for Grade ${formData.gradeLevel}
+   ${formData.essentialOutcomes ? `- Objectives MUST align with the Essential Learning Outcome and selected Specific Curriculum Outcomes provided above` : ''}
 
 2. MATERIALS AND RESOURCES
    - List all materials needed (${gradeSpec.materialComplexity})
