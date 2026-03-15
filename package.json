@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "date-fns": "^4.1.0",
+    "dotenv": "^17.3.1",
     "electron-log": "^5.0.1",
     "electron-updater": "^6.1.7",
     "react-calendar": "^6.0.0",
@@ -51,17 +52,30 @@
       {
         "from": "backend",
         "to": "backend-bundle",
-        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc", "!**/venv/**", "!**/.venv/**", "!chat_history.json", "!lesson_plan_history.json", "!data/**"]
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/venv/**",
+          "!**/.venv/**",
+          "!chat_history.json",
+          "!lesson_plan_history.json",
+          "!data/**"
+        ]
       },
       {
         "from": "frontend/dist/splashscreen",
         "to": "splashscreen",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "frontend/src/data",
         "to": "frontend/src/data",
-        "filter": ["**/*.json"]
+        "filter": [
+          "**/*.json"
+        ]
       }
     ],
     "asarUnpack": [
@@ -70,15 +84,23 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "perMachine": false,  
+      "perMachine": false,
       "include": "build/installer.nsh"
     },
     "directories": {
       "output": "dist-electron"
     },
+    "publish": {
+      "provider": "github",
+      "owner": "Apex758",
+      "repo": "OLH-Offline-Version-Updates",
+      "private": true
+    },
     "win": {
       "icon": "build/OECS.ico",
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     }
   }
 }

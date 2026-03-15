@@ -30,7 +30,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     node: process.versions.node,
     chrome: process.versions.chrome,
     electron: process.versions.electron
-  }
+  },
+
+  // Gated updates (license-gated in renderer)
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (_event, info) => cb(info)),
+  onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', (_event, info) => cb(info)),
+  installUpdate: () => ipcRenderer.send('install-update')
 });
 
 // Expose IPC communication for splashscreen

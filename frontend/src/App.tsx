@@ -7,6 +7,8 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { QueueProvider } from './contexts/QueueContext';
+import { LicenseProvider } from './contexts/LicenseContext';
+import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
@@ -66,16 +68,20 @@ function AppContent() {
 
 function App() {
   return (
-    <SettingsProvider>
-      <NotificationProvider>
-        <WebSocketProvider>
-          <QueueProvider>
-            <AppContent />
-            <ToastContainer />
-          </QueueProvider>
-        </WebSocketProvider>
-      </NotificationProvider>
-    </SettingsProvider>
+    <LicenseProvider>
+      <LicenseGate>
+        <SettingsProvider>
+          <NotificationProvider>
+            <WebSocketProvider>
+              <QueueProvider>
+                <AppContent />
+                <ToastContainer />
+              </QueueProvider>
+            </WebSocketProvider>
+          </NotificationProvider>
+        </SettingsProvider>
+      </LicenseGate>
+    </LicenseProvider>
   );
 }
 

@@ -1,9 +1,29 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+
+// Load .env — from backend/ in dev, from backend-bundle/ in production
+const isDev_ = !app.isPackaged;
+const envPath = isDev_
+  ? path.join(__dirname, '..', 'backend', '.env')
+  : path.join(process.resourcesPath, 'backend-bundle', '.env');
+require('dotenv').config({ path: envPath });
 const log = require('electron-log');
 const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
 const isDev = !app.isPackaged;
+
+// Configure auto-updater
+autoUpdater.logger = log;
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+
+// For private GitHub repos — use a read-only fine-grained token (contents: read only)
+// Generate at: GitHub > Settings > Developer settings > Fine-grained tokens
+const UPDATE_TOKEN = process.env.GH_TOKEN || '';
+if (UPDATE_TOKEN) {
+  autoUpdater.requestHeaders = { Authorization: `token ${UPDATE_TOKEN}` };
+}
 
 // Configure logging paths
 const logsDir = path.join(app.getPath('appData'), 'OECS Learning Hub', 'logs');
@@ -547,6 +567,39 @@ ipcMain.handle('download-file', async (event, { arrayBuffer, filename }) => {
   } catch (error) {
     log.error('Error saving file:', error);
     return { success: false, message: error.message };
+  }
+});
+
+// --- Gated auto-updater IPC ---
+ipcMain.handle('check-for-updates', async () => {
+  if (isDev) {
+    log.info('Skipping update check in development mode');
+    return;
+  }
+  try {
+    log.info('Licensed user requested update check');
+    await autoUpdater.checkForUpdatesAndNotify();
+  } catch (err) {
+    log.error('Update check failed:', err.message);
+  }
+});
+
+ipcMain.on('install-update', () => {
+  log.info('User requested update install, quitting and installing...');
+  autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on('update-available', (info) => {
+  log.info('Update available:', info.version);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update-available', info);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  log.info('Update downloaded:', info.version);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update-downloaded', info);
   }
 });
 

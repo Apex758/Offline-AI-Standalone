@@ -17,6 +17,10 @@ declare global {
         chrome: string;
         electron: string;
       };
+      checkForUpdates?: () => Promise<void>;
+      onUpdateAvailable?: (cb: (...args: any[]) => void) => void;
+      onUpdateDownloaded?: (cb: (...args: any[]) => void) => void;
+      installUpdate?: () => void;
     };
     electron?: {
       ipcRenderer: {

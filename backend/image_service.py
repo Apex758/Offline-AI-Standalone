@@ -43,10 +43,81 @@ def get_app_data_path(subfolder: str = "") -> Path:
     return data_dir
 
 
+# ── LoRA registry ────────────────────────────────────────────────────────────
+
+LORA_REGISTRY = {
+    "detail_tweaker": {
+        "file": "Detail-Tweaker-XL.safetensors",
+        "name": "Detail Tweaker XL",
+        "description": "Enhances overall detail and sharpness",
+        "default_weight": 1.2,
+        "default_enabled": True,
+    },
+    "wrong_lora": {
+        "file": "sdxl_wrong_lora.bin",
+        "name": "SDXL Wrong LoRA",
+        "description": "Improves textures, color, and anatomy (use 'wrong' in negative prompt)",
+        "default_weight": 0.8,
+        "default_enabled": True,
+        "negative_trigger": "wrong",
+    },
+    "add_detail": {
+        "file": "add-detail-xl.safetensors",
+        "name": "Add More Details",
+        "description": "General detail enhancement",
+        "default_weight": 0.8,
+        "default_enabled": False,
+    },
+}
+
+
+def _load_loras(pipe, model_path: Path):
+    """Load available LoRA adapters into the pipeline."""
+    lora_dir = model_path / "loras"
+    if not lora_dir.exists():
+        logger.info("No loras directory found, skipping LoRA loading.")
+        return []
+
+    loaded = []
+    adapter_names = []
+    adapter_weights = []
+
+    for lora_key, lora_info in LORA_REGISTRY.items():
+        lora_path = lora_dir / lora_info["file"]
+        if not lora_path.exists():
+            logger.info(f"LoRA not found, skipping: {lora_info['file']}")
+            continue
+
+        try:
+            logger.info(f"Loading LoRA: {lora_info['name']} ({lora_info['file']})...")
+            pipe.load_lora_weights(
+                str(lora_dir),
+                weight_name=lora_info["file"],
+                adapter_name=lora_key,
+            )
+            loaded.append(lora_key)
+            if lora_info.get("default_enabled", False):
+                adapter_names.append(lora_key)
+                adapter_weights.append(lora_info["default_weight"])
+            logger.info(f"LoRA loaded: {lora_info['name']} (enabled={lora_info.get('default_enabled', False)}, weight={lora_info['default_weight']})")
+        except Exception as e:
+            logger.warning(f"Failed to load LoRA {lora_info['name']}: {e}")
+
+    # Activate enabled LoRAs
+    if adapter_names:
+        try:
+            pipe.set_adapters(adapter_names, adapter_weights=adapter_weights)
+            logger.info(f"Active LoRAs: {list(zip(adapter_names, adapter_weights))}")
+        except Exception as e:
+            logger.warning(f"Failed to set adapters: {e}")
+
+    return loaded
+
+
 # ── pipeline loaders ─────────────────────────────────────────────────────────
 
 def _load_openvino(model_path: Path):
-    """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder and INT8 UNet."""
+    """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder, INT8 UNet, and LoRAs."""
     from optimum.intel.openvino import OVStableDiffusionXLPipeline
     import openvino as ov
 
@@ -76,6 +147,9 @@ def _load_openvino(model_path: Path):
         pipe.unet.model = core.read_model(str(int8_unet_path))
         pipe.unet.request = None
         logger.info("INT8 UNet loaded.")
+
+    # Load LoRA adapters before compiling
+    _load_loras(pipe, model_path)
 
     pipe.compile()
     return pipe
@@ -107,8 +181,20 @@ def _load_openvino_img2img(model_path: Path):
         pipe.unet.model = core.read_model(str(int8_unet_path))
         pipe.unet.request = None
 
+    # Load LoRA adapters before compiling
+    _load_loras(pipe, model_path)
+
     pipe.compile()
     return pipe
+
+
+def _get_negative_trigger_words() -> str:
+    """Return extra negative prompt words from enabled LoRAs with negative_trigger."""
+    triggers = []
+    for lora_info in LORA_REGISTRY.values():
+        if lora_info.get("default_enabled") and lora_info.get("negative_trigger"):
+            triggers.append(lora_info["negative_trigger"])
+    return ", ".join(triggers)
 
 
 def _load_flux_schnell_ov(model_path: Path):
@@ -370,6 +456,11 @@ class ImageService:
                 num_inference_steps = self.model_info.get("steps", 2)
             if guidance_scale is None:
                 guidance_scale = self.model_info.get("guidance", 0.0)
+
+            # Auto-inject LoRA negative trigger words (e.g. "wrong" for wrong_lora)
+            extra_neg = _get_negative_trigger_words()
+            if extra_neg and extra_neg not in negative_prompt:
+                negative_prompt = f"{negative_prompt}, {extra_neg}"
 
             logger.info(f"Generating image: {prompt[:50]}...")
 
