@@ -82,30 +82,6 @@ export interface ImageServiceStatus {
   };
 }
 
-export interface TimeEstimate {
-  estimated_seconds: number | null;
-  per_image_seconds: number | null;
-  method: 'history' | 'calibration' | 'none';
-  confidence: 'high' | 'medium' | 'none';
-  model_key: string;
-  message?: string;
-  parameters: {
-    width: number;
-    height: number;
-    steps: number;
-    num_images: number;
-  };
-}
-
-export interface CalibrationResult {
-  calibrated: boolean;
-  cached?: boolean;
-  time_per_step?: number;
-  calibration_seconds?: number;
-  model_key?: string;
-  error?: string;
-}
-
 export interface SavedImageRecord {
   id: string;
   title: string;
@@ -289,42 +265,6 @@ export const imageApi = {
       return response.data;
     } catch (error) {
       console.error('Error starting IOPaint:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Run a quick benchmark to calibrate generation time estimates
-   */
-  calibrate: async (): Promise<CalibrationResult> => {
-    try {
-      const response = await axios.post<CalibrationResult>(
-        `${API_URL}/image-service/calibrate`
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error calibrating image service:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Estimate how long generation will take based on parameters
-   */
-  estimateTime: async (params: {
-    width?: number;
-    height?: number;
-    steps?: number;
-    numImages?: number;
-  }): Promise<TimeEstimate> => {
-    try {
-      const response = await axios.get<TimeEstimate>(
-        `${API_URL}/image-service/estimate-time`,
-        { params }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error estimating generation time:', error);
       throw error;
     }
   },

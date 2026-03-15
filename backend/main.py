@@ -3469,44 +3469,6 @@ async def get_image_service_status():
         )
 
 
-@app.post("/api/image-service/calibrate")
-async def calibrate_image_service():
-    """
-    Run a quick benchmark to measure generation speed on this hardware.
-    Returns calibration data (time_per_step, etc.)
-    """
-    try:
-        image_service = get_image_service()
-        result = image_service.calibrate()
-        return JSONResponse(content=result)
-    except Exception as e:
-        logger.error(f"Error calibrating image service: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@app.get("/api/image-service/estimate-time")
-async def estimate_generation_time(
-    width: int = 1024, height: int = 512,
-    steps: int = None, numImages: int = 1
-):
-    """
-    Estimate how long image generation will take based on calibration/history.
-
-    Query params: width, height, steps, numImages
-    Returns: estimated_seconds, per_image_seconds, confidence, method
-    """
-    try:
-        image_service = get_image_service()
-        result = image_service.estimate_time(
-            width=width, height=height,
-            num_steps=steps, num_images=numImages
-        )
-        return JSONResponse(content=result)
-    except Exception as e:
-        logger.error(f"Error estimating generation time: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
 @app.post("/api/image-service/start-iopaint")
 async def start_iopaint_service():
     """
