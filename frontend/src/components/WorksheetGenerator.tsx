@@ -19,6 +19,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
 import ExportButton from './ExportButton';
 import WorksheetStructuredEditor from './WorksheetStructuredEditor';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import axios from 'axios';
 
 
@@ -63,6 +64,8 @@ interface WorksheetFormData {
   includeImages: boolean;
   imageStyle: string;
   imagePlacement: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 interface WorksheetTemplate {
@@ -151,7 +154,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     worksheetTitle: '',
     includeImages: false,
     imageStyle: 'cartoon_3d',
-    imagePlacement: 'large-centered'
+    imagePlacement: 'large-centered',
+    essentialOutcomes: '',
+    specificOutcomes: ''
   });
 
   const [formData, setFormData] = useState<WorksheetFormData>(() => {
@@ -217,6 +222,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
 
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumPage[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+  const [useCurriculum, setUseCurriculum] = useState(true);
 
   // ✅ Read streaming content from context (read-only, no setter!)
   const streamingWorksheet = getStreamingContent(tabId || '', ENDPOINT);
@@ -395,26 +401,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     loadStyleProfiles();
   }, []);
 
-
-  // Auto-fetch strands based on subject and grade
-  const getStrands = (subject: string, grade: string): string[] => {
-    if (!subject || !grade) return [];
-    const curriculumData = curriculumIndex as CurriculumIndex;
-    const pages = curriculumData.indexedPages || [];
-    const strandsSet = new Set<string>();
-    pages.forEach((page: CurriculumPage) => {
-      if (
-        page.subject &&
-        page.grade &&
-        page.strand &&
-        page.subject.toLowerCase() === subject.toLowerCase() &&
-        page.grade.toString() === grade.toString()
-      ) {
-        strandsSet.add(page.strand);
-      }
-    });
-    return Array.from(strandsSet);
-  };
 
   // Get available topics (keywords) based on subject, grade, and strand
   const getTopics = (subject: string, grade: string, strand: string): string[] => {

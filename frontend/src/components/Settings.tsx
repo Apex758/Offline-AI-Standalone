@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, RotateCcw as ResetIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -415,24 +415,68 @@ const Settings: React.FC<SettingsProps> = () => {
           {/* Tab Colors Section */}
           <Card className="mb-6" data-tutorial="settings-tab-colors">
             <CardHeader>
-              <CardTitle>Tab Colors</CardTitle>
-              <CardDescription>Customize the color scheme for each tab type</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="w-5 h-5 text-theme-secondary" />
+                    Tab Colors
+                  </CardTitle>
+                  <CardDescription>Personalize the accent color for each tab</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const defaultColors: Record<string, string> = {};
+                    tabTypes.forEach(tab => { defaultColors[tab.type] = tab.defaultColor; });
+                    updateSettings({ tabColors: defaultColors as any });
+                  }}
+                  className="text-xs gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset All
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {tabTypes.map((tab) => (
-                  <div key={tab.type} className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.tabColors[tab.type as keyof typeof settings.tabColors] || tab.defaultColor}
-                      onChange={(e) => handleTabColorChange(tab.type, e.target.value)}
-                      className="w-12 h-10 rounded border border-theme-strong cursor-pointer flex-shrink-0"
-                    />
-                    <span className="text-sm font-medium text-theme-label">
-                      {tab.label}
-                    </span>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {tabTypes.map((tab) => {
+                  const currentColor = settings.tabColors[tab.type as keyof typeof settings.tabColors] || tab.defaultColor;
+                  const colorInputId = `color-${tab.type}`;
+                  return (
+                    <label
+                      key={tab.type}
+                      htmlFor={colorInputId}
+                      className="group relative flex items-center gap-3 p-3 rounded-xl border border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm transition-all duration-200 cursor-pointer"
+                    >
+                      <div className="relative flex-shrink-0">
+                        <div
+                          className="w-9 h-9 rounded-lg shadow-inner ring-1 ring-black/10 transition-transform duration-200 group-hover:scale-110"
+                          style={{ backgroundColor: currentColor }}
+                        />
+                        <input
+                          id={colorInputId}
+                          type="color"
+                          value={currentColor}
+                          onChange={(e) => handleTabColorChange(tab.type, e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-medium text-theme-label truncate">
+                          {tab.label}
+                        </span>
+                        <span className="text-xs text-theme-secondary/70 font-mono uppercase tracking-wider">
+                          {currentColor}
+                        </span>
+                      </div>
+                      <div
+                        className="absolute inset-0 rounded-xl opacity-[0.04] pointer-events-none transition-opacity duration-200"
+                        style={{ backgroundColor: currentColor }}
+                      />
+                    </label>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
