@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import CurriculumNavigator from './CurriculumNavigator';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, BookOpen } from 'lucide-react';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -230,21 +230,24 @@ const CurriculumViewer: React.FC<CurriculumViewerProps> = ({
     <div className="flex h-full tab-content-bg relative" onClick={onPanelClick}>
       {/* Sidebar */}
       <div
-        className={`border-r border-theme bg-theme-secondary transition-all duration-300 ${
-          sidebarOpen ? 'w-50' : 'w-0'
+        className={`border-r border-theme bg-theme-surface transition-all duration-300 ${
+          sidebarOpen ? 'w-72' : 'w-0'
         } overflow-hidden flex flex-col`}
         data-tutorial="curriculum-grades"
       >
-        <div className="flex items-center justify-between p-4 border-b border-theme">
-          <h3 className="font-semibold text-theme-heading">Curriculum</h3>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-theme">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-theme-muted" />
+            <h3 className="text-sm font-semibold text-theme-heading">Curriculum</h3>
+          </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="p-1 rounded hover:bg-theme-hover transition"
+            className="p-1 rounded-md hover:bg-theme-hover transition"
           >
-            <X className="w-5 h-5 text-theme-muted" />
+            <X className="w-4 h-4 text-theme-muted" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto" data-tutorial="curriculum-subjects">
+        <div className="flex-1 overflow-hidden" data-tutorial="curriculum-subjects">
           <CurriculumNavigator onNavigate={() => {}} />
         </div>
       </div>
