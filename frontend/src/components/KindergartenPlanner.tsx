@@ -475,7 +475,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const ageGroups = ['3-4 years', '4-5 years', '5-6 years'];
   
-  const learningDomainsOptions = [
+  const allLearningDomainsOptions = [
     'Social-Emotional Development',
     'Language & Literacy',
     'Mathematics',
@@ -484,6 +484,24 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     'Physical Development',
     'Social Studies'
   ];
+
+  // Map profile subjects to kindergarten learning domains
+  const subjectToDomain: Record<string, string[]> = {
+    'Mathematics': ['Mathematics'],
+    'Language Arts': ['Language & Literacy'],
+    'Science': ['Science & Discovery'],
+    'Social Studies': ['Social Studies'],
+    'Art': ['Creative Arts'],
+    'Music': ['Creative Arts'],
+    'Physical Education': ['Physical Development'],
+    'Health & Family Life': ['Social-Emotional Development'],
+  };
+
+  const learningDomainsOptions = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
+    ? allLearningDomainsOptions.filter(domain =>
+        settings.profile.subjects.some(s => (subjectToDomain[s] || []).includes(domain))
+      )
+    : allLearningDomainsOptions;
 
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {

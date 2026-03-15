@@ -397,14 +397,33 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     };
   }, [generationTimeout]);
 
-  const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Art', 'Music', 'Physical Education'];
-  
-  const gradeRanges = [
+  const allSubjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Art', 'Music', 'Physical Education'];
+
+  const allGradeRanges = [
     'Kindergarten - Grade 1', 'Grade 1 - Grade 2', 'Grade 2 - Grade 3',
     'Grade 3 - Grade 4', 'Grade 4 - Grade 5', 'Grade 5 - Grade 6',
     'Grade 1 - Grade 3', 'Grade 2 - Grade 4', 'Grade 3 - Grade 5',
     'Grade 4 - Grade 6', 'Grade 1 - Grade 6'
   ];
+
+  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
+    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
+    : allSubjects;
+
+  const gradeNameToProfile: Record<string, string> = {
+    'Kindergarten': 'k', 'Grade 1': '1', 'Grade 2': '2', 'Grade 3': '3',
+    'Grade 4': '4', 'Grade 5': '5', 'Grade 6': '6'
+  };
+
+  const gradeRanges = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
+    ? allGradeRanges.filter(range => {
+        const parts = range.split(' - ');
+        return parts.some(part => {
+          const profileKey = gradeNameToProfile[part];
+          return profileKey && settings.profile.gradeLevels.includes(profileKey);
+        });
+      })
+    : allGradeRanges;
 
   const learningStylesOptions = ['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic', 'Mixed'];
   const learningPreferencesOptions = ['Individual Work', 'Group Work', 'Pair Work', 'Whole Class', 'Independent Study'];

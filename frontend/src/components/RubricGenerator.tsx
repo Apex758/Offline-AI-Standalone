@@ -510,14 +510,27 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     'Research Paper', 'Group Work', 'Portfolio', 'Performance', 'Other'
   ];
 
-  const subjects = [
+  const allSubjects = [
     'Language Arts', 'Mathematics', 'Science', 'Social Studies'
   ];
 
-  const grades = [
-    'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 
+  const allGrades = [
+    'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5',
     'Grade 6'
   ];
+
+  const gradeProfileMap: Record<string, string> = {
+    'k': 'Kindergarten', '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3',
+    '4': 'Grade 4', '5': 'Grade 5', '6': 'Grade 6'
+  };
+
+  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
+    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
+    : allSubjects;
+
+  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
+    ? allGrades.filter(g => settings.profile.gradeLevels.some(pl => gradeProfileMap[pl] === g))
+    : allGrades;
 
   const focusAreasOptions = [
     'Content Knowledge', 'Critical Thinking', 'Communication', 'Collaboration',

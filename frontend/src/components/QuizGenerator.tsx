@@ -226,8 +226,16 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   const loading = !!localLoadingMap[tabId] || contextLoading;
 
-  const subjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Music', 'Physical Education'];
-  const grades = ['K', '1', '2', '3', '4', '5', '6'];
+  const allSubjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Music', 'Physical Education'];
+  const allGrades = ['K', '1', '2', '3', '4', '5', '6'];
+
+  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
+    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
+    : allSubjects;
+
+  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
+    ? allGrades.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()))
+    : allGrades;
   const questionTypesOptions = ['Multiple Choice', 'True/False', 'Open-Ended', 'Fill-in-the-Blank'];
   const cognitiveLevelsOptions = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
 

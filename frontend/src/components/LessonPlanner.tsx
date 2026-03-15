@@ -457,14 +457,22 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   };
 
 
-  const subjects = [
+  const allSubjects = [
     'Mathematics',
     'Language Arts',
     'Science',
     'Social Studies'
   ];
 
-  const grades = ['K', '1', '2', '3', '4', '5', '6'];
+  const allGrades = ['K', '1', '2', '3', '4', '5', '6'];
+
+  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
+    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
+    : allSubjects;
+
+  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
+    ? allGrades.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()))
+    : allGrades;
 
   const pedagogicalStrategiesOptions = [
     'Inquiry-Based Learning', 'Project-Based Learning', 'Direct Instruction',

@@ -608,11 +608,25 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }, 300);
   };
 
-  const grades = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 
+  const allGrades = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
                   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
-  
-  const subjects = ['Mathematics', 'Language Arts', 'Science', 'Social Studies', 'Arts', 
+
+  const allSubjects = ['Mathematics', 'Language Arts', 'Science', 'Social Studies', 'Arts',
                     'Physical Education', 'Technology'];
+
+  const gradeProfileMap: Record<string, string> = {
+    'k': 'Kindergarten', '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3',
+    '4': 'Grade 4', '5': 'Grade 5', '6': 'Grade 6', '7': 'Grade 7',
+    '8': 'Grade 8', '9': 'Grade 9', '10': 'Grade 10', '11': 'Grade 11', '12': 'Grade 12'
+  };
+
+  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
+    ? allGrades.filter(g => settings.profile.gradeLevels.some(pl => gradeProfileMap[pl] === g))
+    : allGrades;
+
+  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
+    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
+    : allSubjects;
   
   const integrationModels = ['Multidisciplinary', 'Interdisciplinary', 'Transdisciplinary'];
 

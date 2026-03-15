@@ -84,12 +84,22 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     }
   };
 
+  // Filter milestones by profile
+  const filteredMilestones = useMemo(() => {
+    if (!settings.profile.filterContentByProfile) return milestones;
+    return milestones.filter(m => {
+      const gradeOk = settings.profile.gradeLevels.length === 0 || settings.profile.gradeLevels.includes(m.grade.toLowerCase());
+      const subjectOk = settings.profile.subjects.length === 0 || settings.profile.subjects.includes(m.subject);
+      return gradeOk && subjectOk;
+    });
+  }, [milestones, settings.profile.filterContentByProfile, settings.profile.gradeLevels, settings.profile.subjects]);
+
   // Build tree structure
   const treeData = useMemo(() => {
     const tree: MilestoneTreeNode[] = [];
     const gradeMap = new Map<string, MilestoneTreeNode>();
 
-    milestones.forEach(milestone => {
+    filteredMilestones.forEach(milestone => {
       // Get or create grade node
       if (!gradeMap.has(milestone.grade)) {
         const gradeNode: MilestoneTreeNode = {
@@ -168,22 +178,28 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     });
 
     return tree;
-  }, [milestones]);
+  }, [filteredMilestones]);
 
-  // Get unique values for filters
-  const uniqueGrades = useMemo(() =>
-    [...new Set(milestones.map(m => m.grade))].sort((a, b) => {
+  // Get unique values for filters (respecting profile content filtering)
+  const uniqueGrades = useMemo(() => {
+    const all = [...new Set(milestones.map(m => m.grade))].sort((a, b) => {
       if (a === 'K') return -1;
       if (b === 'K') return 1;
       return Number(a) - Number(b);
-    }),
-    [milestones]
-  );
+    });
+    if (settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0) {
+      return all.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()));
+    }
+    return all;
+  }, [milestones, settings.profile.filterContentByProfile, settings.profile.gradeLevels]);
 
-  const uniqueSubjects = useMemo(() =>
-    [...new Set(milestones.map(m => m.subject))].sort(),
-    [milestones]
-  );
+  const uniqueSubjects = useMemo(() => {
+    const all = [...new Set(milestones.map(m => m.subject))].sort();
+    if (settings.profile.filterContentByProfile && settings.profile.subjects.length > 0) {
+      return all.filter(s => settings.profile.subjects.includes(s));
+    }
+    return all;
+  }, [milestones, settings.profile.filterContentByProfile, settings.profile.subjects]);
 
   const toggleNode = (nodeId: string) => {
     setExpandedNodes(prev => {
