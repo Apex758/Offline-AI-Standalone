@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -48,9 +48,71 @@ const Settings: React.FC<SettingsProps> = () => {
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
 
+  // Profile state synced with Dashboard localStorage
+  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+
   // Section navigation
-  type SettingsSection = 'appearance' | 'models' | 'general' | 'features' | 'danger';
-  const [activeSection, setActiveSection] = useState<SettingsSection>('appearance');
+  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'danger';
+  const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
+
+  // Load profile name & image from localStorage (synced with Dashboard)
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        const name = user.name || user.username || '';
+        if (name && name !== settings.profile.displayName) {
+          updateSettings({ profile: { ...settings.profile, displayName: name } });
+        }
+      } catch (e) {
+        console.error('Error parsing user:', e);
+      }
+    }
+    const storedImage = localStorage.getItem('user-profile-image');
+    if (storedImage) {
+      setUserProfileImage(storedImage);
+    }
+  }, []);
+
+  // Sync display name changes back to Dashboard's localStorage
+  const handleDisplayNameChange = (name: string) => {
+    updateSettings({ profile: { ...settings.profile, displayName: name } });
+    // Update the user object in localStorage so Dashboard picks it up
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.name = name;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    } catch (e) {
+      console.error('Error updating user name:', e);
+    }
+  };
+
+  // Handle profile image upload
+  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setUserProfileImage(dataUrl);
+      localStorage.setItem('user-profile-image', dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Remove profile image
+  const handleRemoveProfileImage = () => {
+    setUserProfileImage(null);
+    localStorage.removeItem('user-profile-image');
+    if (profileImageInputRef.current) {
+      profileImageInputRef.current.value = '';
+    }
+  };
 
   // Fetch available models on component mount
   useEffect(() => {
@@ -192,6 +254,7 @@ const Settings: React.FC<SettingsProps> = () => {
   };
 
   const sections = [
+    { id: 'profile' as const, label: 'Profile', icon: User, description: 'Your name, school & role' },
     { id: 'appearance' as const, label: 'Appearance', icon: Palette, description: 'Theme, fonts & tab colors' },
     { id: 'models' as const, label: 'AI Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
@@ -426,6 +489,188 @@ const Settings: React.FC<SettingsProps> = () => {
       <div className="flex-1 min-w-0">
         <ScrollArea className="h-full">
           <div className="max-w-3xl p-6 pb-20">
+
+            {/* ===== PROFILE SECTION ===== */}
+            {activeSection === 'profile' && (
+              <div className="space-y-6">
+                <div className="mb-2">
+                  <h2 className="text-2xl font-bold text-theme-title">Profile</h2>
+                  <p className="text-sm text-theme-muted mt-1">Tell PEARL about yourself to personalize your experience</p>
+                </div>
+
+                {/* Avatar & Name */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-4.5 h-4.5 text-theme-secondary" />
+                      Personal Info
+                    </CardTitle>
+                    <CardDescription>Your basic information</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Display Name + Avatar */}
+                      <div className="flex items-center gap-5 mb-2">
+                        <div className="relative group">
+                          <div
+                            className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-md overflow-hidden cursor-pointer"
+                            onClick={() => profileImageInputRef.current?.click()}
+                          >
+                            {userProfileImage ? (
+                              <img src={userProfileImage} alt="Profile" className="w-full h-full object-cover" />
+                            ) : settings.profile.displayName ? (
+                              settings.profile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                            ) : (
+                              <User className="w-7 h-7" />
+                            )}
+                          </div>
+                          <div
+                            className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            onClick={() => profileImageInputRef.current?.click()}
+                          >
+                            <span className="text-white text-[10px] font-medium">Change</span>
+                          </div>
+                          {userProfileImage && (
+                            <button
+                              onClick={handleRemoveProfileImage}
+                              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                          <input
+                            ref={profileImageInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleProfileImageUpload}
+                            className="hidden"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-theme-label mb-1.5">Display Name</label>
+                          <Input
+                            placeholder="e.g. Ms. Johnson"
+                            value={settings.profile.displayName}
+                            onChange={(e) => handleDisplayNameChange(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* School */}
+                      <div>
+                        <label className="block text-sm font-medium text-theme-label mb-1.5">School</label>
+                        <Input
+                          placeholder="e.g. Castries Primary School"
+                          value={settings.profile.school}
+                          onChange={(e) => updateSettings({ profile: { ...settings.profile, school: e.target.value } })}
+                        />
+                      </div>
+
+                      {/* Grade Levels */}
+                      <div>
+                        <label className="block text-sm font-medium text-theme-label mb-2">Grade Levels</label>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: 'k', label: 'Kindergarten' },
+                            { value: '1', label: 'Grade 1' },
+                            { value: '2', label: 'Grade 2' },
+                            { value: '3', label: 'Grade 3' },
+                            { value: '4', label: 'Grade 4' },
+                            { value: '5', label: 'Grade 5' },
+                            { value: '6', label: 'Grade 6' },
+                          ].map((grade) => {
+                            const isSelected = settings.profile.gradeLevels.includes(grade.value);
+                            return (
+                              <button
+                                key={grade.value}
+                                onClick={() => {
+                                  const newGrades = isSelected
+                                    ? settings.profile.gradeLevels.filter(g => g !== grade.value)
+                                    : [...settings.profile.gradeLevels, grade.value];
+                                  updateSettings({ profile: { ...settings.profile, gradeLevels: newGrades } });
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                                  isSelected
+                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
+                                    : 'border-theme-strong/30 text-theme-secondary dark:text-white hover:border-theme-strong/60 hover:bg-theme-subtle'
+                                }`}
+                              >
+                                {grade.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Subjects */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Subjects</CardTitle>
+                    <CardDescription>Select the subjects you teach</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {[
+                        'Mathematics', 'Language Arts', 'Science', 'Social Studies',
+                        'Physical Education', 'Health & Family Life', 'Music', 'Art',
+                        'Spanish', 'French', 'ICT', 'Agriculture',
+                        'Religious Education', 'TVET', 'Library Skills'
+                      ].map((subject) => {
+                        const isSelected = settings.profile.subjects.includes(subject);
+                        return (
+                          <button
+                            key={subject}
+                            onClick={() => {
+                              const newSubjects = isSelected
+                                ? settings.profile.subjects.filter(s => s !== subject)
+                                : [...settings.profile.subjects, subject];
+                              updateSettings({ profile: { ...settings.profile, subjects: newSubjects } });
+                            }}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                              isSelected
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
+                                : 'border-theme-strong/30 text-theme-secondary dark:text-white hover:border-theme-strong/60 hover:bg-theme-subtle'
+                            }`}
+                          >
+                            {subject}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {settings.profile.subjects.length > 0 && (
+                      <div className="mt-4 pt-3 border-t border-theme-strong/20">
+                        <div className="flex flex-wrap gap-2">
+                          {settings.profile.subjects.map((subject) => (
+                            <span
+                              key={subject}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                            >
+                              {subject}
+                              <button
+                                onClick={() => {
+                                  updateSettings({
+                                    profile: {
+                                      ...settings.profile,
+                                      subjects: settings.profile.subjects.filter(s => s !== subject)
+                                    }
+                                  });
+                                }}
+                                className="ml-0.5 hover:text-blue-900 dark:hover:text-blue-100"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* ===== APPEARANCE SECTION ===== */}
             {activeSection === 'appearance' && (

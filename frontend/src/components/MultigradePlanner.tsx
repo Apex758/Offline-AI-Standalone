@@ -9,7 +9,7 @@ import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} f
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
-import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
+import MultigradeAlignmentFields from './ui/MultigradeAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -218,6 +218,21 @@ const parseMultigradeContent = (text: string, formData: FormData): ParsedMultigr
   
   return parseMultigradeFromAI(text, multigradeFormData);
 };
+
+// Parse grade range string into individual grade level codes (e.g., "Grade 3 - Grade 5" -> ["3", "4", "5"])
+function parseGradeLevels(gradeRange: string): string[] {
+  if (!gradeRange) return [];
+  const parts = gradeRange.split('-').map(p => p.trim());
+  if (parts.length !== 2) return [];
+  const normalize = (s: string) => s.replace(/^Kindergarten$/i, 'K').replace(/^Grade\s+/i, '');
+  const start = normalize(parts[0]);
+  const end = normalize(parts[1]);
+  const all = ['K', '1', '2', '3', '4', '5', '6'];
+  const startIdx = all.indexOf(start);
+  const endIdx = all.indexOf(end);
+  if (startIdx === -1 || endIdx === -1 || startIdx > endIdx) return [start, end].filter(Boolean);
+  return all.slice(startIdx, endIdx + 1);
+}
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
   // Per-tab localStorage key
@@ -972,9 +987,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <CurriculumAlignmentFields
+                      <MultigradeAlignmentFields
                         subject={formData.subject}
-                        gradeLevel={formData.gradeRange ? formData.gradeRange.split('-')[0].trim().replace(/^Kindergarten$/, 'K').replace(/^Grade\s+/, '') : ''}
+                        gradeLevels={parseGradeLevels(formData.gradeRange)}
                         strand={formData.strand}
                         essentialOutcomes={formData.essentialOutcomes}
                         specificOutcomes={formData.specificOutcomes}
@@ -987,9 +1002,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       />
                       <RelatedCurriculumBox
                         subject={formData.subject}
-                        gradeLevel={formData.gradeRange ? formData.gradeRange.split('-')[0].trim().replace(/^Kindergarten$/, 'K').replace(/^Grade\s+/, '') : ''}
+                        gradeLevel={parseGradeLevels(formData.gradeRange)[0] || ''}
                         strand={formData.strand}
                         useCurriculum={useCurriculum}
+                        essentialOutcomes={formData.essentialOutcomes}
                       />
                     </div>
 

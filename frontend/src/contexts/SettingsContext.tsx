@@ -28,6 +28,13 @@ export interface TutorialState {
   };
 }
 
+export interface UserProfile {
+  displayName: string;
+  school: string;
+  gradeLevels: string[];
+  subjects: string[];
+}
+
 export interface Settings {
   fontSize: number; // Percentage (100 = default)
   tabColors: TabColors;
@@ -41,6 +48,7 @@ export interface Settings {
   visualStudioEnabled: boolean;
   teacherSubjects: string[];
   teacherGradeLevels: string[];
+  profile: UserProfile;
 }
 
 export interface SettingsContextValue {
@@ -90,6 +98,12 @@ export const DEFAULT_SETTINGS: Settings = {
   visualStudioEnabled: false,
   teacherSubjects: [],
   teacherGradeLevels: [],
+  profile: {
+    displayName: '',
+    school: '',
+    gradeLevels: [],
+    subjects: [],
+  },
 };
 
 // localStorage key
@@ -133,6 +147,10 @@ const loadSettingsFromStorage = (): Settings => {
         tabColors: {
           ...DEFAULT_SETTINGS.tabColors,
           ...(parsed.tabColors || {})
+        },
+        profile: {
+          ...DEFAULT_SETTINGS.profile,
+          ...(parsed.profile || {})
         },
         tutorials: {
           ...DEFAULT_SETTINGS.tutorials,
@@ -199,7 +217,15 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
           ...updates.tabColors
         };
       }
-      
+
+      // Special handling for nested profile
+      if (updates.profile) {
+        newSettings.profile = {
+          ...prevSettings.profile,
+          ...updates.profile
+        };
+      }
+
       return newSettings;
     });
   };

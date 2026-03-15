@@ -8,6 +8,7 @@ interface CurriculumMatch {
   strand: string;
   route: string;
   essentialOutcomes?: string[];
+  summary?: string;
   [key: string]: unknown;
 }
 
@@ -16,6 +17,7 @@ interface RelatedCurriculumBoxProps {
   gradeLevel: string;
   strand: string;
   useCurriculum: boolean;
+  essentialOutcomes?: string;
   onOpenCurriculum?: (route: string) => void;
 }
 
@@ -24,6 +26,7 @@ export default function RelatedCurriculumBox({
   gradeLevel,
   strand,
   useCurriculum,
+  essentialOutcomes,
   onOpenCurriculum,
 }: RelatedCurriculumBoxProps) {
   const [matches, setMatches] = useState<CurriculumMatch[]>([]);
@@ -36,6 +39,10 @@ export default function RelatedCurriculumBox({
     const results = getCurriculumMatches(subject, gradeLevel, strand);
     setMatches(results.slice(0, 10));
   }, [subject, gradeLevel, strand]);
+
+  const selectedELOs: string[] = essentialOutcomes
+    ? essentialOutcomes.split('\n').filter(s => s.trim())
+    : [];
 
   if (!useCurriculum) {
     return (
@@ -65,6 +72,20 @@ export default function RelatedCurriculumBox({
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5">
+        {/* Selected ELO summaries */}
+        {selectedELOs.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {selectedELOs.map((elo, idx) => (
+              <div key={idx} className="px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-1">
+                  ELO {selectedELOs.length > 1 ? idx + 1 : ''}
+                </p>
+                <p className="text-[11px] text-theme-heading leading-relaxed">{elo}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {!subject || !gradeLevel || !strand ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <div className="w-8 h-8 rounded-full bg-theme-secondary flex items-center justify-center mb-3">
@@ -76,7 +97,7 @@ export default function RelatedCurriculumBox({
               Select subject, grade, and strand
             </p>
           </div>
-        ) : matches.length === 0 ? (
+        ) : matches.length === 0 && selectedELOs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <p className="text-xs text-theme-hint">
               No matching curriculum found
@@ -99,9 +120,6 @@ export default function RelatedCurriculumBox({
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-theme-title truncate">
                     {curriculum.displayName}
-                  </p>
-                  <p className="text-[11px] text-theme-muted mt-0.5">
-                    {curriculum.essentialOutcomes?.[0] || 'No description available'}
                   </p>
                   <p className="text-[10px] text-theme-hint mt-1">
                     Grade {curriculum.grade} &middot; {curriculum.strand}

@@ -1059,6 +1059,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         gradeLevel={formData.gradeLevel}
                         strand={formData.strand}
                         useCurriculum={useCurriculum}
+                        essentialOutcomes={formData.essentialOutcomes}
                         onOpenCurriculum={handleOpenCurriculum}
                       />
                     </div>

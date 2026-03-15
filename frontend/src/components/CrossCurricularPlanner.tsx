@@ -1190,6 +1190,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         gradeLevel={formData.gradeLevel}
                         strand={formData.strand}
                         useCurriculum={useCurriculum}
+                        essentialOutcomes={formData.essentialOutcomes}
                       />
                     </div>
                     <div data-tutorial="cross-curricular-planner-connections">
