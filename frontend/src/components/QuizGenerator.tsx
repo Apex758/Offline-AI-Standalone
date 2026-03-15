@@ -7,6 +7,7 @@ import QuizGrader from './QuizGrader';
 import axios from 'axios';
 import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
 import { buildQuizPrompt } from '../utils/quizPromptBuilder';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -58,6 +59,9 @@ interface FormData {
   timeLimitPerQuestion: string;
   randomizeQuestions: boolean;
   numberOfQuestions: string;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 const formatQuizText = (text: string, accentColor: string) => {
@@ -187,6 +191,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<'teacher' | 'student'>('teacher');
   const [showVersionMenu, setShowVersionMenu] = useState(false);
+  const [useCurriculum, setUseCurriculum] = useState(true);
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     subject: '',
@@ -196,7 +201,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     cognitiveLevels: [],
     timeLimitPerQuestion: '',
     randomizeQuestions: false,
-    numberOfQuestions: '10'
+    numberOfQuestions: '10',
+    strand: '',
+    essentialOutcomes: '',
+    specificOutcomes: '',
   });
 
   // Form data
@@ -482,8 +490,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const validateForm = () => {
-    return formData.subject && formData.gradeLevel && formData.learningOutcomes && 
-           formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0;
+    return formData.subject && formData.gradeLevel &&
+           formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0 &&
+           formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
   };
 
   // Auto-show tutorial on first use
@@ -1029,7 +1038,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </label>
                   <select
                     value={formData.subject}
-                    onChange={(e) => handleInputChange('subject', e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange('subject', e.target.value);
+                      handleInputChange('strand', '');
+                      handleInputChange('essentialOutcomes', '');
+                      handleInputChange('specificOutcomes', '');
+                    }}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
@@ -1044,7 +1058,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </label>
                   <select
                     value={formData.gradeLevel}
-                    onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange('gradeLevel', e.target.value);
+                      handleInputChange('strand', '');
+                      handleInputChange('essentialOutcomes', '');
+                      handleInputChange('specificOutcomes', '');
+                    }}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
@@ -1052,6 +1071,20 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                     {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
                   </select>
                 </div>
+
+                <CurriculumAlignmentFields
+                  subject={formData.subject}
+                  gradeLevel={formData.gradeLevel}
+                  strand={formData.strand}
+                  essentialOutcomes={formData.essentialOutcomes}
+                  specificOutcomes={formData.specificOutcomes}
+                  useCurriculum={useCurriculum}
+                  onStrandChange={(v) => handleInputChange('strand', v)}
+                  onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                  onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                  onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                  accentColor={tabColor}
+                />
 
                 <div data-tutorial="quiz-generator-question-count">
                   <label className="block text-sm font-medium text-theme-label mb-2">
@@ -1068,19 +1101,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   />
                 </div>
 
-                <div data-tutorial="quiz-generator-topic">
-                  <label className="block text-sm font-medium text-theme-label mb-2">
-                    Learning Outcomes <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={formData.learningOutcomes}
-                    onChange={(e) => handleInputChange('learningOutcomes', e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                    placeholder="What should students know or be able to demonstrate?"
-                  />
-                </div>
 
                 <div data-tutorial="quiz-generator-question-types">
                   <label className="block text-sm font-medium text-theme-label mb-3">

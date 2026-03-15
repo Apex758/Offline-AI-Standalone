@@ -9,6 +9,7 @@ import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilde
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -61,6 +62,9 @@ interface FormData {
   customLearningStyles: string;
   materials: string;
   crossCurricularConnections: string;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 const formatCrossCurricularText = (text: string, accentColor: string) => {
@@ -521,11 +525,18 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     multipleIntelligences: [],
     customLearningStyles: '',
     materials: '',
-    crossCurricularConnections: ''
+    crossCurricularConnections: '',
+    strand: '',
+    essentialOutcomes: '',
+    specificOutcomes: ''
   });
 
   // Start with defaults - will be restored from localStorage or savedData
   const [step, setStep] = useState<number>(1);
+  const [useCurriculum, setUseCurriculum] = useState(true);
+  const [flipPhase, setFlipPhase] = useState<'idle' | 'out' | 'in'>('idle');
+  const [displayStep, setDisplayStep] = useState(step);
+  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
   const [formData, setFormData] = useState<FormData>(() => {
     // First check savedData (for resource manager view/edit)
     if (savedData?.formData && typeof savedData.formData === 'object') {
@@ -574,6 +585,27 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       setIsEditing(true);
     }
   }, [savedData?.startInEditMode, parsedPlan, isEditing]);
+
+  // Card flip animation
+  useEffect(() => {
+    if (flipPhase === 'idle') setDisplayStep(step);
+  }, [step, flipPhase]);
+
+  const handleStepChange = (newStep: number) => {
+    if (newStep === step || flipPhase !== 'idle') return;
+    setFlipDirection(newStep > step ? 'forward' : 'backward');
+    setFlipPhase('out');
+    setTimeout(() => {
+      setStep(newStep);
+      setDisplayStep(newStep);
+      setFlipPhase('in');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFlipPhase('idle');
+        });
+      });
+    }, 300);
+  };
 
   const grades = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 
                   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -770,7 +802,15 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   }, []);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'primarySubject' || field === 'gradeLevel') {
+        updated.strand = '';
+        updated.essentialOutcomes = '';
+        updated.specificOutcomes = '';
+      }
+      return updated;
+    });
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
@@ -784,7 +824,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   const validateStep = () => {
     if (step === 1) return formData.lessonTitle && formData.gradeLevel && formData.duration && formData.bigIdea && formData.integrationModel;
-    if (step === 2) return formData.primarySubject && formData.learningStandards;
+    if (step === 2) return formData.primarySubject && formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
     if (step === 3) return formData.primaryObjective;
     if (step === 4) return formData.introduction && formData.coreActivities;
     if (step === 5) return formData.assessmentMethods && formData.mostChildren;
@@ -1065,9 +1105,20 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
             <StepProgressBar steps={stepLabels} currentStep={step} />
 
             <div className="flex-1 overflow-y-auto p-6">
+              <div style={{ perspective: '1200px' }}>
+              <div style={{
+                transformStyle: 'preserve-3d',
+                transition: flipPhase === 'in' ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease',
+                transform: flipPhase === 'out'
+                  ? `rotateY(${flipDirection === 'forward' ? '-90' : '90'}deg) scale(0.95)`
+                  : flipPhase === 'in'
+                  ? `rotateY(${flipDirection === 'forward' ? '90' : '-90'}deg) scale(0.95)`
+                  : 'rotateY(0deg) scale(1)',
+                opacity: flipPhase === 'out' || flipPhase === 'in' ? 0 : 1,
+              }}>
               <div className="max-w-4xl mx-auto space-y-6">
                 {/* Step 1: Basic Info */}
-                {step === 1 && (
+                {displayStep === 1 && (
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title *</label>
@@ -1108,7 +1159,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 )}
 
                 {/* Step 2: Subjects */}
-                {step === 2 && (
+                {displayStep === 2 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-subjects">
                       <label className="block text-sm font-medium text-theme-label mb-2">Primary Subject *</label>
@@ -1119,23 +1170,30 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
+                    <CurriculumAlignmentFields
+                      subject={formData.primarySubject}
+                      gradeLevel={formData.gradeLevel}
+                      strand={formData.strand}
+                      essentialOutcomes={formData.essentialOutcomes}
+                      specificOutcomes={formData.specificOutcomes}
+                      useCurriculum={useCurriculum}
+                      onStrandChange={(v) => handleInputChange('strand', v)}
+                      onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                      onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                      onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                      accentColor={tabColor}
+                    />
                     <div data-tutorial="cross-curricular-planner-connections">
                       <label className="block text-sm font-medium text-theme-label mb-2">Supporting Subjects</label>
                       <input type="text" value={formData.supportingSubjects} onChange={(e) => handleInputChange('supportingSubjects', e.target.value)}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Other subjects integrated (comma-separated)" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">Learning Standards *</label>
-                      <textarea value={formData.learningStandards} onChange={(e) => handleInputChange('learningStandards', e.target.value)} rows={4}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Curriculum standards from all integrated subjects" />
-                    </div>
                   </div>
                 )}
 
                 {/* Step 3: Objectives */}
-                {step === 3 && (
+                {displayStep === 3 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-objectives">
                       <label className="block text-sm font-medium text-theme-label mb-2">Primary Learning Objective *</label>
@@ -1171,7 +1229,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 )}
 
                 {/* Step 4: Activities */}
-                {step === 4 && (
+                {displayStep === 4 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-activities">
                       <label className="block text-sm font-medium text-theme-label mb-2">Introduction/Hook *</label>
@@ -1201,7 +1259,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 )}
 
                 {/* Step 5: Assessment */}
-                {step === 5 && (
+                {displayStep === 5 && (
                   <div className="space-y-6">
                     <div data-tutorial="cross-curricular-planner-assessment">
                       <label className="block text-sm font-medium text-theme-label mb-2">Assessment Methods *</label>
@@ -1237,7 +1295,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 )}
 
                 {/* Step 6: Teaching & Learning */}
-                {step === 6 && (
+                {displayStep === 6 && (
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-3">Teaching Strategies *</label>
@@ -1269,7 +1327,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 )}
 
                 {/* Step 7: Resources */}
-                {step === 7 && (
+                {displayStep === 7 && (
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Materials and Resources</label>
@@ -1287,12 +1345,14 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                 )}
               </div>
             </div>
+            </div>
+            </div>
 
             <div className="border-t border-theme p-4 bg-theme-secondary">
               <div className="max-w-3xl mx-auto flex justify-between">
                 <div>
                   {step > 1 && (
-                    <button onClick={() => setStep(step - 1)} className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg">
+                    <button onClick={() => handleStepChange(step - 1)} className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg">
                       <ChevronLeft className="w-5 h-5 mr-1" />Previous
                     </button>
                   )}
@@ -1302,7 +1362,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <Trash2 className="w-5 h-5 mr-2" />Clear Form
                   </button>
                   {step < 7 ? (
-                    <button onClick={() => setStep(step + 1)} disabled={!validateStep()}
+                    <button onClick={() => handleStepChange(step + 1)} disabled={!validateStep()}
                       className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
                       style={!validateStep() ? {} : { backgroundColor: tabColor }}
                       onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}

@@ -1,9 +1,14 @@
+import { buildCurriculumPromptSection } from './curriculumPromptSection';
+
 interface MultigradeFormData {
   topic: string;
   subject: string;
   gradeLevels: string[];
   duration: string;
   totalStudents: string;
+  strand?: string;
+  essentialOutcomes?: string;
+  specificOutcomes?: string;
 }
 
 // Grade-specific pedagogical guidance (unified format)
@@ -284,7 +289,8 @@ SUBJECT: ${formData.subject}
 GRADE LEVELS: ${formData.gradeLevels.join(', ')} (${rangeSpec.name})
 DURATION: ${formData.duration}
 TOTAL STUDENTS: ${formData.totalStudents}
-
+STRAND: ${formData.strand || 'Not specified'}
+${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'multigrade')}
 MULTIGRADE TEACHING REQUIREMENTS:
 - Age Range: ${rangeSpec.ageRange}
 - Differentiation Strategy: ${rangeSpec.differentiationStrategy}

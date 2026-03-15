@@ -5,9 +5,10 @@ import './StepProgressBar.css';
 interface StepProgressBarProps {
   steps: string[];
   currentStep: number; // 1-based
+  onClick?: (step: number) => void;
 }
 
-export default function StepProgressBar({ steps, currentStep }: StepProgressBarProps) {
+export default function StepProgressBar({ steps, currentStep, onClick }: StepProgressBarProps) {
   return (
     <div className="spb-wrapper border-b border-theme px-6 py-4 overflow-x-auto">
       <div className="spb-row">
@@ -18,7 +19,7 @@ export default function StepProgressBar({ steps, currentStep }: StepProgressBarP
 
           return (
             <React.Fragment key={stepNumber}>
-              <div className="spb-item">
+              <div className="spb-item" style={{ cursor: onClick ? 'pointer' : undefined }} onClick={() => onClick?.(stepNumber)}>
                 {/* Circle */}
                 <motion.div
                   className="spb-circle"

@@ -1045,23 +1045,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   </div>
 
                   <div data-tutorial="worksheet-generator-strand">
-                    <label className="block text-sm font-medium text-theme-label mb-2">
-                      Strand <span className="text-red-500">*</span>
-                    </label>
-                    {formData.subject && formData.gradeLevel ? (
-                      <select
-                        value={formData.strand}
-                        onChange={(e) => handleInputChange('strand', e.target.value)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Select a strand</option>
-                        {getStrands(formData.subject, formData.gradeLevel).map(strand => (
-                          <option key={strand} value={strand}>{strand}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <p className="text-sm text-theme-hint italic">Select subject and grade level to choose a strand.</p>
-                    )}
+                    <CurriculumAlignmentFields
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeLevel}
+                      strand={formData.strand}
+                      essentialOutcomes={formData.essentialOutcomes}
+                      specificOutcomes={formData.specificOutcomes}
+                      useCurriculum={useCurriculum}
+                      onStrandChange={(v) => handleInputChange('strand', v)}
+                      onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                      onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                      onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                      accentColor="#3b82f6"
+                    />
                   </div>
 
                   <div data-tutorial="worksheet-generator-topic">
@@ -1446,7 +1442,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             <div className="flex justify-end">
               <button
                 onClick={handleGenerate}
-                disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate}
+                disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate || !formData.essentialOutcomes || !formData.specificOutcomes}
                 className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (

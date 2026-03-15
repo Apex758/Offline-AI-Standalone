@@ -1,3 +1,5 @@
+import { buildCurriculumPromptSection } from './curriculumPromptSection';
+
 interface KindergartenFormData {
   theme: string;
   curriculumUnit: string;
@@ -8,6 +10,10 @@ interface KindergartenFormData {
   students: string;
   duration: string;
   learningDomains: string[];
+  curriculumSubject?: string;
+  strand?: string;
+  essentialOutcomes?: string;
+  specificOutcomes?: string;
 }
 
 // Kindergarten-specific developmental and pedagogical specifications
@@ -77,7 +83,8 @@ CURRICULUM UNIT: ${formData.curriculumUnit}
 WEEK: ${formData.week} | DAY: ${formData.day} | DATE: ${formData.date}
 AGE GROUP: ${formData.ageGroup} | STUDENTS: ${formData.students} | DURATION: ${formData.duration}
 LEARNING DOMAINS: ${domains}
-
+${formData.strand ? `CURRICULUM STRAND: ${formData.strand}` : ''}
+${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'kindergarten')}
 KINDERGARTEN REQUIREMENTS:
 - Stage: ${specs.developmentalStage}
 - Attention: ${specs.attentionSpan}

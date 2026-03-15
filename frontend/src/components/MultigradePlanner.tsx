@@ -9,6 +9,7 @@ import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} f
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -50,6 +51,9 @@ interface FormData {
   specialNeeds: boolean;
   specialNeedsDetails: string;
   differentiationNotes: string;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 const formatMultigradeText = (text: string, accentColor: string, isStreaming: boolean = false) => {
@@ -238,6 +242,30 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [step, setStep] = useState<number>(1);
+  const [useCurriculum, setUseCurriculum] = useState(true);
+  const [flipPhase, setFlipPhase] = useState<'idle' | 'out' | 'in'>('idle');
+  const [displayStep, setDisplayStep] = useState(step);
+  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
+
+  useEffect(() => {
+    if (flipPhase === 'idle') setDisplayStep(step);
+  }, [step, flipPhase]);
+
+  const handleStepChange = (newStep: number) => {
+    if (newStep === step || flipPhase !== 'idle') return;
+    setFlipDirection(newStep > step ? 'forward' : 'backward');
+    setFlipPhase('out');
+    setTimeout(() => {
+      setStep(newStep);
+      setDisplayStep(newStep);
+      setFlipPhase('in');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFlipPhase('idle');
+        });
+      });
+    }, 300);
+  };
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
@@ -272,7 +300,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     multigradeStrategies: [],
     specialNeeds: false,
     specialNeedsDetails: '',
-    differentiationNotes: ''
+    differentiationNotes: '',
+    strand: '',
+    essentialOutcomes: '',
+    specificOutcomes: ''
   });
 
   // Start with defaults - will be restored from localStorage or savedData
@@ -556,6 +587,17 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Clear curriculum fields when subject or gradeRange changes
+  const prevSubjectRef = useRef(formData.subject);
+  const prevGradeRangeRef = useRef(formData.gradeRange);
+  useEffect(() => {
+    if (prevSubjectRef.current !== formData.subject || prevGradeRangeRef.current !== formData.gradeRange) {
+      prevSubjectRef.current = formData.subject;
+      prevGradeRangeRef.current = formData.gradeRange;
+      setFormData(prev => ({ ...prev, strand: '', essentialOutcomes: '', specificOutcomes: '' }));
+    }
+  }, [formData.subject, formData.gradeRange]);
+
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
     const currentArray = formData[field] as string[];
     if (currentArray.includes(value)) {
@@ -567,9 +609,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   const validateStep = () => {
     if (step === 1) {
-      return formData.subject && formData.gradeRange && formData.topic && 
-             formData.essentialLearningOutcomes && formData.specificLearningObjectives &&
-             formData.totalStudents && formData.duration && formData.materials;
+      return formData.subject && formData.gradeRange && formData.topic &&
+             formData.totalStudents && formData.duration && formData.materials &&
+             formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
     }
     if (step === 2) {
       return formData.learningStyles.length > 0 && formData.pedagogicalStrategies.length > 0 &&
@@ -585,7 +627,10 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       subject: formData.subject,
       gradeLevels: formData.gradeRange.split(/[-,]/).map(g => g.trim()),
       duration: formData.duration,
-      totalStudents: formData.totalStudents
+      totalStudents: formData.totalStudents,
+      strand: formData.strand,
+      essentialOutcomes: formData.essentialOutcomes,
+      specificOutcomes: formData.specificOutcomes
     };
 
     const prompt = buildMultigradePrompt(multigradeFormData);
@@ -872,12 +917,24 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
             <StepProgressBar
               steps={['Basic Info', 'Learning & Strategies', 'Additional Details']}
               currentStep={step}
+              onClick={(s) => handleStepChange(s)}
             />
 
             <div className="flex-1 overflow-y-auto p-6">
+              <div style={{ perspective: '1200px' }}>
+              <div style={{
+                transformStyle: 'preserve-3d',
+                transition: flipPhase === 'in' ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease',
+                transform: flipPhase === 'out'
+                  ? `rotateY(${flipDirection === 'forward' ? '-90' : '90'}deg) scale(0.95)`
+                  : flipPhase === 'in'
+                  ? `rotateY(${flipDirection === 'forward' ? '90' : '-90'}deg) scale(0.95)`
+                  : 'rotateY(0deg) scale(1)',
+                opacity: flipPhase === 'out' || flipPhase === 'in' ? 0 : 1,
+              }}>
               <div className="max-w-4xl mx-auto">
                 {/* Step 1: Basic Info */}
-                {step === 1 && (
+                {displayStep === 1 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
@@ -913,6 +970,20 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       </div>
                     </div>
 
+                    <CurriculumAlignmentFields
+                      subject={formData.subject}
+                      gradeLevel={formData.gradeRange ? formData.gradeRange.split('-')[0].trim().replace(/^Kindergarten$/, 'K').replace(/^Grade\s+/, '') : ''}
+                      strand={formData.strand}
+                      essentialOutcomes={formData.essentialOutcomes}
+                      specificOutcomes={formData.specificOutcomes}
+                      useCurriculum={useCurriculum}
+                      onStrandChange={(v) => handleInputChange('strand', v)}
+                      onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                      onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                      onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                      accentColor={tabColor}
+                    />
+
                     <div data-tutorial="multigrade-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Topic <span className="text-red-500">*</span>
@@ -921,33 +992,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         type="text"
                         value={formData.topic}
                         onChange={(e) => handleInputChange('topic', e.target.value)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Essential Learning Outcomes <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={formData.essentialLearningOutcomes}
-                        onChange={(e) => handleInputChange('essentialLearningOutcomes', e.target.value)}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        placeholder="Include outcomes for each grade level in your range"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Specific Learning Objectives <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={formData.specificLearningObjectives}
-                        onChange={(e) => handleInputChange('specificLearningObjectives', e.target.value)}
-                        rows={3}
                         className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       />
@@ -1009,7 +1053,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 )}
 
                 {/* Step 2: Learning & Strategies */}
-                {step === 2 && (
+                {displayStep === 2 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Learning Styles & Preferences</h3>
 
@@ -1131,7 +1175,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 )}
 
                 {/* Step 3: Additional Details */}
-                {step === 3 && (
+                {displayStep === 3 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Special Needs Accommodations</h3>
 
@@ -1179,6 +1223,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   </div>
                 )}
               </div>
+              </div>
+              </div>
             </div>
 
             <div className="border-t border-theme p-4 bg-theme-secondary">
@@ -1186,7 +1232,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                 <div>
                   {step > 1 && (
                     <button
-                      onClick={() => setStep(step - 1)}
+                      onClick={() => handleStepChange(step - 1)}
                       className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg"
                     >
                       <ChevronLeft className="w-5 h-5 mr-1" />
@@ -1206,7 +1252,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                   {step < 3 ? (
                     <button
-                      onClick={() => setStep(step + 1)}
+                      onClick={() => handleStepChange(step + 1)}
                       disabled={!validateStep()}
                       className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
                       style={!validateStep() ? {} : { backgroundColor: tabColor }}

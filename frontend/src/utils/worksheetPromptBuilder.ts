@@ -1,4 +1,5 @@
 import { SceneSpec } from '../types/scene';
+import { buildCurriculumPromptSection } from './curriculumPromptSection';
 
 interface WorksheetFormData {
   subject: string;
@@ -13,6 +14,8 @@ interface WorksheetFormData {
   includeImages: boolean;
   imageStyle: string;
   imagePlacement: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 /**
@@ -928,7 +931,7 @@ CURRICULUM CONTEXT:
 - Subject: ${formData.subject}
 - Strand: ${formData.strand}
 - Topic: ${formData.topic}
-
+${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'worksheet')}
 GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Activity Types: ${gradeSpec.activityTypes}

@@ -6,6 +6,7 @@ import KindergartenEditor from './KindergartenEditor';
 import type { ParsedKindergartenPlan } from './KindergartenEditor';
 import axios from 'axios';
 import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -44,6 +45,10 @@ interface FormData {
   additionalRequirements: string;
   includeAssessments: boolean;
   includeMaterials: boolean;
+  curriculumSubject: string;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 const formatKindergartenText = (text: string, accentColor: string) => {
@@ -388,6 +393,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     return null;
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [useCurriculum, setUseCurriculum] = useState(true);
 
   // (Removed manual refs for initialization tracking)
 
@@ -405,7 +411,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     duration: '60',
     additionalRequirements: '',
     includeAssessments: true,
-    includeMaterials: true
+    includeMaterials: true,
+    curriculumSubject: '',
+    strand: '',
+    essentialOutcomes: '',
+    specificOutcomes: ''
   });
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -1179,6 +1189,43 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                     ))}
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">
+                    Curriculum Subject
+                  </label>
+                  <select
+                    value={formData.curriculumSubject}
+                    onChange={(e) => {
+                      handleInputChange('curriculumSubject', e.target.value);
+                      handleInputChange('strand', '');
+                      handleInputChange('essentialOutcomes', '');
+                      handleInputChange('specificOutcomes', '');
+                    }}
+                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                  >
+                    <option value="">Select a subject</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Language Arts">Language Arts</option>
+                    <option value="Science">Science</option>
+                    <option value="Social Studies">Social Studies</option>
+                  </select>
+                </div>
+
+                <CurriculumAlignmentFields
+                  subject={formData.curriculumSubject}
+                  gradeLevel="K"
+                  strand={formData.strand}
+                  essentialOutcomes={formData.essentialOutcomes}
+                  specificOutcomes={formData.specificOutcomes}
+                  useCurriculum={useCurriculum}
+                  onStrandChange={(v) => handleInputChange('strand', v)}
+                  onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                  onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                  onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                  accentColor={tabColor}
+                />
 
                 <div data-tutorial="kinder-planner-circle-time">
                   <label className="block text-sm font-medium text-theme-label mb-2">

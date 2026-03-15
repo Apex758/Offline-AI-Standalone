@@ -1,3 +1,5 @@
+import { buildCurriculumPromptSection } from './curriculumPromptSection';
+
 interface QuizFormData {
   subject: string;
   gradeLevel: string;
@@ -6,6 +8,9 @@ interface QuizFormData {
   cognitiveLevels: string[];
   numberOfQuestions: string;
   timeLimitPerQuestion?: string;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
 }
 
 // Grade-specific pedagogical guidance (unified format)
@@ -265,7 +270,8 @@ Generate questions 1-${formData.numberOfQuestions} now:`
     : `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students, specifically focusing on these learning outcomes: ${formData.learningOutcomes}.
 
 SUBJECT: ${formData.subject}
-
+STRAND: ${formData.strand}
+${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'quiz')}
 QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
 
 GRADE LEVEL REQUIREMENTS:

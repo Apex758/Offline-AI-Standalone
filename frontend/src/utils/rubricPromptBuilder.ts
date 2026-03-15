@@ -1,3 +1,5 @@
+import { buildCurriculumPromptSection } from './curriculumPromptSection';
+
 interface RubricFormData {
   assignmentType: string;
   subject: string;
@@ -8,6 +10,9 @@ interface RubricFormData {
   learningObjectives?: string;
   specificRequirements?: string;
   focusAreas?: string[];
+  strand?: string;
+  essentialOutcomes?: string;
+  specificOutcomes?: string;
 }
 
 // Map number of levels to standard descriptive names
@@ -193,6 +198,8 @@ ASSIGNMENT DETAILS:
 ${formData.specificRequirements ? `- Requirements: ${formData.specificRequirements}` : ''}
 ${formData.focusAreas && formData.focusAreas.length > 0 ? `- Focus Areas: ${formData.focusAreas.join(', ')}` : ''}
 
+STRAND: ${formData.strand || 'Not specified'}
+${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'rubric')}
 GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Assessment Methods: ${gradeSpec.assessmentMethods}

@@ -6,6 +6,7 @@ import RubricEditor from './RubricEditor';
 import type { ParsedRubric, CriteriaRow } from './RubricEditor';
 import axios from 'axios';
 import { buildRubricPrompt } from '../utils/rubricPromptBuilder';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import { useSettings } from '../contexts/SettingsContext';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
@@ -38,6 +39,9 @@ interface FormData {
   assignmentType: string;
   subject: string;
   gradeLevel: string;
+  strand: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
   learningObjectives: string;
   specificRequirements: string;
   performanceLevels: string;
@@ -455,6 +459,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     return null;
   });
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [useCurriculum, setUseCurriculum] = useState(true);
 
 
   // Helper function to get default empty form data
@@ -463,6 +468,9 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     assignmentType: '',
     subject: '',
     gradeLevel: '',
+    strand: '',
+    essentialOutcomes: '',
+    specificOutcomes: '',
     learningObjectives: '',
     specificRequirements: '',
     performanceLevels: '4',
@@ -772,10 +780,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   };
 
   const validateForm = () => {
-    return formData.assignmentTitle && 
-           formData.assignmentType && 
-           formData.subject && 
-           formData.gradeLevel && 
+    return formData.assignmentTitle &&
+           formData.assignmentType &&
+           formData.subject &&
+           formData.gradeLevel &&
+           formData.strand &&
+           formData.essentialOutcomes &&
+           formData.specificOutcomes &&
            formData.learningObjectives &&
            formData.focusAreas.length > 0;
   };
@@ -1027,7 +1038,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </label>
                   <select
                     value={formData.subject}
-                    onChange={(e) => handleInputChange('subject', e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange('subject', e.target.value);
+                      handleInputChange('strand', '');
+                      handleInputChange('essentialOutcomes', '');
+                      handleInputChange('specificOutcomes', '');
+                    }}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
@@ -1042,7 +1058,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </label>
                   <select
                     value={formData.gradeLevel}
-                    onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange('gradeLevel', e.target.value);
+                      handleInputChange('strand', '');
+                      handleInputChange('essentialOutcomes', '');
+                      handleInputChange('specificOutcomes', '');
+                    }}
                     className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
@@ -1050,6 +1071,20 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     {grades.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
+
+                <CurriculumAlignmentFields
+                  subject={formData.subject}
+                  gradeLevel={formData.gradeLevel}
+                  strand={formData.strand}
+                  essentialOutcomes={formData.essentialOutcomes}
+                  specificOutcomes={formData.specificOutcomes}
+                  useCurriculum={useCurriculum}
+                  onStrandChange={(v) => handleInputChange('strand', v)}
+                  onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                  onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                  onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                  accentColor={tabColor}
+                />
 
                 <div data-tutorial="rubric-generator-criteria">
                   <label className="block text-sm font-medium text-theme-label mb-2">

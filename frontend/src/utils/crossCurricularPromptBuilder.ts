@@ -1,3 +1,5 @@
+import { buildCurriculumPromptSection } from './curriculumPromptSection';
+
 interface CrossCurricularFormData {
   theme: string;
   primarySubject: string;
@@ -5,6 +7,9 @@ interface CrossCurricularFormData {
   gradeLevel: string;
   duration: string;
   integrationModel: string;
+  strand?: string;
+  essentialOutcomes?: string;
+  specificOutcomes?: string;
 }
 
 // Grade-specific pedagogical guidance (unified format)
@@ -185,7 +190,8 @@ PRIMARY SUBJECT: ${formData.primarySubject}
 INTEGRATION SUBJECTS: ${formData.integrationSubjects.join(', ')}
 DURATION: ${formData.duration}
 INTEGRATION MODEL: ${formData.integrationModel}
-
+STRAND: ${formData.strand || 'Not specified'}
+${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'cross-curricular')}
 GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Activity Types: ${gradeSpec.activityTypes}
