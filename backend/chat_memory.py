@@ -396,7 +396,7 @@ class ChatMemory:
             return
 
         try:
-            with open(json_path, 'r', encoding='utf-8') as f:
+            with open(json_path, 'r', encoding='utf-8-sig') as f:
                 histories = json.load(f)
 
             if not histories:

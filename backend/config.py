@@ -132,6 +132,72 @@ def scan_diffusion_models():
 
     return models
 
+
+# ============================================================================
+# IMAGE MODEL REGISTRY (multi-model support)
+# ============================================================================
+
+IMAGE_MODEL_REGISTRY = {
+    "sdxl-turbo-openvino": {
+        "folder":      "sdxl-turbo-openvino",
+        "backend":     "openvino",
+        "description": "SDXL-Turbo (OpenVINO) — fast 1-2 steps, ~4 GB",
+        "steps":       2,
+        "guidance":    0.0,
+    },
+    "sdxl-lightning": {
+        "folder":      "sdxl-lightning",
+        "backend":     "diffusers_lightning",
+        "description": "SDXL Lightning 4-step — good quality, ~6.6 GB UNet",
+        "steps":       4,
+        "guidance":    0.0,
+    },
+    "sdxl-lcm": {
+        "folder":      "sdxl-lcm",
+        "backend":     "diffusers_lcm",
+        "description": "SDXL + LCM-LoRA — 4-8 steps, needs base SDXL",
+        "steps":       4,
+        "guidance":    1.0,
+    },
+    "flux-schnell": {
+        "folder":      "flux-schnell",
+        "backend":     "openvino_flux",
+        "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
+        "steps":       4,
+        "guidance":    0.0,
+    },
+    "sd35-medium": {
+        "folder":      "sd35-medium",
+        "backend":     "diffusers_sd3",
+        "description": "SD 3.5 Medium — balanced quality/speed, ~12 GB",
+        "steps":       28,
+        "guidance":    4.5,
+    },
+    "sana-1600m": {
+        "folder":      "sana-1600m",
+        "backend":     "diffusers_sana",
+        "description": "SANA 1600M — efficient, ~6 GB",
+        "steps":       20,
+        "guidance":    5.0,
+    },
+}
+
+def get_image_model_info(model_key: str = None) -> dict:
+    """Get registry info for a model key, falling back to selected model."""
+    if model_key is None:
+        model_key = get_selected_diffusion_model()
+    return IMAGE_MODEL_REGISTRY.get(model_key, IMAGE_MODEL_REGISTRY[DEFAULT_DIFFUSION_MODEL])
+
+def get_image_model_path(model_key: str = None) -> Path:
+    """Resolve the local folder path for the given model key."""
+    if model_key is None:
+        model_key = get_selected_diffusion_model()
+    info = IMAGE_MODEL_REGISTRY.get(model_key)
+    if not info:
+        # Fall back to treating model_key as a folder name
+        return IMAGE_MODELS_DIR / model_key
+    return IMAGE_MODELS_DIR / info["folder"]
+
 def resolve_model_path(model_filename: str) -> str:
     """Resolve model path: check user data directory first, then bundled."""
     user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"

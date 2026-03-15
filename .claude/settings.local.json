@@ -10,7 +10,8 @@
       "Bash(ls:*)",
       "Bash(grep:*)",
       "Bash(python:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(\"C:/Users/LG/Desktop/Projects/Offline AI Standalone/backend/python-embed/python.exe\" -m pip install \"diffusers==0.37.0\" --no-deps 2>&1)"
     ]
   }
 }

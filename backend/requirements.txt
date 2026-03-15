@@ -35,7 +35,7 @@ beautifulsoup4==4.14.2
 # - iopaint 1.6.0 requires diffusers 0.27.2
 # - optimum-intel 1.18.0 supports diffusers 0.27.2
 # - huggingface-hub 0.20.3 works with optimum 1.18.0
-# - This combo is tested and stable
+# - This combo is tested and stable 
 
 # ========================================
 # MANUAL INSTALLATION REQUIRED

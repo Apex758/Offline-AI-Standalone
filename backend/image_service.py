@@ -16,117 +16,200 @@ logger = logging.getLogger(__name__)
 def get_resource_path(relative_path: str) -> Path:
     """
     Get absolute path to resource, works for dev and production (Electron)
-    
-    In development: Uses relative path from backend folder
-    In production: Uses path relative to Electron resources folder
-    
-    Args:
-        relative_path: Relative path to resource (e.g., "../models/image_generation/sdxl-turbo-openvino")
-    
-    Returns:
-        Path: Absolute path to resource
     """
-    # Check if running in packaged Electron app
     if hasattr(sys, '_MEIPASS'):
-        # PyInstaller path
         base_path = Path(sys._MEIPASS)
     elif os.environ.get('ELECTRON_RESOURCE_PATH'):
-        # Custom Electron resource path (set by main.js)
         base_path = Path(os.environ['ELECTRON_RESOURCE_PATH'])
     else:
-        # Development mode - use current directory
         base_path = Path(__file__).parent
-    
     resource_path = base_path / relative_path
     logger.info(f"Resource path resolved: {relative_path} -> {resource_path}")
-    
     return resource_path
 
 
 def get_app_data_path(subfolder: str = "") -> Path:
     """
     Get user-writable data directory for caching models
-    
-    Args:
-        subfolder: Optional subfolder within app data
-    
-    Returns:
-        Path: Path to app data directory
     """
-    if os.name == 'nt':  # Windows
+    if os.name == 'nt':
         app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
         data_dir = Path(app_data) / 'OECS Learning Hub' / 'cache'
-    else:  # macOS/Linux
+    else:
         data_dir = Path.home() / '.olh_ai_education' / 'cache'
-    
     if subfolder:
         data_dir = data_dir / subfolder
-    
     data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir
 
 
+# ── pipeline loaders ─────────────────────────────────────────────────────────
+
+def _load_openvino(model_path: Path):
+    """Load SDXL-Turbo via OpenVINO."""
+    from optimum.intel.openvino import OVStableDiffusionXLPipeline
+    return OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=True)
+
+
+def _load_sdxl_lightning(model_path: Path):
+    """Load SDXL Lightning 4-step pipeline."""
+    import torch
+    from diffusers import StableDiffusionXLPipeline, EulerDiscreteScheduler
+    from safetensors.torch import load_file
+
+    base_path = model_path / "sdxl-base"
+    unet_ckpt = model_path / "sdxl_lightning_4step_unet.safetensors"
+
+    scheduler = EulerDiscreteScheduler.from_pretrained(
+        str(base_path), subfolder="scheduler", timestep_spacing="trailing"
+    )
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        str(base_path), scheduler=scheduler, torch_dtype=torch.float32,
+    )
+    pipe.unet.load_state_dict(load_file(str(unet_ckpt)), strict=False)
+    pipe.to("cpu")
+    return pipe
+
+
+def _load_sdxl_lcm(model_path: Path):
+    """Load base SDXL + LCM-LoRA adapter."""
+    import torch
+    from diffusers import StableDiffusionXLPipeline, LCMScheduler
+
+    base_candidates = [
+        model_path.parent / "sdxl-lightning" / "sdxl-base",
+        model_path.parent / "sdxl-turbo-openvino",
+    ]
+    base_path = next((p for p in base_candidates if p.exists()), None)
+    if base_path is None:
+        raise RuntimeError(
+            "LCM-LoRA requires the SDXL base model. "
+            "Download sdxl-lightning first (it includes sdxl-base)."
+        )
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        str(base_path), torch_dtype=torch.float32
+    )
+    pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
+    pipe.load_lora_weights(str(model_path))
+    pipe.fuse_lora()
+    pipe.to("cpu")
+    return pipe
+
+
+def _load_flux_schnell_ov(model_path: Path):
+    """Load FLUX.1 Schnell INT4 via OpenVINO."""
+    from optimum.intel.openvino import OVFluxPipeline
+    return OVFluxPipeline.from_pretrained(str(model_path), compile=True)
+
+
+def _load_sd35_medium(model_path: Path):
+    """Load SD 3.5 Medium pipeline (requires diffusers >= 0.31)."""
+    import torch
+    from diffusers import StableDiffusion3Pipeline
+    pipe = StableDiffusion3Pipeline.from_pretrained(
+        str(model_path), torch_dtype=torch.bfloat16,
+    )
+    pipe.to("cpu")
+    return pipe
+
+
+def _load_sana(model_path: Path):
+    """Load SANA 1600M pipeline (requires diffusers >= 0.32)."""
+    import torch
+    from diffusers import SanaPipeline
+    pipe = SanaPipeline.from_pretrained(
+        str(model_path), torch_dtype=torch.bfloat16,
+    )
+    pipe.to("cpu")
+    return pipe
+
+
+# Map backend key → loader function
+_LOADERS = {
+    "openvino":            _load_openvino,
+    "openvino_flux":       _load_flux_schnell_ov,
+    "diffusers_lightning": _load_sdxl_lightning,
+    "diffusers_lcm":       _load_sdxl_lcm,
+    "diffusers_sd3":       _load_sd35_medium,
+    "diffusers_sana":      _load_sana,
+}
+
+
 class ImageService:
-    """Manages image generation (SDXL) and inpainting (IOPaint)"""
-    
-    def __init__(self, 
+    """Manages image generation (multi-model) and inpainting (IOPaint)"""
+
+    def __init__(self,
                  sdxl_model_path: Optional[str] = None,
-                 iopaint_port: int = 8080):
+                 iopaint_port: int = 8080,
+                 model_key: Optional[str] = None):
         """
-        Initialize ImageService with automatic path resolution
-        
-        Args:
-            sdxl_model_path: Override path to SDXL model (optional, auto-detected if None)
-            iopaint_port: Port for IOPaint server
+        Initialize ImageService with automatic path resolution.
+        Supports multi-model backends via model_key or legacy sdxl_model_path.
         """
-        # Auto-detect SDXL model path using config
-        if sdxl_model_path is None:
-            try:
-                from config import get_diffusion_model_path
-                sdxl_model_path = get_diffusion_model_path()
-                logger.info(f"Using diffusion model from config: {sdxl_model_path}")
-            except ImportError:
-                user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
-                sdxl_model_name = "sdxl-turbo-openvino"
-                user_sdxl_path = user_models_dir / sdxl_model_name
-                if user_sdxl_path.exists():
-                    sdxl_model_path = str(user_sdxl_path)
-                    logger.info(f"Using SDXL model from user data: {sdxl_model_path}")
-                else:
-                    sdxl_model_path = get_resource_path("../models/image_generation/sdxl-turbo-openvino")
-                    logger.info(f"Using bundled SDXL model: {sdxl_model_path}")
-        else:
-            sdxl_model_path = Path(sdxl_model_path)
-        
-        self.sdxl_model_path = Path(sdxl_model_path)
         self.iopaint_port = iopaint_port
         self.iopaint_process: Optional[subprocess.Popen] = None
-        self.sdxl_pipeline = None
-        
+        self.pipeline = None
+        self.model_info = {}
+        self.model_key = None
+
+        try:
+            from config import (
+                get_selected_diffusion_model, IMAGE_MODEL_REGISTRY,
+                get_image_model_path as config_get_image_model_path
+            )
+
+            if model_key is None and sdxl_model_path is None:
+                model_key = get_selected_diffusion_model()
+
+            if model_key is not None:
+                self.model_key = model_key
+                self.model_info = IMAGE_MODEL_REGISTRY.get(model_key, {})
+                self.model_path = config_get_image_model_path(model_key)
+                logger.info(f"Using model key: {model_key}, backend: {self.model_info.get('backend')}")
+            else:
+                # Legacy path: sdxl_model_path provided directly
+                self.model_path = Path(sdxl_model_path)
+                self.model_key = "sdxl-turbo-openvino"
+                self.model_info = IMAGE_MODEL_REGISTRY.get(self.model_key, {})
+        except ImportError:
+            # Fallback if config not available
+            if sdxl_model_path:
+                self.model_path = Path(sdxl_model_path)
+            else:
+                self.model_path = get_resource_path("../models/image_generation/sdxl-turbo-openvino")
+            self.model_key = "sdxl-turbo-openvino"
+            self.model_info = {"backend": "openvino", "steps": 2, "guidance": 0.0}
+
         # Setup IOPaint cache directory
         self.iopaint_cache_dir = get_app_data_path("iopaint")
         self._setup_iopaint_cache()
-        
+
         # Register cleanup on exit
         atexit.register(self.cleanup)
-        
+
         logger.info(f"ImageService initialized")
-        logger.info(f"  SDXL model path: {self.sdxl_model_path}")
+        logger.info(f"  Model: {self.model_key}, path: {self.model_path}")
+        logger.info(f"  Backend: {self.model_info.get('backend', 'unknown')}")
         logger.info(f"  IOPaint cache: {self.iopaint_cache_dir}")
-    
+
+    # Backward compatibility alias
+    @property
+    def sdxl_pipeline(self):
+        return self.pipeline
+
+    @property
+    def sdxl_model_path(self):
+        return self.model_path
+
     def _setup_iopaint_cache(self):
         """Setup IOPaint model cache in app data folder"""
-        # Copy LaMa model from resources to torch hub cache
         torch_hub_dir = self.iopaint_cache_dir.parent / "hub" / "checkpoints"
         torch_hub_dir.mkdir(parents=True, exist_ok=True)
         lama_cache_file = torch_hub_dir / "big-lama.pt"
 
         if not lama_cache_file.exists():
             logger.info("Setting up IOPaint cache...")
-
-            # Try to copy from bundled resources
             bundled_lama = get_resource_path("../models/image_generation/lama/big-lama.pt")
-
             if bundled_lama.exists():
                 logger.info(f"Copying LaMa model to torch hub cache: {bundled_lama} -> {lama_cache_file}")
                 try:
@@ -140,84 +223,68 @@ class ImageService:
                 logger.info("IOPaint will download on first use")
         else:
             logger.info(f"IOPaint cache already exists: {lama_cache_file}")
-    
-    def initialize_sdxl(self) -> bool:
-        """
-        Initialize SDXL-Turbo pipeline (lazy loading)
-        
-        Returns:
-            bool: True if successful, False otherwise
-        """
-        if self.sdxl_pipeline is not None:
+
+    def initialize_pipeline(self) -> bool:
+        """Initialize the image generation pipeline (lazy loading)."""
+        if self.pipeline is not None:
             return True
-        
-        try:
-            from optimum.intel.openvino import OVStableDiffusionXLPipeline
-            
-            logger.info(f"Loading SDXL model from: {self.sdxl_model_path}")
-            
-            if not self.sdxl_model_path.exists():
-                logger.error(f"SDXL model not found at: {self.sdxl_model_path}")
-                logger.error("Please run setup-models.ps1 before building")
-                return False
-            
-            self.sdxl_pipeline = OVStableDiffusionXLPipeline.from_pretrained(
-                str(self.sdxl_model_path),
-                compile=True
-            )
-            
-            logger.info("SDXL pipeline loaded successfully")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize SDXL: {e}")
+
+        if not self.model_path.exists():
+            logger.error(f"Model folder not found: {self.model_path}")
             return False
-    
+
+        backend = self.model_info.get("backend", "openvino")
+        loader = _LOADERS.get(backend)
+        if loader is None:
+            logger.error(f"No loader for backend: {backend}")
+            return False
+
+        try:
+            logger.info(f"Loading {self.model_key} via backend={backend} from {self.model_path}...")
+            self.pipeline = loader(self.model_path)
+            logger.info("Pipeline loaded successfully.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to initialize pipeline ({self.model_key}): {e}")
+            return False
+
+    def initialize_sdxl(self) -> bool:
+        """Backward-compatible alias for initialize_pipeline."""
+        return self.initialize_pipeline()
+
     def start_iopaint(self) -> bool:
-        """
-        Start IOPaint server as subprocess
-        
-        Returns:
-            bool: True if started successfully
-        """
+        """Start IOPaint server as subprocess"""
         if self.is_iopaint_running():
             logger.info(f"IOPaint already running on port {self.iopaint_port}")
             return True
-        
+
         try:
-            # Find iopaint executable (works with embedded Python)
             iopaint_cmd = self._find_iopaint_executable()
-            
             if not iopaint_cmd:
                 logger.error("IOPaint executable not found")
-                logger.error("Make sure iopaint is installed: pip install iopaint")
                 return False
-            
-            # Set environment variable for model cache
+
             env = os.environ.copy()
             env['TORCH_HOME'] = str(self.iopaint_cache_dir.parent)
-            
-            # Start IOPaint subprocess
+
             cmd = [
-                iopaint_cmd, "-m", "iopaint", "start",  
+                iopaint_cmd, "-m", "iopaint", "start",
                 "--model=lama",
                 "--device=cpu",
                 f"--port={self.iopaint_port}",
                 "--host=127.0.0.1"
             ]
-            
+
             logger.info(f"Starting IOPaint: {' '.join(cmd)}")
-            
-            # Start process with no console window on Windows
+
             startupinfo = None
             creation_flags = 0
-            
             if os.name == 'nt':
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = subprocess.SW_HIDE
                 creation_flags = subprocess.CREATE_NO_WINDOW
-            
+
             self.iopaint_process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -226,8 +293,7 @@ class ImageService:
                 creationflags=creation_flags,
                 env=env
             )
-            
-            # Wait for server to be ready (max 30 seconds)
+
             for i in range(30):
                 time.sleep(1)
                 if self.is_iopaint_running():
@@ -235,52 +301,41 @@ class ImageService:
                     return True
 
             logger.error("IOPaint failed to start within 30 seconds")
-            # Try to get error output from subprocess
             if self.iopaint_process:
                 try:
                     stdout, stderr = self.iopaint_process.communicate(timeout=5)
                     logger.error(f"IOPaint stdout: {stdout.decode('utf-8', errors='ignore') if stdout else 'None'}")
                     logger.error(f"IOPaint stderr: {stderr.decode('utf-8', errors='ignore') if stderr else 'None'}")
-                    if self.iopaint_process.poll() is None:
-                        logger.info("IOPaint process is still running")
-                    else:
-                        logger.info(f"IOPaint process exited with code: {self.iopaint_process.returncode}")
                 except Exception as e:
                     logger.error(f"Error reading IOPaint output: {e}")
             return False
-            
+
         except Exception as e:
             logger.error(f"Error starting IOPaint: {e}")
             return False
-  
-        
+
     def _find_iopaint_executable(self) -> Optional[str]:
         """Find Python executable to run iopaint as module"""
         logger.info(f"sys.prefix: {sys.prefix}")
         logger.info(f"sys.executable: {sys.executable}")
-        
-        # Return Python executable - we'll use "python -m iopaint"
         python_exe = sys.executable
-        
         if os.path.exists(python_exe):
             logger.info(f"Will use Python module: {python_exe} -m iopaint")
             return python_exe
-        
         logger.error("Python executable not found")
         return None
-        
-        
+
     def _command_exists(self, command: str) -> bool:
         """Check if command exists in PATH"""
         try:
-            subprocess.run([command, '--version'], 
-                         capture_output=True, 
+            subprocess.run([command, '--version'],
+                         capture_output=True,
                          timeout=5,
                          creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
             return True
         except (subprocess.SubprocessError, FileNotFoundError):
             return False
-    
+
     def is_iopaint_running(self) -> bool:
         """Check if IOPaint server is responding"""
         try:
@@ -291,79 +346,102 @@ class ImageService:
             return response.status_code == 200
         except requests.RequestException:
             return False
-    
+
     def generate_image(self,
                         prompt: str,
                         negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
                         width: int = 1024,
                         height: int = 512,
-                        num_inference_steps: int = 2,
-                        guidance_scale: float = 0.0,
+                        num_inference_steps: int = None,
+                        guidance_scale: float = None,
                         seed: Optional[int] = None,
                         init_image: Optional[bytes] = None,
                         strength: float = 0.8) -> Optional[bytes]:
-        """
-        Generate image using SDXL-Turbo
-
-        Args:
-            prompt: Text prompt for image generation
-            negative_prompt: Negative prompt
-            width: Image width
-            height: Image height
-            num_inference_steps: Number of inference steps (1-4 for Turbo)
-            guidance_scale: CFG scale (0.0 for Turbo)
-            seed: Random seed for reproducibility
-
-        Returns:
-            bytes: PNG image data or None if failed
-        """
+        """Generate image using the configured model backend."""
         try:
-            # Initialize SDXL if not already loaded
-            if not self.initialize_sdxl():
-                logger.error("SDXL pipeline not initialized")
+            if not self.initialize_pipeline():
+                logger.error("Pipeline not initialized")
                 return None
+
+            # Use model defaults if caller didn't specify
+            if num_inference_steps is None:
+                num_inference_steps = self.model_info.get("steps", 2)
+            if guidance_scale is None:
+                guidance_scale = self.model_info.get("guidance", 0.0)
 
             logger.info(f"Generating image: {prompt[:50]}...")
 
-            # Set seed if provided
             import torch
+            generator = None
             if seed is not None:
                 torch.manual_seed(seed)
+                generator = torch.manual_seed(seed)
                 logger.info(f"Using seed: {seed}")
 
-            # Handle img2img if init_image is provided
-            if init_image is not None:
-                logger.info("Using img2img mode")
-                # Convert init_image bytes to PIL Image
-                from PIL import Image
-                import io
-                init_pil = Image.open(io.BytesIO(init_image)).convert("RGB")
+            backend = self.model_info.get("backend", "openvino")
 
-                # Generate image using img2img
-                result = self.sdxl_pipeline(
+            if backend in ("openvino",):
+                # OpenVINO SDXL-Turbo pipeline
+                if init_image is not None:
+                    import io
+                    init_pil = Image.open(io.BytesIO(init_image)).convert("RGB")
+                    result = self.pipeline(
+                        prompt=prompt, negative_prompt=negative_prompt,
+                        image=init_pil, strength=strength,
+                        num_inference_steps=num_inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=width, height=height,
+                    )
+                else:
+                    result = self.pipeline(
+                        prompt=prompt, negative_prompt=negative_prompt,
+                        num_inference_steps=num_inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=width, height=height,
+                    )
+
+            elif backend == "openvino_flux":
+                # FLUX INT4 OpenVINO — no negative_prompt support
+                result = self.pipeline(
                     prompt=prompt,
-                    negative_prompt=negative_prompt,
-                    image=init_pil,
-                    strength=strength,
                     num_inference_steps=num_inference_steps,
                     guidance_scale=guidance_scale,
-                    width=width,
-                    height=height
+                    height=height, width=width,
                 )
+
+            elif backend in ("diffusers_lightning", "diffusers_lcm"):
+                result = self.pipeline(
+                    prompt=prompt, negative_prompt=negative_prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=width, height=height,
+                    generator=generator,
+                )
+
+            elif backend == "diffusers_sd3":
+                result = self.pipeline(
+                    prompt=prompt, negative_prompt=negative_prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=width, height=height,
+                    generator=generator,
+                )
+
+            elif backend == "diffusers_sana":
+                result = self.pipeline(
+                    prompt=prompt, negative_prompt=negative_prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    height=height, width=width,
+                    generator=generator,
+                )
+
             else:
-                # Standard text-to-image generation
-                result = self.sdxl_pipeline(
-                    prompt=prompt,
-                    negative_prompt=negative_prompt,
-                    num_inference_steps=num_inference_steps,
-                    guidance_scale=guidance_scale,
-                    width=width,
-                    height=height
-                )
+                logger.error(f"Unknown backend: {backend}")
+                return None
 
             image = result.images[0]
 
-            # Convert PIL Image to bytes
             buffer = BytesIO()
             image.save(buffer, format='PNG')
             image_bytes = buffer.getvalue()
@@ -380,40 +458,21 @@ class ImageService:
                              negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
                              width: int = 1024,
                              height: int = 512,
-                             num_inference_steps: int = 2,
-                             guidance_scale: float = 0.0,
+                             num_inference_steps: int = None,
+                             guidance_scale: float = None,
                              num_images: int = 1) -> List[Dict[str, Any]]:
-        """
-        Generate multiple images in batch using SDXL-Turbo
-
-        Args:
-            prompt: Text prompt for image generation
-            negative_prompt: Negative prompt
-            width: Image width
-            height: Image height
-            num_inference_steps: Number of inference steps (1-4 for Turbo)
-            guidance_scale: CFG scale (0.0 for Turbo)
-            num_images: Number of images to generate
-
-        Returns:
-            List of dicts with 'image_data' (bytes) and 'seed' (int)
-        """
+        """Generate multiple images in batch."""
         try:
-            # Initialize SDXL if not already loaded
-            if not self.initialize_sdxl():
-                logger.error("SDXL pipeline not initialized")
+            if not self.initialize_pipeline():
+                logger.error("Pipeline not initialized")
                 return []
 
             logger.info(f"Generating batch of {num_images} images: {prompt[:50]}...")
 
             results = []
-
             for i in range(num_images):
-                # Generate random seed for each image
                 import random
                 seed = random.randint(0, 2**32 - 1)
-
-                # Generate image with seed
                 image_bytes = self.generate_image(
                     prompt=prompt,
                     negative_prompt=negative_prompt,
@@ -423,16 +482,11 @@ class ImageService:
                     guidance_scale=guidance_scale,
                     seed=seed
                 )
-
                 if image_bytes is not None:
-                    results.append({
-                        'image_data': image_bytes,
-                        'seed': seed
-                    })
+                    results.append({'image_data': image_bytes, 'seed': seed})
                     logger.info(f"Generated image {i+1}/{num_images} with seed {seed}")
                 else:
                     logger.error(f"Failed to generate image {i+1}/{num_images}")
-                    # Continue with next image instead of failing the whole batch
 
             logger.info(f"Batch generation completed: {len(results)}/{num_images} images generated")
             return results
@@ -440,46 +494,26 @@ class ImageService:
         except Exception as e:
             logger.error(f"Error generating batch images: {e}")
             return []
-    
+
     def inpaint_image(self,
                      image_data: bytes,
                      mask_data: bytes,
                      seed: Optional[int] = None) -> Optional[bytes]:
-        """
-        Remove objects from image using IOPaint (LaMa model)
-
-        Args:
-            image_data: Original image as bytes
-            mask_data: Mask image as bytes (white = remove, black = keep)
-            seed: Random seed for reproducibility
-
-        Returns:
-            bytes: Inpainted image as bytes or None if failed
-        """
+        """Remove objects from image using IOPaint (LaMa model)"""
         try:
             logger.info("=== STARTING INPAINT_IMAGE ===")
             logger.info(f"Image data size: {len(image_data)} bytes")
             logger.info(f"Mask data size: {len(mask_data)} bytes")
-            logger.info(f"Seed: {seed}")
 
-            # Ensure IOPaint is running
-            logger.info("Checking if IOPaint is running...")
             if not self.is_iopaint_running():
                 logger.info("IOPaint not running, starting it...")
                 if not self.start_iopaint():
                     logger.error("Failed to start IOPaint")
                     return None
-            else:
-                logger.info("IOPaint is already running")
 
-            # Convert bytes to base64
-            logger.info("Converting image and mask to base64...")
             image_b64 = base64.b64encode(image_data).decode('utf-8')
             mask_b64 = base64.b64encode(mask_data).decode('utf-8')
-            logger.info(f"Image b64 length: {len(image_b64)}")
-            logger.info(f"Mask b64 length: {len(mask_b64)}")
 
-            # Prepare request
             payload = {
                 "image": f"data:image/png;base64,{image_b64}",
                 "mask": f"data:image/png;base64,{mask_b64}",
@@ -488,20 +522,12 @@ class ImageService:
                 "hdStrategy": "Original",
                 "seed": seed if seed else -1
             }
-            logger.info(f"Payload prepared with seed: {payload['seed']}")
 
-            # Send request to IOPaint
             url = f"http://127.0.0.1:{self.iopaint_port}/api/v1/inpaint"
             logger.info(f"Sending POST request to {url}")
-            response = requests.post(
-                url,
-                json=payload,
-                timeout=60
-            )
+            response = requests.post(url, json=payload, timeout=60)
 
             logger.info(f"IOPaint response status: {response.status_code}")
-            logger.info(f"Response headers: {dict(response.headers)}")
-            logger.info(f"Response content length: {len(response.content)}")
 
             if response.status_code == 200:
                 logger.info("Inpainting completed successfully")
@@ -516,21 +542,19 @@ class ImageService:
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
-    
+
     def cleanup(self):
         """Cleanup resources and stop IOPaint"""
         logger.info("Cleaning up ImageService...")
-        
-        # Cleanup SDXL pipeline
-        if self.sdxl_pipeline:
+
+        if self.pipeline:
             try:
-                del self.sdxl_pipeline
-                self.sdxl_pipeline = None
-                logger.info("SDXL pipeline cleaned up")
+                del self.pipeline
+                self.pipeline = None
+                logger.info("Pipeline cleaned up")
             except Exception as e:
-                logger.error(f"Error cleaning SDXL: {e}")
-        
-        # Stop IOPaint process
+                logger.error(f"Error cleaning pipeline: {e}")
+
         if self.iopaint_process:
             try:
                 self.iopaint_process.terminate()
@@ -553,8 +577,14 @@ def get_image_service(sdxl_model_path: Optional[str] = None,
                      iopaint_port: int = 8080) -> ImageService:
     """Get or create ImageService singleton"""
     global _image_service_instance
-    
     if _image_service_instance is None:
         _image_service_instance = ImageService(sdxl_model_path, iopaint_port)
-    
+    return _image_service_instance
+
+def reset_image_service(new_model_key: str, iopaint_port: int = 8080) -> ImageService:
+    """Destroy the current singleton and create a new one with a different model."""
+    global _image_service_instance
+    if _image_service_instance:
+        _image_service_instance.cleanup()
+    _image_service_instance = ImageService(model_key=new_model_key, iopaint_port=iopaint_port)
     return _image_service_instance

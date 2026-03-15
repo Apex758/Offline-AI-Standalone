@@ -2612,12 +2612,9 @@ async def select_diffusion_model(request: Request):
         if set_selected_diffusion_model(model_name):
             # Reset the image service singleton so it picks up the new model on next use
             try:
-                from image_service import _image_service_instance
-                import image_service as img_svc
-                if img_svc._image_service_instance is not None:
-                    img_svc._image_service_instance.cleanup()
-                    img_svc._image_service_instance = None
-                    logger.info("Image service reset for new diffusion model")
+                from image_service import reset_image_service
+                reset_image_service(model_name)
+                logger.info("Image service reset for new diffusion model")
             except Exception as e:
                 logger.warning(f"Could not reset image service: {e}")
 
@@ -3456,7 +3453,7 @@ async def get_image_service_status():
         
         return JSONResponse(content={
             "sdxl": {
-                "initialized": image_service.sdxl_pipeline is not None
+                "initialized": image_service.pipeline is not None
             },
             "iopaint": {
                 "running": image_service.is_iopaint_running(),
