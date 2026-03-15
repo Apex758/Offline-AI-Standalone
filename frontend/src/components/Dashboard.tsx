@@ -1272,63 +1272,74 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       };
 
       return (
-        <div className="flex h-full gap-1 p-1" style={{ backgroundColor: 'var(--tab-content-bg)' }} data-tutorial="split-view-demo">
-          {/* Left Pane */}
-          <div
-            className={`flex-1 overflow-hidden relative ${
-              splitView.activePaneId === 'left' ? 'active-pane-glow' : ''
-            }`}
-            onFocus={() => {
-              if (splitView.activePaneId !== 'left') {
-                setSplitView(prev => ({ ...prev, activePaneId: 'left' }));
-              }
-            }}
-            tabIndex={-1}
-            style={splitView.activePaneId === 'left' ? {
-              backgroundColor: 'var(--tab-content-bg)',
-              '--glow-color': activePaneColor,
-              '--glow-rgb': hexToRgb(activePaneColor),
-              border: `3px solid ${activePaneColor}`,
-              borderRadius: '4px',
-              zIndex: 10
-            } as React.CSSProperties : {
-              backgroundColor: 'var(--tab-content-bg)',
-              border: '3px solid transparent',
-              borderRadius: '4px',
-              zIndex: 1
-            }}
-          >
-            {renderSingleTabContent(leftTab)}
+        <>
+          <div className="flex h-full gap-1 p-1" style={{ backgroundColor: 'var(--tab-content-bg)' }} data-tutorial="split-view-demo">
+            {/* Left Pane */}
+            <div
+              className={`flex-1 overflow-hidden relative ${
+                splitView.activePaneId === 'left' ? 'active-pane-glow' : ''
+              }`}
+              onFocus={() => {
+                if (splitView.activePaneId !== 'left') {
+                  setSplitView(prev => ({ ...prev, activePaneId: 'left' }));
+                }
+              }}
+              tabIndex={-1}
+              style={splitView.activePaneId === 'left' ? {
+                backgroundColor: 'var(--tab-content-bg)',
+                '--glow-color': activePaneColor,
+                '--glow-rgb': hexToRgb(activePaneColor),
+                border: `3px solid ${activePaneColor}`,
+                borderRadius: '4px',
+                zIndex: 10
+              } as React.CSSProperties : {
+                backgroundColor: 'var(--tab-content-bg)',
+                border: '3px solid transparent',
+                borderRadius: '4px',
+                zIndex: 1
+              }}
+            >
+              {renderSingleTabContent(leftTab)}
+            </div>
+
+            {/* Right Pane */}
+            <div
+              className={`flex-1 overflow-hidden relative ${
+                splitView.activePaneId === 'right' ? 'active-pane-glow' : ''
+              }`}
+              onFocus={() => {
+                if (splitView.activePaneId !== 'right') {
+                  setSplitView(prev => ({ ...prev, activePaneId: 'right' }));
+                }
+              }}
+              tabIndex={-1}
+              style={splitView.activePaneId === 'right' ? {
+                backgroundColor: 'var(--tab-content-bg)',
+                '--glow-color': activePaneColor,
+                '--glow-rgb': hexToRgb(activePaneColor),
+                border: `3px solid ${activePaneColor}`,
+                borderRadius: '4px',
+                zIndex: 10
+              } as React.CSSProperties : {
+                backgroundColor: 'var(--tab-content-bg)',
+                border: '3px solid transparent',
+                borderRadius: '4px',
+                zIndex: 1
+              }}
+            >
+              {renderSingleTabContent(rightTab)}
+            </div>
           </div>
-          
-          {/* Right Pane */}
-          <div
-            className={`flex-1 overflow-hidden relative ${
-              splitView.activePaneId === 'right' ? 'active-pane-glow' : ''
-            }`}
-            onFocus={() => {
-              if (splitView.activePaneId !== 'right') {
-                setSplitView(prev => ({ ...prev, activePaneId: 'right' }));
-              }
-            }}
-            tabIndex={-1}
-            style={splitView.activePaneId === 'right' ? {
-              backgroundColor: 'var(--tab-content-bg)',
-              '--glow-color': activePaneColor,
-              '--glow-rgb': hexToRgb(activePaneColor),
-              border: `3px solid ${activePaneColor}`,
-              borderRadius: '4px',
-              zIndex: 10
-            } as React.CSSProperties : {
-              backgroundColor: 'var(--tab-content-bg)',
-              border: '3px solid transparent',
-              borderRadius: '4px',
-              zIndex: 1
-            }}
-          >
-            {renderSingleTabContent(rightTab)}
-          </div>
-        </div>
+          {/* Keep non-split tabs mounted but hidden so skeleton loaders / state persist */}
+          {tabs
+            .filter(t => t.id !== splitView.leftTabId && t.id !== splitView.rightTabId)
+            .map(tab => (
+              <div key={tab.id} style={{ display: 'none' }}>
+                {renderSingleTabContent(tab)}
+              </div>
+            ))
+          }
+        </>
       );
     }
 
