@@ -2568,6 +2568,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     // Otherwise, use the mapped tutorial for the tab type, or fallback to dashboard tutorial
     const tutorialId = tutorialIdsByTabType[activeTab.type] || TUTORIAL_IDS.DASHBOARD_MAIN;
+    const isChat = activeTab.type === 'chat';
 
     return (
       <TutorialButton
@@ -2575,7 +2576,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         onStartTutorial={() => startTutorial(tutorialId as TutorialId)}
         onOpenSearch={() => setCommandPaletteOpen(true)}
         onScreenshotTicket={handleScreenshotTicket}
-        position="bottom-right"
+        position={isChat ? 'bottom-left' : 'bottom-right'}
+        ghost={isChat}
       />
     );
   })()}

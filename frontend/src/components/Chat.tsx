@@ -78,7 +78,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         setTitleSet(false);
         setInput('');
         if (onTitleChange) {
-          onTitleChange('Chat with AI');
+          onTitleChange('Ask PEARL');
         }
       }
     } else {
@@ -88,7 +88,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       setTitleSet(false);
       setInput('');
       if (onTitleChange) {
-        onTitleChange('Chat with AI');
+        onTitleChange('Ask PEARL');
       }
     }
   }, [tabId]);
@@ -107,7 +107,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       input,
       title: messages.length > 0 && messages[0].role === 'user'
         ? (messages[0].content.length > 30 ? messages[0].content.substring(0, 30) + '...' : messages[0].content)
-        : 'Chat with AI'
+        : 'Ask PEARL'
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
   }, [messages, streamingMessage, currentChatId, titleSet, input]);
@@ -240,7 +240,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     // Clear localStorage for this chat tab
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     if (onTitleChange) {
-      onTitleChange('Chat with AI');
+      onTitleChange('Ask PEARL');
     }
   };
 

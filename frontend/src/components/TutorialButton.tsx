@@ -8,6 +8,7 @@ interface TutorialButtonProps {
   onOpenSearch?: () => void;
   onScreenshotTicket?: () => void;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  ghost?: boolean;
 }
 
 export const TutorialButton: React.FC<TutorialButtonProps> = ({
@@ -15,7 +16,8 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   onStartTutorial,
   onOpenSearch,
   onScreenshotTicket,
-  position = 'bottom-right'
+  position = 'bottom-right',
+  ghost = false
 }) => {
   const { settings, isTutorialCompleted } = useSettings();
   const [expanded, setExpanded] = useState(false);
@@ -52,7 +54,7 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
 
   const positionStyles: Record<typeof position, string> = {
     'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-6 left-6',
+    'bottom-left': 'bottom-9 left-6',
     'top-right': 'top-6 right-6',
     'top-left': 'top-6 left-6'
   };
@@ -103,7 +105,10 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`fixed ${positionStyles[position]} z-[9999] flex flex-col items-center gap-3`}
+      className={`fixed ${positionStyles[position]} z-[9999] flex flex-col items-center gap-3 transition-opacity duration-200`}
+      style={ghost && !expanded ? { opacity: 0.15 } : { opacity: 1 }}
+      onMouseEnter={(e) => { if (ghost) e.currentTarget.style.opacity = '1'; }}
+      onMouseLeave={(e) => { if (ghost && !expanded) e.currentTarget.style.opacity = '0.15'; }}
     >
       {/* Expanded sub-buttons — appear above the main FAB */}
       {onOpenSearch && (
