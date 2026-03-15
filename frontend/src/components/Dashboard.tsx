@@ -527,71 +527,43 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return tabs.filter(tab => tab.type === type).length;
   };
 
+  const navigateToExistingTab = (tab: Tab) => {
+    setActiveTabId(tab.id);
+    triggerTabBounce(tab.id);
+    // Expand tab group if collapsed
+    if (collapsedGroups.has(tab.type)) {
+      toggleGroupCollapse(tab.type);
+    }
+    // Scroll the tab into view
+    setTimeout(() => {
+      const tabEl = document.querySelector(`[data-tab-id="${tab.id}"]`) ||
+                    document.querySelector(`[data-group-type="${tab.type}"]`);
+      if (tabEl) {
+        tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }, 50);
+  };
+
   const openTool = (tool: Tool) => {
-    if (tool.type === 'analytics') {
-      const existingAnalyticsTab = tabs.find(tab => tab.type === 'analytics');
-      if (existingAnalyticsTab) {
-        setActiveTabId(existingAnalyticsTab.id);
-        return;
-      }
-    }
-    if (tool.type === 'curriculum') {
-      const existingCurriculumTab = tabs.find(tab => tab.type === 'curriculum');
-      if (existingCurriculumTab) {
-        setActiveTabId(existingCurriculumTab.id);
-        return;
-      }
-    }
-    if (tool.type === 'settings') {
-      const existingSettingsTab = tabs.find(tab => tab.type === 'settings');
-      if (existingSettingsTab) {
-        setActiveTabId(existingSettingsTab.id);
+    // Single-instance tool types: navigate to existing tab if open
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager'];
+    if (singleInstanceTypes.includes(tool.type)) {
+      const existing = tabs.find(tab => tab.type === tool.type);
+      if (existing) {
+        navigateToExistingTab(existing);
         return;
       }
     }
 
-    if (tool.type === 'curriculum-tracker') {
-      const existingTrackerTab = tabs.find(tab => tab.type === 'curriculum-tracker');
-      if (existingTrackerTab) {
-        setActiveTabId(existingTrackerTab.id);
-        return;
-      }
-    }
-
-    if (tool.type === 'worksheet-generator') {
-      const existingWorksheetTab = tabs.find(tab => tab.type === 'worksheet-generator');
-      if (existingWorksheetTab) {
-        setActiveTabId(existingWorksheetTab.id);
-        return;
-      }
-    }
-
-    if (tool.type === 'image-studio') {
-      const existingImageStudioTab = tabs.find(tab => tab.type === 'image-studio');
-      if (existingImageStudioTab) {
-        setActiveTabId(existingImageStudioTab.id);
-        return;
-      }
-    }
-
-    if (tool.type === 'resource-manager') {
-      const existingResourceManagerTab = tabs.find(tab => tab.type === 'resource-manager');
-      if (existingResourceManagerTab) {
-        setActiveTabId(existingResourceManagerTab.id);
-        return;
-      }
-    }
-
-    // Special handling for single-instance tabs - only allow 1 instance each
+    // Multi-instance tabs: check max limit
     const maxTabsForTool = SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE;
 
     const currentCount = getTabCountByType(tool.type);
     if (currentCount >= maxTabsForTool) {
-      if (SINGLE_INSTANCE_TABS.has(tool.type)) {
-        const existingTab = tabs.find(t => t.type === tool.type);
-        if (existingTab) setActiveTabId(existingTab.id);
-      } else {
-        alert(`Maximum of ${maxTabsForTool} ${tool.name} tab${maxTabsForTool === 1 ? '' : 's'} allowed at once.`);
+      // Navigate to the first open tab of this type
+      const firstTab = tabs.find(t => t.type === tool.type);
+      if (firstTab) {
+        navigateToExistingTab(firstTab);
       }
       return;
     }
@@ -1447,14 +1419,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
             const isSingleReg = SINGLE_INSTANCE_TABS.has(tool.type);
             const maxForReg = isSingleReg ? 1 : MAX_TABS_PER_TYPE;
-            const isMaxedReg = count >= maxForReg && !isSingleReg;
 
             return (
               <button
                 key={tool.id}
                 data-tool-type={tool.type}
                 onClick={() => openTool(tool)}
-                disabled={isMaxedReg}
                 data-tutorial={
                   tool.type === 'analytics'
                     ? 'tool-analytics'
@@ -1464,34 +1434,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ? 'tool-curriculum'
                     : undefined
                 }
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group ${
-                  isMaxedReg
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
                 title={!sidebarOpen ? `${tool.name}${!isSingleReg ? ` (${count}/${maxForReg} open)` : ''}` : ''}
                 style={{
-                  ...(!isMaxedReg
-                    ? {
-                        backgroundColor: isActiveToolType
-                          ? ('var(--sidebar-active)')
-                          : 'transparent',
-                        transition: 'background-color 0.25s, box-shadow 0.25s'
-                      }
-                    : {}),
+                  backgroundColor: isActiveToolType
+                    ? ('var(--sidebar-active)')
+                    : 'transparent',
+                  transition: 'background-color 0.25s, box-shadow 0.25s',
                   animationDelay: `${i * 40}ms`
                 }}
                 onMouseEnter={(e) => {
-                  if (!isMaxedReg) {
-                    e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                  }
+                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!isMaxedReg) {
-                    e.currentTarget.style.backgroundColor = isActiveToolType
-                      ? ('var(--sidebar-active)')
-                      : 'transparent';
-                  }
+                  e.currentTarget.style.backgroundColor = isActiveToolType
+                    ? ('var(--sidebar-active)')
+                    : 'transparent';
                 }}
               >
                 <Icon
@@ -1546,14 +1504,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
             const isSingle = SINGLE_INSTANCE_TABS.has(tool.type);
             const maxForTool = isSingle ? 1 : MAX_TABS_PER_TYPE;
-            const isMaxed = count >= maxForTool && !isSingle;
 
             return (
               <button
                 key={tool.id}
                 data-tool-type={tool.type}
                 onClick={() => openTool(tool)}
-                disabled={isMaxed}
                 data-tutorial={
                   tool.type === 'quiz-generator'
                     ? 'tool-quiz'
@@ -1561,26 +1517,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ? 'tool-rubric'
                     : undefined
                 }
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group ${
-                  isMaxed
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
                 title={!sidebarOpen ? `${tool.name}${!isSingle ? ` (${count}/${maxForTool} open)` : ''}` : ''}
                 style={{
-                  backgroundColor: 'transparent',
+                  backgroundColor: isActiveToolType
+                    ? ('var(--sidebar-active)')
+                    : 'transparent',
                   transition: 'background-color 0.25s, box-shadow 0.25s',
                   animationDelay: `${(i + regularTools.length) * 40}ms`
                 }}
                 onMouseEnter={(e) => {
-                  if (!isMaxed) {
-                    e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                  }
+                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!isMaxed) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
+                  e.currentTarget.style.backgroundColor = isActiveToolType
+                    ? ('var(--sidebar-active)')
+                    : 'transparent';
                 }}
               >
                 <Icon
@@ -1711,25 +1663,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       key={tool.id}
                       data-tool-type={tool.type}
                       onClick={() => openTool(tool)}
-                      disabled={count >= MAX_TABS_PER_TYPE}
-                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm ${
-                        count >= MAX_TABS_PER_TYPE
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
-                      }`}
+                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm`}
                       style={{
-                        backgroundColor: 'transparent',
+                        backgroundColor: isActiveToolType
+                          ? 'var(--sidebar-active)'
+                          : 'transparent',
                         transition: 'background-color 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        if (count < MAX_TABS_PER_TYPE) {
-                          e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                        }
+                        e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                       }}
                       onMouseLeave={(e) => {
-                        if (count < MAX_TABS_PER_TYPE) {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }
+                        e.currentTarget.style.backgroundColor = isActiveToolType
+                          ? 'var(--sidebar-active)'
+                          : 'transparent';
                       }}
                     >
                       <Icon
@@ -1842,33 +1789,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   const activeTab = tabs.find(t => t.id === activeTabId);
                   const isActiveToolType = activeTab?.type === tool.type;
                   const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-                  const isSingleVS = SINGLE_INSTANCE_TABS.has(tool.type);
-                  const isMaxedVS = count >= (isSingleVS ? 1 : MAX_TABS_PER_TYPE) && !isSingleVS;
-
                   return (
                     <button
                       key={tool.id}
                       data-tool-type={tool.type}
                       onClick={() => openTool(tool)}
-                      disabled={isMaxedVS}
-                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm ${
-                        isMaxedVS
-                          ? 'opacity-50 cursor-not-allowed'
-                          : ''
-                      }`}
+                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm`}
                       style={{
-                        backgroundColor: 'transparent',
+                        backgroundColor: isActiveToolType
+                          ? 'var(--sidebar-active)'
+                          : 'transparent',
                         transition: 'background-color 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        if (!isMaxedVS) {
-                          e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                        }
+                        e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
                       }}
                       onMouseLeave={(e) => {
-                        if (!isMaxedVS) {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }
+                        e.currentTarget.style.backgroundColor = isActiveToolType
+                          ? 'var(--sidebar-active)'
+                          : 'transparent';
                       }}
                     >
                       <Icon
@@ -2032,6 +1971,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     key={tab.id}
                     data-tutorial={isActive ? "single-tab-demo" : undefined}
                     data-tab-type={tab.type}
+                    data-tab-id={tab.id}
                     className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''}`}
                     data-active={isActive}
                     style={{
@@ -2164,6 +2104,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''}`}
                           data-active={isTabActive}
                           data-grouped="true"
+                          data-tab-id={tab.id}
                           style={{
                             '--tab-color': colors.border,
                             '--tab-z-index': tabZIndex,
