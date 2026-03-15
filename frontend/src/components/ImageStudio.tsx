@@ -3,6 +3,7 @@ import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles,
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface ImageStudioProps {
   tabId: string;
@@ -53,6 +54,7 @@ interface StyleProfile {
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
   const hasRestoredRef = useRef(false);
+  const { notify } = useNotification();
 
   const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
 
@@ -168,6 +170,30 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     'hero-3': { name: 'Hero + 3 Small', panels: 4, description: 'One large panel + 3 smaller ones' },
     'asymmetric-4': { name: 'Asymmetric 4', panels: 4, description: 'Mixed sizes for dynamic layouts' },
   };
+
+  // ========================================
+  // Queue Another Popup States
+  // ========================================
+  const [showQueuePopup, setShowQueuePopup] = useState(false);
+  const [queuePrompt, setQueuePrompt] = useState('');
+  const [queueStyle, setQueueStyle] = useState('cartoon_3d');
+  const [queueNumImages, setQueueNumImages] = useState(1);
+  const [queueReferenceImage, setQueueReferenceImage] = useState<string | null>(null);
+  const [queueImg2imgStrength, setQueueImg2imgStrength] = useState(0.5);
+
+  interface QueuedGeneration {
+    id: string;
+    prompt: string;
+    style: string;
+    numImages: number;
+    referenceImage: string | null;
+    img2imgStrength: number;
+    status: 'waiting' | 'generating' | 'completed' | 'error';
+    results: Array<{ imageData: string | null; seed: number | null; status: string }>;
+  }
+
+  const [generationQueue, setGenerationQueue] = useState<QueuedGeneration[]>([]);
+  const isProcessingQueueRef = useRef(false);
 
   // ========================================
   // Auto-save image to backend
@@ -467,10 +493,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       await Promise.allSettled(generationPromises);
 
       setGenerationState('results');
+      notify('Image generation complete!', 'success');
+
+      // Process queued generations
+      processQueue();
     } catch (err: any) {
       console.error('Generation error:', err);
       setError(err.response?.data?.error || err.message || 'Failed to generate images');
       setGenerationState('input');
+      notify('Image generation failed', 'error');
     }
   };
 
@@ -480,6 +511,111 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     setError(null);
     setImageSlots([]);
   };
+
+  // ========================================
+  // Queue: Add to Queue & Process
+  // ========================================
+  const handleAddToQueue = () => {
+    if (!queuePrompt.trim()) return;
+
+    const newItem: QueuedGeneration = {
+      id: `q-${Date.now()}`,
+      prompt: queuePrompt,
+      style: queueStyle,
+      numImages: queueNumImages,
+      referenceImage: queueReferenceImage,
+      img2imgStrength: queueImg2imgStrength,
+      status: 'waiting',
+      results: [],
+    };
+
+    setGenerationQueue(prev => [...prev, newItem]);
+    notify(`Added to queue: "${queuePrompt.slice(0, 40)}..."`, 'info');
+
+    // Reset popup fields
+    setQueuePrompt('');
+    setQueueReferenceImage(null);
+    setShowQueuePopup(false);
+
+    // If nothing is currently generating, start processing
+    if (generationState !== 'generating') {
+      setTimeout(() => processQueue(), 100);
+    }
+  };
+
+  const processQueue = async () => {
+    if (isProcessingQueueRef.current) return;
+
+    setGenerationQueue(prev => {
+      const next = prev.find(q => q.status === 'waiting');
+      if (!next) return prev;
+      return prev; // Just check if there's work — actual processing below
+    });
+
+    // Get the first waiting item
+    const waitingItem = generationQueue.find(q => q.status === 'waiting');
+    if (!waitingItem) return;
+
+    isProcessingQueueRef.current = true;
+
+    // Mark as generating
+    setGenerationQueue(prev => prev.map(q =>
+      q.id === waitingItem.id ? { ...q, status: 'generating' } : q
+    ));
+
+    const styledPrompt = buildStyledPrompt(waitingItem.prompt, waitingItem.style);
+    const profile = styleProfiles[waitingItem.style];
+    const negPrompt = profile?.negative_prompt || negativePrompt;
+    const w = profile?.sdxl_settings?.width || 512;
+    const h = profile?.sdxl_settings?.height || 512;
+    const steps = profile?.sdxl_settings?.num_inference_steps || 4;
+
+    const results: Array<{ imageData: string | null; seed: number | null; status: string }> = [];
+
+    for (let i = 0; i < waitingItem.numImages; i++) {
+      try {
+        const response = await imageApi.generateImageBase64({
+          prompt: styledPrompt,
+          negativePrompt: negPrompt,
+          width: w,
+          height: h,
+          numInferenceSteps: steps,
+          ...(waitingItem.referenceImage && {
+            initImage: waitingItem.referenceImage,
+            strength: waitingItem.img2imgStrength,
+          }),
+        });
+
+        if (response.success && response.imageData) {
+          results.push({ imageData: response.imageData, seed: Math.floor(Math.random() * 1000000), status: 'completed' });
+        } else {
+          results.push({ imageData: null, seed: null, status: 'error' });
+        }
+      } catch {
+        results.push({ imageData: null, seed: null, status: 'error' });
+      }
+    }
+
+    // Mark as completed with results
+    setGenerationQueue(prev => prev.map(q =>
+      q.id === waitingItem.id ? { ...q, status: 'completed', results } : q
+    ));
+
+    const completedCount = results.filter(r => r.status === 'completed').length;
+    notify(`Queue item done: ${completedCount}/${waitingItem.numImages} images generated`, 'success');
+
+    isProcessingQueueRef.current = false;
+
+    // Process next in queue
+    setTimeout(() => processQueue(), 300);
+  };
+
+  // Auto-process queue when generationState changes away from generating
+  useEffect(() => {
+    if (generationState === 'results' && generationQueue.some(q => q.status === 'waiting')) {
+      processQueue();
+    }
+  }, [generationState]);
 
   // ========================================
   // COMIC: Generate Comic Page
@@ -571,9 +707,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       }
 
       setComicState('done');
+      notify('Comic page generation complete!', 'success');
     } catch (err: any) {
       console.error('Comic generation error:', err);
       setComicError(err.response?.data?.error || err.message || 'Failed to generate comic');
+      notify('Comic page generation failed', 'error');
       setComicState('input');
     }
   };
@@ -1745,8 +1883,15 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
             {generationState === 'generating' && (
               <div className="max-w-5xl mx-auto" data-tutorial="image-studio-results">
-                <div className="mb-6">
+                <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold">Generating Images...</h2>
+                  <button
+                    onClick={() => setShowQueuePopup(true)}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+                  >
+                    <Layers className="w-4 h-4 mr-1" />
+                    Add to Queue
+                  </button>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {imageSlots.map((slot, i) => (
@@ -1819,13 +1964,61 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               <div className="max-w-5xl mx-auto" data-tutorial="image-studio-results">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold">Generated Image</h2>
-                  <button
-                    onClick={resetToInput}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                  >
-                    Generate Another
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowQueuePopup(true)}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+                    >
+                      <Layers className="w-4 h-4 mr-1" />
+                      Add to Queue
+                    </button>
+                    <button
+                      onClick={resetToInput}
+                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                    >
+                      Generate Another
+                    </button>
+                  </div>
                 </div>
+
+                {/* Queued items indicator */}
+                {generationQueue.length > 0 && (
+                  <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                        Queue: {generationQueue.filter(q => q.status === 'completed').length}/{generationQueue.length} completed
+                      </span>
+                      {generationQueue.some(q => q.status === 'generating') && (
+                        <span className="flex items-center text-xs text-indigo-600 dark:text-indigo-400">
+                          <HeartbeatLoader className="w-3 h-3 mr-1" /> Processing...
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      {generationQueue.map(q => (
+                        <div key={q.id} className={`h-1.5 flex-1 rounded-full ${
+                          q.status === 'completed' ? 'bg-green-500' :
+                          q.status === 'generating' ? 'bg-indigo-500 animate-pulse' :
+                          q.status === 'error' ? 'bg-red-500' :
+                          'bg-gray-300 dark:bg-gray-600'
+                        }`} title={`${q.prompt.slice(0, 30)}... — ${q.status}`} />
+                      ))}
+                    </div>
+                    {/* Show completed queue results */}
+                    {generationQueue.some(q => q.status === 'completed' && q.results.length > 0) && (
+                      <div className="mt-3 grid grid-cols-4 gap-2">
+                        {generationQueue.filter(q => q.status === 'completed').flatMap(q =>
+                          q.results.filter(r => r.imageData).map((r, i) => (
+                            <img key={`${q.id}-${i}`} src={r.imageData!} alt="Queued result"
+                              className="w-full aspect-square object-cover rounded-md border border-theme cursor-pointer hover:ring-2 hover:ring-indigo-500"
+                              onClick={() => { setSelectedImage(r.imageData); setShowImageModal(true); }}
+                            />
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {imageSlots.map((slot, i) => (
@@ -2624,6 +2817,131 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Queue Another Popup */}
+      {showQueuePopup && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setShowQueuePopup(false)}>
+          <div className="rounded-2xl w-full max-w-lg widget-glass max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-indigo-600" />
+                Add to Queue
+              </h2>
+              <button onClick={() => setShowQueuePopup(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* Style Selector */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">Visual Style</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: 'cartoon_3d', label: '3D Cartoon' },
+                    { id: 'line_art_bw', label: 'Line Art' },
+                    { id: 'illustrated_painting', label: 'Painting' },
+                    { id: 'realistic', label: 'Realistic' },
+                  ].map((style) => (
+                    <button key={style.id} onClick={() => setQueueStyle(style.id)}
+                      className={`py-2 px-2 rounded-lg border text-xs font-semibold transition-all
+                        ${queueStyle === style.id
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950 text-indigo-600'
+                          : 'border-theme hover:border-indigo-300 text-theme-label'
+                        }`}>
+                      {style.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Prompt */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">
+                  Prompt <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={queuePrompt}
+                  onChange={(e) => setQueuePrompt(e.target.value)}
+                  className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Describe the image you want to generate..."
+                  autoFocus
+                />
+              </div>
+
+              {/* Reference Image */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">
+                  Reference Image <span className="text-xs text-theme-hint">(optional)</span>
+                </label>
+                {queueReferenceImage ? (
+                  <div className="relative">
+                    <img src={queueReferenceImage} alt="Reference" className="w-full max-h-32 object-contain rounded-lg border border-theme" />
+                    <button onClick={() => setQueueReferenceImage(null)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
+                      <X className="w-3 h-3" />
+                    </button>
+                    <div className="mt-2">
+                      <label className="text-xs font-medium text-theme-label">
+                        Strength: {Math.round(queueImg2imgStrength * 100)}%
+                      </label>
+                      <input type="range" min="0.1" max="1.0" step="0.05" value={queueImg2imgStrength}
+                        onChange={(e) => setQueueImg2imgStrength(parseFloat(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-theme rounded-lg cursor-pointer hover:bg-theme-subtle transition">
+                    <Upload className="w-5 h-5 text-theme-hint mb-1" />
+                    <span className="text-xs text-theme-hint">Upload reference</span>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setQueueReferenceImage(ev.target?.result as string);
+                        reader.readAsDataURL(file);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Batch Size */}
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-2">Number of Images</label>
+                <select value={queueNumImages} onChange={(e) => setQueueNumImages(Number(e.target.value))}
+                  className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500">
+                  <option value={1}>1 Image</option>
+                  <option value={2}>2 Images</option>
+                  <option value={3}>3 Images</option>
+                  <option value={4}>4 Images</option>
+                  <option value={5}>5 Images</option>
+                </select>
+              </div>
+
+              {/* Queue count indicator */}
+              {generationQueue.filter(q => q.status === 'waiting').length > 0 && (
+                <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                  {generationQueue.filter(q => q.status === 'waiting').length} item(s) already waiting in queue
+                </p>
+              )}
+
+              {/* Add Button */}
+              <button
+                onClick={handleAddToQueue}
+                disabled={!queuePrompt.trim()}
+                className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center transition"
+              >
+                <Layers className="w-5 h-5 mr-2" />
+                Add to Queue
+              </button>
             </div>
           </div>
         </div>
