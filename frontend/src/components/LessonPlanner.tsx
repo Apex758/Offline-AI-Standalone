@@ -228,6 +228,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [curriculumMatches, setCurriculumMatches] = useState<CurriculumReference[]>([]);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+  const [useCurriculum, setUseCurriculum] = useState(true);
   const [curriculumReferences, setCurriculumReferences] = useState<CurriculumReference[]>([]);
 
   // Helper function to get default empty form data
@@ -649,8 +650,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   }, [streamingPlan, curriculumReferences, isStreaming, tabId, ENDPOINT, clearStreaming, formData]);
 
   const generateLessonPlan = () => {
-    setCurriculumReferences(curriculumMatches);
-    const prompt = buildLessonPrompt(formData, curriculumMatches);
+    const refs = useCurriculum ? curriculumMatches : [];
+    setCurriculumReferences(refs);
+    const prompt = buildLessonPrompt(formData, refs);
 
     if (queueEnabled) {
       enqueue({
@@ -1081,9 +1083,24 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                         {formData.subject && formData.gradeLevel && (
                           <div>
-                            <label className="block text-sm font-medium text-theme-label mb-2">
-                              Strand <span className="text-red-500">*</span>
-                            </label>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-sm font-medium text-theme-label">
+                                Strand <span className="text-red-500">*</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setUseCurriculum(!useCurriculum)}
+                                className="flex items-center gap-1.5 group"
+                                title={useCurriculum ? 'Curriculum alignment enabled — click to disable' : 'Curriculum alignment disabled — click to enable'}
+                              >
+                                <span className="text-[11px] text-theme-hint group-hover:text-theme-muted transition-colors">
+                                  Align to curriculum
+                                </span>
+                                <div className={`relative w-7 h-4 rounded-full transition-colors ${useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                                </div>
+                              </button>
+                            </div>
                             <select
                               value={formData.strand}
                               onChange={(e) => {
@@ -1104,6 +1121,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       </div>
 
                       {/* Right column - Related Curriculum Box */}
+                      {useCurriculum ? (
                       <div className="rounded-xl border border-theme/60 p-5 bg-theme-surface/50 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-4">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-theme-muted">
@@ -1172,6 +1190,17 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           )}
                         </div>
                       </div>
+                      ) : (
+                      <div className="rounded-xl border border-dashed border-theme/40 p-5 bg-theme-surface/30 flex flex-col items-center justify-center text-center">
+                        <div className="w-8 h-8 rounded-full bg-theme-secondary flex items-center justify-center mb-3">
+                          <svg className="w-4 h-4 text-theme-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                          </svg>
+                        </div>
+                        <p className="text-xs text-theme-hint">Curriculum alignment disabled</p>
+                        <p className="text-[10px] text-theme-hint mt-1">Toggle on to align lesson with curriculum outcomes</p>
+                      </div>
+                      )}
                     </div>
 
                     {/* Rest of the form fields below (full width) */}
@@ -1188,7 +1217,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         placeholder="e.g., Water Cycle"
                       />
                     </div>
-                    {formData.strand && (
+                    {formData.strand && useCurriculum && (
                       <div>
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           Essential Learning Outcome <span className="text-red-500">*</span>
@@ -1224,7 +1253,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       </div>
                     )}
 
-                    {formData.essentialOutcomes && (
+                    {formData.essentialOutcomes && useCurriculum && (
                       <div data-tutorial="lesson-planner-objectives" ref={scoDropdownRef}>
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           Specific Curriculum Outcomes <span className="text-red-500">*</span>
@@ -1311,6 +1340,37 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           </div>
                         )}
                       </div>
+                    )}
+
+                    {!useCurriculum && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-theme-label mb-2">
+                            Essential Learning Outcome <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            value={formData.essentialOutcomes}
+                            onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                            placeholder="Enter the broad, overarching learning outcome"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-theme-label mb-2">
+                            Specific Curriculum Outcomes <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            value={formData.specificOutcomes}
+                            onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                            placeholder="Enter specific outcomes (one per line)"
+                          />
+                        </div>
+                      </>
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
