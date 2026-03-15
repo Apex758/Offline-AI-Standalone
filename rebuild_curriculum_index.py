@@ -14,12 +14,15 @@ OUTPUT_FILE = Path("frontend/src/data/curriculumIndex.json")
 BACKUP_OUTPUT = Path("backend-bundle/data/curriculumIndex.json")
 
 # Skip non-curriculum files
-SKIP_FILES = {"OHPC Kindergarten Guidelines 14November2024_curriculum.json"}
+SKIP_FILES = set()  # Previously skipped kindergarten guidelines, now processed
+
+# The kindergarten guidelines file uses subject-organized strands
+KINDERGARTEN_GUIDELINES_FILE = "OHPC Kindergarten Guidelines 14November2024_curriculum.json"
 
 # Canonical strand mapping: regex pattern -> (canonical_slug, display_name)
 STRAND_MAP = {
     # Language Arts
-    r"listening.+speaking": ("listening-speaking", "Listening & Speaking"),
+    r"listening.+speaking|speaking.+listening": ("listening-speaking", "Listening & Speaking"),
     r"reading.+viewing": ("reading-viewing", "Reading & Viewing"),
     r"writing.+representing": ("writing-representing", "Writing & Representing"),
     # Math
@@ -74,6 +77,21 @@ SUBJECT_FROM_STRAND = {
     "listening-speaking": "Language Arts",
     "reading-viewing": "Language Arts",
     "writing-representing": "Language Arts",
+    "forces-interactions": "Science",
+    "interdependent-relationships": "Science",
+    "weather-climate": "Science",
+    "earth-systems": "Science",
+    "space-systems": "Science",
+    "structure-properties-matter": "Science",
+    "waves-lights-sounds": "Science",
+    "engineering-design": "Science",
+    "energy": "Science",
+    "chemical-reactions": "Science",
+    "inheritance-variation": "Science",
+    "historical-cultural-thinking": "Social Studies",
+    "civic-participation": "Social Studies",
+    "spatial-thinking": "Social Studies",
+    "economic-decision-making": "Social Studies",
 }
 
 
@@ -243,12 +261,43 @@ def build_index():
 
         # Kindergarten files are unit-based, handle differently
         is_kindergarten = grade == "K"
+        is_guidelines = filename == KINDERGARTEN_GUIDELINES_FILE
 
         for strand in data.get("strands", []):
             strand_name = strand.get("strand_name", "")
             elos = strand.get("essential_learning_outcomes", [])
 
-            if is_kindergarten:
+            if is_kindergarten and is_guidelines:
+                # Kindergarten guidelines: subject-organized strands
+                # Classify strand by name using the standard STRAND_MAP
+                result = classify_strand(strand_name, "K", subject)
+                if result is None:
+                    result = classify_by_content(strand_name, elos, "K", subject)
+                if result is None:
+                    print(f"  WARN: Unclassified kindergarten guideline strand: '{strand_name}'")
+                    continue
+
+                slug, display = result
+
+                # Infer subject from strand
+                inferred_subject = SUBJECT_FROM_STRAND.get(slug, "Kindergarten")
+
+                key = ("K", inferred_subject, slug)
+                entry = grouped[key]
+                entry["display_name"] = display
+
+                for elo in elos:
+                    elo_desc = elo.get("elo_description", "").strip()
+                    if elo_desc and elo_desc not in entry["elos"]:
+                        entry["elos"].append(elo_desc)
+                    for sco in elo.get("specific_curriculum_outcomes", []):
+                        cleaned = sco.strip().lstrip("* ")
+                        if cleaned and len(cleaned) > 10 and cleaned not in entry["scos"]:
+                            entry["scos"].append(cleaned)
+                entry["keywords"].update(extract_keywords(strand_name, elos))
+                continue
+
+            elif is_kindergarten:
                 # Kindergarten units: use filename to determine unit name
                 unit_slug = filename.replace("_curriculum.json", "").replace("kindergarten-", "")
                 unit_display = unit_slug.replace("-", " ").replace("unit", "").strip().title()
@@ -314,9 +363,15 @@ def build_index():
     # Build indexed pages
     indexed_pages = []
     for (grade, subject, slug), entry in sorted(grouped.items()):
-        if grade == "K":
+        if grade == "K" and subject == "Kindergarten":
+            # Unit-based entries (Belonging, Weather, etc.)
             page_id = f"kindergarten-{slug}"
             route = f"/curriculum/kindergarten/{slug}"
+        elif grade == "K":
+            # Subject-based entries from Guidelines (Language Arts, Mathematics, etc.)
+            subject_slug = subject.lower().replace(" ", "-")
+            page_id = f"kindergarten-{subject_slug}-{slug}"
+            route = f"/curriculum/kindergarten/standards/{subject_slug}/{slug}"
         else:
             subject_slug = subject.lower().replace(" ", "-")
             page_id = f"grade{grade}-{subject_slug}-{slug}"

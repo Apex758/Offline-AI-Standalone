@@ -66,6 +66,11 @@ def is_noise(t: str) -> bool:
         r'^Services are things people do',
         r'^\w+:\s*\d+\.\s*$',  # "Studies: 1."
         r'^\(Note\s',
+        r'^Refer to grade level expectations',
+        r'^Grade \d+ \w+ (?:Arts |Studies )?Curriculum',
+        r'^Focus Questions?:?\s*$',
+        r'^Clarification Statement:',
+        r'^Assessment Boundary:',
     ]
     for p in noise:
         if re.search(p, t, re.IGNORECASE):
