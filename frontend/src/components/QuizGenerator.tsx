@@ -622,56 +622,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   return (
     <div className="flex h-full tab-content-bg relative" data-tutorial="quiz-generator-welcome">
-      {/* Student Quiz Panel (left side) - only when class quiz is generated */}
-      {classQuizData && (generatedQuiz || streamingQuiz) && !loading && (
-        <div className="border-r border-theme bg-theme-secondary flex flex-col flex-shrink-0" style={{ width: '260px' }}>
-          <div className="p-3 border-b border-theme">
-            <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
-            <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
-            {/* Teacher version option */}
-            <button
-              onClick={() => setSelectedStudentIdx(null)}
-              className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
-                selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
-                <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
-              </div>
-            </button>
-
-            <div className="border-t border-theme my-1.5" />
-
-            {/* Student entries */}
-            {classQuizData.map((student, idx) => (
-              <button
-                key={student.id}
-                onClick={() => setSelectedStudentIdx(idx)}
-                className={`w-full text-left p-2 rounded-lg transition text-sm ${
-                  selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
-                    style={{ backgroundColor: tabColor }}
-                  >
-                    {student.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
-                    <div className="text-[10px] text-theme-hint">{student.id}</div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="flex-1 flex flex-col tab-content-bg overflow-hidden" style={{ perspective: '2000px' }}>
         {/* Card Flip Container */}
         <div
@@ -847,7 +797,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             showAnswerKey: true,
                             showExplanations: true,
                             boldCorrectAnswers: true
-                          }
+                          },
+                          studentInfo: viewingStudent ? { name: viewingStudent.name, id: viewingStudent.id } : undefined
                         }}
                         filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${viewingStudent ? viewingStudent.name.replace(/\s+/g, '-') : effectiveVersion}`}
                         className="ml-2"
@@ -1570,6 +1521,56 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           </div>
         </div>
       </div>
+
+      {/* Student Quiz Panel (right side) - only when class quiz is generated */}
+      {classQuizData && (generatedQuiz || streamingQuiz) && !loading && (
+        <div className="border-l border-theme bg-theme-secondary flex flex-col flex-shrink-0" style={{ width: '240px' }}>
+          <div className="p-3 border-b border-theme">
+            <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
+            <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
+            {/* Teacher version option */}
+            <button
+              onClick={() => setSelectedStudentIdx(null)}
+              className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
+                selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
+                <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
+              </div>
+            </button>
+
+            <div className="border-t border-theme my-1.5" />
+
+            {/* Student entries */}
+            {classQuizData.map((student, idx) => (
+              <button
+                key={student.id}
+                onClick={() => setSelectedStudentIdx(idx)}
+                className={`w-full text-left p-2 rounded-lg transition text-sm ${
+                  selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
+                    style={{ backgroundColor: tabColor }}
+                  >
+                    {student.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
+                    <div className="text-[10px] text-theme-hint">{student.id}</div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* AI Assistant Panel */}
       <AIAssistantPanel

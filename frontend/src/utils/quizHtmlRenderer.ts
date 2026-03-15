@@ -531,19 +531,21 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
 
 // Export function to use with backend
 export function prepareQuizForExport(
-  text: string, 
-  formData: any, 
+  text: string,
+  formData: any,
   accentColor: string,
   exportOptions: {
     showAnswerKey?: boolean;
     showExplanations?: boolean;
     boldCorrectAnswers?: boolean;
-  } = {}
+  } = {},
+  studentInfo?: { name: string; id: string }
 ) {
   const html = generateQuizHTML(text, {
     accentColor,
     formData,
-    ...exportOptions
+    ...exportOptions,
+    studentInfo
   });
 
   return {
