@@ -399,6 +399,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [hoveringTabId, setHoveringTabId] = useState<string | null>(null);
   const [animatingGroups, setAnimatingGroups] = useState<Set<string>>(new Set());
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Close sidebar when clicking anywhere outside it
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sidebarOpen]);
 
   // Auto-scroll sidebar to the active tool when sidebar opens
   useEffect(() => {
@@ -1381,9 +1394,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           borderRight: '1px solid var(--sidebar-border)',
           boxShadow: sidebarOpen ? '6px 0 40px rgba(0,0,0,0.25), 2px 0 12px rgba(0,0,0,0.15)' : '4px 0 16px rgba(0,0,0,0.12)',
         }}
+        ref={sidebarRef}
         data-tutorial="main-sidebar"
         onMouseEnter={() => setSidebarOpen(true)}
-        onMouseLeave={() => setSidebarOpen(false)}
       >
         {/* Glass header */}
         <div
