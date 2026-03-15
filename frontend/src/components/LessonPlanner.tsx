@@ -6,6 +6,7 @@ import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
 import CurriculumReferences from './CurriculumReferences';
+import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import LessonEditor from './LessonEditor';
 import { ParsedLesson, parseLessonFromAI, lessonToDisplayText } from '../types/lesson';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
@@ -434,94 +435,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   ];
 
   const grades = ['K', '1', '2', '3', '4', '5', '6'];
-
-  // Dynamically generate strands based on subject and grade using curriculumIndex
-  const getStrands = (subject: string, grade: string): string[] => {
-    if (!subject || !grade) return [];
-    const pages = (curriculumIndex as any).indexedPages || [];
-    const strandsSet = new Set<string>();
-    pages.forEach((page: any) => {
-      if (
-        page.subject &&
-        page.grade &&
-        page.strand &&
-        page.subject.toLowerCase() === subject.toLowerCase() &&
-        page.grade.toString() === grade.toString()
-      ) {
-        strandsSet.add(page.strand);
-      }
-    });
-    return Array.from(strandsSet);
-  };
-
-  // Get ELOs matching subject, grade, and strand
-  const getELOs = (subject: string, grade: string, strand: string): string[] => {
-    if (!subject || !grade || !strand) return [];
-    const pages = (curriculumIndex as any).indexedPages || [];
-    const elosSet = new Set<string>();
-    pages.forEach((page: any) => {
-      if (
-        page.subject?.toLowerCase() === subject.toLowerCase() &&
-        page.grade?.toString() === grade.toString() &&
-        page.strand?.toLowerCase() === strand.toLowerCase() &&
-        page.essentialOutcomes
-      ) {
-        page.essentialOutcomes.forEach((elo: string) => elosSet.add(elo));
-      }
-    });
-    return Array.from(elosSet);
-  };
-
-  // Get SCOs matching subject, grade, strand, and optionally ELO
-  const getSCOs = (subject: string, grade: string, strand: string, elo: string): string[] => {
-    if (!subject || !grade || !strand || !elo) return [];
-    const pages = (curriculumIndex as any).indexedPages || [];
-    const scosSet = new Set<string>();
-    pages.forEach((page: any) => {
-      if (
-        page.subject?.toLowerCase() === subject.toLowerCase() &&
-        page.grade?.toString() === grade.toString() &&
-        page.strand?.toLowerCase() === strand.toLowerCase() &&
-        page.essentialOutcomes?.some((e: string) => e === elo) &&
-        page.specificOutcomes
-      ) {
-        page.specificOutcomes.forEach((sco: string) => scosSet.add(sco));
-      }
-    });
-    return Array.from(scosSet);
-  };
-
-  // State for SCO dropdown visibility
-  const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
-  const scoDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Parse selected SCOs from the stored string
-  const selectedSCOs: string[] = formData.specificOutcomes
-    ? formData.specificOutcomes.split('\n').filter(s => s.trim())
-    : [];
-
-  // Toggle a SCO selection
-  const toggleSCO = (sco: string) => {
-    const current = selectedSCOs;
-    let updated: string[];
-    if (current.includes(sco)) {
-      updated = current.filter(s => s !== sco);
-    } else {
-      updated = [...current, sco];
-    }
-    handleInputChange('specificOutcomes', updated.join('\n'));
-  };
-
-  // Close SCO dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (scoDropdownRef.current && !scoDropdownRef.current.contains(e.target as Node)) {
-        setScoDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const pedagogicalStrategiesOptions = [
     'Inquiry-Based Learning', 'Project-Based Learning', 'Direct Instruction',
@@ -1081,43 +994,19 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           </select>
                         </div>
 
-                        {formData.subject && formData.gradeLevel && (
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <label className="text-sm font-medium text-theme-label">
-                                Strand <span className="text-red-500">*</span>
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => setUseCurriculum(!useCurriculum)}
-                                className="flex items-center gap-1.5 group"
-                                title={useCurriculum ? 'Curriculum alignment enabled — click to disable' : 'Curriculum alignment disabled — click to enable'}
-                              >
-                                <span className="text-[11px] text-theme-hint group-hover:text-theme-muted transition-colors">
-                                  Align to curriculum
-                                </span>
-                                <div className={`relative w-7 h-4 rounded-full transition-colors ${useCurriculum ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${useCurriculum ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                                </div>
-                              </button>
-                            </div>
-                            <select
-                              value={formData.strand}
-                              onChange={(e) => {
-                                handleInputChange('strand', e.target.value);
-                                handleInputChange('essentialOutcomes', '');
-                                handleInputChange('specificOutcomes', '');
-                              }}
-                              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                              style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                            >
-                              <option value="">Select a strand</option>
-                              {getStrands(formData.subject, formData.gradeLevel).map(strand => (
-                                <option key={strand} value={strand}>{strand}</option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
+                        <CurriculumAlignmentFields
+                          subject={formData.subject}
+                          gradeLevel={formData.gradeLevel}
+                          strand={formData.strand}
+                          essentialOutcomes={formData.essentialOutcomes}
+                          specificOutcomes={formData.specificOutcomes}
+                          useCurriculum={useCurriculum}
+                          onStrandChange={(v) => handleInputChange('strand', v)}
+                          onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                          onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                          onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                          accentColor={tabColor}
+                        />
                       </div>
 
                       {/* Right column - Related Curriculum Box */}
@@ -1134,7 +1023,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           )}
                         </div>
 
-                        <div className="max-h-96 overflow-y-auto space-y-1.5">
+                        <div className="max-h-48 overflow-y-auto space-y-1.5">
                           {!formData.subject || !formData.gradeLevel || !formData.strand ? (
                             <div className="flex flex-col items-center justify-center py-10 text-center">
                               <div className="w-8 h-8 rounded-full bg-theme-secondary flex items-center justify-center mb-3">
@@ -1217,161 +1106,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         placeholder="e.g., Water Cycle"
                       />
                     </div>
-                    {formData.strand && useCurriculum && (
-                      <div>
-                        <label className="block text-sm font-medium text-theme-label mb-2">
-                          Essential Learning Outcome <span className="text-red-500">*</span>
-                        </label>
-                        {(() => {
-                          const elos = getELOs(formData.subject, formData.gradeLevel, formData.strand);
-                          return elos.length > 0 ? (
-                            <select
-                              value={formData.essentialOutcomes}
-                              onChange={(e) => {
-                                handleInputChange('essentialOutcomes', e.target.value);
-                                handleInputChange('specificOutcomes', '');
-                              }}
-                              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                              style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                            >
-                              <option value="">Select an Essential Learning Outcome</option>
-                              {elos.map((elo, idx) => (
-                                <option key={idx} value={elo} title={elo}>
-                                  {elo.length > 120 ? elo.substring(0, 120) + '...' : elo}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <p className="text-sm text-theme-hint italic px-4 py-2">
-                              No ELOs found for the selected strand
-                            </p>
-                          );
-                        })()}
-                        {formData.essentialOutcomes && (
-                          <p className="mt-1 text-xs text-theme-muted line-clamp-2">{formData.essentialOutcomes}</p>
-                        )}
-                      </div>
-                    )}
-
-                    {formData.essentialOutcomes && useCurriculum && (
-                      <div data-tutorial="lesson-planner-objectives" ref={scoDropdownRef}>
-                        <label className="block text-sm font-medium text-theme-label mb-2">
-                          Specific Curriculum Outcomes <span className="text-red-500">*</span>
-                        </label>
-                        {(() => {
-                          const scos = getSCOs(formData.subject, formData.gradeLevel, formData.strand, formData.essentialOutcomes);
-                          return scos.length > 0 ? (
-                            <div className="relative">
-                              <button
-                                type="button"
-                                onClick={() => setScoDropdownOpen(!scoDropdownOpen)}
-                                className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800"
-                                style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                              >
-                                <span className={selectedSCOs.length === 0 ? 'text-gray-400' : 'text-theme-heading'}>
-                                  {selectedSCOs.length === 0
-                                    ? 'Select Specific Curriculum Outcomes'
-                                    : `${selectedSCOs.length} outcome${selectedSCOs.length > 1 ? 's' : ''} selected`}
-                                </span>
-                                <svg className={`w-4 h-4 transition-transform ${scoDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </button>
-                              {scoDropdownOpen && (
-                                <div className="absolute z-50 w-full mt-1 border border-theme-strong rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-y-auto">
-                                  <div className="p-2 border-b border-theme flex justify-between items-center">
-                                    <span className="text-xs text-theme-muted font-medium">
-                                      {selectedSCOs.length} of {scos.length} selected
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        if (selectedSCOs.length === scos.length) {
-                                          handleInputChange('specificOutcomes', '');
-                                        } else {
-                                          handleInputChange('specificOutcomes', scos.join('\n'));
-                                        }
-                                      }}
-                                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                                    >
-                                      {selectedSCOs.length === scos.length ? 'Deselect All' : 'Select All'}
-                                    </button>
-                                  </div>
-                                  {scos.map((sco, idx) => (
-                                    <label
-                                      key={idx}
-                                      className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedSCOs.includes(sco)}
-                                        onChange={() => toggleSCO(sco)}
-                                        className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
-                                      />
-                                      <span className="text-sm text-theme-heading">{sco}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-theme-hint italic px-4 py-2">
-                              No SCOs found for the selected ELO
-                            </p>
-                          );
-                        })()}
-                        {selectedSCOs.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {selectedSCOs.map((sco, idx) => (
-                              <span
-                                key={idx}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
-                              >
-                                <span className="max-w-[200px] truncate">{sco}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => toggleSCO(sco)}
-                                  className="hover:text-blue-600"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {!useCurriculum && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-theme-label mb-2">
-                            Essential Learning Outcome <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            value={formData.essentialOutcomes}
-                            onChange={(e) => handleInputChange('essentialOutcomes', e.target.value)}
-                            rows={3}
-                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                            placeholder="Enter the broad, overarching learning outcome"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-theme-label mb-2">
-                            Specific Curriculum Outcomes <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            value={formData.specificOutcomes}
-                            onChange={(e) => handleInputChange('specificOutcomes', e.target.value)}
-                            rows={3}
-                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
-                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                            placeholder="Enter specific outcomes (one per line)"
-                          />
-                        </div>
-                      </>
-                    )}
+                    {/* ELO/SCO fields are now handled by CurriculumAlignmentFields above */}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
