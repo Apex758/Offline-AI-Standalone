@@ -97,9 +97,20 @@ def _load_sdxl_lcm(model_path: Path):
 
 
 def _load_flux_schnell_ov(model_path: Path):
-    """Load FLUX.1 Schnell INT4 via OpenVINO."""
-    from optimum.intel.openvino import OVFluxPipeline
-    return OVFluxPipeline.from_pretrained(str(model_path), compile=True)
+    """Load FLUX.1 Schnell INT4 via OpenVINO.
+
+    Uses OVDiffusionPipeline with a reshape skip to work around a shape
+    inference bug in optimum-intel's dynamic reshape for FLUX transformers.
+    """
+    from optimum.intel.openvino import modeling_diffusion, OVDiffusionPipeline
+    # Skip the automatic reshape in __init__ which fails on FLUX models
+    _orig_reshape = modeling_diffusion.OVDiffusionPipeline.reshape
+    modeling_diffusion.OVDiffusionPipeline.reshape = lambda self, *a, **kw: None
+    try:
+        pipe = OVDiffusionPipeline.from_pretrained(str(model_path), compile=True)
+    finally:
+        modeling_diffusion.OVDiffusionPipeline.reshape = _orig_reshape
+    return pipe
 
 
 def _load_sd35_medium(model_path: Path):
