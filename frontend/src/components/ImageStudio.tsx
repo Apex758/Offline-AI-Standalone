@@ -64,11 +64,13 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Generator States
   // ========================================
   const [prompt, setPrompt] = useState('');
-  const [negativePrompt, setNegativePrompt] = useState('multiple people, group, crowd, deformed, distorted, blurry');
-  const [width, setWidth] = useState(1024);
+  const [negativePrompt, setNegativePrompt] = useState('deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, bad anatomy, bad proportions, extra limbs, disfigured, fused fingers, too many fingers, six fingers, long neck, ugly, low quality, worst quality');
+  const [width, setWidth] = useState(512);
   const [height, setHeight] = useState(512);
-  const [numInferenceSteps, setNumInferenceSteps] = useState(2);
+  const [numInferenceSteps, setNumInferenceSteps] = useState(4);
   const [numImages, setNumImages] = useState(1);
+  const [referenceImage, setReferenceImage] = useState<string | null>(null); // img2img reference
+  const [img2imgStrength, setImg2imgStrength] = useState(0.5); // 0 = keep original, 1 = fully new
   const [generationState, setGenerationState] = useState<'input' | 'generating' | 'results'>('input');
   const [imageSlots, setImageSlots] = useState<Array<{imageData: string | null, seed: number | null, status: 'pending' | 'generating' | 'completed' | 'error'}>>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -373,7 +375,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
             negativePrompt,
             width,
             height,
-            numInferenceSteps
+            numInferenceSteps,
+            ...(referenceImage && { initImage: referenceImage, strength: img2imgStrength })
           });
 
           if (response.success && response.imageData) {
@@ -1149,92 +1152,69 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     />
                   </div>
 
-                  {/* Advanced Options */}
-                  <div className="border border-theme rounded-lg">
-                    <button
-                      onClick={() => setShowAdvanced(!showAdvanced)}
-                      className="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-theme-subtle transition rounded-lg"
-                    >
-                      <span className="text-sm font-medium text-theme-label">Advanced Options</span>
-                      <ChevronDown className={`w-4 h-4 text-theme-hint transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    {showAdvanced && (
-                      <div className="px-4 pb-4 space-y-4 border-t border-theme pt-4">
-                        {/* Negative Prompt */}
-                        <div data-tutorial="image-studio-negative-prompt">
-                          <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-medium text-theme-label">
-                              Negative Prompt
-                            </label>
-                            <label className="flex items-center text-xs text-theme-hint">
-                              <input
-                                type="checkbox"
-                                checked={useManualNegative}
-                                onChange={(e) => setUseManualNegative(e.target.checked)}
-                                className="mr-1 rounded"
-                              />
-                              Manual
+                  {/* Image-to-Image Reference */}
+                  <div className="border border-theme rounded-lg p-4">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
+                      Reference Image <span className="text-xs text-theme-hint">(optional - for image-to-image editing)</span>
+                    </label>
+                    {referenceImage ? (
+                      <div className="relative">
+                        <img
+                          src={referenceImage}
+                          alt="Reference"
+                          className="w-full max-h-48 object-contain rounded-lg border border-theme"
+                        />
+                        <button
+                          onClick={() => setReferenceImage(null)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                          title="Remove reference image"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-xs font-medium text-theme-label">
+                              Transformation Strength: {Math.round(img2imgStrength * 100)}%
                             </label>
                           </div>
                           <input
-                            type="text"
-                            value={negativePrompt}
-                            onChange={(e) => {
-                              setNegativePrompt(e.target.value);
-                              setUseManualNegative(true);
-                            }}
-                            className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Things to avoid in the image..."
+                            type="range"
+                            min="0.1"
+                            max="1.0"
+                            step="0.05"
+                            value={img2imgStrength}
+                            onChange={(e) => setImg2imgStrength(parseFloat(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                           />
-                          <p className="text-xs text-theme-hint mt-1">
-                            {useManualNegative ? 'Custom settings' : 'Auto-filled from style profile'}
-                          </p>
-                        </div>
-
-                        {/* Dimensions and Steps */}
-                        <div className="grid grid-cols-3 gap-4" data-tutorial="image-studio-dimensions">
-                          <div>
-                            <label className="block text-sm font-medium text-theme-label mb-2">Width</label>
-                            <select
-                              value={width}
-                              onChange={(e) => setWidth(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value={512}>512</option>
-                              <option value={768}>768</option>
-                              <option value={1024}>1024</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-theme-label mb-2">Height</label>
-                            <select
-                              value={height}
-                              onChange={(e) => setHeight(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value={512}>512</option>
-                              <option value={768}>768</option>
-                              <option value={1024}>1024</option>
-                            </select>
-                          </div>
-                          <div data-tutorial="image-studio-steps">
-                            <label className="block text-sm font-medium text-theme-label mb-2">Steps</label>
-                            <select
-                              value={numInferenceSteps}
-                              onChange={(e) => setNumInferenceSteps(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value={1}>1</option>
-                              <option value={2}>2</option>
-                              <option value={3}>3</option>
-                              <option value={4}>4</option>
-                            </select>
+                          <div className="flex justify-between text-[10px] text-theme-hint mt-1">
+                            <span>Keep original</span>
+                            <span>Fully transform</span>
                           </div>
                         </div>
                       </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-theme rounded-lg cursor-pointer hover:bg-theme-subtle transition">
+                        <Upload className="w-6 h-6 text-theme-hint mb-1" />
+                        <span className="text-xs text-theme-hint">Upload an image to edit with your prompt</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              setReferenceImage(ev.target?.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
                     )}
                   </div>
+
 
                   {/* Batch Size */}
                   <div data-tutorial="image-studio-batch">
@@ -1267,7 +1247,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     ) : (
                       <>
                         <Sparkles className="w-5 h-5 mr-2" />
-                        Generate Image
+                        {referenceImage ? 'Edit Image' : 'Generate Image'}
                       </>
                     )}
                   </button>
@@ -1312,6 +1292,17 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               >
                                 <Save className="w-4 h-4 mr-1" />
                                 Save
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setReferenceImage(slot.imageData!);
+                                  setGenerationState('input');
+                                }}
+                                className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center text-sm"
+                                title="Use this image as a reference and edit it with a new prompt"
+                              >
+                                <Pencil className="w-4 h-4 mr-1" />
+                                Edit
                               </button>
                             </div>
                           </>
@@ -1380,6 +1371,17 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                               >
                                 <Save className="w-4 h-4 mr-1" />
                                 Save
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setReferenceImage(slot.imageData!);
+                                  setGenerationState('input');
+                                }}
+                                className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center text-sm"
+                                title="Use this image as a reference and edit it with a new prompt"
+                              >
+                                <Pencil className="w-4 h-4 mr-1" />
+                                Edit
                               </button>
                             </div>
                           </>

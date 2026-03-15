@@ -2928,7 +2928,7 @@ async def generate_image(request: Request):
         data = await request.json()
         
         prompt = data.get('prompt', '')
-        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
         num_steps = data.get('numInferenceSteps', 2)
@@ -2995,10 +2995,12 @@ async def generate_image_base64(request: Request):
         data = await request.json()
 
         prompt = data.get('prompt', '')
-        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
         num_steps = data.get('numInferenceSteps', 2)
+        init_image_b64 = data.get('initImage')
+        strength = data.get('strength', 0.5)
 
         if not prompt:
             return JSONResponse(
@@ -3006,16 +3008,32 @@ async def generate_image_base64(request: Request):
                 content={"error": "Prompt is required"}
             )
 
+        # Decode init_image if provided (for img2img)
+        init_image_bytes = None
+        if init_image_b64:
+            if init_image_b64.startswith('data:'):
+                init_image_b64 = init_image_b64.split(',')[1]
+            try:
+                init_image_bytes = base64.b64decode(init_image_b64)
+            except Exception as e:
+                logger.error(f"Failed to decode init image: {e}")
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "Invalid init image data"}
+                )
+
         # Get image service
         image_service = get_image_service()
 
-        # Generate image
+        # Generate image (text-to-image or image-to-image)
         image_bytes = image_service.generate_image(
             prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
             height=height,
-            num_inference_steps=num_steps
+            num_inference_steps=num_steps,
+            init_image=init_image_bytes,
+            strength=strength
         )
 
         if image_bytes is None:
@@ -3072,7 +3090,7 @@ async def generate_batch_images_base64(request: Request):
         data = await request.json()
 
         prompt = data.get('prompt', '')
-        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
         num_steps = data.get('numInferenceSteps', 2)
@@ -3159,12 +3177,13 @@ async def generate_image_from_seed(request: Request):
         data = await request.json()
 
         prompt = data.get('prompt', '')
-        negative_prompt = data.get('negativePrompt', 'blurry, distorted, low quality')
+        negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
         num_steps = data.get('numInferenceSteps', 2)
         seed = data.get('seed')
         init_image_b64 = data.get('initImage')
+        strength = data.get('strength', 0.5)
 
         if not prompt:
             return JSONResponse(
@@ -3204,7 +3223,7 @@ async def generate_image_from_seed(request: Request):
             num_inference_steps=num_steps,
             seed=seed,
             init_image=init_image_bytes,
-            strength=0.85  # Higher strength to give prompt more influence over img2img
+            strength=strength
         )
 
         if image_bytes is None:

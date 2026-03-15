@@ -46,63 +46,68 @@ def get_app_data_path(subfolder: str = "") -> Path:
 # ── pipeline loaders ─────────────────────────────────────────────────────────
 
 def _load_openvino(model_path: Path):
-    """Load SDXL-Turbo via OpenVINO."""
+    """Load SDXL-Turbo via OpenVINO with optional Tiny Autoencoder and INT8 UNet."""
     from optimum.intel.openvino import OVStableDiffusionXLPipeline
-    return OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=True)
+    import openvino as ov
 
+    pipe = OVStableDiffusionXLPipeline.from_pretrained(str(model_path), compile=False)
 
-def _load_sdxl_lightning(model_path: Path):
-    """Load SDXL Lightning 4-step pipeline.
+    core = ov.Core()
 
-    Builds the UNet from config + lightning weights so we don't need
-    the full base SDXL UNet checkpoint (~5 GB) on disk.
-    """
-    import torch
-    from diffusers import StableDiffusionXLPipeline, EulerDiscreteScheduler, UNet2DConditionModel
-    from safetensors.torch import load_file
+    # Use Tiny Autoencoder (TAE) for faster VAE decoding if available
+    tae_decoder_path = model_path / "tae_decoder" / "openvino_model.xml"
+    if tae_decoder_path.exists():
+        logger.info("Loading Tiny Autoencoder (TAE) decoder for faster image decoding...")
+        pipe.vae_decoder.model = core.read_model(str(tae_decoder_path))
+        pipe.vae_decoder.request = None
+        logger.info("TAE decoder loaded.")
 
-    base_path = model_path / "sdxl-base"
-    unet_ckpt = model_path / "sdxl_lightning_4step_unet.safetensors"
+    tae_encoder_path = model_path / "tae_encoder" / "openvino_model.xml"
+    if tae_encoder_path.exists():
+        logger.info("Loading Tiny Autoencoder (TAE) encoder for faster image encoding...")
+        pipe.vae_encoder.model = core.read_model(str(tae_encoder_path))
+        pipe.vae_encoder.request = None
+        logger.info("TAE encoder loaded.")
 
-    scheduler = EulerDiscreteScheduler.from_pretrained(
-        str(base_path), subfolder="scheduler", timestep_spacing="trailing"
-    )
+    # Use INT8 quantized UNet if available
+    int8_unet_path = model_path / "optimized_unet" / "openvino_model.xml"
+    if int8_unet_path.exists():
+        logger.info("Loading INT8 quantized UNet for faster inference...")
+        pipe.unet.model = core.read_model(str(int8_unet_path))
+        pipe.unet.request = None
+        logger.info("INT8 UNet loaded.")
 
-    # Build UNet from config and load lightning weights directly
-    unet = UNet2DConditionModel.from_config(
-        str(base_path / "unet" / "config.json")
-    )
-    unet.load_state_dict(load_file(str(unet_ckpt)), strict=False)
-
-    pipe = StableDiffusionXLPipeline.from_pretrained(
-        str(base_path), scheduler=scheduler, unet=unet, torch_dtype=torch.float32,
-    )
-    pipe.to("cpu")
+    pipe.compile()
     return pipe
 
 
-def _load_sdxl_lcm(model_path: Path):
-    """Load base SDXL + LCM-LoRA adapter."""
-    import torch
-    from diffusers import StableDiffusionXLPipeline, LCMScheduler
+def _load_openvino_img2img(model_path: Path):
+    """Load SDXL-Turbo Image-to-Image pipeline via OpenVINO."""
+    from optimum.intel.openvino import OVStableDiffusionXLImg2ImgPipeline
+    import openvino as ov
 
-    base_candidates = [
-        model_path.parent / "sdxl-lightning" / "sdxl-base",
-        model_path.parent / "sdxl-turbo-openvino",
-    ]
-    base_path = next((p for p in base_candidates if p.exists()), None)
-    if base_path is None:
-        raise RuntimeError(
-            "LCM-LoRA requires the SDXL base model. "
-            "Download sdxl-lightning first (it includes sdxl-base)."
-        )
-    pipe = StableDiffusionXLPipeline.from_pretrained(
-        str(base_path), torch_dtype=torch.float32
-    )
-    pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
-    pipe.load_lora_weights(str(model_path))
-    pipe.fuse_lora()
-    pipe.to("cpu")
+    pipe = OVStableDiffusionXLImg2ImgPipeline.from_pretrained(str(model_path), compile=False)
+
+    core = ov.Core()
+
+    # Use Tiny Autoencoder if available
+    tae_decoder_path = model_path / "tae_decoder" / "openvino_model.xml"
+    if tae_decoder_path.exists():
+        pipe.vae_decoder.model = core.read_model(str(tae_decoder_path))
+        pipe.vae_decoder.request = None
+
+    tae_encoder_path = model_path / "tae_encoder" / "openvino_model.xml"
+    if tae_encoder_path.exists():
+        pipe.vae_encoder.model = core.read_model(str(tae_encoder_path))
+        pipe.vae_encoder.request = None
+
+    # Use INT8 quantized UNet if available
+    int8_unet_path = model_path / "optimized_unet" / "openvino_model.xml"
+    if int8_unet_path.exists():
+        pipe.unet.model = core.read_model(str(int8_unet_path))
+        pipe.unet.request = None
+
+    pipe.compile()
     return pipe
 
 
@@ -123,36 +128,10 @@ def _load_flux_schnell_ov(model_path: Path):
     return pipe
 
 
-def _load_sd35_medium(model_path: Path):
-    """Load SD 3.5 Medium pipeline (requires diffusers >= 0.31)."""
-    import torch
-    from diffusers import StableDiffusion3Pipeline
-    pipe = StableDiffusion3Pipeline.from_pretrained(
-        str(model_path), torch_dtype=torch.bfloat16,
-    )
-    pipe.to("cpu")
-    return pipe
-
-
-def _load_sana(model_path: Path):
-    """Load SANA 1600M pipeline (requires diffusers >= 0.32)."""
-    import torch
-    from diffusers import SanaPipeline
-    pipe = SanaPipeline.from_pretrained(
-        str(model_path), torch_dtype=torch.bfloat16,
-    )
-    pipe.to("cpu")
-    return pipe
-
-
 # Map backend key → loader function
 _LOADERS = {
     "openvino":            _load_openvino,
     "openvino_flux":       _load_flux_schnell_ov,
-    "diffusers_lightning": _load_sdxl_lightning,
-    "diffusers_lcm":       _load_sdxl_lcm,
-    "diffusers_sd3":       _load_sd35_medium,
-    "diffusers_sana":      _load_sana,
 }
 
 
@@ -170,6 +149,7 @@ class ImageService:
         self.iopaint_port = iopaint_port
         self.iopaint_process: Optional[subprocess.Popen] = None
         self.pipeline = None
+        self.img2img_pipeline = None  # Separate img2img pipeline for OpenVINO
         self.model_info = {}
         self.model_key = None
 
@@ -408,12 +388,18 @@ class ImageService:
                 if init_image is not None:
                     import io
                     init_pil = Image.open(io.BytesIO(init_image)).convert("RGB")
-                    result = self.pipeline(
+                    # Lazy-load img2img pipeline
+                    if self.img2img_pipeline is None:
+                        logger.info("Loading OpenVINO img2img pipeline...")
+                        self.img2img_pipeline = _load_openvino_img2img(self.model_path)
+                        logger.info("OpenVINO img2img pipeline loaded.")
+                    # For SDXL-Turbo img2img: ensure steps * strength >= 1
+                    img2img_steps = max(num_inference_steps, int(1 / max(strength, 0.1)))
+                    result = self.img2img_pipeline(
                         prompt=prompt, negative_prompt=negative_prompt,
                         image=init_pil, strength=strength,
-                        num_inference_steps=num_inference_steps,
+                        num_inference_steps=img2img_steps,
                         guidance_scale=guidance_scale,
-                        width=width, height=height,
                     )
                 else:
                     result = self.pipeline(
@@ -430,33 +416,6 @@ class ImageService:
                     num_inference_steps=num_inference_steps,
                     guidance_scale=guidance_scale,
                     height=height, width=width,
-                )
-
-            elif backend in ("diffusers_lightning", "diffusers_lcm"):
-                result = self.pipeline(
-                    prompt=prompt, negative_prompt=negative_prompt,
-                    num_inference_steps=num_inference_steps,
-                    guidance_scale=guidance_scale,
-                    width=width, height=height,
-                    generator=generator,
-                )
-
-            elif backend == "diffusers_sd3":
-                result = self.pipeline(
-                    prompt=prompt, negative_prompt=negative_prompt,
-                    num_inference_steps=num_inference_steps,
-                    guidance_scale=guidance_scale,
-                    width=width, height=height,
-                    generator=generator,
-                )
-
-            elif backend == "diffusers_sana":
-                result = self.pipeline(
-                    prompt=prompt, negative_prompt=negative_prompt,
-                    num_inference_steps=num_inference_steps,
-                    guidance_scale=guidance_scale,
-                    height=height, width=width,
-                    generator=generator,
                 )
 
             else:
@@ -580,6 +539,14 @@ class ImageService:
                 logger.info("Pipeline cleaned up")
             except Exception as e:
                 logger.error(f"Error cleaning pipeline: {e}")
+
+        if self.img2img_pipeline:
+            try:
+                del self.img2img_pipeline
+                self.img2img_pipeline = None
+                logger.info("Img2img pipeline cleaned up")
+            except Exception as e:
+                logger.error(f"Error cleaning img2img pipeline: {e}")
 
         if self.iopaint_process:
             try:

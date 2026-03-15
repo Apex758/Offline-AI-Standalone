@@ -141,23 +141,9 @@ IMAGE_MODEL_REGISTRY = {
     "sdxl-turbo-openvino": {
         "folder":      "sdxl-turbo-openvino",
         "backend":     "openvino",
-        "description": "SDXL-Turbo (OpenVINO) — fast 1-2 steps, ~4 GB",
-        "steps":       2,
-        "guidance":    0.0,
-    },
-    "sdxl-lightning": {
-        "folder":      "sdxl-lightning",
-        "backend":     "diffusers_lightning",
-        "description": "SDXL Lightning 4-step — good quality, ~6.6 GB UNet",
+        "description": "SDXL-Turbo (OpenVINO) — 4 steps, ~4 GB",
         "steps":       4,
         "guidance":    0.0,
-    },
-    "sdxl-lcm": {
-        "folder":      "sdxl-lcm",
-        "backend":     "diffusers_lcm",
-        "description": "SDXL + LCM-LoRA — 4-8 steps, needs base SDXL",
-        "steps":       4,
-        "guidance":    1.0,
     },
     "flux-schnell": {
         "folder":      "flux-schnell",
@@ -165,20 +151,6 @@ IMAGE_MODEL_REGISTRY = {
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
         "steps":       4,
         "guidance":    0.0,
-    },
-    "sd35-medium": {
-        "folder":      "sd35-medium",
-        "backend":     "diffusers_sd3",
-        "description": "SD 3.5 Medium — balanced quality/speed, ~12 GB",
-        "steps":       28,
-        "guidance":    4.5,
-    },
-    "sana-1600m": {
-        "folder":      "sana-1600m",
-        "backend":     "diffusers_sana",
-        "description": "SANA 1600M — efficient, ~6 GB",
-        "steps":       20,
-        "guidance":    5.0,
     },
 }
 

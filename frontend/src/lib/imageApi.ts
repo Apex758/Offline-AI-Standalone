@@ -26,6 +26,8 @@ export interface ImageGenerationRequest {
   width?: number;
   height?: number;
   numInferenceSteps?: number;
+  initImage?: string;   // base64 data URI for img2img
+  strength?: number;    // 0.0-1.0, controls how much the init image is changed
 }
 
 export interface BatchImageGenerationRequest {
@@ -45,6 +47,7 @@ export interface SeedImageGenerationRequest {
   numInferenceSteps?: number;
   seed: number;
   initImage?: string; // base64 data URI for img2img
+  strength?: number;  // 0.0-1.0, controls how much the init image is changed
 }
 
 export interface BatchImageResponse {
@@ -125,10 +128,10 @@ export const imageApi = {
         `${API_URL}/generate-image`,
         {
           prompt: request.prompt,
-          negativePrompt: request.negativePrompt || 'blurry, distorted, low quality',
-          width: request.width || 1024,
+          negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
+          width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 2
+          numInferenceSteps: request.numInferenceSteps || 4
         },
         {
           responseType: 'blob' // Important: receive as binary data
@@ -152,10 +155,12 @@ export const imageApi = {
         `${API_URL}/generate-image-base64`,
         {
           prompt: request.prompt,
-          negativePrompt: request.negativePrompt || 'blurry, distorted, low quality',
-          width: request.width || 1024,
+          negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
+          width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 2
+          numInferenceSteps: request.numInferenceSteps || 4,
+          ...(request.initImage && { initImage: request.initImage }),
+          ...(request.strength !== undefined && { strength: request.strength })
         }
       );
       return response.data;
@@ -323,10 +328,10 @@ export const imageApi = {
         `${API_URL}/generate-batch-images-base64`,
         {
           prompt: request.prompt,
-          negativePrompt: request.negativePrompt || 'blurry, distorted, low quality',
-          width: request.width || 1024,
+          negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
+          width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 2,
+          numInferenceSteps: request.numInferenceSteps || 4,
           numImages: request.numImages
         }
       );
@@ -348,12 +353,13 @@ export const imageApi = {
         `${API_URL}/generate-image-from-seed`,
         {
           prompt: request.prompt,
-          negativePrompt: request.negativePrompt || 'blurry, distorted, low quality',
-          width: request.width || 1024,
+          negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
+          width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 2,
+          numInferenceSteps: request.numInferenceSteps || 4,
           seed: request.seed,
-          initImage: request.initImage
+          initImage: request.initImage,
+          ...(request.strength !== undefined && { strength: request.strength })
         }
       );
       return response.data;
