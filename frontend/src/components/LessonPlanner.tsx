@@ -338,6 +338,35 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   }, [tabId]);
 
+  // Step flip animation — two-phase: flip out, swap, flip in
+  const [flipPhase, setFlipPhase] = useState<'idle' | 'out' | 'in'>('idle');
+  const [displayStep, setDisplayStep] = useState(step);
+  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
+
+  // Sync displayStep when step changes directly (init, restore, clear)
+  useEffect(() => {
+    if (flipPhase === 'idle') setDisplayStep(step);
+  }, [step, flipPhase]);
+
+  const handleStepChange = (newStep: number) => {
+    if (newStep === step || flipPhase !== 'idle') return;
+    setFlipDirection(newStep > step ? 'forward' : 'backward');
+    // Phase 1: flip out (animated)
+    setFlipPhase('out');
+    setTimeout(() => {
+      // Swap content and jump to entry position (no transition)
+      setStep(newStep);
+      setDisplayStep(newStep);
+      setFlipPhase('in');
+      // Next frame: animate from entry position to idle
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFlipPhase('idle');
+        });
+      });
+    }, 300);
+  };
+
   // ✅ ADDED: Save state to localStorage whenever it changes
   useEffect(() => {
     const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
@@ -940,10 +969,24 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
             />
 
             {/* Form Content */}
-            <div className="flex-1 overflow-y-auto p-6" style={{ height: 'calc(100vh - 200px)' }}>
-              <div className="max-w-4xl mx-auto">
+            <div className="flex-1 overflow-y-auto p-6" style={{ height: 'calc(100vh - 200px)', perspective: '1200px' }}>
+              <div
+                className="max-w-4xl mx-auto"
+                style={{
+                  transformStyle: 'preserve-3d',
+                  transition: flipPhase === 'in'
+                    ? 'none'
+                    : 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease',
+                  transform: flipPhase === 'out'
+                    ? `rotateY(${flipDirection === 'forward' ? '-90' : '90'}deg) scale(0.95)`
+                    : flipPhase === 'in'
+                    ? `rotateY(${flipDirection === 'forward' ? '90' : '-90'}deg) scale(0.95)`
+                    : 'rotateY(0deg) scale(1)',
+                  opacity: flipPhase === 'out' || flipPhase === 'in' ? 0 : 1,
+                }}
+              >
                 {/* Step 1: Basic Information */}
-                {step === 1 && (
+                {displayStep === 1 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
@@ -1011,7 +1054,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                       {/* Right column - Related Curriculum Box */}
                       {useCurriculum ? (
-                      <div className="rounded-xl border border-theme/60 p-5 bg-theme-surface/50 backdrop-blur-sm">
+                      <div className="rounded-xl border border-theme/60 p-5 bg-theme-surface/50 backdrop-blur-sm max-h-56 overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between mb-4">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-theme-muted">
                             Related Curriculum
@@ -1023,9 +1066,9 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           )}
                         </div>
 
-                        <div className="max-h-48 overflow-y-auto space-y-1.5">
+                        <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5">
                           {!formData.subject || !formData.gradeLevel || !formData.strand ? (
-                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                            <div className="flex flex-col items-center justify-center py-6 text-center">
                               <div className="w-8 h-8 rounded-full bg-theme-secondary flex items-center justify-center mb-3">
                                 <svg className="w-4 h-4 text-theme-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -1141,7 +1184,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 )}
 
                 {/* Step 2: Teaching Strategy */}
-                {step === 2 && (
+                {displayStep === 2 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Teaching Strategy</h3>
 
@@ -1282,7 +1325,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 )}
 
                 {/* Step 3: Additional Details */}
-                {step === 3 && (
+                {displayStep === 3 && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-theme-heading">Additional Details</h3>
 
@@ -1352,7 +1395,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                 <div>
                   {step > 1 && (
                     <button
-                      onClick={() => setStep(step - 1)}
+                      onClick={() => handleStepChange(step - 1)}
                       className="flex items-center px-4 py-2 text-theme-label hover:bg-theme-hover rounded-lg transition"
                     >
                       <ChevronLeft className="w-5 h-5 mr-1" />
@@ -1372,7 +1415,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                   {step < 3 ? (
                     <button
-                      onClick={() => setStep(step + 1)}
+                      onClick={() => handleStepChange(step + 1)}
                       disabled={!validateStep()}
                       className="flex items-center px-6 py-2 text-white rounded-lg transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                       style={!validateStep() ? {} : { backgroundColor: tabColor }}

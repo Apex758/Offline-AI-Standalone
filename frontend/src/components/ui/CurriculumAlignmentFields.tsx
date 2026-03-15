@@ -161,7 +161,7 @@ export default function CurriculumAlignmentFields({
                   </svg>
                 </button>
                 {scoDropdownOpen && (
-                  <div className="absolute z-50 w-full mt-1 border border-theme-strong rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-50 w-full mt-1 border border-theme-strong rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-80 overflow-y-auto">
                     <div className="p-2 border-b border-theme flex justify-between items-center">
                       <span className="text-xs text-theme-muted font-medium">
                         {selectedSCOs.length} of {scos.length} selected
@@ -235,7 +235,7 @@ export default function CurriculumAlignmentFields({
             <textarea
               value={essentialOutcomes}
               onChange={(e) => onELOChange(e.target.value)}
-              rows={3}
+              rows={4}
               className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={ringStyle}
               placeholder="Enter the broad, overarching learning outcome"
@@ -248,7 +248,7 @@ export default function CurriculumAlignmentFields({
             <textarea
               value={specificOutcomes}
               onChange={(e) => onSCOsChange(e.target.value)}
-              rows={3}
+              rows={5}
               className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
               style={ringStyle}
               placeholder="Enter specific outcomes (one per line)"
