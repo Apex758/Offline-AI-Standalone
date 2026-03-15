@@ -52,9 +52,13 @@ def _load_openvino(model_path: Path):
 
 
 def _load_sdxl_lightning(model_path: Path):
-    """Load SDXL Lightning 4-step pipeline."""
+    """Load SDXL Lightning 4-step pipeline.
+
+    Builds the UNet from config + lightning weights so we don't need
+    the full base SDXL UNet checkpoint (~5 GB) on disk.
+    """
     import torch
-    from diffusers import StableDiffusionXLPipeline, EulerDiscreteScheduler
+    from diffusers import StableDiffusionXLPipeline, EulerDiscreteScheduler, UNet2DConditionModel
     from safetensors.torch import load_file
 
     base_path = model_path / "sdxl-base"
@@ -63,10 +67,16 @@ def _load_sdxl_lightning(model_path: Path):
     scheduler = EulerDiscreteScheduler.from_pretrained(
         str(base_path), subfolder="scheduler", timestep_spacing="trailing"
     )
-    pipe = StableDiffusionXLPipeline.from_pretrained(
-        str(base_path), scheduler=scheduler, torch_dtype=torch.float32,
+
+    # Build UNet from config and load lightning weights directly
+    unet = UNet2DConditionModel.from_config(
+        str(base_path / "unet" / "config.json")
     )
-    pipe.unet.load_state_dict(load_file(str(unet_ckpt)), strict=False)
+    unet.load_state_dict(load_file(str(unet_ckpt)), strict=False)
+
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        str(base_path), scheduler=scheduler, unet=unet, torch_dtype=torch.float32,
+    )
     pipe.to("cpu")
     return pipe
 
@@ -162,6 +172,10 @@ class ImageService:
         self.pipeline = None
         self.model_info = {}
         self.model_key = None
+
+        # Performance calibration data: {model_key: {time_per_step, calibration_width, calibration_height, calibration_pixels}}
+        self._calibration: Dict[str, Dict[str, float]] = {}
+        self._generation_history: List[Dict[str, Any]] = []  # recent generation timings for adaptive estimates
 
         try:
             from config import (
@@ -358,6 +372,155 @@ class ImageService:
         except requests.RequestException:
             return False
 
+    def calibrate(self) -> Dict[str, Any]:
+        """Run a quick benchmark to measure this hardware's generation speed.
+
+        Generates a tiny image (256x256, 1 step) and measures time-per-step.
+        Results are cached per model_key and used by estimate_time().
+        Returns calibration data dict.
+        """
+        if not self.initialize_pipeline():
+            return {"error": "Pipeline not initialized", "calibrated": False}
+
+        if self.model_key in self._calibration:
+            return {**self._calibration[self.model_key], "calibrated": True, "cached": True}
+
+        cal_w, cal_h, cal_steps = 256, 256, 1
+        backend = self.model_info.get("backend", "openvino")
+        guidance = self.model_info.get("guidance", 0.0)
+
+        logger.info(f"Calibrating {self.model_key} ({cal_w}x{cal_h}, {cal_steps} step)...")
+
+        try:
+            import torch
+            start = time.time()
+
+            if backend in ("openvino",):
+                self.pipeline(
+                    prompt="calibration test", negative_prompt="",
+                    num_inference_steps=cal_steps, guidance_scale=guidance,
+                    width=cal_w, height=cal_h,
+                )
+            elif backend == "openvino_flux":
+                self.pipeline(
+                    prompt="calibration test",
+                    num_inference_steps=cal_steps, guidance_scale=guidance,
+                    height=cal_h, width=cal_w,
+                )
+            elif backend in ("diffusers_lightning", "diffusers_lcm", "diffusers_sd3", "diffusers_sana"):
+                self.pipeline(
+                    prompt="calibration test", negative_prompt="",
+                    num_inference_steps=cal_steps, guidance_scale=guidance,
+                    width=cal_w, height=cal_h,
+                )
+
+            elapsed = time.time() - start
+            cal_pixels = cal_w * cal_h
+
+            cal_data = {
+                "time_per_step": round(elapsed / cal_steps, 3),
+                "calibration_width": cal_w,
+                "calibration_height": cal_h,
+                "calibration_pixels": cal_pixels,
+                "calibration_seconds": round(elapsed, 3),
+                "model_key": self.model_key,
+            }
+            self._calibration[self.model_key] = cal_data
+            logger.info(f"Calibration complete: {cal_data['time_per_step']}s/step at {cal_w}x{cal_h}")
+            return {**cal_data, "calibrated": True, "cached": False}
+
+        except Exception as e:
+            logger.error(f"Calibration failed: {e}")
+            return {"error": str(e), "calibrated": False}
+
+    def estimate_time(self, width: int = 1024, height: int = 512,
+                      num_steps: int = None, num_images: int = 1) -> Dict[str, Any]:
+        """Estimate generation time based on calibration data and/or history.
+
+        Uses pixel-count scaling: time scales roughly linearly with pixel count.
+        If we have actual generation history, uses that for more accurate estimates.
+        """
+        if num_steps is None:
+            num_steps = self.model_info.get("steps", 2)
+
+        # Try history-based estimate first (most accurate)
+        history_estimate = self._estimate_from_history(width, height, num_steps)
+        if history_estimate is not None:
+            total = history_estimate * num_images
+            return {
+                "estimated_seconds": round(total, 1),
+                "per_image_seconds": round(history_estimate, 1),
+                "method": "history",
+                "confidence": "high",
+                "model_key": self.model_key,
+                "parameters": {"width": width, "height": height, "steps": num_steps, "num_images": num_images},
+            }
+
+        # Fall back to calibration-based estimate
+        cal = self._calibration.get(self.model_key)
+        if cal:
+            target_pixels = width * height
+            cal_pixels = cal["calibration_pixels"]
+            pixel_scale = target_pixels / cal_pixels
+            per_image = cal["time_per_step"] * num_steps * pixel_scale
+            total = per_image * num_images
+            return {
+                "estimated_seconds": round(total, 1),
+                "per_image_seconds": round(per_image, 1),
+                "method": "calibration",
+                "confidence": "medium",
+                "model_key": self.model_key,
+                "parameters": {"width": width, "height": height, "steps": num_steps, "num_images": num_images},
+            }
+
+        # No data at all
+        return {
+            "estimated_seconds": None,
+            "per_image_seconds": None,
+            "method": "none",
+            "confidence": "none",
+            "model_key": self.model_key,
+            "message": "No calibration data. Run calibration or generate an image first.",
+            "parameters": {"width": width, "height": height, "steps": num_steps, "num_images": num_images},
+        }
+
+    def _estimate_from_history(self, width: int, height: int, num_steps: int) -> Optional[float]:
+        """Estimate from recent generation history using pixel/step scaling."""
+        # Filter history for current model
+        model_history = [h for h in self._generation_history if h["model_key"] == self.model_key]
+        if not model_history:
+            return None
+
+        # Use most recent entries (up to 5) for averaging
+        recent = model_history[-5:]
+        target_pixels = width * height
+
+        estimates = []
+        for h in recent:
+            h_pixels = h["width"] * h["height"]
+            h_steps = h["steps"]
+            h_time = h["elapsed"]
+            # Scale: time_per_pixel_per_step
+            rate = h_time / (h_pixels * h_steps)
+            estimated = rate * target_pixels * num_steps
+            estimates.append(estimated)
+
+        return sum(estimates) / len(estimates)
+
+    def _record_generation(self, width: int, height: int, steps: int, elapsed: float):
+        """Record a generation timing for future estimates."""
+        self._generation_history.append({
+            "model_key": self.model_key,
+            "width": width,
+            "height": height,
+            "steps": steps,
+            "elapsed": round(elapsed, 3),
+            "timestamp": time.time(),
+        })
+        # Keep only last 20 entries
+        if len(self._generation_history) > 20:
+            self._generation_history = self._generation_history[-20:]
+
     def generate_image(self,
                         prompt: str,
                         negative_prompt: str = "multiple people, group, crowd, deformed, distorted, blurry",
@@ -390,6 +553,7 @@ class ImageService:
                 logger.info(f"Using seed: {seed}")
 
             backend = self.model_info.get("backend", "openvino")
+            gen_start = time.time()
 
             if backend in ("openvino",):
                 # OpenVINO SDXL-Turbo pipeline
@@ -450,6 +614,10 @@ class ImageService:
             else:
                 logger.error(f"Unknown backend: {backend}")
                 return None
+
+            gen_elapsed = time.time() - gen_start
+            self._record_generation(width, height, num_inference_steps, gen_elapsed)
+            logger.info(f"Generation took {gen_elapsed:.1f}s ({num_inference_steps} steps, {width}x{height})")
 
             image = result.images[0]
 

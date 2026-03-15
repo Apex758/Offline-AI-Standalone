@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X } from 'lucide-react';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
-import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
+import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord, TimeEstimate } from '../lib/imageApi';
 
 interface ImageStudioProps {
   tabId: string;
@@ -122,6 +122,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [annotationDragging, setAnnotationDragging] = useState(false);
   const [annotationStart, setAnnotationStart] = useState<{ x: number; y: number } | null>(null);
   const [liveAnnotation, setLiveAnnotation] = useState<Annotation | null>(null);
+
+  // Time estimation
+  const [timeEstimate, setTimeEstimate] = useState<TimeEstimate | null>(null);
+  const [generationElapsed, setGenerationElapsed] = useState(0);
+  const generationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Background removal
   const [isRemovingBg, setIsRemovingBg] = useState(false);
@@ -311,6 +316,50 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   }, [uploadedImage, isNewUpload, history.original]);
 
   // ========================================
+  // Time Estimation
+  // ========================================
+  useEffect(() => {
+    const fetchEstimate = async () => {
+      try {
+        const estimate = await imageApi.estimateTime({
+          width, height, steps: numInferenceSteps, numImages: numImages
+        });
+        setTimeEstimate(estimate);
+      } catch {
+        setTimeEstimate(null);
+      }
+    };
+    // Debounce: only fetch after 300ms of no changes
+    const timer = setTimeout(fetchEstimate, 300);
+    return () => clearTimeout(timer);
+  }, [width, height, numInferenceSteps, numImages]);
+
+  // Timer during generation
+  useEffect(() => {
+    if (generationState === 'generating') {
+      setGenerationElapsed(0);
+      generationTimerRef.current = setInterval(() => {
+        setGenerationElapsed(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (generationTimerRef.current) {
+        clearInterval(generationTimerRef.current);
+        generationTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (generationTimerRef.current) clearInterval(generationTimerRef.current);
+    };
+  }, [generationState]);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+  };
+
+  // ========================================
   // Build styled prompt with style suffix
   // ========================================
   const buildStyledPrompt = (basePrompt: string, styleId: string): string => {
@@ -405,6 +454,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
 
       // Wait for all generations to complete
       await Promise.allSettled(generationPromises);
+
+      // Re-fetch estimate with updated history data for next generation
+      imageApi.estimateTime({ width, height, steps: numInferenceSteps, numImages })
+        .then(est => setTimeEstimate(est))
+        .catch(() => {});
 
       setGenerationState('results');
     } catch (err: any) {
@@ -1252,7 +1306,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </select>
                   </div>
 
-                  {/* Generate Button */}
+                  {/* Generate Button + Time Estimate */}
                   <button
                     onClick={handleGenerate}
                     disabled={!prompt.trim() || loadingStyles}
@@ -1271,13 +1325,52 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       </>
                     )}
                   </button>
+                  {timeEstimate && timeEstimate.estimated_seconds != null && (
+                    <p className="text-xs text-theme-hint text-center mt-1">
+                      Estimated time: ~{formatTime(timeEstimate.estimated_seconds)}
+                      {numImages > 1 && ` (${formatTime(timeEstimate.per_image_seconds!)} per image)`}
+                      {timeEstimate.confidence === 'medium' && ' *'}
+                    </p>
+                  )}
+                  {timeEstimate && timeEstimate.confidence === 'medium' && timeEstimate.estimated_seconds != null && (
+                    <p className="text-[10px] text-theme-hint text-center opacity-60">
+                      * Rough estimate from calibration — accuracy improves after first generation
+                    </p>
+                  )}
                 </div>
               </div>
             )}
 
             {generationState === 'generating' && (
               <div className="max-w-5xl mx-auto" data-tutorial="image-studio-results">
-                <h2 className="text-2xl font-semibold mb-6">Generating Images...</h2>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-semibold">Generating Images...</h2>
+                  <div className="flex items-center gap-3 mt-2">
+                    <p className="text-sm text-theme-hint">
+                      Elapsed: {formatTime(generationElapsed)}
+                    </p>
+                    {timeEstimate && timeEstimate.estimated_seconds != null && (
+                      <>
+                        <span className="text-theme-hint">|</span>
+                        <p className="text-sm text-theme-hint">
+                          {generationElapsed < timeEstimate.estimated_seconds
+                            ? `~${formatTime(Math.max(0, timeEstimate.estimated_seconds - generationElapsed))} remaining`
+                            : 'Almost done...'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  {timeEstimate && timeEstimate.estimated_seconds != null && (
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-1000"
+                        style={{
+                          width: `${Math.min(95, (generationElapsed / timeEstimate.estimated_seconds) * 100)}%`
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {imageSlots.map((slot, i) => (
                     <div key={i} className="border border-theme-strong rounded-lg p-4 bg-theme-secondary">
