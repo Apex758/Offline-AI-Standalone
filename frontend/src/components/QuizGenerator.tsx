@@ -260,14 +260,18 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
   }, [subjects, grades, settings.profile.filterContentByProfile]);
 
-  // Fetch available classes when class quiz mode is enabled
+  // Fetch available classes when class quiz mode is enabled, filtered by grade level
   useEffect(() => {
     if (classQuizMode) {
-      axios.get('http://localhost:8000/api/classes').then(r => {
+      const params = formData.gradeLevel ? `?grade_level=${encodeURIComponent(formData.gradeLevel)}` : '';
+      axios.get(`http://localhost:8000/api/classes${params}`).then(r => {
         setAvailableClasses(r.data.map((c: any) => c.class_name));
       }).catch(() => {});
+      // Reset selected class when grade level changes
+      setSelectedClassName('');
+      setClassStudents([]);
     }
-  }, [classQuizMode]);
+  }, [classQuizMode, formData.gradeLevel]);
 
   // Fetch students when class is selected
   useEffect(() => {
@@ -1320,6 +1324,64 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </>
                 )}
 
+                <div className="space-y-3">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={classQuizMode}
+                      onChange={(e) => {
+                        setClassQuizMode(e.target.checked);
+                        if (!e.target.checked) {
+                          setSelectedClassName('');
+                          setClassStudents([]);
+                          setRandomizeClassQuestions(false);
+                        }
+                      }}
+                      className="w-4 h-4 rounded"
+                      style={{ accentColor: tabColor }}
+                    />
+                    <span className="text-sm font-medium text-theme-label">Generate for Class</span>
+                  </label>
+
+                  {classQuizMode && (
+                    <div className="ml-6 space-y-3 p-3 rounded-lg border border-theme bg-theme-subtle">
+                      <div>
+                        <label className="block text-xs font-medium text-theme-hint mb-1">Select Class</label>
+                        <select
+                          value={selectedClassName}
+                          onChange={(e) => setSelectedClassName(e.target.value)}
+                          className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm focus:ring-2"
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        >
+                          <option value="">Choose a class...</option>
+                          {availableClasses.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+
+                      {classStudents.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs" style={{ color: tabColor }}>
+                          <Users className="w-3.5 h-3.5" />
+                          <span className="font-medium">{classStudents.length} student{classStudents.length !== 1 ? 's' : ''} in class</span>
+                        </div>
+                      )}
+
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={randomizeClassQuestions}
+                          onChange={(e) => setRandomizeClassQuestions(e.target.checked)}
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: tabColor }}
+                        />
+                        <span className="text-sm text-theme-label">Randomize Question Order</span>
+                      </label>
+                      {randomizeClassQuestions && (
+                        <p className="text-xs text-theme-hint ml-6">Each student will receive questions in a different random order.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div data-tutorial="quiz-generator-question-count">
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Number of Questions <span className="text-red-500">*</span>
@@ -1390,63 +1452,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={classQuizMode}
-                      onChange={(e) => {
-                        setClassQuizMode(e.target.checked);
-                        if (!e.target.checked) {
-                          setSelectedClassName('');
-                          setClassStudents([]);
-                          setRandomizeClassQuestions(false);
-                        }
-                      }}
-                      className="w-4 h-4 rounded"
-                      style={{ accentColor: tabColor }}
-                    />
-                    <span className="text-sm font-medium text-theme-label">Generate for Class</span>
-                  </label>
-
-                  {classQuizMode && (
-                    <div className="ml-6 space-y-3 p-3 rounded-lg border border-theme bg-theme-subtle">
-                      <div>
-                        <label className="block text-xs font-medium text-theme-hint mb-1">Select Class</label>
-                        <select
-                          value={selectedClassName}
-                          onChange={(e) => setSelectedClassName(e.target.value)}
-                          className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm focus:ring-2"
-                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                        >
-                          <option value="">Choose a class...</option>
-                          {availableClasses.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-
-                      {classStudents.length > 0 && (
-                        <div className="flex items-center gap-2 text-xs" style={{ color: tabColor }}>
-                          <Users className="w-3.5 h-3.5" />
-                          <span className="font-medium">{classStudents.length} student{classStudents.length !== 1 ? 's' : ''} in class</span>
-                        </div>
-                      )}
-
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={randomizeClassQuestions}
-                          onChange={(e) => setRandomizeClassQuestions(e.target.checked)}
-                          className="w-4 h-4 rounded"
-                          style={{ accentColor: tabColor }}
-                        />
-                        <span className="text-sm text-theme-label">Randomize Question Order</span>
-                      </label>
-                      {randomizeClassQuestions && (
-                        <p className="text-xs text-theme-hint ml-6">Each student will receive questions in a different random order.</p>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
 

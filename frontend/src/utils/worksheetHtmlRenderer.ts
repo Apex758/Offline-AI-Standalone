@@ -47,13 +47,14 @@ export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: Rende
 <html>
 <head>
   <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     @page {
       size: A4;
       margin: 1.5cm;
     }
     body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       line-height: 1.6;
       color: #374151;
       margin: 0;
@@ -109,7 +110,7 @@ function generateMathHTML(
     const arithmeticProblems = questions.map(parseToArithmetic).filter(Boolean);
     
     return `
-    <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
+    <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
       <div style="border-bottom: 4px solid #111827; padding-bottom: 1rem; margin-bottom: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-end;">
           <div>
@@ -160,7 +161,7 @@ function generateMathHTML(
   } else {
     // Q&A layout (same as preview)
     return `
-    <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', sans-serif;">
+    <div style="background-color: white; padding: 2rem; max-width: 56rem; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
       <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
@@ -230,7 +231,7 @@ function generateMultipleChoiceHTML(
   const includeImages = formData.includeImages || false;
 
   return `
-    <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.875rem;">
+    <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 0.875rem;">
       <!-- Header -->
       <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -319,7 +320,7 @@ function generateComprehensionHTML(
   const imagePlacement = formData.imagePlacement || 'large-centered';
   
   return `
-    <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.875rem;">
+    <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 0.875rem;">
       <!-- Header -->
       <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -419,7 +420,7 @@ function generateMatchingHTML(
   showAnswers: boolean
 ): string {
   return `
-    <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.875rem;">
+    <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 0.875rem;">
       <!-- Header -->
       <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -506,7 +507,7 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
   const questionType = formData.questionType || '';
   
   return `
-    <div style="width: 100%; max-width: 56rem; margin: 0 auto; background-color: white; padding: 2rem; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;">
+    <div style="width: 100%; max-width: 56rem; margin: 0 auto; background-color: white; padding: 2rem; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
       <!-- Header -->
       <div style="border-bottom: 2px solid #1f2937; padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <h1 style="font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem;">${worksheetTitle}</h1>

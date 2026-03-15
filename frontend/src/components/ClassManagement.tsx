@@ -602,10 +602,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
 `;
 
     return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><style>
+<html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>
   @page { size: A4; margin: 15mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; font-size: 11pt; line-height: 1.4; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1e293b; font-size: 11pt; line-height: 1.4; }
   .header { background: ${accent}; color: white; padding: 24px 30px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 20px; }
   .header .avatar { width: 64px; height: 64px; background: rgba(255,255,255,0.25); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 2px solid rgba(255,255,255,0.4); }
   .header .info h1 { font-size: 20pt; margin-bottom: 2px; }

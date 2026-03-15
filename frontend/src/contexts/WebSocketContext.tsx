@@ -1,3 +1,4 @@
+/* @refresh reset */
 import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
 import { useNotification } from './NotificationContext';
 
@@ -22,6 +23,7 @@ interface WebSocketContextValue {
   getConnection: (tabId: string, endpoint: string) => WebSocket;
   getStreamingContent: (tabId: string, endpoint: string) => string;
   getIsStreaming: (tabId: string, endpoint: string) => boolean;
+  getIsTabBusy: (tabId: string) => boolean;
   clearStreaming: (tabId: string, endpoint: string) => void;
   closeConnection: (tabId: string, endpoint: string) => void;
   subscribe: (tabId: string, endpoint: string, listener: () => void) => () => void;
@@ -148,6 +150,13 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return connectionsRef.current.get(key)?.isStreaming || false;
   }, []);
 
+  const getIsTabBusy = useCallback((tabId: string): boolean => {
+    for (const [key, conn] of connectionsRef.current.entries()) {
+      if (key.startsWith(`${tabId}::`) && conn.isStreaming) return true;
+    }
+    return false;
+  }, []);
+
   const clearStreaming = useCallback((tabId: string, endpoint: string) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
@@ -186,6 +195,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       getConnection,
       getStreamingContent,
       getIsStreaming,
+      getIsTabBusy,
       clearStreaming,
       closeConnection,
       subscribe

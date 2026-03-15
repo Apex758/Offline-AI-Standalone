@@ -27,8 +27,7 @@ interface ChatHistory {
 }
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
-  // DEBUG: Log re-render and key state
-  console.log('[Chat] Render', { tabId });
+  // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);

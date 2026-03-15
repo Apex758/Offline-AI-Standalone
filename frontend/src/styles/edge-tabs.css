@@ -69,7 +69,7 @@
 .edge-tab-label {
   position: relative;
   z-index: 2;
-  font-size: 13px;
+  font-size: 0.8125rem;
   letter-spacing: 0.01em;
   white-space: nowrap;
   user-select: none;

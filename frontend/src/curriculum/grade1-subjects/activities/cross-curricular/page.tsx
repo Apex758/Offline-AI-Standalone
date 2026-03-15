@@ -694,7 +694,7 @@ export default function CrossCurricularActivitiesPage() {
           <head>
             <title>${activity.title} - Activity</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
+              body { font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20px; }
               h1 { color: #333; }
               h2 { color: #555; margin-top: 20px; }
               .section { margin-bottom: 20px; }

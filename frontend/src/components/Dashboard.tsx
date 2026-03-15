@@ -286,7 +286,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
-  const { closeConnection } = useWebSocket();
+  const { closeConnection, getIsTabBusy } = useWebSocket();
   const { unreadCount } = useNotification();
   const { queue } = useQueue();
   const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
@@ -1332,10 +1332,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       );
     }
 
-    const activeTab = tabs.find(t => t.id === activeTabId);
-    if (!activeTab) return null;
-    
-    return renderSingleTabContent(activeTab);
+    // Render ALL tabs but hide inactive ones so components stay mounted.
+    // Preserves skeleton loaders, scroll position, form state, etc. when switching tabs.
+    return (
+      <>
+        {tabs.map(tab => (
+          <div
+            key={tab.id}
+            className="absolute inset-0"
+            style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
+          >
+            {renderSingleTabContent(tab)}
+          </div>
+        ))}
+      </>
+    );
   };
 
   const groupedTabs = tabs.reduce((acc, tab) => {
@@ -1356,7 +1367,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     <div
       className="flex h-screen bg-[#f5f5f0] dark:bg-[#2b2b2b]"
       onClick={() => setContextMenu(null)}
-      style={{ fontSize: `${settings.fontSize}%` }}
     >
       {/* Context Menu */}
       {contextMenu && contextMenu.groupType && (
@@ -2279,7 +2289,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                             style={{
                               color: isTabActive ? '#fff' : isTabHover ? '#444' : '#333',
                               fontWeight: isTabActive ? 600 : 400,
-                              fontSize: '12px',
+                              fontSize: '0.75rem',
                               maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                               WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
                             }}

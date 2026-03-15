@@ -3,7 +3,7 @@ import { HashRouter } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { User } from './types';
-import { SettingsProvider } from './contexts/SettingsContext';
+import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { QueueProvider } from './contexts/QueueContext';
@@ -20,6 +20,13 @@ function AppContent() {
 
   // Apply theme
   useTheme();
+
+  // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
+  const { settings } = useSettings();
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${settings.fontSize}%`;
+    return () => { document.documentElement.style.fontSize = ''; };
+  }, [settings.fontSize]);
 
   // Pre-warm spell check dictionary in background
   useEffect(() => {

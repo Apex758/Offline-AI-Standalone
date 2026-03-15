@@ -217,13 +217,19 @@ def delete_student(student_id: str):
         conn.close()
 
 
-def list_classes() -> list[str]:
+def list_classes(grade_level: str | None = None) -> list[dict]:
     conn = _get_conn()
     try:
-        rows = conn.execute(
-            'SELECT DISTINCT class_name FROM students WHERE class_name IS NOT NULL ORDER BY class_name'
-        ).fetchall()
-        return [r['class_name'] for r in rows]
+        if grade_level:
+            rows = conn.execute(
+                'SELECT DISTINCT class_name, grade_level FROM students WHERE class_name IS NOT NULL AND grade_level = ? ORDER BY class_name',
+                (grade_level,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                'SELECT DISTINCT class_name, grade_level FROM students WHERE class_name IS NOT NULL ORDER BY grade_level, class_name'
+            ).fetchall()
+        return [{'class_name': r['class_name'], 'grade_level': r['grade_level']} for r in rows]
     finally:
         conn.close()
 

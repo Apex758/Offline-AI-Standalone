@@ -2002,8 +2002,8 @@ async def remove_student(student_id: str):
     return {"success": True}
 
 @app.get("/api/classes")
-async def get_classes():
-    return student_service.list_classes()
+async def get_classes(grade_level: str | None = None):
+    return student_service.list_classes(grade_level=grade_level)
 
 @app.post("/api/quiz-grades")
 async def add_quiz_grade(grade: QuizGradeCreate):
