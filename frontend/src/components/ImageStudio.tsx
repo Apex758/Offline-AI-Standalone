@@ -232,7 +232,18 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       if (savedData.prompt) setPrompt(savedData.prompt);
       if (savedData.selectedStyle) setSelectedStyle(savedData.selectedStyle);
       if (savedData.imageSlots) setImageSlots(savedData.imageSlots);
-      if (savedData.generationState) setGenerationState(savedData.generationState);
+      if (savedData.generationState) {
+        // If we were stuck in 'generating' (e.g. tab restored after long generation),
+        // check if slots are actually done — if so go to results, otherwise back to input
+        if (savedData.generationState === 'generating') {
+          const slots = savedData.imageSlots || [];
+          const allDone = slots.length > 0 && slots.every((s: any) => s.status === 'completed' || s.status === 'error');
+          const hasCompleted = slots.some((s: any) => s.status === 'completed');
+          setGenerationState(allDone && hasCompleted ? 'results' : 'input');
+        } else {
+          setGenerationState(savedData.generationState);
+        }
+      }
       if (savedData.selectedImage) setSelectedImage(savedData.selectedImage);
 
       // Restore from sessionStorage
@@ -279,6 +290,19 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, prompt, selectedStyle, imageSlots, generationState, selectedImage]);
+
+  // ========================================
+  // Safety: auto-transition to results if all slots are done but state is stuck on 'generating'
+  // ========================================
+  useEffect(() => {
+    if (generationState === 'generating' && imageSlots.length > 0) {
+      const allDone = imageSlots.every(s => s.status === 'completed' || s.status === 'error');
+      if (allDone) {
+        const hasCompleted = imageSlots.some(s => s.status === 'completed');
+        setGenerationState(hasCompleted ? 'results' : 'input');
+      }
+    }
+  }, [generationState, imageSlots]);
 
   // ========================================
   // Save heavy image data to sessionStorage (larger quota, clears on browser close)
