@@ -88,18 +88,40 @@ class MilestoneDB:
         logger.info(f"Milestone database initialized at {self.db_path}")
 
     @staticmethod
+    def _extract_key_and_text(outcome: str, index: int) -> tuple:
+        """Extract a stable key and display text from an outcome string.
+        Handles: '1.1 text', 'K1: text', '3-CP-K-1: text', plain text.
+        """
+        text = outcome.strip()
+        if not text:
+            return str(index), text
+
+        # Numbered: "1.1 Choose to listen..."
+        m = re.match(r'^(\d+\.\d+)\s+(.+)', text)
+        if m:
+            return m.group(1), m.group(2).strip()
+
+        # KSV with number: "K1: Identify..." or "S: Observe..."
+        m = re.match(r'^([KSV]\d*):\s+(.+)', text)
+        if m:
+            return m.group(1), m.group(2).strip()
+
+        # Coded: "3-CP-K-1: Identify..."
+        m = re.match(r'^([\d]+-\w+-[KSV]-?\d+):?\s+(.+)', text)
+        if m:
+            return m.group(1), m.group(2).strip()
+
+        return str(index), text
+
+    @staticmethod
     def _parse_outcomes_to_checklist(specific_outcomes: list) -> str:
         """Convert specificOutcomes strings into checklist JSON."""
         checklist = []
         for i, outcome in enumerate(specific_outcomes):
-            text = outcome.strip()
-            if not text:
+            if not outcome.strip():
                 continue
-            match = re.match(r'^(\d+\.\d+)\s+(.+)', text)
-            if match:
-                checklist.append({"key": match.group(1), "text": match.group(2).strip(), "checked": False})
-            else:
-                checklist.append({"key": str(i), "text": text, "checked": False})
+            key, text = MilestoneDB._extract_key_and_text(outcome, i)
+            checklist.append({"key": key, "text": text, "checked": False})
         return json.dumps(checklist)
 
     @staticmethod
@@ -110,16 +132,10 @@ class MilestoneDB:
 
         checklist = []
         for i, outcome in enumerate(specific_outcomes):
-            text = outcome.strip()
-            if not text:
+            if not outcome.strip():
                 continue
-            match = re.match(r'^(\d+\.\d+)\s+(.+)', text)
-            if match:
-                key = match.group(1)
-                checklist.append({"key": key, "text": match.group(2).strip(), "checked": existing_map.get(key, False)})
-            else:
-                key = str(i)
-                checklist.append({"key": key, "text": text, "checked": existing_map.get(key, False)})
+            key, text = MilestoneDB._extract_key_and_text(outcome, i)
+            checklist.append({"key": key, "text": text, "checked": existing_map.get(key, False)})
         return json.dumps(checklist)
     
     def get_connection(self):

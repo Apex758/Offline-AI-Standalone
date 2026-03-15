@@ -833,12 +833,26 @@ async def websocket_lesson_plan(websocket: WebSocket):
             curriculum_refs = []
             curriculum_context = ""
             if curriculum_matcher:
+                # Extract grade and subject for exact filtering
+                grade_filter = ""
+                subject_filter = ""
                 query = ""
                 if isinstance(form_data, dict) and form_data:
-                    query = " ".join(str(v) for v in form_data.values() if v)
+                    grade_filter = str(form_data.get("gradeLevel", "")).strip()
+                    subject_filter = str(form_data.get("subject", "")).strip()
+                    # Build query from topic-relevant fields only (not duration, class size, etc.)
+                    topic_parts = [
+                        str(form_data.get("topic", "")),
+                        str(form_data.get("strand", "")),
+                        str(form_data.get("subject", "")),
+                    ]
+                    query = " ".join(p for p in topic_parts if p and p != "None")
                 if not query:
                     query = prompt
-                matches = curriculum_matcher.find_matching_pages(query, top_k=3)
+                matches = curriculum_matcher.find_matching_pages(
+                    query, top_k=3,
+                    grade=grade_filter, subject=subject_filter
+                )
                 curriculum_refs = [
                     {
                         "id": m.get("id"),
@@ -990,14 +1004,28 @@ async def quiz_websocket(websocket: WebSocket):
                 continue
 
             prompt = data.get("prompt", "")
+            form_data = data.get("formData", {})
             job_id = data.get("jobId") or data.get("id") or "quiz"
             generation_mode = data.get("generationMode", "queued")
-            
+
             if not prompt:
                 logger.error("Empty quiz prompt received")
                 continue
 
             system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
+
+            # Add curriculum context for alignment
+            if curriculum_matcher and isinstance(form_data, dict) and form_data:
+                grade_filter = str(form_data.get("gradeLevel", "")).strip()
+                subject_filter = str(form_data.get("subject", "")).strip()
+                topic_parts = [str(form_data.get("topic", "")), str(form_data.get("strand", "")), str(form_data.get("subject", ""))]
+                query = " ".join(p for p in topic_parts if p and p != "None")
+                if query:
+                    matches = curriculum_matcher.find_matching_pages(query, top_k=2, grade=grade_filter, subject=subject_filter)
+                    context_blocks = [curriculum_matcher.get_curriculum_context(m.get("id")) for m in matches]
+                    context_blocks = [c for c in context_blocks if c]
+                    if context_blocks:
+                        system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -1116,6 +1144,7 @@ async def rubric_websocket(websocket: WebSocket):
             logger.info(f"Received rubric request, prompt length: {len(data.get('prompt', ''))}")
 
             prompt = data.get("prompt", "")
+            form_data = data.get("formData", {})
             job_id = data.get("jobId") or data.get("id") or "rubric"
             generation_mode = data.get("generationMode", "queued")
 
@@ -1125,6 +1154,19 @@ async def rubric_websocket(websocket: WebSocket):
 
             logger.info("Building rubric prompt...")
             system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
+
+            # Add curriculum context for alignment
+            if curriculum_matcher and isinstance(form_data, dict) and form_data:
+                grade_filter = str(form_data.get("gradeLevel", "")).strip()
+                subject_filter = str(form_data.get("subject", "")).strip()
+                topic_parts = [str(form_data.get("topic", "")), str(form_data.get("strand", "")), str(form_data.get("subject", ""))]
+                query = " ".join(p for p in topic_parts if p and p != "None")
+                if query:
+                    matches = curriculum_matcher.find_matching_pages(query, top_k=2, grade=grade_filter, subject=subject_filter)
+                    context_blocks = [curriculum_matcher.get_curriculum_context(m.get("id")) for m in matches]
+                    context_blocks = [c for c in context_blocks if c]
+                    if context_blocks:
+                        system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -1624,12 +1666,15 @@ async def worksheet_websocket(websocket: WebSocket):
 
             system_prompt = f"You are an expert educational worksheet designer. Create comprehensive, well-structured worksheets that accurately assess student learning and align with curriculum standards. Focus on clear instructions, appropriate difficulty level, and educational value."
 
-            # Add curriculum context if available
-            curriculum_context = ""
-            if subject and grade_level and strand:
-                system_prompt += f"\n\nCurriculum Context: Subject: {subject}, Grade: {grade_level}, Strand: {strand}"
-                if topic:
-                    system_prompt += f", Topic: {topic}"
+            # Add curriculum context for alignment
+            if curriculum_matcher and (subject or grade_level):
+                query = " ".join(p for p in [topic, strand, subject] if p)
+                if query:
+                    matches = curriculum_matcher.find_matching_pages(query, top_k=2, grade=grade_level, subject=subject)
+                    context_blocks = [curriculum_matcher.get_curriculum_context(m.get("id")) for m in matches]
+                    context_blocks = [c for c in context_blocks if c]
+                    if context_blocks:
+                        system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"

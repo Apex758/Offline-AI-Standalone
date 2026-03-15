@@ -110,15 +110,21 @@ class CurriculumMatcher:
         self,
         query: str,
         top_k: int = 5,
-        min_score: float = 0.25
+        min_score: float = 0.25,
+        grade: str = "",
+        subject: str = ""
     ) -> List[Dict[str, Any]]:
         """
-        Find curriculum pages that best match the query using fuzzy logic and keyword overlap.
+        Find curriculum pages that best match the query.
+        When grade and/or subject are provided, filters exactly on those first,
+        then ranks by fuzzy + keyword score within that filtered set.
 
         Args:
-            query (str): User query.
+            query (str): User query (topic, strand, keywords).
             top_k (int): Number of top results to return.
             min_score (float): Minimum score threshold.
+            grade (str): Exact grade to filter (e.g., "2", "K").
+            subject (str): Exact subject to filter (e.g., "Mathematics").
 
         Returns:
             List[Dict]: List of matching curriculum page dicts, sorted by score.
@@ -127,27 +133,43 @@ class CurriculumMatcher:
         query_keywords = set(self._extract_keywords(query))
         results: List[Tuple[float, Dict[str, Any]]] = []
 
+        # Normalize grade for comparison (handle "Kindergarten" -> "K", "Grade 2" -> "2")
+        grade_norm = grade.strip()
+        if grade_norm.lower().startswith("kindergarten"):
+            grade_norm = "K"
+        grade_norm = re.sub(r'(?i)^grade\s*', '', grade_norm).strip()
+
+        subject_norm = subject.strip().lower()
+        has_filters = bool(grade_norm or subject_norm)
+
         for page in self.pages:
-            # Combine searchable fields
+            # Exact grade/subject filtering when provided
+            if grade_norm and page.get("grade", "").strip() != grade_norm:
+                continue
+            if subject_norm and page.get("subject", "").strip().lower() != subject_norm:
+                continue
+
+            # Combine searchable fields (focused on topic/strand, not outcomes)
             fields = [
                 page.get("displayName", ""),
-                page.get("subject", ""),
                 page.get("strand", ""),
                 " ".join(page.get("keywords", [])),
-                " ".join(page.get("essentialOutcomes", [])),
-                " ".join(page.get("specificOutcomes", [])),
                 page.get("summary", ""),
             ]
             page_text = " ".join(fields)
-            page_norm = self._normalize(page_text)
+            page_norm_text = self._normalize(page_text)
             page_keywords = set(page.get("keywords", []))
             # Fuzzy score
-            fuzzy = self._fuzzy_score(query_norm, page_norm)
+            fuzzy = self._fuzzy_score(query_norm, page_norm_text)
             # Keyword overlap
             keyword_overlap = len(query_keywords & page_keywords) / (len(query_keywords) + 1e-6)
             # Weighted score: 70% fuzzy, 30% keyword
             score = 0.7 * fuzzy + 0.3 * keyword_overlap
-            if score >= min_score:
+
+            # When grade/subject filters are active, include all matching pages
+            # (the filtering already ensures relevance)
+            effective_min = 0.0 if has_filters else min_score
+            if score >= effective_min:
                 results.append((score, page))
 
         # Sort by score descending
@@ -180,6 +202,7 @@ class CurriculumMatcher:
     ) -> Optional[str]:
         """
         Get a formatted context string for a curriculum page by its ID.
+        Structured for clear LLM consumption with numbered outcomes.
 
         Args:
             page_id (str): The curriculum page ID.
@@ -190,19 +213,26 @@ class CurriculumMatcher:
         page = next((p for p in self.pages if p.get("id") == page_id), None)
         if not page:
             return None
-        # Format context as specified
-        context = [
-            f"Title: {page.get('displayName', '')}",
-            f"Grade: {page.get('grade', '')}",
-            f"Subject: {page.get('subject', '')}",
+
+        grade = page.get('grade', '')
+        grade_label = 'Kindergarten' if grade == 'K' else f'Grade {grade}'
+
+        lines = [
+            f"--- {page.get('displayName', '')} ({grade_label} {page.get('subject', '')}) ---",
             f"Strand: {page.get('strand', '')}",
-            f"Keywords: {', '.join(page.get('keywords', []))}",
-            f"Essential Outcomes: {'; '.join(page.get('essentialOutcomes', []))}",
-            f"Specific Outcomes: {'; '.join(page.get('specificOutcomes', []))}",
-            f"Summary: {page.get('summary', '')}",
-            f"Route: {page.get('route', '')}",
         ]
-        return "\n".join(context)
+
+        eo = page.get('essentialOutcomes', [])
+        if eo:
+            lines.append(f"\nEssential Outcome: {eo[0]}")
+
+        so = page.get('specificOutcomes', [])
+        if so:
+            lines.append("\nSpecific Outcomes (students should be able to):")
+            for outcome in so:
+                lines.append(f"  - {outcome}")
+
+        return "\n".join(lines)
 
     def get_page_by_id(self, page_id: str) -> Optional[Dict[str, Any]]:
         """
