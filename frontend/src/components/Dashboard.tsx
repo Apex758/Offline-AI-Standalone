@@ -2413,7 +2413,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       'cross-curricular-planner': TUTORIAL_IDS.CROSS_CURRICULAR_PLANNER,
       'worksheet-generator': TUTORIAL_IDS.WORKSHEET_GENERATOR,
       'image-studio': TUTORIAL_IDS.IMAGE_STUDIO,
-      'settings': TUTORIAL_IDS.SETTINGS
+      'settings': TUTORIAL_IDS.SETTINGS,
+      'chat': TUTORIAL_IDS.CHAT,
+      'class-management': TUTORIAL_IDS.CLASS_MANAGEMENT,
     };
 
     if (splitView.isActive || !settings.tutorials.tutorialPreferences.showFloatingButtons) return null;
@@ -2446,11 +2448,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     // Otherwise, use the mapped tutorial for the tab type, or fallback to dashboard tutorial
     const tutorialId = tutorialIdsByTabType[activeTab.type] || TUTORIAL_IDS.DASHBOARD_MAIN;
-
-    // Don't show tutorial button for chat tab
-    if (activeTab.type === 'chat') {
-      return null;
-    }
 
     return (
       <TutorialButton

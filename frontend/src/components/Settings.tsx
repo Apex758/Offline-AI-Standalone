@@ -11,6 +11,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import { useLicense } from '../contexts/LicenseContext';
 
 interface SettingsProps {
   tabId?: string;
@@ -53,7 +54,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   // Section navigation
-  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'danger';
+  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'license' | 'danger';
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
 
   // Load profile name & image from localStorage (synced with Dashboard)
@@ -259,6 +260,7 @@ const Settings: React.FC<SettingsProps> = () => {
     { id: 'models' as const, label: 'AI Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
     { id: 'features' as const, label: 'Features', icon: Sparkles, description: 'Visual Studio & tools' },
+    { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
     { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Reset & wipe data' },
   ];
 
@@ -1198,6 +1200,11 @@ const Settings: React.FC<SettingsProps> = () => {
               </div>
             )}
 
+            {/* ===== LICENSE & UPDATES SECTION ===== */}
+            {activeSection === 'license' && (
+              <LicenseSection />
+            )}
+
             {/* ===== DANGER ZONE SECTION ===== */}
             {activeSection === 'danger' && (
               <div className="space-y-6">
@@ -1395,5 +1402,115 @@ const Settings: React.FC<SettingsProps> = () => {
     </div>
   );
 };
+
+function LicenseSection() {
+  const { isLicensed, email, schoolName, loading, error, activate, deactivate } = useLicense();
+  const [licenseEmail, setLicenseEmail] = useState('');
+  const [licenseCode, setLicenseCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleActivate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    await activate(licenseEmail.trim(), licenseCode.trim().toUpperCase());
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="mb-2">
+        <h2 className="text-2xl font-bold text-theme-title">License & Updates</h2>
+        <p className="text-sm text-theme-muted mt-1">Enter a license code to receive automatic updates. The app works fully without a license.</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RefreshCw className="w-4.5 h-4.5 text-theme-secondary" />
+            License Status
+          </CardTitle>
+          <CardDescription>
+            A valid license enables automatic updates when new versions are available
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLicensed ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">License Active</p>
+                  {email && <p className="text-xs text-emerald-600 dark:text-emerald-400">{email}</p>}
+                  {schoolName && <p className="text-xs text-emerald-600 dark:text-emerald-400">{schoolName}</p>}
+                  <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">Automatic updates are enabled</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => window.electronAPI?.checkForUpdates?.()}
+                  className="flex-1"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Check for Updates
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm('Deactivate your license? You will no longer receive automatic updates.')) {
+                      deactivate();
+                    }
+                  }}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  Deactivate
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleActivate} className="space-y-4">
+              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  The app works fully without a license. A license code is only needed to receive automatic updates.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-1">Email address</label>
+                <Input
+                  type="email"
+                  placeholder="you@school.edu"
+                  value={licenseEmail}
+                  onChange={e => setLicenseEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-theme-label mb-1">License code</label>
+                <Input
+                  type="text"
+                  placeholder="OECS-XXXX-XXXX-XXXX"
+                  value={licenseCode}
+                  onChange={e => setLicenseCode(e.target.value)}
+                  required
+                  className="font-mono tracking-wider"
+                />
+              </div>
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+              <Button type="submit" disabled={submitting || loading} className="w-full">
+                {submitting ? 'Validating...' : 'Activate License'}
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default Settings;

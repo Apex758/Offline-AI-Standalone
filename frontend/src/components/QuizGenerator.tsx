@@ -1090,7 +1090,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4" data-tutorial="quiz-generator-topic">
                   <CurriculumAlignmentFields
                     subject={formData.subject}
                     gradeLevel={formData.gradeLevel}

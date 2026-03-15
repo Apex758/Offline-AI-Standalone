@@ -4,7 +4,7 @@ import { TutorialStep, dashboardWalkthroughSteps } from '../components/TutorialO
 export const TUTORIAL_IDS = {
   // Main dashboard tutorial
   DASHBOARD_MAIN: 'dashboard-main',
-  
+
   // Tool-specific tutorials
   ANALYTICS: 'analytics-dashboard',
   CURRICULUM: 'curriculum-viewer',
@@ -19,6 +19,8 @@ export const TUTORIAL_IDS = {
   IMAGE_STUDIO: 'image-studio',
   RESOURCE_MANAGER: 'resource-manager',
   SETTINGS: 'settings',
+  CHAT: 'chat',
+  CLASS_MANAGEMENT: 'class-management',
 } as const;
 
 // Type for tutorial IDs
@@ -112,18 +114,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         title: 'Browse Topics',
         description: 'Navigate through curriculum topics and learning units. Each topic contains detailed objectives and activities.',
         position: 'right'
-      },
-      {
-        target: '[data-tutorial="curriculum-standards"]',
-        title: 'View Standards',
-        description: 'See the official OECS curriculum standards and learning objectives for each topic.',
-        position: 'left'
-      },
-      {
-        target: '[data-tutorial="curriculum-activities"]',
-        title: 'Suggested Activities',
-        description: 'Explore recommended teaching activities and strategies aligned with curriculum standards.',
-        position: 'left'
       },
       {
         target: '[data-tutorial="curriculum-breadcrumb"]',
@@ -271,67 +261,43 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Create comprehensive lesson plans',
     steps: [
       {
-        target: '[data-tutorial="lesson-welcome"]',
+        target: '[data-tutorial="lesson-planner-welcome"]',
         title: 'Welcome to Lesson Planner',
         description: 'Create detailed, standards-aligned lesson plans with AI assistance. Perfect for planning engaging and effective lessons.',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="lesson-basic-info"]',
+        target: '[data-tutorial="lesson-planner-basic-info"]',
         title: 'Basic Information',
         description: 'Start by selecting the grade level, subject, and lesson topic. This helps PEARL AI generate relevant content.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="lesson-duration"]',
+        target: '[data-tutorial="lesson-planner-duration"]',
         title: 'Lesson Duration',
         description: 'Specify how long your lesson will be. This helps structure activities within the available time.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="lesson-objectives"]',
-        title: 'Learning Objectives',
-        description: 'Enter clear learning objectives or let AI suggest them. Good objectives define what students should know or do by the end.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="lesson-materials"]',
+        target: '[data-tutorial="lesson-planner-materials"]',
         title: 'Materials Needed',
         description: 'List materials and resources required for the lesson. AI can suggest appropriate materials based on your topic.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="lesson-activities"]',
+        target: '[data-tutorial="lesson-planner-activities"]',
         title: 'Lesson Activities',
         description: 'Plan your lesson procedures including introduction, main activities, and conclusion. AI generates structured, time-appropriate activities.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="lesson-assessment"]',
-        title: 'Assessment Methods',
-        description: 'Define how you\'ll assess student learning. Include formative and summative assessment strategies.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="lesson-differentiation"]',
-        title: 'Differentiation',
-        description: 'Add strategies to support diverse learners. AI suggests modifications for different ability levels.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="lesson-generate"]',
+        target: '[data-tutorial="lesson-planner-generate"]',
         title: 'Generate Lesson Plan',
         description: 'Click to have PEARL AI create a complete, detailed lesson plan based on your inputs.',
         position: 'top',
         interactive: true,
         waitForAction: 'click',
         actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="lesson-export"]',
-        title: 'Save & Export',
-        description: 'Save your lesson plan to resources, export as PDF or Word document, or share with colleagues.',
-        position: 'left'
       }
     ]
   },
@@ -342,67 +308,55 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Create early childhood lesson plans',
     steps: [
       {
-        target: '[data-tutorial="kinder-welcome"]',
+        target: '[data-tutorial="kinder-planner-welcome"]',
         title: 'Welcome to Kindergarten Planner',
         description: 'Design age-appropriate, play-based learning experiences tailored for kindergarten students. Includes themes, centers, and activities.',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="kinder-theme"]',
+        target: '[data-tutorial="kinder-planner-theme"]',
         title: 'Select Theme',
         description: 'Choose a weekly or daily theme. Themes help integrate learning across all activities and make connections meaningful for young learners.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="kinder-learning-areas"]',
+        target: '[data-tutorial="kinder-planner-learning-areas"]',
         title: 'Learning Areas',
         description: 'Select focus areas like literacy, numeracy, science, social-emotional learning, and physical development.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="kinder-centers"]',
+        target: '[data-tutorial="kinder-planner-centers"]',
         title: 'Learning Centers',
         description: 'Plan activities for different centers: dramatic play, blocks, art, literacy, math, and science exploration.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="kinder-circle-time"]',
+        target: '[data-tutorial="kinder-planner-circle-time"]',
         title: 'Circle Time Activities',
         description: 'Add morning meeting, songs, stories, and group discussions appropriate for kindergarteners.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="kinder-play-activities"]',
+        target: '[data-tutorial="kinder-planner-play-activities"]',
         title: 'Play-Based Learning',
         description: 'Include structured and unstructured play activities that support learning objectives through hands-on exploration.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="kinder-resources"]',
-        title: 'Materials & Resources',
-        description: 'List age-appropriate materials, books, and supplies. AI suggests kindergarten-friendly resources.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="kinder-assessment"]',
+        target: '[data-tutorial="kinder-planner-assessment"]',
         title: 'Observation & Assessment',
         description: 'Plan observation points and simple assessment strategies suitable for kindergarten students.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="kinder-generate"]',
+        target: '[data-tutorial="kinder-planner-generate"]',
         title: 'Generate Plan',
         description: 'Create a comprehensive, developmentally-appropriate kindergarten plan with engaging, play-based activities.',
         position: 'top',
         interactive: true,
         waitForAction: 'click',
         actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="kinder-export"]',
-        title: 'Save & Share',
-        description: 'Save to your resources or export your kindergarten plan for printing and sharing.',
-        position: 'left'
       }
     ]
   },
@@ -413,13 +367,13 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Plan lessons for multiple grade levels',
     steps: [
       {
-        target: '[data-tutorial="multigrade-welcome"]',
+        target: '[data-tutorial="multigrade-planner-welcome"]',
         title: 'Welcome to Multigrade Planner',
         description: 'Create effective lesson plans for mixed-grade classrooms. Balance common activities with grade-specific differentiation.',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="multigrade-grades"]',
+        target: '[data-tutorial="multigrade-planner-grades"]',
         title: 'Select Grade Levels',
         description: 'Choose all grade levels in your classroom. PEARL AI will help you plan appropriate activities for each.',
         position: 'right',
@@ -428,55 +382,49 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         actionHint: '👆 Click here!'
       },
       {
-        target: '[data-tutorial="multigrade-subject"]',
+        target: '[data-tutorial="multigrade-planner-subject"]',
         title: 'Choose Subject',
         description: 'Select the subject area for your multigrade lesson. Consider which subjects work best for combined teaching.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="multigrade-theme"]',
+        target: '[data-tutorial="multigrade-planner-theme"]',
         title: 'Common Theme',
         description: 'Enter a central theme or topic that works across grade levels. This creates cohesion while allowing differentiation.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="multigrade-common-activities"]',
+        target: '[data-tutorial="multigrade-planner-common-activities"]',
         title: 'Shared Activities',
         description: 'Plan activities all students can participate in together. These build community and maximize teaching time.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="multigrade-differentiation"]',
+        target: '[data-tutorial="multigrade-planner-differentiation"]',
         title: 'Grade-Specific Tasks',
         description: 'Add differentiated activities tailored to each grade level\'s abilities and curriculum standards.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="multigrade-grouping"]',
+        target: '[data-tutorial="multigrade-planner-grouping"]',
         title: 'Grouping Strategies',
         description: 'Plan how students will be grouped: by grade, ability, mixed-age pairs, or independent work.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="multigrade-resources"]',
+        target: '[data-tutorial="multigrade-planner-resources"]',
         title: 'Shared Resources',
         description: 'List materials that can be used across grades and those specific to each grade level.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="multigrade-generate"]',
+        target: '[data-tutorial="multigrade-planner-generate"]',
         title: 'Generate Plan',
         description: 'Create a detailed multigrade lesson plan with balanced whole-class and differentiated activities.',
         position: 'top',
         interactive: true,
         waitForAction: 'click',
         actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="multigrade-export"]',
-        title: 'Save & Export',
-        description: 'Save your multigrade plan to resources or export for reference during teaching.',
-        position: 'left'
       }
     ]
   },
@@ -487,19 +435,25 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     description: 'Create integrated subject lesson plans',
     steps: [
       {
-        target: '[data-tutorial="cross-welcome"]',
+        target: '[data-tutorial="cross-curricular-planner-welcome"]',
         title: 'Welcome to Cross-Curricular Planning',
         description: 'Create integrated lessons connecting multiple subjects around a central theme. Make learning more meaningful and engaging!',
         position: 'bottom'
       },
       {
-        target: '[data-tutorial="cross-theme"]',
+        target: '[data-tutorial="cross-curricular-planner-grade"]',
+        title: 'Grade Level',
+        description: 'Select the grade level to ensure all integrated activities are age-appropriate and standards-aligned.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="cross-curricular-planner-theme"]',
         title: 'Central Theme',
         description: 'Choose a unifying theme or essential question that connects all subjects. Examples: "Caribbean Climate," "Community Helpers," or "Caribbean History."',
         position: 'right'
       },
       {
-        target: '[data-tutorial="cross-subjects"]',
+        target: '[data-tutorial="cross-curricular-planner-subjects"]',
         title: 'Select Subjects',
         description: 'Choose which subjects to integrate: Language Arts, Mathematics, Science, Social Studies, and Arts.',
         position: 'right',
@@ -508,49 +462,37 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         actionHint: '👆 Click here!'
       },
       {
-        target: '[data-tutorial="cross-grade"]',
-        title: 'Grade Level',
-        description: 'Select the grade level to ensure all integrated activities are age-appropriate and standards-aligned.',
-        position: 'right'
-      },
-      {
-        target: '[data-tutorial="cross-objectives"]',
+        target: '[data-tutorial="cross-curricular-planner-objectives"]',
         title: 'Subject Objectives',
         description: 'Define learning objectives for each subject area. PEARL AI helps create objectives that naturally connect.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="cross-connections"]',
+        target: '[data-tutorial="cross-curricular-planner-connections"]',
         title: 'Integration Strategies',
         description: 'Plan how subjects connect. For example, reading about science topics or using math in social studies projects.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="cross-activities"]',
+        target: '[data-tutorial="cross-curricular-planner-activities"]',
         title: 'Integrated Activities',
         description: 'Design activities that incorporate multiple subjects simultaneously, showing real-world connections.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="cross-assessment"]',
+        target: '[data-tutorial="cross-curricular-planner-assessment"]',
         title: 'Holistic Assessment',
         description: 'Plan assessment that evaluates learning across subjects, such as projects or presentations.',
         position: 'right'
       },
       {
-        target: '[data-tutorial="cross-generate"]',
+        target: '[data-tutorial="cross-curricular-planner-generate"]',
         title: 'Generate Plan',
         description: 'Create a rich, integrated lesson plan that shows meaningful connections across curriculum areas.',
         position: 'top',
         interactive: true,
         waitForAction: 'click',
         actionHint: '👆 Click here!'
-      },
-      {
-        target: '[data-tutorial="cross-export"]',
-        title: 'Save & Export',
-        description: 'Save your cross-curricular plan to resources or export for implementation.',
-        position: 'left'
       }
     ]
   },
@@ -713,7 +655,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       { target: '[data-tutorial="worksheet-generator-templates"]', title: 'Template Layout', description: 'Pick the worksheet layout that matches your question type.', position: 'right' },
       { target: '[data-tutorial="worksheet-generator-include-images"]', title: 'Images (Optional)', description: 'Toggle images on/off to enrich the worksheet.', position: 'right' },
       { target: '[data-tutorial="worksheet-generator-image-prompt"]', title: 'Image Prompt', description: 'Describe the image for AI generation when images are enabled.', position: 'right' },
-      { target: '[data-tutorial="worksheet-generator-image-generate"]', title: 'Generate Images', description: 'Generate supportive images for the worksheet.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
       { target: '[data-tutorial="worksheet-generator-generate"]', title: 'Generate Worksheet', description: 'Produce the worksheet with the chosen settings.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
       { target: '[data-tutorial="worksheet-generator-preview"]', title: 'Live Preview', description: 'See the rendered worksheet; switch between student/teacher views.', position: 'left' },
       { target: '[data-tutorial="worksheet-generator-view-toggle"]', title: 'Student vs. Teacher', description: 'Toggle to show/hide answers.', position: 'left', interactive: true, waitForAction: 'click', actionHint: '👆 Toggle view' },
@@ -731,9 +672,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     steps: [
       { target: '[data-tutorial="image-studio-tab-toggle"]', title: 'Generator vs. Editor', description: 'Switch between generating images and editing uploads.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Toggle' },
       { target: '[data-tutorial="image-studio-prompt"]', title: 'Prompt', description: 'Describe the image you want to generate.', position: 'right' },
-      { target: '[data-tutorial="image-studio-negative-prompt"]', title: 'Negative Prompt', description: 'Exclude unwanted elements (optional).', position: 'right' },
-      { target: '[data-tutorial="image-studio-dimensions"]', title: 'Dimensions', description: 'Pick width/height for outputs.', position: 'right' },
-      { target: '[data-tutorial="image-studio-steps"]', title: 'Steps / Batch', description: 'Control quality and batch size.', position: 'right' },
+      { target: '[data-tutorial="image-studio-batch"]', title: 'Batch Size', description: 'Control how many images to generate at once.', position: 'right' },
       { target: '[data-tutorial="image-studio-generate"]', title: 'Generate Images', description: 'Start the AI image generation.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
       { target: '[data-tutorial="image-studio-results"]', title: 'Results', description: 'Review generated images; download or save.', position: 'left' },
       { target: '[data-tutorial="image-studio-upload"]', title: 'Upload to Edit', description: 'Upload an image for cleanup or inpainting.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Upload' },
@@ -915,12 +854,6 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         position: 'right'
       },
       {
-        target: '[data-tutorial="settings-api"]',
-        title: 'API Configuration',
-        description: 'Configure API settings for AI features. Most users can keep default settings.',
-        position: 'right'
-      },
-      {
         target: '[data-tutorial="settings-notifications"]',
         title: 'Notification Settings',
         description: 'Manage notifications for completed tasks, updates, and other system alerts.',
@@ -931,11 +864,117 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
         title: 'Reset Options',
         description: 'Reset app to defaults, clear cache, or reset specific settings if needed.',
         position: 'left'
+      }
+    ]
+  },
+
+  [TUTORIAL_IDS.CHAT]: {
+    id: TUTORIAL_IDS.CHAT,
+    name: 'Ask PEARL',
+    description: 'Chat with your AI teaching assistant',
+    steps: [
+      {
+        target: '[data-tutorial="chat-welcome"]',
+        title: 'Welcome to Ask PEARL',
+        description: 'Chat with your AI teaching assistant for lesson ideas, curriculum questions, differentiation strategies, and more. PEARL understands the OECS curriculum and can help you plan effectively.',
+        position: 'center'
       },
       {
-        target: '[data-tutorial="settings-export"]',
-        title: 'Export Settings',
-        description: 'Export your preferences to backup or transfer settings to another device.',
+        target: '[data-tutorial="chat-new"]',
+        title: 'New Conversation',
+        description: 'Start a fresh conversation with PEARL. Each conversation is saved automatically so you can return to it later.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="chat-conversations"]',
+        title: 'Conversation History',
+        description: 'Browse your past conversations. Click any conversation to continue where you left off.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="chat-history"]',
+        title: 'Chat Messages',
+        description: 'Your conversation appears here. PEARL provides formatted responses with suggestions, examples, and curriculum-aligned content.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="chat-input"]',
+        title: 'Type Your Message',
+        description: 'Ask PEARL anything about teaching, lesson planning, or the OECS curriculum. Try questions like "Help me plan a Grade 3 Science lesson on plants" or "What activities work for mixed-ability groups?"',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="chat-send"]',
+        title: 'Send Message',
+        description: 'Click send or press Enter to submit your message. PEARL will respond with helpful, curriculum-aligned suggestions.',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="chat-sidebar"]',
+        title: 'Chat Sidebar',
+        description: 'Toggle the sidebar to manage your conversations, search through history, or start new topics.',
+        position: 'left'
+      }
+    ]
+  },
+
+  [TUTORIAL_IDS.CLASS_MANAGEMENT]: {
+    id: TUTORIAL_IDS.CLASS_MANAGEMENT,
+    name: 'My Classes',
+    description: 'Manage students, attendance, and grades',
+    steps: [
+      {
+        target: '[data-tutorial="class-welcome"]',
+        title: 'Welcome to My Classes',
+        description: 'Manage your students, track attendance, monitor quiz grades, and generate report cards all in one place.',
+        position: 'center'
+      },
+      {
+        target: '[data-tutorial="class-sidebar"]',
+        title: 'Class Navigation',
+        description: 'Browse your students organized by grade and class. Click grade levels to expand and see classes, then click classes to see individual students.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="class-search"]',
+        title: 'Search Students',
+        description: 'Quickly find any student by name. Search works across all grades and classes.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="class-add-student"]',
+        title: 'Add Student',
+        description: 'Click to add a new student. Enter their name, grade, class, date of birth, and contact information.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="class-import"]',
+        title: 'Import Students',
+        description: 'Bulk import students from an Excel (.xlsx) or CSV file. Download the sample template to see the required format. You can also drag and drop files directly!',
+        position: 'top'
+      },
+      {
+        target: '[data-tutorial="class-tree"]',
+        title: 'Grade & Class Tree',
+        description: 'Navigate the tree hierarchy: Grade levels contain classes, classes contain students. Click any level to view details on the right panel.',
+        position: 'right'
+      },
+      {
+        target: '[data-tutorial="class-right-panel"]',
+        title: 'Detail Panel',
+        description: 'This panel shows details for whatever you select: grade overview, class student list with attendance, or individual student profiles with quiz grades.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="class-attendance"]',
+        title: 'Attendance Tracking',
+        description: 'Track daily attendance and engagement levels for each student. Mark students as Present, Absent, Late, or Excused, and rate their engagement level.',
+        position: 'left'
+      },
+      {
+        target: '[data-tutorial="class-report-card"]',
+        title: 'Report Cards',
+        description: 'Generate professional PDF report cards for individual students or an entire class. Reports include quiz grades organized by subject with letter grades and averages.',
         position: 'left'
       }
     ]

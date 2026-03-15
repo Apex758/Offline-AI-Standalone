@@ -803,6 +803,7 @@ ${tabScript}
           <button
             onClick={() => openAdd()}
             title="Add student"
+            data-tutorial="class-add-student"
             className="w-6 h-6 rounded-md flex items-center justify-center text-white transition hover:opacity-80"
             style={{ backgroundColor: accentColor }}
           >
@@ -811,7 +812,7 @@ ${tabScript}
         </div>
 
         {/* Search */}
-        <div className="relative">
+        <div className="relative" data-tutorial="class-search">
           <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-theme-muted pointer-events-none" />
           <input
             type="text"
@@ -829,7 +830,7 @@ ${tabScript}
       </div>
 
       {/* Tree / Search results */}
-      <div className="flex-1 overflow-y-auto py-1">
+      <div className="flex-1 overflow-y-auto py-1" data-tutorial="class-tree">
         {loading ? (
           <div className="px-4 py-6 text-center text-xs text-theme-muted">Loading...</div>
         ) : students.length === 0 ? (
@@ -946,6 +947,7 @@ ${tabScript}
           <Download className="w-3 h-3" /> Sample
         </button>
         <button onClick={() => fileInputRef.current?.click()} title="Import from Excel or CSV"
+          data-tutorial="class-import"
           className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-theme-muted hover:text-theme-label hover:bg-theme-hover transition text-[11px]">
           <Upload className="w-3 h-3" /> Import
         </button>
@@ -1208,7 +1210,7 @@ ${tabScript}
 
           {/* ── Attendance & Engagement Tab ── */}
           {classViewTab === 'attendance' && (
-            <div>
+            <div data-tutorial="class-attendance">
               {cs.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-theme p-8 text-center text-theme-muted text-sm">
                   Add students to this class to track attendance.
@@ -1423,6 +1425,7 @@ ${tabScript}
               <button
                 onClick={() => generateReportCard(activeStudent)}
                 disabled={generatingReport}
+                data-tutorial="class-report-card"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm transition disabled:opacity-50"
               >
                 {generatingReport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
@@ -1719,6 +1722,7 @@ ${tabScript}
   return (
     <div
       className="h-full bg-theme-surface flex overflow-hidden relative"
+      data-tutorial="class-welcome"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -1729,12 +1733,12 @@ ${tabScript}
         className="hidden" />
 
       {/* Left sidebar */}
-      <div className="w-[22%] min-w-[170px] max-w-[260px] border-r border-theme flex-shrink-0 overflow-hidden">
+      <div className="w-[22%] min-w-[170px] max-w-[260px] border-r border-theme flex-shrink-0 overflow-hidden" data-tutorial="class-sidebar">
         {renderSidebar()}
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden" data-tutorial="class-right-panel">
         {/* Banners */}
         {(error || importResult || importing) && (
           <div className="px-6 pt-4 space-y-2 flex-shrink-0">
