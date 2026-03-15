@@ -811,6 +811,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
         prompt,
         generationMode: settings.generationMode,
       });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
     }
 

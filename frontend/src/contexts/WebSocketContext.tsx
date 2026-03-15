@@ -19,11 +19,18 @@ interface WebSocketConnection {
   listeners: Set<() => void>;
 }
 
+export interface ActiveStream {
+  tabId: string;
+  endpoint: string;
+  toolName: string;
+}
+
 interface WebSocketContextValue {
   getConnection: (tabId: string, endpoint: string) => WebSocket;
   getStreamingContent: (tabId: string, endpoint: string) => string;
   getIsStreaming: (tabId: string, endpoint: string) => boolean;
   getIsTabBusy: (tabId: string) => boolean;
+  getActiveStreams: () => ActiveStream[];
   clearStreaming: (tabId: string, endpoint: string) => void;
   closeConnection: (tabId: string, endpoint: string) => void;
   subscribe: (tabId: string, endpoint: string, listener: () => void) => () => void;
@@ -157,6 +164,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return false;
   }, []);
 
+  const getActiveStreams = useCallback((): ActiveStream[] => {
+    const streams: ActiveStream[] = [];
+    for (const [key, conn] of connectionsRef.current.entries()) {
+      if (conn.isStreaming) {
+        const [tabId, endpoint] = key.split('::');
+        streams.push({ tabId, endpoint, toolName: TOOL_NAMES[endpoint] || endpoint });
+      }
+    }
+    return streams;
+  }, []);
+
   const clearStreaming = useCallback((tabId: string, endpoint: string) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
@@ -196,6 +214,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       getStreamingContent,
       getIsStreaming,
       getIsTabBusy,
+      getActiveStreams,
       clearStreaming,
       closeConnection,
       subscribe

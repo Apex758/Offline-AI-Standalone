@@ -286,10 +286,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
-  const { closeConnection, getIsTabBusy } = useWebSocket();
+  const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
   const { unreadCount } = useNotification();
   const { queue } = useQueue();
-  const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
+  const activeStreams = getActiveStreams();
+  const queuedTabEndpoints = new Set(
+    queue.filter(item => item.status === 'generating').map(item => `${item.tabId}::${item.endpoint}`)
+  );
+  const directStreamCount = activeStreams.filter(s => !queuedTabEndpoints.has(`${s.tabId}::${s.endpoint}`)).length;
+  const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length + directStreamCount;
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));

@@ -629,6 +629,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
         prompt,
         generationMode: settings.generationMode,
       });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
     }
 

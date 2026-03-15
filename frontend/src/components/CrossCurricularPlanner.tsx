@@ -877,6 +877,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
         prompt,
         generationMode: settings.generationMode,
       });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
     }
 

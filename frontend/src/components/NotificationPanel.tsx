@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, Bell, Trash2, ListOrdered, Loader2, Clock, GripV
 import { formatDistanceToNow } from 'date-fns';
 import { useNotification } from '../contexts/NotificationContext';
 import { useQueue, QueueItem } from '../contexts/QueueContext';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 interface NotificationPanelProps {
   open: boolean;
@@ -16,6 +17,7 @@ type PanelTab = 'notifications' | 'queue';
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) => {
   const { history, unreadCount, markAllRead, clearHistory } = useNotification();
   const { queue, removeFromQueue, reorderQueue, clearCompleted, queueEnabled } = useQueue();
+  const { getActiveStreams } = useWebSocket();
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<PanelTab>('notifications');
 
@@ -41,7 +43,13 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
   }, [open, onClose]);
 
   const waitingItems = queue.filter(item => item.status === 'waiting');
-  const queueCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length;
+  const activeStreams = getActiveStreams();
+  // Filter out streams that are already tracked by the queue to avoid duplicates
+  const queuedTabEndpoints = new Set(
+    queue.filter(item => item.status === 'generating').map(item => `${item.tabId}::${item.endpoint}`)
+  );
+  const directStreams = activeStreams.filter(s => !queuedTabEndpoints.has(`${s.tabId}::${s.endpoint}`));
+  const queueCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length + directStreams.length;
 
   const getStatusIcon = (status: QueueItem['status']) => {
     switch (status) {
@@ -203,10 +211,10 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
           {activeTab === 'queue' && (
             <>
               {/* Queue actions bar */}
-              {queue.length > 0 && (
+              {(queue.length > 0 || directStreams.length > 0) && (
                 <div className="flex justify-between items-center px-4 py-2" style={{ borderBottom: '1px solid var(--notif-divider)' }}>
                   <span className="text-xs" style={{ color: 'var(--notif-text-muted)' }}>
-                    {queueCount} pending
+                    {queueCount} active
                   </span>
                   <button
                     onClick={clearCompleted}
@@ -220,21 +228,37 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
               )}
 
               <div className="max-h-80 overflow-y-auto">
-                {!queueEnabled ? (
-                  <div className="flex flex-col items-center justify-center py-10 gap-2 px-4" style={{ color: 'var(--notif-text-faint)' }}>
-                    <ListOrdered size={26} className="opacity-25" />
-                    <span className="text-sm text-center">Queuing is disabled</span>
-                    <span className="text-xs text-center opacity-75">Enable it in Settings &gt; Generation Behavior</span>
-                  </div>
-                ) : queue.length === 0 ? (
+                {queue.length === 0 && directStreams.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 gap-2" style={{ color: 'var(--notif-text-faint)' }}>
                     <ListOrdered size={26} className="opacity-25" />
-                    <span className="text-sm">Queue is empty</span>
-                    <span className="text-xs opacity-75">Tasks will appear here when you generate</span>
+                    <span className="text-sm">No active generations</span>
+                    <span className="text-xs opacity-75">Active generations will appear here</span>
                   </div>
                 ) : (
                   <>
-                    {/* Currently generating */}
+                    {/* Direct (non-queued) active generations */}
+                    {directStreams.map(stream => (
+                      <div
+                        key={`${stream.tabId}::${stream.endpoint}`}
+                        className="flex items-start gap-3 px-4 py-3"
+                        style={{
+                          borderBottom: '1px solid var(--notif-divider)',
+                          backgroundColor: 'var(--notif-unread-bg)',
+                        }}
+                      >
+                        <Loader2 size={15} className="text-blue-500 shrink-0 mt-0.5 animate-spin" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium leading-snug" style={{ color: 'var(--notif-text)' }}>
+                            {stream.toolName}
+                          </p>
+                          <p className="text-xs mt-0.5 text-blue-500 font-medium">
+                            Generating...
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Queued - currently generating */}
                     {queue.filter(item => item.status === 'generating').map(item => (
                       <div
                         key={item.id}

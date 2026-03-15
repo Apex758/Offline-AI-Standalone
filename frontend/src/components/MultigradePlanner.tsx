@@ -690,6 +690,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
         prompt,
         generationMode: settings.generationMode,
       });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
     }
 

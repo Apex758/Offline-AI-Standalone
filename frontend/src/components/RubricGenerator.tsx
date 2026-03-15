@@ -772,6 +772,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         prompt,
         generationMode: settings.generationMode,
       });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
     }
 

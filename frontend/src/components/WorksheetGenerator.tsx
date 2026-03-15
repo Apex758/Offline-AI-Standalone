@@ -581,11 +581,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           jobId,
         },
       });
-      setLocalLoadingMap(prev => {
-        const newMap = { ...prev };
-        delete newMap[tabId || ''];
-        return newMap;
-      });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
       return;
     }
 
