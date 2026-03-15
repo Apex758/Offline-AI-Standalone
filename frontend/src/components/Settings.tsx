@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -30,6 +30,8 @@ const Settings: React.FC<SettingsProps> = () => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials } = useSettings();
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showWipeDialog, setShowWipeDialog] = useState(false);
+  const [isWiping, setIsWiping] = useState(false);
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [selectedModel, setSelectedModel] = useState('');
@@ -226,6 +228,24 @@ const Settings: React.FC<SettingsProps> = () => {
 
   const handleCancelReset = () => {
     setShowResetDialog(false);
+  };
+
+  const handleWipeApp = async () => {
+    setIsWiping(true);
+    try {
+      // 1. Call backend to wipe all server-side data
+      await axios.post('http://localhost:8000/api/factory-reset');
+      // 2. Clear all localStorage
+      localStorage.clear();
+      // 3. Clear all sessionStorage
+      sessionStorage.clear();
+      // 4. Reload the app
+      window.location.reload();
+    } catch (err) {
+      console.error('Factory reset failed:', err);
+      setIsWiping(false);
+      setShowWipeDialog(false);
+    }
   };
 
   // Export functions
@@ -812,6 +832,71 @@ const Settings: React.FC<SettingsProps> = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Wipe Entire App Section */}
+          <Card className="mb-6 border-red-300 bg-red-100" data-tutorial="settings-wipe">
+            <CardHeader>
+              <CardTitle className="text-red-800 flex items-center gap-2">
+                <Trash2 className="w-5 h-5" />
+                Wipe Entire App
+              </CardTitle>
+              <CardDescription className="text-red-600">
+                Delete all data including chat history, generated resources, milestones, student records, and settings.
+                The app will behave as if opened for the first time.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={() => setShowWipeDialog(true)}
+                className="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white"
+              >
+                Wipe All App Data
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Wipe Confirmation Dialog */}
+          {showWipeDialog && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="rounded-lg p-6 max-w-md w-full mx-4 widget-glass">
+                <div className="flex items-center gap-3 mb-4">
+                  <Trash2 className="w-6 h-6 text-red-700" />
+                  <h3 className="text-lg font-semibold text-theme-title">Wipe Entire App?</h3>
+                </div>
+                <p className="text-theme-muted mb-2">
+                  This will permanently delete:
+                </p>
+                <ul className="text-theme-muted mb-4 text-sm list-disc list-inside space-y-1">
+                  <li>All chat conversations</li>
+                  <li>All generated lesson plans, quizzes, rubrics, and worksheets</li>
+                  <li>All curriculum milestones and progress</li>
+                  <li>All student records</li>
+                  <li>All generated images</li>
+                  <li>All app settings and preferences</li>
+                </ul>
+                <p className="text-red-600 font-medium mb-6 text-sm">
+                  This action cannot be undone. The app will reload after wiping.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    onClick={() => setShowWipeDialog(false)}
+                    variant="outline"
+                    className="px-4 py-2"
+                    disabled={isWiping}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleWipeApp}
+                    className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white"
+                    disabled={isWiping}
+                  >
+                    {isWiping ? 'Wiping...' : 'Wipe Everything'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Reset Confirmation Dialog */}
           {showResetDialog && (

@@ -3498,6 +3498,93 @@ async def start_iopaint_service():
         )
 
 
+@app.post("/api/factory-reset")
+async def factory_reset():
+    """Wipe all app data: databases, history files, and cached state.
+    After this, the app behaves as if opened for the first time."""
+    errors = []
+    deleted = []
+
+    data_dir = get_data_directory()
+
+    # 1. Delete all JSON history files in data directory
+    json_files = [
+        "quiz_history.json",
+        "rubric_history.json",
+        "kindergarten_history.json",
+        "multigrade_history.json",
+        "cross_curricular_history.json",
+        "worksheet_history.json",
+        "images_history.json",
+    ]
+    for fname in json_files:
+        fpath = data_dir / fname
+        if fpath.exists():
+            try:
+                os.remove(fpath)
+                deleted.append(str(fpath))
+            except Exception as e:
+                errors.append(f"Failed to delete {fname}: {e}")
+
+    # 2. Delete lesson_plan_history.json (stored in backend dir)
+    if os.path.exists(LESSON_PLAN_HISTORY_FILE):
+        try:
+            os.remove(LESSON_PLAN_HISTORY_FILE)
+            deleted.append(LESSON_PLAN_HISTORY_FILE)
+        except Exception as e:
+            errors.append(f"Failed to delete lesson_plan_history.json: {e}")
+
+    # 3. Delete chat_history.json (legacy, stored in backend dir)
+    if os.path.exists(CHAT_HISTORY_FILE):
+        try:
+            os.remove(CHAT_HISTORY_FILE)
+            deleted.append(CHAT_HISTORY_FILE)
+        except Exception as e:
+            errors.append(f"Failed to delete chat_history.json: {e}")
+
+    # 4. Delete SQLite databases (close singletons first)
+    import chat_memory as _cm
+    from milestones.milestone_db import _milestone_db as _mdb_ref
+    import milestones.milestone_db as _mdb_mod
+
+    # Close and delete chat_memory.db
+    try:
+        if _cm._instance is not None:
+            _cm._instance = None
+        db_path = data_dir / "chat_memory.db"
+        if db_path.exists():
+            os.remove(db_path)
+            deleted.append(str(db_path))
+    except Exception as e:
+        errors.append(f"Failed to delete chat_memory.db: {e}")
+
+    # Close and delete milestones.db
+    try:
+        _mdb_mod._milestone_db = None
+        db_path = data_dir / "milestones.db"
+        if db_path.exists():
+            os.remove(db_path)
+            deleted.append(str(db_path))
+    except Exception as e:
+        errors.append(f"Failed to delete milestones.db: {e}")
+
+    # Close and delete students.db
+    try:
+        db_path = data_dir / "students.db"
+        if db_path.exists():
+            os.remove(db_path)
+            deleted.append(str(db_path))
+    except Exception as e:
+        errors.append(f"Failed to delete students.db: {e}")
+
+    logger.info(f"Factory reset completed. Deleted: {deleted}. Errors: {errors}")
+    return {
+        "success": len(errors) == 0,
+        "deleted": deleted,
+        "errors": errors
+    }
+
+
 
 
 
