@@ -508,8 +508,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const validateForm = () => {
-    return formData.subject && formData.gradeLevel &&
-           formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0 &&
+    const hasQuizOptions = formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0;
+    if (lockedLessonPlan) {
+      return hasQuizOptions;
+    }
+    return formData.subject && formData.gradeLevel && hasQuizOptions &&
            formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
   };
 
@@ -1050,68 +1053,149 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto space-y-6">
-                <div data-tutorial="quiz-generator-subject">
-                  <label className="block text-sm font-medium text-theme-label mb-2">
-                    Subject <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.subject}
-                    onChange={(e) => {
-                      handleInputChange('subject', e.target.value);
-                      handleInputChange('strand', '');
-                      handleInputChange('essentialOutcomes', '');
-                      handleInputChange('specificOutcomes', '');
-                    }}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                  >
-                    <option value="">Select a subject</option>
-                    {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
+                {lockedLessonPlan ? (
+                  /* ── Lesson Plan Summary Card ── */
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: `${tabColor}33` }}>
+                    <div className="px-5 py-4" style={{ background: `linear-gradient(135deg, ${tabColor}12, ${tabColor}08)` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: `${tabColor}18` }}>
+                          <BookOpen className="w-5 h-5" style={{ color: tabColor }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium uppercase tracking-wider text-theme-hint mb-1">Generating quiz from</p>
+                          <h4 className="font-semibold text-theme-heading text-base truncate">{lockedLessonPlan.title}</h4>
+                          <div className="flex items-center gap-3 mt-1.5 text-sm text-theme-muted">
+                            {lockedLessonPlan.formData.subject && (
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tabColor }} />
+                                {lockedLessonPlan.formData.subject}
+                              </span>
+                            )}
+                            {lockedLessonPlan.formData.gradeLevel && (
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tabColor }} />
+                                Grade {lockedLessonPlan.formData.gradeLevel}
+                              </span>
+                            )}
+                            {lockedLessonPlan.formData.topic && (
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tabColor }} />
+                                <span className="truncate max-w-[200px]">{lockedLessonPlan.formData.topic}</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setLockedLessonPlan(null)}
+                          className="p-1.5 rounded-lg hover:bg-theme-hover transition shrink-0"
+                          title="Remove lesson plan"
+                        >
+                          <X className="w-4 h-4 text-theme-muted" />
+                        </button>
+                      </div>
 
-                <div data-tutorial="quiz-generator-grade">
-                  <label className="block text-sm font-medium text-theme-label mb-2">
-                    Grade Level <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.gradeLevel}
-                    onChange={(e) => {
-                      handleInputChange('gradeLevel', e.target.value);
-                      handleInputChange('strand', '');
-                      handleInputChange('essentialOutcomes', '');
-                      handleInputChange('specificOutcomes', '');
-                    }}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                  >
-                    <option value="">Select a grade</option>
-                    {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
-                  </select>
-                </div>
+                      {/* Learning objectives preview */}
+                      {lockedLessonPlan.parsedLesson?.learningObjectives && lockedLessonPlan.parsedLesson.learningObjectives.length > 0 && (
+                        <div className="mt-3 pt-3 border-t" style={{ borderColor: `${tabColor}20` }}>
+                          <p className="text-xs font-medium text-theme-hint mb-1.5">Learning Objectives</p>
+                          <ul className="space-y-1">
+                            {lockedLessonPlan.parsedLesson.learningObjectives.slice(0, 3).map((obj, i) => (
+                              <li key={i} className="text-sm text-theme-label flex items-start gap-2">
+                                <span className="w-1 h-1 rounded-full mt-2 shrink-0" style={{ backgroundColor: `${tabColor}88` }} />
+                                <span className="line-clamp-1">{obj}</span>
+                              </li>
+                            ))}
+                            {lockedLessonPlan.parsedLesson.learningObjectives.length > 3 && (
+                              <li className="text-xs text-theme-hint ml-3">
+                                +{lockedLessonPlan.parsedLesson.learningObjectives.length - 3} more objectives
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
 
-                <div className="grid grid-cols-2 gap-4" data-tutorial="quiz-generator-topic">
-                  <CurriculumAlignmentFields
-                    subject={formData.subject}
-                    gradeLevel={formData.gradeLevel}
-                    strand={formData.strand}
-                    essentialOutcomes={formData.essentialOutcomes}
-                    specificOutcomes={formData.specificOutcomes}
-                    useCurriculum={useCurriculum}
-                    onStrandChange={(v) => handleInputChange('strand', v)}
-                    onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
-                    onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
-                    onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
-                    accentColor={tabColor}
-                  />
-                  <RelatedCurriculumBox
-                    subject={formData.subject}
-                    gradeLevel={formData.gradeLevel}
-                    strand={formData.strand}
-                    useCurriculum={useCurriculum}
-                    essentialOutcomes={formData.essentialOutcomes}
-                  />
-                </div>
+                      {/* Curriculum outcomes preview */}
+                      {!lockedLessonPlan.parsedLesson?.learningObjectives?.length && (lockedLessonPlan.formData.essentialOutcomes || lockedLessonPlan.formData.specificOutcomes) && (
+                        <div className="mt-3 pt-3 border-t" style={{ borderColor: `${tabColor}20` }}>
+                          <p className="text-xs font-medium text-theme-hint mb-1.5">Curriculum Outcomes</p>
+                          <p className="text-sm text-theme-label line-clamp-2">
+                            {lockedLessonPlan.formData.essentialOutcomes || lockedLessonPlan.formData.specificOutcomes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="px-5 py-2.5 bg-theme-secondary border-t border-theme text-xs text-theme-hint flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" />
+                      The generated quiz will be based on this lesson plan.
+                    </div>
+                  </div>
+                ) : (
+                  /* ── Standard curriculum fields ── */
+                  <>
+                    <div data-tutorial="quiz-generator-subject">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
+                        Subject <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.subject}
+                        onChange={(e) => {
+                          handleInputChange('subject', e.target.value);
+                          handleInputChange('strand', '');
+                          handleInputChange('essentialOutcomes', '');
+                          handleInputChange('specificOutcomes', '');
+                        }}
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      >
+                        <option value="">Select a subject</option>
+                        {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+
+                    <div data-tutorial="quiz-generator-grade">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
+                        Grade Level <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.gradeLevel}
+                        onChange={(e) => {
+                          handleInputChange('gradeLevel', e.target.value);
+                          handleInputChange('strand', '');
+                          handleInputChange('essentialOutcomes', '');
+                          handleInputChange('specificOutcomes', '');
+                        }}
+                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      >
+                        <option value="">Select a grade</option>
+                        {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4" data-tutorial="quiz-generator-topic">
+                      <CurriculumAlignmentFields
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeLevel}
+                        strand={formData.strand}
+                        essentialOutcomes={formData.essentialOutcomes}
+                        specificOutcomes={formData.specificOutcomes}
+                        useCurriculum={useCurriculum}
+                        onStrandChange={(v) => handleInputChange('strand', v)}
+                        onELOChange={(v) => handleInputChange('essentialOutcomes', v)}
+                        onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
+                        onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
+                        accentColor={tabColor}
+                      />
+                      <RelatedCurriculumBox
+                        subject={formData.subject}
+                        gradeLevel={formData.gradeLevel}
+                        strand={formData.strand}
+                        useCurriculum={useCurriculum}
+                        essentialOutcomes={formData.essentialOutcomes}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div data-tutorial="quiz-generator-question-count">
                   <label className="block text-sm font-medium text-theme-label mb-2">
