@@ -419,10 +419,11 @@ const Settings: React.FC<SettingsProps> = () => {
     const colors: Record<string, string> = {};
     const count = tabTypes.length;
     tabTypes.forEach((tab, i) => {
-      const lightness = 35 + Math.round((i / (count - 1)) * 30); // 35% to 65%
-      const satShift = Math.round((i / (count - 1)) * 20) - 10; // slight sat variation
-      const hueShift = Math.round((i / (count - 1)) * 30) - 15; // slight hue shift
-      colors[tab.type] = hslToHex((h + hueShift + 360) % 360, Math.max(20, Math.min(100, s + satShift)), lightness);
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const lightness = 30 + Math.round(t * 40); // 30% to 70%
+      const hueShift = Math.round(t * 80) - 40; // -40 to +40 degrees
+      const satShift = Math.round(Math.sin(t * Math.PI) * 25); // arc: 0 → +25 → 0
+      colors[tab.type] = hslToHex((h + hueShift + 360) % 360, Math.max(25, Math.min(100, s + satShift)), lightness);
     });
     applyPresetColors(colors);
   };
@@ -996,6 +997,8 @@ const Settings: React.FC<SettingsProps> = () => {
                           const defaultColors: Record<string, string> = {};
                           tabTypes.forEach(tab => { defaultColors[tab.type] = tab.defaultColor; });
                           updateSettings({ tabColors: defaultColors as any });
+                          setShowGradientPicker(false);
+                          setShowSpectrumPicker(false);
                         }}
                         className="text-xs gap-1.5"
                       >
@@ -1062,8 +1065,8 @@ const Settings: React.FC<SettingsProps> = () => {
                           <div className="flex gap-0.5">
                             {(() => {
                               const [h, s] = hexToHSL(spectrumBase);
-                              return [35, 42, 50, 57, 65].map((l, i) => (
-                                <div key={i} className="w-3 h-6 rounded-sm first:rounded-l-md last:rounded-r-md" style={{ backgroundColor: hslToHex((h + (i - 2) * 7 + 360) % 360, s, l) }} />
+                              return [30, 40, 50, 60, 70].map((l, i) => (
+                                <div key={i} className="w-3 h-6 rounded-sm first:rounded-l-md last:rounded-r-md" style={{ backgroundColor: hslToHex((h + (i - 2) * 20 + 360) % 360, s, l) }} />
                               ));
                             })()}
                           </div>
@@ -1148,14 +1151,15 @@ const Settings: React.FC<SettingsProps> = () => {
                               const [h, s] = hexToHSL(spectrumBase);
                               const count = tabTypes.length;
                               return tabTypes.map((_, i) => {
-                                const lightness = 35 + Math.round((i / (count - 1)) * 30);
-                                const hueShift = Math.round((i / (count - 1)) * 30) - 15;
-                                const satShift = Math.round((i / (count - 1)) * 20) - 10;
+                                const t = count === 1 ? 0.5 : i / (count - 1);
+                                const lightness = 30 + Math.round(t * 40);
+                                const hueShift = Math.round(t * 80) - 40;
+                                const satShift = Math.round(Math.sin(t * Math.PI) * 25);
                                 return (
                                   <div
                                     key={i}
                                     className="flex-1 h-4 first:rounded-l-lg last:rounded-r-lg"
-                                    style={{ backgroundColor: hslToHex((h + hueShift + 360) % 360, Math.max(20, Math.min(100, s + satShift)), lightness) }}
+                                    style={{ backgroundColor: hslToHex((h + hueShift + 360) % 360, Math.max(25, Math.min(100, s + satShift)), lightness) }}
                                   />
                                 );
                               });
