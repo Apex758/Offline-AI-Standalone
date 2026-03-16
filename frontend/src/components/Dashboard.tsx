@@ -2545,7 +2545,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <img
                       src="/OECS.png"
                       alt="OECS"
-                      className="mx-auto mb-6 w-28 h-28 object-contain"
+                      className="mx-auto mb-6 w-28 h-28 object-contain oecs-logo-pulse"
                       style={{
                         filter: isDarkMode ? 'drop-shadow(0 4px 24px rgba(77,168,46,0.3))' : 'drop-shadow(0 4px 24px rgba(29,54,45,0.15))'
                       }}
