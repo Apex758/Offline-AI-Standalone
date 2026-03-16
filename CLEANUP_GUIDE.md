@@ -3,45 +3,6 @@
 
 
 
-# Performance Improvements — Priority Order
-
-All findings from a full audit of backend, frontend, and Electron layers.
-
----
-
-## P0 — CRITICAL (Massive User-Visible Impact)
-
-### 1. Eager-load 332 curriculum pages into bundle (~500KB+ waste)
-**File:** `frontend/src/components/CurriculumViewer.tsx` line 19
-**Issue:** `import.meta.glob('../curriculum/**/*.tsx', { eager: true })` forces all 332 curriculum `.tsx` files into the main JS bundle. Users pay this cost on every app launch even though only one page displays at a time.
-**Fix:** Change `eager: true` → `eager: false`. The glob already returns promises — the rest of the code just needs minor async handling.
-**Impact:** ~500KB smaller bundle, noticeably faster startup
-
----
-
-### 2. Code splitting completely disabled in Vite
-**File:** `frontend/vite.config.ts` lines 34-37
-**Issue:**
-```js
-rollupOptions: {
-  output: {
-    manualChunks: undefined, // ← disables all code splitting
-  },
-},
-```
-The entire app (React, recharts, framer-motion, xlsx, html2canvas, 332 curriculum pages, all components) ships as one monolithic JS file.
-**Fix:** Remove `manualChunks: undefined` entirely (lets Vite auto-split), or configure smart chunks:
-```js
-manualChunks: {
-  vendor: ['react', 'react-dom'],
-  charts: ['recharts'],
-  xlsx: ['xlsx'],
-  canvas: ['html2canvas'],
-  animation: ['framer-motion'],
-}
-```
-**Impact:** 40-50% smaller initial load, enables browser caching of stable vendor chunks
-
 ---
 
 ### 3. All major components imported eagerly in Dashboard

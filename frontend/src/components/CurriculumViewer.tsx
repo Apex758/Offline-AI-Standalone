@@ -15,16 +15,14 @@ interface CurriculumViewerProps {
   onPanelClick?: () => void;
 }
 
-// Import all curriculum pages using Vite's glob import
-const allCurriculumPages = import.meta.glob('../curriculum/**/*.tsx', { eager: true });
+// Import all curriculum pages using Vite's glob import (lazy-loaded)
+const allCurriculumPages = import.meta.glob('../curriculum/**/*.tsx');
 
 // Filter out dynamic route pages (containing [...])
 const curriculumPages = Object.keys(allCurriculumPages)
   .filter(path => !path.includes('[') && !path.includes(']'))
   .reduce((acc, key) => {
-    // With eager loading, modules are already loaded
-    const module = allCurriculumPages[key];
-    acc[key] = () => Promise.resolve(module);
+    acc[key] = allCurriculumPages[key];
     return acc;
   }, {} as Record<string, () => Promise<unknown>>);
 

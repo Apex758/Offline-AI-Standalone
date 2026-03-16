@@ -33,7 +33,14 @@ export default defineConfig({
     copyPublicDir: true, 
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+          xlsx: ['xlsx'],
+          canvas: ['html2canvas'],
+          animation: ['framer-motion'],
+          webgl: ['ogl'],
+        },
       },
     },
   },
