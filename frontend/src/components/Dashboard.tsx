@@ -2542,21 +2542,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1 }}>
                 <div className="glass-card p-10 max-w-lg w-full mx-6 dashboard-welcome-enter">
                   <div className="text-center">
-                    <div
-                      className="mx-auto mb-6 w-16 h-16 rounded-2xl flex items-center justify-center"
+                    <img
+                      src="/OECS.png"
+                      alt="OECS"
+                      className="mx-auto mb-6 w-28 h-28 object-contain"
                       style={{
-                        background: isDarkMode
-                          ? 'linear-gradient(135deg, rgba(77,168,46,0.3), rgba(232,170,32,0.25))'
-                          : 'linear-gradient(135deg, rgba(29,54,45,0.5), rgba(232,170,32,0.4))',
-                        border: isDarkMode ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(29,54,45,0.2)',
-                        boxShadow: isDarkMode ? '0 4px 24px rgba(77,168,46,0.2)' : '0 4px 24px rgba(29,54,45,0.15)'
+                        filter: isDarkMode ? 'drop-shadow(0 4px 24px rgba(77,168,46,0.3))' : 'drop-shadow(0 4px 24px rgba(29,54,45,0.15))'
                       }}
-                    >
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? 'rgba(160,220,120,0.8)' : 'rgba(255,255,255,0.9)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
-                        <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
-                      </svg>
-                    </div>
+                    />
 
                     <h3
                       className="text-2xl font-bold mb-2"

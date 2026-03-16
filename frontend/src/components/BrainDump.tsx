@@ -27,7 +27,9 @@ import {
   Play,
   Pause,
   Square,
-  ExternalLink
+  ExternalLink,
+  Save,
+  ArrowLeft
 } from 'lucide-react';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -86,7 +88,6 @@ const MiniCalculator: React.FC = () => {
     if (val === 'C') { setDisplay('0'); setExpression(''); return; }
     if (val === '=') {
       try {
-        // Safe evaluation using Function constructor (no eval)
         const sanitized = expression.replace(/[^0-9+\-*/.() ]/g, '');
         const result = new Function(`return (${sanitized})`)();
         setDisplay(String(Number(result.toFixed(10))));
@@ -103,18 +104,19 @@ const MiniCalculator: React.FC = () => {
 
   return (
     <div className="space-y-2">
-      <div className="bg-theme-tertiary rounded-lg px-3 py-2 text-right font-mono text-lg text-theme-heading truncate min-h-[2.5rem]">
+      <div className="rounded-lg px-3 py-2 text-right font-mono text-lg truncate min-h-[2.5rem]"
+        style={{ background: 'var(--color-surface-tertiary)', color: 'var(--color-text-heading)' }}>
         {display}
       </div>
-      <div className="grid grid-cols-4 gap-1">
+      <div className="grid grid-cols-4 gap-1.5">
         {buttons.map(b => (
           <button
             key={b}
             onClick={() => handleInput(b)}
-            className={`rounded-lg py-2 text-sm font-medium transition-colors ${
-              b === 'C' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 col-span-4' :
-              '+-*/'.includes(b) ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-              b === '=' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+            className={`rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-95 ${
+              b === 'C' ? 'col-span-4 bg-red-500/15 text-red-500 hover:bg-red-500/25' :
+              '+-*/'.includes(b) ? 'bg-purple-500/15 text-purple-500 hover:bg-purple-500/25' :
+              b === '=' ? 'bg-green-500/15 text-green-500 hover:bg-green-500/25' :
               'bg-theme-tertiary text-theme-heading hover:bg-theme-hover'
             }`}
           >
@@ -150,20 +152,20 @@ const MiniStopwatch: React.FC = () => {
   };
 
   return (
-    <div className="text-center space-y-3">
-      <div className="font-mono text-3xl text-theme-heading">{fmt(elapsed)}</div>
-      <div className="flex items-center justify-center gap-2">
+    <div className="text-center space-y-4">
+      <div className="font-mono text-4xl font-light tracking-wider" style={{ color: 'var(--color-text-heading)' }}>{fmt(elapsed)}</div>
+      <div className="flex items-center justify-center gap-3">
         <button
           onClick={() => setRunning(!running)}
-          className={`p-2 rounded-full ${running ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}
+          className={`p-3 rounded-2xl transition-all active:scale-95 ${running ? 'bg-amber-500/15 text-amber-500 hover:bg-amber-500/25' : 'bg-green-500/15 text-green-500 hover:bg-green-500/25'}`}
         >
-          {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
         </button>
         <button
           onClick={() => { setRunning(false); setElapsed(0); }}
-          className="p-2 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+          className="p-3 rounded-2xl bg-red-500/15 text-red-500 hover:bg-red-500/25 transition-all active:scale-95"
         >
-          <Square className="w-4 h-4" />
+          <Square className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -195,33 +197,33 @@ const MiniTimer: React.FC = () => {
   const presets = [60, 300, 600, 900, 1800];
 
   return (
-    <div className="space-y-3">
-      <div className="font-mono text-3xl text-center text-theme-heading">{fmt(remaining)}</div>
-      <div className="flex flex-wrap items-center justify-center gap-1.5">
+    <div className="space-y-4">
+      <div className="font-mono text-4xl text-center font-light tracking-wider" style={{ color: 'var(--color-text-heading)' }}>{fmt(remaining)}</div>
+      <div className="flex flex-wrap items-center justify-center gap-2">
         {presets.map(p => (
           <button
             key={p}
             onClick={() => { setTotalSec(p); setRemaining(p); setRunning(false); }}
-            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-              totalSec === p ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+              totalSec === p ? 'bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/30' : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
             }`}
           >
             {p >= 60 ? `${p / 60}m` : `${p}s`}
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-3">
         <button
           onClick={() => setRunning(!running)}
-          className={`p-2 rounded-full ${running ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}
+          className={`p-3 rounded-2xl transition-all active:scale-95 ${running ? 'bg-amber-500/15 text-amber-500 hover:bg-amber-500/25' : 'bg-green-500/15 text-green-500 hover:bg-green-500/25'}`}
         >
-          {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
         </button>
         <button
           onClick={() => { setRunning(false); setRemaining(totalSec); }}
-          className="p-2 rounded-full bg-theme-tertiary text-theme-muted hover:bg-theme-hover"
+          className="p-3 rounded-2xl bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-all active:scale-95"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -265,7 +267,6 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   // Parse the AI response into actions
   const parseActions = useCallback((raw: string): BrainDumpAction[] => {
     try {
-      // Try direct JSON parse
       let parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) parsed = parsed.actions || parsed.items || [parsed];
       return parsed.map((a: any, i: number) => ({
@@ -277,7 +278,6 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         status: 'pending' as const,
       }));
     } catch {
-      // Try extracting JSON from markdown code blocks
       const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || raw.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         try {
@@ -347,7 +347,6 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     if (!action) return;
 
     if (action.type === 'calendar-task') {
-      // Save task to localStorage (same pattern as AnalyticsDashboard)
       try {
         const existing = JSON.parse(localStorage.getItem('dashboard-tasks') || '[]');
         const newTask = {
@@ -361,7 +360,6 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         localStorage.setItem('dashboard-tasks', JSON.stringify([...existing, newTask]));
       } catch { /* ignore */ }
     } else {
-      // Open the corresponding tool tab
       const tabType = ACTION_TO_TAB[action.type];
       if (tabType && onCreateTab) {
         onCreateTab(tabType, action.details);
@@ -383,14 +381,30 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
       timestamp: new Date().toISOString(),
       actions: [...actions],
     };
-    const updated = [entry, ...entries].slice(0, 50); // Keep max 50 entries
+    const updated = [entry, ...entries].slice(0, 50);
     setEntries(updated);
     saveEntries(updated);
-    // Clear
     setDumpText('');
     setActions([]);
     setAnalysisError(null);
   }, [dumpText, actions, entries]);
+
+  // Save just the text as a note (no analysis needed)
+  const handleSaveTextAsNote = useCallback(() => {
+    if (!dumpText.trim()) return;
+    const entry: BrainDumpEntry = {
+      id: `entry-${Date.now()}`,
+      text: dumpText.trim(),
+      timestamp: new Date().toISOString(),
+      actions: [],
+    };
+    const updated = [entry, ...entries].slice(0, 50);
+    setEntries(updated);
+    saveEntries(updated);
+    setDumpText('');
+    setActions([]);
+    setAnalysisError(null);
+  }, [dumpText, entries]);
 
   // Delete a saved entry
   const handleDeleteEntry = useCallback((entryId: string) => {
@@ -400,7 +414,12 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   }, [entries]);
 
   const hasContent = dumpText.trim().length > 0;
-  const hasPendingActions = actions.some(a => a.status === 'pending');
+
+  const quickTools = [
+    { id: 'calculator' as const, icon: Calculator, label: 'Calculator', color: 'text-blue-500', bg: 'bg-blue-500/12 hover:bg-blue-500/20' },
+    { id: 'stopwatch' as const, icon: Clock, label: 'Stopwatch', color: 'text-amber-500', bg: 'bg-amber-500/12 hover:bg-amber-500/20' },
+    { id: 'timer' as const, icon: Timer, label: 'Timer', color: 'text-green-500', bg: 'bg-green-500/12 hover:bg-green-500/20' },
+  ];
 
   return (
     <div className="h-full overflow-hidden">
@@ -409,50 +428,54 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         <div className={`image-studio-flip-inner h-full ${flipped ? 'flipped' : ''}`}>
 
           {/* ═══════ FRONT: Brain Dump Input ═══════ */}
-          <div className="image-studio-flip-front p-4 md:p-6 space-y-4">
+          <div className="image-studio-flip-front p-4 md:p-6 space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-violet-500/10 ring-1 ring-purple-500/20">
+                  <Brain className="w-5 h-5 text-purple-500" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-theme-heading">Brain Dump</h2>
-                  <p className="text-xs text-theme-muted">Type or speak your thoughts, then let AI organize them into actions</p>
+                  <h2 className="text-lg font-bold text-theme-heading tracking-tight">Brain Dump</h2>
+                  <p className="text-xs text-theme-muted">Type or speak your thoughts, let AI turn them into actions</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setFlipped(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-colors"
-                >
-                  <StickyNote className="w-3.5 h-3.5" />
-                  Saved Notes ({entries.length})
-                </button>
-              </div>
+              <button
+                onClick={() => setFlipped(true)}
+                className="group flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold transition-all active:scale-95 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 hover:ring-amber-500/30"
+              >
+                <StickyNote className="w-3.5 h-3.5" />
+                Saved Notes
+                {entries.length > 0 && (
+                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20">
+                    {entries.length}
+                  </span>
+                )}
+              </button>
             </div>
 
             {/* Main content area - scrollable */}
             <div className="flex-1 overflow-y-auto space-y-4 pb-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
               {/* Text Input Area */}
-              <div className="relative">
+              <div className="relative group">
                 <textarea
                   ref={textareaRef}
                   value={isListening && interimText ? interimText : dumpText}
                   onChange={(e) => { if (!isListening) setDumpText(e.target.value); }}
                   placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything! You can also use the microphone to speak."
-                  className="w-full rounded-xl border border-theme bg-theme-surface p-4 pr-24 text-sm text-theme-label placeholder:text-theme-hint resize-none focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400 transition-all min-h-[120px]"
+                  className="w-full rounded-2xl border-2 border-transparent bg-theme-surface p-4 pr-14 text-sm text-theme-label placeholder:text-theme-hint resize-none focus:outline-none focus:border-purple-400/50 focus:shadow-[0_0_0_4px_rgba(168,85,247,0.08)] transition-all min-h-[120px]"
+                  style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
                   rows={4}
                   disabled={isAnalyzing}
                 />
-                {/* Mic + Analyze buttons */}
-                <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                {/* Mic button */}
+                <div className="absolute bottom-3 right-3">
                   <button
                     onClick={toggleListening}
-                    className={`p-2 rounded-full transition-all ${
+                    className={`p-2.5 rounded-xl transition-all active:scale-90 ${
                       isListening
-                        ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 animate-pulse'
-                        : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
+                        ? 'bg-red-500/15 text-red-500 ring-2 ring-red-500/30 animate-pulse'
+                        : 'bg-theme-tertiary text-theme-muted hover:bg-purple-500/15 hover:text-purple-500'
                     }`}
                     title={isListening ? 'Stop listening' : 'Start voice input'}
                   >
@@ -461,28 +484,39 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                 </div>
               </div>
 
-              {/* Analyze Button */}
-              <button
-                onClick={handleAnalyze}
-                disabled={!hasContent || isAnalyzing}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-purple-600 text-white hover:bg-purple-700"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing your thoughts...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    Analyze & Organize
-                  </>
-                )}
-              </button>
+              {/* Action Buttons Row */}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAnalyze}
+                  disabled={!hasContent || isAnalyzing}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Analyze & Organize
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleSaveTextAsNote}
+                  disabled={!hasContent || isAnalyzing}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
+                  title="Save as note without analyzing"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Note
+                </button>
+              </div>
 
               {/* Error message */}
               {analysisError && (
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm">
+                <div className="p-3.5 rounded-2xl bg-red-500/8 ring-1 ring-red-500/15 text-red-600 dark:text-red-400 text-sm">
                   {analysisError}
                 </div>
               )}
@@ -491,16 +525,20 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
               {actions.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-theme-heading">
-                      Suggested Actions ({actions.length})
+                    <h3 className="text-sm font-bold text-theme-heading flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                      Suggested Actions
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-500">
+                        {actions.length}
+                      </span>
                     </h3>
                     {(actions.length > 0 && (hasContent || actions.some(a => a.status !== 'pending'))) && (
                       <button
                         onClick={handleSaveToNotes}
-                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 transition-all active:scale-95"
                       >
                         <StickyNote className="w-3 h-3" />
-                        Save to Notes
+                        Save All to Notes
                       </button>
                     )}
                   </div>
@@ -515,31 +553,36 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       return (
                         <div
                           key={action.id}
-                          className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
-                            isAccepted ? 'bg-green-50 dark:bg-green-900/15 border-green-200 dark:border-green-800/40' :
-                            isDenied ? 'bg-theme-tertiary border-theme opacity-50' :
-                            'bg-theme-surface border-theme hover:border-purple-300 dark:hover:border-purple-700'
+                          className={`flex items-start gap-3 p-3.5 rounded-2xl transition-all ${
+                            isAccepted ? 'bg-green-500/8 ring-1 ring-green-500/20' :
+                            isDenied ? 'bg-theme-tertiary opacity-50 ring-1 ring-transparent' :
+                            'bg-theme-surface ring-1 ring-theme hover:ring-purple-400/30'
                           }`}
+                          style={!isAccepted && !isDenied ? { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } : undefined}
                         >
-                          <div className={`p-1.5 rounded-lg shrink-0 bg-${meta.color}-100 dark:bg-${meta.color}-900/30`}>
-                            <Icon className={`w-4 h-4 text-${meta.color}-600 dark:text-${meta.color}-400`} />
+                          <div className={`p-2 rounded-xl shrink-0 bg-${meta.color}-500/12`}>
+                            <Icon className={`w-4 h-4 text-${meta.color}-500`} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-theme-muted uppercase tracking-wider">
+                              <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">
                                 {meta.label}
                               </span>
-                              {isAccepted && <span className="text-xs text-green-600 dark:text-green-400 font-medium">Accepted</span>}
-                              {isDenied && <span className="text-xs text-theme-hint line-through">Declined</span>}
+                              {isAccepted && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">
+                                  <Check className="w-2.5 h-2.5" /> Done
+                                </span>
+                              )}
+                              {isDenied && <span className="text-[10px] text-theme-hint line-through">Declined</span>}
                             </div>
-                            <p className="text-sm font-medium text-theme-heading mt-0.5">{action.title}</p>
+                            <p className="text-sm font-semibold text-theme-heading mt-1">{action.title}</p>
                             {action.description && (
-                              <p className="text-xs text-theme-muted mt-0.5">{action.description}</p>
+                              <p className="text-xs text-theme-muted mt-0.5 leading-relaxed">{action.description}</p>
                             )}
                             {action.details && Object.keys(action.details).length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                              <div className="flex flex-wrap gap-1.5 mt-2">
                                 {Object.entries(action.details).map(([key, val]) => (
-                                  <span key={key} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-theme-tertiary text-theme-muted">
+                                  <span key={key} className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-medium bg-theme-tertiary text-theme-muted">
                                     {key}: {String(val)}
                                   </span>
                                 ))}
@@ -547,17 +590,17 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             )}
                           </div>
                           {action.status === 'pending' && (
-                            <div className="flex items-center gap-1 shrink-0">
+                            <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 onClick={() => handleAccept(action.id)}
-                                className="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors"
+                                className="p-2 rounded-xl bg-green-500/12 text-green-500 hover:bg-green-500/25 transition-all active:scale-90"
                                 title="Accept"
                               >
                                 <Check className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeny(action.id)}
-                                className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"
+                                className="p-2 rounded-xl bg-red-500/12 text-red-500 hover:bg-red-500/25 transition-all active:scale-90"
                                 title="Decline"
                               >
                                 <X className="w-4 h-4" />
@@ -570,7 +613,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                 const tabType = ACTION_TO_TAB[action.type];
                                 if (tabType && onCreateTab) onCreateTab(tabType, action.details);
                               }}
-                              className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors shrink-0"
+                              className="p-2 rounded-xl bg-blue-500/12 text-blue-500 hover:bg-blue-500/25 transition-all active:scale-90 shrink-0"
                               title="Open tool"
                             >
                               <ExternalLink className="w-4 h-4" />
@@ -584,30 +627,29 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
               )}
 
               {/* ─── Quick Tools ─── */}
-              <div className="border-t border-theme pt-4">
-                <h3 className="text-xs font-semibold text-theme-hint uppercase tracking-wider mb-2">Quick Tools</h3>
-                <div className="flex gap-2">
-                  {([
-                    { id: 'calculator' as const, icon: Calculator, label: 'Calculator' },
-                    { id: 'stopwatch' as const, icon: Clock, label: 'Stopwatch' },
-                    { id: 'timer' as const, icon: Timer, label: 'Timer' },
-                  ]).map(tool => (
-                    <button
-                      key={tool.id}
-                      onClick={() => setActiveTool(activeTool === tool.id ? null : tool.id)}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                        activeTool === tool.id
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
-                      }`}
-                    >
-                      <tool.icon className="w-3.5 h-3.5" />
-                      {tool.label}
-                    </button>
-                  ))}
+              <div className="pt-2">
+                <h3 className="text-[11px] font-bold text-theme-hint uppercase tracking-widest mb-3">Quick Tools</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {quickTools.map(tool => {
+                    const isActive = activeTool === tool.id;
+                    return (
+                      <button
+                        key={tool.id}
+                        onClick={() => setActiveTool(isActive ? null : tool.id)}
+                        className={`group flex flex-col items-center gap-2 p-3.5 rounded-2xl text-xs font-semibold transition-all active:scale-95 ${
+                          isActive
+                            ? 'bg-purple-500/15 text-purple-500 ring-1 ring-purple-500/25 shadow-lg shadow-purple-500/10'
+                            : `${tool.bg} ${tool.color} ring-1 ring-transparent hover:ring-current/10`
+                        }`}
+                      >
+                        <tool.icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
+                        {tool.label}
+                      </button>
+                    );
+                  })}
                 </div>
                 {activeTool && (
-                  <div className="mt-3 p-4 rounded-xl border border-theme bg-theme-surface">
+                  <div className="mt-3 p-5 rounded-2xl bg-theme-surface ring-1 ring-theme" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
                     {activeTool === 'calculator' && <MiniCalculator />}
                     {activeTool === 'stopwatch' && <MiniStopwatch />}
                     {activeTool === 'timer' && <MiniTimer />}
@@ -618,102 +660,123 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
           </div>
 
           {/* ═══════ BACK: Saved Notes ═══════ */}
-          <div className="image-studio-flip-back p-4 md:p-6 space-y-4">
+          <div className="image-studio-flip-back p-4 md:p-6 space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                  <StickyNote className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 ring-1 ring-amber-500/20">
+                  <StickyNote className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-theme-heading">Saved Notes</h2>
-                  <p className="text-xs text-theme-muted">{entries.length} saved brain dump{entries.length !== 1 ? 's' : ''}</p>
+                  <h2 className="text-lg font-bold text-theme-heading tracking-tight">Saved Notes</h2>
+                  <p className="text-xs text-theme-muted">
+                    {entries.length} saved note{entries.length !== 1 ? 's' : ''}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setFlipped(false)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-colors"
+                className="group flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold transition-all active:scale-95 bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 ring-1 ring-purple-500/15 hover:ring-purple-500/30"
               >
-                <Brain className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
                 Brain Dump
               </button>
             </div>
 
             {/* Notes list */}
-            <div className="flex-1 overflow-y-auto space-y-2 pb-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <div className="flex-1 overflow-y-auto space-y-2.5 pb-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
               {entries.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-theme-hint">
-                  <StickyNote className="w-10 h-10 mb-3 opacity-30" />
-                  <p className="text-sm">No saved notes yet</p>
-                  <p className="text-xs mt-1">Brain dump something and save it to see it here</p>
+                <div className="flex flex-col items-center justify-center py-20 text-theme-hint">
+                  <div className="p-4 rounded-3xl bg-amber-500/8 mb-4">
+                    <StickyNote className="w-10 h-10 text-amber-400/50" />
+                  </div>
+                  <p className="text-sm font-medium">No saved notes yet</p>
+                  <p className="text-xs mt-1 text-theme-hint">Brain dump something and save it to see it here</p>
                 </div>
               ) : (
-                entries.map(entry => (
-                  <div key={entry.id} className="rounded-xl border border-theme bg-theme-surface overflow-hidden">
-                    <button
-                      onClick={() => setExpandedEntry(expandedEntry === entry.id ? null : entry.id)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-theme-hover transition-colors"
+                entries.map(entry => {
+                  const isExpanded = expandedEntry === entry.id;
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`rounded-2xl bg-theme-surface ring-1 overflow-hidden transition-all ${
+                        isExpanded ? 'ring-purple-400/30 shadow-lg shadow-purple-500/5' : 'ring-theme hover:ring-theme'
+                      }`}
+                      style={!isExpanded ? { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } : undefined}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-theme-heading truncate">{entry.text.slice(0, 100)}{entry.text.length > 100 ? '...' : ''}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-theme-hint">
-                            {new Date(entry.timestamp).toLocaleDateString()} {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          {entry.actions.length > 0 && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                              {entry.actions.length} action{entry.actions.length !== 1 ? 's' : ''}
+                      <button
+                        onClick={() => setExpandedEntry(isExpanded ? null : entry.id)}
+                        className="w-full flex items-center justify-between p-3.5 text-left hover:bg-theme-hover/50 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-heading truncate">
+                            {entry.text.slice(0, 100)}{entry.text.length > 100 ? '...' : ''}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-theme-hint font-medium">
+                              {new Date(entry.timestamp).toLocaleDateString()} {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0 ml-2">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDeleteEntry(entry.id); }}
-                          className="p-1 rounded-lg text-theme-hint hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                        {expandedEntry === entry.id ? <ChevronUp className="w-4 h-4 text-theme-hint" /> : <ChevronDown className="w-4 h-4 text-theme-hint" />}
-                      </div>
-                    </button>
-                    {expandedEntry === entry.id && (
-                      <div className="px-3 pb-3 space-y-2 border-t border-theme">
-                        <p className="text-sm text-theme-label whitespace-pre-wrap mt-2">{entry.text}</p>
-                        {entry.actions.length > 0 && (
-                          <div className="space-y-1.5 mt-2">
-                            <p className="text-xs font-medium text-theme-muted">Actions:</p>
-                            {entry.actions.map(action => {
-                              const meta = ACTION_META[action.type] || ACTION_META['calendar-task'];
-                              return (
-                                <div key={action.id} className="flex items-center gap-2 text-xs text-theme-muted">
-                                  <span className={`w-1.5 h-1.5 rounded-full ${
-                                    action.status === 'accepted' ? 'bg-green-500' :
-                                    action.status === 'denied' ? 'bg-red-400' : 'bg-yellow-400'
-                                  }`} />
-                                  <span className="font-medium">{meta.label}:</span>
-                                  <span>{action.title}</span>
-                                  <span className="text-[10px] text-theme-hint capitalize">({action.status})</span>
-                                </div>
-                              );
-                            })}
+                            {entry.actions.length > 0 && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/12 text-purple-500">
+                                {entry.actions.length} action{entry.actions.length !== 1 ? 's' : ''}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        {/* Re-use button */}
-                        <button
-                          onClick={() => {
-                            setDumpText(entry.text);
-                            setFlipped(false);
-                          }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors mt-2"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          Re-analyze
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteEntry(entry.id); }}
+                            className="p-1.5 rounded-xl text-theme-hint hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          <div className={`p-1 rounded-lg transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                            <ChevronDown className="w-4 h-4 text-theme-hint" />
+                          </div>
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="px-4 pb-4 space-y-3 border-t border-theme/50">
+                          <p className="text-sm text-theme-label whitespace-pre-wrap mt-3 leading-relaxed">{entry.text}</p>
+                          {entry.actions.length > 0 && (
+                            <div className="space-y-1.5 mt-3">
+                              <p className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">Actions</p>
+                              {entry.actions.map(action => {
+                                const meta = ACTION_META[action.type] || ACTION_META['calendar-task'];
+                                return (
+                                  <div key={action.id} className="flex items-center gap-2.5 py-1.5 text-xs text-theme-muted">
+                                    <span className={`w-2 h-2 rounded-full ring-2 ${
+                                      action.status === 'accepted' ? 'bg-green-500 ring-green-500/20' :
+                                      action.status === 'denied' ? 'bg-red-400 ring-red-400/20' : 'bg-amber-400 ring-amber-400/20'
+                                    }`} />
+                                    <span className="font-semibold">{meta.label}:</span>
+                                    <span className="flex-1">{action.title}</span>
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full capitalize ${
+                                      action.status === 'accepted' ? 'bg-green-500/10 text-green-500' :
+                                      action.status === 'denied' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-500'
+                                    }`}>
+                                      {action.status}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <button
+                            onClick={() => {
+                              setDumpText(entry.text);
+                              setFlipped(false);
+                            }}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-500/12 text-purple-500 hover:bg-purple-500/20 transition-all active:scale-95 mt-2"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            Re-analyze
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
