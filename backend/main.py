@@ -967,7 +967,7 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 
                 # ✅ FIX: Use inference factory instead of process pool
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
 
                 # Stream tokens in real-time (works with both Gemma API and local models)
                 token_buffer = []
@@ -1106,7 +1106,7 @@ async def quiz_websocket(websocket: WebSocket):
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
 
                 # Stream tokens as they are generated
                 token_buffer = []
@@ -1248,7 +1248,7 @@ async def rubric_websocket(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 logger.info("Getting LlamaInference instance...")
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
                 logger.info("Starting rubric generation...")
 
                 # Use streaming method for real-time generation
@@ -1370,7 +1370,7 @@ async def kindergarten_websocket(websocket: WebSocket):
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
 
                 # Use streaming method for real-time generation
                 token_buffer = []
@@ -1488,7 +1488,7 @@ async def multigrade_websocket(websocket: WebSocket):
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
 
                 # Use streaming method for real-time generation
                 token_buffer = []
@@ -1610,7 +1610,7 @@ async def cross_curricular_websocket(websocket: WebSocket):
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
 
                 # Use streaming method for real-time generation
                 token_buffer = []
@@ -1758,7 +1758,7 @@ async def worksheet_websocket(websocket: WebSocket):
                 logger.info(f"Generation slot acquired: {slot_mode}")
 
                 from inference_factory import get_inference_instance
-                inference = get_inference_instance()
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
                 logger.info("Got inference instance, starting generation...")
 
                 # Use streaming method for real-time generation
@@ -2561,6 +2561,13 @@ async def select_model(request: Request):
             )
         
         if set_selected_model(model_name):
+            # Reload singleton so it picks up the new model
+            try:
+                from inference_factory import reload_local_model
+                reload_local_model()
+            except Exception as reload_err:
+                logger.warning(f"Could not reload model singleton: {reload_err}")
+
             return JSONResponse(content={
                 "success": True,
                 "message": f"Model set to {model_name}",

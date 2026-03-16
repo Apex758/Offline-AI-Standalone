@@ -7,47 +7,6 @@
 
 ## P1 — HIGH (Clearly Noticeable)
 
-### 6. Large JSON data files statically imported (~1 MB)
-**Files:**
-- `frontend/src/components/LessonPlanner.tsx` → imports `curriculumIndex.json` (460KB)
-- `frontend/src/components/WorksheetGenerator.tsx` → imports `curriculumIndex.json` (460KB)
-- `frontend/src/utils/curriculumHelpers.ts` → imports `curriculumIndex.json` (460KB)
-- `frontend/src/components/CurriculumNavigator.tsx` → imports `curriculumTree.json` (94KB)
-
-**Issue:** These huge JSON files are bundled into the main chunk and parsed at startup, even when the user hasn't opened those tools.
-**Fix:** Dynamic import on first use:
-```ts
-const curriculumIndex = await import('../data/curriculumIndex.json').then(m => m.default);
-```
-**Impact:** ~1MB deferred from initial bundle
-
----
-
-### 7. History JSON files re-read from disk on every request
-**File:** `backend/main.py` lines 2367-2473 (8 endpoints)
-**Issue:** Every GET to `/api/*-history` calls `load_json_data()` which opens, reads, and JSON-parses the file from disk. No caching at all.
-**Fix:** Cache history data in memory. Invalidate on write.
-```python
-_history_cache = {}
-def get_cached_history(name):
-    if name not in _history_cache:
-        _history_cache[name] = load_json_data(name)
-    return _history_cache[name]
-```
-**Impact:** 200-500ms faster page loads when opening history panels
-
----
-
-### 8. Process pool defaults to only 2 workers
-**File:** `backend/process_pool.py` line 7
-**Issue:** `DEFAULT_WORKERS = int(os.environ.get("PROCESS_POOL_WORKERS", 2))` — only 2 workers regardless of CPU count. Concurrent generation requests queue up.
-**Fix:** Default to `cpu_count() - 1`:
-```python
-import os
-DEFAULT_WORKERS = int(os.environ.get("PROCESS_POOL_WORKERS", max(2, os.cpu_count() - 1)))
-```
-**Impact:** 2-3x faster handling of concurrent requests
-
 ---
 
 ### 9. Synchronous directory copy blocks Electron on first run

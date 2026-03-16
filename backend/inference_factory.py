@@ -1,71 +1,75 @@
 """
 Inference Factory - Unified interface for different LLM backends.
 
-DESIGN PATTERN: Factory Pattern
+DESIGN PATTERN: Factory Pattern + Singleton (for local models)
 WHY: Allows switching between different AI providers without changing
-the rest of the codebase. The factory creates the right instance based
-on configuration.
+the rest of the codebase. Local models use a singleton to avoid
+reloading multi-GB files from disk on every request.
 """
 
 import logging
-from typing import Union
+import threading
 from config import (
-    INFERENCE_BACKEND, 
-    GEMMA_API_KEY, 
+    INFERENCE_BACKEND,
+    GEMMA_API_KEY,
     OPENROUTER_API_KEY,
     OPENROUTER_MODEL,
-    MODEL_PATH, 
+    MODEL_PATH,
     MODEL_N_CTX
 )
 
 logger = logging.getLogger(__name__)
 
-def get_inference_instance():
+# Singleton for local model (shared across queued requests)
+_local_instance = None
+_local_instance_lock = threading.Lock()
+
+
+def get_inference_instance(use_singleton: bool = True):
     """
-    Get a NEW inference instance for each request.
-    
-    ✅ NO SINGLETON: Creates fresh instances to prevent deadlocks.
-    
-    REASONING:
-    - API clients are cheap to create (just wrappers around HTTP)
-    - Local models are expensive, but that's a separate optimization
-    - Fresh instances = no shared state = no race conditions
+    Get an inference instance.
+
+    For API backends (openrouter, gemma): always creates a fresh instance
+    (cheap HTTP wrappers, no shared state issues).
+
+    For local backend:
+      - use_singleton=True  → reuses a single loaded model (for queued mode)
+      - use_singleton=False → creates a fresh instance (for simultaneous mode)
     """
-    
+
     if INFERENCE_BACKEND == "openrouter":
         logger.info("Creating new OpenRouter API instance...")
         from openrouter_inference import OpenRouterInference
-        
+
         if not OPENROUTER_API_KEY:
             raise ValueError(
                 "OPENROUTER_API_KEY environment variable must be set when using openrouter backend"
             )
-        
+
         return OpenRouterInference(
             api_key=OPENROUTER_API_KEY,
             model_id=OPENROUTER_MODEL
         )
-    
+
     elif INFERENCE_BACKEND == "gemma_api":
         logger.info("Creating new Gemma API instance...")
         from gemma_inference import GemmaInference
-        
+
         if not GEMMA_API_KEY:
             raise ValueError(
                 "GEMMA_API_KEY environment variable must be set when using gemma_api backend"
             )
-        
+
         return GemmaInference(api_key=GEMMA_API_KEY)
-    
+
     elif INFERENCE_BACKEND == "local":
-        logger.info("Creating new local Llama instance...")
-        from llama_inference import LlamaInference
-        
-        return LlamaInference(
-            model_path=MODEL_PATH,
-            n_ctx=MODEL_N_CTX
-        )
-    
+        if use_singleton:
+            return _get_local_singleton()
+        else:
+            logger.info("Creating new local Llama instance (simultaneous mode)...")
+            from llama_inference import LlamaInference
+            return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
+
     else:
         raise ValueError(
             f"Unknown INFERENCE_BACKEND: {INFERENCE_BACKEND}. "
@@ -73,28 +77,36 @@ def get_inference_instance():
         )
 
 
-# ============================================================================
-# OPTIONAL: Instance pooling for local models (future optimization)
-# ============================================================================
-# 
-# If local model loading becomes a bottleneck, we can add pooling:
-#
-# from asyncio import Queue
-# _local_model_pool = Queue(maxsize=2)
-#
-# async def get_pooled_local_instance():
-#     """Get instance from pool or create new one."""
-#     try:
-#         return await asyncio.wait_for(_local_model_pool.get(), timeout=1.0)
-#     except asyncio.TimeoutError:
-#         return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
-#
-# async def return_to_pool(instance):
-#     """Return instance to pool."""
-#     try:
-#         _local_model_pool.put_nowait(instance)
-#     except asyncio.QueueFull:
-#         await instance.cleanup()
-#
-# For now, keeping it simple - create fresh instances.
-# ============================================================================
+def _get_local_singleton():
+    """Get or create the singleton local model instance (thread-safe)."""
+    global _local_instance
+    if _local_instance is not None and _local_instance.is_loaded:
+        return _local_instance
+
+    with _local_instance_lock:
+        # Double-check after acquiring lock
+        if _local_instance is not None and _local_instance.is_loaded:
+            return _local_instance
+
+        logger.info("Loading local Llama model (singleton)...")
+        from llama_inference import LlamaInference
+        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
+        return _local_instance
+
+
+def reload_local_model():
+    """Force reload the singleton (e.g. after switching models in settings)."""
+    global _local_instance
+    with _local_instance_lock:
+        if _local_instance is not None:
+            logger.info("Releasing old local model...")
+            try:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(_local_instance.cleanup())
+            except Exception:
+                pass
+            _local_instance = None
+        logger.info("Reloading local model...")
+        from llama_inference import LlamaInference
+        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
+        return _local_instance
