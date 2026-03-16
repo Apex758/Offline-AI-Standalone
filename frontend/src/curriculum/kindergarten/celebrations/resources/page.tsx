@@ -1,7 +1,30 @@
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BookOpen, Download, FileText, Video, ChevronLeft, FileImage, Music, Palette } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import Video01IconData from '@hugeicons/core-free-icons/Video01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const Video: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Video01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const FileImage: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Image01IconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
 import { Link } from "react-router-dom"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 

@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
 import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
 import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
@@ -67,7 +67,7 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
 const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
 const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Mic01IconData} {...p} />;
 const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MicOff01IconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
 const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
 const XIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const RotateCcw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
@@ -970,7 +970,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <Zap className="w-4 h-4" />
                       Analyze & Organize
                     </>
                   )}
@@ -998,7 +998,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-theme-heading flex items-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                      <Zap className="w-3.5 h-3.5 text-purple-500" />
                       Suggested Actions
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-500">
                         {actions.length}
@@ -1176,9 +1176,12 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       }`}
                       style={!isExpanded ? { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } : undefined}
                     >
-                      <button
+                      <div
                         onClick={() => setExpandedEntry(isExpanded ? null : entry.id)}
-                        className="w-full flex items-center justify-between p-3.5 text-left hover:bg-theme-hover/50 transition-colors"
+                        className="w-full flex items-center justify-between p-3.5 text-left hover:bg-theme-hover/50 transition-colors cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedEntry(isExpanded ? null : entry.id); } }}
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-theme-heading truncate">
@@ -1206,7 +1209,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             <ChevronDown className="w-4 h-4 text-theme-hint" />
                           </div>
                         </div>
-                      </button>
+                      </div>
                       {isExpanded && (
                         <div className="px-4 pb-4 space-y-3 border-t border-theme/50">
                           {/* Note text — editable or read-only */}

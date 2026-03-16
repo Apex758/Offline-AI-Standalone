@@ -8,7 +8,7 @@ import UndoIconData from '@hugeicons/core-free-icons/UndoIcon';
 import RedoIconData from '@hugeicons/core-free-icons/RedoIcon';
 import EraserIconData from '@hugeicons/core-free-icons/EraserIcon';
 import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
 import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
@@ -19,7 +19,6 @@ import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import ImageNotFound01IconData from '@hugeicons/core-free-icons/ImageNotFound01Icon';
-import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
@@ -39,7 +38,7 @@ const Undo2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const Redo2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RedoIconData} {...p} />;
 const Eraser: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EraserIconData} {...p} />;
 const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
 const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
 const ArrowRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
@@ -50,7 +49,6 @@ const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Layers01IconData} {...p} />;
 const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
 const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ImageNotFound01IconData} {...p} />;
-const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
 const Pencil: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FolderOpenIconData} {...p} />;
@@ -1672,7 +1670,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                activeTab === 'generator' ? 'text-white' : 'text-theme-label hover:text-theme-title'
              }`}
            >
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Palette className="w-4 h-4 mr-2" />
             Image Generator
           </button>
            <button
@@ -1929,7 +1927,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-5 h-5 mr-2" />
+                        <Palette className="w-5 h-5 mr-2" />
                         {referenceImage ? 'Edit Image' : 'Generate Image'}
                       </>
                     )}

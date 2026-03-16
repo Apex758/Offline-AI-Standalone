@@ -2,8 +2,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { StandardsBadge } from "@/components/standards-badge"
-import { Zap, ArrowUpDown, Battery } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import SortingDownIconData from '@hugeicons/core-free-icons/SortingDownIcon';
+import Battery01IconData from '@hugeicons/core-free-icons/Battery01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const ArrowUpDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SortingDownIconData} {...p} />;
+const Battery: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Battery01IconData} {...p} />;
 export default function ForcesInteractionsPage() {
   const breadcrumbItems = [
     { label: "Curriculum", href: "/curriculum" },

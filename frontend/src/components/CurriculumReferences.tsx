@@ -1,5 +1,16 @@
 import React from "react";
-import { BookOpen, ExternalLink } from "lucide-react";
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import SquareArrowUpRightIconData from '@hugeicons/core-free-icons/SquareArrowUpRightIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const ExternalLink: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SquareArrowUpRightIconData} {...p} />;
 
 export interface CurriculumReference {
   id: string;

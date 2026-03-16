@@ -1,7 +1,28 @@
 import { Link } from "react-router-dom"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Search, Compass, Waves, Cloud, AlertTriangle, Shield } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import WaveIconData from '@hugeicons/core-free-icons/WaveIcon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import Shield01IconData from '@hugeicons/core-free-icons/Shield01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
+const Waves: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WaveIconData} {...p} />;
+const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const AlertTriangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
+const Shield: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Shield01IconData} {...p} />;
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"

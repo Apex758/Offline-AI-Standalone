@@ -1,8 +1,30 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { FlaskConical, Leaf, Package, Cloud, Sun, PawPrint, Zap, Sparkles } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import Package01IconData from '@hugeicons/core-free-icons/Package01Icon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
+import ChessPawnIconData from '@hugeicons/core-free-icons/ChessPawnIcon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const FlaskConical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Package: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Package01IconData} {...p} />;
+const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const Sun: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun01IconData} {...p} />;
+const PawPrint: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ChessPawnIconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
 export default function ScienceActivitiesPage() {
   const activities = [
     {

@@ -4,7 +4,34 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { ArrowLeft, Globe, Target, BookOpen, Lightbulb, Play, Map, Mountain, Landmark, CloudRain } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import PlayIconData from '@hugeicons/core-free-icons/PlayIcon';
+import MapsIconData from '@hugeicons/core-free-icons/MapsIcon';
+import MountainIconData from '@hugeicons/core-free-icons/MountainIcon';
+import LandmarkIconData from '@hugeicons/core-free-icons/LandmarkIcon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ArrowLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Play: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlayIconData} {...p} />;
+const Map: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MapsIconData} {...p} />;
+const Mountain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MountainIconData} {...p} />;
+const Landmark: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LandmarkIconData} {...p} />;
+const CloudRain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
 import { Link } from "react-router-dom"
 
 export default function SpatialThinkingActivitiesPage() {

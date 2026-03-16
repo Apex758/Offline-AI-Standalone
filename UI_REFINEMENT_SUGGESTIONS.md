@@ -82,40 +82,6 @@ This creates a clear visual hierarchy: **brand color = generate**, **blue = save
 
 ---
 
-## 3. Unnecessary or Redundant Text to Remove
-
-### Welcome Modal
-- **"Your Educational Assistant"** subtitle — vague, adds nothing. The app name is self-explanatory. Remove it or replace with something specific like the OECS tagline.
-- **"Click the tutorial button in the bottom-right corner..."** — This is telling users about a UI element they haven't seen yet while they're reading a modal. Remove it; the tutorial button should be discoverable on its own.
-
-### Dashboard Tool Descriptions
-These descriptions show in the sidebar. Some are redundant with the tool name:
-- "Build customized quizzes" → the tool is literally called "Quiz Builder." Consider removing descriptions entirely from sidebar items — the names are clear enough. Or keep them only for non-obvious tools.
-- "Build grading rubrics" → same issue
-- "Build custom worksheets" → same
-- "Create and edit images" → same
-- "Application settings" → same
-- "Browse OECS curriculum content" → useful, keep
-- "View your teaching analytics and quick access" → trim to "Teaching analytics and quick access"
-
-### Generator Headers (When Content is Generated)
-Each generator shows text like:
-- "Generated Lesson Plan" / "Generating Lesson Plan..."
-- "Generated Quiz" / "Generating Quiz..."
-
-These are fine — they communicate state. Keep them.
-
-### Chat Empty State
-Current: "Ask me anything! I'm your AI teaching assistant, here to help explain concepts and answer your questions."
-
-This is wordy. Suggestion: "Ask me anything about teaching, curriculum, or your lesson plans."
-
-### AI Assistant Panel Empty States
-- "Start a Conversation" + "Ask anything about your generated content" — redundant pair. Keep just "Ask anything about your content."
-- "Request Modifications" + "Tell me what changes you'd like to make" — redundant pair. Keep just "Describe the changes you'd like."
-
-### Login Page
-- "Demo: Use any username and password to login" — This should be removed before production, or hidden behind a flag. It undermines credibility.
 
 ---
 
@@ -144,24 +110,4 @@ The `Sparkles` icon (✨) is heavily used — it's on the AI Assistant header, e
 Reserve `Sparkles` for, at most, ONE place — or don't use it at all.
 
 ---
-
-## 5. Summary of Priorities
-
-### High Impact (Do First)
-1. **Remove "AI-powered [type]" banners** from all generated content headers — these add nothing
-2. **Replace AIAssistantPanel purple theme** with brand colors (`#1D362D` + gold/orange)
-3. **Remove "AI" from tool headings** (Lesson Plan Generator, Image Generator, etc.)
-4. **Standardize generator toolbar button colors** — primary/secondary/tertiary hierarchy
-5. **Replace most Sparkles icons** with contextually appropriate alternatives
-
-### Medium Impact
-6. **Align Login page** with brand palette instead of generic blue
-7. **Simplify BrainDump gradients** — too many competing colors
-8. **Trim AI Assistant panel descriptions** to their "Ask PEARL" equivalents
-9. **Clean up redundant sidebar tool descriptions**
-
-### Lower Priority
-10. **Rework dark mode quick link icon color** for warmth
-11. **Simplify FAQ/Support text** to remove gratuitous AI mentions
-12. **Remove Welcome Modal tutorial instruction text**
-13. **Remove demo login text** (or hide behind flag)
+ 

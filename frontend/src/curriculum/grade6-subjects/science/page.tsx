@@ -2,7 +2,32 @@ import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, Atom, Zap, Dna, Radio, Magnet, Globe, Rocket, BookOpen } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Atom01IconData from '@hugeicons/core-free-icons/Atom01Icon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import Dna01IconData from '@hugeicons/core-free-icons/Dna01Icon';
+import Radio01IconData from '@hugeicons/core-free-icons/Radio01Icon';
+import MagnetIconData from '@hugeicons/core-free-icons/MagnetIcon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import Rocket01IconData from '@hugeicons/core-free-icons/Rocket01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Atom: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Atom01IconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Dna: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Dna01IconData} {...p} />;
+const Radio: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Radio01IconData} {...p} />;
+const Magnet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MagnetIconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Rocket: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Rocket01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade6SciencePage() {

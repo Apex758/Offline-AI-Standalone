@@ -2,8 +2,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { StandardsBadge } from "@/components/standards-badge"
-import { Globe, Mountain, Thermometer } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import MountainIconData from '@hugeicons/core-free-icons/MountainIcon';
+import ThermometerIconData from '@hugeicons/core-free-icons/ThermometerIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Mountain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MountainIconData} {...p} />;
+const Thermometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ThermometerIconData} {...p} />;
 export default function EarthSystemsPage() {
   const breadcrumbItems = [
     { label: "Curriculum", href: "/curriculum" },

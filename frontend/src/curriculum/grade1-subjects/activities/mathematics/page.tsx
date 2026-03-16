@@ -1,8 +1,30 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calculator, Search, Ruler, BarChart3, Hash, Shapes, Target, Sparkles } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import CalculatorIconData from '@hugeicons/core-free-icons/CalculatorIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import RulerIconData from '@hugeicons/core-free-icons/RulerIcon';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+import HashtagIconData from '@hugeicons/core-free-icons/HashtagIcon';
+import ShapesIconData from '@hugeicons/core-free-icons/ShapesIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Calculator: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CalculatorIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Ruler: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RulerIconData} {...p} />;
+const BarChart3: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BarChartIconData} {...p} />;
+const Hash: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HashtagIconData} {...p} />;
+const Shapes: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShapesIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
 export default function MathematicsActivitiesPage() {
   const activities = [
     {

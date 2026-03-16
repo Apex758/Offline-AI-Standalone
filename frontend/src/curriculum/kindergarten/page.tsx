@@ -1,21 +1,38 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Users,
-  Cloud,
-  PartyPopper,
-  Leaf,
-  Gamepad2,
-  CalendarDays,
-  BookOpen,
-  Clock,
-  ListChecks,
-  Target,
-  Award,
-  FileText,
-  Download,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Gamepad2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Gamepad01IconData} {...p} />;
+const CalendarDays: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
 import { Link } from "react-router-dom"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 

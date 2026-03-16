@@ -1,6 +1,29 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Search, Beaker, Leaf, Dna, Cloud, Zap, Globe } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import Dna01IconData from '@hugeicons/core-free-icons/Dna01Icon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Beaker: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Dna: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Dna01IconData} {...p} />;
+const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"

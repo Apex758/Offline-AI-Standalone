@@ -1,8 +1,25 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Volume2, PenTool, Users, Search, BookOpen as BookOpenIcon } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import VolumeHighIconData from '@hugeicons/core-free-icons/VolumeHighIcon';
+import PenTool01IconData from '@hugeicons/core-free-icons/PenTool01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeHighIconData} {...p} />;
+const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const BookOpenIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
 export default function LanguageArtsActivitiesPage() {
   const activities = [
     {

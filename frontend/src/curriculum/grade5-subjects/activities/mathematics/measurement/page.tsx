@@ -1,6 +1,27 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Ruler, Scale, CuboidIcon as Cube, Target, Triangle, BarChart } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import RulerIconData from '@hugeicons/core-free-icons/RulerIcon';
+import WeightScaleIconData from '@hugeicons/core-free-icons/WeightScaleIcon';
+import CubeIconData from '@hugeicons/core-free-icons/CubeIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import TriangleIconData from '@hugeicons/core-free-icons/TriangleIcon';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Ruler: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RulerIconData} {...p} />;
+const Scale: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WeightScaleIconData} {...p} />;
+const Cube: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CubeIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Triangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TriangleIconData} {...p} />;
+const BarChart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BarChartIconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

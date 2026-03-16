@@ -1,16 +1,23 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import {
-  ChevronLeft,
-  Hash,
-  Search,
-  MapPin,
-  Construction,
-  MenuIcon as Restaurant,
-  Palette,
-  Drama,
-  CreditCard,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import HashtagIconData from '@hugeicons/core-free-icons/HashtagIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Hash: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HashtagIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const MapPin: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Location01IconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

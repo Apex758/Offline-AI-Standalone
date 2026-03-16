@@ -1,7 +1,30 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calculator, Hash, Ruler, ChevronLeft, ChevronRight, BarChart, Shapes, Repeat } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import CalculatorIconData from '@hugeicons/core-free-icons/CalculatorIcon';
+import HashtagIconData from '@hugeicons/core-free-icons/HashtagIcon';
+import RulerIconData from '@hugeicons/core-free-icons/RulerIcon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+import ShapesIconData from '@hugeicons/core-free-icons/ShapesIcon';
+import RepeatIconData from '@hugeicons/core-free-icons/RepeatIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Calculator: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CalculatorIconData} {...p} />;
+const Hash: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HashtagIconData} {...p} />;
+const Ruler: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RulerIconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const BarChart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BarChartIconData} {...p} />;
+const Shapes: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShapesIconData} {...p} />;
+const Repeat: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RepeatIconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade3MathematicsPage() {

@@ -9,10 +9,10 @@ import File01Icon from '@hugeicons/core-free-icons/File01Icon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
 import SaveIcon from '@hugeicons/core-free-icons/SaveIcon';
 import Download01Icon from '@hugeicons/core-free-icons/Download01Icon';
-import WorkHistoryIcon from '@hugeicons/core-free-icons/WorkHistoryIcon';
+import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
 import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
-import SparklesIcon from '@hugeicons/core-free-icons/SparklesIcon';
+import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
 import VolumeHighIcon from '@hugeicons/core-free-icons/VolumeHighIcon';
 import VolumeOffIcon from '@hugeicons/core-free-icons/VolumeOffIcon';
 
@@ -29,10 +29,10 @@ const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
 const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIcon} {...p} />;
 const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01Icon} {...p} />;
-const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WorkHistoryIcon} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01Icon} {...p} />;
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
 const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01Icon} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIcon} {...p} />;
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01Icon} {...p} />;
 const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeHighIcon} {...p} />;
 const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeOffIcon} {...p} />;
 import ExportButton from './ExportButton';
@@ -811,7 +811,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                        <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
                         Assistant
                       </button>
                       <button

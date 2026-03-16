@@ -3,20 +3,38 @@ import { Link } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import {
-  ChevronLeft,
-  Calculator,
-  Hash,
-  Shapes,
-  Ruler,
-  BarChart,
-  Plus,
-  Sparkles,
-  Search,
-  BookOpen,
-  Play,
-  Download,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import CalculatorIconData from '@hugeicons/core-free-icons/CalculatorIcon';
+import HashtagIconData from '@hugeicons/core-free-icons/HashtagIcon';
+import ShapesIconData from '@hugeicons/core-free-icons/ShapesIcon';
+import RulerIconData from '@hugeicons/core-free-icons/RulerIcon';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import PlayIconData from '@hugeicons/core-free-icons/PlayIcon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Calculator: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CalculatorIconData} {...p} />;
+const Hash: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HashtagIconData} {...p} />;
+const Shapes: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShapesIconData} {...p} />;
+const Ruler: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RulerIconData} {...p} />;
+const BarChart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BarChartIconData} {...p} />;
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Play: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlayIconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"

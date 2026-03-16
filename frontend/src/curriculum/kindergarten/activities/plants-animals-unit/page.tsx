@@ -2,8 +2,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
-import { Leaf, Droplets, Home, TreesIcon as Tree, Recycle, Clock, Users, BookOpen, ArrowLeft } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import DropletIconData from '@hugeicons/core-free-icons/DropletIcon';
+import Home01IconData from '@hugeicons/core-free-icons/Home01Icon';
+import PineTreeIconData from '@hugeicons/core-free-icons/PineTreeIcon';
+import Recycle01IconData from '@hugeicons/core-free-icons/Recycle01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Droplets: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DropletIconData} {...p} />;
+const Home: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Home01IconData} {...p} />;
+const Tree: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PineTreeIconData} {...p} />;
+const Recycle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Recycle01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const ArrowLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
 export default function PlantsAnimalsActivitiesPage() {
   const weeks = [
     {

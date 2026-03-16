@@ -3,25 +3,42 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 // Removed Next.js notFound - using React Router navigation instead
-import {
-  Heart,
-  Users,
-  School,
-  MapPin,
-  Sparkles,
-  Palette,
-  MessageCircle,
-  Camera,
-  Book,
-  Music,
-  Scissors,
-  Star,
-  Clock,
-  BookOpen,
-  Target,
-  Package,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+import Book01IconData from '@hugeicons/core-free-icons/Book01Icon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import StarIconData from '@hugeicons/core-free-icons/StarIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Package01IconData from '@hugeicons/core-free-icons/Package01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Heart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FavouriteIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const MapPin: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Location01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const MessageCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
+const Book: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Book01IconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Star: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StarIconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Package: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Package01IconData} {...p} />;
 // Unit data structure
 const unitData = {
   "belonging-unit": {

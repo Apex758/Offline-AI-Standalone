@@ -48,7 +48,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
             Welcome to the OECS Learning Hub! 🎓
           </h1>
           <p className="text-center text-lg" style={{ color: '#F2A631' }}>
-            Your Educational Assistant
+            Empowering Teachers Across the Eastern Caribbean
           </p>
         </div>
 
@@ -81,9 +81,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
               </ul>
             </div>
 
-            <p className="text-center italic" style={{ color: '#552A01' }}>
-              Click the tutorial button in the bottom-right corner to learn how to use all the features!
-            </p>
           </div>
 
 

@@ -4,20 +4,32 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { Link } from "react-router-dom"
-import {
-  BookOpen,
-  Clock,
-  Calendar,
-  PartyPopper,
-  Download,
-  Lightbulb,
-  Heart,
-  Gift,
-  Music,
-  Users,
-  Cake,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
+import GiftIconData from '@hugeicons/core-free-icons/GiftIcon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Heart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FavouriteIconData} {...p} />;
+const Gift: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GiftIconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
 export default function CelebrationsUnit() {
   return (
     <div className="container mx-auto px-4 py-8">

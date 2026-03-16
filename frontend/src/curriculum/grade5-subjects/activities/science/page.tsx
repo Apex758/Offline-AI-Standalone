@@ -2,7 +2,28 @@ import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, FlaskConical, Leaf, Globe, Star, Cog, Users } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import StarIconData from '@hugeicons/core-free-icons/StarIcon';
+import CogIconData from '@hugeicons/core-free-icons/CogIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const FlaskConical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Star: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StarIconData} {...p} />;
+const Cog: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CogIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 

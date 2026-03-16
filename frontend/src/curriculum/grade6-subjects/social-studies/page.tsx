@@ -1,6 +1,23 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { History, MapPin, Users, DollarSign, ChevronLeft } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Dollar01IconData from '@hugeicons/core-free-icons/Dollar01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const MapPin: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Location01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const DollarSign: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Dollar01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
 

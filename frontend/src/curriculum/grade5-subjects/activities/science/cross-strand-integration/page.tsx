@@ -2,7 +2,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { Clock, Users, Target, Lightbulb, Rocket, Leaf, Globe, Zap, Beaker, Search } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import Rocket01IconData from '@hugeicons/core-free-icons/Rocket01Icon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Rocket: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Rocket01IconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Beaker: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
 import { Link } from "react-router-dom"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 

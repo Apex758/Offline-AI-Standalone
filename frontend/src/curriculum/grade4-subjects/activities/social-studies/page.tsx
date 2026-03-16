@@ -1,7 +1,26 @@
 import { Link } from "react-router-dom"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Search, BookOpen, Map, Users, DollarSign } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import MapsIconData from '@hugeicons/core-free-icons/MapsIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Dollar01IconData from '@hugeicons/core-free-icons/Dollar01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Map: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MapsIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const DollarSign: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Dollar01IconData} {...p} />;
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"

@@ -1,7 +1,23 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { Clock, Users, Target, Calendar, FingerprintIcon as Fossil } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import FingerprintIconData from '@hugeicons/core-free-icons/FingerprintIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Fossil: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FingerprintIconData} {...p} />;
 export default function HistoryOfEarthActivitiesPage() {
   return (
     <div className="container mx-auto px-4 py-8">

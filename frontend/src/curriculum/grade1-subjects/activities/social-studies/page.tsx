@@ -4,8 +4,36 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { PDFExportButton } from "@/components/pdf-export-button"
-import { Clock, Users, BookOpen, Globe, Users2, Map, Building2, Sparkles, Heart, Compass, Palette } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import UserMultipleIconData from '@hugeicons/core-free-icons/UserMultipleIcon';
+import MapsIconData from '@hugeicons/core-free-icons/MapsIcon';
+import Building02IconData from '@hugeicons/core-free-icons/Building02Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Users2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserMultipleIconData} {...p} />;
+const Map: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MapsIconData} {...p} />;
+const Building2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Building02IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Heart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FavouriteIconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
 // Enhanced activities data with icons and colors
 const activities = [
   {

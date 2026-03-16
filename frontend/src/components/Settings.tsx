@@ -12,7 +12,7 @@ import ComputerIconData from '@hugeicons/core-free-icons/ComputerIcon';
 import CpuIconData from '@hugeicons/core-free-icons/CpuIcon';
 import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import SlidersHorizontalIconData from '@hugeicons/core-free-icons/SlidersHorizontalIcon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import TextFontIconData from '@hugeicons/core-free-icons/TextFontIcon';
 import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
@@ -53,7 +53,7 @@ const Monitor: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const Cpu: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CpuIconData} {...p} />;
 const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Layers01IconData} {...p} />;
 const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Sliders: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SlidersHorizontalIconData} {...p} />;
 const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
 const Type: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextFontIconData} {...p} />;
 const Sun: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun01IconData} {...p} />;
@@ -357,7 +357,7 @@ const Settings: React.FC<SettingsProps> = () => {
     { id: 'appearance' as const, label: 'Appearance', icon: Palette, description: 'Theme, fonts & tab colors' },
     { id: 'models' as const, label: 'Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
-    { id: 'features' as const, label: 'Features', icon: Sparkles, description: 'Writing assistant & tools' },
+    { id: 'features' as const, label: 'Features', icon: Sliders, description: 'Writing assistant & tools' },
     { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
     { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Export, import & reset' },
   ];
@@ -1608,7 +1608,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 <Card data-search-section="visual-studio">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="w-4.5 h-4.5 text-theme-secondary" />
+                      <PenTool className="w-4.5 h-4.5 text-theme-secondary" />
                       Visual Studio
                     </CardTitle>
                     <CardDescription>Control access to Visual Studio tools (Worksheet Builder, Image Studio)</CardDescription>
@@ -1691,7 +1691,7 @@ const Settings: React.FC<SettingsProps> = () => {
 
                       <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
                         <div className="flex items-start gap-3">
-                          <Sparkles className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <SpellCheck className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-theme-label">Auto-Finish Sentence</p>
                             <p className="text-xs text-theme-hint">Suggests how to finish your sentence after a brief pause. Press Tab to accept.</p>

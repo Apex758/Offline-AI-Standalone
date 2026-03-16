@@ -2,8 +2,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { StandardsBadge } from "@/components/standards-badge"
-import { Waves, Radio, Smartphone } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import WaveIconData from '@hugeicons/core-free-icons/WaveIcon';
+import Radio01IconData from '@hugeicons/core-free-icons/Radio01Icon';
+import Smartphone01IconData from '@hugeicons/core-free-icons/Smartphone01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Waves: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WaveIconData} {...p} />;
+const Radio: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Radio01IconData} {...p} />;
+const Smartphone: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Smartphone01IconData} {...p} />;
 export default function WavesElectromagneticRadiationPage() {
   const breadcrumbItems = [
     { label: "Curriculum", href: "/curriculum" },

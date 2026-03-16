@@ -5,20 +5,34 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { Link } from "react-router-dom"
-import {
-  BookOpen,
-  Clock,
-  Calendar,
-  Download,
-  Lightbulb,
-  Users,
-  MapPin,
-  Briefcase,
-  TrendingUp,
-  HelpCircle,
-  Gamepad2,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
+import Briefcase01IconData from '@hugeicons/core-free-icons/Briefcase01Icon';
+import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const MapPin: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Location01IconData} {...p} />;
+const Briefcase: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Briefcase01IconData} {...p} />;
+const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ChartIncreaseIconData} {...p} />;
+const Gamepad2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Gamepad01IconData} {...p} />;
 export default function GamesUnit() {
   return (
     <div className="container mx-auto px-4 py-8">

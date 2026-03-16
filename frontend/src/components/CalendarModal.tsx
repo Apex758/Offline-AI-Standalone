@@ -34,7 +34,6 @@ import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
 import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
 import CircleIconData from '@hugeicons/core-free-icons/CircleIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
   if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
@@ -61,7 +60,7 @@ const Plus: React.FC<{ className?: string; style?: React.CSSProperties; size?: n
 const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CheckmarkCircle01IconData} {...p} />;
 const Circle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CircleIconData} {...p} />;
 const Clock: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={Clock01IconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={SparklesIconData} {...p} />;
+
 
 interface Resource {
   id: string;
@@ -586,7 +585,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
               {selectedResources.length === 0 && selectedTasks.length === 0 && selectedMilestones.length === 0 ? (
                 <div className="cal-empty-state">
                   <div className="cal-empty-icon">
-                    <Sparkles className="w-8 h-8" />
+                    <CalendarIcon className="w-8 h-8" />
                   </div>
                   <p className="cal-empty-title">Nothing here yet</p>
                   <p className="cal-empty-subtitle">

@@ -1,6 +1,23 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FlaskRoundIcon as Flask, Globe, ChevronLeft, Wrench, Leaf } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import WrenchIconData from '@hugeicons/core-free-icons/WrenchIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Flask: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Wrench: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WrenchIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
 

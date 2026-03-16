@@ -3,8 +3,30 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Clock, Users, Palette, Music, Heart, Star, Gift, Camera } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
+import StarIconData from '@hugeicons/core-free-icons/StarIcon';
+import GiftIconData from '@hugeicons/core-free-icons/GiftIcon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Heart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FavouriteIconData} {...p} />;
+const Star: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StarIconData} {...p} />;
+const Gift: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GiftIconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
 export default function CelebrationsActivitiesPage() {
   const activities = [
     // Week 1: Family Celebrations

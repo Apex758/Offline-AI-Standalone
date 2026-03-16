@@ -9,7 +9,7 @@ import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
@@ -35,7 +35,7 @@ const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
 const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
 const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
 const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
 const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
@@ -765,7 +765,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                        <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
                         Assistant
                       </button>
                       <button
@@ -1265,7 +1265,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       )}
                     </div>
                     <div className="px-5 py-2.5 bg-theme-secondary border-t border-theme text-xs text-theme-hint flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3" />
+                      <MessageSquare className="w-3 h-3" />
                       The generated quiz will be based on this lesson plan.
                     </div>
                   </div>

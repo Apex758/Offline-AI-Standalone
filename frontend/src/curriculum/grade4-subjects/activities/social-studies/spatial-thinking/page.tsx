@@ -1,7 +1,30 @@
 import { Link } from "react-router-dom"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Search, Map, Compass, Cloud, Waves, Mountain, Shield } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import MapsIconData from '@hugeicons/core-free-icons/MapsIcon';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import WaveIconData from '@hugeicons/core-free-icons/WaveIcon';
+import MountainIconData from '@hugeicons/core-free-icons/MountainIcon';
+import Shield01IconData from '@hugeicons/core-free-icons/Shield01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Map: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MapsIconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
+const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const Waves: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WaveIconData} {...p} />;
+const Mountain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MountainIconData} {...p} />;
+const Shield: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Shield01IconData} {...p} />;
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"

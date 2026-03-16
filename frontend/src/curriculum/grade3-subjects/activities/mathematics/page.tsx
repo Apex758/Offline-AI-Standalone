@@ -3,8 +3,16 @@ import type { Metadata } from "next"
 import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ArrowRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
 export const metadata: Metadata = {
   title: "Grade 3 Mathematics Activities",
   description: "Engaging mathematics activities for Grade 3 students across all strands",

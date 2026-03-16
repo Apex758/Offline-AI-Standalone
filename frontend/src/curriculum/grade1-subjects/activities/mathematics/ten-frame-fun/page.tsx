@@ -1,7 +1,24 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Hash, ListChecks, Users, RotateCcw, CalendarDays } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import HashtagIconData from '@hugeicons/core-free-icons/HashtagIcon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Hash: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HashtagIconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const RotateCcw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
+const CalendarDays: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 export default function TenFrameFunPage() {

@@ -8,29 +8,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  ChevronLeft,
-  Search,
-  Clock,
-  Users,
-  Home,
-  Filter,
-  ArrowUpDown,
-  ChevronUp,
-  ChevronDown,
-  Printer,
-  X,
-  MinusCircle,
-  PlusCircle,
-  ArrowUp,
-  Menu,
-  CloudRain,
-  Palette,
-  Leaf,
-  Shapes,
-  Map,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Home01IconData from '@hugeicons/core-free-icons/Home01Icon';
+import FilterIconData from '@hugeicons/core-free-icons/FilterIcon';
+import SortingDownIconData from '@hugeicons/core-free-icons/SortingDownIcon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import PrinterIconData from '@hugeicons/core-free-icons/PrinterIcon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import ShapesIconData from '@hugeicons/core-free-icons/ShapesIcon';
+import MapsIconData from '@hugeicons/core-free-icons/MapsIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Home: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Home01IconData} {...p} />;
+const Filter: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FilterIconData} {...p} />;
+const ArrowUpDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SortingDownIconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
+const CloudRain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Shapes: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShapesIconData} {...p} />;
+const Map: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MapsIconData} {...p} />;
 // Define activity types and structure for better organization
 type ActivitySkill =
   | "science"

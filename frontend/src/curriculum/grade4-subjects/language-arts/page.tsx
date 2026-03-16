@@ -3,18 +3,34 @@ import type React from "react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  PenTool,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Headphones,
-  Sparkles,
-  BookOpen,
-  Award,
-  Lightbulb,
-  Target,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import PenTool01IconData from '@hugeicons/core-free-icons/PenTool01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import EyeIconData from '@hugeicons/core-free-icons/EyeIcon';
+import HeadphonesIconData from '@hugeicons/core-free-icons/HeadphonesIcon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EyeIconData} {...p} />;
+const Headphones: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HeadphonesIconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
 import { useState, useEffect } from "react"
 
 // Floating animation component

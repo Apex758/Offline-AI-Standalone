@@ -1,6 +1,27 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Shapes, Grid3X3, Navigation, Square, Puzzle, Compass } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ShapesIconData from '@hugeicons/core-free-icons/ShapesIcon';
+import GridIconData from '@hugeicons/core-free-icons/GridIcon';
+import Navigation01IconData from '@hugeicons/core-free-icons/Navigation01Icon';
+import SquareIconData from '@hugeicons/core-free-icons/SquareIcon';
+import PuzzleIconData from '@hugeicons/core-free-icons/PuzzleIcon';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Shapes: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShapesIconData} {...p} />;
+const Grid3X3: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GridIconData} {...p} />;
+const Navigation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Navigation01IconData} {...p} />;
+const Square: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SquareIconData} {...p} />;
+const Puzzle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PuzzleIconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

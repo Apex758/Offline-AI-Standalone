@@ -128,7 +128,7 @@ const tools: Tool[] = [
     name: 'My Overview',
     icon: 'LayoutDashboard',
     type: 'analytics',
-    description: 'View your teaching analytics and quick access'
+    description: 'Teaching analytics and quick access'
   },
   {
     id: 'brain-dump',
@@ -170,7 +170,7 @@ const tools: Tool[] = [
     name: 'Quiz Builder',
     icon: 'PenTool',
     type: 'quiz-generator',
-    description: 'Build customized quizzes',
+    description: 'Quizzes aligned to your curriculum',
     group: 'tools'
   },
   {
@@ -178,7 +178,7 @@ const tools: Tool[] = [
     name: 'Rubric Builder',
     icon: 'ClipboardList',
     type: 'rubric-generator',
-    description: 'Build grading rubrics',
+    description: 'Grading criteria for assignments',
     group: 'tools'
   },
   {
@@ -234,7 +234,7 @@ const tools: Tool[] = [
     name: 'Settings',
     icon: 'Settings',
     type: 'settings',
-    description: 'Application settings'
+    description: 'Models, themes, and preferences'
   },
   // Visual Studio Group
   {
@@ -242,7 +242,7 @@ const tools: Tool[] = [
     name: 'Worksheet Builder',
     icon: 'FileSpreadsheet',
     type: 'worksheet-generator',
-    description: 'Build custom worksheets',
+    description: 'Printable student worksheets',
     group: 'visual-studio'
   },
   {
@@ -250,7 +250,7 @@ const tools: Tool[] = [
     name: 'Image Studio',
     icon: 'Palette',
     type: 'image-studio',
-    description: 'Create and edit images',
+    description: 'Generate and edit classroom visuals',
     group: 'visual-studio'
   }
 ];
@@ -356,7 +356,7 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
             className={`glass-action-btn flex flex-col items-center gap-2 p-4 ${!isDarkMode ? 'glass-action-btn-light' : ''}`}
             onClick={() => onOpenTool(item.type)}
           >
-            <item.icon className="w-5 h-5" style={{ color: isDarkMode ? 'rgba(160,220,120,0.7)' : 'rgba(29,54,45,0.8)' }} />
+            <item.icon className="w-5 h-5" style={{ color: isDarkMode ? 'rgba(242,166,49,0.7)' : 'rgba(29,54,45,0.8)' }} />
             <span className="text-xs font-medium" style={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(29,54,45,0.75)' }}>{item.label}</span>
           </button>
         ))}
@@ -378,7 +378,7 @@ const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; o
               width: i === setIndex ? 16 : 6,
               height: 6,
               backgroundColor: i === setIndex
-                ? (isDarkMode ? 'rgba(160,220,120,0.6)' : 'rgba(29,54,45,0.5)')
+                ? (isDarkMode ? 'rgba(242,166,49,0.6)' : 'rgba(29,54,45,0.5)')
                 : (isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(29,54,45,0.15)'),
             }}
           />

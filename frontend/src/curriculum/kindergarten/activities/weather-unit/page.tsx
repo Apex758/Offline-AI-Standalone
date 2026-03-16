@@ -2,23 +2,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
-import {
-  CloudSun,
-  CloudRain,
-  Calendar,
-  Sun,
-  Thermometer,
-  Palette,
-  MessageCircle,
-  Users,
-  Music,
-  Scissors,
-  Eye,
-  Clock,
-  BookOpen,
-  ArrowLeft,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
+import ThermometerIconData from '@hugeicons/core-free-icons/ThermometerIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import EyeIconData from '@hugeicons/core-free-icons/EyeIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const CloudRain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Sun: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun01IconData} {...p} />;
+const Thermometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ThermometerIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const MessageCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EyeIconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const ArrowLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
 export default function WeatherUnitActivitiesPage() {
   const weeks = [
     {

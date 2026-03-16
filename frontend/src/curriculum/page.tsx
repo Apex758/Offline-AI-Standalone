@@ -1,7 +1,34 @@
 import { Link } from "react-router-dom"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 import { useState } from "react"
-import { BookOpen, GraduationCap, Calendar, Search, Filter, ChevronRight, Users, Target, Award, Sparkles } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import FilterIconData from '@hugeicons/core-free-icons/FilterIcon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Filter: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FilterIconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
 //import { CurriculumSearch } from "@/components/curriculum-search"
 
 export default function CurriculumPage() {

@@ -21,7 +21,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-analytics',
     title: 'My Overview',
-    description: 'View teaching analytics and quick access',
+    description: 'Teaching analytics and quick access',
     keywords: ['dashboard', 'analytics', 'stats', 'statistics', 'overview', 'home', 'charts', 'graphs', 'progress', 'activity'],
     category: 'tool',
     icon: 'LayoutDashboard',
@@ -66,7 +66,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-quiz-generator',
     title: 'Quiz Builder',
-    description: 'Build customized quizzes',
+    description: 'Quizzes aligned to your curriculum',
     keywords: ['quiz', 'builder', 'test', 'assessment', 'questions', 'exam', 'multiple choice', 'true false', 'create quiz'],
     category: 'tool',
     icon: 'PenTool',
@@ -75,7 +75,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-rubric-generator',
     title: 'Rubric Builder',
-    description: 'Build grading rubrics',
+    description: 'Grading criteria for assignments',
     keywords: ['rubric', 'builder', 'grading', 'criteria', 'scoring', 'assessment', 'evaluation', 'marking', 'create rubric'],
     category: 'tool',
     icon: 'ClipboardList',
@@ -129,7 +129,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-worksheet',
     title: 'Worksheet Builder',
-    description: 'Build custom worksheets',
+    description: 'Printable student worksheets',
     keywords: ['worksheet', 'builder', 'printable', 'activity', 'handout', 'exercise', 'practice', 'create worksheet'],
     category: 'tool',
     icon: 'FileSpreadsheet',
@@ -138,7 +138,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-image-studio',
     title: 'Image Studio',
-    description: 'Create and edit images',
+    description: 'Generate and edit classroom visuals',
     keywords: ['image', 'studio', 'picture', 'photo', 'create', 'edit', 'generate', 'visual', 'art', 'illustration', 'diffusion'],
     category: 'tool',
     icon: 'Palette',
@@ -147,7 +147,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-settings',
     title: 'Settings',
-    description: 'Application settings and configuration',
+    description: 'Models, themes, and preferences',
     keywords: ['settings', 'preferences', 'configuration', 'options', 'customize', 'setup'],
     category: 'tool',
     icon: 'Settings',

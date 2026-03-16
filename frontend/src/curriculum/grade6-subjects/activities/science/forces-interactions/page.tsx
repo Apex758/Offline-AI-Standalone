@@ -1,7 +1,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { Clock, Users, Target, Zap, Car, Magnet } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import Car01IconData from '@hugeicons/core-free-icons/Car01Icon';
+import MagnetIconData from '@hugeicons/core-free-icons/MagnetIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Car: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Car01IconData} {...p} />;
+const Magnet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MagnetIconData} {...p} />;
 export default function ForcesInteractionsActivitiesPage() {
   return (
     <div className="container mx-auto px-4 py-8">

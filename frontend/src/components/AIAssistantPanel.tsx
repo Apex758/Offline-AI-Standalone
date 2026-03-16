@@ -4,7 +4,7 @@ import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
 import MagicWand01IconData from '@hugeicons/core-free-icons/MagicWand01Icon';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -16,7 +16,7 @@ const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => 
 const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Message01IconData} {...p} />;
 const Wand2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={MagicWand01IconData} {...p} />;
 const Send: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SentIconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SparklesIconData} {...p} />;
+
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import SmartTextArea from './SmartTextArea';
@@ -246,7 +246,7 @@ IMPORTANT INSTRUCTIONS:
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Sparkles className="w-6 h-6" />
+              <MessageSquare className="w-6 h-6" />
               <h2 className="text-2xl font-bold">Assistant</h2>
             </div>
             <button
@@ -318,13 +318,10 @@ IMPORTANT INSTRUCTIONS:
               <div className="text-6xl mb-4">
                 {mode === 'chat' ? '\uD83D\uDCAD' : '\uD83E\uDE84'}
               </div>
-              <p className="text-lg font-medium mb-2">
-                {mode === 'chat' ? 'Start a Conversation' : 'Request Modifications'}
-              </p>
               <p className="text-sm">
                 {mode === 'chat'
-                  ? 'Ask anything about your generated content'
-                  : 'Tell me what changes you\'d like to make'
+                  ? 'Ask anything about your content'
+                  : 'Describe the changes you\'d like'
                 }
               </p>
             </div>

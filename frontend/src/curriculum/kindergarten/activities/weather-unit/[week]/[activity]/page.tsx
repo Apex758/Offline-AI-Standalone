@@ -5,25 +5,44 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Link } from "react-router-dom"
 // Removed Next.js notFound - using React Router navigation instead
-import {
-  Calendar,
-  Palette,
-  MessageCircle,
-  Users,
-  Music,
-  Scissors,
-  Eye,
-  Clock,
-  Users2,
-  Target,
-  CheckCircle,
-  Lightbulb,
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  CloudRain,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import EyeIconData from '@hugeicons/core-free-icons/EyeIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserMultipleIconData from '@hugeicons/core-free-icons/UserMultipleIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const MessageCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EyeIconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserMultipleIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const ArrowLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const ArrowRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const CloudRain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
 // Define the activity data structure with proper types
 interface ActivityInfo {
   title: string

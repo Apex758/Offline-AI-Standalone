@@ -8,38 +8,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-import {
+import { HugeiconsIcon } from '@hugeicons/react';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import MusicNote01IconData from '@hugeicons/core-free-icons/MusicNote01Icon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Home01IconData from '@hugeicons/core-free-icons/Home01Icon';
+import StarIconData from '@hugeicons/core-free-icons/StarIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 
-  BookOpen,
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
 
-  Calendar,
-
-  ChevronLeft,
-
-  Download,
-
-  Heart,
-
-  Lightbulb,
-
-  Music,
-
-  Pencil,
-
-  Users,
-
-  Home,
-
-  Star,
-
-  Palette,
-
-  FileText,
-
-  LinkIcon,
-
-} from "lucide-react"
-
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const Heart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FavouriteIconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01IconData} {...p} />;
+const Pencil: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Home: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Home01IconData} {...p} />;
+const Star: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StarIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 import { Link } from "react-router-dom"

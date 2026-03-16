@@ -2,23 +2,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Shapes,
-  RotateCcw,
-  Eye,
-  Calculator,
-  Compass,
-  Triangle,
-  Square,
-  Hexagon,
-  Clock,
-  Users,
-  Target,
-  BookOpen,
-  Camera,
-  Palette,
-  ChevronRight,
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ShapesIconData from '@hugeicons/core-free-icons/ShapesIcon';
+import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
+import EyeIconData from '@hugeicons/core-free-icons/EyeIcon';
+import CalculatorIconData from '@hugeicons/core-free-icons/CalculatorIcon';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import TriangleIconData from '@hugeicons/core-free-icons/TriangleIcon';
+import SquareIconData from '@hugeicons/core-free-icons/SquareIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Shapes: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShapesIconData} {...p} />;
+const RotateCcw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EyeIconData} {...p} />;
+const Calculator: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CalculatorIconData} {...p} />;
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
+const Triangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TriangleIconData} {...p} />;
+const Square: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SquareIconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
 import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 

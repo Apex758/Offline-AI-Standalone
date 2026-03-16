@@ -1,7 +1,26 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, MapPin, Globe, Thermometer, Home, CloudRain } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import ThermometerIconData from '@hugeicons/core-free-icons/ThermometerIcon';
+import Home01IconData from '@hugeicons/core-free-icons/Home01Icon';
+import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const MapPin: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Location01IconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Thermometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ThermometerIconData} {...p} />;
+const Home: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Home01IconData} {...p} />;
+const CloudRain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CloudIconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function SpatialThinkingActivitiesPage() {

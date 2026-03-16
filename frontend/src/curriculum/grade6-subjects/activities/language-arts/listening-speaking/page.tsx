@@ -1,7 +1,28 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Mic, Users, Clock, Target, Video, Headphones, MessageCircle } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Video01IconData from '@hugeicons/core-free-icons/Video01Icon';
+import HeadphonesIconData from '@hugeicons/core-free-icons/HeadphonesIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Mic01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Video: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Video01IconData} {...p} />;
+const Headphones: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HeadphonesIconData} {...p} />;
+const MessageCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
 import { Link } from "react-router-dom"
 import { Breadcrumb } from "@/components/breadcrumb"
 

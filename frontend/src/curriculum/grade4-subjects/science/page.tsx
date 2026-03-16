@@ -1,7 +1,26 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Beaker, Leaf, Mountain, ChevronLeft, ChevronRight, Zap } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
+import MountainIconData from '@hugeicons/core-free-icons/MountainIcon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Beaker: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Leaf: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Leaf01IconData} {...p} />;
+const Mountain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MountainIconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
 import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function Grade4SciencePage() {

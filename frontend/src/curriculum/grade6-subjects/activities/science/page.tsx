@@ -3,8 +3,34 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Link } from "react-router-dom"
-import { Clock, Users, Target, Beaker, Zap, Globe, Microscope, Atom, Waves, Rocket } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
+import MicroscopeIconData from '@hugeicons/core-free-icons/MicroscopeIcon';
+import Atom01IconData from '@hugeicons/core-free-icons/Atom01Icon';
+import WaveIconData from '@hugeicons/core-free-icons/WaveIcon';
+import Rocket01IconData from '@hugeicons/core-free-icons/Rocket01Icon';
 
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const Beaker: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TestTubeIconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GlobeIconData} {...p} />;
+const Microscope: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MicroscopeIconData} {...p} />;
+const Atom: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Atom01IconData} {...p} />;
+const Waves: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WaveIconData} {...p} />;
+const Rocket: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Rocket01IconData} {...p} />;
 const scienceActivities = [
   {
     id: "structure-properties-matter",

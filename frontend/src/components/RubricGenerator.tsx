@@ -8,7 +8,7 @@ import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -24,7 +24,7 @@ const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import RubricEditor from './RubricEditor';
@@ -882,7 +882,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                         onClick={() => setAssistantOpen(true)}
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                        <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
                         Assistant
                       </button>
                       <button

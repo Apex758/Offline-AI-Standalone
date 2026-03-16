@@ -10,7 +10,7 @@ import School01IconData from '@hugeicons/core-free-icons/School01Icon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
 import LibraryIconData from '@hugeicons/core-free-icons/LibraryIcon';
-import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -28,7 +28,7 @@ const School: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookOpen01IconData} {...p} />;
 const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Target01IconData} {...p} />;
 const Library: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={LibraryIconData} {...p} />;
-const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SparklesIconData} {...p} />;
+
 import type { ToolUsage } from '../../types/analytics';
 
 interface MostUsedToolsProps {
@@ -80,7 +80,7 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
         style={{ borderBottom: `1px solid var(--dash-border)` }}
       >
         <div className="flex items-center space-x-2">
-          <Sparkles className="w-5 h-5" style={{ color: 'var(--dash-orange)' }} />
+          <Target className="w-5 h-5" style={{ color: 'var(--dash-orange)' }} />
           <h3 className="font-bold" style={{ color: 'var(--dash-text)' }}>Most Used Tools</h3>
         </div>
       </div>
@@ -89,7 +89,7 @@ const MostUsedTools: React.FC<MostUsedToolsProps> = ({ toolUsage, onToolClick })
       <div className="p-4">
         {limitedToolUsage.length === 0 ? (
           <div className="text-center py-8">
-            <Sparkles className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
+            <Target className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--dash-border)' }} />
             <p className="text-sm font-medium" style={{ color: 'var(--dash-text-sub)' }}>No tool usage data yet</p>
             <p className="text-xs mt-1" style={{ color: 'var(--dash-text-faint)' }}>Start using tools to see stats</p>
           </div>
