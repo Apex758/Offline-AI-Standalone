@@ -15,12 +15,53 @@ import {
   setYear,
   getYear
 } from 'date-fns';
-import {
-  X, ChevronLeft, ChevronRight, Calendar as CalendarIcon,
-  BookMarked, ListChecks, FileText, GraduationCap, Users, School,
-  Eye, Edit, TrendingUp, Activity, Plus, CheckCircle2, Circle,
-  Clock, Sparkles
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import SchoolIconData from '@hugeicons/core-free-icons/SchoolIcon';
+import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
+import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import CircleIconData from '@hugeicons/core-free-icons/CircleIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
+  if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={Cancel01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const CalendarIcon: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={Calendar01IconData} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={BookBookmark01IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CheckListIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={File01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={GraduationScrollIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={UserGroupIconData} {...p} />;
+const School: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={SchoolIconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={ViewIconData} {...p} />;
+const Edit: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={PencilEdit01IconData} {...p} />;
+const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={ChartIncreaseIconData} {...p} />;
+const Activity: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={Activity01IconData} {...p} />;
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={PlusSignIconData} {...p} />;
+const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CheckmarkCircle01IconData} {...p} />;
+const Circle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={CircleIconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={Clock01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <IconW icon={SparklesIconData} {...p} />;
 
 interface Resource {
   id: string;
