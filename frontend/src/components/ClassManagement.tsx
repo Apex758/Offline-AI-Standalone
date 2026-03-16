@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Users, Plus, Trash2, Edit, Search, X, Save,
-  ChevronRight, Award, BookOpen, Calendar, Phone,
+  ChevronRight, BookOpen, Calendar, Phone,
   User, AlertCircle, Upload, Download, FileSpreadsheet,
   CheckCircle, GraduationCap, BarChart2, ClipboardCheck, Zap,
   FileText, Loader2, Printer

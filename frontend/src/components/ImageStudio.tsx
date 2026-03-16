@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, ArrowLeft, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X, FolderOpen, BookOpen } from 'lucide-react';
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
-import { imageApi, ImageGenerationContext, blobToDataURL, downloadImage, SavedImageRecord } from '../lib/imageApi';
+import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
 import { useNotification } from '../contexts/NotificationContext';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';

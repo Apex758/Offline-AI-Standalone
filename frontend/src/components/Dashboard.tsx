@@ -1250,118 +1250,102 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const renderTabContent = () => {
-    if (splitView.isActive && splitView.leftTabId && splitView.rightTabId) {
+    const isSplit = splitView.isActive && splitView.leftTabId && splitView.rightTabId;
+
+    // Validate split tabs still exist
+    if (isSplit) {
       const leftTab = tabs.find(t => t.id === splitView.leftTabId);
       const rightTab = tabs.find(t => t.id === splitView.rightTabId);
-
       if (!leftTab || !rightTab) {
-        setSplitView({
-          isActive: false,
-          leftTabId: null,
-          rightTabId: null,
-          activePaneId: 'left'
-        });
+        setSplitView({ isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' });
         return null;
       }
+    }
 
-      // Get active tab color for pane highlight
-      const activeTabInPane = splitView.activePaneId === 'left' ? leftTab : rightTab;
-      const activePaneColor = settings.tabColors[activeTabInPane.type as keyof typeof settings.tabColors] || '#60a5fa';
-      
-      // Convert hex to RGB for CSS variable
-      const hexToRgb = (hex: string) => {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result
-          ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-          : '96, 165, 250'; // fallback blue-400 RGB
-      };
+    // Compute split-mode styling values
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+        : '96, 165, 250';
+    };
 
-      return (
-        <>
-          <div className="flex h-full gap-1 p-1" style={{ backgroundColor: 'var(--tab-content-bg)' }} data-tutorial="split-view-demo">
-            {/* Left Pane */}
-            <div
-              className={`flex-1 overflow-hidden relative ${
-                splitView.activePaneId === 'left' ? 'active-pane-glow' : ''
-              }`}
-              onFocus={() => {
-                if (splitView.activePaneId !== 'left') {
-                  setSplitView(prev => ({ ...prev, activePaneId: 'left' }));
-                }
-              }}
-              tabIndex={-1}
-              style={splitView.activePaneId === 'left' ? {
-                backgroundColor: 'var(--tab-content-bg)',
-                '--glow-color': activePaneColor,
-                '--glow-rgb': hexToRgb(activePaneColor),
-                border: `3px solid ${activePaneColor}`,
-                borderRadius: '4px',
-                zIndex: 10
-              } as React.CSSProperties : {
-                backgroundColor: 'var(--tab-content-bg)',
-                border: '3px solid transparent',
-                borderRadius: '4px',
-                zIndex: 1
-              }}
-            >
-              {renderSingleTabContent(leftTab)}
-            </div>
+    let activePaneColor = '#60a5fa';
+    if (isSplit) {
+      const activeTabInPane = tabs.find(t => t.id === (splitView.activePaneId === 'left' ? splitView.leftTabId : splitView.rightTabId));
+      if (activeTabInPane) {
+        activePaneColor = settings.tabColors[activeTabInPane.type as keyof typeof settings.tabColors] || '#60a5fa';
+      }
+    }
 
-            {/* Right Pane */}
-            <div
-              className={`flex-1 overflow-hidden relative ${
-                splitView.activePaneId === 'right' ? 'active-pane-glow' : ''
-              }`}
-              onFocus={() => {
-                if (splitView.activePaneId !== 'right') {
-                  setSplitView(prev => ({ ...prev, activePaneId: 'right' }));
-                }
-              }}
-              tabIndex={-1}
-              style={splitView.activePaneId === 'right' ? {
-                backgroundColor: 'var(--tab-content-bg)',
-                '--glow-color': activePaneColor,
-                '--glow-rgb': hexToRgb(activePaneColor),
-                border: `3px solid ${activePaneColor}`,
-                borderRadius: '4px',
-                zIndex: 10
-              } as React.CSSProperties : {
-                backgroundColor: 'var(--tab-content-bg)',
-                border: '3px solid transparent',
-                borderRadius: '4px',
-                zIndex: 1
-              }}
-            >
-              {renderSingleTabContent(rightTab)}
-            </div>
-          </div>
-          {/* Keep non-split tabs mounted but hidden so skeleton loaders / state persist */}
-          {tabs
-            .filter(t => t.id !== splitView.leftTabId && t.id !== splitView.rightTabId)
-            .map(tab => (
+    // Always render ALL tabs through a single tabs.map() with consistent keys.
+    // This prevents React from unmounting/remounting components when toggling split view.
+    // Only CSS changes between normal and split modes.
+    return (
+      <div
+        className={isSplit ? 'flex h-full gap-1 p-1' : ''}
+        style={isSplit ? { backgroundColor: 'var(--tab-content-bg)' } : undefined}
+        data-tutorial={isSplit ? 'split-view-demo' : undefined}
+      >
+        {tabs.map(tab => {
+          if (!isSplit) {
+            // Normal mode: absolute positioned, show/hide by display
+            return (
+              <div
+                key={tab.id}
+                className="absolute inset-0"
+                style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
+              >
+                {renderSingleTabContent(tab)}
+              </div>
+            );
+          }
+
+          // Split mode
+          const isLeft = tab.id === splitView.leftTabId;
+          const isRight = tab.id === splitView.rightTabId;
+
+          if (!isLeft && !isRight) {
+            // Hidden tab — keep mounted but invisible
+            return (
               <div key={tab.id} style={{ display: 'none' }}>
                 {renderSingleTabContent(tab)}
               </div>
-            ))
+            );
           }
-        </>
-      );
-    }
 
-    // Render ALL tabs but hide inactive ones so components stay mounted.
-    // Preserves skeleton loaders, scroll position, form state, etc. when switching tabs.
-    return (
-      <>
-        {tabs.map(tab => (
-          <div
-            key={tab.id}
-            className="absolute inset-0"
-            style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
-          >
-            {renderSingleTabContent(tab)}
-          </div>
-        ))}
-      </>
+          const paneId: 'left' | 'right' = isLeft ? 'left' : 'right';
+          const isActivePane = splitView.activePaneId === paneId;
+
+          return (
+            <div
+              key={tab.id}
+              className={`flex-1 overflow-hidden relative ${isActivePane ? 'active-pane-glow' : ''}`}
+              onFocus={() => {
+                if (splitView.activePaneId !== paneId) {
+                  setSplitView(prev => ({ ...prev, activePaneId: paneId }));
+                }
+              }}
+              tabIndex={-1}
+              style={isActivePane ? {
+                backgroundColor: 'var(--tab-content-bg)',
+                '--glow-color': activePaneColor,
+                '--glow-rgb': hexToRgb(activePaneColor),
+                border: `3px solid ${activePaneColor}`,
+                borderRadius: '4px',
+                zIndex: 10
+              } as React.CSSProperties : {
+                backgroundColor: 'var(--tab-content-bg)',
+                border: '3px solid transparent',
+                borderRadius: '4px',
+                zIndex: 1
+              }}
+            >
+              {renderSingleTabContent(tab)}
+            </div>
+          );
+        })}
+      </div>
     );
   };
 
