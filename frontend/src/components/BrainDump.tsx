@@ -29,7 +29,14 @@ import {
   Square,
   ExternalLink,
   Save,
-  ArrowLeft
+  ArrowLeft,
+  Pencil,
+  Delete,
+  Percent,
+  Divide,
+  Plus as PlusIcon,
+  Minus as MinusIcon,
+  Equal
 } from 'lucide-react';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -79,50 +86,147 @@ function saveEntries(entries: BrainDumpEntry[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
-// ─── Utility: Simple Calculator ─────────────────────────────────
+// ─── Utility: Modern Calculator ─────────────────────────────────
 const MiniCalculator: React.FC = () => {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
+  const [prevResult, setPrevResult] = useState<string | null>(null);
+  const [justEvaluated, setJustEvaluated] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleInput = (val: string) => {
-    if (val === 'C') { setDisplay('0'); setExpression(''); return; }
-    if (val === '=') {
-      try {
-        const sanitized = expression.replace(/[^0-9+\-*/.() ]/g, '');
-        const result = new Function(`return (${sanitized})`)();
-        setDisplay(String(Number(result.toFixed(10))));
-        setExpression(String(Number(result.toFixed(10))));
-      } catch { setDisplay('Error'); setExpression(''); }
+  const handleInput = useCallback((val: string) => {
+    if (val === 'AC') {
+      setDisplay('0'); setExpression(''); setPrevResult(null); setJustEvaluated(false);
       return;
     }
-    const newExpr = expression === '0' && !'.+-*/'.includes(val) ? val : expression + val;
-    setExpression(newExpr);
-    setDisplay(newExpr);
+    if (val === 'DEL') {
+      setJustEvaluated(prev => {
+        if (prev) return prev;
+        setExpression(expr => { const n = expr.slice(0, -1) || '0'; setDisplay(n); return n; });
+        return prev;
+      });
+      return;
+    }
+    if (val === '%') {
+      setExpression(expr => {
+        try {
+          const sanitized = expr.replace(/[^0-9+\-*/.() ]/g, '');
+          const result = new Function(`return (${sanitized})`)() / 100;
+          const str = String(Number(result.toFixed(10)));
+          setDisplay(str); setPrevResult(str); setJustEvaluated(true);
+          return str;
+        } catch { return expr; }
+      });
+      return;
+    }
+    if (val === '=') {
+      setExpression(expr => {
+        try {
+          const sanitized = expr.replace(/[^0-9+\-*/.() ]/g, '');
+          const result = new Function(`return (${sanitized})`)();
+          const str = String(Number(result.toFixed(10)));
+          setPrevResult(expr); setDisplay(str); setJustEvaluated(true);
+          return str;
+        } catch { setDisplay('Error'); setJustEvaluated(false); return ''; }
+      });
+      return;
+    }
+
+    setJustEvaluated(prev => {
+      if (prev && !'+-*/'.includes(val)) {
+        setExpression(val); setDisplay(val); setPrevResult(null);
+        return false;
+      }
+      setExpression(expr => {
+        const newExpr = expr === '0' && val !== '.' && !'+-*/'.includes(val) ? val : expr + val;
+        setDisplay(newExpr);
+        return newExpr;
+      });
+      return false;
+    });
+  }, []);
+
+  // Keyboard support
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = (e: KeyboardEvent) => {
+      // Don't capture if user is typing in a textarea/input elsewhere
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
+      const key = e.key;
+      if (/^[0-9]$/.test(key)) { e.preventDefault(); handleInput(key); }
+      else if (key === '.' || key === ',') { e.preventDefault(); handleInput('.'); }
+      else if (key === '+') { e.preventDefault(); handleInput('+'); }
+      else if (key === '-') { e.preventDefault(); handleInput('-'); }
+      else if (key === '*') { e.preventDefault(); handleInput('*'); }
+      else if (key === '/') { e.preventDefault(); handleInput('/'); }
+      else if (key === '%') { e.preventDefault(); handleInput('%'); }
+      else if (key === 'Enter' || key === '=') { e.preventDefault(); handleInput('='); }
+      else if (key === 'Backspace') { e.preventDefault(); handleInput('DEL'); }
+      else if (key === 'Escape' || key === 'Delete') { e.preventDefault(); handleInput('AC'); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleInput]);
+
+  type BtnDef = { label: string; value: string; icon?: React.ElementType; span?: number; style: 'num' | 'op' | 'fn' | 'eq' };
+  const buttons: BtnDef[] = [
+    { label: 'AC',  value: 'AC',  style: 'fn' },
+    { label: 'DEL', value: 'DEL', icon: Delete, style: 'fn' },
+    { label: '%',   value: '%',   icon: Percent, style: 'fn' },
+    { label: '/',   value: '/',   icon: Divide, style: 'op' },
+    { label: '7',   value: '7',   style: 'num' },
+    { label: '8',   value: '8',   style: 'num' },
+    { label: '9',   value: '9',   style: 'num' },
+    { label: '*',   value: '*',   style: 'op' },
+    { label: '4',   value: '4',   style: 'num' },
+    { label: '5',   value: '5',   style: 'num' },
+    { label: '6',   value: '6',   style: 'num' },
+    { label: '-',   value: '-',   icon: MinusIcon, style: 'op' },
+    { label: '1',   value: '1',   style: 'num' },
+    { label: '2',   value: '2',   style: 'num' },
+    { label: '3',   value: '3',   style: 'num' },
+    { label: '+',   value: '+',   icon: PlusIcon, style: 'op' },
+    { label: '0',   value: '0',   span: 2, style: 'num' },
+    { label: '.',   value: '.',   style: 'num' },
+    { label: '=',   value: '=',   icon: Equal, style: 'eq' },
+  ];
+
+  const btnStyles: Record<string, string> = {
+    num: 'bg-theme-surface text-theme-heading hover:bg-theme-hover ring-1 ring-black/[0.04] dark:ring-white/[0.06]',
+    op:  'bg-purple-500/15 text-purple-600 dark:text-purple-400 hover:bg-purple-500/25',
+    fn:  'bg-theme-tertiary text-theme-muted hover:bg-theme-hover',
+    eq:  'bg-gradient-to-br from-purple-500 to-violet-600 text-white hover:from-purple-400 hover:to-violet-500 shadow-lg shadow-purple-500/20',
   };
 
-  const buttons = ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+','C'];
-
   return (
-    <div className="space-y-2">
-      <div className="rounded-lg px-3 py-2 text-right font-mono text-lg truncate min-h-[2.5rem]"
-        style={{ background: 'var(--color-surface-tertiary)', color: 'var(--color-text-heading)' }}>
-        {display}
+    <div ref={containerRef} className="space-y-3">
+      {/* Display */}
+      <div className="rounded-2xl p-4 min-h-[5rem] flex flex-col justify-end"
+        style={{ background: 'var(--bg-tertiary)' }}>
+        {prevResult && (
+          <p className="text-xs text-theme-hint text-right font-mono truncate mb-1">{prevResult}</p>
+        )}
+        <p className="text-right font-mono text-2xl font-light tracking-wide text-theme-heading truncate">
+          {display}
+        </p>
       </div>
-      <div className="grid grid-cols-4 gap-1.5">
-        {buttons.map(b => (
-          <button
-            key={b}
-            onClick={() => handleInput(b)}
-            className={`rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-95 ${
-              b === 'C' ? 'col-span-4 bg-red-500/15 text-red-500 hover:bg-red-500/25' :
-              '+-*/'.includes(b) ? 'bg-purple-500/15 text-purple-500 hover:bg-purple-500/25' :
-              b === '=' ? 'bg-green-500/15 text-green-500 hover:bg-green-500/25' :
-              'bg-theme-tertiary text-theme-heading hover:bg-theme-hover'
-            }`}
-          >
-            {b}
-          </button>
-        ))}
+      <p className="text-[10px] text-theme-hint text-center">Use your keyboard to type numbers and operators</p>
+      {/* Buttons */}
+      <div className="grid grid-cols-4 gap-2">
+        {buttons.map(b => {
+          const Icon = b.icon;
+          return (
+            <button
+              key={b.value + b.label}
+              onClick={() => handleInput(b.value)}
+              tabIndex={-1}
+              className={`rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.92] ${btnStyles[b.style]} ${b.span === 2 ? 'col-span-2' : ''}`}
+            >
+              {Icon ? <Icon className="w-4 h-4 mx-auto" /> : b.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -132,11 +236,12 @@ const MiniCalculator: React.FC = () => {
 const MiniStopwatch: React.FC = () => {
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
+  const [laps, setLaps] = useState<number[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (running) {
-      intervalRef.current = setInterval(() => setElapsed(e => e + 100), 100);
+      intervalRef.current = setInterval(() => setElapsed(e => e + 10), 10);
     } else if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -144,30 +249,68 @@ const MiniStopwatch: React.FC = () => {
   }, [running]);
 
   const fmt = (ms: number) => {
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    const tenths = Math.floor((ms % 1000) / 100);
-    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${tenths}`;
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    const cs = Math.floor((ms % 1000) / 10);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
   };
 
+  const handleLap = () => { if (running) setLaps(prev => [elapsed, ...prev]); };
+  const handleReset = () => { setRunning(false); setElapsed(0); setLaps([]); };
+
   return (
-    <div className="text-center space-y-4">
-      <div className="font-mono text-4xl font-light tracking-wider" style={{ color: 'var(--color-text-heading)' }}>{fmt(elapsed)}</div>
-      <div className="flex items-center justify-center gap-3">
+    <div className="space-y-4">
+      {/* Display */}
+      <div className="rounded-2xl p-5 text-center" style={{ background: 'var(--bg-tertiary)' }}>
+        <p className="font-mono text-4xl font-light tracking-wider text-theme-heading">{fmt(elapsed)}</p>
+      </div>
+      {/* Controls */}
+      <div className="grid grid-cols-3 gap-2">
+        <button
+          onClick={handleReset}
+          className="flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold bg-red-500/12 text-red-500 hover:bg-red-500/20 transition-all active:scale-[0.92]"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reset
+        </button>
         <button
           onClick={() => setRunning(!running)}
-          className={`p-3 rounded-2xl transition-all active:scale-95 ${running ? 'bg-amber-500/15 text-amber-500 hover:bg-amber-500/25' : 'bg-green-500/15 text-green-500 hover:bg-green-500/25'}`}
+          className={`flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-[0.92] ${
+            running
+              ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20'
+              : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/20'
+          }`}
         >
-          {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+          {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {running ? 'Pause' : elapsed > 0 ? 'Resume' : 'Start'}
         </button>
         <button
-          onClick={() => { setRunning(false); setElapsed(0); }}
-          className="p-3 rounded-2xl bg-red-500/15 text-red-500 hover:bg-red-500/25 transition-all active:scale-95"
+          onClick={handleLap}
+          disabled={!running}
+          className="flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold bg-purple-500/12 text-purple-500 hover:bg-purple-500/20 transition-all active:scale-[0.92] disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          <Square className="w-5 h-5" />
+          <Clock className="w-4 h-4" />
+          Lap
         </button>
       </div>
+      {/* Laps */}
+      {laps.length > 0 && (
+        <div className="rounded-2xl ring-1 ring-theme overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+          <div className="max-h-[120px] overflow-y-auto">
+            {laps.map((lap, i) => {
+              const diff = i < laps.length - 1 ? lap - laps[i + 1] : lap;
+              return (
+                <div key={i} className="flex items-center justify-between px-4 py-2 text-xs border-b border-theme/30 last:border-0">
+                  <span className="font-semibold text-theme-muted">Lap {laps.length - i}</span>
+                  <span className="font-mono text-theme-heading">{fmt(lap)}</span>
+                  <span className="font-mono text-purple-500">+{fmt(diff)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -177,6 +320,8 @@ const MiniTimer: React.FC = () => {
   const [totalSec, setTotalSec] = useState(300);
   const [remaining, setRemaining] = useState(300);
   const [running, setRunning] = useState(false);
+  const [customMin, setCustomMin] = useState('');
+  const [customSec, setCustomSec] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -194,36 +339,103 @@ const MiniTimer: React.FC = () => {
   }, [running, remaining]);
 
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-  const presets = [60, 300, 600, 900, 1800];
+  const progress = totalSec > 0 ? ((totalSec - remaining) / totalSec) * 100 : 0;
+  const isFinished = remaining === 0 && totalSec > 0;
+  const presets = [
+    { label: '1m', sec: 60 },
+    { label: '5m', sec: 300 },
+    { label: '10m', sec: 600 },
+    { label: '15m', sec: 900 },
+    { label: '30m', sec: 1800 },
+  ];
+
+  const applyCustom = () => {
+    const m = parseInt(customMin) || 0;
+    const s = parseInt(customSec) || 0;
+    const total = m * 60 + s;
+    if (total > 0) {
+      setTotalSec(total);
+      setRemaining(total);
+      setRunning(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
-      <div className="font-mono text-4xl text-center font-light tracking-wider" style={{ color: 'var(--color-text-heading)' }}>{fmt(remaining)}</div>
+      {/* Display with progress ring */}
+      <div className={`rounded-2xl p-5 text-center relative overflow-hidden ${isFinished ? 'animate-pulse' : ''}`} style={{ background: 'var(--bg-tertiary)' }}>
+        {/* Progress bar */}
+        <div className="absolute bottom-0 left-0 h-1 transition-all duration-1000 rounded-full"
+          style={{ width: `${progress}%`, background: isFinished ? '#ef4444' : 'linear-gradient(to right, #a855f7, #7c3aed)' }} />
+        <p className={`font-mono text-4xl font-light tracking-wider ${isFinished ? 'text-red-500' : 'text-theme-heading'}`}>
+          {fmt(remaining)}
+        </p>
+        {isFinished && <p className="text-xs font-semibold text-red-500 mt-1">Time's up!</p>}
+      </div>
+      {/* Presets */}
       <div className="flex flex-wrap items-center justify-center gap-2">
         {presets.map(p => (
           <button
-            key={p}
-            onClick={() => { setTotalSec(p); setRemaining(p); setRunning(false); }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
-              totalSec === p ? 'bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/30' : 'bg-theme-tertiary text-theme-muted hover:bg-theme-hover'
+            key={p.sec}
+            onClick={() => { setTotalSec(p.sec); setRemaining(p.sec); setRunning(false); }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+              totalSec === p.sec && !running
+                ? 'bg-purple-500/20 text-purple-500 ring-1 ring-purple-500/30'
+                : 'bg-theme-surface text-theme-muted hover:bg-theme-hover ring-1 ring-black/[0.04] dark:ring-white/[0.06]'
             }`}
           >
-            {p >= 60 ? `${p / 60}m` : `${p}s`}
+            {p.label}
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-center gap-3">
+      {/* Custom input */}
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          placeholder="Min"
+          value={customMin}
+          onChange={(e) => setCustomMin(e.target.value)}
+          className="flex-1 px-3 py-2 rounded-xl text-xs text-center bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] text-theme-heading placeholder:text-theme-hint focus:outline-none focus:ring-2 focus:ring-purple-400/40"
+          min="0"
+          max="999"
+        />
+        <span className="text-theme-hint text-xs font-bold">:</span>
+        <input
+          type="number"
+          placeholder="Sec"
+          value={customSec}
+          onChange={(e) => setCustomSec(e.target.value)}
+          className="flex-1 px-3 py-2 rounded-xl text-xs text-center bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] text-theme-heading placeholder:text-theme-hint focus:outline-none focus:ring-2 focus:ring-purple-400/40"
+          min="0"
+          max="59"
+        />
+        <button
+          onClick={applyCustom}
+          className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-purple-500/12 text-purple-500 hover:bg-purple-500/20 transition-all active:scale-95"
+        >
+          Set
+        </button>
+      </div>
+      {/* Controls */}
+      <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => setRunning(!running)}
-          className={`p-3 rounded-2xl transition-all active:scale-95 ${running ? 'bg-amber-500/15 text-amber-500 hover:bg-amber-500/25' : 'bg-green-500/15 text-green-500 hover:bg-green-500/25'}`}
+          disabled={remaining === 0 && !running}
+          className={`flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-[0.92] disabled:opacity-30 ${
+            running
+              ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20'
+              : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/20'
+          }`}
         >
-          {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+          {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {running ? 'Pause' : remaining < totalSec && remaining > 0 ? 'Resume' : 'Start'}
         </button>
         <button
           onClick={() => { setRunning(false); setRemaining(totalSec); }}
-          className="p-3 rounded-2xl bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-all active:scale-95"
+          className="flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold bg-theme-surface text-theme-muted hover:bg-theme-hover ring-1 ring-black/[0.04] dark:ring-white/[0.06] transition-all active:scale-[0.92]"
         >
-          <RotateCcw className="w-5 h-5" />
+          <RotateCcw className="w-4 h-4" />
+          Reset
         </button>
       </div>
     </div>
@@ -239,6 +451,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const [actions, setActions] = useState<BrainDumpAction[]>([]);
   const [entries, setEntries] = useState<BrainDumpEntry[]>(loadEntries);
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
+  const [editingEntry, setEditingEntry] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
   const [activeTool, setActiveTool] = useState<'calculator' | 'stopwatch' | 'timer' | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -411,7 +625,30 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     const updated = entries.filter(e => e.id !== entryId);
     setEntries(updated);
     saveEntries(updated);
-  }, [entries]);
+    if (editingEntry === entryId) setEditingEntry(null);
+  }, [entries, editingEntry]);
+
+  // Start editing a note
+  const handleStartEdit = useCallback((entry: BrainDumpEntry) => {
+    setEditingEntry(entry.id);
+    setEditText(entry.text);
+  }, []);
+
+  // Save edited note
+  const handleSaveEdit = useCallback((entryId: string) => {
+    if (!editText.trim()) return;
+    const updated = entries.map(e => e.id === entryId ? { ...e, text: editText.trim() } : e);
+    setEntries(updated);
+    saveEntries(updated);
+    setEditingEntry(null);
+    setEditText('');
+  }, [entries, editText]);
+
+  // Cancel editing
+  const handleCancelEdit = useCallback(() => {
+    setEditingEntry(null);
+    setEditText('');
+  }, []);
 
   const hasContent = dumpText.trim().length > 0;
 
@@ -463,9 +700,9 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                   value={isListening && interimText ? interimText : dumpText}
                   onChange={(e) => { if (!isListening) setDumpText(e.target.value); }}
                   placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything! You can also use the microphone to speak."
-                  className="w-full rounded-2xl border-2 border-transparent bg-theme-surface p-4 pr-14 text-sm text-theme-label placeholder:text-theme-hint resize-none focus:outline-none focus:border-purple-400/50 focus:shadow-[0_0_0_4px_rgba(168,85,247,0.08)] transition-all min-h-[120px]"
+                  className={`w-full rounded-2xl border-2 border-transparent bg-theme-surface p-4 pr-14 text-sm text-theme-label placeholder:text-theme-hint resize-none focus:outline-none focus:border-purple-400/50 focus:shadow-[0_0_0_4px_rgba(168,85,247,0.08)] transition-all ${activeTool ? 'max-h-[60px] min-h-[60px]' : 'min-h-[480px]'}`}
                   style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
-                  rows={4}
+                  rows={activeTool ? 2 : 18}
                   disabled={isAnalyzing}
                 />
                 {/* Mic button */}
@@ -737,7 +974,37 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       </button>
                       {isExpanded && (
                         <div className="px-4 pb-4 space-y-3 border-t border-theme/50">
-                          <p className="text-sm text-theme-label whitespace-pre-wrap mt-3 leading-relaxed">{entry.text}</p>
+                          {/* Note text — editable or read-only */}
+                          {editingEntry === entry.id ? (
+                            <div className="mt-3 space-y-2">
+                              <textarea
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                className="w-full rounded-xl border-2 border-purple-400/40 bg-theme-surface p-3 text-sm text-theme-label resize-none focus:outline-none focus:border-purple-400 transition-all min-h-[80px]"
+                                rows={4}
+                                autoFocus
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleSaveEdit(entry.id)}
+                                  disabled={!editText.trim()}
+                                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-green-500/12 text-green-600 dark:text-green-400 hover:bg-green-500/20 transition-all active:scale-95 disabled:opacity-40"
+                                >
+                                  <Check className="w-3 h-3" />
+                                  Save
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-all active:scale-95"
+                                >
+                                  <X className="w-3 h-3" />
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-theme-label whitespace-pre-wrap mt-3 leading-relaxed">{entry.text}</p>
+                          )}
                           {entry.actions.length > 0 && (
                             <div className="space-y-1.5 mt-3">
                               <p className="text-[10px] font-bold text-theme-muted uppercase tracking-widest">Actions</p>
@@ -762,16 +1029,28 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                               })}
                             </div>
                           )}
-                          <button
-                            onClick={() => {
-                              setDumpText(entry.text);
-                              setFlipped(false);
-                            }}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-500/12 text-purple-500 hover:bg-purple-500/20 transition-all active:scale-95 mt-2"
-                          >
-                            <RotateCcw className="w-3 h-3" />
-                            Re-analyze
-                          </button>
+                          {/* Action buttons */}
+                          <div className="flex gap-2 mt-2">
+                            {editingEntry !== entry.id && (
+                              <button
+                                onClick={() => handleStartEdit(entry)}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-500/12 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all active:scale-95"
+                              >
+                                <Pencil className="w-3 h-3" />
+                                Edit
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setDumpText(entry.text);
+                                setFlipped(false);
+                              }}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-500/12 text-purple-500 hover:bg-purple-500/20 transition-all active:scale-95"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              Re-analyze
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
