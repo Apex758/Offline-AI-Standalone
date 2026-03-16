@@ -25,6 +25,7 @@ class CurriculumMatcher:
             curriculum_index_path = base_dir / "frontend" / "src" / "data" / "curriculumIndex.json"
         self.curriculum_index_path = str(curriculum_index_path)
         self.pages = self._load_curriculum_index()
+        self._match_cache: Dict[tuple, List[Dict[str, Any]]] = {}
 
     def _load_curriculum_index(self) -> List[Dict[str, Any]]:
         """
@@ -129,8 +130,11 @@ class CurriculumMatcher:
         Returns:
             List[Dict]: List of matching curriculum page dicts, sorted by score.
         """
+        cache_key = (query, top_k, grade, subject)
+        if cache_key in self._match_cache:
+            return self._match_cache[cache_key]
+
         query_norm = self._normalize(query)
-        query_keywords = set(self._extract_keywords(query))
         results: List[Tuple[float, Dict[str, Any]]] = []
 
         # Normalize grade for comparison (handle "Kindergarten" -> "K", "Grade 2" -> "2")
@@ -174,10 +178,12 @@ class CurriculumMatcher:
 
         # Sort by score descending
         results.sort(key=lambda x: -x[0])
-        return [
+        matched = [
             {**page, "matchScore": round(score, 3)}
             for score, page in results[:top_k]
         ]
+        self._match_cache[cache_key] = matched
+        return matched
 
     def search_by_query(
         self,

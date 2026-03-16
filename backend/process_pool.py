@@ -3,8 +3,8 @@ import atexit
 from concurrent.futures import ProcessPoolExecutor, Future
 from typing import Any, Callable, Optional
  
-# Default number of workers: configurable via environment variable, else 2
-DEFAULT_WORKERS = int(os.environ.get("PROCESS_POOL_WORKERS", 2))
+# Default number of workers: configurable via environment variable, else cpu_count - 1
+DEFAULT_WORKERS = int(os.environ.get("PROCESS_POOL_WORKERS", max(2, (os.cpu_count() or 4) - 1)))
  
 # Singleton process pool executor
 _executor: Optional[ProcessPoolExecutor] = ProcessPoolExecutor(max_workers=DEFAULT_WORKERS)

@@ -132,27 +132,37 @@ def get_data_directory():
     data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir
 
+_json_cache = {}
+
 def load_json_data(filename: str):
-    """Load data from a JSON file, create if doesn't exist"""
+    """Load data from a JSON file with in-memory cache"""
+    if filename in _json_cache:
+        return _json_cache[filename]
+
     filepath = get_data_directory() / filename
-    
+
     if not filepath.exists():
         with open(filepath, 'w') as f:
             json.dump([], f)
+        _json_cache[filename] = []
         return []
-    
+
     try:
         with open(filepath, 'r') as f:
-            return json.load(f)
+            data = json.load(f)
+        _json_cache[filename] = data
+        return data
     except json.JSONDecodeError:
+        _json_cache[filename] = []
         return []
 
 def save_json_data(filename: str, data):
-    """Save data to a JSON file"""
+    """Save data to a JSON file and update cache"""
     filepath = get_data_directory() / filename
-    
+
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)
+    _json_cache[filename] = data
         
 # (Create app only once, after defining lifespan)
 

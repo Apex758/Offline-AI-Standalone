@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import curriculumTreeData from '../data/curriculumTree.json';
+import { getCurriculumTree } from '../data/curriculumLoader';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, ChevronDown, FolderOpen, FileText, BookOpen, GraduationCap, Layers, ChevronsDownUp, Search, X } from 'lucide-react';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -32,13 +32,10 @@ const CurriculumNavigator: React.FC<CurriculumNavigatorProps> = ({ onNavigate })
   const accentColor = settings.tabColors['curriculum'] ?? '#8b5cf6';
 
   useEffect(() => {
-    try {
-      setTree(curriculumTreeData);
-    } catch (error) {
-      console.error('Failed to load curriculum tree:', error);
-    } finally {
-      setLoading(false);
-    }
+    getCurriculumTree()
+      .then(data => setTree(data))
+      .catch(error => console.error('Failed to load curriculum tree:', error))
+      .finally(() => setLoading(false));
   }, []);
 
   // Auto-expand folders in current path ONLY on initial load

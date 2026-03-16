@@ -402,7 +402,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      devTools: true, // Enable DevTools for debugging
+      devTools: isDev, // Only enable DevTools in development
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: false // Allow local file access
     },
