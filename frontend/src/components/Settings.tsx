@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X, SpellCheck, PenTool, Zap, BookA, Download, Upload, Check } from 'lucide-react';
+import { Settings as SettingsIcon, Eye, EyeOff, AlertTriangle, RotateCcw, FolderOpen, RefreshCw, Trash2, Palette, Monitor, Cpu, Layers, BookOpen, Sparkles, ChevronRight, Type, Sun, Moon, Image, User, X, SpellCheck, PenTool, Zap, BookA, Download, Upload, Check, Shuffle, Minus, Plus, Paintbrush, Droplets, Blend } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -323,6 +323,108 @@ const Settings: React.FC<SettingsProps> = () => {
         [tabType]: color
       }
     });
+  };
+
+  // ── Tab Color Presets ─────────────────────────────────────────
+  const [gradientColors, setGradientColors] = useState<string[]>(['#a855f7', '#3b82f6']);
+  const [spectrumBase, setSpectrumBase] = useState('#3b82f6');
+  const [showGradientPicker, setShowGradientPicker] = useState(false);
+  const [showSpectrumPicker, setShowSpectrumPicker] = useState(false);
+
+  // Convert hex to HSL
+  const hexToHSL = (hex: string): [number, number, number] => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+      else if (max === g) h = ((b - r) / d + 2) / 6;
+      else h = ((r - g) / d + 4) / 6;
+    }
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+  };
+
+  // Convert HSL to hex
+  const hslToHex = (h: number, s: number, l: number): string => {
+    s /= 100; l /= 100;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  };
+
+  // Interpolate between two hex colors
+  const lerpColor = (c1: string, c2: string, t: number): string => {
+    const r1 = parseInt(c1.slice(1, 3), 16), g1 = parseInt(c1.slice(3, 5), 16), b1 = parseInt(c1.slice(5, 7), 16);
+    const r2 = parseInt(c2.slice(1, 3), 16), g2 = parseInt(c2.slice(3, 5), 16), b2 = parseInt(c2.slice(5, 7), 16);
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  };
+
+  const applyPresetColors = (colors: Record<string, string>) => {
+    updateSettings({ tabColors: { ...settings.tabColors, ...colors } as any });
+  };
+
+  // Monochrome: grays from dark to light
+  const applyMonochrome = () => {
+    const colors: Record<string, string> = {};
+    const count = tabTypes.length;
+    tabTypes.forEach((tab, i) => {
+      const lightness = 30 + Math.round((i / (count - 1)) * 35); // 30% to 65%
+      colors[tab.type] = hslToHex(220, 8, lightness);
+    });
+    applyPresetColors(colors);
+  };
+
+  // Randomize
+  const applyRandom = () => {
+    const colors: Record<string, string> = {};
+    const goldenAngle = 137.508;
+    const startHue = Math.random() * 360;
+    tabTypes.forEach((tab, i) => {
+      const hue = (startHue + i * goldenAngle) % 360;
+      colors[tab.type] = hslToHex(Math.round(hue), 65 + Math.round(Math.random() * 20), 50 + Math.round(Math.random() * 10));
+    });
+    applyPresetColors(colors);
+  };
+
+  // Gradient: distribute colors across a multi-stop gradient
+  const applyGradient = (stops: string[]) => {
+    if (stops.length < 2) return;
+    const colors: Record<string, string> = {};
+    const count = tabTypes.length;
+    tabTypes.forEach((tab, i) => {
+      const t = count === 1 ? 0 : i / (count - 1);
+      const segmentCount = stops.length - 1;
+      const segment = Math.min(Math.floor(t * segmentCount), segmentCount - 1);
+      const localT = (t * segmentCount) - segment;
+      colors[tab.type] = lerpColor(stops[segment], stops[segment + 1], localT);
+    });
+    applyPresetColors(colors);
+  };
+
+  // Spectrum: shades of a single base color
+  const applySpectrum = (baseHex: string) => {
+    const [h, s] = hexToHSL(baseHex);
+    const colors: Record<string, string> = {};
+    const count = tabTypes.length;
+    tabTypes.forEach((tab, i) => {
+      const lightness = 35 + Math.round((i / (count - 1)) * 30); // 35% to 65%
+      const satShift = Math.round((i / (count - 1)) * 20) - 10; // slight sat variation
+      const hueShift = Math.round((i / (count - 1)) * 30) - 15; // slight hue shift
+      colors[tab.type] = hslToHex((h + hueShift + 360) % 360, Math.max(20, Math.min(100, s + satShift)), lightness);
+    });
+    applyPresetColors(colors);
   };
 
   const handleResetClick = () => {
@@ -898,49 +1000,221 @@ const Settings: React.FC<SettingsProps> = () => {
                         className="text-xs gap-1.5"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        Reset All
+                        Reset Default
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {tabTypes.map((tab) => {
-                        const currentColor = settings.tabColors[tab.type as keyof typeof settings.tabColors] || tab.defaultColor;
-                        const colorInputId = `color-${tab.type}`;
-                        return (
-                          <label
-                            key={tab.type}
-                            htmlFor={colorInputId}
-                            className="group relative flex items-center gap-3 p-3 rounded-xl border border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm transition-all duration-200 cursor-pointer"
+                  <CardContent className="space-y-5">
+                    {/* ── Color Presets ── */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-theme-muted uppercase tracking-wider">Presets</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {/* Monochrome */}
+                        <button
+                          onClick={applyMonochrome}
+                          className="group flex flex-col items-center gap-2 p-3 rounded-xl border border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm transition-all"
+                        >
+                          <div className="flex gap-0.5">
+                            {['#3d4450', '#4f5563', '#636b7a', '#7a8291', '#929aaa'].map((c, i) => (
+                              <div key={i} className="w-3 h-6 rounded-sm first:rounded-l-md last:rounded-r-md" style={{ backgroundColor: c }} />
+                            ))}
+                          </div>
+                          <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors">Monochrome</span>
+                        </button>
+
+                        {/* Randomize */}
+                        <button
+                          onClick={applyRandom}
+                          className="group flex flex-col items-center gap-2 p-3 rounded-xl border border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm transition-all"
+                        >
+                          <div className="flex gap-0.5">
+                            {['#f43f5e', '#a855f7', '#3b82f6', '#10b981', '#f59e0b'].map((c, i) => (
+                              <div key={i} className="w-3 h-6 rounded-sm first:rounded-l-md last:rounded-r-md" style={{ backgroundColor: c }} />
+                            ))}
+                          </div>
+                          <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors flex items-center gap-1">
+                            <Shuffle className="w-3 h-3" />
+                            Randomize
+                          </span>
+                        </button>
+
+                        {/* Gradient */}
+                        <button
+                          onClick={() => { setShowGradientPicker(!showGradientPicker); setShowSpectrumPicker(false); }}
+                          className={`group flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
+                            showGradientPicker ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/15 shadow-sm' : 'border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="w-[62px] h-6 rounded-md" style={{ background: `linear-gradient(to right, ${gradientColors.join(', ')})` }} />
+                          <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors flex items-center gap-1">
+                            <Blend className="w-3 h-3" />
+                            Gradient
+                          </span>
+                        </button>
+
+                        {/* Spectrum */}
+                        <button
+                          onClick={() => { setShowSpectrumPicker(!showSpectrumPicker); setShowGradientPicker(false); }}
+                          className={`group flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
+                            showSpectrumPicker ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/15 shadow-sm' : 'border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex gap-0.5">
+                            {(() => {
+                              const [h, s] = hexToHSL(spectrumBase);
+                              return [35, 42, 50, 57, 65].map((l, i) => (
+                                <div key={i} className="w-3 h-6 rounded-sm first:rounded-l-md last:rounded-r-md" style={{ backgroundColor: hslToHex((h + (i - 2) * 7 + 360) % 360, s, l) }} />
+                              ));
+                            })()}
+                          </div>
+                          <span className="text-[11px] font-medium text-theme-muted group-hover:text-theme-label transition-colors flex items-center gap-1">
+                            <Droplets className="w-3 h-3" />
+                            Spectrum
+                          </span>
+                        </button>
+                      </div>
+
+                      {/* Gradient Picker */}
+                      {showGradientPicker && (
+                        <div className="p-4 rounded-xl border border-purple-200 dark:border-purple-800/50 bg-purple-50/50 dark:bg-purple-900/10 space-y-3">
+                          <p className="text-xs font-medium text-theme-label">Pick gradient stops, then apply:</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {gradientColors.map((color, i) => (
+                              <div key={i} className="flex items-center gap-1">
+                                <label className="relative cursor-pointer">
+                                  <div className="w-8 h-8 rounded-lg ring-1 ring-black/10 shadow-sm" style={{ backgroundColor: color }} />
+                                  <input
+                                    type="color"
+                                    value={color}
+                                    onChange={(e) => {
+                                      const updated = [...gradientColors];
+                                      updated[i] = e.target.value;
+                                      setGradientColors(updated);
+                                    }}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  />
+                                </label>
+                                {gradientColors.length > 2 && (
+                                  <button
+                                    onClick={() => setGradientColors(gradientColors.filter((_, j) => j !== i))}
+                                    className="p-0.5 rounded text-theme-hint hover:text-red-500 transition-colors"
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {gradientColors.length < 5 && (
+                              <button
+                                onClick={() => setGradientColors([...gradientColors, '#10b981'])}
+                                className="p-1.5 rounded-lg border border-dashed border-theme-strong text-theme-muted hover:text-theme-label hover:border-theme-strong transition-colors"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          {/* Gradient preview */}
+                          <div className="w-full h-4 rounded-lg ring-1 ring-black/10" style={{ background: `linear-gradient(to right, ${gradientColors.join(', ')})` }} />
+                          <Button
+                            size="sm"
+                            onClick={() => applyGradient(gradientColors)}
+                            className="text-xs gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
                           >
-                            <div className="relative flex-shrink-0">
-                              <div
-                                className="w-9 h-9 rounded-lg shadow-inner ring-1 ring-black/10 transition-transform duration-200 group-hover:scale-110"
-                                style={{ backgroundColor: currentColor }}
-                              />
+                            <Paintbrush className="w-3.5 h-3.5" />
+                            Apply Gradient
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Spectrum Picker */}
+                      {showSpectrumPicker && (
+                        <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-900/10 space-y-3">
+                          <p className="text-xs font-medium text-theme-label">Pick a base color to generate shades:</p>
+                          <div className="flex items-center gap-3">
+                            <label className="relative cursor-pointer">
+                              <div className="w-10 h-10 rounded-lg ring-1 ring-black/10 shadow-sm" style={{ backgroundColor: spectrumBase }} />
                               <input
-                                id={colorInputId}
                                 type="color"
-                                value={currentColor}
-                                onChange={(e) => handleTabColorChange(tab.type, e.target.value)}
+                                value={spectrumBase}
+                                onChange={(e) => setSpectrumBase(e.target.value)}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                               />
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-sm font-medium text-theme-label truncate">
-                                {tab.label}
-                              </span>
-                              <span className="text-xs text-theme-secondary/70 font-mono uppercase tracking-wider">
-                                {currentColor}
-                              </span>
-                            </div>
-                            <div
-                              className="absolute inset-0 rounded-xl opacity-[0.04] pointer-events-none transition-opacity duration-200"
-                              style={{ backgroundColor: currentColor }}
-                            />
-                          </label>
-                        );
-                      })}
+                            </label>
+                            <span className="text-xs font-mono text-theme-muted uppercase">{spectrumBase}</span>
+                          </div>
+                          {/* Spectrum preview */}
+                          <div className="flex gap-0.5">
+                            {(() => {
+                              const [h, s] = hexToHSL(spectrumBase);
+                              const count = tabTypes.length;
+                              return tabTypes.map((_, i) => {
+                                const lightness = 35 + Math.round((i / (count - 1)) * 30);
+                                const hueShift = Math.round((i / (count - 1)) * 30) - 15;
+                                const satShift = Math.round((i / (count - 1)) * 20) - 10;
+                                return (
+                                  <div
+                                    key={i}
+                                    className="flex-1 h-4 first:rounded-l-lg last:rounded-r-lg"
+                                    style={{ backgroundColor: hslToHex((h + hueShift + 360) % 360, Math.max(20, Math.min(100, s + satShift)), lightness) }}
+                                  />
+                                );
+                              });
+                            })()}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => applySpectrum(spectrumBase)}
+                            className="text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Paintbrush className="w-3.5 h-3.5" />
+                            Apply Spectrum
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ── Individual Tab Colors ── */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-theme-muted uppercase tracking-wider">Individual Colors</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {tabTypes.map((tab) => {
+                          const currentColor = settings.tabColors[tab.type as keyof typeof settings.tabColors] || tab.defaultColor;
+                          const colorInputId = `color-${tab.type}`;
+                          return (
+                            <label
+                              key={tab.type}
+                              htmlFor={colorInputId}
+                              className="group relative flex items-center gap-3 p-3 rounded-xl border border-theme-strong/50 bg-theme-surface hover:border-theme-strong hover:shadow-sm transition-all duration-200 cursor-pointer"
+                            >
+                              <div className="relative flex-shrink-0">
+                                <div
+                                  className="w-9 h-9 rounded-lg shadow-inner ring-1 ring-black/10 transition-transform duration-200 group-hover:scale-110"
+                                  style={{ backgroundColor: currentColor }}
+                                />
+                                <input
+                                  id={colorInputId}
+                                  type="color"
+                                  value={currentColor}
+                                  onChange={(e) => handleTabColorChange(tab.type, e.target.value)}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-medium text-theme-label truncate">
+                                  {tab.label}
+                                </span>
+                                <span className="text-xs text-theme-secondary/70 font-mono uppercase tracking-wider">
+                                  {currentColor}
+                                </span>
+                              </div>
+                              <div
+                                className="absolute inset-0 rounded-xl opacity-[0.04] pointer-events-none transition-opacity duration-200"
+                                style={{ backgroundColor: currentColor }}
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -476,6 +476,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     // Add default colors for support & reporting
     if (!colors['support']) colors['support'] = generateColorVariants('#3b82f6'); // blue-500
 
+    // Ensure brain-dump always has a color
+    if (!colors['brain-dump']) colors['brain-dump'] = generateColorVariants('#a855f7'); // purple-500
+
     return colors;
   }, [settings.tabColors]);
   
@@ -1595,7 +1598,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             const count = getTabCountByType(tool.type);
             const activeTab = tabs.find(t => t.id === activeTabId);
             const isActiveToolType = activeTab?.type === tool.type;
-            const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+            const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors] || (tabColors[tool.type]?.border);
             const isSingleReg = SINGLE_INSTANCE_TABS.has(tool.type);
             const maxForReg = isSingleReg ? 1 : MAX_TABS_PER_TYPE;
 

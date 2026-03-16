@@ -21,7 +21,8 @@
       "Bash(for file:*)",
       "Bash(do echo:*)",
       "Read(//c/Users/LG/Desktop/Projects/Offline AI Standalone/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(where magick:*)"
     ]
   }
 }
