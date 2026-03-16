@@ -548,26 +548,70 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     return editorRef.current.innerText.trim();
   }, []);
 
-  // Exec command helper for toolbar
+  // Check if the current selection is inside a specific block tag
+  const isInsideBlock = useCallback((tag: string) => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    let node: Node | null = sel.anchorNode;
+    while (node && node !== editorRef.current) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === tag.toUpperCase()) return true;
+      node = node.parentNode;
+    }
+    return false;
+  }, []);
+
+  // Exec command helper for toolbar — with toggle support for block formats
   const execFormat = useCallback((command: string, value?: string) => {
-    // Restore focus without losing selection (onMouseDown preventDefault keeps it)
     const sel = window.getSelection();
     const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
     editorRef.current?.focus();
     if (range) { sel!.removeAllRanges(); sel!.addRange(range); }
+
+    // Toggle: if formatBlock is already the same tag, revert to <div> (normal paragraph)
+    if (command === 'formatBlock' && value) {
+      const tag = value.replace(/[<>]/g, '');
+      if (isInsideBlock(tag)) {
+        document.execCommand('formatBlock', false, '<div>');
+        if (editorRef.current) setDumpText(editorRef.current.innerHTML);
+        return;
+      }
+    }
+
     document.execCommand(command, false, value);
     if (editorRef.current) setDumpText(editorRef.current.innerHTML);
+  }, [isInsideBlock]);
+
+  // Check if the current selection is inside a specific block tag (edit editor)
+  const isInsideBlockEdit = useCallback((tag: string) => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    let node: Node | null = sel.anchorNode;
+    while (node && node !== editEditorRef.current) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === tag.toUpperCase()) return true;
+      node = node.parentNode;
+    }
+    return false;
   }, []);
 
-  // Exec command helper for edit toolbar
+  // Exec command helper for edit toolbar — with toggle support
   const execEditFormat = useCallback((command: string, value?: string) => {
     const sel = window.getSelection();
     const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
     editEditorRef.current?.focus();
     if (range) { sel!.removeAllRanges(); sel!.addRange(range); }
+
+    if (command === 'formatBlock' && value) {
+      const tag = value.replace(/[<>]/g, '');
+      if (isInsideBlockEdit(tag)) {
+        document.execCommand('formatBlock', false, '<div>');
+        if (editEditorRef.current) setEditText(editEditorRef.current.innerHTML);
+        return;
+      }
+    }
+
     document.execCommand(command, false, value);
     if (editEditorRef.current) setEditText(editEditorRef.current.innerHTML);
-  }, []);
+  }, [isInsideBlockEdit]);
 
   // Parse the AI response into actions
   const parseActions = useCallback((raw: string): BrainDumpAction[] => {
@@ -786,7 +830,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-theme-heading tracking-tight">Brain Dump</h2>
-                  <p className="text-xs text-theme-muted">Type or speak your thoughts, let AI turn them into actions</p>
+                  <p className="text-xs text-theme-muted">Type or speak your thoughts, turn them into actions</p>
                 </div>
               </div>
               <button
@@ -822,7 +866,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       if (editorRef.current) setDumpText(editorRef.current.innerHTML);
                     }}
                     data-placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything!"
-                    className={`w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
+                    className={`rich-text w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
                     style={{ wordBreak: 'break-word' }}
                   />
                   {/* Mic button */}
@@ -1218,7 +1262,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                 contentEditable
                                 suppressContentEditableWarning
                                 onInput={() => { if (editEditorRef.current) setEditText(editEditorRef.current.innerHTML); }}
-                                className="w-full rounded-xl border-2 bg-theme-surface p-3 text-sm text-theme-label focus:outline-none transition-all min-h-[80px]"
+                                className="rich-text w-full rounded-xl border-2 bg-theme-surface p-3 text-sm text-theme-label focus:outline-none transition-all min-h-[80px]"
                                 style={{ borderColor: `${accentColor}66` }}
                               />
                               <div className="flex gap-2">
@@ -1241,7 +1285,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             </div>
                           ) : (
                             <div
-                              className="text-sm text-theme-label mt-3 leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                              className="rich-text text-sm text-theme-label mt-3 leading-relaxed max-w-none"
                               dangerouslySetInnerHTML={{ __html: entry.text }}
                             />
                           )}

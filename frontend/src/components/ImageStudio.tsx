@@ -1,5 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Download, Eye, EyeOff, Undo2, Redo2, Eraser, Upload, Sparkles, Save, ChevronDown, ArrowRight, ArrowLeft, Square, Hash, Trash2, Layers, FileText, ImageOff, Palette, Pencil, X, FolderOpen, BookOpen } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
+import ViewOffIconData from '@hugeicons/core-free-icons/ViewOffIcon';
+import UndoIconData from '@hugeicons/core-free-icons/UndoIcon';
+import RedoIconData from '@hugeicons/core-free-icons/RedoIcon';
+import EraserIconData from '@hugeicons/core-free-icons/EraserIcon';
+import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import SquareIconData from '@hugeicons/core-free-icons/SquareIcon';
+import HashtagIconData from '@hugeicons/core-free-icons/HashtagIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import ImageNotFound01IconData from '@hugeicons/core-free-icons/ImageNotFound01Icon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ViewIconData} {...p} />;
+const EyeOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ViewOffIconData} {...p} />;
+const Undo2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UndoIconData} {...p} />;
+const Redo2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={RedoIconData} {...p} />;
+const Eraser: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EraserIconData} {...p} />;
+const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ArrowRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const ArrowLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Square: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SquareIconData} {...p} />;
+const Hash: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HashtagIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Layers01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ImageNotFound01IconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const Pencil: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FolderOpenIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { imageApi, downloadImage, SavedImageRecord } from '../lib/imageApi';
@@ -1654,7 +1709,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
           <div className="image-studio-flip-front h-full p-6 overflow-y-auto" data-tutorial="image-studio-generator-panel">
             {generationState === 'input' && (
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">AI Image Generator</h2>
+                <h2 className="text-2xl font-semibold mb-6" data-tutorial="image-studio-generator-title">Image Generator</h2>
                 <div className="space-y-6">
                   
                   {/* Visual Style Selector */}
@@ -2149,7 +2204,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                         {comicState === 'generating-prompts' && (
                           <div className="flex items-center justify-center py-12">
                             <HeartbeatLoader className="w-8 h-8 text-blue-600 mr-3" />
-                            <span className="text-theme-hint">AI is writing scene prompts...</span>
+                            <span className="text-theme-hint">Writing scene prompts...</span>
                           </div>
                         )}
                         {(comicState === 'generating-images' || comicState === 'done') && (

@@ -1,6 +1,15 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BarChart3: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BarChartIconData} {...p} />;
 
 interface LessonPlanComparisonChartProps {
   data: {

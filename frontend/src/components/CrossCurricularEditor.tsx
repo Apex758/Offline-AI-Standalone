@@ -1,6 +1,27 @@
 // components/CrossCurricularEditor.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, Check, X, BookOpen, Link2 } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { PlusSignIcon } from '@hugeicons/core-free-icons/PlusSignIcon';
+import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
+import { DragDropVerticalIcon } from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
+import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+import { BookOpen01Icon } from '@hugeicons/core-free-icons/BookOpen01Icon';
+import { Link02Icon } from '@hugeicons/core-free-icons/Link02Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIcon} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DragDropVerticalIcon} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01Icon} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01Icon} {...p} />;
+const Link2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Link02Icon} {...p} />;
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 

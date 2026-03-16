@@ -1,41 +1,82 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import {
-  X,
-  MessageSquare,
-  ClipboardCheck,
-  BookOpen,
-  FileText,
-  LogOut,
-  Plus,
-  Columns,
-  ChevronDown,
-  ChevronRight,
-  GraduationCap,
-  ListChecks,
-  BookMarked,
-  School,
-  Users,
-  BarChart3,
-  Library,
-  Settings as SettingsIcon,
-  Target,
-  FileSpreadsheet,
-  Palette,
-  Bell,
-  LayoutDashboard,
-  TrendingUp,
-  FolderOpen,
-  Search,
-  PenTool,
-  ClipboardList,
-  UsersRound,
-  Baby,
-  Layers,
-  Merge,
-  HelpCircle,
-  AlertTriangle,
-  Brain
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import Logout01IconData from '@hugeicons/core-free-icons/Logout01Icon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import ColumnInsertIconData from '@hugeicons/core-free-icons/ColumnInsertIcon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import SchoolIconData from '@hugeicons/core-free-icons/SchoolIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+import LibraryIconData from '@hugeicons/core-free-icons/LibraryIcon';
+import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import Notification01IconData from '@hugeicons/core-free-icons/Notification01Icon';
+import DashboardSquare01IconData from '@hugeicons/core-free-icons/DashboardSquare01Icon';
+import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
+import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import PenTool01IconData from '@hugeicons/core-free-icons/PenTool01Icon';
+import UserMultipleIconData from '@hugeicons/core-free-icons/UserMultipleIcon';
+import Baby01IconData from '@hugeicons/core-free-icons/Baby01Icon';
+import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
+import GitMergeIconData from '@hugeicons/core-free-icons/GitMergeIcon';
+import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
+
+// Wrapper to make HugeiconsIcon work like lucide-react components
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+// Named icon components matching lucide-react API
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const ClipboardCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const LogOut: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Logout01IconData} {...p} />;
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
+const Columns: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColumnInsertIconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookBookmark01IconData} {...p} />;
+const School: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SchoolIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const BarChart3: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BarChartIconData} {...p} />;
+const Library: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LibraryIconData} {...p} />;
+const SettingsIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Settings01IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const Bell: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Notification01IconData} {...p} />;
+const LayoutDashboard: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DashboardSquare01IconData} {...p} />;
+const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ChartIncreaseIconData} {...p} />;
+const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FolderOpenIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
+const ClipboardList: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const UsersRound: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserMultipleIconData} {...p} />;
+const Baby: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Baby01IconData} {...p} />;
+const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Layers01IconData} {...p} />;
+const Merge: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GitMergeIconData} {...p} />;
+const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
+const AlertTriangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
+const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 
@@ -94,7 +135,7 @@ const tools: Tool[] = [
     name: 'Brain Dump',
     icon: 'Brain',
     type: 'brain-dump',
-    description: 'Dump your thoughts and let AI organize them into actions'
+    description: 'Dump your thoughts and turn them into actions'
   },
   {
     id: 'curriculum-tracker',
@@ -115,7 +156,7 @@ const tools: Tool[] = [
     name: 'Ask PEARL',
     icon: 'MessageSquare',
     type: 'chat',
-    description: 'Have a conversation with the AI assistant'
+    description: 'Chat with PEARL for ideas and help'
   },
   {
     id: 'curriculum',

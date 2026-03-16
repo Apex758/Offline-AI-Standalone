@@ -1,7 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Bell, Trash2, ListOrdered, Loader2, Clock, GripVertical, X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
+import Notification01IconData from '@hugeicons/core-free-icons/Notification01Icon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
+  if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const XCircle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
+const Bell: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Notification01IconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const ListOrdered: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Loading02IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={DragDropVerticalIconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 import { formatDistanceToNow } from 'date-fns';
 import { useNotification } from '../contexts/NotificationContext';
 import { useQueue, QueueItem } from '../contexts/QueueContext';

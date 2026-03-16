@@ -1,9 +1,39 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  X, CheckCircle, XCircle, Award, RotateCcw, Save, ChevronDown,
-  User, Upload, Loader2, ClipboardCheck, Users, FileText
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
+import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import UserIconData from '@hugeicons/core-free-icons/UserIcon';
+import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
+import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import { ParsedQuiz, QuizQuestion } from '../types/quiz';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const XCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
+const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
+const RotateCcw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const User: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserIconData} {...p} />;
+const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
+const ClipboardCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
 import axios from 'axios';
 import BulkGrader from './BulkGrader';

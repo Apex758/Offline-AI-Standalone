@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from 'recharts';
-import { BarChart2 } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BarChart2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BarChartIconData} {...p} />;
 import type { DistributionData } from '../../types/analytics';
 
 interface ResourceDistributionChartProps {

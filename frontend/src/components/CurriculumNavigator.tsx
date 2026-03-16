@@ -1,7 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getCurriculumTree } from '../data/curriculumLoader';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, ChevronDown, FolderOpen, FileText, BookOpen, GraduationCap, Layers, ChevronsDownUp, Search, X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
+import ListChevronsDownUpIconData from '@hugeicons/core-free-icons/ListChevronsDownUpIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowDown01IconData} {...p} />;
+const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={FolderOpenIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={File01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookOpen01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={GraduationScrollIconData} {...p} />;
+const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Layers01IconData} {...p} />;
+const ChevronsDownUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ListChevronsDownUpIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Search01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Cancel01IconData} {...p} />;
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useSettings } from '../contexts/SettingsContext';
 

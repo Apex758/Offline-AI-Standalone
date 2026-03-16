@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 import { getStrands, getELOs, getSCOs } from '../../utils/curriculumHelpers';
 import SmartTextArea from '../SmartTextArea';
 

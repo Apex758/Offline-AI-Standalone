@@ -281,7 +281,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const sections = [
     { id: 'profile' as const, label: 'Profile', icon: User, description: 'Your name, school & role' },
     { id: 'appearance' as const, label: 'Appearance', icon: Palette, description: 'Theme, fonts & tab colors' },
-    { id: 'models' as const, label: 'AI Models', icon: Cpu, description: 'Language & diffusion models' },
+    { id: 'models' as const, label: 'Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
     { id: 'features' as const, label: 'Features', icon: Sparkles, description: 'Writing assistant & tools' },
     { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
@@ -636,7 +636,7 @@ const Settings: React.FC<SettingsProps> = () => {
             <SettingsIcon className="w-6 h-6 text-theme-label" />
             <h1 className="text-xl font-bold text-theme-title">Settings</h1>
           </div>
-          <p className="text-xs text-theme-muted ml-[34px]">Customize PEARL AI</p>
+          <p className="text-xs text-theme-muted ml-[34px]">Customize PEARL</p>
         </div>
         <nav className="flex-1 px-5 py-3 space-y-1.5">
           {sections.map((section) => {
@@ -1229,7 +1229,7 @@ const Settings: React.FC<SettingsProps> = () => {
             {activeSection === 'models' && (
               <div className="space-y-6">
                 <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-theme-title">AI Models</h2>
+                  <h2 className="text-2xl font-bold text-theme-title">Models</h2>
                   <p className="text-sm text-theme-muted mt-1">Manage language and image generation models</p>
                 </div>
 
@@ -1240,7 +1240,7 @@ const Settings: React.FC<SettingsProps> = () => {
                       <Cpu className="w-4.5 h-4.5 text-theme-secondary" />
                       Language Model
                     </CardTitle>
-                    <CardDescription>Select the AI model to use for text generation</CardDescription>
+                    <CardDescription>Select the model to use for text generation</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -1415,7 +1415,7 @@ const Settings: React.FC<SettingsProps> = () => {
                   <CardHeader>
                     <CardTitle>Generation Behavior</CardTitle>
                     <CardDescription>
-                      Control how AI generations are processed
+                      Control how generations are processed
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -1620,7 +1620,7 @@ const Settings: React.FC<SettingsProps> = () => {
                           <Sparkles className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-theme-label">Auto-Finish Sentence</p>
-                            <p className="text-xs text-theme-hint">AI suggests how to finish your sentence after a brief pause. Press Tab to accept.</p>
+                            <p className="text-xs text-theme-hint">Suggests how to finish your sentence after a brief pause. Press Tab to accept.</p>
                           </div>
                         </div>
                         <input
@@ -1634,7 +1634,7 @@ const Settings: React.FC<SettingsProps> = () => {
                       {settings.autoFinishEnabled && (
                         <div className="mt-2 mx-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
                           <p className="text-xs text-amber-700 dark:text-amber-400">
-                            Auto-finish uses your AI model to suggest completions. If the model is busy generating content, suggestions may be delayed.
+                            Auto-finish uses your model to suggest completions. If the model is busy generating content, suggestions may be delayed.
                           </p>
                         </div>
                       )}

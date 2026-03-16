@@ -1,5 +1,14 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 
 interface WelcomeModalProps {
   onClose: () => void;
@@ -55,7 +64,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour
               <ul className="space-y-2" style={{ color: '#552A01' }}>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>AI-powered lesson planning for multiple grade levels</span>
+                  <span>Lesson planning for multiple grade levels</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>

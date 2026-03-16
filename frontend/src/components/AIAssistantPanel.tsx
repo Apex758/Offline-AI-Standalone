@@ -1,5 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, MessageSquare, Wand2, Send, Sparkles } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import MagicWand01IconData from '@hugeicons/core-free-icons/MagicWand01Icon';
+import SentIconData from '@hugeicons/core-free-icons/SentIcon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Cancel01IconData} {...p} />;
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Message01IconData} {...p} />;
+const Wand2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={MagicWand01IconData} {...p} />;
+const Send: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SentIconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SparklesIconData} {...p} />;
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { getWebSocketUrl, isElectronEnvironment } from '../config/api.config';
 import SmartTextArea from './SmartTextArea';
@@ -230,7 +247,7 @@ IMPORTANT INSTRUCTIONS:
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Sparkles className="w-6 h-6" />
-              <h2 className="text-2xl font-bold">AI Assistant</h2>
+              <h2 className="text-2xl font-bold">Assistant</h2>
             </div>
             <button
               onClick={onClose}
@@ -290,7 +307,7 @@ IMPORTANT INSTRUCTIONS:
           {mode === 'chat' ? (
             <p>Ask questions about your {getContentTypeLabel().toLowerCase()} or request insights and suggestions.</p>
           ) : (
-            <p>Describe the changes you want, and AI will update your {getContentTypeLabel().toLowerCase()} accordingly.</p>
+            <p>Describe the changes you want and your {getContentTypeLabel().toLowerCase()} will be updated accordingly.</p>
           )}
         </div>
 

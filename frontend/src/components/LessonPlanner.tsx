@@ -1,7 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
-import { ChevronRight, ChevronLeft, Loader2, FileText, Trash2, Save, Download, History, X, Edit, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ArrowRight01Icon } from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import { Loading02Icon } from '@hugeicons/core-free-icons/Loading02Icon';
+import { File01Icon } from '@hugeicons/core-free-icons/File01Icon';
+import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
+import { SaveIcon } from '@hugeicons/core-free-icons/SaveIcon';
+import { Download01Icon } from '@hugeicons/core-free-icons/Download01Icon';
+import { WorkHistoryIcon } from '@hugeicons/core-free-icons/WorkHistoryIcon';
+import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+import { PencilEdit01Icon } from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import { SparklesIcon } from '@hugeicons/core-free-icons/SparklesIcon';
+import { VolumeHighIcon } from '@hugeicons/core-free-icons/VolumeHighIcon';
+import { VolumeOffIcon } from '@hugeicons/core-free-icons/VolumeOffIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01Icon} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01Icon} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02Icon} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01Icon} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIcon} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01Icon} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WorkHistoryIcon} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
+const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01Icon} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIcon} {...p} />;
+const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeHighIcon} {...p} />;
+const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeOffIcon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import curriculumIndex from '../data/curriculumIndex.json';
@@ -779,7 +812,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
                         <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                        AI Assistant
+                        Assistant
                       </button>
                       <button
                         onClick={saveLessonPlan}
@@ -905,7 +938,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               <HeartbeatLoader className="w-5 h-5 mr-3" />
                               <div>
                                 <div className="text-sm font-medium">Generating...</div>
-                                <div className="text-xs text-blue-100">AI-powered lesson plan</div>
+                                <div className="text-xs text-blue-100">Lesson plan</div>
                               </div>
                             </div>
                           </div>
@@ -987,7 +1020,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
           <>
             <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-theme-heading">AI Lesson Plan Generator</h2>
+                <h2 className="text-xl font-semibold text-theme-heading">Lesson Plan Generator</h2>
                 <p className="text-sm text-theme-hint">Fill in the details to generate a personalized D-OHPC lesson plan</p>
               </div>
               <button

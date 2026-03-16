@@ -1,5 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Camera, BookOpen, GraduationCap, X, Check } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import UserIconData from '@hugeicons/core-free-icons/UserIcon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const User: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserIconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import axios from 'axios';

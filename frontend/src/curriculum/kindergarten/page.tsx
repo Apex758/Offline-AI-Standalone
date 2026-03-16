@@ -241,7 +241,7 @@ export default function KindergartenSubjectsPage() {
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-8 shadow-sm">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Create Your Lesson Plan?</h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Use our AI-powered kindergarten lesson planner to create engaging, standards-aligned lesson plans tailored
+              Use our kindergarten lesson planner to create engaging, standards-aligned lesson plans tailored
               to your students' needs and learning objectives.
             </p>
             <Link to="/kindergarten-planner"><Button>

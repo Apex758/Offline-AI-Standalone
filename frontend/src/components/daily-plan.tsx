@@ -1,5 +1,18 @@
 import React from 'react';
-import { Clock, Users, BookOpen } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Clock01Icon } from '@hugeicons/core-free-icons/Clock01Icon';
+import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
+import { BookOpen01Icon } from '@hugeicons/core-free-icons/BookOpen01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock = (props: { className?: string }) => <Icon icon={Clock01Icon} {...props} />;
+const Users = (props: { className?: string }) => <Icon icon={UserGroupIcon} {...props} />;
+const BookOpen = (props: { className?: string }) => <Icon icon={BookOpen01Icon} {...props} />;
 
 interface Activity {
   time: string;
@@ -69,7 +82,7 @@ export function DailyPlan({
                       {activity.title}
                     </h3>
                     <p className="text-gray-600 mb-2">{activity.description}</p>
-                    
+
                     {activity.materials && activity.materials.length > 0 && (
                       <div className="mt-2">
                         <p className="text-sm font-medium text-gray-700 mb-1">Materials:</p>

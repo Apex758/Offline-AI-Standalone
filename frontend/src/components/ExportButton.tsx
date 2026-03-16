@@ -1,6 +1,20 @@
 // components/ExportButton.tsx - UPDATED VERSION
 import React, { useState } from 'react';
-import { Download, Loader2, FileText, FileDown } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const FileDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import axios from 'axios';
 import { generateQuizHTML, prepareQuizForExport } from '../utils/quizHtmlRenderer';

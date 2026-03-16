@@ -1,9 +1,26 @@
 // components/QuizEditor.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { ParsedQuiz, QuizQuestion } from '../types/quiz';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DragDropVerticalIconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 
 interface QuizEditorProps {
   quiz: ParsedQuiz;

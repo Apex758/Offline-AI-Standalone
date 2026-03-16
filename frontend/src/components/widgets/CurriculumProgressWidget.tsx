@@ -1,5 +1,18 @@
 import React from 'react';
-import { Target, ChevronRight, Calendar } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Target01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Calendar01IconData} {...p} />;
 import { format, parseISO } from 'date-fns';
 import type { MilestoneStats } from '../../types/milestone';
 import type { Milestone } from '../../types/milestone';

@@ -1,6 +1,27 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { HelpCircle, X, ChevronLeft, ChevronRight, Volume2, VolumeX, PlayCircle } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import VolumeHighIconData from '@hugeicons/core-free-icons/VolumeHighIcon';
+import VolumeOffIconData from '@hugeicons/core-free-icons/VolumeOffIcon';
+import PlayCircleIconData from '@hugeicons/core-free-icons/PlayCircleIcon';
 import { useTTS } from '../hooks/useVoice';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeHighIconData} {...p} />;
+const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeOffIconData} {...p} />;
+const PlayCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlayCircleIconData} {...p} />;
 
 export interface TutorialStep {
   target: string;
@@ -715,7 +736,7 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   {
     target: '[data-tutorial="main-sidebar"]',
     title: 'Welcome to OECS Learning Hub! 🎓',
-    description: 'This is your AI-powered teaching assistant sidebar. Here you\'ll find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace.',
+    description: 'This is your teaching toolkit sidebar. Here you\'ll find all the tools to create lesson plans, quizzes, rubrics, and more. The sidebar auto-collapses when you hover away to give you more workspace.',
     position: 'right',
   },
   {
@@ -741,8 +762,8 @@ export const dashboardWalkthroughSteps: TutorialStep[] = [
   },
   {
     target: '[data-tutorial="tool-chat"]',
-    title: 'AI Chat Assistant',
-    description: 'Let\'s open another tool! Chat with your AI teaching assistant for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
+    title: 'Chat with PEARL',
+    description: 'Let\'s open another tool! Chat with PEARL for help, ideas, or to discuss your lesson plans. Go ahead and click to open it!',
     position: 'right',
     interactive: true,
     waitForAction: 'click',

@@ -1,5 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, GraduationCap, Trash2, Save, Download, History, X, Edit, Sparkles } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Loading02Icon } from '@hugeicons/core-free-icons/Loading02Icon';
+import { GraduationScrollIcon } from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
+import { SaveIcon } from '@hugeicons/core-free-icons/SaveIcon';
+import { Download01Icon } from '@hugeicons/core-free-icons/Download01Icon';
+import { WorkHistoryIcon } from '@hugeicons/core-free-icons/WorkHistoryIcon';
+import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+import { PencilEdit01Icon } from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import { SparklesIcon } from '@hugeicons/core-free-icons/SparklesIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02Icon} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIcon} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIcon} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01Icon} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WorkHistoryIcon} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
+const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01Icon} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIcon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import KindergartenEditor from './KindergartenEditor';
@@ -894,7 +919,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
                         <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                        AI Assistant
+                        Assistant
                       </button>
                       <button
                         onClick={savePlan}
@@ -1000,7 +1025,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                               <HeartbeatLoader className="w-5 h-5 mr-3" />
                               <div>
                                 <div className="text-sm font-medium">Generating...</div>
-                                <div className="text-xs text-pink-100">AI-powered kindergarten plan</div>
+                                <div className="text-xs text-pink-100">Early childhood plan</div>
                               </div>
                             </div>
                           </div>
@@ -1049,7 +1074,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
           <>
             <div className="border-b border-theme p-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-theme-heading">AI-Powered Kindergarten Lesson Planner</h2>
+                <h2 className="text-xl font-semibold text-theme-heading">Early Childhood Planner</h2>
                 <p className="text-sm text-theme-hint">Generate engaging, developmentally appropriate lesson plans tailored to your kindergarten students</p>
               </div>
               <button

@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import CurriculumNavigator from './CurriculumNavigator';
-import { Menu, X, BookOpen } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Menu01IconData from '@hugeicons/core-free-icons/Menu01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Menu: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Menu01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Cancel01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookOpen01IconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';

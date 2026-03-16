@@ -1,6 +1,35 @@
 // components/KindergartenEditor.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, Check, X, Palette, Music, Book, Footprints, Users, Apple } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { PlusSignIcon } from '@hugeicons/core-free-icons/PlusSignIcon';
+import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
+import { DragDropVerticalIcon } from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
+import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+import { ColorsIcon } from '@hugeicons/core-free-icons/ColorsIcon';
+import { MusicNote01Icon } from '@hugeicons/core-free-icons/MusicNote01Icon';
+import { Book01Icon } from '@hugeicons/core-free-icons/Book01Icon';
+import { WorkoutRunIcon } from '@hugeicons/core-free-icons/WorkoutRunIcon';
+import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
+import { Apple01Icon } from '@hugeicons/core-free-icons/Apple01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIcon} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DragDropVerticalIcon} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01Icon} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIcon} {...p} />;
+const Music: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MusicNote01Icon} {...p} />;
+const Book: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Book01Icon} {...p} />;
+const Footprints: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={WorkoutRunIcon} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIcon} {...p} />;
+const Apple: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Apple01Icon} {...p} />;
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 

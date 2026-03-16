@@ -1,5 +1,26 @@
 import React, { useState } from 'react';
-import { Plus, Check, Calendar, ChevronDown, ChevronRight, Clock, ListTodo } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Task01IconData from '@hugeicons/core-free-icons/Task01Icon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; strokeWidth?: number }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }> = (p) => <IconW icon={PlusSignIconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }> = (p) => <IconW icon={Tick01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Calendar01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowDown01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Clock01IconData} {...p} />;
+const ListTodo: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Task01IconData} {...p} />;
 import { format, parseISO } from 'date-fns';
 import type { Task } from '../../types/task';
 import { groupTasksByStatus } from '../../lib/analyticsHelpers';

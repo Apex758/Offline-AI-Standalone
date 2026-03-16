@@ -1,9 +1,44 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  ChevronRight, ChevronDown, Circle, CheckCircle2, PlayCircle, XCircle,
-  Calendar, Edit2, Eye, Filter, RotateCcw, BookOpen, TrendingUp,
-  Target, Clock, AlertCircle, ChevronUp, ListChecks
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import CircleIconData from '@hugeicons/core-free-icons/CircleIcon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import PlayCircleIconData from '@hugeicons/core-free-icons/PlayCircleIcon';
+import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import FilterIconData from '@hugeicons/core-free-icons/FilterIcon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowDown01IconData} {...p} />;
+const Circle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CircleIconData} {...p} />;
+const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckmarkCircle01IconData} {...p} />;
+const PlayCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={PlayCircleIconData} {...p} />;
+const XCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CancelCircleIconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Calendar01IconData} {...p} />;
+const Edit2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={PencilEdit01IconData} {...p} />;
+const Filter: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={FilterIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookOpen01IconData} {...p} />;
+const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ChartIncreaseIconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Target01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Clock01IconData} {...p} />;
+const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={AlertCircleIconData} {...p} />;
+const ChevronUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowUp01IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckListIconData} {...p} />;
 import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';

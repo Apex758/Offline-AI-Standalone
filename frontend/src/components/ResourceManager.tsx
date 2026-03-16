@@ -1,10 +1,49 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Search, Star, Trash2, Edit, Download, Calendar, Eye,
-  FileText, ListChecks, BookMarked, GraduationCap, Users,
-  Link2, RefreshCw, ArrowUpDown, X, Image, FileSpreadsheet
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import StarIconData from '@hugeicons/core-free-icons/StarIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Link01IconData from '@hugeicons/core-free-icons/Link01Icon';
+import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
+import SortingDownIconData from '@hugeicons/core-free-icons/SortingDownIcon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
 import axios from 'axios';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Star: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StarIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ViewIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookBookmark01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Link2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Link01IconData} {...p} />;
+const RefreshCw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
+const ArrowUpDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SortingDownIconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Image: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Image01IconData} {...p} />;
+const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';

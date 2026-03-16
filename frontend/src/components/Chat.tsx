@@ -1,5 +1,30 @@
                     import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, History, X, Trash2, Plus, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import SentIconData from '@hugeicons/core-free-icons/SentIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
+import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
+import VolumeHighIconData from '@hugeicons/core-free-icons/VolumeHighIcon';
+import VolumeOffIconData from '@hugeicons/core-free-icons/VolumeOffIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Send: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SentIconData} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Clock01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Cancel01IconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Delete02IconData} {...p} />;
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={PlusSignIconData} {...p} />;
+const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Mic01IconData} {...p} />;
+const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={MicOff01IconData} {...p} />;
+const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={VolumeHighIconData} {...p} />;
+const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={VolumeOffIconData} {...p} />;
 import { Message } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -461,7 +486,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </div>
                 <h3 className="text-xl font-semibold text-theme-heading mb-2">Start Learning!</h3>
                 <p className="text-theme-muted">
-                  Ask me anything! I'm your AI teaching assistant, here to help explain concepts and answer your questions.
+                  Ask me anything about teaching, curriculum, or your lesson plans.
                 </p>
               </div>
             </div>

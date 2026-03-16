@@ -1,6 +1,17 @@
 // components/MultigradeEditor.tsx
 import React, { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
+import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01Icon} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { ParsedMultigrade } from '../types/multigrade';

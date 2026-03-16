@@ -1,5 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles, FileText, Users, GraduationCap, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, BookOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import PanelRightCloseIconData from '@hugeicons/core-free-icons/PanelRightCloseIcon';
+import PanelRightOpenIconData from '@hugeicons/core-free-icons/PanelRightOpenIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const ClipboardCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const PanelRightClose: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightCloseIconData} {...p} />;
+const PanelRightOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PanelRightOpenIconData} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
@@ -720,7 +766,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
                         <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                        AI Assistant
+                        Assistant
                       </button>
                       <button
                         onClick={saveQuiz}
@@ -906,7 +952,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <HeartbeatLoader className="w-5 h-5 mr-3" />
                                   <div>
                                     <div className="text-sm font-medium">Generating...</div>
-                                    <div className="text-xs text-cyan-100">AI-powered quiz</div>
+                                    <div className="text-xs text-cyan-100">Generating quiz</div>
                                   </div>
                                 </div>
                               </div>
@@ -1703,7 +1749,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             {/* Footer */}
             <div className="p-4 border-t border-theme">
               <p className="text-xs text-theme-hint text-center">
-                The full lesson plan will be sent to the AI. You can still adjust question types and other settings.
+                The full lesson plan will be used for context. You can still adjust question types and other settings.
               </p>
             </div>
           </div>

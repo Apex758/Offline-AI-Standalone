@@ -1,6 +1,17 @@
 import React from 'react';
-import { Clock, Users } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Clock01Icon } from '@hugeicons/core-free-icons/Clock01Icon';
+import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock = (props: { className?: string }) => <Icon icon={Clock01Icon} {...props} />;
+const Users = (props: { className?: string }) => <Icon icon={UserGroupIcon} {...props} />;
 
 interface ActivityCardProps {
   title: string;
@@ -69,7 +80,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             </ul>
           </div>
         )}
-        
+
         {instructions && instructions.length > 0 && (
           <div className="mb-4">
             <h4 className="font-semibold mb-2">Instructions:</h4>
@@ -80,7 +91,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             </ol>
           </div>
         )}
-        
+
         {children}
       </CardContent>
     </Card>

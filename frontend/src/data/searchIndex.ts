@@ -48,7 +48,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'tool-chat',
     title: 'Ask PEARL',
-    description: 'Have a conversation with the AI assistant',
+    description: 'Chat with PEARL for ideas and help',
     keywords: ['chat', 'pearl', 'ai', 'assistant', 'conversation', 'ask', 'help', 'question', 'talk', 'message'],
     category: 'tool',
     icon: 'MessageSquare',
@@ -177,8 +177,8 @@ const searchIndex: SearchEntry[] = [
   },
   {
     id: 'setting-ai-model',
-    title: 'AI Model Selection',
-    description: 'Select the AI model to use for generation',
+    title: 'Model Selection',
+    description: 'Select the model to use for generation',
     keywords: ['ai', 'model', 'llm', 'language model', 'select model', 'change model', 'switch model', 'gguf'],
     category: 'setting',
     icon: 'Cpu',
@@ -218,7 +218,7 @@ const searchIndex: SearchEntry[] = [
   {
     id: 'setting-generation-mode',
     title: 'Generation Behavior',
-    description: 'Queued vs simultaneous AI generation mode',
+    description: 'Queued vs simultaneous generation mode',
     keywords: ['generation', 'behavior', 'queued', 'simultaneous', 'queue', 'parallel', 'processing', 'mode'],
     category: 'setting',
     icon: 'Layers',

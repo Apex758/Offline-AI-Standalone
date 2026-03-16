@@ -1,6 +1,23 @@
 // components/LessonEditor.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { PlusSignIcon } from '@hugeicons/core-free-icons/PlusSignIcon';
+import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
+import { DragDropVerticalIcon } from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
+import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIcon} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02Icon} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DragDropVerticalIcon} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01Icon} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01Icon} {...p} />;
 import CurriculumReferences, { CurriculumReference } from "./CurriculumReferences";
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';

@@ -1,12 +1,61 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import {
-  Users, Plus, Trash2, Edit, Search, X, Save,
-  ChevronRight, BookOpen, Calendar, Phone,
-  User, AlertCircle, Upload, Download, FileSpreadsheet,
-  CheckCircle, GraduationCap, BarChart2, ClipboardCheck, Zap,
-  FileText, Loader2, Printer
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import CallIconData from '@hugeicons/core-free-icons/CallIcon';
+import UserIconData from '@hugeicons/core-free-icons/UserIcon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
+import PrinterIconData from '@hugeicons/core-free-icons/PrinterIcon';
 import axios from 'axios';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const Edit: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const Calendar: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Phone: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CallIconData} {...p} />;
+const User: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserIconData} {...p} />;
+const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
+const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
+const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const BarChart2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BarChartIconData} {...p} />;
+const ClipboardCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
+const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
 import SmartInput from './SmartInput';
 

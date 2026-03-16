@@ -1,5 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Loader2, Eye, Trash2, Wand2, Save, History, X, Download, ChevronDown, Users, GraduationCap, Check, Undo2 } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
+import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import MagicWand01IconData from '@hugeicons/core-free-icons/MagicWand01Icon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+import UndoIconData from '@hugeicons/core-free-icons/UndoIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ViewIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const Wand2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MagicWand01IconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
+const Undo2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UndoIconData} {...p} />;
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,

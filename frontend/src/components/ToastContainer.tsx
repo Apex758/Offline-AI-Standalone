@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Info, Download, X } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
+import InformationCircleIconData from '@hugeicons/core-free-icons/InformationCircleIcon';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; size?: number }> = ({ icon, className = '', style, size: sizeProp }) => {
+  if (sizeProp) return <HugeiconsIcon icon={icon} size={sizeProp} className={className} style={style} />;
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const XCircle: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
+const Info: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={InformationCircleIconData} {...p} />;
+const Download: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties; size?: number }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 import { useNotification } from '../contexts/NotificationContext';
 
 function UpdateBanner() {

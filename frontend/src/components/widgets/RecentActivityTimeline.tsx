@@ -1,5 +1,30 @@
 import React from 'react';
-import { Clock, BookMarked, CheckCircle2, Target, FileText, ListChecks, GraduationCap, Users, School } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import CheckmarkCircle02IconData from '@hugeicons/core-free-icons/CheckmarkCircle02Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import School01IconData from '@hugeicons/core-free-icons/School01Icon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Clock01IconData} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookBookmark01IconData} {...p} />;
+const CheckCircle2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckmarkCircle02IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Target01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={File01IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckListIconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={GraduationScrollIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={UserGroupIconData} {...p} />;
+const School: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={School01IconData} {...p} />;
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import type { Activity } from '../../types/analytics';
 

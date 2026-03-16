@@ -1,6 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { HelpCircle, Search, GraduationCap, X, Camera } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
 import { useSettings } from '../contexts/SettingsContext';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
 
 interface TutorialButtonProps {
   tutorialId: string;

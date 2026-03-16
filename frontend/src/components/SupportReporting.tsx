@@ -1,13 +1,66 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Search, ChevronDown, ChevronRight, BookOpen,
-  FileText, PenTool, Settings, HelpCircle,
-  Lightbulb, Users, Palette, FolderOpen, MessageSquare,
-  ThumbsUp, ThumbsDown,
-  AlertTriangle, Send, Loader2, CheckCircle, Clock,
-  Image, X, Filter, ArrowUpDown, Bug,
-  Zap, Camera
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import PenTool01IconData from '@hugeicons/core-free-icons/PenTool01Icon';
+import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
+import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
+import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import ThumbsUpIconData from '@hugeicons/core-free-icons/ThumbsUpIcon';
+import ThumbsDownIconData from '@hugeicons/core-free-icons/ThumbsDownIcon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import SentIconData from '@hugeicons/core-free-icons/SentIcon';
+import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import FilterIconData from '@hugeicons/core-free-icons/FilterIcon';
+import ArrowUpDownIconData from '@hugeicons/core-free-icons/ArrowUpDownIcon';
+import Bug01IconData from '@hugeicons/core-free-icons/Bug01Icon';
+import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
+import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookOpen01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
+const Settings: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Settings01IconData} {...p} />;
+const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
+const Lightbulb: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BulbIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FolderOpenIconData} {...p} />;
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const ThumbsUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ThumbsUpIconData} {...p} />;
+const ThumbsDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ThumbsDownIconData} {...p} />;
+const AlertTriangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
+const Send: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SentIconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading02IconData} {...p} />;
+const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Image: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Image01IconData} {...p} />;
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Filter: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FilterIconData} {...p} />;
+const ArrowUpDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowUpDownIconData} {...p} />;
+const Bug: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Bug01IconData} {...p} />;
+const Zap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FlashIconData} {...p} />;
+const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
@@ -52,7 +105,7 @@ const FAQ_DATA: FAQCategory[] = [
     id: 'lesson-planning', title: 'Lesson Planning', icon: BookOpen, color: '#8b5cf6',
     description: 'Creating and managing lesson plans',
     items: [
-      { question: 'How do I create a new lesson plan?', answer: 'Click "Lesson Plan" in the sidebar under Lesson Planners. Fill in the subject, grade level, topic, and any other details. The AI will generate a comprehensive lesson plan based on the OECS curriculum standards. You can then edit and customize the generated plan.' },
+      { question: 'How do I create a new lesson plan?', answer: 'Click "Lesson Plan" in the sidebar under Lesson Planners. Fill in the subject, grade level, topic, and any other details. A comprehensive lesson plan will be generated based on the OECS curriculum standards. You can then edit and customize the generated plan.' },
       { question: 'What\'s the difference between the lesson planner types?', answer: 'There are 4 types: Regular Lesson Plan (standard single-grade), Early Childhood (designed for kindergarten with play-based activities), Multi-Level (for combined/multigrade classrooms), and Integrated Lesson (cross-curricular plans that blend multiple subjects).' },
       { question: 'Can I save and edit lesson plans later?', answer: 'Yes! All generated lesson plans are automatically saved to My Resources. You can access them anytime from the Resource Manager, edit them, export as PDF, or duplicate them as templates for future lessons.' },
       { question: 'How do I link lesson plans to curriculum standards?', answer: 'When creating a lesson plan, select your subject and grade level. The system automatically maps to relevant OECS curriculum standards. You can also click "Browse Curriculum" to manually select specific learning outcomes to target.' },
@@ -63,9 +116,9 @@ const FAQ_DATA: FAQCategory[] = [
     id: 'quizzes-rubrics', title: 'Quizzes & Rubrics', icon: PenTool, color: '#ec4899',
     description: 'Building assessments and grading criteria',
     items: [
-      { question: 'How do I create a quiz?', answer: 'Open the Quiz Builder from the sidebar. Select your subject, grade level, and topic. Choose question types (multiple choice, true/false, short answer, etc.), set the difficulty level, and the AI will generate questions aligned to curriculum standards.' },
+      { question: 'How do I create a quiz?', answer: 'Open the Quiz Builder from the sidebar. Select your subject, grade level, and topic. Choose question types (multiple choice, true/false, short answer, etc.), set the difficulty level, and questions will be generated aligned to curriculum standards.' },
       { question: 'Can I edit the generated quiz questions?', answer: 'Absolutely! After generation, you can edit any question, change answers, adjust difficulty, add or remove questions, and reorder them. You have full control over the final quiz before saving or exporting.' },
-      { question: 'How do I create a grading rubric?', answer: 'Use the Rubric Builder in the sidebar. Specify the assignment type, subject, and criteria you want to assess. The AI generates a detailed rubric with performance levels and descriptors that you can customize.' },
+      { question: 'How do I create a grading rubric?', answer: 'Use the Rubric Builder in the sidebar. Specify the assignment type, subject, and criteria you want to assess. A detailed rubric with performance levels and descriptors will be generated that you can customize.' },
       { question: 'Can I grade students using the quizzes?', answer: 'Yes! Go to My Classes to manage your students. After creating a quiz, you can assign grades to individual students. The system tracks quiz scores and calculates grade averages automatically.' },
       { question: 'How do I export quizzes for printing?', answer: 'After creating a quiz, look for the Export/PDF button. You can generate a print-ready version with or without answer keys. The formatting is optimized for standard paper sizes.' },
     ]
@@ -94,7 +147,7 @@ const FAQ_DATA: FAQCategory[] = [
     id: 'visual-tools', title: 'Visual Studio Tools', icon: Palette, color: '#f97316',
     description: 'Worksheets, images, and visual content',
     items: [
-      { question: 'How do I create a worksheet?', answer: 'Open the Worksheet Builder from the Visual Studio section in the sidebar. Select your subject, grade, and activity type. The AI generates a formatted worksheet that you can customize before exporting.' },
+      { question: 'How do I create a worksheet?', answer: 'Open the Worksheet Builder from the Visual Studio section in the sidebar. Select your subject, grade, and activity type. A formatted worksheet will be generated that you can customize before exporting.' },
       { question: 'What is the Image Studio?', answer: 'The Image Studio lets you create and edit educational images and visual aids. You can generate illustrations, edit existing images, and create visual content to enhance your lessons and worksheets.' },
       { question: 'Why can\'t I see the Visual Studio tools?', answer: 'Visual Studio tools may be disabled in your settings. Go to Settings and look for the Visual Studio toggle to enable Worksheet Builder and Image Studio. These tools require the image generation service to be running.' },
     ]
@@ -109,8 +162,8 @@ const FAQ_DATA: FAQCategory[] = [
     ]
   },
   {
-    id: 'ask-pearl', title: 'Ask PEARL (AI Chat)', icon: MessageSquare, color: '#0ea5e9',
-    description: 'Using the AI assistant effectively',
+    id: 'ask-pearl', title: 'Ask PEARL', icon: MessageSquare, color: '#0ea5e9',
+    description: 'Getting the most out of PEARL',
     items: [
       { question: 'What can I ask PEARL?', answer: 'PEARL can help with lesson planning ideas, explain curriculum concepts, suggest teaching strategies, help differentiate instruction, create activity ideas, and answer questions about pedagogy. Think of PEARL as a knowledgeable teaching assistant.' },
       { question: 'Does PEARL know the OECS curriculum?', answer: 'Yes! PEARL is trained on OECS curriculum standards and can reference specific learning outcomes, suggest aligned activities, and help you plan lessons that meet curriculum requirements for your subject and grade level.' },
@@ -121,9 +174,9 @@ const FAQ_DATA: FAQCategory[] = [
     id: 'technical', title: 'Technical & Account', icon: Settings, color: '#64748b',
     description: 'Settings, performance, and account issues',
     items: [
-      { question: 'The app is running slowly. What can I do?', answer: 'Try closing unused tabs to free up resources. If using Visual Studio tools, they can be resource-intensive. Also check your internet connection as AI features require server communication. Clearing your browser cache can also help.' },
+      { question: 'The app is running slowly. What can I do?', answer: 'Try closing unused tabs to free up resources. If using Visual Studio tools, they can be resource-intensive. Also check your internet connection as generation features require server communication. Clearing your browser cache can also help.' },
       { question: 'How do I change my display name or profile?', answer: 'Go to Settings from the sidebar. Under the Profile section, you can update your display name and profile picture. Changes are saved automatically.' },
-      { question: 'Can I use this app offline?', answer: 'The app requires an internet connection for AI-powered features like lesson plan generation, quiz creation, and chat. However, you can browse previously saved resources and view cached curriculum content while offline.' },
+      { question: 'Can I use this app offline?', answer: 'The app requires a connection to the server for features like lesson plan generation, quiz creation, and chat. However, you can browse previously saved resources and view cached curriculum content while offline.' },
       { question: 'How do I report a bug or problem?', answer: 'Use the Report Issue side of this tab to create a support ticket. You can also click the floating help button (?) and use the camera icon to take a screenshot and submit it as a ticket — this is the easiest way to report visual issues.' },
     ]
   }

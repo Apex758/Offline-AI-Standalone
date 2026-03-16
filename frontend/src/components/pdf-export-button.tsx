@@ -1,5 +1,14 @@
 import React from 'react';
-import { Download } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
 
 interface PdfExportButtonProps {
   content?: string;

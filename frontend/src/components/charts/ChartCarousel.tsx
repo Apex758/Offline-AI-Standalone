@@ -1,5 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowLeft01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowDown01IconData} {...p} />;
 import ResourceTrendChart from './ResourceTrendChart';
 import ResourceDistributionChart from './ResourceDistributionChart';
 import type { ResourceTrendData, DistributionData, Timeframe } from '../../types/analytics';

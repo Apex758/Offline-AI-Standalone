@@ -1,7 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Eye, Save, Plus, Trash2, GripVertical, Users, GraduationCap, Check } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const Eye: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ViewIconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DragDropVerticalIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
 
 interface Question {
   id: string;

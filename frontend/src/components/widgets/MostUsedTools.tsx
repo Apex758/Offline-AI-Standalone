@@ -1,8 +1,34 @@
 import React from 'react';
-import {
-  MessageSquare, BookMarked, ListChecks, FileText, GraduationCap,
-  Users, School, BookOpen, Target, Library, Sparkles
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import School01IconData from '@hugeicons/core-free-icons/School01Icon';
+import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import LibraryIconData from '@hugeicons/core-free-icons/LibraryIcon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const MessageSquare: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Message01IconData} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookBookmark01IconData} {...p} />;
+const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckListIconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={File01IconData} {...p} />;
+const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={GraduationScrollIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={UserGroupIconData} {...p} />;
+const School: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={School01IconData} {...p} />;
+const BookOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookOpen01IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Target01IconData} {...p} />;
+const Library: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={LibraryIconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={SparklesIconData} {...p} />;
 import type { ToolUsage } from '../../types/analytics';
 
 interface MostUsedToolsProps {

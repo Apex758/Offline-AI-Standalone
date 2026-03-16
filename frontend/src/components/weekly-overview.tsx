@@ -1,6 +1,19 @@
 import React from 'react';
-import { Calendar, Target, BookOpen } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Calendar01Icon } from '@hugeicons/core-free-icons/Calendar01Icon';
+import { Target01Icon } from '@hugeicons/core-free-icons/Target01Icon';
+import { BookOpen01Icon } from '@hugeicons/core-free-icons/BookOpen01Icon';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Calendar = (props: { className?: string }) => <Icon icon={Calendar01Icon} {...props} />;
+const Target = (props: { className?: string }) => <Icon icon={Target01Icon} {...props} />;
+const BookOpen = (props: { className?: string }) => <Icon icon={BookOpen01Icon} {...props} />;
 
 interface WeeklyOverviewProps {
   weekNumber?: number;

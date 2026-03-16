@@ -2,54 +2,7 @@
 
 A focused review of color choices, button/icon styling, and unnecessary text across the app. The goal: make everything feel deliberate, crafted, and human — not like it was auto-generated.
 
----
 
-## 1. Remove or Replace "AI" Text Throughout
-
-The word "AI" appears **excessively** across the UI. It doesn't add value to teachers — they care about what the tool *does*, not that it's AI. Overuse makes the app feel like a tech demo instead of a professional teaching tool.
-
-### User-Facing Text to Change
-
-| Location | Current Text | Suggested Text |
-|---|---|---|
-| **AIAssistantPanel** header | "AI Assistant" | "Assistant" or "PEARL" |
-| **AIAssistantPanel** modify banner | "...and AI will update your..." | "...and your content will be updated accordingly." |
-| **LessonPlanner** heading | "AI Lesson Plan Generator" | "Lesson Plan Generator" or just "Lesson Planner" |
-| **KindergartenPlanner** heading | "AI-Powered Kindergarten Lesson Planner" | "Early Childhood Planner" |
-| **ImageStudio** heading | "AI Image Generator" | "Image Generator" |
-| **QuizGenerator** result banner | "AI-powered quiz" | Remove entirely, or use "Generated on [date]" |
-| **LessonPlanner** result banner | "AI-powered lesson plan" | Remove entirely |
-| **RubricGenerator** result banner | "AI-powered rubric" | Remove entirely |
-| **KindergartenPlanner** result banner | "AI-powered kindergarten plan" | Remove entirely |
-| **MultigradePlanner** result banner | "AI-powered multigrade plan" | Remove entirely |
-| **CrossCurricularPlanner** result banner | "AI-powered cross-curricular plan" | Remove entirely |
-| **Dashboard** tool description | "Have a conversation with the AI assistant" | "Chat with PEARL for ideas and help" |
-| **Dashboard** tool description | "Dump your thoughts and let AI organize them into actions" | "Dump your thoughts and turn them into actions" |
-| **BrainDump** subtitle | "Type or speak your thoughts, let AI turn them into actions" | "Type or speak your thoughts, turn them into actions" |
-| **Chat** empty state | "I'm your AI teaching assistant, here to help..." | "I'm here to help explain concepts and answer your questions." |
-| **Settings** sidebar label | "AI Models" | "Models" |
-| **Settings** sidebar sublabel | "Customize PEARL AI" | "Customize PEARL" |
-| **Settings** section heading | "AI Models" | "Models" |
-| **Settings** card description | "Select the AI model to use for text generation" | "Select the model to use for generation" |
-| **Settings** generation behavior | "Control how AI generations are processed" | "Control how generations are processed" |
-| **Settings** auto-finish description | "Auto-finish uses your AI model to suggest completions..." | "Auto-finish uses your model to suggest completions..." |
-| **SupportReporting** category title | "Ask PEARL (AI Chat)" | "Ask PEARL" |
-| **SupportReporting** category description | "Using the AI assistant effectively" | "Getting the most out of PEARL" |
-| **TutorialOverlay** sidebar step | "This is your AI-powered teaching assistant sidebar..." | "This is your teaching toolkit sidebar..." |
-| **TutorialOverlay** chat step title | "AI Chat Assistant" | "Chat with PEARL" |
-| **TutorialOverlay** chat step description | "Chat with your AI teaching assistant..." | "Chat with PEARL for help, ideas, or to discuss your lesson plans." |
-| **WelcomeModal** feature bullet | "AI-powered lesson planning for multiple grade levels" | "Lesson planning for multiple grade levels" |
-| **searchIndex** setting title | "AI Model Selection" | "Model Selection" |
-| **searchIndex** chat description | "Have a conversation with the AI assistant" | "Chat with PEARL for ideas and help" |
-| **ImageStudio** loading text | "AI is writing scene prompts..." | "Writing scene prompts..." |
-
-### System prompts (not user-facing, but still worth noting)
-The system prompts in `AIAssistantPanel.tsx` ("You are a helpful AI assistant...") are backend-only and fine to leave as-is.
-
-### FAQ/Support answers
-The support FAQ answers reference "AI" heavily (e.g., "the AI will generate..."). Consider rewriting to passive voice: "A comprehensive lesson plan will be generated..." or simply "Your lesson plan will be generated...". This is lower priority since it's help text.
-
----
 
 ## 2. Color Issues — Buttons & Accents
 
@@ -192,147 +145,7 @@ Reserve `Sparkles` for, at most, ONE place — or don't use it at all.
 
 ---
 
-## 5. Text Size Inconsistencies & Font Scaling System
-
-### How the Font Size System Works (and Its Limitations)
-
-The font size setting (`Settings > Appearance > Font Size`) works by setting `document.documentElement.style.fontSize` to a percentage (80%–120%). This scales the root `rem` unit, so **anything sized in `rem` scales proportionally** — Tailwind classes like `text-sm` (0.875rem), `text-base` (1rem), `text-lg` (1.125rem) all respond correctly.
-
-**The problem:** A significant portion of the app uses **hardcoded pixel values** via Tailwind's arbitrary value syntax (`text-[10px]`, `text-[11px]`, `text-[13.5px]`, `text-[15px]`). These are absolute — they **completely ignore the font size slider**. A user who sets their font to 120% for readability will see most text scale up but these elements will stay tiny.
-
-### Pixel Sizes That Bypass the Font Scaler
-
-| Size | Where Used | Count |
-|---|---|---|
-| `text-[10px]` | BrainDump (action badges, timestamps, labels), ClassManagement (table headers, status labels, student counts, attendance stats, grade headers, comment labels), CurriculumNavigator (hover hint counts, section labels), ImageStudio (prompt text, style hints, slider labels, template labels) | ~30+ instances |
-| `text-[11px]` | BrainDump ("Quick Tools" heading), ClassManagement (attendance labels, action buttons), CommandPalette (category headers, keyboard hints, footer) | ~8 instances |
-| `text-[13px]` | CurriculumNavigator (tree items — both folders and leaf nodes) | 2 instances |
-| `text-[13.5px]` | **Every generator toolbar button** — Save, Assistant, Export, Edit, History, Generate across LessonPlanner, QuizGenerator, RubricGenerator, KindergartenPlanner, MultigradePlanner, CrossCurricularPlanner, WorksheetGenerator | ~40+ instances |
-| `text-[15px]` | CommandPalette (search input) | 1 instance |
-
-**Fix:** Replace all `text-[Npx]` classes with their closest `rem`-based Tailwind equivalents:
-
-| Hardcoded | Replace With | Tailwind Class |
-|---|---|---|
-| `text-[10px]` | 0.625rem | `text-[0.625rem]` (or just use `text-xs` which is 0.75rem — visually close and already in the system) |
-| `text-[11px]` | 0.6875rem | `text-[0.6875rem]` (or `text-xs`) |
-| `text-[13px]` | 0.8125rem | `text-[0.8125rem]` (or `text-sm` which is 0.875rem) |
-| `text-[13.5px]` | 0.84375rem | `text-sm` (0.875rem) — the difference is negligible and it unifies all toolbar buttons |
-| `text-[15px]` | 0.9375rem | `text-base` (1rem) or `text-[0.9375rem]` |
-
-The simplest fix: replace `text-[13.5px]` with `text-sm` across all generators. This alone fixes 40+ instances and makes every toolbar button respect the font scaler.
-
-### The `0.625rem` Sidebar Section Label
-
-In `index.css`, the `.glass-section-label` class is hardcoded to `font-size: 0.625rem` (10px). This is used for sidebar group headers like "LESSON PLANNERS", "VISUAL STUDIO", etc. At 10px, these are already at the edge of legibility. When a user scales down to 80%, they become 8px — nearly unreadable.
-
-**Fix:** Bump to `0.6875rem` (11px) minimum, or better yet use `text-xs` (0.75rem / 12px) which is the Tailwind standard for small utility text.
-
-### The Form Input Override
-
-In `index.css` line 12:
-```css
-input, textarea, select {
-  font-size: 0.875rem;
-}
-```
-This hardcodes all form inputs to `text-sm` regardless of the user's font size setting. It uses `rem`, so it *does* scale — but it overrides any component that tries to set a different input size. This is mostly fine, but worth knowing about.
-
-### Text Sizes That Should Match But Don't
-
-These are places where visually equivalent elements use different sizes, making the UI feel unpolished:
-
-#### Generator Toolbar Buttons — Inconsistent `disabled` Opacity
-- LessonPlanner Save: `disabled:bg-theme-tertiary disabled:cursor-not-allowed`
-- QuizGenerator Save: `disabled:opacity-50 disabled:cursor-not-allowed`
-- RubricGenerator Save: `disabled:opacity-50 disabled:cursor-not-allowed`
-
-Some generators use `disabled:bg-theme-tertiary` (changes background), others use `disabled:opacity-50` (fades everything). Pick one approach — `disabled:opacity-50` is simpler and more consistent.
-
-#### Section Headings Inside Generator Forms
-- LessonPlanner form sections: `text-lg font-bold text-theme-heading` (e.g., "Basic Information", "Teaching Strategy")
-- QuizGenerator form heading: `text-xl font-semibold text-theme-heading` ("Quiz Configuration")
-- KindergartenPlanner form heading: `text-xl font-semibold text-theme-heading`
-
-The top-level form heading should be consistent across generators. Pick `text-xl font-semibold` or `text-lg font-bold` — not both.
-
-#### Generated Content Headers
-- LessonPlanner: `text-xl font-semibold` ("Generated Lesson Plan" / "AI Lesson Plan Generator")
-- QuizGenerator: `text-xl font-semibold` — matches
-- All generators use `text-xl font-semibold text-theme-heading` for the page title — this is **consistent**, which is good.
-
-But the *subtitle text* underneath varies:
-- LessonPlanner: `text-sm text-theme-hint` ("Fill in the details to generate a personalized D-OHPC lesson plan")
-- QuizGenerator: `text-sm text-theme-hint` ("Configure your quiz parameters")
-- These match. Good.
-
-#### Result Banner Metadata Text
-Inside the generated content header banner (the colored card at top):
-- Subject/Grade badges: `text-white text-sm font-medium` — consistent across generators
-- Metadata items (strand, duration, student count): `text-sm` — consistent
-- Status text ("Generating..."): `text-sm font-medium` — consistent
-- The "AI-powered" sub-label: `text-xs text-[color]-100` — consistent (but should be removed per Section 1)
-
-### Opacity Overuse and Inconsistency
-
-The app uses opacity in several ways that create visual inconsistency:
-
-#### Inline `rgba()` Opacity vs Tailwind Opacity
-The Dashboard quick links use inline `rgba()` values with specific opacities:
-```jsx
-color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(29,54,45,0.75)'   // label text
-color: isDarkMode ? 'rgba(160,220,120,0.7)' : 'rgba(29,54,45,0.8)'   // icon
-color: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(29,54,45,0.4)'   // tip text
-```
-Meanwhile, the theme system already defines opacity levels through semantic colors (`text-theme-muted`, `text-theme-hint`). These inline values bypass the theme entirely and won't update if you change the theme palette later.
-
-**Fix:** Map these to theme classes:
-- Icon color 0.8 → `text-theme-heading` or `text-theme-label`
-- Label text 0.75 → `text-theme-label`
-- Tip text 0.4 → `text-theme-hint`
-
-#### ClassManagement Header Opacity Layers
-The ClassManagement student detail card uses multiple stacked white opacity values:
-- `text-white/70` for subtitle text
-- `bg-white/20` for buttons
-- `bg-white/30` for button hover
-- `text-white/60` for IDs
-- `text-white/90` for badges
-- `opacity-10` for decorative elements
-- `opacity-40` for icons
-
-This is 7 different opacity levels in one card. It works visually but creates maintenance complexity. Consider consolidating to 3 levels: full, muted (0.7), faint (0.3).
-
-#### BrainDump Purple Opacity Variants
-BrainDump uses:
-- `bg-purple-500/15` — operator buttons
-- `bg-purple-500/12` — secondary action buttons
-- `bg-purple-500/20` — hover/active states
-- `shadow-purple-500/20` — glow shadows
-- `ring-purple-500/30` — focus rings
-- `bg-purple-400/40` — focus ring on inputs
-
-Six different purple opacity values is excessive for a single component. This ties back to the color issue — simplify to the brand palette and you eliminate most of these.
-
-#### Empty State Icon Opacity
-Various components fade their empty-state icons differently:
-- CurriculumNavigator: `opacity-30` on the BookOpen icon
-- ClassManagement: `opacity-20` on Users icon
-- ClassManagement (another spot): `opacity-40` on Users icon
-- ClassManagement header: `opacity-10` for large decorative text
-
-**Fix:** Pick one empty-state icon opacity — `opacity-20` or `opacity-25` — and use it everywhere. The variation between 10, 20, 30, and 40 across the app looks accidental.
-
-#### `hover:opacity-90` as a Button Hover State
-Several buttons in ClassManagement use `hover:opacity-90` instead of a darker background:
-```
-transition hover:opacity-90  // on colored buttons
-```
-This is a lazy hover state — it slightly dims the entire button including text and icon, which looks flat. A proper `hover:bg-[darker-shade]` is more intentional. Some buttons already do this correctly (e.g., `hover:bg-blue-700`), so the inconsistency is noticeable.
-
----
-
-## 6. Summary of Priorities
+## 5. Summary of Priorities
 
 ### High Impact (Do First)
 1. **Remove "AI-powered [type]" banners** from all generated content headers — these add nothing
@@ -340,23 +153,15 @@ This is a lazy hover state — it slightly dims the entire button including text
 3. **Remove "AI" from tool headings** (Lesson Plan Generator, Image Generator, etc.)
 4. **Standardize generator toolbar button colors** — primary/secondary/tertiary hierarchy
 5. **Replace most Sparkles icons** with contextually appropriate alternatives
-6. **Convert `text-[13.5px]` → `text-sm`** across all generator toolbars (~40 instances) — makes buttons respect font scaler and unifies sizing
-7. **Convert all `text-[10px]` / `text-[11px]` → `rem`-based equivalents** — makes small text respect font scaler
 
 ### Medium Impact
-8. **Align Login page** with brand palette instead of generic blue
-9. **Simplify BrainDump gradients** — too many competing colors
-10. **Trim AI Assistant panel descriptions** to their "Ask PEARL" equivalents
-11. **Clean up redundant sidebar tool descriptions**
-12. **Standardize `disabled` button styles** — pick `opacity-50` or `bg-theme-tertiary`, not both
-13. **Standardize empty-state icon opacity** — pick one value (e.g., `opacity-20`) instead of 10/20/30/40
-14. **Replace inline `rgba()` opacity** in Dashboard quick links with theme classes
+6. **Align Login page** with brand palette instead of generic blue
+7. **Simplify BrainDump gradients** — too many competing colors
+8. **Trim AI Assistant panel descriptions** to their "Ask PEARL" equivalents
+9. **Clean up redundant sidebar tool descriptions**
 
 ### Lower Priority
-15. **Rework dark mode quick link icon color** for warmth
-16. **Simplify FAQ/Support text** to remove gratuitous AI mentions
-17. **Remove Welcome Modal tutorial instruction text**
-18. **Remove demo login text** (or hide behind flag)
-19. **Bump `.glass-section-label` font-size** from `0.625rem` to `0.75rem` (`text-xs`)
-20. **Replace `hover:opacity-90` button hover states** with proper darker-shade backgrounds
-21. **Consolidate BrainDump's 6 purple opacity variants** down to 2-3 (or eliminate with brand color switch)
+10. **Rework dark mode quick link icon color** for warmth
+11. **Simplify FAQ/Support text** to remove gratuitous AI mentions
+12. **Remove Welcome Modal tutorial instruction text**
+13. **Remove demo login text** (or hide behind flag)

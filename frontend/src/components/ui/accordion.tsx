@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
 
 interface AccordionContextValue {
   value: string[];

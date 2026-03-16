@@ -1,5 +1,18 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
+import ChartDecreaseIconData from '@hugeicons/core-free-icons/ChartDecreaseIcon';
+import MinusSignIconData from '@hugeicons/core-free-icons/MinusSignIcon';
+
+const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ChartIncreaseIconData} {...p} />;
+const TrendingDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ChartDecreaseIconData} {...p} />;
+const Minus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={MinusSignIconData} {...p} />;
 
 interface QuickStatsCardProps {
   title: string;

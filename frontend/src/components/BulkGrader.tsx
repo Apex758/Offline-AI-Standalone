@@ -1,9 +1,37 @@
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  X, Upload, FileText, CheckCircle, XCircle, AlertCircle,
-  Award, ChevronDown, ChevronUp, Save, Users, Trash2
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
+const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
+const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckmarkCircle01IconData} {...p} />;
+const XCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
+const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
+const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ChevronUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowUp01IconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
 import axios from 'axios';
 import { ParsedQuiz } from '../types/quiz';
 import { useSettings } from '../contexts/SettingsContext';

@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, CalendarDays, Type, AlignLeft, Flag } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import TextFontIconData from '@hugeicons/core-free-icons/TextFontIcon';
+import AlignLeftIconData from '@hugeicons/core-free-icons/AlignLeftIcon';
+import Flag01IconData from '@hugeicons/core-free-icons/Flag01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const CalendarDays: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Calendar01IconData} {...p} />;
+const Type: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextFontIconData} {...p} />;
+const AlignLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlignLeftIconData} {...p} />;
+const Flag: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Flag01IconData} {...p} />;
 import { format } from 'date-fns';
 import type { Task, TaskFormData, TaskPriority } from '../../types/task';
 import SmartTextArea from '../SmartTextArea';

@@ -263,13 +263,13 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="lesson-planner-welcome"]',
         title: 'Welcome to Lesson Planner',
-        description: 'Create detailed, standards-aligned lesson plans with AI assistance. Perfect for planning engaging and effective lessons.',
+        description: 'Create detailed, standards-aligned lesson plans. Perfect for planning engaging and effective lessons.',
         position: 'bottom'
       },
       {
         target: '[data-tutorial="lesson-planner-basic-info"]',
         title: 'Basic Information',
-        description: 'Start by selecting the grade level, subject, and lesson topic. This helps PEARL AI generate relevant content.',
+        description: 'Start by selecting the grade level, subject, and lesson topic. This helps PEARL generate relevant content.',
         position: 'right'
       },
       {
@@ -281,19 +281,19 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="lesson-planner-materials"]',
         title: 'Materials Needed',
-        description: 'List materials and resources required for the lesson. AI can suggest appropriate materials based on your topic.',
+        description: 'List materials and resources required for the lesson. Appropriate materials can be suggested based on your topic.',
         position: 'right'
       },
       {
         target: '[data-tutorial="lesson-planner-activities"]',
         title: 'Lesson Activities',
-        description: 'Plan your lesson procedures including introduction, main activities, and conclusion. AI generates structured, time-appropriate activities.',
+        description: 'Plan your lesson procedures including introduction, main activities, and conclusion. Structured, time-appropriate activities will be generated.',
         position: 'right'
       },
       {
         target: '[data-tutorial="lesson-planner-generate"]',
         title: 'Generate Lesson Plan',
-        description: 'Click to have PEARL AI create a complete, detailed lesson plan based on your inputs.',
+        description: 'Click to create a complete, detailed lesson plan based on your inputs.',
         position: 'top',
         interactive: true,
         waitForAction: 'click',
@@ -375,7 +375,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="multigrade-planner-grades"]',
         title: 'Select Grade Levels',
-        description: 'Choose all grade levels in your classroom. PEARL AI will help you plan appropriate activities for each.',
+        description: 'Choose all grade levels in your classroom. PEARL will help you plan appropriate activities for each.',
         position: 'right',
         interactive: true,
         waitForAction: 'click',
@@ -464,7 +464,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="cross-curricular-planner-objectives"]',
         title: 'Subject Objectives',
-        description: 'Define learning objectives for each subject area. PEARL AI helps create objectives that naturally connect.',
+        description: 'Define learning objectives for each subject area. PEARL helps create objectives that naturally connect.',
         position: 'right'
       },
       {
@@ -553,7 +553,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="quiz-generator-generate"]',
         title: 'Generate Quiz',
-        description: 'Create your quiz! PEARL AI will generate questions with answer keys and marking schemes.',
+        description: 'Create your quiz! Questions will be generated with answer keys and marking schemes.',
         position: 'top'
       },
       //Future: preview/edit/export steps once anchors exist
@@ -643,7 +643,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   [TUTORIAL_IDS.WORKSHEET_GENERATOR]: {
     id: TUTORIAL_IDS.WORKSHEET_GENERATOR,
     name: 'Worksheet Builder',
-    description: 'Create and preview AI-assisted worksheets',
+    description: 'Create and preview worksheets',
     steps: [
       { target: '[data-tutorial="worksheet-generator-welcome"]', title: 'Welcome to Worksheet Generator', description: 'Configure subject, grade, and scope to create aligned worksheets.', position: 'center' },
       { target: '[data-tutorial="worksheet-generator-subject"]', title: 'Pick Subject', description: 'Choose the subject to align standards and content.', position: 'right' },
@@ -654,7 +654,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       { target: '[data-tutorial="worksheet-generator-question-type"]', title: 'Question Type', description: 'Select the question type to shape the template and prompts.', position: 'right', interactive: true, waitForAction: 'click', actionHint: '👆 Select a type' },
       { target: '[data-tutorial="worksheet-generator-templates"]', title: 'Template Layout', description: 'Pick the worksheet layout that matches your question type.', position: 'right' },
       { target: '[data-tutorial="worksheet-generator-include-images"]', title: 'Images (Optional)', description: 'Toggle images on/off to enrich the worksheet.', position: 'right' },
-      { target: '[data-tutorial="worksheet-generator-image-prompt"]', title: 'Image Prompt', description: 'Describe the image for AI generation when images are enabled.', position: 'right' },
+      { target: '[data-tutorial="worksheet-generator-image-prompt"]', title: 'Image Prompt', description: 'Describe the image to generate when images are enabled.', position: 'right' },
       { target: '[data-tutorial="worksheet-generator-generate"]', title: 'Generate Worksheet', description: 'Produce the worksheet with the chosen settings.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
       { target: '[data-tutorial="worksheet-generator-preview"]', title: 'Live Preview', description: 'See the rendered worksheet; switch between student/teacher views.', position: 'left' },
       { target: '[data-tutorial="worksheet-generator-view-toggle"]', title: 'Student vs. Teacher', description: 'Toggle to show/hide answers.', position: 'left', interactive: true, waitForAction: 'click', actionHint: '👆 Toggle view' },
@@ -673,7 +673,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       { target: '[data-tutorial="image-studio-tab-toggle"]', title: 'Generator vs. Editor', description: 'Switch between generating images and editing uploads.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Toggle' },
       { target: '[data-tutorial="image-studio-prompt"]', title: 'Prompt', description: 'Describe the image you want to generate.', position: 'right' },
       { target: '[data-tutorial="image-studio-batch"]', title: 'Batch Size', description: 'Control how many images to generate at once.', position: 'right' },
-      { target: '[data-tutorial="image-studio-generate"]', title: 'Generate Images', description: 'Start the AI image generation.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
+      { target: '[data-tutorial="image-studio-generate"]', title: 'Generate Images', description: 'Start generating images.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Generate' },
       { target: '[data-tutorial="image-studio-results"]', title: 'Results', description: 'Review generated images; download or save.', position: 'left' },
       { target: '[data-tutorial="image-studio-upload"]', title: 'Upload to Edit', description: 'Upload an image for cleanup or inpainting.', position: 'top', interactive: true, waitForAction: 'click', actionHint: '👆 Upload' },
       { target: '[data-tutorial="image-studio-canvas"]', title: 'Mask & Preview', description: 'Draw masks over areas to remove.', position: 'center' },
@@ -829,7 +829,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
       {
         target: '[data-tutorial="settings-welcome"]',
         title: 'Welcome to Settings',
-        description: 'Customize PEARL AI to match your preferences and teaching style. Adjust appearance, notifications, and more.',
+        description: 'Customize PEARL to match your preferences and teaching style. Adjust appearance, notifications, and more.',
         position: 'bottom'
       },
       {
@@ -871,12 +871,12 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
   [TUTORIAL_IDS.CHAT]: {
     id: TUTORIAL_IDS.CHAT,
     name: 'Ask PEARL',
-    description: 'Chat with your AI teaching assistant',
+    description: 'Chat with PEARL',
     steps: [
       {
         target: '[data-tutorial="chat-welcome"]',
         title: 'Welcome to Ask PEARL',
-        description: 'Chat with your AI teaching assistant for lesson ideas, curriculum questions, differentiation strategies, and more. PEARL understands the OECS curriculum and can help you plan effectively.',
+        description: 'Chat with PEARL for lesson ideas, curriculum questions, differentiation strategies, and more. PEARL understands the OECS curriculum and can help you plan effectively.',
         position: 'center'
       },
       {
