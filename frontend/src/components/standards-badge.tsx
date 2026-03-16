@@ -1,5 +1,14 @@
 import React from 'react';
-import { BookOpen } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { BookOpen01Icon } from '@hugeicons/core-free-icons/BookOpen01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const BookOpen = (props: { className?: string }) => <Icon icon={BookOpen01Icon} {...props} />;
 
 interface StandardsBadgeProps {
   code?: string;
@@ -9,9 +18,9 @@ interface StandardsBadgeProps {
 }
 
 // Add named export
-export function StandardsBadge({ 
-  code, 
-  title, 
+export function StandardsBadge({
+  code,
+  title,
   className = '',
   variant = 'default'
 }: StandardsBadgeProps) {
@@ -23,7 +32,7 @@ export function StandardsBadge({
   };
 
   return (
-    <div 
+    <div
       className={`inline-flex items-center px-3 py-1.5 rounded-lg border text-sm font-medium ${variantStyles[variant]} ${className}`}
       title={title}
     >

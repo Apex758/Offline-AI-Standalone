@@ -1,5 +1,14 @@
 import React from 'react';
-import { Lightbulb } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { BulbIcon } from '@hugeicons/core-free-icons/BulbIcon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Lightbulb = (props: { className?: string }) => <Icon icon={BulbIcon} {...props} />;
 
 interface TeachingTipProps {
   children: React.ReactNode;
