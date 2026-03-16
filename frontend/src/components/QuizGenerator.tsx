@@ -709,37 +709,37 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       <button
                         onClick={enableEditing}
                         disabled={!parsedQuiz}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         title={!parsedQuiz ? "Quiz format not recognized" : "Edit quiz"}
                       >
-                        <Edit className="w-4 h-4 mr-2" />
+                        <Edit className="w-3.5 h-3.5 mr-1.5" />
                         Edit
                       </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
-                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
+                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        <Sparkles className="w-4 h-4 mr-2" />
+                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                         AI Assistant
                       </button>
                       <button
                         onClick={saveQuiz}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
                       >
                         {saveStatus === 'saving' ? (
                           <>
-                            <HeartbeatLoader className="w-4 h-4 mr-2" />
+                            <HeartbeatLoader className="w-3.5 h-3.5 mr-1.5" />
                             Saving...
                           </>
                         ) : saveStatus === 'saved' ? (
                           <>
-                            <Save className="w-4 h-4 mr-2" />
+                            <Save className="w-3.5 h-3.5 mr-1.5" />
                             Saved!
                           </>
                         ) : (
                           <>
-                            <Save className="w-4 h-4 mr-2" />
+                            <Save className="w-3.5 h-3.5 mr-1.5" />
                             Save Quiz
                           </>
                         )}
@@ -748,11 +748,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       <div className="relative">
                         <button
                           onClick={() => setShowVersionMenu(!showVersionMenu)}
-                          className="flex items-center px-4 py-2 bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
+                          className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
                         >
-                          <FileText className="w-4 h-4 mr-2" />
+                          <FileText className="w-3.5 h-3.5 mr-1.5" />
                           {selectedVersion === 'teacher' ? 'Teacher Version' : 'Student Version'}
-                          <ChevronDown className="w-4 h-4 ml-2" />
+                          <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
                         </button>
 
                         {showVersionMenu && (
@@ -832,7 +832,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           studentInfo: viewingStudent ? { name: viewingStudent.name, id: viewingStudent.id } : undefined
                         }}
                         filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${viewingStudent ? viewingStudent.name.replace(/\s+/g, '-') : effectiveVersion}`}
-                        className="ml-2"
+                        className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
@@ -851,7 +851,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           setClassQuizData(null);
                           setSelectedStudentIdx(null);
                         }}
-                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                        className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
                         Create New Quiz
                       </button>
@@ -1557,7 +1557,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
             <div className="flex flex-col items-center gap-1">
               <PanelRightOpen className="w-4 h-4 text-theme-muted" />
               <Users className="w-4 h-4 text-theme-muted" />
-              <span className="text-[10px] text-theme-hint font-medium" style={{ writingMode: 'vertical-lr' }}>
+              <span className="text-xs text-theme-hint font-semibold" style={{ writingMode: 'vertical-lr' }}>
                 {classQuizData.length} Students
               </span>
             </div>

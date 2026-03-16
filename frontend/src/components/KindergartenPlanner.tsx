@@ -883,37 +883,37 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       <button
                         onClick={enableEditing}
                         disabled={!parsedPlan}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
+                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
                         title={!parsedPlan ? "Kindergarten plan format not recognized" : "Edit plan"}
                       >
-                        <Edit className="w-4 h-4 mr-2" />
+                        <Edit className="w-3.5 h-3.5 mr-1.5" />
                         Edit
                       </button>
                       <button
                         onClick={() => setAssistantOpen(true)}
-                        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
+                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-lg"
                       >
-                        <Sparkles className="w-4 h-4 mr-2" />
+                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                         AI Assistant
                       </button>
                       <button
                         onClick={savePlan}
                         disabled={saveStatus === 'saving'}
-                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary"
+                        className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-theme-tertiary"
                       >
                         {saveStatus === 'saving' ? (
                           <>
-                            <HeartbeatLoader className="w-4 h-4 mr-2" />
+                            <HeartbeatLoader className="w-3.5 h-3.5 mr-1.5" />
                             Saving...
                           </>
                         ) : saveStatus === 'saved' ? (
                           <>
-                            <Save className="w-4 h-4 mr-2" />
+                            <Save className="w-3.5 h-3.5 mr-1.5" />
                             Saved!
                           </>
                         ) : (
                           <>
-                            <Save className="w-4 h-4 mr-2" />
+                            <Save className="w-3.5 h-3.5 mr-1.5" />
                             Save Plan
                           </>
                         )}
@@ -927,7 +927,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                           accentColor: tabColor
                         }}
                         filename={`kindergarten-${formData.lessonTopic.toLowerCase().replace(/\s+/g, '-')}`}
-                        className="ml-2"
+                        className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"
                       />
                       <button
                         onClick={() => setHistoryOpen(!historyOpen)}
@@ -943,7 +943,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                           setParsedPlan(null);
                           setIsEditing(false);
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                       >
                         Create New Plan
                       </button>

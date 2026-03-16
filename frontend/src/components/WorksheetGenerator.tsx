@@ -1433,35 +1433,35 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       setIsEditing(true);
                     }
                   }}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                  className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                   title="Edit generated worksheet"
                   disabled={!generatedWorksheet && !parsedWorksheet}
                   data-tutorial="worksheet-generator-edit"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
+                  <FileText className="w-3.5 h-3.5 mr-1.5" />
                   Edit {parsedWorksheet ? '' : '(Text Mode)'}
                 </button>
 
                 <button
                   onClick={saveWorksheet}
                   disabled={saveStatus === 'saving'}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                  className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
                   data-tutorial="worksheet-generator-save"
                 >
                   {saveStatus === 'saving' ? (
                     <>
-                      <HeartbeatLoader className="w-4 h-4 mr-2" />
+                      <HeartbeatLoader className="w-3.5 h-3.5 mr-1.5" />
                       Saving...
                     </>
                   ) : saveStatus === 'saved' ? (
                     <>
-                      <Save className="w-4 h-4 mr-2" />
+                      <Save className="w-3.5 h-3.5 mr-1.5" />
                       Saved!
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save 
+                      <Save className="w-3.5 h-3.5 mr-1.5" />
+                      Save
                     </>
                   )}
                 </button>
@@ -1469,12 +1469,12 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 <div className="relative">
                   <button
                     onClick={() => setShowVersionMenu(!showVersionMenu)}
-                    className="flex items-center px-4 py-2 bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
+                    className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
                     data-tutorial="worksheet-generator-view-toggle"
                   >
-                    <FileText className="w-4 h-4 mr-2" />
+                    <FileText className="w-3.5 h-3.5 mr-1.5" />
                     {viewMode === 'teacher' ? 'Teacher Version' : 'Student Version'}
-                    <ChevronDown className="w-4 h-4 ml-2" />
+                    <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
                   </button>
 
                   {showVersionMenu && (
@@ -1546,15 +1546,16 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     generatedImages: generatedImages
                   }}
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
+                  className="!px-3.5 !py-1.5 !text-[13.5px]"
                   data-tutorial="worksheet-generator-export"
                 />
 
                 <button
                   onClick={handleClearWorksheet}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                  className="px-3.5 py-1.5 text-[13.5px] bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                   title="Create a new worksheet"
                 >
-                  Create New 
+                  Create New
                 </button>
 
               </>

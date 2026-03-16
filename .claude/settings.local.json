@@ -17,7 +17,11 @@
       "WebFetch(domain:github.com)",
       "Bash(/tmp/button_report.txt:*)",
       "Read(//tmp/**)",
-      "Bash(du:*)"
+      "Bash(du:*)",
+      "Bash(for file:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/LG/Desktop/Projects/Offline AI Standalone/**)",
+      "Bash(done)"
     ]
   }
 }

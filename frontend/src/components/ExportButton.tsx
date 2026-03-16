@@ -186,7 +186,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           />
           
           {/* Menu */}
-          <div className="absolute right-0 mt-2 w-48 rounded-lg z-20 overflow-hidden widget-glass">
+          <div className="absolute right-0 mt-2 w-48 rounded-lg z-20 overflow-hidden export-dropdown-glass">
             <div className="py-1">
               <button
                 onClick={() => handleExport('pdf')}
