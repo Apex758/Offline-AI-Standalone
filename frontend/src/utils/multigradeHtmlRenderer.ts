@@ -228,21 +228,41 @@ export function generateMultigradeHTML(text: string, options: RenderOptions): st
     padding: 2rem;
   ">
     <div style="
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      gap: 0.5rem;
       margin-bottom: 1rem;
     ">
-      <span style="
-        color: white;
-        font-size: 0.875rem;
-        font-weight: 500;
-      ">${formData.subject} • Multigrade</span>
+      <div style="
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      ">
+        <span style="
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+        ">${formData.subject}</span>
+      </div>
+      <div style="
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      ">
+        <span style="
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+        ">Grades ${formData.gradeLevels.join(', ')}</span>
+      </div>
     </div>
-    
+
     <h1 style="
       font-size: 2rem;
       font-weight: 700;
@@ -250,7 +270,7 @@ export function generateMultigradeHTML(text: string, options: RenderOptions): st
       margin: 0.5rem 0;
       line-height: 1.2;
     ">${formData.topic || 'Multigrade Lesson Plan'}</h1>
-    
+
     <div style="
       display: flex;
       flex-wrap: wrap;
@@ -260,45 +280,17 @@ export function generateMultigradeHTML(text: string, options: RenderOptions): st
       margin-top: 1rem;
     ">
       <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
-        <span style="font-size: 0.875rem;">Grades ${formData.gradeLevels.join(', ')}</span>
-      </div>
-      <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
         <span style="font-size: 0.875rem;">${formData.duration}</span>
       </div>
       <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
         <span style="font-size: 0.875rem;">${formData.totalStudents} students</span>
       </div>
-    </div>
-    
-    <div style="
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(207, 250, 254, 1);
-      font-size: 0.875rem;
-    ">
-      // <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
+      <div style="display: flex; align-items: center;">
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">Generated on ${new Date().toLocaleDateString()}</span>
+      </div>
     </div>
   </div>
 

@@ -1022,19 +1022,20 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div className="relative px-8 py-8">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
-                            <span className="text-white text-sm font-medium">{formData.integrationModel}</span>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                              <span className="text-white text-sm font-medium">{formData.integrationModel}</span>
+                            </div>
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                              <span className="text-white text-sm font-medium">{formData.gradeLevel}</span>
+                            </div>
                           </div>
-                          
+
                           <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
                             {formData.lessonTitle}
                           </h1>
-                          
+
                           <div className="flex flex-wrap items-center gap-4 text-teal-100">
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-teal-200 rounded-full mr-2"></div>
-                              <span className="text-sm">{formData.gradeLevel}</span>
-                            </div>
                             <div className="flex items-center">
                               <div className="w-2 h-2 bg-teal-200 rounded-full mr-2"></div>
                               <span className="text-sm">{formData.primarySubject}</span>
@@ -1046,6 +1047,10 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                             <div className="flex items-center">
                               <div className="w-2 h-2 bg-teal-200 rounded-full mr-2"></div>
                               <span className="text-sm">Integrated Learning</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 bg-teal-200 rounded-full mr-2"></div>
+                              <span className="text-sm">Generated on {new Date().toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
@@ -1063,19 +1068,6 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         )}
                       </div>
                       
-                      <div className="mt-6 pt-4 border-t border-white/20">
-                        <div className="flex items-center justify-between">
-                          <div className="text-teal-100 text-sm">
-                            <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
-                          </div>
-                          {!loading && (
-                            <div className="flex items-center text-green-200 text-sm">
-                              <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
-                              <span>Generation Complete</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
                     </div>
                     
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>

@@ -105,17 +105,39 @@ export function generateCrossCurricularHTML(text: string, options: RenderOptions
     margin-bottom: 2rem;
   ">
     <div style="
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(4px);
-      padding: 0.5rem 1rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.3);
     ">
-      ${integrationModel}
+      <div style="
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      ">
+        <span style="
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+        ">${integrationModel}</span>
+      </div>
+      <div style="
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      ">
+        <span style="
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+        ">${formData.gradeLevel || 'N/A'}</span>
+      </div>
     </div>
 
     <h1 style="
@@ -139,22 +161,26 @@ export function generateCrossCurricularHTML(text: string, options: RenderOptions
     <div style="
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.3);
+      align-items: center;
+      gap: 1rem;
+      color: rgba(207, 250, 254, 1);
+      margin-top: 1rem;
     ">
-      <div>
-        <div style="font-size: 0.75rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em;">Grade Level</div>
-        <div style="font-weight: 600;">${formData.gradeLevel || 'N/A'}</div>
+      <div style="display: flex; align-items: center;">
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">${formData.primarySubject || 'N/A'}</span>
       </div>
-      <div>
-        <div style="font-size: 0.75rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em;">Duration</div>
-        <div style="font-weight: 600;">${formData.duration || 'N/A'}</div>
+      <div style="display: flex; align-items: center;">
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">${formData.duration || 'N/A'}</span>
       </div>
-      <div>
-        <div style="font-size: 0.75rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em;">Primary Subject</div>
-        <div style="font-weight: 600;">${formData.primarySubject || 'N/A'}</div>
+      <div style="display: flex; align-items: center;">
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">Integrated Learning</span>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">Generated on ${new Date().toLocaleDateString()}</span>
       </div>
     </div>
 

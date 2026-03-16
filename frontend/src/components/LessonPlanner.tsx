@@ -853,7 +853,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
               {/* Modern Header Card */}
               {(streamingPlan || generatedPlan) && !isEditing && (
                 <div className="mb-8">
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
                     {/* Background gradient */}
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }}></div>
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }}></div>

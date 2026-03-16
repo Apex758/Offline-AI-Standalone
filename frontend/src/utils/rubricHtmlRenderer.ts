@@ -292,21 +292,41 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
     padding: 2rem;
   ">
     <div style="
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      gap: 0.5rem;
       margin-bottom: 1rem;
     ">
-      <span style="
-        color: white;
-        font-size: 0.875rem;
-        font-weight: 500;
-      ">${formData.subject} • ${formData.assignmentType}</span>
+      <div style="
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      ">
+        <span style="
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+        ">${formData.subject}</span>
+      </div>
+      <div style="
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      ">
+        <span style="
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+        ">${formData.gradeLevel}</span>
+      </div>
     </div>
-    
+
     <h1 style="
       font-size: 2rem;
       font-weight: 700;
@@ -314,7 +334,7 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
       margin: 0.5rem 0;
       line-height: 1.2;
     ">${title || formData.assignmentTitle}</h1>
-    
+
     <div style="
       display: flex;
       flex-wrap: wrap;
@@ -324,47 +344,23 @@ export function generateRubricHTML(text: string, options: RenderOptions): string
       margin-top: 1rem;
     ">
       <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
-        <span style="font-size: 0.875rem;">${formData.gradeLevel}</span>
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">${formData.assignmentType}</span>
       </div>
       <div style="display: flex; align-items: center;">
-        <div style="
-          width: 0.5rem;
-          height: 0.5rem;
-          background-color: rgba(165, 243, 252, 1);
-          border-radius: 9999px;
-          margin-right: 0.5rem;
-        "></div>
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
         <span style="font-size: 0.875rem;">${headers.length - 1} Performance Levels</span>
       </div>
       ${formData.includePointValues ? `
         <div style="display: flex; align-items: center;">
-          <div style="
-            width: 0.5rem;
-            height: 0.5rem;
-            background-color: rgba(165, 243, 252, 1);
-            border-radius: 9999px;
-            margin-right: 0.5rem;
-          "></div>
+          <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
           <span style="font-size: 0.875rem;">With Point Values</span>
         </div>
       ` : ''}
-    </div>
-    
-    <div style="
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(207, 250, 254, 1);
-      font-size: 0.875rem;
-    ">
-      // <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
+      <div style="display: flex; align-items: center;">
+        <div style="width: 0.5rem; height: 0.5rem; background-color: rgba(165, 243, 252, 1); border-radius: 9999px; margin-right: 0.5rem;"></div>
+        <span style="font-size: 0.875rem;">Generated on ${new Date().toLocaleDateString()}</span>
+      </div>
     </div>
   </div>
 

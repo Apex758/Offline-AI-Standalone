@@ -707,14 +707,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   {!loading && (
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setIsGrading(true)}
-                        className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
-                        title="Grade this quiz"
-                      >
-                        <ClipboardCheck className="w-4 h-4 mr-2" />
-                        Grade Quiz
-                      </button>
-                      <button
                         onClick={enableEditing}
                         disabled={!parsedQuiz}
                         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -870,7 +862,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 <div className="flex-1 overflow-y-auto bg-theme-surface p-6">
                   {(streamingQuiz || generatedQuiz) && (
                     <div className="mb-8">
-                      <div className="relative overflow-hidden">
+                      <div className="relative overflow-hidden rounded-2xl shadow-lg">
                         <div className="absolute inset-0 bg-gradient-to-br" style={{
                           background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)`
                         }}></div>
