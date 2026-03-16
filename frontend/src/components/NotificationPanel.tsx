@@ -317,10 +317,10 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
                             </div>
                             <button
                               onClick={() => removeFromQueue(item.id)}
-                              className="shrink-0 p-0.5 rounded hover:bg-red-500/20 transition"
+                              className="shrink-0 p-1.5 rounded hover:bg-red-500/20 transition"
                               title="Remove from queue"
                             >
-                              <X size={14} className="text-red-400" />
+                              <X size={18} className="text-red-400" />
                             </button>
                           </div>
                         ))}

@@ -29,3 +29,5 @@ python -m uvicorn main:app --reload --port 8000
 "maximum" | "normal" | "store"        "compression": "store",   in package.json
 
 --- 
+
+

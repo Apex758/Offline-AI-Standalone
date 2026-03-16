@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { BookOpen, Calculator, Atom, Globe, XCircle, ChevronDown, ChevronRight } from "lucide-react"
-import { getAllCurriculumStandards } from "@/app/actions/curriculum-standards"
-
-export const dynamic = "force-dynamic"
+import curriculumIndex from '../data/curriculumIndex.json'
 
 interface CurriculumStandard {
   subject: string
@@ -10,6 +8,25 @@ interface CurriculumStandard {
   strand: string
   code: string
   description: string
+}
+
+function getAllCurriculumStandards(): CurriculumStandard[] {
+  const pages = (curriculumIndex as any).indexedPages || []
+  const standards: CurriculumStandard[] = []
+  for (const page of pages) {
+    if (page.specificOutcomes) {
+      for (const sco of page.specificOutcomes) {
+        standards.push({
+          subject: (page.subject || '').toLowerCase().replace(/\s+/g, '-'),
+          grade_level: page.grade || '',
+          strand: page.strand || '',
+          code: sco.match(/^(\d+\.\d+)/)?.[1] || '',
+          description: sco,
+        })
+      }
+    }
+  }
+  return standards
 }
 
 
@@ -79,20 +96,16 @@ export default function AllCurriculumStandardsPage() {
   const [openGrades, setOpenGrades] = useState<Set<string>>(new Set())
   const [openStrands, setOpenStrands] = useState<Set<string>>(new Set())
 
-  // Fetch standards from database
+  // Load standards from local curriculum index
   useEffect(() => {
-    async function fetchStandards() {
-      try {
-        const allStandards = await getAllCurriculumStandards()
-        setStandards(allStandards)
-      } catch (error) {
-        console.error('Error fetching standards:', error)
-      } finally {
-        setLoading(false)
-      }
+    try {
+      const allStandards = getAllCurriculumStandards()
+      setStandards(allStandards)
+    } catch (error) {
+      console.error('Error loading standards:', error)
+    } finally {
+      setLoading(false)
     }
-    
-    fetchStandards()
   }, [])
 
   const subjects = useMemo(() => getUnique(standards.map(s => s.subject)), [standards])

@@ -31,6 +31,8 @@ interface QueueContextValue {
   clearCompleted: () => void;
   clearAll: () => void;
   queueEnabled: boolean;
+  /** Returns true (once) if a waiting item for this tabId+endpoint was cancelled. */
+  consumeCancelled: (tabId: string, endpoint: string) => boolean;
 }
 
 const QueueContext = createContext<QueueContextValue | undefined>(undefined);
@@ -53,6 +55,11 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const processingRef = useRef(false);
   const currentItemRef = useRef<QueueItem | null>(null);
   const queueRef = useRef<QueueItem[]>([]);
+
+  // Track cancelled waiting items so generators can clear their loading state.
+  // Keys are "tabId::endpoint". Using a ref + counter to trigger re-renders.
+  const cancelledKeysRef = useRef<Set<string>>(new Set());
+  const [, setCancelTick] = useState(0);
 
   const queueEnabled = settings.generationMode === 'queued';
 
@@ -168,8 +175,18 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [processNext, notify]);
 
   const removeFromQueue = useCallback((id: string) => {
-    setQueue(prev => prev.filter(item => item.id !== id));
-  }, []);
+    setQueue(prev => {
+      const item = prev.find(i => i.id === id);
+      // If the item was waiting (not yet started), signal cancellation
+      if (item && item.status === 'waiting') {
+        const key = `${item.tabId}::${item.endpoint}`;
+        cancelledKeysRef.current.add(key);
+        setCancelTick(t => t + 1);
+        notify(`${item.label} cancelled`);
+      }
+      return prev.filter(i => i.id !== id);
+    });
+  }, [notify]);
 
   const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
     setQueue(prev => {
@@ -199,8 +216,26 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const clearAll = useCallback(() => {
-    // Only clear non-active items
-    setQueue(prev => prev.filter(item => item.status === 'generating'));
+    // Signal cancellation for all waiting items
+    setQueue(prev => {
+      for (const item of prev) {
+        if (item.status === 'waiting') {
+          cancelledKeysRef.current.add(`${item.tabId}::${item.endpoint}`);
+        }
+      }
+      setCancelTick(t => t + 1);
+      return prev.filter(item => item.status === 'generating');
+    });
+  }, []);
+
+  /** Returns true (once) if a waiting item for this tabId+endpoint was cancelled. Clears the flag. */
+  const consumeCancelled = useCallback((tabId: string, endpoint: string): boolean => {
+    const key = `${tabId}::${endpoint}`;
+    if (cancelledKeysRef.current.has(key)) {
+      cancelledKeysRef.current.delete(key);
+      return true;
+    }
+    return false;
   }, []);
 
   const activeItem = queue.find(item => item.status === 'generating') || null;
@@ -215,6 +250,7 @@ export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       clearCompleted,
       clearAll,
       queueEnabled,
+      consumeCancelled,
     }}>
       {children}
     </QueueContext.Provider>

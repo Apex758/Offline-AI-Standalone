@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles, FileText, Users, GraduationCap, ChevronDown, ClipboardCheck, BookOpen } from 'lucide-react';
+import { Loader2, ListChecks, Trash2, Save, Download, History, X, Edit, Check, Sparkles, FileText, Users, GraduationCap, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, BookOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
@@ -18,6 +18,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -77,6 +78,18 @@ const formatQuizText = (text: string, accentColor: string) => {
   cleanText = cleanText.replace(/^Below (?:is|are) (?:the )?\d+ questions? for (?:the )?.*?:\s*/i, '');
   cleanText = cleanText.replace(/^Here (?:is|are) (?:the )?\d+ questions? for (?:the )?.*?:\s*/i, '');
   cleanText = cleanText.replace(/^The following (?:is|are|questions? )?.*?:\s*/i, '');
+
+  // Safety net: strip echoed prompt/instructional sections that the LLM may repeat
+  cleanText = cleanText.replace(/\n*QUESTION TYPE[S]?:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*SUBJECT:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*STRAND:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*CURRICULUM ALIGNMENT[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*GRADE LEVEL REQUIREMENTS:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*SUBJECT-SPECIFIC ASSESSMENT GUIDANCE:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*FORMAT EACH QUESTION[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*CRITICAL[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*RULES:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+  cleanText = cleanText.replace(/\n*(?:MULTIPLE CHOICE|TRUE\/FALSE|FILL-IN-THE-BLANK|OPEN-ENDED) FORMAT:\n[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
 
   const lines = cleanText.split('\n');
   const elements: JSX.Element[] = [];
@@ -201,6 +214,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [randomizeClassQuestions, setRandomizeClassQuestions] = useState(false);
   const [classQuizData, setClassQuizData] = useState<Array<{id: string, name: string, questionOrder: number[]}> | null>(null);
   const [selectedStudentIdx, setSelectedStudentIdx] = useState<number | null>(null);
+  const [studentPanelOpen, setStudentPanelOpen] = useState(false);
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     subject: '',
@@ -231,6 +245,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const contextLoading = getIsStreaming(tabId, ENDPOINT);
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const loading = !!localLoadingMap[tabId] || contextLoading;
 
   // Computed values for class quiz display
@@ -503,7 +518,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const generateQuiz = () => {
-    const prompt = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan);
+    const { systemPrompt, userPrompt } = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan);
 
     if (queueEnabled) {
       enqueue({
@@ -511,8 +526,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         toolType: 'Quiz',
         tabId,
         endpoint: ENDPOINT,
-        prompt,
+        prompt: userPrompt,
         generationMode: settings.generationMode,
+        extraMessageData: { systemPrompt, formData },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -527,7 +543,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
     try {
       ws.send(JSON.stringify({
-        prompt,
+        prompt: userPrompt,
+        systemPrompt,
+        formData,
         generationMode: settings.generationMode,
       }));
     } catch (error) {
@@ -742,6 +760,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   onClick={() => {
                                     setSelectedVersion('student');
                                     setShowVersionMenu(false);
+                                    if (classQuizData) setStudentPanelOpen(true);
                                   }}
                                   className={`w-full text-left px-4 py-2 hover:bg-theme-subtle flex items-center justify-between transition ${
                                     selectedVersion === 'student' ? 'bg-blue-50' : ''
@@ -874,6 +893,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 </div>
                               </div>
                             )}
+                            {viewingStudent && !loading && (
+                              <div className="text-right">
+                                <div className="text-3xl font-bold text-white leading-tight">{viewingStudent.name}</div>
+                                <div className="text-sm text-cyan-100 mt-1">ID: {viewingStudent.id}</div>
+                              </div>
+                            )}
                           </div>
                           
                           <div className="mt-6 pt-4 border-t border-white/20">
@@ -902,21 +927,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       {displayParsedQuiz && !loading ? (
                         // ✅ Conditionally render based on effectiveVersion (student view when viewing class quiz student)
                         <div className="space-y-6">
-                          {/* Student info banner */}
-                          {viewingStudent && (
-                            <div className="p-4 rounded-xl border-2 mb-2" style={{ borderColor: `${tabColor}44`, backgroundColor: `${tabColor}08` }}>
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: tabColor }}>
-                                  {viewingStudent.name.charAt(0)}
-                                </div>
-                                <div>
-                                  <div className="font-semibold text-theme-heading text-base">{viewingStudent.name}</div>
-                                  <div className="text-sm text-theme-muted">Student ID: {viewingStudent.id}</div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
                           {displayParsedQuiz.questions.map((question, qIndex) => {
                             const correctAnswerIndex = question.correctAnswer as number;
                             const correctLetter = question.type === 'multiple-choice' && typeof correctAnswerIndex === 'number'
@@ -1525,52 +1535,85 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
       {/* Student Quiz Panel (right side) - only when class quiz is generated */}
       {classQuizData && (generatedQuiz || streamingQuiz) && !loading && (
-        <div className="border-l border-theme bg-theme-secondary flex flex-col flex-shrink-0" style={{ width: '240px' }}>
-          <div className="p-3 border-b border-theme">
-            <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
-            <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
-            {/* Teacher version option */}
-            <button
-              onClick={() => setSelectedStudentIdx(null)}
-              className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
-                selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
-                <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
-              </div>
-            </button>
-
-            <div className="border-t border-theme my-1.5" />
-
-            {/* Student entries */}
-            {classQuizData.map((student, idx) => (
+        <>
+          {/* Collapsed toggle strip */}
+          {!studentPanelOpen && (
+            <div className="border-l border-theme bg-theme-secondary flex flex-col items-center flex-shrink-0 py-3 px-1">
               <button
-                key={student.id}
-                onClick={() => setSelectedStudentIdx(idx)}
-                className={`w-full text-left p-2 rounded-lg transition text-sm ${
-                  selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
-                }`}
+                onClick={() => setStudentPanelOpen(true)}
+                className="p-1.5 rounded-lg hover:bg-theme-hover transition group"
+                title="Show student list"
               >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
-                    style={{ backgroundColor: tabColor }}
-                  >
-                    {student.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
-                    <div className="text-[10px] text-theme-hint">{student.id}</div>
-                  </div>
-                </div>
+                <PanelRightOpen className="w-4 h-4 text-theme-muted group-hover:text-theme-label" />
               </button>
-            ))}
-          </div>
-        </div>
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <Users className="w-4 h-4 text-theme-muted" />
+                <span className="text-[10px] text-theme-hint font-medium" style={{ writingMode: 'vertical-lr' }}>
+                  {classQuizData.length} Students
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Expanded panel */}
+          {studentPanelOpen && (
+            <div className="border-l border-theme bg-theme-secondary flex flex-col flex-shrink-0" style={{ width: '240px' }}>
+              <div className="p-3 border-b border-theme flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
+                  <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
+                </div>
+                <button
+                  onClick={() => setStudentPanelOpen(false)}
+                  className="p-1 rounded-lg hover:bg-theme-hover transition"
+                  title="Collapse panel"
+                >
+                  <PanelRightClose className="w-4 h-4 text-theme-muted" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
+                {/* Teacher version option */}
+                <button
+                  onClick={() => setSelectedStudentIdx(null)}
+                  className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
+                    selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
+                    <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
+                  </div>
+                </button>
+
+                <div className="border-t border-theme my-1.5" />
+
+                {/* Student entries */}
+                {classQuizData.map((student, idx) => (
+                  <button
+                    key={student.id}
+                    onClick={() => setSelectedStudentIdx(idx)}
+                    className={`w-full text-left p-2 rounded-lg transition text-sm ${
+                      selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
+                        style={{ backgroundColor: tabColor }}
+                      >
+                        {student.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
+                        <div className="text-[10px] text-theme-hint">{student.id}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* AI Assistant Panel */}

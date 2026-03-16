@@ -201,7 +201,19 @@ function parseTextBasedQuiz(text: string): ParsedQuiz | null {
     initPatterns.forEach(pattern => {
       cleanText = cleanText.replace(pattern, '');
     });
-    
+
+    // Strip echoed prompt/instructional sections that the LLM may repeat after the quiz
+    cleanText = cleanText.replace(/\n*QUESTION TYPE[S]?:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*SUBJECT:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*STRAND:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*CURRICULUM ALIGNMENT[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*GRADE LEVEL REQUIREMENTS:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*SUBJECT-SPECIFIC ASSESSMENT GUIDANCE:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*FORMAT EACH QUESTION[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*CRITICAL[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*RULES:[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+    cleanText = cleanText.replace(/\n*(?:MULTIPLE CHOICE|TRUE\/FALSE|FILL-IN-THE-BLANK|OPEN-ENDED) FORMAT:\n[\s\S]*?(?=\nQuestion \d+:|$)/gi, '');
+
     // Match questions
     const questionRegex = /Question\s+(\d+):\s*([^\n]*)\n([^]*?)(?=Question\s+\d+:|$)/gi;
     const matches = [...cleanText.matchAll(questionRegex)];

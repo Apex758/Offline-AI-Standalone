@@ -18,19 +18,15 @@ iopaint==1.6.0
 optimum-intel[openvino]
 Pillow
 requests>=2.31.0
-rembg[gpu]
 
 # --- Text-to-Speech (offline) ---
 piper-tts>=1.2.0
 
 # --- Document / Rendering ---
-openpyxl>=3.1.0
 python-docx>=1.0.0
 weasyprint>=60.0
 beautifulsoup4==4.14.2
-pypdf>=4.0.0
 soupsieve==2.8
-beautifulsoup4==4.14.2
 
 # ========================================
 # NOTES
@@ -38,17 +34,10 @@ beautifulsoup4==4.14.2
 # - iopaint 1.6.0 requires diffusers 0.27.2
 # - optimum-intel 1.18.0 supports diffusers 0.27.2
 # - huggingface-hub 0.20.3 works with optimum 1.18.0
-# - This combo is tested and stable 
+# - This combo is tested and stable
 
 # ========================================
 # MANUAL INSTALLATION REQUIRED
 # ========================================
 # llama-cpp-python must be installed separately:
-# pip install llama-cpp-python --no-build-isolation --config-settings=builddir=build
-
-# ========================================
-# MANUAL INSTALLATION REQUIRED
-# ========================================
-# llama-cpp-python must be installed separately:
-# pip install llama-cpp-python --no-build-isolation --config-settings=builddir=build
 # pip install llama-cpp-python --no-build-isolation --config-settings=builddir=build

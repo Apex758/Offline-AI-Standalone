@@ -1091,20 +1091,25 @@ async def quiz_websocket(websocket: WebSocket):
                 logger.error("Empty quiz prompt received")
                 continue
 
-            system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
+            # Use frontend-provided system prompt if available (contains all
+            # instructional context: grade specs, curriculum, format templates).
+            # Fall back to a basic system prompt for backward compatibility.
+            system_prompt = data.get("systemPrompt", "").strip()
+            if not system_prompt:
+                system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
 
-            # Add curriculum context for alignment
-            if curriculum_matcher and isinstance(form_data, dict) and form_data:
-                grade_filter = str(form_data.get("gradeLevel", "")).strip()
-                subject_filter = str(form_data.get("subject", "")).strip()
-                topic_parts = [str(form_data.get("topic", "")), str(form_data.get("strand", "")), str(form_data.get("subject", ""))]
-                query = " ".join(p for p in topic_parts if p and p != "None")
-                if query:
-                    matches = curriculum_matcher.find_matching_pages(query, top_k=2, grade=grade_filter, subject=subject_filter)
-                    context_blocks = [curriculum_matcher.get_curriculum_context(m.get("id")) for m in matches]
-                    context_blocks = [c for c in context_blocks if c]
-                    if context_blocks:
-                        system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
+                # Legacy path: add curriculum context for alignment
+                if curriculum_matcher and isinstance(form_data, dict) and form_data:
+                    grade_filter = str(form_data.get("gradeLevel", "")).strip()
+                    subject_filter = str(form_data.get("subject", "")).strip()
+                    topic_parts = [str(form_data.get("topic", "")), str(form_data.get("strand", "")), str(form_data.get("subject", ""))]
+                    query = " ".join(p for p in topic_parts if p and p != "None")
+                    if query:
+                        matches = curriculum_matcher.find_matching_pages(query, top_k=2, grade=grade_filter, subject=subject_filter)
+                        context_blocks = [curriculum_matcher.get_curriculum_context(m.get("id")) for m in matches]
+                        context_blocks = [c for c in context_blocks if c]
+                        if context_blocks:
+                            system_prompt += "\n\nCurriculum Alignment Context:\n" + "\n\n".join(context_blocks)
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"

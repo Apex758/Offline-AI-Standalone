@@ -19,6 +19,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 
 const ENDPOINT = '/ws/rubric';
 
@@ -444,6 +445,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const streamingRubric = getStreamingContent(tabId, ENDPOINT);
   const contextLoading = getIsStreaming(tabId, ENDPOINT);
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const loading = !!localLoadingMap[tabId] || contextLoading;
   
   const [showTutorial, setShowTutorial] = useState(false);

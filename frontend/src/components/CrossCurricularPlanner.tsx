@@ -19,6 +19,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 
 interface CrossCurricularPlannerProps {
   tabId: string;
@@ -481,6 +482,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);

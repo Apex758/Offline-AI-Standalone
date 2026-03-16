@@ -19,6 +19,7 @@ import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -253,6 +254,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);

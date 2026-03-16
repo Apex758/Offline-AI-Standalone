@@ -23,6 +23,7 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
 import SmartTextArea from './SmartTextArea';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import SmartInput from './SmartInput';
 
 
@@ -232,6 +233,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const contextLoading = getIsStreaming(tabId || '', ENDPOINT);
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  useQueueCancellation(tabId || '', ENDPOINT, setLocalLoadingMap);
   const loading = !!localLoadingMap[tabId || ''] || contextLoading;
 
   // ✅ Finalization logic - when streaming completes, update generatedWorksheet

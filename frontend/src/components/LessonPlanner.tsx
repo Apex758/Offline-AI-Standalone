@@ -22,6 +22,7 @@ import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 
 interface LessonPlannerProps {
   tabId: string;
@@ -219,6 +220,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   const streamingPlan = getStreamingContent(tabId, ENDPOINT);
   // Per-tab local loading state
   const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
+  useQueueCancellation(tabId, ENDPOINT, setLocalLoadingMap);
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);

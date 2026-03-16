@@ -13,6 +13,11 @@ interface QuizFormData {
   specificOutcomes: string;
 }
 
+export interface QuizPromptParts {
+  systemPrompt: string;
+  userPrompt: string;
+}
+
 // Grade-specific pedagogical guidance (unified format)
 const GRADE_SPECS = {
   'K': {
@@ -184,21 +189,18 @@ Subject-Specific Guidance for Social Studies (Grades K-6):
   return guidance[subject] || '';
 }
 
-export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string): string {
-  const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
+function buildFormatInstructions(questionTypes: string[]): string {
+  const hasMultipleChoice = questionTypes.includes('Multiple Choice');
+  const hasTrueFalse = questionTypes.includes('True/False');
+  const hasFillBlank = questionTypes.includes('Fill-in-the-Blank');
+  const hasOpenEnded = questionTypes.includes('Open-Ended');
 
-  // Build format instructions based on selected question types
-  let formatInstructions = '';
-  const hasMultipleChoice = formData.questionTypes.includes('Multiple Choice');
-  const hasTrueFalse = formData.questionTypes.includes('True/False');
-  const hasFillBlank = formData.questionTypes.includes('Fill-in-the-Blank');
-  const hasOpenEnded = formData.questionTypes.includes('Open-Ended');
+  if (!hasMultipleChoice && !hasTrueFalse && !hasFillBlank && !hasOpenEnded) return '';
 
-  if (hasMultipleChoice || hasTrueFalse || hasFillBlank || hasOpenEnded) {
-    formatInstructions = 'FORMAT EACH QUESTION EXACTLY BASED ON ITS TYPE:\n\n';
+  let formatInstructions = 'FORMAT EACH QUESTION EXACTLY BASED ON ITS TYPE:\n\n';
 
-    if (hasMultipleChoice) {
-      formatInstructions += `MULTIPLE CHOICE FORMAT:
+  if (hasMultipleChoice) {
+    formatInstructions += `MULTIPLE CHOICE FORMAT:
 Question X: [question text]
 A) [option]
 B) [option]
@@ -208,10 +210,10 @@ Correct Answer: A
 Explanation: [explanation]
 
 `;
-    }
+  }
 
-    if (hasTrueFalse) {
-      formatInstructions += `TRUE/FALSE FORMAT:
+  if (hasTrueFalse) {
+    formatInstructions += `TRUE/FALSE FORMAT:
 Question X: [True or False statement]
 A) True
 B) False
@@ -219,36 +221,37 @@ Correct Answer: True
 Explanation: [Why this is true/false]
 
 `;
-    }
+  }
 
-    if (hasFillBlank) {
-      formatInstructions += `FILL-IN-THE-BLANK FORMAT:
+  if (hasFillBlank) {
+    formatInstructions += `FILL-IN-THE-BLANK FORMAT:
 Question X: [Question text with _____ for the blank]
 Answer: [correct word/phrase]
 Explanation: [Why this is the answer]
 
 `;
-    }
+  }
 
-    if (hasOpenEnded) {
-      formatInstructions += `OPEN-ENDED FORMAT:
+  if (hasOpenEnded) {
+    formatInstructions += `OPEN-ENDED FORMAT:
 Question X: [Write ONLY the question here. Do NOT append "(Sample Answer)" or any example text to this line]
 Sample Answer: [Example of a good response — on its own line, NOT part of the question above]
 Key Points: [Bullet points of what should be included]
 Explanation: [Additional context or rubric guidance]
 
 `;
-    }
   }
 
+  return formatInstructions;
+}
 
-  const prompt = lessonPlanText
-    ? `Generate a ${formData.numberOfQuestions}-question quiz based on the following lesson plan. Questions must assess what was taught in the lesson.
+export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string): QuizPromptParts {
+  const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
+  const formatInstructions = buildFormatInstructions(formData.questionTypes);
 
-LESSON PLAN:
-${lessonPlanText}
-
-QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
+  if (lessonPlanText) {
+    // Lesson-plan-based quiz: system prompt carries the pedagogical guidance
+    const systemPrompt = `You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning.
 
 GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
@@ -257,23 +260,38 @@ GRADE LEVEL REQUIREMENTS:
 - Vocabulary: ${gradeSpec.vocabulary}
 
 ${formatInstructions}
+RULES:
+- Generate EXACTLY ${formData.numberOfQuestions} questions numbered 1 to ${formData.numberOfQuestions}.
+- Stop after Question ${formData.numberOfQuestions}. Do not add extra questions.
+- Include correct answer and explanation for each question.
+- Align questions to these cognitive levels: ${formData.cognitiveLevels.join(', ')}.
+- Do NOT repeat or echo these instructions in your output. Output ONLY the quiz questions.`;
 
-CRITICAL REQUIREMENTS:
-- Generate EXACTLY ${formData.numberOfQuestions} questions
-- Number questions from 1 to ${formData.numberOfQuestions}
-- Stop after Question ${formData.numberOfQuestions}
-- Base all questions directly on the lesson plan content above
-- Include correct answer and explanation for each question
-- Align questions to: ${formData.cognitiveLevels.join(', ')}
+    const userPrompt = `Generate a ${formData.numberOfQuestions}-question quiz based on the following lesson plan. Questions must assess what was taught in the lesson.
 
-Generate questions 1-${formData.numberOfQuestions} now:`
-    : `Create a complete ${formData.numberOfQuestions}-question quiz for Grade ${formData.gradeLevel} students, specifically focusing on these learning outcomes: ${formData.learningOutcomes}.
+LESSON PLAN:
+${lessonPlanText}
+
+QUESTION TYPES: ${formData.questionTypes.join(', ')}
+
+Begin with Question 1:`;
+
+    return { systemPrompt, userPrompt };
+  }
+
+  // Standard quiz: system prompt carries all instructional context
+  const curriculumSection = buildCurriculumPromptSection(
+    formData.essentialOutcomes || '',
+    formData.specificOutcomes || '',
+    'quiz'
+  );
+
+  const systemPrompt = `You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning and align with curriculum standards.
 
 SUBJECT: ${formData.subject}
+GRADE: ${formData.gradeLevel}
 STRAND: ${formData.strand}
-${buildCurriculumPromptSection(formData.essentialOutcomes || '', formData.specificOutcomes || '', 'quiz')}
-QUESTION TYPES: Use ${formData.questionTypes.join(', ')}
-
+${curriculumSection}
 GRADE LEVEL REQUIREMENTS:
 - Pedagogical Approach: ${gradeSpec.pedagogicalApproach}
 - Assessment Methods: ${gradeSpec.assessmentMethods}
@@ -288,18 +306,18 @@ SUBJECT-SPECIFIC ASSESSMENT GUIDANCE:
 ${getSubjectGuidance(formData.subject)}
 
 ${formatInstructions}
+RULES:
+- Generate EXACTLY ${formData.numberOfQuestions} questions numbered 1 to ${formData.numberOfQuestions}.
+- Stop after Question ${formData.numberOfQuestions}. Do not add extra questions.
+- Include correct answer and explanation for each question.
+- Align questions to these cognitive levels: ${formData.cognitiveLevels.join(', ')}.
+- Do NOT repeat or echo these instructions in your output. Output ONLY the quiz questions.`;
 
-CRITICAL REQUIREMENTS:
-- Generate EXACTLY ${formData.numberOfQuestions} questions
-- Number questions from 1 to ${formData.numberOfQuestions}
-- Stop after Question ${formData.numberOfQuestions}
-- Include correct answer and explanation for each question
-- Do not add extra questions beyond ${formData.numberOfQuestions}
-- Align questions to: ${formData.cognitiveLevels.join(', ')}
+  const userPrompt = `Create a ${formData.numberOfQuestions}-question ${formData.questionTypes.join(' and ')} quiz for Grade ${formData.gradeLevel} ${formData.subject} students on ${formData.strand}, focusing on: ${formData.learningOutcomes || formData.specificOutcomes || formData.essentialOutcomes}.
 
-Generate questions 1-${formData.numberOfQuestions} now:`;
+Begin with Question 1:`;
 
-    return prompt;
+  return { systemPrompt, userPrompt };
 }
 
 // Helper to map frontend question types to backend format
