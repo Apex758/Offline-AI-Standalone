@@ -33,6 +33,8 @@ interface QuizHistory {
   formData: FormData;
   generatedQuiz: string;
   parsedQuiz?: ParsedQuiz;
+  classQuizData?: Array<{id: string, name: string, questionOrder: number[]}>;
+  selectedClassName?: string;
 }
 
 interface LessonPlanHistoryItem {
@@ -207,14 +209,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [useCurriculum, setUseCurriculum] = useState(true);
 
   // Class quiz mode state
-  const [classQuizMode, setClassQuizMode] = useState(false);
-  const [selectedClassName, setSelectedClassName] = useState('');
+  const [classQuizMode, setClassQuizMode] = useState(!!savedData?.classQuizData);
+  const [selectedClassName, setSelectedClassName] = useState(savedData?.selectedClassName || '');
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
   const [classStudents, setClassStudents] = useState<Array<{id: string, full_name: string}>>([]);
   const [randomizeClassQuestions, setRandomizeClassQuestions] = useState(false);
-  const [classQuizData, setClassQuizData] = useState<Array<{id: string, name: string, questionOrder: number[]}> | null>(null);
+  const [classQuizData, setClassQuizData] = useState<Array<{id: string, name: string, questionOrder: number[]}> | null>(savedData?.classQuizData || null);
   const [selectedStudentIdx, setSelectedStudentIdx] = useState<number | null>(null);
-  const [studentPanelOpen, setStudentPanelOpen] = useState(false);
+  const [studentPanelOpen, setStudentPanelOpen] = useState(!!savedData?.classQuizData);
   // Helper function to get default empty form data
   const getDefaultFormData = (): FormData => ({
     subject: '',
@@ -463,7 +465,9 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         timestamp: new Date().toISOString(),
         formData: formData,
         generatedQuiz: generatedQuiz,  // ✅ Save original clean text
-        parsedQuiz: parsedQuiz || undefined
+        parsedQuiz: parsedQuiz || undefined,
+        classQuizData: classQuizData || undefined,
+        selectedClassName: classQuizMode ? selectedClassName : undefined,
       };
 
       await axios.post('http://localhost:8000/api/quiz-history', quizData);
@@ -487,6 +491,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     setParsedQuiz(history.parsedQuiz || null);
     setCurrentQuizId(history.id);
     setHistoryOpen(false);
+    // Restore class quiz data if present
+    if (history.classQuizData) {
+      setClassQuizData(history.classQuizData);
+      setClassQuizMode(true);
+      setSelectedClassName(history.selectedClassName || '');
+      setSelectedStudentIdx(null);
+      setStudentPanelOpen(true);
+    } else {
+      setClassQuizData(null);
+      setClassQuizMode(false);
+      setSelectedClassName('');
+      setSelectedStudentIdx(null);
+    }
   };
 
   const deleteQuizHistory = async (quizId: string, e: React.MouseEvent) => {
@@ -593,8 +610,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   // ✅ Save data whenever it changes (no streamingQuiz in saved data)
   useEffect(() => {
-    onDataChange({ formData, generatedQuiz, parsedQuiz });
-  }, [formData, generatedQuiz, parsedQuiz]);
+    onDataChange({ formData, generatedQuiz, parsedQuiz, classQuizData, selectedClassName: classQuizMode ? selectedClassName : undefined });
+  }, [formData, generatedQuiz, parsedQuiz, classQuizData, classQuizMode, selectedClassName]);
 
   // ✅ Finalization logic - when streaming completes, update generatedQuiz
   useEffect(() => {
@@ -635,6 +652,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         });
         setClassQuizData(studentData);
         setSelectedStudentIdx(null);
+        setStudentPanelOpen(true);
       }
     }
   }, [streamingQuiz, contextLoading]);
@@ -781,6 +799,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                 <button
                                   onClick={() => {
                                     setSelectedVersion('teacher');
+                                    setSelectedStudentIdx(null);
                                     setShowVersionMenu(false);
                                   }}
                                   className={`w-full text-left px-4 py-2 hover:bg-theme-subtle flex items-center justify-between transition ${
@@ -879,9 +898,15 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                                   <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
                                   <span className="text-sm">{formData.questionTypes.join(', ')}</span>
                                 </div>
+                                {effectiveVersion !== 'student' && (
+                                <div className="flex items-center">
+                                  <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
+                                  <span className="text-sm">Generated on {new Date().toLocaleDateString()}</span>
+                                </div>
+                                )}
                               </div>
                             </div>
-                            
+
                             {loading && (
                               <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
                                 <div className="flex items-center text-white">
@@ -901,21 +926,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             )}
                           </div>
                           
-                          <div className="mt-6 pt-4 border-t border-white/20">
-                            <div className="flex items-center justify-between">
-                              <div className="text-cyan-100 text-sm">
-                                <span className="opacity-75">Generated on</span> {new Date().toLocaleDateString()}
-                              </div>
-                              {!loading && (
-                                <div className="flex items-center text-green-200 text-sm">
-                                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2 animate-pulse"></div>
-                                  <span>Generation Complete</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
                         </div>
-                        
+
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                       </div>
@@ -1538,14 +1550,14 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         <>
           {/* Collapsed toggle strip */}
           {!studentPanelOpen && (
-            <div className="border-l border-theme bg-theme-secondary flex flex-col items-center flex-shrink-0 py-3 px-1">
-              <button
-                onClick={() => setStudentPanelOpen(true)}
-                className="p-1.5 rounded-lg hover:bg-theme-hover transition group"
-                title="Show student list"
-              >
-                <PanelRightOpen className="w-4 h-4 text-theme-muted group-hover:text-theme-label" />
-              </button>
+            <div
+              onClick={() => setStudentPanelOpen(true)}
+              className="border-l border-theme bg-theme-secondary flex flex-col items-center flex-shrink-0 py-3 px-1 cursor-pointer hover:bg-theme-hover transition"
+              title="Show student list"
+            >
+              <div className="p-1.5">
+                <PanelRightOpen className="w-4 h-4 text-theme-muted" />
+              </div>
               <div className="mt-2 flex flex-col items-center gap-1">
                 <Users className="w-4 h-4 text-theme-muted" />
                 <span className="text-[10px] text-theme-hint font-medium" style={{ writingMode: 'vertical-lr' }}>
