@@ -37,22 +37,24 @@ import {
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
-import Chat from './Chat';
-import LessonPlanner from './LessonPlanner';
-import CurriculumViewer from './CurriculumViewer';
-import QuizGenerator from './QuizGenerator';
-import RubricGenerator from './RubricGenerator';
-import MultigradePlanner from './MultigradePlanner';
-import KindergartenPlanner from './KindergartenPlanner';
-import CrossCurricularPlanner from './CrossCurricularPlanner';
-import AnalyticsDashboard from './AnalyticsDashboard';
-import ResourceManager from './ResourceManager';
-import Settings from './Settings';
-import CurriculumTracker from './CurriculumTracker';
-import WorksheetGenerator from './WorksheetGenerator';
-import ImageStudio from './ImageStudio';
-import ClassManagement from './ClassManagement';
-import SupportReporting from './SupportReporting';
+
+// Lazy-load all tab components (only downloaded when user opens that tab)
+const Chat = React.lazy(() => import('./Chat'));
+const LessonPlanner = React.lazy(() => import('./LessonPlanner'));
+const CurriculumViewer = React.lazy(() => import('./CurriculumViewer'));
+const QuizGenerator = React.lazy(() => import('./QuizGenerator'));
+const RubricGenerator = React.lazy(() => import('./RubricGenerator'));
+const MultigradePlanner = React.lazy(() => import('./MultigradePlanner'));
+const KindergartenPlanner = React.lazy(() => import('./KindergartenPlanner'));
+const CrossCurricularPlanner = React.lazy(() => import('./CrossCurricularPlanner'));
+const AnalyticsDashboard = React.lazy(() => import('./AnalyticsDashboard'));
+const ResourceManager = React.lazy(() => import('./ResourceManager'));
+const Settings = React.lazy(() => import('./Settings'));
+const CurriculumTracker = React.lazy(() => import('./CurriculumTracker'));
+const WorksheetGenerator = React.lazy(() => import('./WorksheetGenerator'));
+const ImageStudio = React.lazy(() => import('./ImageStudio'));
+const ClassManagement = React.lazy(() => import('./ClassManagement'));
+const SupportReporting = React.lazy(() => import('./SupportReporting'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -1087,12 +1089,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </>
         );
       case 'curriculum-tracker':
-        // Lazy import to avoid circular dependency if any
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        // const CurriculumTracker = require('./CurriculumTracker').default;
-        // But since it's already imported in the project, just use it:
-        
-        // eslint-disable-next-line
         return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'chat':
         return (
@@ -1296,7 +1292,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 className="absolute inset-0"
                 style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
               >
-                {renderSingleTabContent(tab)}
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab)}</React.Suspense>
               </div>
             );
           }
@@ -1309,7 +1305,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             // Hidden tab — keep mounted but invisible
             return (
               <div key={tab.id} style={{ display: 'none' }}>
-                {renderSingleTabContent(tab)}
+                <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab)}</React.Suspense>
               </div>
             );
           }
@@ -1341,7 +1337,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 zIndex: 1
               }}
             >
-              {renderSingleTabContent(tab)}
+              <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-pulse text-theme-muted">Loading...</div></div>}>{renderSingleTabContent(tab)}</React.Suspense>
             </div>
           );
         })}

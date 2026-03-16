@@ -3,44 +3,7 @@
 
 
 
----
 
-### 3. All major components imported eagerly in Dashboard
-**File:** `frontend/src/components/Dashboard.tsx` lines 40-72
-**Issue:** Every tool component is imported at the top level — ImageStudio (144KB), ClassManagement (92KB), CrossCurricularPlanner (71KB), LessonPlanner (67KB), KindergartenPlanner (60KB), etc. Users only see one tab at a time but pay the cost of loading ALL of them.
-**Fix:** Use `React.lazy()` for every tab component:
-```tsx
-const ImageStudio = React.lazy(() => import('./ImageStudio'));
-const ClassManagement = React.lazy(() => import('./ClassManagement'));
-// ... wrap render in <Suspense fallback={<Loading />}>
-```
-**Impact:** ~600KB+ deferred from initial load. Much faster time-to-interactive.
-
----
-
-### 4. Backend startup blocks window creation
-**File:** `electron/main.js` lines 607-648
-**Issue:** `await startBackend()` is called before the main UI loads. The Python backend can take 10-45 seconds to start, and the user stares at a splash screen the entire time.
-**Fix:** Start the backend asynchronously. Show the UI immediately with a "Connecting to backend..." indicator. Let features enable as backend becomes ready.
-**Impact:** Perceived startup time drops from 30-60s to 2-5s
-
----
-
-### 5. LLM model re-created on every inference call
-**File:** `backend/inference_factory.py` lines 61-67
-**Issue:** `get_inference_instance()` creates a NEW `LlamaInference` object each time, re-loading the model from disk. Model loading takes 5-30 seconds depending on size.
-**Fix:** Create a singleton instance on first call and reuse it. Use thread-safe locking for concurrent access.
-```python
-_instance = None
-def get_inference_instance():
-    global _instance
-    if _instance is None:
-        _instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
-    return _instance
-```
-**Impact:** Eliminates 5-30s reload penalty on every generation after the first
-
----
 
 ## P1 — HIGH (Clearly Noticeable)
 
