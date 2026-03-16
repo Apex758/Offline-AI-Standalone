@@ -1,8 +1,33 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Beaker, Leaf, Mountain, ChevronLeft, ChevronRight, Zap, Atom, Globe, Rocket } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import TestTubeIcon from '@hugeicons/core-free-icons/TestTubeIcon'
+import Leaf01Icon from '@hugeicons/core-free-icons/Leaf01Icon'
+import MountainIcon from '@hugeicons/core-free-icons/MountainIcon'
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon'
+import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon'
+import ZapIcon from '@hugeicons/core-free-icons/ZapIcon'
+import Atom01Icon from '@hugeicons/core-free-icons/Atom01Icon'
+import GlobeIcon from '@hugeicons/core-free-icons/GlobeIcon'
+import RocketIcon from '@hugeicons/core-free-icons/RocketIcon'
 import { Breadcrumb } from "@/components/breadcrumb"
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Beaker = (props: { className?: string }) => <Icon icon={TestTubeIcon} {...props} />;
+const Leaf = (props: { className?: string }) => <Icon icon={Leaf01Icon} {...props} />;
+const Mountain = (props: { className?: string }) => <Icon icon={MountainIcon} {...props} />;
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const ChevronRight = (props: { className?: string }) => <Icon icon={ArrowRight01Icon} {...props} />;
+const Zap = (props: { className?: string }) => <Icon icon={ZapIcon} {...props} />;
+const Atom = (props: { className?: string }) => <Icon icon={Atom01Icon} {...props} />;
+const Globe = (props: { className?: string }) => <Icon icon={GlobeIcon} {...props} />;
+const Rocket = (props: { className?: string }) => <Icon icon={RocketIcon} {...props} />;
 
 export default function Grade5SciencePage() {
   return (

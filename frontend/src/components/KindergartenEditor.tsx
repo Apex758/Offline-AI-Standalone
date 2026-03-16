@@ -1,17 +1,17 @@
 // components/KindergartenEditor.tsx
 import React, { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { PlusSignIcon } from '@hugeicons/core-free-icons/PlusSignIcon';
-import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
-import { DragDropVerticalIcon } from '@hugeicons/core-free-icons/DragDropVerticalIcon';
-import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
-import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
-import { ColorsIcon } from '@hugeicons/core-free-icons/ColorsIcon';
-import { MusicNote01Icon } from '@hugeicons/core-free-icons/MusicNote01Icon';
-import { Book01Icon } from '@hugeicons/core-free-icons/Book01Icon';
-import { WorkoutRunIcon } from '@hugeicons/core-free-icons/WorkoutRunIcon';
-import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
-import { Apple01Icon } from '@hugeicons/core-free-icons/Apple01Icon';
+import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
+import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
+import DragDropVerticalIcon from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import Tick01Icon from '@hugeicons/core-free-icons/Tick01Icon';
+import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
+import ColorsIcon from '@hugeicons/core-free-icons/ColorsIcon';
+import MusicNote01Icon from '@hugeicons/core-free-icons/MusicNote01Icon';
+import Book01Icon from '@hugeicons/core-free-icons/Book01Icon';
+import WorkoutRunIcon from '@hugeicons/core-free-icons/WorkoutRunIcon';
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
+import Apple01Icon from '@hugeicons/core-free-icons/Apple01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

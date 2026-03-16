@@ -1,11 +1,11 @@
 // components/LessonEditor.tsx
 import React, { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { PlusSignIcon } from '@hugeicons/core-free-icons/PlusSignIcon';
-import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
-import { DragDropVerticalIcon } from '@hugeicons/core-free-icons/DragDropVerticalIcon';
-import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
-import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
+import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
+import DragDropVerticalIcon from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import Tick01Icon from '@hugeicons/core-free-icons/Tick01Icon';
+import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

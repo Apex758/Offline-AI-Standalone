@@ -1,7 +1,7 @@
 import React from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Clock01Icon } from '@hugeicons/core-free-icons/Clock01Icon';
-import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
+import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {

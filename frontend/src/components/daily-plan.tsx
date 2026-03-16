@@ -1,8 +1,8 @@
 import React from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Clock01Icon } from '@hugeicons/core-free-icons/Clock01Icon';
-import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
-import { BookOpen01Icon } from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Clock01Icon from '@hugeicons/core-free-icons/Clock01Icon';
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
+import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

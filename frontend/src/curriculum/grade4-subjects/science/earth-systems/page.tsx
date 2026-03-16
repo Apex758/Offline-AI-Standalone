@@ -3,13 +3,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Mountain, ClipboardCheck } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon'
+import MountainIcon from '@hugeicons/core-free-icons/MountainIcon'
+import CheckListIcon from '@hugeicons/core-free-icons/CheckListIcon'
 import { Breadcrumb } from "@/components/breadcrumb"
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const Mountain = (props: { className?: string }) => <Icon icon={MountainIcon} {...props} />;
+const ClipboardCheck = (props: { className?: string }) => <Icon icon={CheckListIcon} {...props} />;
 
 export default function EarthSystemsPage() {
   return (
     <div className="container mx-auto py-8">
-      
+
       <Link to="/curriculum/grade4-subjects/science">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 4 Science
@@ -23,7 +36,7 @@ export default function EarthSystemsPage() {
             Earth's Systems: Processes that Shape the Earth
           </h1>
           <p className="text-gray-700">
-            We live in a world where we watch natural processes shape the landscape. While we can’t always prevent
+            We live in a world where we watch natural processes shape the landscape. While we can't always prevent
             small and sometimes catastrophic events, our children should understand enough of these earth changes to be
             prepared to cope with the inevitable consequences.
           </p>
@@ -115,7 +128,7 @@ export default function EarthSystemsPage() {
 
               <AccordionItem value="item-3" className="border border-pink-200 rounded-md mb-2">
                 <AccordionTrigger className="hover:bg-pink-50 px-4 py-2 rounded-md">
-                  Describing and Classifying Earth’s Features
+                  Describing and Classifying Earth's Features
                 </AccordionTrigger>
                 <AccordionContent className="bg-pink-50 px-4 py-2 rounded-b-md">
                   <ul className="list-disc pl-5 space-y-2">
@@ -167,10 +180,10 @@ export default function EarthSystemsPage() {
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="strategy-1">
-                  <AccordionTrigger>Understanding Earth’s Core</AccordionTrigger>
+                  <AccordionTrigger>Understanding Earth's Core</AccordionTrigger>
                   <AccordionContent>
                     <ul className="list-disc pl-5 space-y-2">
-                      <li>Show images of what may lie beneath the earth’s surface.</li>
+                      <li>Show images of what may lie beneath the earth's surface.</li>
                       <li>Relate how layers of the earth relate to daily functions.</li>
                     </ul>
                   </AccordionContent>
@@ -223,7 +236,7 @@ export default function EarthSystemsPage() {
             <h3 className="font-semibold mb-2">Teacher Content Knowledge</h3>
             <p>
               Earth's Systems in Grade 4 enables to have a deeper understanding of the different types of landforms
-              and bodies of water that make up Earth's surface. They learn about the how Earth’s surface is changed and what are
+              and bodies of water that make up Earth's surface. They learn about the how Earth's surface is changed and what are
               the effects.
             </p>
           </div>

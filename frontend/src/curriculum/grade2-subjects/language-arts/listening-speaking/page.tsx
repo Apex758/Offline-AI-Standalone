@@ -3,8 +3,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Ear, MessageSquare, Users, BookOpen, ChevronRight, ClipboardCheck } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon'
+import EarIcon from '@hugeicons/core-free-icons/EarIcon'
+import Message01Icon from '@hugeicons/core-free-icons/Message01Icon'
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon'
+import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon'
+import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon'
+import CheckListIcon from '@hugeicons/core-free-icons/CheckListIcon'
 import { Breadcrumb } from "@/components/breadcrumb"
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const Ear = (props: { className?: string }) => <Icon icon={EarIcon} {...props} />;
+const MessageSquare = (props: { className?: string }) => <Icon icon={Message01Icon} {...props} />;
+const Users = (props: { className?: string }) => <Icon icon={UserGroupIcon} {...props} />;
+const BookOpen = (props: { className?: string }) => <Icon icon={BookOpen01Icon} {...props} />;
+const ChevronRight = (props: { className?: string }) => <Icon icon={ArrowRight01Icon} {...props} />;
+const ClipboardCheck = (props: { className?: string }) => <Icon icon={CheckListIcon} {...props} />;
 
 export default function Grade2ListeningSpeakingPage() {
   return (
@@ -125,7 +146,7 @@ export default function Grade2ListeningSpeakingPage() {
                   <ul className="list-disc pl-5 space-y-2">
                     <li>Describe, share, and discuss thoughts, feelings, and experiences</li>
                     <li>Ask and respond to questions to clarify information and to explore possibilities or solutions to problems</li>
-                    <li>Consider others’ ideas and ask/ respond to questions to clarify information and to explore possibilities or solutions to problems</li>
+                    <li>Consider others' ideas and ask/ respond to questions to clarify information and to explore possibilities or solutions to problems</li>
                     <li>Recognize some examples of unfair and hurtful vocabulary, and begin to make vocabulary choices that affirm rather than hurt people</li>
                     <li>Experiment with the impact of intonation, expression, and tone while communicating ideas and feelings in small- and whole-group situations</li>
                   </ul>
@@ -209,7 +230,7 @@ export default function Grade2ListeningSpeakingPage() {
                   <AccordionContent>
                     <ul className="list-disc pl-5 space-y-2">
                       <li>Follow me!: Teacher indicates to learners that she has hidden a special gift/treat in the classroom/school</li>
-                      <li>What’s That Sound?: Begin the year with a focus on active listening</li>
+                      <li>What's That Sound?: Begin the year with a focus on active listening</li>
                       <li>Listening to our feelings and emotions: Teacher engages learners in a Read-aloud that focuses on a text that depicts a specific feeling/emotion</li>
                     </ul>
                   </AccordionContent>

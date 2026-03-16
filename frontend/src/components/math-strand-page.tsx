@@ -1,6 +1,6 @@
 import React from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { BulbIcon } from '@hugeicons/core-free-icons/BulbIcon';
+import BulbIcon from '@hugeicons/core-free-icons/BulbIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

@@ -3,7 +3,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Map, ClipboardCheck } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon'
+import MapsIcon from '@hugeicons/core-free-icons/MapsIcon'
+import CheckListIcon from '@hugeicons/core-free-icons/CheckListIcon'
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const MapIcon = (props: { className?: string }) => <Icon icon={MapsIcon} {...props} />;
+const ClipboardCheck = (props: { className?: string }) => <Icon icon={CheckListIcon} {...props} />;
 
 export default function SpatialThinkingPage() {
   return (
@@ -11,11 +24,11 @@ export default function SpatialThinkingPage() {
       <div className="mb-8">
         <div className="bg-gradient-to-r from-green-100 to-emerald-100 p-6 rounded-xl shadow-md">
           <h1 className="text-3xl font-bold mb-4 text-green-700 flex items-center">
-            <Map className="mr-2 h-7 w-7 text-green-600" />
+            <MapIcon className="mr-2 h-7 w-7 text-green-600" />
             Spatial Thinking
           </h1>
           <p className="text-gray-700">
-            In Grade 2, students develop an understanding that islands are made up of many diverse regions and communities. 
+            In Grade 2, students develop an understanding that islands are made up of many diverse regions and communities.
             They learn about cardinal directions, mapping, features of communities, plants and animals, weather patterns,
             and the environment as a resource. This knowledge helps students understand their physical surroundings and
             their relationship to the natural world.

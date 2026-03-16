@@ -1,8 +1,8 @@
 import React from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Calendar01Icon } from '@hugeicons/core-free-icons/Calendar01Icon';
-import { Target01Icon } from '@hugeicons/core-free-icons/Target01Icon';
-import { BookOpen01Icon } from '@hugeicons/core-free-icons/BookOpen01Icon';
+import Calendar01Icon from '@hugeicons/core-free-icons/Calendar01Icon';
+import Target01Icon from '@hugeicons/core-free-icons/Target01Icon';
+import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {

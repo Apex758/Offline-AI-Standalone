@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRight01Icon } from '@hugeicons/core-free-icons/ArrowRight01Icon';
-import { ArrowLeft01Icon } from '@hugeicons/core-free-icons/ArrowLeft01Icon';
-import { Loading02Icon } from '@hugeicons/core-free-icons/Loading02Icon';
-import { UserGroupIcon } from '@hugeicons/core-free-icons/UserGroupIcon';
-import { Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon';
-import { SaveIcon } from '@hugeicons/core-free-icons/SaveIcon';
-import { Download01Icon } from '@hugeicons/core-free-icons/Download01Icon';
-import { WorkHistoryIcon } from '@hugeicons/core-free-icons/WorkHistoryIcon';
-import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
-import { PencilEdit01Icon } from '@hugeicons/core-free-icons/PencilEdit01Icon';
-import { SparklesIcon } from '@hugeicons/core-free-icons/SparklesIcon';
+import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
+import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
+import SaveIcon from '@hugeicons/core-free-icons/SaveIcon';
+import Download01Icon from '@hugeicons/core-free-icons/Download01Icon';
+import WorkHistoryIcon from '@hugeicons/core-free-icons/WorkHistoryIcon';
+import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
+import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import SparklesIcon from '@hugeicons/core-free-icons/SparklesIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

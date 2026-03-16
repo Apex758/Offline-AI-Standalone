@@ -1,8 +1,31 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calculator, Hash, Ruler, ChevronLeft, ChevronRight, BarChart, Shapes, Repeat } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import CalculatorIcon from '@hugeicons/core-free-icons/CalculatorIcon'
+import HashtagIcon from '@hugeicons/core-free-icons/HashtagIcon'
+import RulerIcon from '@hugeicons/core-free-icons/RulerIcon'
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon'
+import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon'
+import BarChartIcon from '@hugeicons/core-free-icons/BarChartIcon'
+import ShapesIcon from '@hugeicons/core-free-icons/ShapesIcon'
+import RepeatIcon from '@hugeicons/core-free-icons/RepeatIcon'
 import { Breadcrumb } from "@/components/breadcrumb"
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const Calculator = (props: { className?: string }) => <Icon icon={CalculatorIcon} {...props} />;
+const Hash = (props: { className?: string }) => <Icon icon={HashtagIcon} {...props} />;
+const Ruler = (props: { className?: string }) => <Icon icon={RulerIcon} {...props} />;
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const ChevronRight = (props: { className?: string }) => <Icon icon={ArrowRight01Icon} {...props} />;
+const BarChart = (props: { className?: string }) => <Icon icon={BarChartIcon} {...props} />;
+const Shapes = (props: { className?: string }) => <Icon icon={ShapesIcon} {...props} />;
+const Repeat = (props: { className?: string }) => <Icon icon={RepeatIcon} {...props} />;
 
 export default function Grade6MathematicsPage() {
   return (

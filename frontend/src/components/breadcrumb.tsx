@@ -1,6 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronRight = (props: { className?: string }) => <Icon icon={ArrowRight01Icon} {...props} />;
 
 interface BreadcrumbItem {
   label: string;

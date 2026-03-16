@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Image01Icon } from '@hugeicons/core-free-icons/Image01Icon';
+import Image01Icon from '@hugeicons/core-free-icons/Image01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

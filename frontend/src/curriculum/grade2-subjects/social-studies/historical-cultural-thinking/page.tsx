@@ -3,13 +3,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, BookOpen, ClipboardCheck } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon'
+import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon'
+import CheckListIcon from '@hugeicons/core-free-icons/CheckListIcon'
 import { Breadcrumb } from "@/components/breadcrumb"
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const BookOpen = (props: { className?: string }) => <Icon icon={BookOpen01Icon} {...props} />;
+const ClipboardCheck = (props: { className?: string }) => <Icon icon={CheckListIcon} {...props} />;
 
 export default function HistoricalCulturalThinkingPage() {
   return (
     <div className="container mx-auto py-8">
-      
+
       <Link to="/curriculum/grade2-subjects/social-studies">
         <Button variant="outline" className="mb-6">
           <ChevronLeft className="mr-2 h-4 w-4" /> Back to Grade 2 Social Studies
@@ -23,9 +36,9 @@ export default function HistoricalCulturalThinkingPage() {
             Historical and Cultural Thinking
           </h1>
           <p className="text-gray-700">
-            In Grade 2, students develop an appreciation for how our past and present shape our identity. 
-            They explore the roots of their identity as Caribbean people through family relationships, 
-            festivals and celebrations, and historical sites. This knowledge helps students understand 
+            In Grade 2, students develop an appreciation for how our past and present shape our identity.
+            They explore the roots of their identity as Caribbean people through family relationships,
+            festivals and celebrations, and historical sites. This knowledge helps students understand
             and appreciate the rich cultural heritage that forms their identity.
           </p>
         </div>

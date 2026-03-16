@@ -4,82 +4,152 @@ import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { HugeiconsIcon } from '@hugeicons/react';
+import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  BookOpen, 
-  Users, 
-  Image as ImageIcon, 
-  FileText, 
-  Palette, 
-  Eye,
-  Theater, 
-  Blocks, 
-  Music, 
-  Baby, 
-  Calendar, 
-  Heart, 
-  Image as ImageIcon2, 
-  BookOpenCheck, 
-  Camera, 
-  Building2,
-  PartyPopper,
-  Scissors,
-  Shirt,
-  Drum,
-  Headphones,
-  Utensils,
-  Flag,
-  Video,
-  Cake,
-  ChefHat,
-  CalendarDays,
-  ListOrdered,
-  MessageSquare,
-  Cloud,
-  CloudRain,
-  Thermometer,
-  Wind,
-  Droplets,
-  CloudSnow,
-  SprayCan,
-  Umbrella,
-  Music2,
-  Flashlight,
-  BookOpenText,
-  VideoIcon,
-  Paintbrush,
-  Calendar as CalendarIcon,
-  Circle,
-  Gamepad2,
-  Dice1,
-  Hash,
-  CircleDot,
-  Circle as Circle2,
-  BookOpenCheck as BookOpenCheck2,
-  Music3,
-  Timer,
-  Trophy,
-  Square,
-  ClipboardList,
-  FileSpreadsheet,
-  Leaf,
-  Sprout,
-  Flower,
-  Image as ImageIcon3,
-  Search,
-  Bug,
-  Sprout as Sprout2,
-  Backpack,
-  BookOpenCheck as BookOpenCheck3,
-  Volume2,
-  Table2,
-  Pencil,
-  Film,
-  Gift,
-  Container
-} from 'lucide-react';
+
+// Import all hugeicons
+import BookOpen01Icon from '@hugeicons/core-free-icons/BookOpen01Icon';
+import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
+import Image01Icon from '@hugeicons/core-free-icons/Image01Icon';
+import File01Icon from '@hugeicons/core-free-icons/File01Icon';
+import ColorsIcon from '@hugeicons/core-free-icons/ColorsIcon';
+import ViewIcon from '@hugeicons/core-free-icons/ViewIcon';
+import TheaterIcon from '@hugeicons/core-free-icons/TheaterIcon';
+import BlockGameIcon from '@hugeicons/core-free-icons/BlockGameIcon';
+import MusicNote01Icon from '@hugeicons/core-free-icons/MusicNote01Icon';
+import Baby01Icon from '@hugeicons/core-free-icons/Baby01Icon';
+import Calendar01Icon from '@hugeicons/core-free-icons/Calendar01Icon';
+import FavouriteIcon from '@hugeicons/core-free-icons/FavouriteIcon';
+import Camera01Icon from '@hugeicons/core-free-icons/Camera01Icon';
+import Building02Icon from '@hugeicons/core-free-icons/Building02Icon';
+import PartyIcon from '@hugeicons/core-free-icons/PartyIcon';
+import ScissorIcon from '@hugeicons/core-free-icons/ScissorIcon';
+import Shirt01Icon from '@hugeicons/core-free-icons/Shirt01Icon';
+import MusicNote02Icon from '@hugeicons/core-free-icons/MusicNote02Icon';
+import HeadphonesIcon from '@hugeicons/core-free-icons/HeadphonesIcon';
+import KitchenUtensilsIcon from '@hugeicons/core-free-icons/KitchenUtensilsIcon';
+import Flag01Icon from '@hugeicons/core-free-icons/Flag01Icon';
+import Video01Icon from '@hugeicons/core-free-icons/Video01Icon';
+import CakeSliceIcon from '@hugeicons/core-free-icons/CakeSliceIcon';
+import ChefHatIcon from '@hugeicons/core-free-icons/ChefHatIcon';
+import Message01Icon from '@hugeicons/core-free-icons/Message01Icon';
+import CloudIcon from '@hugeicons/core-free-icons/CloudIcon';
+import CloudBigRainIcon from '@hugeicons/core-free-icons/CloudBigRainIcon';
+import ThermometerIcon from '@hugeicons/core-free-icons/ThermometerIcon';
+import CloudFastWindIcon from '@hugeicons/core-free-icons/CloudFastWindIcon';
+import DropletIcon from '@hugeicons/core-free-icons/DropletIcon';
+import CloudSnowIcon from '@hugeicons/core-free-icons/CloudSnowIcon';
+import SprayCanIcon from '@hugeicons/core-free-icons/SprayCanIcon';
+import UmbrellaIcon from '@hugeicons/core-free-icons/UmbrellaIcon';
+import FlashlightIcon from '@hugeicons/core-free-icons/FlashlightIcon';
+import BookOpenTextIcon from '@hugeicons/core-free-icons/BookOpenTextIcon';
+import PaintBrush01Icon from '@hugeicons/core-free-icons/PaintBrush01Icon';
+import CircleIcon from '@hugeicons/core-free-icons/CircleIcon';
+import GamepadDirectionalIcon from '@hugeicons/core-free-icons/GamepadDirectionalIcon';
+import DiceIcon from '@hugeicons/core-free-icons/DiceIcon';
+import HashtagIcon from '@hugeicons/core-free-icons/HashtagIcon';
+import Timer01Icon from '@hugeicons/core-free-icons/Timer01Icon';
+import Award01Icon from '@hugeicons/core-free-icons/Award01Icon';
+import Square01Icon from '@hugeicons/core-free-icons/Square01Icon';
+import ClipboardIcon from '@hugeicons/core-free-icons/ClipboardIcon';
+import FileSpreadsheetIcon from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import Leaf01Icon from '@hugeicons/core-free-icons/Leaf01Icon';
+import FlowerIcon from '@hugeicons/core-free-icons/FlowerIcon';
+import Search01Icon from '@hugeicons/core-free-icons/Search01Icon';
+import Bug01Icon from '@hugeicons/core-free-icons/Bug01Icon';
+import Backpack01Icon from '@hugeicons/core-free-icons/Backpack01Icon';
+import BookOpenCheckIcon from '@hugeicons/core-free-icons/BookOpenCheckIcon';
+import VolumeHighIcon from '@hugeicons/core-free-icons/VolumeHighIcon';
+import Table01Icon from '@hugeicons/core-free-icons/Table01Icon';
+import PencilEdit01Icon from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import Film01Icon from '@hugeicons/core-free-icons/Film01Icon';
+import GiftIcon from '@hugeicons/core-free-icons/GiftIcon';
+import ContainerIcon from '@hugeicons/core-free-icons/ContainerIcon';
+import MusicNote03Icon from '@hugeicons/core-free-icons/MusicNote03Icon';
+
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} className={className} style={style} />;
+};
+
+// Named wrappers matching old lucide names
+const ChevronLeft = (props: { className?: string }) => <Icon icon={ArrowLeft01Icon} {...props} />;
+const BookOpen = (props: { className?: string }) => <Icon icon={BookOpen01Icon} {...props} />;
+const Users = (props: { className?: string }) => <Icon icon={UserGroupIcon} {...props} />;
+const ImageIcon = (props: { className?: string }) => <Icon icon={Image01Icon} {...props} />;
+const FileText = (props: { className?: string }) => <Icon icon={File01Icon} {...props} />;
+const Palette = (props: { className?: string }) => <Icon icon={ColorsIcon} {...props} />;
+const Eye = (props: { className?: string }) => <Icon icon={ViewIcon} {...props} />;
+const Theater = (props: { className?: string }) => <Icon icon={TheaterIcon} {...props} />;
+const Blocks = (props: { className?: string }) => <Icon icon={BlockGameIcon} {...props} />;
+const Music = (props: { className?: string }) => <Icon icon={MusicNote01Icon} {...props} />;
+const Baby = (props: { className?: string }) => <Icon icon={Baby01Icon} {...props} />;
+const Calendar = (props: { className?: string }) => <Icon icon={Calendar01Icon} {...props} />;
+const Heart = (props: { className?: string }) => <Icon icon={FavouriteIcon} {...props} />;
+const ImageIcon2 = (props: { className?: string }) => <Icon icon={Image01Icon} {...props} />;
+const Camera = (props: { className?: string }) => <Icon icon={Camera01Icon} {...props} />;
+const Building2 = (props: { className?: string }) => <Icon icon={Building02Icon} {...props} />;
+const PartyPopper = (props: { className?: string }) => <Icon icon={PartyIcon} {...props} />;
+const Scissors = (props: { className?: string }) => <Icon icon={ScissorIcon} {...props} />;
+const Cake = (props: { className?: string }) => <Icon icon={CakeSliceIcon} {...props} />;
+const Shirt = (props: { className?: string }) => <Icon icon={Shirt01Icon} {...props} />;
+const Drum = (props: { className?: string }) => <Icon icon={MusicNote02Icon} {...props} />;
+const Headphones = (props: { className?: string }) => <Icon icon={HeadphonesIcon} {...props} />;
+const Utensils = (props: { className?: string }) => <Icon icon={KitchenUtensilsIcon} {...props} />;
+const Flag = (props: { className?: string }) => <Icon icon={Flag01Icon} {...props} />;
+const Video = (props: { className?: string }) => <Icon icon={Video01Icon} {...props} />;
+const CalendarDays = (props: { className?: string }) => <Icon icon={Calendar01Icon} {...props} />;
+const ChefHat = (props: { className?: string }) => <Icon icon={ChefHatIcon} {...props} />;
+const CalendarIcon2 = (props: { className?: string }) => <Icon icon={Calendar01Icon} {...props} />;
+const ListOrdered = (props: { className?: string }) => <Icon icon={CheckListIconAlias} {...props} />;
+const MessageSquare = (props: { className?: string }) => <Icon icon={Message01Icon} {...props} />;
+const Cloud = (props: { className?: string }) => <Icon icon={CloudIcon} {...props} />;
+const CloudRain = (props: { className?: string }) => <Icon icon={CloudBigRainIcon} {...props} />;
+const Thermometer = (props: { className?: string }) => <Icon icon={ThermometerIcon} {...props} />;
+const Wind = (props: { className?: string }) => <Icon icon={CloudFastWindIcon} {...props} />;
+const Droplets = (props: { className?: string }) => <Icon icon={DropletIcon} {...props} />;
+const CloudSnow = (props: { className?: string }) => <Icon icon={CloudSnowIcon} {...props} />;
+const SprayCan = (props: { className?: string }) => <Icon icon={SprayCanIcon} {...props} />;
+const Umbrella = (props: { className?: string }) => <Icon icon={UmbrellaIcon} {...props} />;
+const Music2 = (props: { className?: string }) => <Icon icon={MusicNote02Icon} {...props} />;
+const Flashlight = (props: { className?: string }) => <Icon icon={FlashlightIcon} {...props} />;
+const BookOpenText = (props: { className?: string }) => <Icon icon={BookOpenTextIcon} {...props} />;
+const VideoIcon = (props: { className?: string }) => <Icon icon={Video01Icon} {...props} />;
+const Paintbrush = (props: { className?: string }) => <Icon icon={PaintBrush01Icon} {...props} />;
+const Circle = (props: { className?: string }) => <Icon icon={CircleIcon} {...props} />;
+const Gamepad2 = (props: { className?: string }) => <Icon icon={GamepadDirectionalIcon} {...props} />;
+const Dice1 = (props: { className?: string }) => <Icon icon={DiceIcon} {...props} />;
+const Hash = (props: { className?: string }) => <Icon icon={HashtagIcon} {...props} />;
+const CircleDot = (props: { className?: string }) => <Icon icon={CircleIcon} {...props} />;
+const Circle2 = (props: { className?: string }) => <Icon icon={CircleIcon} {...props} />;
+const BookOpenCheck2 = (props: { className?: string }) => <Icon icon={BookOpenCheckIcon} {...props} />;
+const Music3 = (props: { className?: string }) => <Icon icon={MusicNote03Icon} {...props} />;
+const Timer = (props: { className?: string }) => <Icon icon={Timer01Icon} {...props} />;
+const Trophy = (props: { className?: string }) => <Icon icon={Award01Icon} {...props} />;
+const Square = (props: { className?: string }) => <Icon icon={Square01Icon} {...props} />;
+const ClipboardList = (props: { className?: string }) => <Icon icon={ClipboardIcon} {...props} />;
+const FileSpreadsheet = (props: { className?: string }) => <Icon icon={FileSpreadsheetIcon} {...props} />;
+const Leaf = (props: { className?: string }) => <Icon icon={Leaf01Icon} {...props} />;
+const Sprout = (props: { className?: string }) => <Icon icon={Leaf01Icon} {...props} />;
+const Flower = (props: { className?: string }) => <Icon icon={FlowerIcon} {...props} />;
+const ImageIcon3 = (props: { className?: string }) => <Icon icon={Image01Icon} {...props} />;
+const Search = (props: { className?: string }) => <Icon icon={Search01Icon} {...props} />;
+const Bug = (props: { className?: string }) => <Icon icon={Bug01Icon} {...props} />;
+const Sprout2 = (props: { className?: string }) => <Icon icon={Leaf01Icon} {...props} />;
+const Backpack = (props: { className?: string }) => <Icon icon={Backpack01Icon} {...props} />;
+const BookOpenCheck3 = (props: { className?: string }) => <Icon icon={BookOpenCheckIcon} {...props} />;
+const Volume2 = (props: { className?: string }) => <Icon icon={VolumeHighIcon} {...props} />;
+const Table2 = (props: { className?: string }) => <Icon icon={Table01Icon} {...props} />;
+const Pencil = (props: { className?: string }) => <Icon icon={PencilEdit01Icon} {...props} />;
+const Film = (props: { className?: string }) => <Icon icon={Film01Icon} {...props} />;
+const Gift = (props: { className?: string }) => <Icon icon={GiftIcon} {...props} />;
+const Container = (props: { className?: string }) => <Icon icon={ContainerIcon} {...props} />;
+
+// Alias for ListOrdered (using ClipboardIcon as substitute)
+import CheckListIconAlias from '@hugeicons/core-free-icons/CheckListIcon';
 
 interface Resource {
   name: string;
@@ -494,7 +564,7 @@ const getResourceIcon = (name: string) => {
     'Video Clips of Celebrations': <Video className="h-6 w-6" />,
     'Birthday Chart': <CalendarDays className="h-6 w-6" />,
     'Recipe Cards or Props': <ChefHat className="h-6 w-6" />,
-    'Calendar': <CalendarIcon className="h-6 w-6" />,
+    'Calendar': <CalendarIcon2 className="h-6 w-6" />,
     'Story Sequence Cards': <ListOrdered className="h-6 w-6" />,
     'Greeting Cards': <MessageSquare className="h-6 w-6" />,
     'Weather Chart': <Cloud className="h-6 w-6" />,
@@ -597,7 +667,7 @@ export default function KindergartenResourcesPage() {
             <p className="text-sm">Materials to extend learning at home</p>
           </div>
         </div>
-        
+
         {/* Lesson Plan Creation Button */}
         <div className="mt-8 text-center">
           <Link to="/kindergarten-planner"><Button>
@@ -609,36 +679,36 @@ export default function KindergartenResourcesPage() {
 
       <Tabs defaultValue="belonging" className="w-full mt-8">
         <TabsList className="grid w-full grid-cols-5 p-1 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl shadow-sm">
-          <TabsTrigger 
-            value="belonging" 
+          <TabsTrigger
+            value="belonging"
             className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-blue-50"
           >
             <Users className="h-4 w-4 mr-2" />
             Belonging
           </TabsTrigger>
-          <TabsTrigger 
-            value="weather" 
+          <TabsTrigger
+            value="weather"
             className="data-[state=active]:bg-cyan-100 data-[state=active]:text-cyan-700 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-cyan-50"
           >
             <Cloud className="h-4 w-4 mr-2" />
             Weather
           </TabsTrigger>
-          <TabsTrigger 
-            value="celebrations" 
+          <TabsTrigger
+            value="celebrations"
             className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-purple-50"
           >
             <PartyPopper className="h-4 w-4 mr-2" />
             Celebrations
           </TabsTrigger>
-          <TabsTrigger 
-            value="plantsAndAnimals" 
+          <TabsTrigger
+            value="plantsAndAnimals"
             className="data-[state=active]:bg-green-100 data-[state=active]:text-green-700 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-green-50"
           >
             <Leaf className="h-4 w-4 mr-2" />
             Plants & Animals
           </TabsTrigger>
-          <TabsTrigger 
-            value="games" 
+          <TabsTrigger
+            value="games"
             className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-amber-50"
           >
             <Gamepad2 className="h-4 w-4 mr-2" />
@@ -652,8 +722,8 @@ export default function KindergartenResourcesPage() {
               {resources.map((resource, index) => {
                 const colors = getUnitColor(unit);
                 return (
-                  <Card 
-                    key={index} 
+                  <Card
+                    key={index}
                     className={`hover:shadow-lg transition-all duration-300 border-t-4 border-${colors.text.split('-')[1]}-500 hover:-translate-y-1`}
                   >
                     <CardHeader className={`bg-gradient-to-br ${colors.from} ${colors.to} pb-2`}>
@@ -665,8 +735,8 @@ export default function KindergartenResourcesPage() {
                           <CardTitle className={colors.text}>{resource.name}</CardTitle>
                           <div className="flex flex-wrap gap-2 mt-2">
                             {resource.tags?.map((tag, tagIndex) => (
-                              <Badge 
-                                key={tagIndex} 
+                              <Badge
+                                key={tagIndex}
                                 variant="secondary"
                                 className={`bg-white/80 ${colors.text}`}
                               >
@@ -689,4 +759,4 @@ export default function KindergartenResourcesPage() {
       </Tabs>
     </div>
   );
-} 
+}

@@ -1,8 +1,8 @@
 // components/MultigradeEditor.tsx
 import React, { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon';
-import { Cancel01Icon } from '@hugeicons/core-free-icons/Cancel01Icon';
+import Tick01Icon from '@hugeicons/core-free-icons/Tick01Icon';
+import Cancel01Icon from '@hugeicons/core-free-icons/Cancel01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
