@@ -1,46 +1,108 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Brain,
-  Mic,
-  MicOff,
-  Sparkles,
-  Check,
-  X,
-  RotateCcw,
-  BookMarked,
-  PenTool,
-  ClipboardList,
-  FileSpreadsheet,
-  CalendarPlus,
-  Baby,
-  Layers,
-  Merge,
-  Palette,
-  Loader2,
-  StickyNote,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Calculator,
-  Timer,
-  Play,
-  Pause,
-  Square,
-  ExternalLink,
-  Save,
-  ArrowLeft,
-  Pencil,
-  Delete,
-  Percent,
-  Divide,
-  Plus as PlusIcon,
-  Minus as MinusIcon,
-  Equal
-} from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
+import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
+import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
+import SparklesIconData from '@hugeicons/core-free-icons/SparklesIcon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
+import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import PenTool01IconData from '@hugeicons/core-free-icons/PenTool01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import CalendarAdd01IconData from '@hugeicons/core-free-icons/CalendarAdd01Icon';
+import Baby01IconData from '@hugeicons/core-free-icons/Baby01Icon';
+import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
+import GitMergeIconData from '@hugeicons/core-free-icons/GitMergeIcon';
+import ColorsIconData from '@hugeicons/core-free-icons/ColorsIcon';
+import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
+import StickyNote01IconData from '@hugeicons/core-free-icons/StickyNote01Icon';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import CalculatorIconData from '@hugeicons/core-free-icons/CalculatorIcon';
+import Timer01IconData from '@hugeicons/core-free-icons/Timer01Icon';
+import PlayIconData from '@hugeicons/core-free-icons/PlayIcon';
+import PauseIconData from '@hugeicons/core-free-icons/PauseIcon';
+import StopIconData from '@hugeicons/core-free-icons/StopIcon';
+import SquareArrowUpRightIconData from '@hugeicons/core-free-icons/SquareArrowUpRightIcon';
+import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
+import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import Delete01IconData from '@hugeicons/core-free-icons/Delete01Icon';
+import PercentIconData from '@hugeicons/core-free-icons/PercentIcon';
+import DivideSignIconData from '@hugeicons/core-free-icons/DivideSignIcon';
+import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import MinusSignIconData from '@hugeicons/core-free-icons/MinusSignIcon';
+import EqualSignIconData from '@hugeicons/core-free-icons/EqualSignIcon';
+import TextBoldIconData from '@hugeicons/core-free-icons/TextBoldIcon';
+import TextItalicIconData from '@hugeicons/core-free-icons/TextItalicIcon';
+import TextUnderlineIconData from '@hugeicons/core-free-icons/TextUnderlineIcon';
+import TextStrikethroughIconData from '@hugeicons/core-free-icons/TextStrikethroughIcon';
+import Heading01IconData from '@hugeicons/core-free-icons/Heading01Icon';
+import Heading02IconData from '@hugeicons/core-free-icons/Heading02Icon';
+import LeftToRightListBulletIconData from '@hugeicons/core-free-icons/LeftToRightListBulletIcon';
+import LeftToRightListNumberIconData from '@hugeicons/core-free-icons/LeftToRightListNumberIcon';
+import QuoteDownIconData from '@hugeicons/core-free-icons/QuoteDownIcon';
+import Link01IconData from '@hugeicons/core-free-icons/Link01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import TextFontIconData from '@hugeicons/core-free-icons/TextFontIcon';
+import StopWatchIconData from '@hugeicons/core-free-icons/StopWatchIcon';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useSettings } from '../contexts/SettingsContext';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType } from '../types/brainDump';
+
+// Wrapper to make HugeiconsIcon work like lucide-react components
+const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties; strokeWidth?: number }> = ({ icon, className = '', style, strokeWidth }) => {
+  // Extract size from className (w-N h-N pattern)
+  const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+  const size = sizeMatch ? parseFloat(sizeMatch[1]) * 4 : 20;
+  return <HugeiconsIcon icon={icon} size={size} strokeWidth={strokeWidth} className={className} style={style} />;
+};
+
+// Named icon components for use in ACTION_META and toolbar
+const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
+const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Mic01IconData} {...p} />;
+const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MicOff01IconData} {...p} />;
+const Sparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SparklesIconData} {...p} />;
+const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
+const XIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
+const RotateCcw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
+const BookMarked: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BookBookmark01IconData} {...p} />;
+const PenTool: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PenTool01IconData} {...p} />;
+const ClipboardList: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
+const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
+const CalendarPlus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CalendarAdd01IconData} {...p} />;
+const Baby: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Baby01IconData} {...p} />;
+const Layers: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Layers01IconData} {...p} />;
+const Merge: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GitMergeIconData} {...p} />;
+const Palette: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ColorsIconData} {...p} />;
+const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
+const StickyNote: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StickyNote01IconData} {...p} />;
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ChevronUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowUp01IconData} {...p} />;
+const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const Calculator: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CalculatorIconData} {...p} />;
+const Timer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Timer01IconData} {...p} />;
+const Play: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlayIconData} {...p} />;
+const Pause: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PauseIconData} {...p} />;
+const Square: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StopIconData} {...p} />;
+const ExternalLink: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SquareArrowUpRightIconData} {...p} />;
+const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
+const ArrowLeft: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowLeft01IconData} {...p} />;
+const Pencil: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PencilEdit01IconData} {...p} />;
+const Delete: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete01IconData} {...p} />;
+const Percent: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PercentIconData} {...p} />;
+const Divide: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DivideSignIconData} {...p} />;
+const PlusIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PlusSignIconData} {...p} />;
+const MinusIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MinusSignIconData} {...p} />;
+const Equal: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EqualSignIconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const Type: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextFontIconData} {...p} />;
 
 interface BrainDumpProps {
   tabId: string;
@@ -454,9 +516,14 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [activeTool, setActiveTool] = useState<'calculator' | 'stopwatch' | 'timer' | null>(null);
+  const [showToolbar, setShowToolbar] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const editEditorRef = useRef<HTMLDivElement>(null);
   const accumulatedRef = useRef('');
+
+  const { settings } = useSettings();
+  const accentColor = settings.tabColors['brain-dump'] ?? '#a855f7';
 
   const { getConnection } = useWebSocket();
   const WS_ENDPOINT = '/ws/brain-dump';
@@ -464,19 +531,43 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   // STT integration
   const { isListening, toggleListening } = useSTT(
     (finalText) => {
-      setDumpText(prev => prev ? prev + ' ' + finalText : finalText);
+      if (editorRef.current) {
+        // Insert spoken text at cursor or append
+        editorRef.current.focus();
+        document.execCommand('insertText', false, (editorRef.current.textContent ? ' ' : '') + finalText);
+        setDumpText(editorRef.current.innerHTML);
+      }
       setInterimText('');
     },
     (interim) => setInterimText(interim)
   );
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 300) + 'px';
-    }
-  }, [dumpText, interimText]);
+  // Helper to get plain text from editor
+  const getPlainText = useCallback(() => {
+    if (!editorRef.current) return '';
+    return editorRef.current.innerText.trim();
+  }, []);
+
+  // Exec command helper for toolbar
+  const execFormat = useCallback((command: string, value?: string) => {
+    // Restore focus without losing selection (onMouseDown preventDefault keeps it)
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    editorRef.current?.focus();
+    if (range) { sel!.removeAllRanges(); sel!.addRange(range); }
+    document.execCommand(command, false, value);
+    if (editorRef.current) setDumpText(editorRef.current.innerHTML);
+  }, []);
+
+  // Exec command helper for edit toolbar
+  const execEditFormat = useCallback((command: string, value?: string) => {
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    editEditorRef.current?.focus();
+    if (range) { sel!.removeAllRanges(); sel!.addRange(range); }
+    document.execCommand(command, false, value);
+    if (editEditorRef.current) setEditText(editEditorRef.current.innerHTML);
+  }, []);
 
   // Parse the AI response into actions
   const parseActions = useCallback((raw: string): BrainDumpAction[] => {
@@ -514,7 +605,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
 
   // Analyze brain dump via WebSocket
   const handleAnalyze = useCallback(() => {
-    const text = dumpText.trim();
+    const text = getPlainText();
     if (!text || isAnalyzing) return;
 
     setIsAnalyzing(true);
@@ -552,7 +643,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
       jobId: `brain-dump-${Date.now()}`,
       generationMode: 'queued',
     }));
-  }, [dumpText, isAnalyzing, tabId, getConnection, parseActions]);
+  }, [getPlainText, isAnalyzing, tabId, getConnection, parseActions]);
 
   // Accept an action
   const handleAccept = useCallback((actionId: string) => {
@@ -588,10 +679,12 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
 
   // Save current brain dump to notes
   const handleSaveToNotes = useCallback(() => {
-    if (!dumpText.trim() && actions.length === 0) return;
+    const html = dumpText.trim();
+    const plain = getPlainText();
+    if (!plain && actions.length === 0) return;
     const entry: BrainDumpEntry = {
       id: `entry-${Date.now()}`,
-      text: dumpText.trim(),
+      text: html || plain,
       timestamp: new Date().toISOString(),
       actions: [...actions],
     };
@@ -599,16 +692,19 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     setEntries(updated);
     saveEntries(updated);
     setDumpText('');
+    if (editorRef.current) editorRef.current.innerHTML = '';
     setActions([]);
     setAnalysisError(null);
-  }, [dumpText, actions, entries]);
+  }, [dumpText, actions, entries, getPlainText]);
 
   // Save just the text as a note (no analysis needed)
   const handleSaveTextAsNote = useCallback(() => {
-    if (!dumpText.trim()) return;
+    const html = dumpText.trim();
+    const plain = getPlainText();
+    if (!plain) return;
     const entry: BrainDumpEntry = {
       id: `entry-${Date.now()}`,
-      text: dumpText.trim(),
+      text: html || plain,
       timestamp: new Date().toISOString(),
       actions: [],
     };
@@ -616,9 +712,10 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     setEntries(updated);
     saveEntries(updated);
     setDumpText('');
+    if (editorRef.current) editorRef.current.innerHTML = '';
     setActions([]);
     setAnalysisError(null);
-  }, [dumpText, entries]);
+  }, [dumpText, entries, getPlainText]);
 
   // Delete a saved entry
   const handleDeleteEntry = useCallback((entryId: string) => {
@@ -632,12 +729,20 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const handleStartEdit = useCallback((entry: BrainDumpEntry) => {
     setEditingEntry(entry.id);
     setEditText(entry.text);
+    // Set content after render
+    requestAnimationFrame(() => {
+      if (editEditorRef.current) {
+        editEditorRef.current.innerHTML = entry.text;
+        editEditorRef.current.focus();
+      }
+    });
   }, []);
 
   // Save edited note
   const handleSaveEdit = useCallback((entryId: string) => {
-    if (!editText.trim()) return;
-    const updated = entries.map(e => e.id === entryId ? { ...e, text: editText.trim() } : e);
+    const html = editEditorRef.current?.innerHTML?.trim() || editText.trim();
+    if (!html) return;
+    const updated = entries.map(e => e.id === entryId ? { ...e, text: html } : e);
     setEntries(updated);
     saveEntries(updated);
     setEditingEntry(null);
@@ -650,7 +755,14 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     setEditText('');
   }, []);
 
-  const hasContent = dumpText.trim().length > 0;
+  const hasContent = getPlainText().length > 0;
+
+  // Strip HTML for preview text
+  const stripHtml = useCallback((html: string) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  }, []);
 
   const quickTools = [
     { id: 'calculator' as const, icon: Calculator, label: 'Calculator', color: 'text-blue-500', bg: 'bg-blue-500/12 hover:bg-blue-500/20' },
@@ -669,8 +781,8 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-violet-500/10 ring-1 ring-purple-500/20">
-                  <Brain className="w-5 h-5 text-purple-500" />
+                <div className="p-2.5 rounded-2xl" style={{ background: `${accentColor}20`, boxShadow: `inset 0 0 0 1px ${accentColor}33` }}>
+                  <Brain className="w-5 h-5" style={{ color: accentColor }} />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-theme-heading tracking-tight">Brain Dump</h2>
@@ -693,32 +805,111 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
 
             {/* Main content area - scrollable */}
             <div className="flex-1 overflow-y-auto space-y-4 pb-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-              {/* Text Input Area */}
-              <div className="relative group">
-                <textarea
-                  ref={textareaRef}
-                  value={isListening && interimText ? interimText : dumpText}
-                  onChange={(e) => { if (!isListening) setDumpText(e.target.value); }}
-                  placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything! You can also use the microphone to speak."
-                  className={`w-full rounded-2xl border-2 border-transparent bg-theme-surface p-4 pr-14 text-sm text-theme-label placeholder:text-theme-hint resize-none focus:outline-none focus:border-purple-400/50 focus:shadow-[0_0_0_4px_rgba(168,85,247,0.08)] transition-all ${activeTool ? 'max-h-[60px] min-h-[60px]' : 'min-h-[480px]'}`}
-                  style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
-                  rows={activeTool ? 2 : 18}
-                  disabled={isAnalyzing}
-                />
-                {/* Mic button */}
-                <div className="absolute bottom-3 right-3">
-                  <button
-                    onClick={toggleListening}
-                    className={`p-2.5 rounded-xl transition-all active:scale-90 ${
-                      isListening
-                        ? 'bg-red-500/15 text-red-500 ring-2 ring-red-500/30 animate-pulse'
-                        : 'bg-theme-tertiary text-theme-muted hover:bg-purple-500/15 hover:text-purple-500'
-                    }`}
-                    title={isListening ? 'Stop listening' : 'Start voice input'}
-                  >
-                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  </button>
+              {/* Text Input Area with Rich Text Toolbar */}
+              <div className={`flex rounded-2xl bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden transition-all ${activeTool ? 'max-h-[60px]' : ''}`}
+                style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                {/* Content-editable editor */}
+                <div className="flex-1 relative">
+                  <div
+                    ref={editorRef}
+                    contentEditable={!isAnalyzing}
+                    suppressContentEditableWarning
+                    onInput={() => { if (editorRef.current) setDumpText(editorRef.current.innerHTML); }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+                      document.execCommand('insertHTML', false, text);
+                      if (editorRef.current) setDumpText(editorRef.current.innerHTML);
+                    }}
+                    data-placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything!"
+                    className={`w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
+                    style={{ wordBreak: 'break-word' }}
+                  />
+                  {/* Mic button */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                    <button
+                      onClick={toggleListening}
+                      className={`p-3.5 rounded-2xl transition-all active:scale-90 ${
+                        isListening
+                          ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/40 animate-pulse shadow-lg shadow-red-500/20'
+                          : 'bg-red-500/12 text-red-500 hover:bg-red-500/20 ring-1 ring-red-500/20 hover:ring-red-500/30'
+                      }`}
+                      title={isListening ? 'Stop listening' : 'Start voice input'}
+                    >
+                      {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
+                {/* Rich Text Toolbar — expandable right panel */}
+                {!activeTool && (
+                  <div className="flex">
+                    {/* Toggle strip */}
+                    <button
+                      onClick={() => setShowToolbar(!showToolbar)}
+                      className="flex items-center justify-center w-8 border-l transition-all"
+                      style={{
+                        borderColor: showToolbar ? `${accentColor}33` : undefined,
+                        background: showToolbar ? `${accentColor}0d` : undefined,
+                      }}
+                      title={showToolbar ? 'Hide formatting' : 'Show formatting'}
+                    >
+                      {showToolbar ? (
+                        <ChevronRight className="w-4 h-4" style={{ color: accentColor }} />
+                      ) : (
+                        <Type className="w-4 h-4 text-theme-hint" />
+                      )}
+                    </button>
+                    {/* Toolbar icons */}
+                    {showToolbar && (
+                      <div
+                        className="flex flex-col items-center gap-1 p-2 border-l overflow-y-auto"
+                        style={{ borderColor: `${accentColor}26`, background: `${accentColor}0a` }}
+                      >
+                        {([
+                          { iconData: TextBoldIconData,          tip: 'Bold',          cmd: 'bold' },
+                          { iconData: TextItalicIconData,        tip: 'Italic',        cmd: 'italic' },
+                          { iconData: TextUnderlineIconData,     tip: 'Underline',     cmd: 'underline' },
+                          { iconData: TextStrikethroughIconData, tip: 'Strikethrough', cmd: 'strikeThrough' },
+                          { divider: true },
+                          { iconData: Heading01IconData,      tip: 'Heading 1',     cmd: 'formatBlock', value: '<h1>' },
+                          { iconData: Heading02IconData,      tip: 'Heading 2',     cmd: 'formatBlock', value: '<h2>' },
+                          { divider: true },
+                          { iconData: LeftToRightListBulletIconData, tip: 'Bullet list',   cmd: 'insertUnorderedList' },
+                          { iconData: LeftToRightListNumberIconData, tip: 'Numbered list', cmd: 'insertOrderedList' },
+                          { iconData: QuoteDownIconData,         tip: 'Quote',         cmd: 'formatBlock', value: '<blockquote>' },
+                          { divider: true },
+                          { iconData: Link01IconData,          tip: 'Link',          cmd: 'createLink', prompt: true },
+                          { iconData: MinusSignIconData,       tip: 'Divider',       cmd: 'insertHorizontalRule' },
+                        ] as Array<{ iconData?: any; tip?: string; cmd?: string; value?: string; prompt?: boolean; divider?: boolean }>).map((item, i) => {
+                          if (item.divider) {
+                            return <div key={`d-${i}`} className="w-7 h-px my-0.5" style={{ background: `${accentColor}1a` }} />;
+                          }
+                          return (
+                            <button
+                              key={item.tip}
+                              title={item.tip}
+                              tabIndex={-1}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => {
+                                if (item.prompt) {
+                                  const url = window.prompt('Enter URL:');
+                                  if (url) execFormat(item.cmd!, url);
+                                } else {
+                                  execFormat(item.cmd!, item.value);
+                                }
+                              }}
+                              className="p-2 rounded-xl text-theme-muted transition-all active:scale-90 hover:shadow-sm"
+                              onMouseEnter={(e) => { e.currentTarget.style.color = accentColor; e.currentTarget.style.background = `${accentColor}1f`; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.background = ''; }}
+                            >
+                              <HugeiconsIcon icon={item.iconData!} size={18} strokeWidth={2} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons Row */}
@@ -743,7 +934,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                 <button
                   onClick={handleSaveTextAsNote}
                   disabled={!hasContent || isAnalyzing}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
                   title="Save as note without analyzing"
                 >
                   <Save className="w-4 h-4" />
@@ -840,7 +1031,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                 className="p-2 rounded-xl bg-red-500/12 text-red-500 hover:bg-red-500/25 transition-all active:scale-90"
                                 title="Decline"
                               >
-                                <X className="w-4 h-4" />
+                                <XIcon className="w-4 h-4" />
                               </button>
                             </div>
                           )}
@@ -947,7 +1138,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-theme-heading truncate">
-                            {entry.text.slice(0, 100)}{entry.text.length > 100 ? '...' : ''}
+                            {(() => { const plain = stripHtml(entry.text); return plain.slice(0, 100) + (plain.length > 100 ? '...' : ''); })()}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-[10px] text-theme-hint font-medium">
@@ -977,12 +1168,58 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                           {/* Note text — editable or read-only */}
                           {editingEntry === entry.id ? (
                             <div className="mt-3 space-y-2">
-                              <textarea
-                                value={editText}
-                                onChange={(e) => setEditText(e.target.value)}
-                                className="w-full rounded-xl border-2 border-purple-400/40 bg-theme-surface p-3 text-sm text-theme-label resize-none focus:outline-none focus:border-purple-400 transition-all min-h-[80px]"
-                                rows={4}
-                                autoFocus
+                              {/* Edit toolbar */}
+                              <div className="flex flex-wrap items-center gap-1 p-1.5 rounded-xl" style={{ background: `${accentColor}0a` }}>
+                                {([
+                                  { icon: Bold,          tip: 'Bold',          cmd: 'bold' },
+                                  { icon: Italic,        tip: 'Italic',        cmd: 'italic' },
+                                  { icon: Underline,     tip: 'Underline',     cmd: 'underline' },
+                                  { icon: Strikethrough, tip: 'Strikethrough', cmd: 'strikeThrough' },
+                                  { divider: true },
+                                  { icon: Heading1,      tip: 'Heading 1',     cmd: 'formatBlock', value: '<h1>' },
+                                  { icon: Heading2,      tip: 'Heading 2',     cmd: 'formatBlock', value: '<h2>' },
+                                  { divider: true },
+                                  { icon: List,          tip: 'Bullet list',   cmd: 'insertUnorderedList' },
+                                  { icon: ListOrdered,   tip: 'Numbered list', cmd: 'insertOrderedList' },
+                                  { icon: Quote,         tip: 'Quote',         cmd: 'formatBlock', value: '<blockquote>' },
+                                  { divider: true },
+                                  { icon: Link,          tip: 'Link',          cmd: 'createLink', prompt: true },
+                                  { icon: HrIcon,        tip: 'Divider',       cmd: 'insertHorizontalRule' },
+                                ] as Array<{ iconData?: any; tip?: string; cmd?: string; value?: string; prompt?: boolean; divider?: boolean }>).map((item, i) => {
+                                  if (item.divider) {
+                                    return <div key={`ed-${i}`} className="w-px h-5 mx-0.5" style={{ background: `${accentColor}20` }} />;
+                                  }
+                                  return (
+                                    <button
+                                      key={item.tip}
+                                      title={item.tip}
+                                      tabIndex={-1}
+                                      onMouseDown={(e) => e.preventDefault()}
+                                      onClick={() => {
+                                        if (item.prompt) {
+                                          const url = window.prompt('Enter URL:');
+                                          if (url) execEditFormat(item.cmd!, url);
+                                        } else {
+                                          execEditFormat(item.cmd!, item.value);
+                                        }
+                                      }}
+                                      className="p-1.5 rounded-lg text-theme-muted transition-all active:scale-90"
+                                      onMouseEnter={(e) => { e.currentTarget.style.color = accentColor; e.currentTarget.style.background = `${accentColor}1f`; }}
+                                      onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.background = ''; }}
+                                    >
+                                      <HugeiconsIcon icon={item.iconData!} size={14} strokeWidth={2} />
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {/* Edit contentEditable */}
+                              <div
+                                ref={editEditorRef}
+                                contentEditable
+                                suppressContentEditableWarning
+                                onInput={() => { if (editEditorRef.current) setEditText(editEditorRef.current.innerHTML); }}
+                                className="w-full rounded-xl border-2 bg-theme-surface p-3 text-sm text-theme-label focus:outline-none transition-all min-h-[80px]"
+                                style={{ borderColor: `${accentColor}66` }}
                               />
                               <div className="flex gap-2">
                                 <button
@@ -997,13 +1234,16 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                   onClick={handleCancelEdit}
                                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-theme-tertiary text-theme-muted hover:bg-theme-hover transition-all active:scale-95"
                                 >
-                                  <X className="w-3 h-3" />
+                                  <XIcon className="w-3 h-3" />
                                   Cancel
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm text-theme-label whitespace-pre-wrap mt-3 leading-relaxed">{entry.text}</p>
+                            <div
+                              className="text-sm text-theme-label mt-3 leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                              dangerouslySetInnerHTML={{ __html: entry.text }}
+                            />
                           )}
                           {entry.actions.length > 0 && (
                             <div className="space-y-1.5 mt-3">
@@ -1043,6 +1283,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                             <button
                               onClick={() => {
                                 setDumpText(entry.text);
+                                if (editorRef.current) editorRef.current.innerHTML = entry.text;
                                 setFlipped(false);
                               }}
                               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-500/12 text-purple-500 hover:bg-purple-500/20 transition-all active:scale-95"

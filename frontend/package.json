@@ -18,6 +18,8 @@
     "start:unix": "concurrently \"npm:dev\" \"npm:backend:unix\""
   },
   "dependencies": {
+    "@hugeicons/core-free-icons": "^4.0.0",
+    "@hugeicons/react": "^1.1.6",
     "@supabase/supabase-js": "^2.99.1",
     "axios": "^1.6.7",
     "date-fns": "^4.1.0",
