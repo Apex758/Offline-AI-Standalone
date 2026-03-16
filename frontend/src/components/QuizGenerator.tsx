@@ -1540,93 +1540,91 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
       {/* Student Quiz Panel (right side) - only when class quiz is generated */}
       {classQuizData && (generatedQuiz || streamingQuiz) && !loading && (
-        <>
-          {/* Collapsed toggle strip */}
-          {!studentPanelOpen && (
-            <div
-              onClick={() => setStudentPanelOpen(true)}
-              className="relative border-l border-theme flex flex-col items-center justify-center flex-shrink-0 py-3 px-1 cursor-pointer hover:opacity-80 transition overflow-hidden"
-              title="Show student list"
-              style={{
-                backgroundImage: `repeating-linear-gradient(
-                  -45deg,
-                  transparent,
-                  transparent 4px,
-                  rgba(0, 0, 0, 0.08) 4px,
-                  rgba(0, 0, 0, 0.08) 8px
-                )`,
-                backgroundColor: 'var(--theme-secondary, #1e1e2e)',
-              }}
-            >
-              <div className="flex flex-col items-center gap-1">
-                <PanelRightOpen className="w-4 h-4 text-theme-muted" />
-                <Users className="w-4 h-4 text-theme-muted" />
-                <span className="text-[10px] text-theme-hint font-medium" style={{ writingMode: 'vertical-lr' }}>
-                  {classQuizData.length} Students
-                </span>
-              </div>
+        <div
+          className={`relative border-l border-theme flex flex-col flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+            studentPanelOpen ? 'bg-theme-secondary' : 'student-panel-collapsed cursor-pointer hover:opacity-80'
+          }`}
+          style={{ width: studentPanelOpen ? '280px' : '40px' }}
+          onClick={!studentPanelOpen ? () => setStudentPanelOpen(true) : undefined}
+          title={!studentPanelOpen ? 'Show student list' : undefined}
+        >
+          {/* Collapsed content */}
+          <div
+            className={`flex flex-col items-center justify-center absolute inset-0 transition-opacity duration-200 ${
+              studentPanelOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+          >
+            <div className="flex flex-col items-center gap-1">
+              <PanelRightOpen className="w-4 h-4 text-theme-muted" />
+              <Users className="w-4 h-4 text-theme-muted" />
+              <span className="text-[10px] text-theme-hint font-medium" style={{ writingMode: 'vertical-lr' }}>
+                {classQuizData.length} Students
+              </span>
             </div>
-          )}
+          </div>
 
-          {/* Expanded panel */}
-          {studentPanelOpen && (
-            <div className="border-l border-theme bg-theme-secondary flex flex-col flex-shrink-0" style={{ width: '240px' }}>
-              <div className="p-3 border-b border-theme flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
-                  <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
-                </div>
-                <button
-                  onClick={() => setStudentPanelOpen(false)}
-                  className="p-1 rounded-lg hover:bg-theme-hover transition"
-                  title="Collapse panel"
-                >
-                  <PanelRightClose className="w-4 h-4 text-theme-muted" />
-                </button>
+          {/* Expanded content */}
+          <div
+            className={`flex flex-col h-full transition-opacity duration-200 delay-100 ${
+              studentPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            style={{ minWidth: '280px' }}
+          >
+            <div className="p-3 border-b border-theme flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-theme-heading">Student Quizzes</h3>
+                <p className="text-xs text-theme-hint mt-0.5">{classQuizData.length} students</p>
               </div>
-              <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
-                {/* Teacher version option */}
+              <button
+                onClick={() => setStudentPanelOpen(false)}
+                className="p-1 rounded-lg hover:bg-theme-hover transition"
+                title="Collapse panel"
+              >
+                <PanelRightClose className="w-4 h-4 text-theme-muted" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
+              {/* Teacher version option */}
+              <button
+                onClick={() => setSelectedStudentIdx(null)}
+                className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
+                  selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
+                  <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
+                </div>
+              </button>
+
+              <div className="border-t border-theme my-1.5" />
+
+              {/* Student entries */}
+              {classQuizData.map((student, idx) => (
                 <button
-                  onClick={() => setSelectedStudentIdx(null)}
-                  className={`w-full text-left p-2.5 rounded-lg transition text-sm ${
-                    selectedStudentIdx === null ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
+                  key={student.id}
+                  onClick={() => setSelectedStudentIdx(idx)}
+                  className={`w-full text-left p-2 rounded-lg transition text-sm ${
+                    selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4 flex-shrink-0" style={{ color: tabColor }} />
-                    <span className="font-medium text-theme-heading text-xs">Teacher Version</span>
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
+                      style={{ backgroundColor: tabColor }}
+                    >
+                      {student.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
+                      <div className="text-[10px] text-theme-hint">{student.id}</div>
+                    </div>
                   </div>
                 </button>
-
-                <div className="border-t border-theme my-1.5" />
-
-                {/* Student entries */}
-                {classQuizData.map((student, idx) => (
-                  <button
-                    key={student.id}
-                    onClick={() => setSelectedStudentIdx(idx)}
-                    className={`w-full text-left p-2 rounded-lg transition text-sm ${
-                      selectedStudentIdx === idx ? 'bg-theme-surface shadow-sm border border-theme' : 'hover:bg-theme-subtle'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
-                        style={{ backgroundColor: tabColor }}
-                      >
-                        {student.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-theme-label text-xs truncate">{student.name}</div>
-                        <div className="text-[10px] text-theme-hint">{student.id}</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
 
       {/* AI Assistant Panel */}
