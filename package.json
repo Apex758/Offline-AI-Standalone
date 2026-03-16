@@ -1,7 +1,7 @@
 {
   "name": "oecs-learning-hub",
-  "version": "1.0.0",
-  "description": "OECS Learning Hub - AI-powered educational tools suite",
+  "version": "2.0.0",
+  "description": "OECS Learning Hub - AI-powered educational tools suite by the Organisation of Eastern Caribbean States",
   "main": "electron/main.js",
   "author": {
     "name": "Delon Pierre",
@@ -41,6 +41,7 @@
   "build": {
     "appId": "com.oecs.learninghub",
     "productName": "OECS Learning Hub",
+    "copyright": "Copyright 2026 Organisation of Eastern Caribbean States. Developed by Delon Pierre.",
     "files": [
       "frontend/dist/**/*",
       "electron/**/*",
@@ -78,8 +79,10 @@
         ]
       }
     ],
+    "asar": true,
     "asarUnpack": [
-      "**/*.node"
+      "**/*.node",
+      "**/*.pyd"
     ],
     "nsis": {
       "oneClick": false,

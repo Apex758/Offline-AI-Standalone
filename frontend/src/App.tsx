@@ -12,8 +12,6 @@ import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
-import { initSpellCheck } from './utils/spellCheck';
-
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,11 +25,6 @@ function AppContent() {
     document.documentElement.style.fontSize = `${settings.fontSize}%`;
     return () => { document.documentElement.style.fontSize = ''; };
   }, [settings.fontSize]);
-
-  // Pre-warm spell check dictionary in background
-  useEffect(() => {
-    requestIdleCallback?.(() => initSpellCheck()) ?? setTimeout(() => initSpellCheck(), 2000);
-  }, []);
 
   useEffect(() => {
     // Check if user is already logged in

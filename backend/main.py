@@ -714,8 +714,8 @@ async def websocket_chat(websocket: WebSocket):
                         token_buffer.append(chunk["token"])
                         full_response_tokens.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1026,8 +1026,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1165,8 +1165,8 @@ async def quiz_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1309,8 +1309,8 @@ async def rubric_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1429,8 +1429,8 @@ async def kindergarten_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1550,8 +1550,8 @@ async def multigrade_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1669,8 +1669,8 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -1822,8 +1822,8 @@ async def worksheet_websocket(websocket: WebSocket):
                     if chunk.get("token"):
                         token_buffer.append(chunk["token"])
 
-                        # Send every 50ms or 5 tokens (whichever comes first)
-                        if len(token_buffer) >= 5 or (time.time() - last_send) > 0.05:
+                        # Send every 100ms or 10 tokens (whichever comes first)
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
                             try:
                                 await websocket.send_json({
                                     "type": "token",
@@ -3698,7 +3698,8 @@ async def get_image_service_status():
         
         return JSONResponse(content={
             "sdxl": {
-                "initialized": image_service.pipeline is not None
+                "initialized": image_service.pipeline is not None,
+                "model_key": getattr(image_service, 'model_key', None),
             },
             "iopaint": {
                 "running": image_service.is_iopaint_running(),
@@ -3712,6 +3713,22 @@ async def get_image_service_status():
             status_code=500,
             content={"error": str(e)}
         )
+
+
+@app.post("/api/image-service/preload")
+async def preload_image_pipeline():
+    """Preload the image generation pipeline in the background so first request is fast."""
+    try:
+        image_service = get_image_service()
+        if image_service.pipeline is not None:
+            return JSONResponse(content={"status": "already_loaded"})
+        success = image_service.initialize_pipeline()
+        return JSONResponse(content={
+            "status": "loaded" if success else "failed"
+        })
+    except Exception as e:
+        logger.error(f"Error preloading image pipeline: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/image-service/start-iopaint")

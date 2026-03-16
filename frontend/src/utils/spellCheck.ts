@@ -632,7 +632,7 @@ function editDistance(a: string, b: string): number {
   return matrix[a.length][b.length];
 }
 
-// Pre-warm the dictionary (call on app start)
+// Kept for backward compatibility — dictionary is built lazily on first use via getDictionary()
 export function initSpellCheck() {
   getDictionary();
 }

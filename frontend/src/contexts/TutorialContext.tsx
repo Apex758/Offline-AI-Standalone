@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
-import TutorialOverlay from '../components/TutorialOverlay';
-import { getTutorialById, TutorialId } from '../data/tutorialSteps';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import TutorialOverlay, { TutorialStep } from '../components/TutorialOverlay';
+import type { TutorialId } from '../data/tutorialSteps';
 
 interface TutorialContextType {
   startTutorial: (id: TutorialId) => void;
@@ -12,19 +12,27 @@ const TutorialContext = createContext<TutorialContextType | null>(null);
 
 export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTutorialId, setActiveTutorialId] = useState<TutorialId | null>(null);
+  const [activeSteps, setActiveSteps] = useState<TutorialStep[] | null>(null);
 
   const startTutorial = (id: TutorialId) => setActiveTutorialId(id);
-  const stopTutorial = () => setActiveTutorialId(null);
+  const stopTutorial = () => { setActiveTutorialId(null); setActiveSteps(null); };
 
-  const currentTutorial = activeTutorialId ? getTutorialById(activeTutorialId) : null;
+  // Lazy-load tutorial steps only when a tutorial is started
+  useEffect(() => {
+    if (!activeTutorialId) { setActiveSteps(null); return; }
+    import('../data/tutorialSteps').then(m => {
+      const tutorial = m.getTutorialById(activeTutorialId);
+      setActiveSteps(tutorial?.steps ?? null);
+    });
+  }, [activeTutorialId]);
 
   return (
     <TutorialContext.Provider value={{ startTutorial, stopTutorial, activeTutorialId }}>
       {children}
-      {currentTutorial && (
+      {activeTutorialId && activeSteps && (
         <TutorialOverlay
-          key={currentTutorial.id}
-          steps={currentTutorial.steps}
+          key={activeTutorialId}
+          steps={activeSteps}
           onComplete={stopTutorial}
           autoStart
         />

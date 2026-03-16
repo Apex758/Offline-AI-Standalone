@@ -44,12 +44,7 @@
 
 ---
 
-
-
----
-
-
----
+ 
 
 ## P3 — LOW (Nice to Have)
 
@@ -64,36 +59,3 @@
 
 
 
-### 19. Dashboard is a "god component" (2,627 lines, 36+ state vars, 16+ useEffects)
-**File:** `frontend/src/components/Dashboard.tsx`
-**Issue:** Massive component with too much responsibility. Any state change triggers complex re-render logic.
-**Fix:** Extract TabManager, ToolbarManager, ContextMenuHandler, ModalHandler into sub-components.
-**Impact:** Smoother tab switching, less render overhead
-
----
-
-### 20. ImageStudio is a "god component" (2,975 lines, 50+ state vars)
-**File:** `frontend/src/components/ImageStudio.tsx`
-**Issue:** Canvas manipulation, image processing, style profiles, annotations, history — all in one component with no memoization.
-**Fix:** Split into ImageGenerator, ImageEditor, AnnotationTools, StyleProfiles sub-components.
-**Impact:** Faster tab switching to/from ImageStudio
-
----
-
-### 21. Missing useMemo/useCallback in Dashboard
-**File:** `frontend/src/components/Dashboard.tsx`
-**Issue:** Only 1 `useMemo` and 1 `useCallback` across 2,627 lines. Inline functions in render cause unnecessary child re-renders.
-**Fix:** Wrap event handlers and computed values in `useCallback`/`useMemo`.
-**Impact:** Smoother interactions, fewer wasted renders
-
----
-
-### 22. WebSocket token batching is conservative
-**File:** `backend/main.py` lines 710, 1022, 1305 etc.
-**Issue:** Tokens sent every 5 tokens or 50ms. Could batch to 10 tokens / 100ms with no perceived difference.
-**Fix:** Increase buffer threshold from 5→10 tokens and 50ms→100ms.
-**Impact:** 5-10% lower CPU during streaming
-
----
- 
- 

@@ -442,26 +442,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [settings.tutorials.hasSeenWelcome]);
 
-  const handleTutorialComplete = () => {
+  const handleTutorialComplete = useCallback(() => {
     markTutorialComplete(TUTORIAL_IDS.DASHBOARD_MAIN);
     setShowFirstTimeTutorial(false);
-  };
+  }, [markTutorialComplete]);
 
-  const handleWelcomeStartTour = () => {
+  const handleWelcomeStartTour = useCallback(() => {
     setWelcomeSeen(true);
     setShowWelcomeModal(false);
     setShowFirstTimeTutorial(true);
-  };
+  }, [setWelcomeSeen]);
 
-  const handleWelcomeSkip = () => {
+  const handleWelcomeSkip = useCallback(() => {
     setWelcomeSeen(true);
     setShowWelcomeModal(false);
-  };
+  }, [setWelcomeSeen]);
 
-  const handleResourceManagerTutorialComplete = () => {
+  const handleResourceManagerTutorialComplete = useCallback(() => {
     markTutorialComplete(TUTORIAL_IDS.RESOURCE_MANAGER);
     setShowResourceManagerTutorial(false);
-  };
+  }, [markTutorialComplete]);
 
   // Auto-show ResourceManager tutorial when tab becomes active
   useEffect(() => {
@@ -682,64 +682,66 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  const closeTab = (tabId: string) => {
-    const tab = tabs.find(t => t.id === tabId);
-    if (!tab) return;
+  const closeTab = useCallback((tabId: string) => {
+    setTabs(prevTabs => {
+      const tab = prevTabs.find(t => t.id === tabId);
+      if (!tab) return prevTabs;
 
-    const updatedTabs = tabs.filter(t => t.id !== tabId);
-    setTabs(updatedTabs);
+      const updatedTabs = prevTabs.filter(t => t.id !== tabId);
 
-    const endpoints = [
-      '/ws/chat',
-      '/ws/lesson-plan',
-      '/ws/quiz',
-      '/ws/rubric',
-      '/ws/kindergarten',
-      '/ws/multigrade',
-      '/ws/cross-curricular'
-    ];
+      const endpoints = [
+        '/ws/chat',
+        '/ws/lesson-plan',
+        '/ws/quiz',
+        '/ws/rubric',
+        '/ws/kindergarten',
+        '/ws/multigrade',
+        '/ws/cross-curricular'
+      ];
 
-    endpoints.forEach(endpoint => {
-      closeConnection(tabId, endpoint);
-    });
+      endpoints.forEach(endpoint => {
+        closeConnection(tabId, endpoint);
+      });
 
-    // Debug: Log all open WebSocket keys after closing
-    if (window && (window as any).wsDebugListConnections) {
-      (window as any).wsDebugListConnections(tabId);
-    }
+      if (window && (window as any).wsDebugListConnections) {
+        (window as any).wsDebugListConnections(tabId);
+      }
 
-    if (splitView.isActive && (tabId === splitView.leftTabId || tabId === splitView.rightTabId)) {
-      if (updatedTabs.length < 2) {
-        setSplitView({
-          isActive: false,
-          leftTabId: null,
-          rightTabId: null,
-          activePaneId: 'left'
-        });
-        if (updatedTabs.length > 0) {
-          setActiveTabId(updatedTabs[0].id);
-        }
-      } else {
-        const availableTab = updatedTabs.find(t =>
-          t.id !== splitView.leftTabId && t.id !== splitView.rightTabId
-        );
-        
-        if (availableTab) {
-          if (tabId === splitView.leftTabId) {
-            setSplitView(prev => ({ ...prev, leftTabId: availableTab.id }));
+      setSplitView(prevSplit => {
+        if (prevSplit.isActive && (tabId === prevSplit.leftTabId || tabId === prevSplit.rightTabId)) {
+          if (updatedTabs.length < 2) {
+            if (updatedTabs.length > 0) {
+              setActiveTabId(updatedTabs[0].id);
+            }
+            return { isActive: false, leftTabId: null, rightTabId: null, activePaneId: 'left' as const };
           } else {
-            setSplitView(prev => ({ ...prev, rightTabId: availableTab.id }));
+            const availableTab = updatedTabs.find(t =>
+              t.id !== prevSplit.leftTabId && t.id !== prevSplit.rightTabId
+            );
+            if (availableTab) {
+              if (tabId === prevSplit.leftTabId) {
+                return { ...prevSplit, leftTabId: availableTab.id };
+              } else {
+                return { ...prevSplit, rightTabId: availableTab.id };
+              }
+            }
           }
         }
-      }
-    } else {
-      if (activeTabId === tabId && updatedTabs.length > 0) {
-        setActiveTabId(updatedTabs[updatedTabs.length - 1].id);
-      } else if (updatedTabs.length === 0) {
-        setActiveTabId(null);
-      }
-    }
-  };
+        return prevSplit;
+      });
+
+      setActiveTabId(prevActiveId => {
+        if (prevActiveId === tabId && updatedTabs.length > 0) {
+          return updatedTabs[updatedTabs.length - 1].id;
+        } else if (updatedTabs.length === 0) {
+          return null;
+        }
+        return prevActiveId;
+      });
+
+      return updatedTabs;
+    });
+  }, [closeConnection]);
 
   useEffect(() => {
     const savedTabs = localStorage.getItem('dashboard-tabs');
@@ -839,22 +841,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     };
   }, [userProfileImage]);
 
-  const updateTabData = (tabId: string, data: Partial<Tab['data']>) => {
-    setTabs(tabs.map(tab =>
+  const updateTabData = useCallback((tabId: string, data: Partial<Tab['data']>) => {
+    setTabs(prev => prev.map(tab =>
       tab.id === tabId ? { ...tab, data: { ...tab.data, ...data } } : tab
     ));
-  };
+  }, []);
 
-  const updateTabTitle = (tabId: string, title: string) => {
-    setTabs(tabs.map(tab =>
+  const updateTabTitle = useCallback((tabId: string, title: string) => {
+    setTabs(prev => prev.map(tab =>
       tab.id === tabId ? { ...tab, title } : tab
     ));
-  };
+  }, []);
 
-  const triggerTabBounce = (tabId: string) => {
+  const triggerTabBounce = useCallback((tabId: string) => {
     setBouncingTabId(tabId);
-    setTimeout(() => setBouncingTabId(null), 300); // Remove bounce class after animation
-  };
+    setTimeout(() => setBouncingTabId(null), 300);
+  }, []);
 
   const toggleGroupCollapse = (type: string) => {
     const newCollapsed = new Set(collapsedGroups);
@@ -904,31 +906,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
 
-  const handleViewResource = (type: string, resource: Resource) => {
-    const typeToToolType: { [key: string]: string } = {
-      'lesson': 'lesson-planner',
-      'quiz': 'quiz-generator',
-      'worksheet': 'worksheet-generator',
-      'rubric': 'rubric-generator',
-      'kindergarten': 'kindergarten-planner',
-      'multigrade': 'multigrade-planner',
-      'cross-curricular': 'cross-curricular-planner',
-      'images': 'image-studio'
-    };
+  const typeToToolType: { [key: string]: string } = useMemo(() => ({
+    'lesson': 'lesson-planner',
+    'quiz': 'quiz-generator',
+    'worksheet': 'worksheet-generator',
+    'rubric': 'rubric-generator',
+    'kindergarten': 'kindergarten-planner',
+    'multigrade': 'multigrade-planner',
+    'cross-curricular': 'cross-curricular-planner',
+    'images': 'image-studio'
+  }), []);
 
+  const handleViewResource = useCallback((type: string, resource: Resource) => {
     const toolType = typeToToolType[type];
-    if (!toolType) {
-      console.error('Unknown resource type:', type);
-      return;
-    }
-
+    if (!toolType) { console.error('Unknown resource type:', type); return; }
     const tool = tools.find(t => t.type === toolType);
-    if (!tool) {
-      console.error('Could not find tool for type:', toolType);
-      return;
-    }
+    if (!tool) { console.error('Could not find tool for type:', toolType); return; }
 
-    // Create a new tab for viewing the resource
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
       title: `Viewing: ${resource.title.substring(0, 20)}...`,
@@ -943,40 +937,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         parsedQuiz: resource.parsedQuiz,
         parsedWorksheet: resource.parsedWorksheet,
         streamingQuiz: resource.streamingQuiz,
-        startInEditMode: false, // View mode
+        startInEditMode: false,
         ...(type === 'images' && { initialTab: 'editor', imageId: resource.id, imageUrl: resource.imageUrl })
       }
     };
 
-    setTabs([...tabs, newTab]);
+    setTabs(prev => [...prev, newTab]);
     setActiveTabId(newTab.id);
-  };
+  }, [typeToToolType]);
 
-  const handleEditResource = (type: string, resource: Resource) => {
-    const typeToToolType: { [key: string]: string } = {
-      'lesson': 'lesson-planner',
-      'quiz': 'quiz-generator',
-      'worksheet': 'worksheet-generator',
-      'rubric': 'rubric-generator',
-      'kindergarten': 'kindergarten-planner',
-      'multigrade': 'multigrade-planner',
-      'cross-curricular': 'cross-curricular-planner',
-      'images': 'image-studio'
-    };
-
+  const handleEditResource = useCallback((type: string, resource: Resource) => {
     const toolType = typeToToolType[type];
-    if (!toolType) {
-      console.error('Unknown resource type:', type);
-      return;
-    }
-
+    if (!toolType) { console.error('Unknown resource type:', type); return; }
     const tool = tools.find(t => t.type === toolType);
-    if (!tool) {
-      console.error('Could not find tool for type:', toolType);
-      return;
-    }
+    if (!tool) { console.error('Could not find tool for type:', toolType); return; }
 
-    // Create a new tab for editing the resource
     const newTab: Tab = {
       id: `${tool.type}-${Date.now()}`,
       title: `Editing: ${resource.title.substring(0, 20)}...`,
@@ -991,14 +966,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         parsedQuiz: resource.parsedQuiz,
         parsedWorksheet: resource.parsedWorksheet,
         streamingQuiz: resource.streamingQuiz,
-        startInEditMode: true, // Edit mode
+        startInEditMode: true,
         ...(type === 'images' && { initialTab: 'editor', imageId: resource.id, imageUrl: resource.imageUrl })
       }
     };
 
-    setTabs([...tabs, newTab]);
+    setTabs(prev => [...prev, newTab]);
     setActiveTabId(newTab.id);
-  };
+  }, [typeToToolType]);
 
   const renderSingleTabContent = (tab: Tab) => {
     switch (tab.type) {
@@ -1345,19 +1320,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     );
   };
 
-  const groupedTabs = tabs.reduce((acc, tab) => {
+  const groupedTabs = useMemo(() => tabs.reduce((acc, tab) => {
     if (!acc[tab.type]) acc[tab.type] = [];
     acc[tab.type].push(tab);
     return acc;
-  }, {} as { [key: string]: Tab[] });
+  }, {} as { [key: string]: Tab[] }), [tabs]);
 
-  // Group tools by category
-  const regularTools = tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support');
-  const lessonPlannerTools = tools.filter(t => t.group === 'lesson-planners');
-  const visualStudioTools = tools.filter(t => t.group === 'visual-studio');
-  const otherGroupedTools = tools.filter(t => t.group === 'tools');
-  const supportTool = tools.find(t => t.type === 'support');
-  const settingsTool = tools.find(t => t.type === 'settings');
+  // Group tools by category (static — tools array never changes)
+  const regularTools = useMemo(() => tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support'), []);
+  const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
+  const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
+  const otherGroupedTools = useMemo(() => tools.filter(t => t.group === 'tools'), []);
+  const supportTool = useMemo(() => tools.find(t => t.type === 'support'), []);
+  const settingsTool = useMemo(() => tools.find(t => t.type === 'settings'), []);
 
   return (
     <div
