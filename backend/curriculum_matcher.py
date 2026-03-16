@@ -135,6 +135,7 @@ class CurriculumMatcher:
             return self._match_cache[cache_key]
 
         query_norm = self._normalize(query)
+        query_keywords = set(query_norm.split())
         results: List[Tuple[float, Dict[str, Any]]] = []
 
         # Normalize grade for comparison (handle "Kindergarten" -> "K", "Grade 2" -> "2")

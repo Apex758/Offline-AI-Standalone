@@ -881,19 +881,20 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         <div className="relative px-8 py-8">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
-                                <span className="text-white text-sm font-medium">{formData.subject}</span>
+                              <div className="flex items-center gap-2 mb-4">
+                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                                  <span className="text-white text-sm font-medium">{formData.subject}</span>
+                                </div>
+                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                                  <span className="text-white text-sm font-medium">Grade {formData.gradeLevel}</span>
+                                </div>
                               </div>
-                              
+
                               <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
                                 {formData.numberOfQuestions}-Question Assessment
                               </h1>
-                              
+
                               <div className="flex flex-wrap items-center gap-4 text-cyan-100">
-                                <div className="flex items-center">
-                                  <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
-                                  <span className="text-sm">Grade {formData.gradeLevel}</span>
-                                </div>
                                 <div className="flex items-center">
                                   <div className="w-2 h-2 bg-cyan-200 rounded-full mr-2"></div>
                                   <span className="text-sm">{formData.questionTypes.join(', ')}</span>
