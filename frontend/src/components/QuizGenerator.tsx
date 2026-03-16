@@ -1545,13 +1545,21 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           {!studentPanelOpen && (
             <div
               onClick={() => setStudentPanelOpen(true)}
-              className="border-l border-theme bg-theme-secondary flex flex-col items-center flex-shrink-0 py-3 px-1 cursor-pointer hover:bg-theme-hover transition"
+              className="relative border-l border-theme flex flex-col items-center justify-center flex-shrink-0 py-3 px-1 cursor-pointer hover:opacity-80 transition overflow-hidden"
               title="Show student list"
+              style={{
+                backgroundImage: `repeating-linear-gradient(
+                  -45deg,
+                  transparent,
+                  transparent 4px,
+                  rgba(0, 0, 0, 0.08) 4px,
+                  rgba(0, 0, 0, 0.08) 8px
+                )`,
+                backgroundColor: 'var(--theme-secondary, #1e1e2e)',
+              }}
             >
-              <div className="p-1.5">
+              <div className="flex flex-col items-center gap-1">
                 <PanelRightOpen className="w-4 h-4 text-theme-muted" />
-              </div>
-              <div className="mt-2 flex flex-col items-center gap-1">
                 <Users className="w-4 h-4 text-theme-muted" />
                 <span className="text-[10px] text-theme-hint font-medium" style={{ writingMode: 'vertical-lr' }}>
                   {classQuizData.length} Students
