@@ -33,7 +33,8 @@ import {
   Layers,
   Merge,
   HelpCircle,
-  AlertTriangle
+  AlertTriangle,
+  Brain
 } from 'lucide-react';
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
@@ -55,6 +56,7 @@ const WorksheetGenerator = React.lazy(() => import('./WorksheetGenerator'));
 const ImageStudio = React.lazy(() => import('./ImageStudio'));
 const ClassManagement = React.lazy(() => import('./ClassManagement'));
 const SupportReporting = React.lazy(() => import('./SupportReporting'));
+const BrainDump = React.lazy(() => import('./BrainDump'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -86,6 +88,13 @@ const tools: Tool[] = [
     icon: 'LayoutDashboard',
     type: 'analytics',
     description: 'View your teaching analytics and quick access'
+  },
+  {
+    id: 'brain-dump',
+    name: 'Brain Dump',
+    icon: 'Brain',
+    type: 'brain-dump',
+    description: 'Dump your thoughts and let AI organize them into actions'
   },
   {
     id: 'curriculum-tracker',
@@ -232,7 +241,8 @@ const iconMap: { [key: string]: React.ElementType } = {
   Layers,
   Merge,
   HelpCircle,
-  AlertTriangle
+  AlertTriangle,
+  Brain
 };
 
 const WELCOME_TIPS = [
@@ -252,6 +262,90 @@ const WELCOME_TIPS = [
   'Pin your most-used tools for quick access',
   'Keyboard shortcuts make navigation faster — try them out',
 ];
+
+const QUICKLINK_SETS = [
+  [
+    { icon: LayoutDashboard, label: 'My Overview', type: 'analytics' },
+    { icon: MessageSquare, label: 'Ask PEARL', type: 'chat' },
+    { icon: Search, label: 'Curriculum', type: 'curriculum' },
+  ],
+  [
+    { icon: BookMarked, label: 'Lesson Plan', type: 'lesson-planner' },
+    { icon: PenTool, label: 'Quiz Builder', type: 'quiz-generator' },
+    { icon: ClipboardList, label: 'Rubric Builder', type: 'rubric-generator' },
+  ],
+  [
+    { icon: Brain, label: 'Brain Dump', type: 'brain-dump' },
+    { icon: FolderOpen, label: 'My Resources', type: 'resource-manager' },
+    { icon: TrendingUp, label: 'Progress Tracker', type: 'curriculum-tracker' },
+  ],
+  [
+    { icon: FileSpreadsheet, label: 'Worksheets', type: 'worksheet-generator' },
+    { icon: UsersRound, label: 'My Classes', type: 'class-management' },
+    { icon: Palette, label: 'Image Studio', type: 'image-studio' },
+  ],
+];
+
+const RotatingQuickLinks = ({ isDarkMode, onOpenTool }: { isDarkMode: boolean; onOpenTool: (type: string) => void }) => {
+  const [setIndex, setSetIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setSetIndex(prev => (prev + 1) % QUICKLINK_SETS.length);
+        setVisible(true);
+      }, 400);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentSet = QUICKLINK_SETS[setIndex];
+
+  return (
+    <div className="relative mb-6">
+      <div
+        className="grid grid-cols-3 gap-3 transition-opacity duration-400"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        {currentSet.map((item) => (
+          <button
+            key={item.label}
+            className={`glass-action-btn flex flex-col items-center gap-2 p-4 ${!isDarkMode ? 'glass-action-btn-light' : ''}`}
+            onClick={() => onOpenTool(item.type)}
+          >
+            <item.icon className="w-5 h-5" style={{ color: isDarkMode ? 'rgba(160,220,120,0.7)' : 'rgba(29,54,45,0.8)' }} />
+            <span className="text-xs font-medium" style={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(29,54,45,0.75)' }}>{item.label}</span>
+          </button>
+        ))}
+      </div>
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-1.5 mt-3">
+        {QUICKLINK_SETS.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              setVisible(false);
+              setTimeout(() => {
+                setSetIndex(i);
+                setVisible(true);
+              }, 300);
+            }}
+            className="rounded-full transition-all duration-300"
+            style={{
+              width: i === setIndex ? 16 : 6,
+              height: 6,
+              backgroundColor: i === setIndex
+                ? (isDarkMode ? 'rgba(160,220,120,0.6)' : 'rgba(29,54,45,0.5)')
+                : (isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(29,54,45,0.15)'),
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const [index, setIndex] = useState(() => Math.floor(Math.random() * WELCOME_TIPS.length));
@@ -282,7 +376,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
@@ -1215,6 +1309,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'support':
         return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} initialScreenshot={tab.data?.initialScreenshot || null} />;
+      case 'brain-dump':
+        return (
+          <BrainDump
+            tabId={tab.id}
+            savedData={tab.data}
+            onDataChange={(data) => updateTabData(tab.id, data)}
+            onCreateTab={(toolType, prefillData) => {
+              const tool = tools.find(t => t.type === toolType);
+              if (tool) {
+                const existingTab = tabs.find(t => t.type === toolType);
+                if (existingTab) {
+                  setTabs(prev => prev.map(t => ({ ...t, active: t.id === existingTab.id })));
+                  setActiveTabId(existingTab.id);
+                } else {
+                  const newTab: Tab = {
+                    id: `tab-${Date.now()}`,
+                    title: tool.name,
+                    type: tool.type as Tool['type'],
+                    active: true,
+                    data: prefillData ? { prefillData } : undefined
+                  };
+                  setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                  setActiveTabId(newTab.id);
+                }
+              }
+            }}
+          />
+        );
       default:
         return null;
     }
@@ -1536,7 +1658,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {tool.name}
                   </p>
-                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' &&(
+                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' && tool.type !== 'brain-dump' && count > 0 && (
                     <p
                       className="text-xs whitespace-nowrap"
                       style={{ color: 'var(--sidebar-text-muted)' }}
@@ -1619,7 +1741,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {tool.name}
                   </p>
-                  {!SINGLE_INSTANCE_TABS.has(tool.type) && (
+                  {!SINGLE_INSTANCE_TABS.has(tool.type) && count > 0 && (
                     <p
                       className="text-xs whitespace-nowrap"
                       style={{ color: 'var(--sidebar-text-muted)' }}
@@ -1754,12 +1876,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                            }}>
                           {tool.name}
                         </p>
-                        <p
-                          className="text-xs"
-                          style={{ color: 'var(--sidebar-text-muted)' }}
-                        >
-                          {count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}
-                        </p>
+                        {count > 0 && (
+                          <p
+                            className="text-xs"
+                            style={{ color: 'var(--sidebar-text-muted)' }}
+                          >
+                            {count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}
+                          </p>
+                        )}
                       </div>
                     </button>
                   );
@@ -2451,22 +2575,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       Select a tool from the sidebar to get started
                     </p>
 
-                    <div className="grid grid-cols-3 gap-3 mb-6">
-                      {[
-                        { icon: LayoutDashboard, label: 'My Overview', tool: tools.find(t => t.type === 'analytics') },
-                        { icon: MessageSquare, label: 'Ask PEARL', tool: tools.find(t => t.type === 'chat') },
-                        { icon: Search, label: 'Curriculum', tool: tools.find(t => t.type === 'curriculum') },
-                      ].map((item) => (
-                        <button
-                          key={item.label}
-                          className={`glass-action-btn flex flex-col items-center gap-2 p-4 ${!isDarkMode ? 'glass-action-btn-light' : ''}`}
-                          onClick={() => item.tool && openTool(item.tool)}
-                        >
-                          <item.icon className="w-5 h-5" style={{ color: isDarkMode ? 'rgba(160,220,120,0.7)' : 'rgba(29,54,45,0.8)' }} />
-                          <span className="text-xs font-medium" style={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(29,54,45,0.75)' }}>{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <RotatingQuickLinks
+                      isDarkMode={isDarkMode}
+                      onOpenTool={(type) => {
+                        const tool = tools.find(t => t.type === type);
+                        if (tool) openTool(tool);
+                      }}
+                    />
 
                     <RotatingTip isDarkMode={isDarkMode} />
                   </div>

@@ -18,6 +18,7 @@ export interface TabColors {
   'class-management': string;
   support: string;
   settings: string;
+  'brain-dump': string;
 }
 
 export interface TutorialState {
@@ -87,7 +88,8 @@ export const DEFAULT_SETTINGS: Settings = {
     'image-studio': '#ec4899',
     'class-management': '#f97316',
     'support': '#3b82f6',
-    'settings': '#6b7280'
+    'settings': '#6b7280',
+    'brain-dump': '#a855f7'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',

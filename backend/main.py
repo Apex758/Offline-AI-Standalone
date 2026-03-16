@@ -1863,6 +1863,116 @@ async def worksheet_websocket(websocket: WebSocket):
     except Exception as e:
         logger.error(f"Worksheet WebSocket error: {str(e)}")
 
+@app.websocket("/ws/brain-dump")
+async def brain_dump_websocket(websocket: WebSocket):
+    """Analyze free-form teacher brain dump and map to app actions."""
+    await websocket.accept()
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    BRAIN_DUMP_SYSTEM_PROMPT = """You are an AI assistant for the OECS Learning Hub, a teacher productivity app. Your job is to analyze a teacher's free-form thoughts ("brain dump") and extract actionable items that map to features in the app.
+
+Available action types:
+- "lesson-plan": Create a lesson plan (details: subject, grade, topic, duration)
+- "quiz": Create a quiz/assessment (details: subject, grade, topic, questionCount, difficulty)
+- "rubric": Create a grading rubric (details: subject, grade, topic, criteria)
+- "worksheet": Create a worksheet (details: subject, grade, topic, questionType)
+- "calendar-task": Add a task/reminder to calendar (details: date, priority)
+- "kindergarten-plan": Create an early childhood lesson plan (details: topic, theme, duration)
+- "multigrade-plan": Create a multi-level lesson plan (details: subject, grades, topic)
+- "cross-curricular-plan": Create an integrated cross-subject lesson (details: subjects, grade, topic)
+- "image-studio": Create a visual aid or image (details: description, style)
+
+Return ONLY a valid JSON array. Each item must have:
+- "type": one of the action types above
+- "title": short descriptive title (max 60 chars)
+- "description": brief explanation of what to create (1-2 sentences)
+- "details": object with relevant fields for that action type
+
+If the text mentions dates, include them in details.date. If it mentions a subject/grade, include those.
+If you cannot identify any actions, return an empty array: []
+Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            text = data.get("text", "").strip()
+            job_id = data.get("jobId") or "brain-dump"
+            generation_mode = data.get("generationMode", "queued")
+
+            if not text:
+                continue
+
+            full_prompt = "<|begin_of_text|>"
+            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{BRAIN_DUMP_SYSTEM_PROMPT}<|eot_id|>"
+            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{text}<|eot_id|>"
+            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+            slot_mode = None
+            try:
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+
+                token_buffer = []
+                last_send = time.time()
+                async for chunk in inference.generate_stream(
+                    tool_name="brain-dump",
+                    input_data=text,
+                    prompt_template=full_prompt,
+                    max_tokens=2000,
+                    temperature=0.3
+                ):
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({"type": "error", "message": chunk["error"]})
+                            await asyncio.sleep(0)
+                        except:
+                            pass
+                        break
+
+                    if chunk.get("finished"):
+                        if token_buffer:
+                            try:
+                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                                await asyncio.sleep(0)
+                            except:
+                                pass
+                        try:
+                            await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)
+                        except:
+                            pass
+                        break
+
+                    if chunk.get("token"):
+                        token_buffer.append(chunk["token"])
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                            try:
+                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                                token_buffer = []
+                                last_send = time.time()
+                                await asyncio.sleep(0)
+                            except:
+                                break
+
+            except Exception as e:
+                logger.error(f"Brain dump analysis error: {e}")
+                try:
+                    await websocket.send_json({"type": "error", "message": str(e)})
+                except:
+                    pass
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except:
+                    pass
+
+    except WebSocketDisconnect:
+        logger.info("Brain Dump WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Brain Dump WebSocket error: {e}")
+
+
 @app.get("/api/quiz-history")
 async def get_quiz_history():
     return load_json_data("quiz_history.json")

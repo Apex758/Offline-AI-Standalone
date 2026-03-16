@@ -35,15 +35,56 @@ function cleanTextForTTS(text: string): string {
 }
 
 // ========================================
+// Chunker — splits text into TTS-friendly chunks for fluid speech
+// ========================================
+const MAX_CHUNK_CHARS = 400; // sweet spot for Piper: fast synthesis, natural flow
+
+function chunkTextForTTS(text: string): string[] {
+  // Split on paragraph boundaries (double newline was already converted to ". ")
+  // and on sentence endings, keeping chunks under the limit
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const sentence of sentences) {
+    // If a single sentence exceeds the limit, push it as its own chunk
+    if (sentence.length > MAX_CHUNK_CHARS) {
+      if (current.trim()) {
+        chunks.push(current.trim());
+        current = '';
+      }
+      chunks.push(sentence.trim());
+      continue;
+    }
+
+    const candidate = current ? current + ' ' + sentence : sentence;
+    if (candidate.length > MAX_CHUNK_CHARS && current.trim()) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current.trim()) {
+    chunks.push(current.trim());
+  }
+
+  return chunks;
+}
+
+// ========================================
 // TTS Hook — uses Piper TTS backend (fully offline, natural voice)
+// Chunks text and pre-fetches next audio for seamless playback
 // ========================================
 export function useTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const onEndCallbackRef = useRef<(() => void) | null>(null);
+  const cancelledRef = useRef(false);
 
   const stopAudio = useCallback(() => {
+    cancelledRef.current = true;
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -56,56 +97,94 @@ export function useTTS() {
     }
   }, []);
 
+  const fetchChunkAudio = useCallback(async (
+    text: string,
+    signal: AbortSignal
+  ): Promise<string> => {
+    const response = await fetch('http://localhost:8000/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+      signal,
+    });
+    if (!response.ok) throw new Error('TTS request failed');
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  }, []);
+
   const speak = useCallback(async (text: string, onEnd?: () => void) => {
     const cleaned = cleanTextForTTS(text);
     if (!cleaned) return;
 
     stopAudio();
+    cancelledRef.current = false;
     onEndCallbackRef.current = onEnd || null;
     setIsSpeaking(true);
 
     const controller = new AbortController();
     abortRef.current = controller;
 
+    const chunks = chunkTextForTTS(cleaned);
+    const objectUrls: string[] = [];
+
     try {
-      const response = await fetch('http://localhost:8000/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleaned }),
-        signal: controller.signal,
-      });
+      // Pre-fetch first chunk immediately
+      let nextAudioPromise: Promise<string> | null =
+        chunks.length > 0 ? fetchChunkAudio(chunks[0], controller.signal) : null;
 
-      if (!response.ok) throw new Error('TTS request failed');
+      for (let i = 0; i < chunks.length; i++) {
+        if (cancelledRef.current) break;
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
+        // Await the current chunk's audio
+        const url = await nextAudioPromise!;
+        objectUrls.push(url);
 
-      audio.onended = () => {
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
+        // Start pre-fetching the next chunk while this one plays
+        if (i + 1 < chunks.length) {
+          nextAudioPromise = fetchChunkAudio(chunks[i + 1], controller.signal);
+        } else {
+          nextAudioPromise = null;
+        }
+
+        if (cancelledRef.current) break;
+
+        // Play the current chunk
+        await new Promise<void>((resolve, reject) => {
+          const audio = new Audio(url);
+          audioRef.current = audio;
+
+          audio.onended = () => {
+            audioRef.current = null;
+            resolve();
+          };
+          audio.onerror = () => {
+            audioRef.current = null;
+            reject(new Error('Audio playback error'));
+          };
+
+          audio.play().catch(reject);
+        });
+      }
+
+      // All chunks finished
+      if (!cancelledRef.current) {
         setIsSpeaking(false);
         onEndCallbackRef.current?.();
         onEndCallbackRef.current = null;
-      };
-
-      audio.onerror = () => {
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-        setIsSpeaking(false);
-        onEndCallbackRef.current = null;
-      };
-
-      await audio.play();
+      }
     } catch (e: any) {
       if (e.name !== 'AbortError') {
         console.error('[TTS] Piper error:', e);
-        setIsSpeaking(false);
-        onEndCallbackRef.current = null;
+      }
+      setIsSpeaking(false);
+      onEndCallbackRef.current = null;
+    } finally {
+      // Clean up all object URLs
+      for (const url of objectUrls) {
+        URL.revokeObjectURL(url);
       }
     }
-  }, [stopAudio]);
+  }, [stopAudio, fetchChunkAudio]);
 
   const stop = useCallback(() => {
     onEndCallbackRef.current = null;

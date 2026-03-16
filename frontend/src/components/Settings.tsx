@@ -292,6 +292,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const tabTypes = [
     // Regular tools
     { type: 'analytics', label: 'My Overview', defaultColor: '#3b82f6' },
+    { type: 'brain-dump', label: 'Brain Dump', defaultColor: '#a855f7' },
     { type: 'curriculum-tracker', label: 'Progress Tracker', defaultColor: '#10b981' },
     { type: 'resource-manager', label: 'My Resources', defaultColor: '#84cc16' },
     { type: 'chat', label: 'Ask PEARL', defaultColor: '#3b82f6' },
