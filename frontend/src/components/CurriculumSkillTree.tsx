@@ -318,10 +318,10 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
     grade: 56, subject: 50, strand: 46, elo: 42, sco: 30,
   };
 
-  // Reset child refs when children change
-  useEffect(() => {
+  // Reset child refs array size before render (not in useEffect which runs after)
+  if (childNodeRefs.current.length !== currentView.nodes.length) {
     childNodeRefs.current = new Array(currentView.nodes.length).fill(null);
-  }, [currentView.nodes.length]);
+  }
 
   return (
     <div className="h-full flex flex-col" style={{ background: 'var(--bg-secondary)' }}>
