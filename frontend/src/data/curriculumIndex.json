@@ -5518,7 +5518,7 @@
           "elo": "ELO 4: Generate and compare multiple solutions to reduce the impacts of natural Earth processes on humans",
           "scoRange": [
             67,
-            90
+            89
           ]
         }
       ]
@@ -6303,7 +6303,7 @@
           "elo": "Learners will interpret, analyse, evaluate, and respond creatively to a range of texts in all areas of the curriculum.",
           "scoRange": [
             13,
-            19
+            18
           ]
         }
       ]
@@ -7713,11 +7713,11 @@
       "summary": "1: Learners will explore, use, and critically apply oral language for pleasure, personal growth, to form and foster relationships and to develop an appreciation and celebration of culture and of oral ",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             17
-          ]
+          ],
+          "elo": "1: Learners will explore, use, and critically apply oral language for pleasure, personal growth, to form and foster relationships and to develop an appreciation and celebration of culture and of oral languages."
         }
       ]
     },
@@ -7771,11 +7771,11 @@
       "summary": "2: Learners will demonstrate a variety of ways to use background knowledge and interests to select and engage critically with a range of culturally diverse paper based, visual, and digital texts for p",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             17
-          ]
+          ],
+          "elo": "2: Learners will explore, use, and critically apply a variety of reading and viewing strategies to construct meaning and to read and view for pleasure, personal growth, to form and foster relationships and to develop an appreciation and celebration of culture."
         }
       ]
     },
@@ -7829,11 +7829,11 @@
       "summary": "5: Learners will generate, gather, and organize thoughts to explore, clarify and reflect on thoughts, feelings, and experiences as they create a written or representative draft, independently and coll",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             17
-          ]
+          ],
+          "elo": "3: Learners will explore, use, and critically apply a variety of writing and representing strategies to communicate meaning for pleasure, personal growth, to form and foster relationships and to develop an appreciation and celebration of culture."
         }
       ]
     },
@@ -7927,67 +7927,67 @@
       "summary": "D1.1. Collecting, Organizing, and Displaying Data - Formulating Questions That Can be Answered with Data",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             6
-          ]
+          ],
+          "elo": "D1.1: Collecting, Organizing, and Displaying Data – Formulating Questions That Can be Answered with Data"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             7,
             13
-          ]
+          ],
+          "elo": "D1.2: Collecting, Organizing, and Displaying Data – Collecting, Organizing, Displaying and Communicating Data"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             14,
             21
-          ]
+          ],
+          "elo": "D2.1: Using Statistical Methods to Analyse Data – Describing Data Sets"
         },
         {
-          "eloIndex": 3,
           "scoRange": [
             22,
             27
-          ]
+          ],
+          "elo": "D2.2: Using Statistical Methods to Analyse Data – Developing and Applying Methods to Analyse Data Sets"
         },
         {
-          "eloIndex": 4,
           "scoRange": [
             28,
             33
-          ]
+          ],
+          "elo": "D3.1: Evaluating Inferences and Making Predictions Based on Data – Making Inferences with Data Sets"
         },
         {
-          "eloIndex": 5,
           "scoRange": [
             34,
             38
-          ]
+          ],
+          "elo": "D3.2: Evaluating Inferences and Making Predictions Based on Data – Making and Testing Conjectures Based on Data Sets"
         },
         {
-          "eloIndex": 6,
           "scoRange": [
             39,
             43
-          ]
+          ],
+          "elo": "D3.3: Evaluating Inferences and Making Predictions Based on Data – Evaluating Data Descriptions and Reports, Analyse Misinterpreted Data"
         },
         {
-          "eloIndex": 7,
           "scoRange": [
             44,
             46
-          ]
+          ],
+          "elo": "D4.1: Understanding and Applying Concepts of Probability – Predicting and Describing the Likelihood of Events"
         },
         {
-          "eloIndex": 8,
           "scoRange": [
             47,
             49
-          ]
+          ],
+          "elo": "D4.2: Understanding and Applying Concepts of Probability – Calculating Probabilities"
         }
       ]
     },
@@ -8083,60 +8083,60 @@
       "summary": "G1.1. Explore and Analyse Geometric Shapes and Relationships - Developing Spatial Sense",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             5
-          ]
+          ],
+          "elo": "G1.1: Geometric Thinking – Explore and Analyse Geometric Shapes and Relationships – Developing Spatial Sense"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             6,
             13
-          ]
+          ],
+          "elo": "G1.2: Geometric Thinking – Explore and Analyse Geometric Shapes and Relationships – Sorting, Patterning, and Building with 2D & 3D Shapes"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             14,
             19
-          ]
+          ],
+          "elo": "G2.1: Recognising, Naming and Describing Shapes – Analysing and Describing Shapes"
         },
         {
-          "eloIndex": 3,
           "scoRange": [
             20,
             24
-          ]
+          ],
+          "elo": "G2.2: Recognising, Naming and Describing Shapes – Naming 2D & 3D Shapes"
         },
         {
-          "eloIndex": 4,
           "scoRange": [
             25,
             30
-          ]
+          ],
+          "elo": "G2.3: Recognising, Naming and Describing Shapes – Comparing and Adding the Angles of 2D & 3D Shapes"
         },
         {
-          "eloIndex": 5,
           "scoRange": [
             31,
             38
-          ]
+          ],
+          "elo": "G3.1: Composing, Decomposing and Transforming Shapes – Combining Shapes"
         },
         {
-          "eloIndex": 6,
           "scoRange": [
             39,
             41
-          ]
+          ],
+          "elo": "G3.2: Composing, Decomposing and Transforming Shapes – Deconstructing Shapes"
         },
         {
-          "eloIndex": 7,
           "scoRange": [
             42,
             52
-          ]
+          ],
+          "elo": "G3.3: Composing, Decomposing and Transforming Shapes – Transforming Shapes"
         }
       ]
     },
@@ -8220,53 +8220,53 @@
       "summary": "M1.1 : Understanding What and How We Measure - Developing an Understanding of Measurable Attributes",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             7
-          ]
+          ],
+          "elo": "M1.1: Understanding What and How We Measure – Developing an Understanding of Measurable Attributes"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             8,
             12
-          ]
+          ],
+          "elo": "M1.2: Understanding What and How We Measure – Comparing and Ordering Based on Measurable Attributes"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             13,
             17
-          ]
+          ],
+          "elo": "M1.3: Understanding What and How We Measure – Developing and Applying Non-standard Units of Measure"
         },
         {
-          "eloIndex": 3,
           "scoRange": [
             18,
             23
-          ]
+          ],
+          "elo": "M1.4: Understanding What and How We Measure – Developing and Applying Standard Units of Measure"
         },
         {
-          "eloIndex": 4,
           "scoRange": [
             24,
             29
-          ]
+          ],
+          "elo": "M2.1: Applying Techniques, Tools and Formulas for Measuring – Developing Personal Referents for Measuring Attributes"
         },
         {
-          "eloIndex": 5,
           "scoRange": [
             30,
             34
-          ]
+          ],
+          "elo": "M2.2: Applying Techniques, Tools and Formulas for Measuring – Using Tools to Measure Attributes"
         },
         {
-          "eloIndex": 6,
           "scoRange": [
             35,
             41
-          ]
+          ],
+          "elo": "M2.3: Applying Techniques, Tools and Formulas for Measuring – Developing and Applying Formulae for Measuring"
         }
       ]
     },
@@ -8324,25 +8324,25 @@
       "summary": "N1.1. Whole Number - Saying Number Sequence, Meaningful Counting and Skip Counting",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             6
-          ]
+          ],
+          "elo": "O1.1: Number Sense – Understanding Quantities and Place Value"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             7,
             13
-          ]
+          ],
+          "elo": "O1.2: Number Sense – Representing Numbers in Multiple Ways"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             14,
             19
-          ]
+          ],
+          "elo": "O1.3: Number Sense – Comparing and Ordering Numbers"
         }
       ]
     },
@@ -8413,39 +8413,39 @@
       "summary": "O1.1: Additive Thinking - Understanding the Meaning of Addition and Subtraction and how They Relate Grade Level Expectation: Add and subtract decimals to thousandths, using concrete models or drawings",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             5
-          ]
+          ],
+          "elo": "O2.1: Multiplicative Thinking – Understanding Operations (× & ÷)"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             6,
             11
-          ]
+          ],
+          "elo": "O2.2: Multiplicative Thinking – Compute Fluently with Operations (× & ÷)"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             12,
             16
-          ]
+          ],
+          "elo": "O2.3: Multiplicative Thinking – Make Reasonable Estimations When Using the Operation (× & ÷)"
         },
         {
-          "eloIndex": 3,
           "scoRange": [
             17,
             23
-          ]
+          ],
+          "elo": "O3.1: Proportional Reasoning – Representing and Working with Rates and Ratios"
         },
         {
-          "eloIndex": 4,
           "scoRange": [
             24,
             30
-          ]
+          ],
+          "elo": "O3.2: Proportional Reasoning – Use a Variety of Representations and Models of Percentages"
         }
       ]
     },
@@ -8529,60 +8529,60 @@
       "summary": "P1.1. Recognizing, describing and extending patterns - Repeating Patterns",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             4
-          ]
+          ],
+          "elo": "P1.1: Pattern and Relationship – Recognizing, Describing and Extending Patterns – Repeating Patterns"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             5,
             9
-          ]
+          ],
+          "elo": "P1.2: Pattern and Relationship – Recognizing, Describing and Extending Patterns – Increasing and Decreasing Patterns"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             10,
             14
-          ]
+          ],
+          "elo": "P2.1: Variables and Relationships – Representing Unknowns"
         },
         {
-          "eloIndex": 3,
           "scoRange": [
             15,
             19
-          ]
+          ],
+          "elo": "P2.2: Variables and Relationships – Understanding and Representing Equivalence"
         },
         {
-          "eloIndex": 4,
           "scoRange": [
             20,
             25
-          ]
+          ],
+          "elo": "P2.3: Variables and Relationships – Writing Expressions and Equations"
         },
         {
-          "eloIndex": 5,
           "scoRange": [
             26,
             30
-          ]
+          ],
+          "elo": "P3.1: Modelling Quantitative Relationships and Analysing Change – Modelling Patterns and Relationships with Equations and Functions"
         },
         {
-          "eloIndex": 6,
           "scoRange": [
             31,
             35
-          ]
+          ],
+          "elo": "P3.2: Modelling Quantitative Relationships and Analysing Change – Representing Functions and Relationships"
         },
         {
-          "eloIndex": 7,
           "scoRange": [
             36,
             40
-          ]
+          ],
+          "elo": "P3.3: Modelling Quantitative Relationships and Analysing Change – Solving Problems with Functions and Relationships"
         }
       ]
     },
@@ -8653,18 +8653,18 @@
       "summary": "Analyse and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occurred.",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             18
-          ]
+          ],
+          "elo": "ELO 1: Develop a model to describe how atoms rearrange during a chemical reaction to form new substances with different properties"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             19,
             33
-          ]
+          ],
+          "elo": "ELO 2: Investigate and analyse the factors that affect the rate of chemical reactions"
         }
       ]
     },
@@ -8750,18 +8750,18 @@
       "summary": "Develop a model to describe the cycling of water through Earth's systems driven by energy from the sun and the force of gravity",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             20
-          ]
+          ],
+          "elo": "ELO 1: Develop a model to describe the cycling of water through Earth's systems driven by energy from the sun and the force of gravity"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             21,
             48
-          ]
+          ],
+          "elo": "ELO 2: Construct a scientific explanation based on evidence for how the uneven distributions of Earth's mineral, energy, and groundwater resources are the result of past and current geoscience processes"
         }
       ]
     },
@@ -8847,25 +8847,25 @@
       "summary": "Analyse and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             16
-          ]
+          ],
+          "elo": "ELO 1: Construct and interpret graphical displays of data to describe the relationships of kinetic energy to the mass of an object and to the speed of an object"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             17,
             31
-          ]
+          ],
+          "elo": "ELO 2: Develop a model to describe that when the arrangement of objects interacting at a distance changes, different amounts of potential energy are stored in the system"
         },
         {
-          "eloIndex": 2,
           "scoRange": [
             32,
             47
-          ]
+          ],
+          "elo": "ELO 3: Apply scientific principles to design, construct, and test a device that either minimizes or maximizes thermal energy transfer"
         }
       ]
     },
@@ -8934,18 +8934,18 @@
       "summary": "Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects.",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             16
-          ]
+          ],
+          "elo": "ELO 1: Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             17,
             31
-          ]
+          ],
+          "elo": "ELO 2: Plan an investigation to provide evidence that the change in an object's motion depends on the sum of the forces on the object and the mass of the object"
         }
       ]
     },
@@ -9003,18 +9003,18 @@
       "summary": "See specific curriculum outcomes",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             15
-          ]
+          ],
+          "elo": "ELO 1: Analyse and interpret data for patterns in the fossil record that document the existence, diversity, extinction, and change of life forms throughout the history of life on Earth"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             16,
             31
-          ]
+          ],
+          "elo": "ELO 2: Apply concepts of statistics and probability to explain the variation and distribution of expressed traits in a population"
         }
       ]
     },
@@ -9080,18 +9080,18 @@
       "summary": "Construct an explanation that predicts patterns of interactions among organisms across multiple ecosystems.",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             15
-          ]
+          ],
+          "elo": "ELO 1: Analyse and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             16,
             31
-          ]
+          ],
+          "elo": "ELO 2: Construct an explanation that predicts patterns of interactions among organisms across multiple ecosystems"
         }
       ]
     },
@@ -9197,18 +9197,18 @@
       "summary": "Analyse and interpret data to determine scale properties of objects in the solar system.",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             34
-          ]
+          ],
+          "elo": "ELO 1: Analyse and interpret data to determine scale properties of objects in the solar system"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             35,
             68
-          ]
+          ],
+          "elo": "ELO 2: Construct and present arguments using evidence to support the claim that gravitational interactions are attractive and depend on the masses of interacting objects"
         }
       ]
     },
@@ -9277,18 +9277,18 @@
       "summary": "Develop models to describe the atomic composition of simple molecules and extended structures.",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             15
-          ]
+          ],
+          "elo": "ELO 1: Conduct an investigation and evaluate the experimental design to provide evidence that fields exist between objects exerting forces on each other even though the objects are not in contact"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             16,
             31
-          ]
+          ],
+          "elo": "ELO 2: Develop a model that predicts and describes changes in particle motion, temperature, and state of a pure substance when thermal energy is added or removed"
         }
       ]
     },
@@ -9357,18 +9357,18 @@
       "summary": "Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy in a wave.",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             16
-          ]
+          ],
+          "elo": "ELO 1: Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy in a wave"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             17,
             31
-          ]
+          ],
+          "elo": "ELO 2: Integrate qualitative scientific and technical information to support the claim that digitized signals are a more reliable way to encode and transmit information than analog signals"
         }
       ]
     },
@@ -9432,18 +9432,18 @@
       "summary": "To appreciate that complex global problems require international cooperation to make choices for the future",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             15
-          ]
+          ],
+          "elo": "ELO 1: Examine the rights and responsibilities of citizens and evaluate how civic participation strengthens communities and democratic societies"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             16,
             30
-          ]
+          ],
+          "elo": "ELO 2: Analyse how individuals and groups can influence government decisions and advocate for change"
         }
       ]
     },
@@ -9510,18 +9510,18 @@
       "summary": "Recognize that regional and international movement of goods, people, and services shapes Caribbean society",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             15
-          ]
+          ],
+          "elo": "ELO 1: Analyse how individuals, businesses, and governments make economic decisions and evaluate the impact of those decisions on communities"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             16,
             31
-          ]
+          ],
+          "elo": "ELO 2: Examine the role of trade, globalisation, and economic integration in the Caribbean and assess their impact on development"
         }
       ]
     },
@@ -9584,18 +9584,18 @@
       "summary": "To understand the diversity of the world's population is its strength",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             16
-          ]
+          ],
+          "elo": "ELO 1: Analyse key historical events and processes that have shaped the Caribbean region, and evaluate their impact on contemporary Caribbean societies"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             17,
             32
-          ]
+          ],
+          "elo": "ELO 2: Examine the diverse cultural heritage of the Caribbean and evaluate how it contributes to Caribbean identity"
         }
       ]
     },
@@ -9659,18 +9659,18 @@
       "summary": "To appreciate that the Caribbean has a diverse geography that poses challenges and opportunities",
       "eloGroups": [
         {
-          "eloIndex": 0,
           "scoRange": [
             0,
             16
-          ]
+          ],
+          "elo": "ELO 1: Analyse the physical and human geographic features of the Caribbean and evaluate how they influence the lives of Caribbean people"
         },
         {
-          "eloIndex": 1,
           "scoRange": [
             17,
             32
-          ]
+          ],
+          "elo": "ELO 2: Examine how human activities affect the physical environment of the Caribbean and evaluate strategies for sustainable development"
         }
       ]
     },
