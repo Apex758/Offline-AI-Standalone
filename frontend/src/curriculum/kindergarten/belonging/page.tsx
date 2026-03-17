@@ -15,6 +15,8 @@ import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Building01IconData from '@hugeicons/core-free-icons/Building01Icon';
 import PuzzleIconData from '@hugeicons/core-free-icons/PuzzleIcon';
 import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
+import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
+import SchoolIconData from '@hugeicons/core-free-icons/SchoolIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -31,6 +33,8 @@ const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const Building: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Building01IconData} {...p} />;
 const Puzzle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PuzzleIconData} {...p} />;
 const Heart: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FavouriteIconData} {...p} />;
+const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
+const School: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SchoolIconData} {...p} />;
 export default function BelongingUnit() {
   return (
     <div className="container mx-auto px-4 py-8">
