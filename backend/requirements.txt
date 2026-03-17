@@ -18,6 +18,7 @@ iopaint==1.6.0
 optimum-intel[openvino]
 Pillow
 requests>=2.31.0
+rembg
 
 # --- Text-to-Speech (offline) ---
 piper-tts>=1.2.0

@@ -3,7 +3,17 @@
 
 
 
+### Sparkles Icon Usage
+The `Sparkles` icon (✨) is heavily used — it's on the AI Assistant header, every "AI Assistant" button across generators, Brain Dump, Image Studio, Settings features section, and analytics widgets. This icon has become a visual cliche for "AI feature."
 
+**Suggestion:** Replace `Sparkles` with more purposeful icons:
+- AI Assistant panel header: Use `MessageSquare` (it's a chat) or a custom PEARL icon/logo
+- Generator "Assistant" buttons: Use `MessageSquare` (opening a chat panel)
+- BrainDump process button: Use `Zap` or `ArrowRight` (processing/converting)
+- Image Studio generate: Use `Palette` or `Image` (you're making images)
+- Settings features: Use `Sliders` or `ToggleLeft` (configuration)
+
+Reserve `Sparkles` for, at most, ONE place — or don't use it at all.
 
 ## P1 — HIGH (Clearly Noticeable)
 
@@ -43,19 +53,7 @@
 **Impact:** Prevents brief UI freezes when saving/loading tasks data
 
 ---
-
  
-
-## P3 — LOW (Nice to Have)
-
-### 18. lucide-react excluded from Vite optimization
-**File:** `frontend/vite.config.ts` line 16
-**Issue:** `optimizeDeps: { exclude: ['lucide-react'] }` prevents Vite from pre-bundling icons. Dashboard alone imports 30+ icons.
-**Fix:** Remove the `exclude` line.
-**Impact:** Faster dev server, slightly smaller bundle
-
----
-
 
 
 
