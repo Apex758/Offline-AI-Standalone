@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
-import WrenchIconData from '@hugeicons/core-free-icons/WrenchIcon';
+import WrenchIconData from '@hugeicons/core-free-icons/Wrench01Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {

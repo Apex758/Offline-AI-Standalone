@@ -5,7 +5,7 @@ import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
 import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
-import Battery01IconData from '@hugeicons/core-free-icons/Battery01Icon';
+import Battery01IconData from '@hugeicons/core-free-icons/BatteryFullIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

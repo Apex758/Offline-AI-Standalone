@@ -4,7 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import TestTubeIconData from '@hugeicons/core-free-icons/TestTubeIcon';
 import GlobeIconData from '@hugeicons/core-free-icons/GlobeIcon';
 import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
-import WrenchIconData from '@hugeicons/core-free-icons/WrenchIcon';
+import WrenchIconData from '@hugeicons/core-free-icons/Wrench01Icon';
 import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {

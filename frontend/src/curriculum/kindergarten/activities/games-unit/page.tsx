@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
 import { HugeiconsIcon } from '@hugeicons/react';
-import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/GameController01Icon';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
 import Briefcase01IconData from '@hugeicons/core-free-icons/Briefcase01Icon';

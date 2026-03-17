@@ -5,7 +5,7 @@ import { StandardsBadge } from "@/components/standards-badge"
 import { HugeiconsIcon } from '@hugeicons/react';
 import FlashIconData from '@hugeicons/core-free-icons/FlashIcon';
 import SortingDownIconData from '@hugeicons/core-free-icons/SortingDownIcon';
-import Battery01IconData from '@hugeicons/core-free-icons/Battery01Icon';
+import Battery01IconData from '@hugeicons/core-free-icons/BatteryFullIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

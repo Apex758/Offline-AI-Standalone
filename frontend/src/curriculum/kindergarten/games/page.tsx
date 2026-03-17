@@ -15,7 +15,7 @@ import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Location01IconData from '@hugeicons/core-free-icons/Location01Icon';
 import Briefcase01IconData from '@hugeicons/core-free-icons/Briefcase01Icon';
 import ChartIncreaseIconData from '@hugeicons/core-free-icons/ChartIncreaseIcon';
-import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/GameController01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);

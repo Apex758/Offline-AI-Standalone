@@ -13,7 +13,7 @@ import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircl
 import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
 import ArrowLeft01IconData from '@hugeicons/core-free-icons/ArrowLeft01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
-import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/GameController01Icon';
 import FavouriteIconData from '@hugeicons/core-free-icons/FavouriteIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {

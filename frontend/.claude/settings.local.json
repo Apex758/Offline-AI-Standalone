@@ -9,7 +9,8 @@
       "Bash(do:*)",
       "Bash(wc:*)",
       "Bash(huggingface-cli:*)",
-      "Bash(/c/Users/LG/AppData/Local/Programs/Python/Python311/python.exe:*)"
+      "Bash(/c/Users/LG/AppData/Local/Programs/Python/Python311/python.exe:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

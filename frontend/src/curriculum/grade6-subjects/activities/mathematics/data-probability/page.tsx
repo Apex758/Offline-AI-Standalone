@@ -10,7 +10,7 @@ import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircl
 import BulbIconData from '@hugeicons/core-free-icons/BulbIcon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
-import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/GameController01Icon';
 import DiceIconData from '@hugeicons/core-free-icons/DiceIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
