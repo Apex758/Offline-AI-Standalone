@@ -173,6 +173,7 @@ const TreeConnectors: React.FC<{
   nodeCount: number;
 }> = ({ parentRef, childRefs, containerRef, accentColor, animKey, nodeCount }) => {
   const [paths, setPaths] = useState<string[]>([]);
+  const [visible, setVisible] = useState(false);
 
   const calc = useCallback(() => {
     const parent = parentRef.current;
@@ -198,14 +199,19 @@ const TreeConnectors: React.FC<{
   }, [parentRef, childRefs, containerRef]);
 
   useEffect(() => {
-    // Recalculate at multiple points to catch post-animation layout
-    const t1 = setTimeout(calc, 60);
-    const t2 = setTimeout(calc, 250);
-    const t3 = setTimeout(calc, 450);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // Hide lines immediately on zoom, then calculate + fade in after animation finishes
+    setPaths([]);
+    setVisible(false);
+    // Animation is 380ms — wait for it to fully settle before measuring
+    const t1 = setTimeout(() => {
+      calc();
+      setVisible(true);
+    }, 420);
+    // One more recalc for safety
+    const t2 = setTimeout(calc, 600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [calc, animKey, nodeCount]);
 
-  // Also recalc on resize
   useEffect(() => {
     window.addEventListener('resize', calc);
     return () => window.removeEventListener('resize', calc);
@@ -216,18 +222,17 @@ const TreeConnectors: React.FC<{
   return (
     <svg
       className="absolute inset-0 pointer-events-none"
-      style={{ overflow: 'visible', zIndex: 0, width: '100%', height: '100%' }}
+      style={{
+        overflow: 'visible',
+        zIndex: 0,
+        width: '100%',
+        height: '100%',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.25s ease',
+      }}
     >
       {paths.map((d, i) => (
-        <path
-          key={i}
-          d={d}
-          fill="none"
-          stroke={accentColor}
-          strokeWidth="2"
-          strokeOpacity={0.3}
-          style={{ transition: 'all 0.3s ease' }}
-        />
+        <path key={i} d={d} fill="none" stroke={accentColor} strokeWidth="2" strokeOpacity={0.3} />
       ))}
     </svg>
   );
