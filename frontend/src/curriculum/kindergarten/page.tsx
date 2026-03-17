@@ -5,7 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import CloudIconData from '@hugeicons/core-free-icons/CloudIcon';
 import Leaf01IconData from '@hugeicons/core-free-icons/Leaf01Icon';
-import Gamepad01IconData from '@hugeicons/core-free-icons/Gamepad01Icon';
+import Gamepad01IconData from '@hugeicons/core-free-icons/GamepadDirectionalIcon';
 import Calendar01IconData from '@hugeicons/core-free-icons/Calendar01Icon';
 import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
@@ -14,6 +14,7 @@ import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
 import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import PartyIconData from '@hugeicons/core-free-icons/PartyIcon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -33,6 +34,7 @@ const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
 const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
 const Download: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Download01IconData} {...p} />;
+const PartyPopper: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PartyIconData} {...p} />;
 import { Link } from "react-router-dom"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
