@@ -29,7 +29,7 @@ import type { MilestoneStats, Milestone } from '../types/milestone';
 import type { Task } from '../types/task';
 import type { Timeframe, CurriculumView } from '../types/analytics';
 import type { Tab } from '../types';
-import { HeartbeatLoader } from './ui/HeartbeatLoader';
+
 
 // Import helper functions
 import {
@@ -346,10 +346,132 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center" style={{ backgroundColor: 'var(--dash-bg)' }}>
-        <div className="text-center">
-          <HeartbeatLoader className="w-12 h-12 mx-auto mb-4" />
-          <p style={{ color: 'var(--dash-text-sub)' }}>Loading your dashboard...</p>
+      <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--dash-bg)' }}>
+        {/* Header Skeleton */}
+        <header className="sticky top-0 z-20" style={{
+          backgroundColor: 'var(--dash-bg)',
+          boxShadow: `0 4px 16px var(--dash-shadow)`
+        }}>
+          <div className="px-8 py-5 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-14 h-14 rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+              <div className="space-y-2">
+                <div className="h-6 w-32 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                <div className="h-4 w-24 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+              </div>
+            </div>
+            <div className="flex items-center space-x-6">
+              {[1, 2, 3].map(i => (
+                <React.Fragment key={i}>
+                  {i > 1 && <div className="w-px h-10" style={{ backgroundColor: 'var(--dash-border)' }} />}
+                  <div className="text-center space-y-1">
+                    <div className="h-7 w-10 mx-auto rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    <div className="h-3 w-14 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Skeleton - 3/5 + 2/5 Grid */}
+        <div className="px-8 py-8">
+          <div className="grid grid-cols-5 gap-6">
+            {/* Left Column - 3/5 */}
+            <div className="col-span-3 space-y-6">
+              {/* Chart Carousel Skeleton */}
+              <div className="rounded-2xl p-6 widget-glass space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-5 w-36 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <div className="flex gap-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-8 w-16 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="h-56 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+              </div>
+
+              {/* Curriculum Progress Skeleton */}
+              <div className="rounded-2xl p-6 widget-glass space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-5 w-44 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <div className="flex gap-2">
+                    {[1, 2].map(i => (
+                      <div key={i} className="h-7 w-20 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="h-3 w-full rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                <div className="grid grid-cols-3 gap-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="h-20 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Activity Skeleton */}
+              <div className="rounded-2xl p-6 widget-glass space-y-4">
+                <div className="h-5 w-36 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-4 w-3/4 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                      <div className="h-3 w-1/3 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column - 2/5 */}
+            <div className="col-span-2 space-y-6">
+              {/* Calendar Skeleton */}
+              <div className="rounded-2xl p-6 widget-glass space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-5 w-28 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <div className="h-8 w-8 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {Array.from({ length: 35 }).map((_, i) => (
+                    <div key={i} className="h-8 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Task List Skeleton */}
+              <div className="rounded-2xl p-6 widget-glass space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-5 w-20 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                  <div className="h-8 w-8 rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                </div>
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="w-5 h-5 rounded-md animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    <div className="flex-1 space-y-1">
+                      <div className="h-4 w-4/5 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                      <div className="h-3 w-1/4 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Most Used Tools Skeleton */}
+              <div className="rounded-2xl p-6 widget-glass space-y-4">
+                <div className="h-5 w-32 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg animate-pulse flex-shrink-0" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-4 w-2/3 rounded animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                      <div className="h-2 w-full rounded-full animate-pulse" style={{ backgroundColor: 'var(--dash-border)' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

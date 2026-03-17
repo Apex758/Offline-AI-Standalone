@@ -46,7 +46,7 @@ const Image: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
-import { HeartbeatLoader } from './ui/HeartbeatLoader';
+
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTutorials } from '../contexts/TutorialContext';
@@ -344,10 +344,73 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center tab-content-bg">
-        <div className="text-center">
-          <HeartbeatLoader className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <p className="text-theme-muted">Loading resources...</p>
+      <div className="h-full flex tab-content-bg">
+        {/* Sidebar Skeleton */}
+        <div className="w-60 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
+          <div className="p-4 border-b border-theme">
+            <div className="h-4 w-24 rounded animate-pulse bg-theme-tertiary" />
+          </div>
+          <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
+                <div className="w-4 h-4 rounded animate-pulse bg-theme-tertiary flex-shrink-0" />
+                <div className="flex-1 h-4 rounded animate-pulse bg-theme-tertiary" />
+                <div className="w-6 h-4 rounded-full animate-pulse bg-theme-tertiary" />
+              </div>
+            ))}
+          </nav>
+          <div className="p-4 border-t border-theme space-y-2">
+            <div className="flex justify-between">
+              <div className="h-3 w-10 rounded animate-pulse bg-theme-tertiary" />
+              <div className="h-3 w-6 rounded animate-pulse bg-theme-tertiary" />
+            </div>
+            <div className="flex justify-between">
+              <div className="h-3 w-16 rounded animate-pulse bg-theme-tertiary" />
+              <div className="h-3 w-4 rounded animate-pulse bg-theme-tertiary" />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Skeleton */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header Bar Skeleton */}
+          <div className="bg-theme-surface border-b border-theme p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="space-y-1.5">
+                <div className="h-6 w-36 rounded animate-pulse bg-theme-tertiary" />
+                <div className="h-3 w-20 rounded animate-pulse bg-theme-tertiary" />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-16 rounded-lg animate-pulse bg-theme-tertiary" />
+                <div className="h-8 w-20 rounded-lg animate-pulse bg-theme-tertiary" />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1 h-9 rounded-lg animate-pulse bg-theme-tertiary" />
+              <div className="h-9 w-9 rounded-lg animate-pulse bg-theme-tertiary" />
+              <div className="h-9 w-28 rounded-lg animate-pulse bg-theme-tertiary" />
+            </div>
+          </div>
+
+          {/* Resources Grid Skeleton */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-theme bg-theme-surface p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="w-10 h-10 rounded-lg animate-pulse bg-theme-tertiary" />
+                    <div className="w-6 h-6 rounded animate-pulse bg-theme-tertiary" />
+                  </div>
+                  <div className="h-4 w-4/5 rounded animate-pulse bg-theme-tertiary" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-20 rounded animate-pulse bg-theme-tertiary" />
+                    <div className="w-2 h-2 rounded-full animate-pulse bg-theme-tertiary" />
+                    <div className="h-3 w-14 rounded animate-pulse bg-theme-tertiary" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
