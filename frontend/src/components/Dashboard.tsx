@@ -558,6 +558,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [sidebarOpen]);
 
+  // Auto-scroll tab strip to show the active tab whenever it changes
+  useEffect(() => {
+    if (!activeTabId) return;
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    if (!activeTab) return;
+    setTimeout(() => {
+      const tabEl = document.querySelector(`[data-tab-id="${activeTabId}"]`) ||
+                    document.querySelector(`[data-group-type="${activeTab.type}"]`);
+      if (tabEl) {
+        tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }, 80);
+  }, [activeTabId, tabs]);
+
   // Auto-scroll sidebar to the active tool when sidebar opens
   useEffect(() => {
     if (sidebarOpen && activeTabId && sidebarScrollRef.current) {

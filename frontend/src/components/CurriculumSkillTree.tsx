@@ -20,6 +20,8 @@ interface SkillNode {
   completed: number;
   children: SkillNode[];
   checked?: boolean;
+  milestoneId?: string;
+  checklistIndex?: number;
 }
 
 /* ── Helpers ── */
@@ -92,6 +94,8 @@ function buildSkillTree(treeData: MilestoneTreeNode[]): SkillNode[] {
                 completed: sco.checked ? 1 : 0,
                 children: [],
                 checked: sco.checked,
+                milestoneId: m.id,
+                checklistIndex: g.scoRange[0] + si,
               })),
             });
           });
@@ -267,9 +271,10 @@ interface Props {
   treeData: MilestoneTreeNode[];
   accentColor: string;
   onNavigate: (expandIds: string[], highlightId?: string) => void;
+  onToggleSco: (milestoneId: string, checklistIndex: number) => void;
 }
 
-const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigate }) => {
+const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigate, onToggleSco }) => {
   const [currentPath, setCurrentPath] = useState<number[]>([]);
   const [animKey, setAnimKey] = useState(0);
   const [zoomDir, setZoomDir] = useState<'in' | 'out'>('in');
@@ -470,7 +475,13 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
                     key={node.id}
                     ref={el => { if (childNodeRefs.current) childNodeRefs.current[i] = el; }}
                     className={`progress-tree-node flex flex-col items-center cursor-pointer ${canZoom ? 'is-clickable' : ''}`}
-                    onClick={() => zoomIn(i)}
+                    onClick={() => {
+                      if (node.type === 'sco' && node.milestoneId != null && node.checklistIndex != null) {
+                        onToggleSco(node.milestoneId, node.checklistIndex);
+                      } else {
+                        zoomIn(i);
+                      }
+                    }}
                     style={{ minWidth: Math.max(size + 12, 48) }}
                   >
                     {/* Node circle */}
@@ -571,14 +582,19 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
               {currentView.nodes.map(node => (
                 <div
                   key={node.id}
-                  className="flex items-start gap-2 p-2 rounded-lg text-[11px] leading-relaxed"
+                  className="flex items-start gap-2 p-2 rounded-lg text-[11px] leading-relaxed cursor-pointer hover:bg-theme-hover transition-colors"
                   style={node.checked
                     ? { backgroundColor: `${accentColor}10`, color: 'var(--text-hint)', textDecoration: 'line-through' }
                     : { color: 'var(--text-label)' }
                   }
+                  onClick={() => {
+                    if (node.milestoneId != null && node.checklistIndex != null) {
+                      onToggleSco(node.milestoneId, node.checklistIndex);
+                    }
+                  }}
                 >
                   <div
-                    className="w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center"
+                    className="w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors"
                     style={node.checked
                       ? { backgroundColor: accentColor, borderColor: accentColor }
                       : { borderColor: 'var(--border-strong)' }

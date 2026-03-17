@@ -98,8 +98,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
   const highlightTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Draggable divider: right panel width in pixels
-  const [rightPanelWidth, setRightPanelWidth] = useState(320);
+  // Draggable divider: right panel as fraction of total width (0.4 = 40%)
+  const [rightPanelRatio, setRightPanelRatio] = useState(() => {
+    const saved = localStorage.getItem('curriculum-tracker-divider');
+    return saved ? parseFloat(saved) : 0.4;
+  });
   const isDragging = React.useRef(false);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -112,10 +115,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     const onMouseMove = (ev: MouseEvent) => {
       if (!isDragging.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const newRight = rect.right - ev.clientX;
-      const min = 200;
-      const max = rect.width * 0.5;
-      setRightPanelWidth(Math.max(min, Math.min(max, newRight)));
+      const newRatio = (rect.right - ev.clientX) / rect.width;
+      setRightPanelRatio(Math.max(0.15, Math.min(0.5, newRatio)));
     };
 
     const onMouseUp = () => {
@@ -124,6 +125,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       document.body.style.userSelect = '';
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      // Persist the divider position
+      setRightPanelRatio(prev => {
+        localStorage.setItem('curriculum-tracker-divider', String(prev));
+        return prev;
+      });
     };
 
     window.addEventListener('mousemove', onMouseMove);
@@ -786,7 +792,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         </div>
 
         {/* Right panel - Progress Tree */}
-        <div className="flex-shrink-0 overflow-hidden" style={{ width: rightPanelWidth }}>
+        <div className="flex-shrink-0 overflow-hidden" style={{ width: `${rightPanelRatio * 100}%` }}>
           <CurriculumSkillTree
             treeData={treeData}
             accentColor={accentColor}
@@ -826,6 +832,12 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                 });
               } else {
                 setHighlightedNodeId(null);
+              }
+            }}
+            onToggleSco={(milestoneId, checklistIndex) => {
+              const milestone = milestones.find(m => m.id === milestoneId);
+              if (milestone) {
+                handleChecklistToggle(milestone, checklistIndex);
               }
             }}
           />

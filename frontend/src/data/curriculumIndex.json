@@ -1380,29 +1380,35 @@
         "speak"
       ],
       "essentialOutcomes": [
-        "For pleasure, personal growth"
+        "ELO 1: The learner will explore, use, and critically apply oral language for pleasure, personal growth, to form and foster relationships and to develop an appreciation and celebration of culture and of oral languages."
       ],
       "specificOutcomes": [
-        "For pleasure, personal growth",
-        "1.1 Engage with various genres of music, oral poetry, and oral stories for pleasure.",
-        "1.2 Offer thoughts and opinions on the meaning and mood of music, stories, and poetry.",
-        "1.3 Sustain one-to-one conversations and contribute to small and large group interactions with peers.",
-        "1.4 Continue to develop comfort while engaging in interactions with adults.",
-        "1.5 Describe a personal experience in sequential order.",
-        "1.6 Continue to develop vocabulary that reflects interests as well as application of synonyms, antonyms, and descriptive words to build more complex sentences.",
-        "1.7 Use some transition words to connect phrases.",
-        "1.8 Respond and to give instructions that involve 3-4 steps.",
-        "1.9 Demonstrate application of oral comprehension strategies such as: - visualising - predicting - connecting - analysis - synthesising - determining importance",
-        "To form and foster relationships",
-        "1.10 Describe, share, and discuss thoughts, feelings, and experiences.",
-        "1.11 Ask and respond to questions to clarify information and to explore possibilities or solutions to problems.",
-        "1.12 Consider others' ideas and ask/ respond to questions to clarify information and to explore possibilities or solutions to problems.",
-        "1.13 Recognize some examples of unfair and hurtful vocabulary, and begin to make vocabulary choices that affirm rather than hurt people.",
-        "1.14 Experiment with the impact of intonation, expression, and tone while communicating ideas and feelings in small- and whole of voice needs to be adjusted according to situation XC.",
-        "1.15 Continue to develop monitoring and self correction of oral language use.",
-        "1.16 Develop automaticity with the meaningful application of phonological awareness in oral expression of- rhyming- onset and rime- segmenting- blending- beats in a word (syllables)"
+        "1.1 Listen and respond appropriately to oral presentations, stories, and conversations",
+        "1.2 Use active listening skills: making eye contact, nodding, not interrupting",
+        "1.3 Ask and answer questions to seek clarification or additional information",
+        "1.4 Retell stories and events in sequence using beginning, middle, and end",
+        "1.5 Speak in complete sentences using Standard English and/or Home Language",
+        "1.6 Use appropriate volume, tone, and pace when speaking for different purposes",
+        "1.7 Participate in partner, small group, and whole class discussions",
+        "1.8 Share personal experiences and connect them to text or topics",
+        "1.9 Use descriptive language to express ideas and feelings clearly",
+        "1.10 Follow multi-step oral directions",
+        "1.11 Recite poems, songs, chants, and rhymes with expression",
+        "1.12 Demonstrate understanding of figurative language heard in texts",
+        "1.13 Begin to identify and use language appropriate to audience and purpose",
+        "1.14 Use Home Language and Standard English interchangeably as appropriate to context",
+        "1.15 Demonstrate listening behaviours that show respect for the speaker"
       ],
-      "summary": "The learner will speak and listen: For pleasure, personal growth"
+      "summary": "The learner will speak and listen: For pleasure, personal growth",
+      "eloGroups": [
+        {
+          "elo": "ELO 1: The learner will explore, use, and critically apply oral language for pleasure, personal growth, to form and foster relationships and to develop an appreciation and celebration of culture and of oral languages.",
+          "scoRange": [
+            0,
+            14
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-language-arts-reading-viewing",
@@ -1429,37 +1435,76 @@
         "genre"
       ],
       "essentialOutcomes": [
-        "Reading and Viewing The learner will demonstrate a variety of ways to select and engage critically with a range of culturally diverse paper based, visual and digital texts for a variety of purposes, including pleasure, and personal growth.",
-        "The learner will demonstrate a variety of ways to use background knowledge and interests to select and engage critically with a range of culturally diverse paper based, visual, and digital texts for pleasure and personal growth.",
-        "Students will develop their understanding of how an author's purpose and style, genre, text form, text features and choice of vocabulary, and language influence the meaning of text and define the author's craft."
+        "ELO 2: The learner will demonstrate a variety of ways to select and engage critically with a range of culturally diverse paper based, visual and digital texts for a variety of purposes, including pleasure, and personal growth.",
+        "ELO 3: The learner will demonstrate a variety of ways to use background knowledge and interests to select and engage critically with a range of culturally diverse paper based, visual, and digital texts for pleasure and personal growth.",
+        "ELO 4: Students will develop their understanding of how an author's purpose and style, genre, text form, text features and choice of vocabulary, and language influence the meaning of text and define the author's craft."
       ],
       "specificOutcomes": [
-        "Use background knowledge and interests to select books",
-        "2.1 Continue to make engaging and ‘just right' book choices for Independent Reading based on:✓ -interests✓ various cultures (theirs and others)✓ difficulty level✓ genre",
-        "2.2 Reflect on various sources of background knowledge to predict and make connections before, during and after reading a piece of:- fiction- nonfiction- poetry",
-        "2.3 Increase time (build stamina) while engaged in Independent ReadingEngage critically with a range of texts for pleasure.",
-        "2.4 Regard reading/viewing as sources of interest, enjoyment, and information.",
-        "2.5 Share ideas and opinions about favourite authors or favourite genres with peers.",
-        "2.6 Make meaningful personal, text and community/world connections that enhance comprehension.",
-        "Select and engage critically with a range of texts for personal growth.",
-        "2.7 Demonstrate understanding and application of reading strategies while reading Early level texts.",
-        "2.8 Ask critical questions of fiction, nonfiction and poetry (Why, what if, is it possible, etc.)",
-        "2.9 Make connections between wellbeing and information texts on topics such as:; physical activity - health - emotions",
-        "2.10 Recognize different points of view of the author of print and/or digital text.",
-        "2.11 Continue to develop an understanding and respect for diversity in text and illustrations.",
-        "2.12 Use illustrations and details in a text to describe and interpret characters, setting, and events.",
-        "2.13 Reflect on the purpose of different types of texts e.g., local newspaper articles, local stories, poems, ads, e-texts, etc.",
-        "The learner will: Interact with understanding and critical thought to a wide range of genres and text forms using comprehension strategies,",
-        "3.1 Recognise the purpose and basic similarities and differences in paper based and digital genres of:- fiction- nonfiction- poetry",
-        "3.2 Apply a variety of comprehension strategies to create meaning✓ activating background✓ knowledge✓ determining importance✓ visualisation✓ prediction✓ inferring✓ synthesising analysingquestionsmake connections",
-        "3.3 Use illustrations, graphics etc. of nonfiction text to ask questions, make inferences, and search for answers.",
-        "3.4 Use various tools to retell a narrative, referring to characters, problem (what happened), and solution (ending).",
-        "3.5 Read simple mathematics or science problems to:search for informationask questionsfind solutions",
-        "3.6 Demonstrate understanding through various responses to text, such as:artistic representations (visual arts, dance)discussionsgraphic organisersoral and written responses to questionsetc.",
-        "3.7 Follow written instructions to create an object, find a location, etc.",
-        "3.8 Begin to connect background knowledge re: community and culture to support comprehension of culturally relevant text"
+        "2.1 Select texts for a variety of purposes using knowledge of text features (covers, titles, illustrations, headings)",
+        "2.2 Use prior knowledge and personal experience to make connections to text (text-to-self, text-to-text, text-to-world)",
+        "2.3 Make and confirm predictions using text features and prior knowledge",
+        "2.4 Identify and use basic reading strategies: rereading, reading ahead, sounding out",
+        "2.5 Demonstrate understanding of what is read through retelling and summarizing",
+        "2.6 Identify the main idea and supporting details in a text",
+        "2.7 Identify characters, setting, and plot in narrative texts",
+        "2.8 Distinguish between fiction and non-fiction texts",
+        "2.9 Use picture clues and context to determine the meaning of unfamiliar words",
+        "2.10 Respond personally to texts in a variety of ways (drawing, writing, talking)",
+        "2.11 Read and interpret simple visual texts (photographs, diagrams, maps, charts)",
+        "2.12 Engage with digital texts with teacher guidance",
+        "2.13 Read aloud with increasing fluency, accuracy, and expression",
+        "2.14 Identify and read a growing number of high-frequency words automatically",
+        "2.15 Apply phonics knowledge and word-solving strategies when reading",
+        "2.16 Demonstrate awareness of culturally diverse texts including texts from the Caribbean",
+        "3.1 Choose texts for independent reading based on personal interest",
+        "3.2 Respond to texts in a variety of ways: drawing, dramatizing, writing, discussing",
+        "3.3 Identify favourite authors, genres, and types of texts",
+        "3.4 Make connections between texts and personal experience, other texts, and the world",
+        "3.5 Discuss personal reactions and opinions about texts read",
+        "3.6 Identify and use features of a variety of text forms (stories, poems, labels, lists, charts)",
+        "3.7 Develop vocabulary through wide reading",
+        "3.8 Identify words with multiple meanings and begin to determine meaning from context",
+        "3.9 Read and engage with texts that reflect Caribbean culture, people, and environment",
+        "3.10 Share reading experiences with others (buddy reading, read aloud, book talks)",
+        "3.11 Develop awareness of how illustrations and visual features contribute to meaning",
+        "3.12 Begin to self-monitor reading for meaning and use fix-up strategies",
+        "4.1 Identify the author's purpose (to entertain, inform, persuade)",
+        "4.2 Identify and discuss text features: title, headings, table of contents, captions, glossary",
+        "4.3 Recognize different text forms and their purposes (stories, poems, letters, lists, reports)",
+        "4.4 Identify how word choice affects meaning and mood",
+        "4.5 Notice and discuss how an author uses descriptive language to paint pictures with words",
+        "4.6 Identify examples of rhyme, repetition, and rhythm in poetry",
+        "4.7 Compare how two texts on the same topic may differ in purpose, style, or perspective",
+        "4.8 Begin to identify figurative language (simile, alliteration) in text",
+        "4.9 Discuss how illustrations support or extend the meaning of text",
+        "4.10 Identify and discuss the genre of texts read (fairy tale, fable, non-fiction, poetry)",
+        "4.11 Use knowledge of genre features to support comprehension",
+        "4.12 Notice how authors use dialogue to develop characters"
       ],
-      "summary": "Reading and Viewing    The learner will demonstrate a variety of ways to select and engage critically with a range of culturally diverse paper based, visual and digital texts for a variety of purposes"
+      "summary": "Reading and Viewing    The learner will demonstrate a variety of ways to select and engage critically with a range of culturally diverse paper based, visual and digital texts for a variety of purposes",
+      "eloGroups": [
+        {
+          "elo": "ELO 2: The learner will select and engage critically with a range of culturally diverse texts for a variety of purposes.",
+          "scoRange": [
+            0,
+            15
+          ]
+        },
+        {
+          "elo": "ELO 3: The learner will use background knowledge and interests to engage with culturally diverse texts for pleasure and personal growth.",
+          "scoRange": [
+            16,
+            27
+          ]
+        },
+        {
+          "elo": "ELO 4: Students will develop understanding of how author's purpose, style, genre, and vocabulary influence meaning.",
+          "scoRange": [
+            28,
+            39
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-language-arts-writing-representing",
@@ -1486,38 +1531,88 @@
         "meaning"
       ],
       "essentialOutcomes": [
-        "Generate and gather thoughts to explore ideas, feelings, and experiences",
-        "Learners will Revise organization styles of drafted writing and representation",
-        "The learner will use their knowledge of spoken language, written language and writing conventions to refine the precision and enhance the meaning and clarity of their written work."
+        "ELO 5: The learner will use a variety of strategies and skills to brainstorm and draft writing and other representations, collaboratively and independently, for a variety of purposes and audiences.",
+        "ELO 6: The learner will revise the organization, and language use of drafted writing or representation, collaboratively and independently, for a variety of purposes and audiences.",
+        "ELO 7: The learner will use their knowledge of spoken language, written language and writing conventions to refine the precision and enhance the meaning and clarity of their written work."
       ],
       "specificOutcomes": [
-        "Generate and gather thoughts to explore ideas, feelings, and experiences",
-        "5.1 Engage in writing and representing activities every day and sustain engagement in writing.",
-        "5.2 Continue to engage in conversations about:$\\checkmark$ why we write or draw$\\checkmark$ how we write or draw$\\checkmark$ how authors use words and sentences to share their ideas$\\checkmark$ how illustrators provide additional information to the writing$\\checkmark$ how authors use choices about when to use Home Language and when to use Standard English",
-        "5.3 Develop comfort in experimenting within different forms of formal and informal writing, such as:",
-        "simple handwritten or digital notes thank you notes invitations to school or class letters to peers or community members",
-        "5.4 Engage in conversations about an anchor text chosen to model the genre for the writing project.",
-        "5.5 Participate in large group and small group opportunities to brainstorm ideas about a topic or a writing prompt.",
-        "5.6 Use simple graphic organizers, such as pictures, the five-finger plan, web, list, five Ws, etc. to organize ideas into a draft.Use organisational strategies to arrange thoughts and to explore, clarify and reflect on ideas, feelings, and experiences",
-        "5.7 Organise brainstormed ideas through increasingly independent use of:",
-        "a print, visual or digital graphic organizer * group conversation * story boards * role play * text based models",
-        "5.8 Organize writing to match the genre being studied: * narrative writing * expository writing * descriptive writing * persuasive writing",
-        "5.9 Make decisions about when illustrations, charts, and alternate language use will enhance the writing.Create a written or representative draft",
-        "5.10 Understand that writing a draft is connected to the prewriting/brainstorming and organising process.",
-        "5.11 Approach draft writing from a positive perspective of taking risks by:",
-        "using temporary spelling exploring various languages writing freely with a focus on getting ideas on paper or device",
-        "5.12 Refer to anchor texts as examples of the genre of the writing project.",
-        "5.13 Continue to work with a partner, small group or independently, to begin the process of drafting and organising sentences.",
-        "5.14 Further develop the structure of the genre throughout the draft process of: narrative writing expository writing descriptive writing persuasive writing",
-        "5.15 Continue to develop understanding of the social aspect of writing by engaging with peers and the teacher for ideas, suggestions, and ongoing feedback.",
-        "Learners will Revise organization styles of drafted writing and representation",
-        "6.1 Identify different forms of print and digital writing that are appropriate to specific purposes and audiences.",
-        "6.2 Review the draft and monitor writing for form and organisation using revision tools such as: ✓ inserting a word by using a caret, ✓ crossing out a word ✓ adding /removing details",
-        "-using arrows to indicate how ideas can be better organised",
-        "6.3 Add details or labels to a picture with thought and purpose.",
-        "6.4 Focus revisions on creating print, visual and digital texts with a beginning, middle, and end"
+        "5.1 Use temporary spelling",
+        "5.2 Explore various languages",
+        "5.3 Write freely with a focus on getting ideas on paper or device",
+        "5.4 Use drawing, talking, and writing to generate ideas",
+        "5.5 Use graphic organizers and visual tools to brainstorm and plan writing",
+        "5.6 Develop understanding of the social aspect of writing by sharing ideas with peers and teacher",
+        "5.7 Begin to select appropriate genre and form for writing purpose",
+        "5.8 Understand that writing can communicate ideas, feelings, information, and stories",
+        "5.9 Begin to organize ideas in a logical sequence",
+        "5.10 Use personal experience, observation, and imagination as sources of writing ideas",
+        "5.11 Participate in shared and interactive writing with the teacher and peers",
+        "5.12 Refer to anchor texts as examples of the genre of the writing project",
+        "5.13 Continue to work with a partner, small group or independently, to begin drafting and organising sentences",
+        "5.14 Further develop the structure of the genre throughout the draft process of: narrative, expository, descriptive, persuasive writing",
+        "5.15 Continue to develop understanding of the social aspect of writing by engaging with peers and the teacher",
+        "6.1 Identify different forms of print and digital writing appropriate to specific purposes and audiences",
+        "6.2 Review the draft and monitor writing for form and organisation using revision tools",
+        "6.3 Add details or labels to a picture with thought and purpose",
+        "6.4 Focus revisions on creating texts with a beginning, middle, and end",
+        "6.5 Experiment with organisation with various real-world genres: wish list, how to list, grocery list",
+        "6.6 Continue to notice and make choices about the use of Standard English or Home Language vocabulary",
+        "6.7 Become aware of how to make decisions about word specific choice to enhance clarity",
+        "6.8 Continue to develop and refine the intentional use of Home Language and Standard English vocabulary",
+        "6.9 Use the word wall to check for alternates for overused words",
+        "6.10 Develop understanding of how to write complete sentences on a specific topic",
+        "6.11 Use some variety in sentence beginnings",
+        "6.12 Experiment with lead sentences that will engage the audience",
+        "6.13 Begin to embed structures for plurals and simple past tense in sentences",
+        "6.14 Use expressive Home Language and Standard English phrases to enhance message",
+        "6.15 Experiment with how an author uses bold print, visual words, and fonts to enhance voice",
+        "6.16 Begin to experiment with revising strategies for sentence fluency",
+        "6.17 Use expressive words and phrases to enhance the message",
+        "7.1 Continue to develop independent strategies to monitor and edit spelling",
+        "7.2 Use an increasing number of accurately spelled words",
+        "7.3 Use word walls, personal dictionaries, environmental print to check commonly used words",
+        "7.4 Generate spelling of unfamiliar words based on beginning, middle, and ending sounds",
+        "7.5 Demonstrate increasing knowledge of complex spelling patterns, including long vowel patterns",
+        "7.6 Continue to develop understanding of how to sequence letters when spelling unfamiliar words",
+        "7.7 Demonstrate the knowledge of an increasing number of accurately spelt words",
+        "7.8 Apply a wider range of spelling strategies resulting in more conventional spelling",
+        "7.9 Continue to develop the use of digital features such as spell check",
+        "7.10 Continue to refine the use of grade-level punctuation conventions",
+        "7.11 Demonstrate a beginning awareness of when to use quotation marks",
+        "7.12 Make final corrections of revised draft",
+        "7.13 Self-select final pieces of writing to publish that demonstrate grade-level traits and conventions",
+        "7.14 Use conventional spacing between words",
+        "7.15 Continue to refine letter formation to increase readability",
+        "7.16 Develop hand-created or digital presentation styles",
+        "7.17 Share writing and other representations with others and seek response",
+        "7.18 With assistance, experiment with technology in writing and other forms of representing",
+        "7.19 Create illustrations/drawings with a computer graphics/drawing program",
+        "7.20 Compose simple text with a word processing program"
       ],
-      "summary": "Generate and gather thoughts to explore ideas, feelings, and experiences"
+      "summary": "Generate and gather thoughts to explore ideas, feelings, and experiences",
+      "eloGroups": [
+        {
+          "elo": "ELO 5: The learner will use strategies and skills to brainstorm and draft writing for a variety of purposes and audiences.",
+          "scoRange": [
+            0,
+            14
+          ]
+        },
+        {
+          "elo": "ELO 6: The learner will revise organization and language use of drafted writing.",
+          "scoRange": [
+            15,
+            31
+          ]
+        },
+        {
+          "elo": "ELO 7: The learner will use knowledge of spoken and written language conventions to refine their written work.",
+          "scoRange": [
+            32,
+            51
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-mathematics-data-probability",
@@ -1544,35 +1639,79 @@
         "explicitly"
       ],
       "essentialOutcomes": [
-        "KnowledgeList questions of interest for investigation.SkillsGather and record simple sets of data about self and others through observation and simple interviews.",
-        "Using Statistical Methods to Analyze Data - Describing data sets",
-        "(Note not all 3 below need to be explicitly identified for each SCO but the presence of all three should be apparent1. Ask questions to collect data.2. Collect simple sets of data through observation and simple interview.3. Use number statements to record the collected data.4. Collect data using a variety of observation tools.5. Organize, display and communicate data that has been collected.6. Record data information on, bar graph, pictograph and tally chart.7. Create different types of data presentations, including pictograph, and bar graphs to represent data.8. Identify the most frequent count, if any, for various data sets presented in concrete graphs, pictographs, bar graphs, and"
+        "ELO 1.1: Collecting, Organising and Displaying Data - Formulating questions for data collection",
+        "ELO 1.2: Collecting, Organising and Displaying Data - Collecting, organising, displaying and communicating data",
+        "ELO 2.1: Using Statistical Methods to Analyse Data - Describing data sets",
+        "ELO 2.2: Using Statistical Methods to Analyse Data - Developing and applying methods to analyse data sets",
+        "ELO 2.3: Using Statistical Methods to Analyse Data - Predicting and describing the likelihood of events"
       ],
       "specificOutcomes": [
-        "K: List questions of interest for investigation.",
-        "S: Gather and record simple sets of data about self and others through observation and simple interviews.",
-        "Record data as a tally or as drawings (pictographs).",
-        "Use collected data to answer questions.",
-        "V: Make the connection that data collection is acquiring information to answer important questions.",
-        "Identify the most frequent count presented in any data sets (e.g., concrete graphs, pictographs, bar graphs, and tables).",
-        "Explain in their own words what the most frequent count indicates about the data.",
-        "S: Collect, group and analyze data.",
-        "V: Analyze data and make informed decisions using these data. * Use data to make informed decisions about real life situations. * Appreciate the importance of identifying the most frequent count of any given data.",
-        "Ask questions to collect data.",
-        "Collect simple sets of data through observation and simple interview.",
-        "Use number statements to record the collected data.",
-        "Collect data using a variety of observation tools.",
-        "Organize, display and communicate data that has been collected.",
-        "Record data information on, bar graph, pictograph and tally chart.",
-        "Create different types of data presentations, including pictograph, and bar graphs to represent data.",
-        "Identify the most frequent count, if any, for various data sets presented in concrete graphs, pictographs, bar graphs, and tables.",
-        "Identify the key elements of pictograph and bar graph.",
-        "Analyze data presented in various ways by asking and answering questions about the data.",
-        "Draw conclusions from the data by making observations and inferences.",
-        "Describe the likelihood that events will happen, and use that information to make predictions.",
-        "Use mathematical language, including the terms \"impossible\", \"possible\", and \"certain\", to"
+        "Identify simple topics for investigation",
+        "Match investigative topics to relevant questions",
+        "Formulate questions to gather information about self, others, and the environment",
+        "Appreciate the need for appropriate questions in data collection",
+        "List questions of interest for investigation",
+        "Gather and record simple sets of data about self and others through observation and interviews",
+        "Record data as a tally or as drawings (pictographs)",
+        "Use collected data to answer questions",
+        "Make the connection that data collection is acquiring information to answer important questions",
+        "Identify the most frequent count presented in any data set",
+        "Explain in their own words what the most frequent count indicates about the data",
+        "Collect, group, and analyse data",
+        "Analyse data and make informed decisions using these data",
+        "Appreciate the importance of identifying the most frequent count",
+        "Ask questions to collect data",
+        "Collect simple sets of data through observation and simple interview",
+        "Use number statements to record the collected data",
+        "Collect data using a variety of observation tools",
+        "Organise, display, and communicate data that has been collected",
+        "Record data information on bar graph, pictograph, and tally chart",
+        "Create different types of data presentations to represent data",
+        "Identify the most frequent count for various data sets in concrete graphs, pictographs, bar graphs, and tables",
+        "Analyse data presented in various ways by asking and answering questions",
+        "Draw conclusions from the data by making observations and inferences",
+        "Describe the likelihood that events will happen, and use that information to make predictions",
+        "Use mathematical language including impossible, possible, and certain to describe likelihood",
+        "Use the likelihood that an event will happen to make predictions and informed decisions"
       ],
-      "summary": "Learners will be able to:KnowledgeList questions of interest for investigation.SkillsGather and record simple sets of data about self and others through observation and simple interviews."
+      "summary": "Learners will be able to:KnowledgeList questions of interest for investigation.SkillsGather and record simple sets of data about self and others through observation and simple interviews.",
+      "eloGroups": [
+        {
+          "elo": "ELO 1.1: Formulating questions for data collection",
+          "scoRange": [
+            0,
+            3
+          ]
+        },
+        {
+          "elo": "ELO 1.2: Collecting, organising, displaying and communicating data",
+          "scoRange": [
+            4,
+            8
+          ]
+        },
+        {
+          "elo": "ELO 2.1: Describing data sets",
+          "scoRange": [
+            9,
+            13
+          ]
+        },
+        {
+          "elo": "ELO 2.2: Developing and applying methods to analyse data sets",
+          "scoRange": [
+            14,
+            23
+          ]
+        },
+        {
+          "elo": "ELO 2.3: Predicting and describing the likelihood of events",
+          "scoRange": [
+            24,
+            26
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-mathematics-geometrical-thinking",
@@ -1599,38 +1738,80 @@
         "decomposing"
       ],
       "essentialOutcomes": [
-        "Knowledge1. Describe orally and written, 2-D and 3-D shapes and/or objects and space.2. Identify 2-D and 3-D shapes in the environment.3. Explain the differences and similarities between and among 2-D shapes using vocabulary associated with properties of shapes.4. Make comparisons between solids and plane shapes in concrete and pictorial forms using formal language.5. Identify 2-D shapes as faces of 3-D shapes in pictures, objects or space from different orientations.6. Classify shapes according to their properties/features and give reasons for the classification.7. Create/build 2-D and 3-D shapes.8. Describe 2-D and 3-D shapes found in the natural environment or in pictures.9. Create 3D shapes using 2D shapes from a description given within a real world context.Values",
-        "Knowledge:",
-        "Geometrical Thinking 2.1",
-        "ELO 2.2 : Recognizing, Naming and Describing Shapes - Naming 2D & 3D shapes",
-        "ELO 3.2: Composing, Decomposing and Transforming Shapes - Deconstructing Shapes"
+        "ELO 1.1: 2D Shapes - Identifying and describing 2D shapes",
+        "ELO 1.2: 3D Objects - Identifying and describing 3D objects",
+        "ELO 2.3: Spatial Reasoning - Comparing and describing shapes and movements",
+        "ELO 3.1: Composing and Decomposing Shapes - Working with composite shapes",
+        "ELO 3.2: Composing and Decomposing Shapes - Identifying 2D shapes in 3D objects"
       ],
       "specificOutcomes": [
-        "Describe orally and written, 2-D and 3-D shapes and/or objects and space.",
-        "Identify 2-D and 3-D shapes in the environment.",
-        "Explain the differences and similarities between and among 2-D shapes using vocabulary associated with properties of shapes.",
-        "Make comparisons between solids and plane shapes in concrete and pictorial forms using formal language.",
-        "Identify 2-D shapes as faces of 3-D shapes in pictures, objects or space from different orientations.",
-        "Classify shapes according to their properties/features and give reasons for the classification.",
-        "Create/build 2-D and 3-D shapes.",
-        "Describe 2-D and 3-D shapes found in the natural environment or in pictures.",
-        "Create 3D shapes using 2D shapes from a description given within a real world context.Values",
-        "Show an awareness of the properties of 2-D and 3-D shapes in the environment through explorations of multimedia games, toys, props, puzzles, worksheets and songs.",
-        "Investigate and reason about the results of transforming 2-D shapes using the appropriate vocabulary (flipping, turning) (e.g., Skills12.)",
-        "Identify and describe the position of 2-D and 3-D shapes in relation to another shape, object or space (e.g., Knowledge:)",
-        "Identify 2D shapes on 3D objects (e.g., Skill:)",
-        "Represent and construct 2D shapes and 3D objects.",
-        "Sort 2D shapes and 3D objects based on their attributes and characteristics.",
-        "Sole repeating patterns using/involving 2D shapes and 3D objects.",
-        "Create repeating patterns using/ involving 2D shapes and 3D objects.",
-        "Build composite shapes/structures of 2D and 3D shapes and describe the pattern used (e.g., Value:)",
-        "Choose to use 2D shapes to create 3D models using pictorial and physical representations.",
-        "Learners should be able to:Knowledge1.",
-        "Identify properties of 2D shapes.",
-        "Justify classification of 2D shapes according to attributes.",
-        "Identify similarities and differences between 2D shapes based on attributes such as sides or corners."
+        "Identify and name common 2D shapes: circle, square, rectangle, triangle, hexagon",
+        "Describe the properties of 2D shapes including sides and corners/vertices",
+        "Sort and classify 2D shapes by their attributes",
+        "Draw and create 2D shapes",
+        "Identify 2D shapes in the environment",
+        "Compare and describe similarities and differences between 2D shapes",
+        "Show appreciation for the use of 2D shapes in art and design",
+        "Identify and name common 3D objects: cube, cylinder, cone, sphere, rectangular prism",
+        "Describe the properties of 3D objects including faces, edges, and vertices",
+        "Sort and classify 3D objects by their attributes",
+        "Identify 3D objects in the environment",
+        "Compare and describe similarities and differences between 3D objects",
+        "Match 3D objects to their real-world counterparts",
+        "Show curiosity about 3D shapes in the world around them",
+        "Compare 2D and 3D shapes on the basis of their attributes",
+        "Describe the relative position of objects using positional language",
+        "Describe movements of shapes including slides, flips, and turns",
+        "Use models and materials to create shapes in different positions and orientations",
+        "Volunteer to identify objects in the environment that represent various shapes",
+        "Duplicate composite 2D and 3D shapes",
+        "Design composite 2D representations using basic shapes",
+        "Create composite 3D structures using basic 3D objects",
+        "Make composite representations using concrete materials",
+        "Solve problems involving composite shapes",
+        "Justify the use of particular shapes when creating composite designs",
+        "Identify 2D shapes found in 3D objects through footprints, shadows, and slicing",
+        "Deconstruct 3D objects in order to identify the 2D shapes that form them",
+        "Volunteer to present on the 2D shapes found in 3D objects"
       ],
-      "summary": "Knowledge1. Describe orally and written, 2-D and 3-D shapes and/or objects and space.2. Identify 2-D and 3-D shapes in the environment.3. Explain the differences and similarities between and among 2-D"
+      "summary": "Knowledge1. Describe orally and written, 2-D and 3-D shapes and/or objects and space.2. Identify 2-D and 3-D shapes in the environment.3. Explain the differences and similarities between and among 2-D",
+      "eloGroups": [
+        {
+          "elo": "ELO 1.1: Identifying and describing 2D shapes",
+          "scoRange": [
+            0,
+            6
+          ]
+        },
+        {
+          "elo": "ELO 1.2: Identifying and describing 3D objects",
+          "scoRange": [
+            7,
+            13
+          ]
+        },
+        {
+          "elo": "ELO 2.3: Comparing and describing shapes and movements",
+          "scoRange": [
+            14,
+            18
+          ]
+        },
+        {
+          "elo": "ELO 3.1: Working with composite shapes",
+          "scoRange": [
+            19,
+            24
+          ]
+        },
+        {
+          "elo": "ELO 3.2: Identifying 2D shapes in 3D objects",
+          "scoRange": [
+            25,
+            27
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-mathematics-measurement",
@@ -1657,22 +1838,102 @@
         "liquid"
       ],
       "essentialOutcomes": [
-        "* Identify the standard units of grams (g) for mass and milliliters (mL) for volume. Estimate the volume of liquid in containers using milliliters (mL) as the unit of measurement. Estimate the mass of objects using grams (g) as the unit of measurement. Compare and order different volumes of liquids and masses of objects using concepts such as more than, less than, and equal to when comparing volumes and masses. Use measuring tools, such as graduated cylinders or measuring cups, to measure the volume of liquids accurately in milliliters (mL). Use a balance or scale to measure the mass of objects accurately in grams (g). Record measurements of volumes and masses in",
-        "Data Handling 1.1"
+        "ELO 1.1: Developing an understanding of measurable attributes",
+        "ELO 1.2: Comparing and ordering based on measurable attributes",
+        "ELO 1.3: Developing and applying non-standard units of measure (TIME)",
+        "ELO 1.4: Developing and applying standard units of measurement (TIME and MONEY)",
+        "ELO 2.1: Developing personal referents for measuring attributes",
+        "ELO 2.3: Developing and applying formulae for measuring (MASS and VOLUME)"
       ],
       "specificOutcomes": [
-        "Identify the standard units of grams (g) for mass and milliliters (mL) for volume.",
-        "Estimate the volume of liquid in containers using milliliters (mL) as the unit of measurement.",
-        "Estimate the mass of objects using grams (g) as the unit of measurement.",
-        "Compare and order different volumes of liquids and masses of objects using concepts such as more than, less than, and equal to when comparing volumes and masses.",
-        "Use measuring tools, such as graduated cylinders or measuring cups, to measure the volume of liquids accurately in milliliters (mL).",
-        "Use a balance or scale to measure the mass of objects accurately in grams (g).",
-        "Record measurements of volumes and masses in appropriate units (grams or milliliters) and write them in numerical form.- Solve problems involving estimating and measuring volumes and masses using grams and milliliters.- Create real-life situations, such as measuring ingredients for a recipe or estimating the amount of liquid in a container.",
-        "K: Identify simple topics of collective interest for investigation.Match investigative topics to relevant questions.",
-        "S: Formulate questions that can be answered by gathering information about self, others, and their environment.",
-        "V: Appreciate the need for the use of appropriate questions in data collection."
+        "Explain the concept of linear measurement",
+        "Differentiate between measurable attributes including length, width, height, depth, and distance",
+        "Use appropriate vocabulary for each measurable attribute",
+        "Describe what non-standard units of measure are",
+        "Use non-standard units to measure length",
+        "Compare and order objects using non-standard units",
+        "Choose to use both standard and non-standard units in appropriate contexts",
+        "Estimate and measure length, height, and distance using standard units (cm and m)",
+        "Record and represent measurements",
+        "Use a ruler or tape measure to measure in centimetres and metres",
+        "Identify the starting point of a measuring tool",
+        "Recognise the abbreviations cm and m",
+        "Create real-life scenarios involving measuring",
+        "Identify appropriate units of time including seconds, minutes, hours, and days",
+        "Create a time log",
+        "Compare time using non-standard units",
+        "Use seconds, minutes, and hours to measure and describe duration",
+        "Compare and order durations using the terms shorter, longer, and equal",
+        "Solve simple addition and subtraction problems involving duration",
+        "Use appropriate vocabulary for time",
+        "Use units of time to describe the duration of various events",
+        "Represent and read time on the hour, half past the hour, and quarter past the hour",
+        "Tell time from analog and digital clocks to the nearest five minutes using a.m. and p.m.",
+        "Add a mixed collection of coins whose sum is no more than one dollar (25c, 10c, 5c)",
+        "Solve real-world problems within one dollar using the cent symbol",
+        "Compare lengths using a standard unit",
+        "Solve addition and subtraction problems involving lengths up to 100",
+        "Estimate lengths using centimetres and metres",
+        "Explore and estimate liquid volumes and masses using grams and millilitres",
+        "Measure attributes such as length, weight, and time using standard units",
+        "Estimate measurements and make comparisons",
+        "Use measurement tools to measure and compare attributes",
+        "Use simple formulas to calculate perimeter or find average length",
+        "Identify standard units of mass (grams) and volume (millilitres)",
+        "Estimate volume in millilitres",
+        "Estimate mass in grams",
+        "Compare and order volumes and masses",
+        "Use graduated cylinders and measuring cups to measure volume",
+        "Use a balance or scale to measure mass",
+        "Record measurements of mass and volume",
+        "Solve problems involving estimating and measuring mass and volume",
+        "Create real-life situations involving measurement of mass and volume"
       ],
-      "summary": "* Identify the standard units of grams (g) for mass and milliliters (mL) for volume. Estimate the volume of liquid in containers using milliliters (mL) as the unit of measurement. Estimate the mass of"
+      "summary": "* Identify the standard units of grams (g) for mass and milliliters (mL) for volume. Estimate the volume of liquid in containers using milliliters (mL) as the unit of measurement. Estimate the mass of",
+      "eloGroups": [
+        {
+          "elo": "ELO 1.1: Developing an understanding of measurable attributes",
+          "scoRange": [
+            0,
+            6
+          ]
+        },
+        {
+          "elo": "ELO 1.2: Comparing and ordering based on measurable attributes",
+          "scoRange": [
+            7,
+            12
+          ]
+        },
+        {
+          "elo": "ELO 1.3: Developing and applying non-standard units of measure (TIME)",
+          "scoRange": [
+            13,
+            19
+          ]
+        },
+        {
+          "elo": "ELO 1.4: Developing and applying standard units of measurement (TIME and MONEY)",
+          "scoRange": [
+            20,
+            24
+          ]
+        },
+        {
+          "elo": "ELO 2.1: Developing personal referents for measuring attributes",
+          "scoRange": [
+            25,
+            32
+          ]
+        },
+        {
+          "elo": "ELO 2.3: Developing and applying formulae for measuring (MASS and VOLUME)",
+          "scoRange": [
+            33,
+            41
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-mathematics-number-sense",
@@ -1699,42 +1960,58 @@
         "distinguish"
       ],
       "essentialOutcomes": [
-        "Essential Learning Outcome 1.1 : Whole Number - Saying Number Sequence, Meaningful Counting and Skip Counting",
-        "Knowledge Distinguish between odd and even numbers for groups with up to 20 objects.Identify equations that express an even number as a sum of two equal addends.SkillsWrite an equation to express an even number as",
-        "KnowledgeCompare and order numbers up to 100 in ascending or descending order.Indicate and describe the position of specific",
-        "Knowledge Identify and contrast among the face value, place value, and total value of the digits in any two-digit number. Skills",
-        "KnowledgeRecognize simple fractions as representation of the parts of a whole.1. Identify unit fractions correctly."
+        "ELO 1.4: Place Value - Developing an understanding of place value",
+        "ELO 2.1: Fractions - Developing an understanding of simple fractions",
+        "ELO 2.2: Decimals and Percentages - Introduction to decimals and percentages"
       ],
       "specificOutcomes": [
-        "K: Count by 1s, 2s, 5s and 10s, forward and backward, to 100.Say number sequence by 1s, 2s, 5s and 10s, forward and backward, starting from any point, to 100.",
-        "Read, write and represent whole numbers from 1",
-        "S: Demonstrate different ways of representing numbers from 1",
-        "100. * Skip count orally in 2s, 5s and 10s up to 200. * Use a variety of methods to count and skip count.",
-        "V: Volunteer to count/skip count up to a given number of real-life objects found in the classroom.",
-        "K: Distinguish between odd and even numbers for groups with up to 20 objects.Identify equations that express an even number as a sum of two equal addends.",
-        "S: Write an equation to express an even number as",
-        "Represent two numbers of equal value.",
-        "V: Willingly participate in activities involving odd and even numbers.",
-        "K: Compare and order numbers up to 100 in ascending or descending order.Indicate and describe the position of specific numbers in a sequence by using ordinal numbers up to tenth.",
-        "Identify 2-digit numbers.",
-        "Use vocabulary related to comparing numbers (greater than, less than, equal to).",
-        "Distinguish among the symbols (< , >, and =) used to compare 2-digit numbers.Skills",
-        "Arrange numbers in order of size and give reasons for their arrangement.",
-        "Use relevant vocabulary to orally compare numbers (greater than, less than, equal to).",
-        "Compare pairs of 2-digit numbers using the symbols (<, > and =).",
-        "V: Show willingness to participate in games and other activities involving comparing numbers.Volunteer to share on how to compare pairs of numbers.",
-        "K: Identify and contrast among the face value, place value, and total value of the digits in any two-digit number.",
-        "Represent numbers concretely and pictorially up to ninety-nine (99) as groups of tens and ones.",
-        "Write the place value and total value of any digit in a 2-digit number.",
-        "Round two-digit numbers to the nearest 10Values Willingly participate in games and other activities involving face value, place value, and total value of digits in 2-digit numbers.",
-        "Appreciate the importance of knowing the place value and total value of digits.",
-        "K: Recognize simple fractions as representation of the parts of a whole.",
-        "Identify unit fractions correctly.",
-        "Distinguish between the numerator and the denominator.",
-        "Partition given shapes into parts with equal sections.",
-        "Shade parts of given shapes to represent named unit fractions up to eighths."
+        "Read and write numbers to 100 using concrete objects, pictures, and symbols",
+        "Represent two-digit numbers using tens and ones",
+        "Identify the value of a digit in a two-digit number",
+        "Compare and order two-digit numbers using <, >, and = symbols",
+        "Use a number line to represent and order numbers to 100",
+        "Skip count by 2s, 5s, and 10s to 100",
+        "Identify odd and even numbers to 20",
+        "Solve problems involving place value",
+        "Identify and describe fractions as parts of a whole (halves, thirds, quarters)",
+        "Represent fractions using concrete objects, pictures, and symbols",
+        "Compare fractions with the same denominator",
+        "Describe equal parts of a whole or a set",
+        "Identify fractions in real-life contexts",
+        "Solve simple problems involving fractions",
+        "Show appreciation for equal sharing in everyday situations",
+        "Recognise and write decimal fractions to tenths using concrete materials, pictures and symbols",
+        "Represent decimal fractions on a number line",
+        "Read and write money amounts using the decimal point",
+        "Count and make change using coins and notes",
+        "Solve real-world money problems using addition and subtraction",
+        "Connect decimal fractions to fractions",
+        "Show responsibility when handling money"
       ],
-      "summary": "Essential Learning Outcome 1.1 : Whole Number - Saying Number Sequence, Meaningful Counting and Skip Counting"
+      "summary": "Essential Learning Outcome 1.1 : Whole Number - Saying Number Sequence, Meaningful Counting and Skip Counting",
+      "eloGroups": [
+        {
+          "elo": "ELO 1.4: Place Value - Developing an understanding of place value",
+          "scoRange": [
+            0,
+            7
+          ]
+        },
+        {
+          "elo": "ELO 2.1: Fractions - Developing an understanding of simple fractions",
+          "scoRange": [
+            8,
+            14
+          ]
+        },
+        {
+          "elo": "ELO 2.2: Decimals and Percentages - Introduction to decimals and percentages",
+          "scoRange": [
+            15,
+            21
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-mathematics-operations-with-numbers",
@@ -1761,35 +2038,59 @@
         "explain"
       ],
       "essentialOutcomes": [
-        "Knowledge1. Add up to three two-digit numbers within 100 using a variety of strategies without and with regrouping.2. Subtract two-digit number from two-digit number using a variety of strategies without and with regrouping.3. Mentally demonstrate their ability to add 10's or 100's up to 900 from a given number.4. Identify that addition is the opposite of subtraction.5. Use appropriate vocabulary to explain addition and subtraction strategies.Skills1. Use a variety of strategies and tools to add and subtract two-digit numbers with and without regrouping.2. Use problem solving strategies for up to two step problem involving addition",
-        "Knowledge1. Use addition to find the total number of objects arranged in rectangular arrays with up to 5 rows and up to 5 columns.2. Write an equation to express total as a sum of equal addends.",
-        "Knowledge1. Interpret repeated addition procedures, using terms such as 'sets of', 'times', 'groups of'.2. Use mathematical language such as '4 threes' and '2 groups of 5' to describe equal groups.3. Demonstrate their understanding of the word multiplication and division by correctly solving problems.Skills1. Write a number sentence for a given situation involving multiplication or division.2. Solve a 1-step picture problem involving multiplication and division.3. Work out a multiplication fact by repeated addition."
+        "ELO 1.1: Addition and Subtraction - Developing an understanding of addition and subtraction",
+        "ELO 1.2: Addition and Subtraction - Applying addition and subtraction strategies",
+        "ELO 2.1: Multiplication and Division - Developing an understanding of multiplication and division"
       ],
       "specificOutcomes": [
-        "Add up to three two-digit numbers within 100 using a variety of strategies without and with regrouping.",
-        "Subtract two-digit number from two-digit number using a variety of strategies without and with regrouping.",
-        "Mentally demonstrate their ability to add 10's or 100's up to 900 from a given number.",
-        "Identify that addition is the opposite of subtraction.",
-        "Use appropriate vocabulary to explain addition and subtraction strategies (e.g., Skills1.)",
-        "Use a variety of strategies and tools to add and subtract two-digit numbers with and without regrouping.",
-        "Use problem solving strategies for up to two step problem involving addition",
-        "Use addition to find the total number of objects arranged in rectangular arrays with up to 5 rows and up to 5 columns.",
-        "Write an equation to express total as a sum of equal addends.",
-        "Demonstrate initial multiplication and division knowledge related to sharing, grouping and array.",
-        "Show how multiplication undo division and vice versa.",
-        "Finding a missing quantity given the whole and another known quantity.",
-        "Identify times in their daily lives where they would have to use the multiplication strategy or identify totals using array.",
-        "Interpret repeated addition procedures, using terms such as 'sets of', 'times', 'groups of'.",
-        "Use mathematical language such as '4 threes' and '2 groups of 5' to describe equal groups.",
-        "Demonstrate their understanding of the word multiplication and division by correctly solving problems (e.g., Skills1.)",
-        "Write a number sentence for a given situation involving multiplication or division.",
-        "Solve a 1-step picture problem involving multiplication and division.",
-        "Work out a multiplication fact by repeated addition.",
-        "Make a number story for a given multiplication or division sentence.",
-        "Demonstrate the ability to share objects equally in groups or sets (e.g., Values1.)",
-        "Work cooperatively to place manipulatives in groups to demonstrate repeated addition."
+        "Model addition and subtraction using concrete objects and pictures",
+        "Write number sentences for addition and subtraction",
+        "Recall addition and subtraction facts to 20",
+        "Add and subtract two-digit numbers without regrouping",
+        "Explain the relationship between addition and subtraction",
+        "Use strategies to add and subtract including counting on, counting back, and using doubles",
+        "Solve one-step word problems involving addition and subtraction",
+        "Show confidence when solving addition and subtraction problems",
+        "Add and subtract two-digit numbers with regrouping",
+        "Use mental math strategies for addition and subtraction",
+        "Estimate sums and differences",
+        "Solve two-step word problems involving addition and subtraction",
+        "Check answers using the inverse operation",
+        "Use number lines and hundreds charts as tools for addition and subtraction",
+        "Appreciate the usefulness of addition and subtraction in everyday life",
+        "Describe multiplication as repeated addition",
+        "Model multiplication using arrays and concrete objects",
+        "Write multiplication number sentences",
+        "Describe division as sharing equally or grouping",
+        "Model division using concrete objects and pictures",
+        "Solve simple multiplication and division problems",
+        "Connect multiplication and division as inverse operations",
+        "Show curiosity when exploring multiplication and division patterns"
       ],
-      "summary": "Knowledge1. Add up to three two-digit numbers within 100 using a variety of strategies without and with regrouping.2. Subtract two-digit number from two-digit number using a variety of strategies with"
+      "summary": "Knowledge1. Add up to three two-digit numbers within 100 using a variety of strategies without and with regrouping.2. Subtract two-digit number from two-digit number using a variety of strategies with",
+      "eloGroups": [
+        {
+          "elo": "ELO 1.1: Developing an understanding of addition and subtraction",
+          "scoRange": [
+            0,
+            7
+          ]
+        },
+        {
+          "elo": "ELO 1.2: Applying addition and subtraction strategies",
+          "scoRange": [
+            8,
+            14
+          ]
+        },
+        {
+          "elo": "ELO 2.1: Developing an understanding of multiplication and division",
+          "scoRange": [
+            15,
+            22
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-mathematics-patterns-relationships",
@@ -1816,35 +2117,84 @@
         "simple"
       ],
       "essentialOutcomes": [
-        "Essential Learning Outcome PR 1.1 - Learners will create and extend simple patterns, repeating and growing patterns.",
-        "Patterns and Relationships 1.2",
-        "Variables and Relationships - Writing Expressions and Equations",
-        "Identify when symbols are being used as variables, and describe how they are being used.",
-        "Variables and Relationships - Understanding and representing equivalence."
+        "ELO 1.1: Patterns - Identifying and describing patterns",
+        "ELO 1.2: Patterns - Creating and extending patterns",
+        "ELO 2.1: Relationships - Exploring relationships between numbers",
+        "ELO 2.2: Relationships - Variables and expressions",
+        "ELO 2.3: Relationships - Exploring equality and inequality"
       ],
       "specificOutcomes": [
-        "K: Describe a given pattern.Identify whether given terms form a pattern or not.Make predictions as to what may come next in a given pattern.",
-        "S: Create and extend simple patterns with 3-5 elements.Create patterns resulting from repeating an operation or making a repeated change to an attribute.Copy and extend a repeating pattern (using manipulatives, diagrams, body movements/actions/sounds)Translate simple repeating patterns (E.g., a repeating orientation pattern to a repeating sound pattern, etc.).Copy and extend growing patterns.Recognize patterns as either repeating or growing (e.g., Values:)",
-        "K: patterns in their environment by identifying and describing the pattern observed around them.",
-        "Identify and enjoy patterns in poems, stories, (folk and modern) within their culture.",
-        "K: Determine the rule used to extend a growing and a shrinking pattern.Identify, describe, and create through investigation, growing and shrinking patterns (increasing and decreasing) involving addition and subtraction.",
-        "S: Solve simple patterns involving increasing and decreasing patterns.- Use pattern rules to extend patterns and to make predictions.- Complete patterns where elements are missing.",
-        "V: Demonstrate the ability to obtain a rule for a number pattern by determining the relationship between given numbers.",
-        "K: Demonstrate and explain what equality means using manipulatives and diagrams (0-100).- Record equalities and inequalities symbolically using the correct symbol; Calculate missing quantities to make the equation equivalent.",
-        "S: Model equalities using a variety of concrete representation and record.",
-        "V: Appreciate the need for equating an expression to values.- Accept that an equation is a number sentence.",
-        "K: Identify and interpret simple number sentences using words, diagrams and symbols.Communicate and interpret simple additive and subtractive strategies using words, diagrams and symbols.",
-        "Explain how the arrangement of numbers (commutative property) does not affect the sum/total.",
-        "Recognize that the commutative property does not apply to subtraction.",
-        "S: Represent algebraic expressions using variables and symbols.",
-        "Represent unknown quantities concretely, pictorially and numerically.",
-        "Simplify algebraic expression problems involving an unknown quantity in an addition and subtraction situation.",
-        "V: Demonstrate an appreciation for the use of symbols as a substitute for real life objects* when counting and grouping items up to a hundred.",
-        "K: Represent numbers up to 100 in a variety of ways.Apply the commutative property when add numbers.identifying equivalent monetary values of coins and bills.",
-        "S: Create equivalent sum of money using different coins.",
-        "V: Generalize whole numbers can be decomposed and composed without changing its value."
+        "Identify, describe, and extend repeating patterns using objects, shapes, and numbers",
+        "Create repeating patterns using concrete materials",
+        "Identify the core of a repeating pattern",
+        "Identify and describe growing and shrinking patterns",
+        "Represent patterns using symbols and numbers",
+        "Use patterns to make predictions",
+        "Appreciate the role of patterns in everyday life and nature",
+        "Create and extend number patterns using skip counting",
+        "Identify patterns in addition and subtraction tables",
+        "Describe the rule for a given number pattern",
+        "Translate patterns from one form to another (e.g. shape to number)",
+        "Solve problems involving patterns",
+        "Show creativity when creating and extending patterns",
+        "Describe number relationships using the terms more than, less than, and equal to",
+        "Use symbols <, >, and = to express relationships between numbers",
+        "Identify and describe relationships in addition and subtraction",
+        "Use number patterns to describe relationships",
+        "Solve problems using number relationships",
+        "Appreciate the connections between numbers and real-life situations",
+        "Identify missing values in number sentences using addition and subtraction",
+        "Use symbols or boxes to represent unknown values",
+        "Write and solve simple equations",
+        "Explore simple relationships between quantities using tables",
+        "Describe relationships using mathematical language",
+        "Show persistence when solving problems with unknowns",
+        "Identify whether number sentences are true or false",
+        "Demonstrate the meaning of the equal sign as balance",
+        "Use a balance model to explore equality",
+        "Write equivalent number sentences",
+        "Identify inequalities and express them using symbols",
+        "Solve problems involving equality and inequality",
+        "Appreciate the concept of fairness and balance in mathematics"
       ],
-      "summary": "Essential Learning Outcome  PR 1.1  - Learners will create and extend simple patterns, repeating and growing patterns."
+      "summary": "Essential Learning Outcome  PR 1.1  - Learners will create and extend simple patterns, repeating and growing patterns.",
+      "eloGroups": [
+        {
+          "elo": "ELO 1.1: Identifying and describing patterns",
+          "scoRange": [
+            0,
+            6
+          ]
+        },
+        {
+          "elo": "ELO 1.2: Creating and extending patterns",
+          "scoRange": [
+            7,
+            12
+          ]
+        },
+        {
+          "elo": "ELO 2.1: Exploring relationships between numbers",
+          "scoRange": [
+            13,
+            18
+          ]
+        },
+        {
+          "elo": "ELO 2.2: Variables and expressions",
+          "scoRange": [
+            19,
+            24
+          ]
+        },
+        {
+          "elo": "ELO 2.3: Exploring equality and inequality",
+          "scoRange": [
+            25,
+            31
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-science-earth-systems",
@@ -1866,37 +2216,118 @@
         "volcanolavasoilerupt"
       ],
       "essentialOutcomes": [
-        "KnowledgeDefine the following terms:VolcanoLavaSoilErupt and eruptionEarth EventsQuakeEarthquake"
+        "ELO 1: Use information from several sources to provide evidence that Earth events can occur quickly or slowly.",
+        "ELO 2: Compare multiple solutions designed to slow or prevent wind or water from changing the shape of the land.",
+        "ELO 3: Develop a model to represent the shapes and kinds of land and bodies of water in an area.",
+        "ELO 4: Obtain information to identify where water is found on Earth and that it can be solid or liquid."
       ],
       "specificOutcomes": [
-        "K: Define the following terms:VolcanoLavaSoilErupt and eruptionEarth EventsQuakeEarthquake o ErosionUsing examples, demonstrate an understanding of the difference between fast and slow earth events.Define the term soil erosion, listing types of soil erosion, and ways and means of preventing it (ST-5-ESS-ER-1).Describe an earthquake as a natural occurrence and explain what causes it, (ST-5-LS-ECS-15)* describe formation in simple terms.Identify volcanic activity as a natural process and explain how volcanoes are formed, as well as the impact on the environment. (ST-5-LS-ECS-16) *describe formation in simple terms.",
-        "S: Use new vocabulary to describe your observations.",
-        "Draw pictures that demonstrate you understand features of a volcano.",
-        "Compare and contrast slow and fast earth events.",
-        "Problem solve around preparation to be safe for predictable events.",
-        "Interpret video information and pictures.",
-        "Communicate ideas about observation of erosion.",
-        "With the assistance of the teacher, construct models.",
-        "V: Appreciate the role of natural processes in shaping the earth.* Compassion for those experiencing hardship due to a dangerous earth event.",
-        "If able, assist those that have been victims of an earth event.- Persistence at completing tasks and activities.- Interest/Curiosity",
-        "Find out more about different naturally occurring events and objects on their own.- Respect for Evidence",
-        "Explain and listen to other students' results and explanation.- Collaboration & Cooperation",
-        "Share ideas with others.- Stewardship/Respect for Living Things",
-        "Show sensitivity to living things in the environment.- Apply safety practices during fast earth events such as earthquakes, hurricanes, etc.",
-        "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges.",
-        "Participate actively in classroom discussions.",
-        "K: Define the terms:WeatheringErosionLivestockGrazeDivertingRetaining WallRootsCropsWindbreaksDemonstrate they understand that water and wind can change the shape of the land.",
-        "Distinguish between weathering and erosion.",
-        "Compare ways to prevent wind/water from changing land shape.",
-        "Explain at least two given solutions to slow down or prevent wind or water from changing the shape of the land.",
-        "Distinguish between water and wind erosion.",
-        "Investigate the effects of wave action on the environment (ST-4-LS-ECS-10).",
-        "Plan and execute appropriate research using technological methodology to solve environmental challenges (ST-4-TE-TM-1).",
-        "Observe that the processes of weathering and erosion take a long time but we can readily see their long-term effects.Classify a process as either weathering or erosion.Devise a solution to a problem of weathering/erosion based on careful observation of historical pictures.Hypothesize how diversion of water can be an effective erosion deterrent.Hypothesize how retention walls can be an effective erosion deterrent.Hypothesize how placing plants on hillsides can be an effective erosion deterrent.Hypothesize how adding windbreaks to a field can protect crops.",
-        "Communicate to peers the rationale behind models that explain weathering/erosion problem solutions.",
-        "Construct a model to explain weathering/erosion control."
+        "K1: Define the following terms: Volcano, Lava, Soil, Erupt, Earthquake, Erosion",
+        "K2: Demonstrate understanding of the difference between fast and slow earth events",
+        "K3: Define the term soil erosion and list types and prevention methods",
+        "K4: Describe an earthquake as a natural occurrence and explain what causes it",
+        "K5: Identify volcanic activity as a natural process and explain how volcanoes are formed",
+        "S1: Use new vocabulary to describe observations",
+        "S2: Draw pictures that demonstrate understanding of features of a volcano",
+        "S3: Compare and contrast slow and fast earth events",
+        "S4: Problem solve around preparation to be safe for predictable events",
+        "S5: Interpret video information and pictures",
+        "S6: Communicate ideas about observation of erosion",
+        "S7: With the assistance of the teacher, construct models",
+        "V1: Appreciate the role of natural processes in shaping the earth",
+        "V2: Compassion for those experiencing hardship due to dangerous earth events",
+        "V3: Persistence at completing tasks and activities",
+        "V4: Apply safety practices during fast earth events",
+        "V5: Participate actively in classroom discussions",
+        "K6: Define the terms: Weathering, Erosion, Livestock, Retaining Wall, Windbreaks",
+        "K7: Demonstrate understanding that water and wind can change the shape of the land",
+        "K8: Distinguish between weathering and erosion",
+        "K9: Compare ways to prevent wind/water from changing land shape",
+        "K10: Explain solutions to slow or prevent erosion",
+        "K11: Distinguish between water and wind erosion",
+        "S8: Observe that weathering and erosion take a long time but effects are visible",
+        "S9: Classify a process as either weathering or erosion",
+        "S10: Devise a solution to a problem of weathering/erosion",
+        "S11: Hypothesize how diversion of water can be an effective erosion deterrent",
+        "S12: Hypothesize how retention walls can be an effective erosion deterrent",
+        "S13: Hypothesize how placing plants on hillsides can be an effective erosion deterrent",
+        "S14: Hypothesize how adding windbreaks to a field can protect crops",
+        "S15: Communicate to peers the rationale behind erosion models",
+        "S16: Construct a model to explain weathering/erosion control",
+        "S17: Analyse information from the community to formulate solutions",
+        "V6: Show concern for community problems related to weathering/erosion",
+        "V7: Appreciate the importance of windbreaks and walls in preventing erosion",
+        "V8: Contribute solutions to identified issues of erosion",
+        "V9: Collaborate with others to investigate erosion",
+        "K12: Define landform, continent, ocean, fresh water, salt water, water pollution",
+        "K13: Define and identify locations of different landforms and bodies of water in the Caribbean",
+        "K14: Identify the two major landforms on the earth",
+        "K15: Identify the 7 continents",
+        "K16: Describe at least three means of traveling over landforms",
+        "K17: Compare and define different forms of water",
+        "K18: Provide examples of water pollution",
+        "K19: Give three examples of how technology has resulted in water pollution",
+        "K20: List 5 examples of land pollution",
+        "K21: Explain how the three Rs mitigate the effects of pollution",
+        "S18: Interpret a pie chart",
+        "S19: Classify the Caribbean region's common landforms",
+        "S20: Compile information on regional landforms from several sources",
+        "S21: Use technology (Google Earth) to investigate landforms in the region",
+        "S22: Construct a model depicting the shapes and kinds of land and bodies of water",
+        "S23: Create posters to communicate the need for responsible recycling",
+        "V10: Appreciate that water and land are important resources to be protected",
+        "V11: Collaborate with peers to discuss different landforms in the Caribbean",
+        "V12: Demonstrate respect for the environment by discussing ways to protect landforms",
+        "V13: Demonstrate Stewardship for living things impacted by pollution",
+        "K22: Define conserve, sphere, ocean, sea, solid water, glacier, liquid water, water cycle",
+        "K23: Identify where water can be found on Earth",
+        "K24: Show where water can be found in its different forms (solid, liquid)",
+        "K25: Compare and describe different bodies of water",
+        "K26: Use a globe or map to show that planet Earth has more water than land",
+        "K27: Explain what a water cycle is",
+        "K28: Explain how particles in a solid compare to a liquid and a gas",
+        "S24: Identify bodies of water and land on a map or globe",
+        "S25: Distinguish salt water and fresh water",
+        "S26: Observe and describe physical changes when water freezes, melts, and evaporates",
+        "S27: Classify sources of water on earth as solid, liquid or gas",
+        "S28: Measure the temperature of frozen water, water and boiling water",
+        "S29: Label a diagram of the water cycle",
+        "S30: Debate the importance of water conservation",
+        "V14: Develop appreciation for the importance of water as a natural resource",
+        "V15: Develop deep interest and curiosity in the topic of water",
+        "V16: Use creativity to develop solutions to water-related problems"
       ],
-      "summary": "Learners are expected to:KnowledgeDefine the following terms:VolcanoLavaSoilErupt and eruptionEarth EventsQuakeEarthquake"
+      "summary": "Learners are expected to:KnowledgeDefine the following terms:VolcanoLavaSoilErupt and eruptionEarth EventsQuakeEarthquake",
+      "eloGroups": [
+        {
+          "elo": "ELO 1: Use information from several sources to provide evidence that Earth events can occur quickly or slowly.",
+          "scoRange": [
+            0,
+            16
+          ]
+        },
+        {
+          "elo": "ELO 2: Compare multiple solutions designed to slow or prevent wind or water from changing the shape of the land.",
+          "scoRange": [
+            17,
+            34
+          ]
+        },
+        {
+          "elo": "ELO 3: Develop a model to represent the shapes and kinds of land and bodies of water in an area.",
+          "scoRange": [
+            35,
+            54
+          ]
+        },
+        {
+          "elo": "ELO 4: Obtain information to identify where water is found on Earth and that it can be solid or liquid.",
+          "scoRange": [
+            55,
+            72
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-science-engineering-design",
@@ -1922,35 +2353,90 @@
         "terms"
       ],
       "essentialOutcomes": [
-        "Knowledge* Define the terms: * Technology * Engineering * Problem * Solution * Engineer * Inventions * Mechanical Engineer * Electrical Engineer * Industrial Engineer * Civil Engineer * Design Loop"
+        "ELO 1: Ask questions, make observations, and gather information about a situation people want to change to define a simple problem that can be solved through the development of a new or improved object or tool.",
+        "ELO 2: Develop a simple sketch, drawing, or physical model to illustrate how the shape of an object helps it function as needed to solve a given problem.",
+        "ELO 3: Analyze data from tests of at least two objects designed to solve the same problem to compare the strengths and weaknesses of how each performs."
       ],
       "specificOutcomes": [
-        "K: Define the terms: * Technology * Engineering * Problem * Solution * Engineer * Inventions * Mechanical Engineer * Electrical Engineer * Industrial Engineer * Civil Engineer * Design Loop o Diagonal sideo Rampo Recyclingo Biomedical Engineers- Distinguish technology as a problem-solving human adaptation and engineering as the tangible products (solutions) to that process.- Demonstrate an understanding that engineers plan and design objects and tools that are designed to solve problems faced by people.- Show how people are affected by natural and human-made problems or situations which they want to be changed or solved.Identify natural or human-made problems or situations to be changed or solved, in the home, school and community.Identify possible solutions to the problems based on observation and research (what others have done to solve similar problems).Describe the features of the tool or object that would solve a problem based on scientific information, materials used, and how it would be of benefit to",
-        "Ask students to think about how the design loop was applied to the engineering they saw in the community (e.g., Reviewing the Steps)",
-        "Engineering Design Process",
-        "Use the words in bold below to complete the diagram showing an engineer's design process",
-        "Design Challenge people and the environment.Explain in their own words, the interrelationship between Science and Technology (ST-2-TE-TM-3).Realise that some things are natural and some are human-made (ST-2-TE-NT-1).Match simple gadgets to the use to which they were put (ST-2-TE-TM-2).Identify and appreciate that the gadgets, tools and structures used in their homes and community are made by humans (ST-3-TE-UT-1).",
-        "S: Demonstrate an understanding of a design approach by using the design loop or design steps in a real design challenge.Make predictions about how to solve a real design challenge.Make drawings of proposed solutions to real design challenges.Hypothesize why problem solutions worked or didn't satisfy the design challenge.Develop manual dexterity in building a solution to a real design challenge.",
-        "Demonstrate the ability to explain to people the why, how and benefit of their model design.",
-        "Given problems, be able to design and construct simple gadgets (ST-2-TE-TM-1).",
-        "Evaluate two different gadgets using named criteria (ST-2-TE-TM-4).",
-        "Share information with peers on the nature of technology (St-2-TE-NT-2).",
-        "Formulate problems and do research in development of technological devices (construct models and images) gadgets) (ST-3-TE-TM-1)Attitudes/Values Appreciate the importance of finding solutions to everyday problems and of objects and tools created/ used to solve problems.",
-        "Understanding the importance of problem-solving as a life skill.",
-        "Becoming aware of the viability and importance of careers in engineering and technology.",
-        "Participate actively in classroom discussions, contributing design ideas.",
-        "Collaborating productively in team preparation of design planning and construction of solutions.",
-        "Express the desire to find solutions to the problem identified by asking many questions during the survey to understand the problems faced by people.",
-        "Demonstrate an awareness of the need to care for the environment by recycling materials to construct a tool or object to solve the problem identified.* Show sensitivity and assist their peers who may have learning and physical challenges as they are engaged in the engineering design process.Appreciate the advantages and disadvantages of using devices, tools and structures made by humans (ST-2-TE-UT-1).Scientific and technological activities are usually influenced by the values and beliefs of humans and their societies.",
-        "K: Define the terms:ShapeTechnologyEngineeringProblemsSolutionsDesign BriefPrototypeDisabilityBiomedical engineersBlunt/sharp noseLock/Key",
-        "Controlled experimentDemonstrate an understanding that the shape of an object depends on its function to solve a given problem.Recognize that there are different designs for a roof and that some designs are better for resisting the effects of wind and rain.Identify objects in the school, house and community that have specific shapes based on their functions.Recognize that certain shapes are required in order for a designed object to solve the problem.Recognize that keys are very carefully prepared to exactly fit a lock and that this allows us to have secure homes and communities.- Give examples of how poor design can lead to unsafe use and danger.- Be aware that there are engineers that assist humans with physical challenges and that this is an exciting and rewarding career.- Match simple gadgets to the use to which they are put (ST-2-TE-TM-2).- Identify and appreciate that the gadgets, tools and structures used in their homes and community are made by humans(ST-3-TE-UT-1).",
-        "S: Understand and practice the engineering loop of stating the problem, creating a solution drawing and testing the prototype design. - Investigate how the shape of an object depends on its function to solve a given problem. - Sketch or draw to simply illustrate how the shape of an object depends on its function to solve a given problem. - Communicate effectively to explain their sketches or drawings as to how the shape of an object helps to solve a given problem. - Compare and contrast the shapes of objects with the same/ similar function. - Predicting the shape of an object to solve a given problem; Observe and recognize different shapes such as circles, squares, rectangles, triangles, and more to help solve a problem. - Propose a design for a practical device (window stick)- Construct working models of paper airplanes.- Test models of paper airplanes using a controlled experiment.- Compare and contrast intuitive designs of airplanes with research-informed design.- Infer the suitability of design solutions from drawings.- Use a systematic approach to problem solving.",
-        "Evaluate two different gadgets using named criteria (St-2-TE-TM-4).",
-        "Formulate problems and do research in development of technological devices (construct models and gadgets) (ST-3-TE-TM-1).",
-        "V: Recognize that engineering makes a very important contribution to human's daily life.",
-        "Creation of assistive devices by engineers is a rewarding career.* Engineering is a creative job that involves much problem solving."
+        "K1: Define Technology, Engineering, Problem, Solution, Engineer, Inventions",
+        "K2: Distinguish technology as problem-solving and engineering as tangible products",
+        "K3: Demonstrate understanding that engineers plan and design objects to solve problems",
+        "K4: Show how people are affected by natural and human-made problems",
+        "K5: Identify natural or human-made problems in the home, school and community",
+        "K6: Identify possible solutions to the problems based on observation and research",
+        "K7: Describe the features of a tool or object that would solve a problem",
+        "S1: Demonstrate understanding of a design approach using the design loop",
+        "S2: Make predictions about how to solve a real design challenge",
+        "S3: Make drawings of proposed solutions to real design challenges",
+        "S4: Hypothesize why problem solutions worked or didn't satisfy the design challenge",
+        "S5: Develop manual dexterity in building a solution to a real design challenge",
+        "S6: Construct a device or tool based on the plan to solve the problem",
+        "S7: Predict the possible outcomes/results or benefits of the designed tool",
+        "S8: Demonstrate the ability to explain the why/how and benefit of their model design",
+        "V1: Appreciate the importance of finding solutions to everyday problems",
+        "V2: Understand the importance of problem-solving as a life skill",
+        "V3: Become aware of the viability and importance of careers in engineering and technology",
+        "V4: Participate actively in classroom discussions, contributing design ideas",
+        "V5: Demonstrate awareness of the need to care for the environment by recycling",
+        "K8: Define Shape, Prototype, Disability, Biomedical engineers",
+        "K9: Demonstrate understanding that the shape of an object depends on its function",
+        "K10: Recognize that different designs for a roof resist effects of wind and rain differently",
+        "K11: Identify objects with specific shapes based on their functions",
+        "K12: Recognize that certain shapes are required for designed objects to solve problems",
+        "K13: Give examples of how poor design can lead to unsafe use and danger",
+        "K14: Be aware that biomedical engineers assist humans with physical challenges",
+        "S9: Understand and practice the engineering loop",
+        "S10: Investigate how the shape of an object depends on its function",
+        "S11: Sketch or draw to illustrate how the shape of an object helps solve a problem",
+        "S12: Communicate effectively to explain sketches about shape and function",
+        "S13: Compare and contrast the shapes of objects with the same function",
+        "S14: Predict the shape of an object to solve a given problem",
+        "S15: Construct working models of paper airplanes",
+        "S16: Test models using a controlled experiment",
+        "V6: Recognize that engineering makes an important contribution to daily life",
+        "V7: Appreciate the importance of having an object shaped for its function",
+        "V8: Show concern for safety when manipulating objects during investigation",
+        "V9: Work with others willingly to share ideas and materials",
+        "K15: Define Adhesives, Cardboard, Corrugated, Collapse, Columns, Cylinder, Rebar",
+        "K16: Demonstrate understanding that we can make comparisons by collecting data",
+        "K17: Compare the strengths of different folds of paper",
+        "K18: Show that there are inventions all around us",
+        "K19: Distinguish different shapes of columns",
+        "S17: Observe the results of experiments and make a hypothesis",
+        "S18: Infer that the number of folds has an impact on paper strength",
+        "S19: Measure number of folds and numbers of paper clips",
+        "S20: Construct columns with paper",
+        "S21: Investigate information about inventors",
+        "S22: Analyse experimental data",
+        "V10: Appreciate that humans adapt through problem solving and engineer new inventions",
+        "V11: Demonstrate respect for evidence as they make conclusions",
+        "V12: Collaborate and cooperate as they conduct experiments",
+        "V13: Display sensitivity and offer assistance to peers during practical work"
       ],
-      "summary": "Learners are expected to:Knowledge* Define the terms: * Technology * Engineering * Problem * Solution * Engineer * Inventions * Mechanical Engineer * Electrical Engineer * Industrial Engineer * Civil "
+      "summary": "Learners are expected to:Knowledge* Define the terms: * Technology * Engineering * Problem * Solution * Engineer * Inventions * Mechanical Engineer * Electrical Engineer * Industrial Engineer * Civil ",
+      "eloGroups": [
+        {
+          "elo": "ELO 1: Ask questions, make observations, and gather information to define a simple problem that can be solved through a new or improved object or tool.",
+          "scoRange": [
+            0,
+            19
+          ]
+        },
+        {
+          "elo": "ELO 2: Develop a simple sketch, drawing, or physical model to illustrate how the shape of an object helps it function as needed.",
+          "scoRange": [
+            20,
+            38
+          ]
+        },
+        {
+          "elo": "ELO 3: Analyze data from tests of at least two objects designed to solve the same problem to compare strengths and weaknesses.",
+          "scoRange": [
+            39,
+            52
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-science-interdependent-relationships",
@@ -1977,37 +2463,94 @@
         "stages"
       ],
       "essentialOutcomes": [
-        "Knowledge - Define the terms: - Plant - Optimum - Leaf - Root - Flower - Stem - Seed - Embryo - Seed coat - Cotyledon - Function - Growth - Germination - Stages/Phases"
+        "ELO 1: Plan and conduct an investigation to determine if plants need sunlight and water to grow.",
+        "ELO 2: Develop a simple model that mimics the function of an animal in dispersing seeds or pollinating plants."
       ],
       "specificOutcomes": [
-        "K: Define the terms: - Plant - Optimum - Leaf - Root - Flower - Stem - Seed - Embryo - Seed coat - Cotyledon - Function - Growth - Germination - Stages/Phases",
-        "Controlled Experiment Give examples of parts of plants that we eat.",
-        "Account for why it is important to know how to nurture the growth of plants.",
-        "Use humans as a comparison to plants in terms of fundamental needs (water, nutrition, fresh air).",
-        "Name the different parts of the seed (embryo, seed coat, cotyledon).",
-        "Explain the functions of the different parts of the seed.",
-        "Explain how to design a controlled experiment.",
-        "Explain why a controlled experiment is necessary.",
-        "Account for differences in the rate of growth of plants under varying conditions. * Identify and name different kinds of plants (ST-2-LS-DC-7). * List different uses of leaves in everyday life (ST-2-LS-DC-8). * Identify and appreciate caring for plants and animals and their environment (ST-2-LS-ECS-4). * Outline and explain the process of germination (ST-2-LS-ECS-7). * Identify and name the main conditions necessary for seed growth (ST-2-LS-ECS-8). * Name, draw and label the main external parts of a plant (ST-2-LS-SF-1).",
-        "Describe the process of germination in plants, outlining the factors that are necessary for the process to occur (ST-3-LS-DC-7).",
-        "Describe the physical features of the parts of a plant, relating these features to their functions (ST-3-LS-SF-1).",
-        "S: Compare the growth of plants under different conditions.",
-        "Construct drawings of the different seeds during the germination process.",
-        "Place the sequence of germination stages in the correct order.* Observe the different stages of plant growth.",
-        "Infer that sunlight and water are needed for plants to grow.",
-        "Measure plant growth over a period of time.",
-        "Communicate results of investigations in a variety of ways.",
-        "Predict the effect of sunlight and water on the growth rate of plants.",
-        "Construct simple diagrams and charts to present findings.",
-        "Calculate growth rate of plants under varying conditions.",
-        "Investigate whether sunlight and water are necessary for plant growth.* Graph data on plant growth; Interpret data tables and graphs with data on plant growth.",
-        "V: Be aware that farming is an important means to secure our food and this is a vital industry for our countries.- Appreciate that sunlight and water are conditions necessary for plant growth.- Display Interest/Curiosity for what is needed for plants to grow well.- Develop a positive attitude for engaging in inquiry.- Demonstrate respect for evidence by conducting experiments in a systematic and timely manner.",
-        "Work collaboratively & cooperatively to carry out scientific investigations.",
-        "Show respect for living things by caring plants around.",
-        "Display sensitivity and offer assistance to peers who may have physical or learning challenges when conducting practical and group work.",
-        "Participate actively in classroom discussions."
+        "K1: Give examples of parts of plants that we eat",
+        "K2: Account for why it is important to know how to nurture the growth of plants",
+        "K3: Use humans as a comparison to plants in terms of fundamental needs",
+        "K4: Name the different parts of the seed (embryo, seed coat, cotyledon)",
+        "K5: Explain the functions of the different parts of the seed",
+        "K6: Explain how to design a controlled experiment",
+        "K7: Explain why a controlled experiment is necessary",
+        "K8: Account for differences in the rate of growth of plants under varying conditions",
+        "K9: Identify and name different kinds of plants",
+        "K10: List different uses of leaves in everyday life",
+        "K11: Identify and appreciate caring for plants and animals and their environment",
+        "K12: Outline and explain the process of germination",
+        "K13: Identify and name the main conditions necessary for seed growth",
+        "K14: Name, draw and label the main external parts of a plant",
+        "K15: Describe the process of germination, outlining the factors necessary",
+        "K16: Describe the physical features of plant parts, relating features to functions",
+        "S1: Compare the growth of plants under different conditions",
+        "S2: Construct drawings of the different seeds during the germination process",
+        "S3: Place the sequence of germination stages in the correct order",
+        "S4: Observe the different stages of plant growth",
+        "S5: Infer that sunlight and water are needed for plants to grow",
+        "S6: Measure plant growth over a period of time",
+        "S7: Communicate results of investigations in a variety of ways",
+        "S8: Predict the effect of sunlight and water on the growth rate of plants",
+        "S9: Construct simple diagrams and charts to present findings",
+        "S10: Calculate growth rate of plants under varying conditions",
+        "S11: Investigate whether sunlight and water are necessary for plant growth",
+        "S12: Graph data on plant growth",
+        "S13: Interpret data tables and graphs with data on plant growth",
+        "V1: Be aware that farming is an important means to secure food",
+        "V2: Appreciate that sunlight and water are conditions necessary for plant growth",
+        "V3: Display interest/curiosity for what is needed for plants to grow well",
+        "V4: Develop a positive attitude for engaging in inquiry",
+        "V5: Demonstrate respect for evidence by conducting experiments systematically",
+        "V6: Work collaboratively and cooperatively to carry out scientific investigations",
+        "V7: Show respect for living things by caring for plants",
+        "V8: Display sensitivity and offer assistance to peers with challenges",
+        "V9: Participate actively in classroom discussions",
+        "K17: Define the terms: Dispersal, Pollination, Structure, Function, Diversity, Habitat",
+        "K18: Discuss how fruit trees grow - how seeds make new plants",
+        "K19: Compare different forms of seed dispersal by animals",
+        "K20: Give general characteristics of soil types",
+        "K21: Account for how invasive plant species might impact habitat",
+        "K22: Identify the role of each part of a flower",
+        "K23: Define propagation of a seed",
+        "K24: Outline two natural methods of propagation in flowering plants",
+        "K25: Describe and explain methods of vegetative propagation",
+        "K26: Identify and describe use of seeds as a means of reproducing plants",
+        "K27: Identify and describe the various agents of pollination",
+        "S14: Observe different habitats and record the types of animals and plants",
+        "S15: Infer how animals and plants are adapted for seed dispersal and pollination",
+        "S16: Classify seeds based on the type of dispersal (wind, animal, water)",
+        "S17: Collect data from videos on how seeds are dispersed",
+        "S18: Communicate findings about seed dispersal and pollination",
+        "S19: Construct a design for a model to show dispersal of seeds by animals",
+        "S20: Construct a pictograph using the information gathered",
+        "S21: Interpret data presented in pictographs and charts",
+        "S22: Show finished model that mimics animal dispersal of seeds or pollination",
+        "S23: Identify the parts of the flower that aid in pollination",
+        "S24: Conduct an experiment to determine how much water is absorbed by different soils",
+        "V10: Appreciate the importance of seed dispersal for the survival of plants",
+        "V11: Create solutions to mitigate the impacts of invasive species",
+        "V12: Recognise the role of animals in the survival of plants through seed dispersal",
+        "V13: Work collaboratively with peers to create a model for dispersal",
+        "V14: Display sensitivity and offer assistance to peers during practical work",
+        "V15: Participate actively in classroom discussions"
       ],
-      "summary": "Learners are expected to: Knowledge ● Define the terms: ○ Plant ○ Optimum ○ Leaf ○ Root ○ Flower ○ Stem ○ Seed ○ Embryo ○ Seed coat ○ Cotyledon ○ Function ○ Growth ○ Germination ○ Stages/Phases"
+      "summary": "Learners are expected to: Knowledge ● Define the terms: ○ Plant ○ Optimum ○ Leaf ○ Root ○ Flower ○ Stem ○ Seed ○ Embryo ○ Seed coat ○ Cotyledon ○ Function ○ Growth ○ Germination ○ Stages/Phases",
+      "eloGroups": [
+        {
+          "elo": "ELO 1: Plan and conduct an investigation to determine if plants need sunlight and water to grow.",
+          "scoRange": [
+            0,
+            37
+          ]
+        },
+        {
+          "elo": "ELO 2: Develop a simple model that mimics the function of an animal in dispersing seeds or pollinating plants.",
+          "scoRange": [
+            38,
+            63
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-science-structure-properties-matter",
@@ -2034,37 +2577,107 @@
         "terms"
       ],
       "essentialOutcomes": [
-        "Knowledge- Define the terms: - Matter - Characteristics - Properties - Solid - Liquid - Gas - Materials - Properties - Texture - Hard/Soft - Flexible - Elastic - Rigid - Natural materials - Living"
+        "ELO 1: Plan and conduct an investigation to describe and classify different kinds of materials by their observable properties.",
+        "ELO 2: Analyze data obtained from testing different materials to determine which materials have the properties that are best suited for an intended purpose.",
+        "ELO 3: Make observations to construct an evidence-based account of how an object made of a small set of pieces can be disassembled and made into a new object.",
+        "ELO 4: Construct an argument with evidence that some changes caused by heating or cooling can be reversed and some cannot."
       ],
       "specificOutcomes": [
-        "K: Define the terms: - Matter - Characteristics - Properties - Solid - Liquid - Gas - Materials - Properties - Texture - Hard/Soft - Flexible - Elastic - Rigid - Natural materials - Living",
-        "Manmade materials State that matter is composed of particles.Demonstrate they understand the properties of the states of matter.Demonstrate they understand the properties of the different types of materials (metal, paper, wood, plastic, fabric, etc).Compare solids, liquids and gases based on their properties.Distinguish between an object and the material it is made from.Determine the properties to be observed in the investigations.Distinguish between objects and the materials from which they are made (ST-2-PS-MM-1).Identify different materials such as wood, rubber, metal, plastic and list objects made from each (ST-2-PS-MM-2).Describe giving examples, the properties of solids and liquids (ST-2-PS-MM-5).",
-        "Identify examples of at least two solids and two liquids (ST-2-PS-MM-6).",
-        "Realise that some things are natural and some are human made (ST-2-TE-NT-1).",
-        "List some physical properties of matter (ST-3-PS-MM-1).",
-        "Match, with relevant examples, properties of materials which make them useful for specific purposes (ST-3-PS-MM-4).",
-        "S: Observe the three states of matter Identify the three states of matter and give examples of each.",
-        "Observe different types of materials Identify the properties of different materials.",
-        "Compare different types of materials based on their observable properties.* Compare solids, liquids and gases based on their properties; Classify matter as solids, liquids and gases.- Classify materials based on observable properties.- Classify objects based on the materials they are made from.- Communicate the results from the various investigations to the class and teacher.- Plan investigations to describe and classify different kinds of materials.- Conduct investigations to classify materials by their observable properties.- Collect and analyse data gathered after observing different materials.- Collect and analyse data gathered after observing each state of matter.- Analyze and interpret data obtained from their observations to classify matter and materials.- Investigate the properties of various materials and match the properties to their use (ST-2-PS-MM-3).",
-        "V: Develop curiosity by finding out about objects and materials around them.Appreciate that materials have similar and different properties.Develop inquiry through investigating materials and their properties.Show respect for evidence by using the results from the investigations to make classifications.Safety when conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges.Participate actively in classroom discussions.Show persistence in completing practical activities, especially those that may be challenging.Work collaboratively, cooperatively and respectfully with other members of their group in exploring and investigating different materials.- Show sensitivity and demonstrate helpfulness when working with peers that may have learning or physical challenges as you undertake experimental work together.- Stewardship/Respect for Living Things:Take care not to damage objects (living and non-living things) when they are making observations about materials in the environment.Use materials wisely.- Safety:Wear safety goggles when conducting certain experiments.Be careful not to taste materials unless told to do so by the teacher.Use safety protocols for collecting objects.Wash hands after conducting certain activities, especially when playing with soil or materials collected outside the classroom.- Realise that some things are natural and some are human made (ST-2-TE-NT-1).",
-        "K: Give examples of how different materials (e.g. wood, cloth, plastics, clay, metal, etc) are commonly used.Explain why certain materials are more suitable for specific purposes than others.Demonstrate they understand the importance of testing different materials.Compare the properties of different materials to determine suitability for intended purpose.",
-        "Account for the results obtained from the different tests.",
-        "State which properties of a material allow that material to be well suited for an intended use.",
-        "Use data to suggest reasons for the choice of material.",
-        "Investigate the properties of various materials and match the properties to the uses (ST-2-PS-MM-3).",
-        "Design and construct a simple object using chosen materials (ST-2-PS-MM-4).",
-        "Appreciate the advantages and disadvantages of using devices, tools and structures made by humans (ST-2-TE-UT-1).",
-        "K: that human-made things hold the potential to pollute the atmosphere and disrupt the environment (ST-2-TE-UT-2); Impact of Science and Technology may be positive or negative (ST-3-STSE-2).",
-        "S: Analyse different materials to determine which materials have the properties that are best suited for an intended purpose.- Investigate and compare the hardness, elasticity, absorbency, etc of different materials (wood, plastic, metal, clay, paper etc.).- Plan and conduct different tests on a variety of materials.- Predict the results of tests on different materials.- Interpret data collected from experiments.- Use data obtained from their experiments to select the materials best suited for a particular purpose.- Measure the different materials and products.",
-        "Hypothesize which materials would give the best results when tested for a particular property.",
-        "Construct devices and models to test the suitability of materials.",
-        "Perform calculations using data collected.",
-        "Investigate different materials, their uses and properties.",
-        "Compile/analyze data gathered after conducting various tests on different materials.",
-        "Interpret data obtained from the various tests done on the materials.",
-        "V: Appreciate that the use of an object is related to the material from which it is made."
+        "K1: Define observable properties: colour, texture, hardness, flexibility, transparency, absorbency",
+        "K2: Identify and name common materials (wood, metal, plastic, glass, fabric, rubber, paper)",
+        "K3: Classify materials based on observable properties",
+        "K4: Explain why scientists classify materials",
+        "K5: Describe the difference between natural and man-made materials",
+        "K6: Identify materials that are living or non-living",
+        "K7: Relate the properties of materials to their everyday uses",
+        "S1: Observe and describe properties of different materials using appropriate vocabulary",
+        "S2: Sort and classify materials based on their properties",
+        "S3: Record observations using drawings, charts, and tables",
+        "S4: Communicate findings about material properties to peers",
+        "S5: Compare properties of different materials systematically",
+        "S6: Conduct simple tests to determine observable properties",
+        "S7: Use scientific tools and equipment safely when investigating materials",
+        "V1: Show curiosity about the properties of materials in the environment",
+        "V2: Work collaboratively and cooperatively during investigations",
+        "V3: Respect evidence by recording observations accurately",
+        "V4: Show care when handling materials and scientific equipment",
+        "V5: Participate actively in classroom discussions",
+        "V6: Display sensitivity and offer assistance to peers with physical or learning challenges",
+        "K8: Explain that materials are chosen for specific uses based on their properties",
+        "K9: Identify the properties needed for specific objects",
+        "K10: Describe how different materials can be used for the same purpose",
+        "K11: Explain the relationship between properties of materials and their uses",
+        "K12: Identify properties of materials used in everyday objects",
+        "S8: Test materials for specific properties (strength, absorbency, flexibility, hardness)",
+        "S9: Collect and record data from material tests",
+        "S10: Analyse data to determine the best material for a given purpose",
+        "S11: Compare the properties of different materials and justify selection",
+        "S12: Communicate conclusions from investigations using tables and charts",
+        "S13: Construct simple fair tests to compare material properties",
+        "V7: Appreciate that material selection is important for safety and function",
+        "V8: Demonstrate persistence when testing materials",
+        "V9: Respect evidence when drawing conclusions from data",
+        "V10: Work cooperatively in group investigations",
+        "V11: Show interest in how materials are used in Caribbean communities",
+        "K13: Explain that many objects are made of smaller pieces/parts",
+        "K14: Describe how parts can be assembled and disassembled",
+        "K15: Identify examples of objects that can be taken apart and reassembled",
+        "K16: Explain how the same pieces can be used to make different objects",
+        "S14: Take apart simple objects and identify the component pieces",
+        "S15: Reassemble pieces into the original object or a new object",
+        "S16: Record observations about how objects are constructed",
+        "S17: Compare different objects built from the same set of pieces",
+        "S18: Communicate findings about object construction using drawings",
+        "V12: Show curiosity about how objects are made and how they work",
+        "V13: Demonstrate care when handling materials and objects",
+        "V14: Work cooperatively when building and disassembling objects",
+        "V15: Appreciate that creativity allows for new objects from the same pieces",
+        "K17: Define reversible and irreversible changes",
+        "K18: Give examples of reversible changes caused by heating or cooling",
+        "K19: Give examples of irreversible changes caused by heating",
+        "K20: Explain that temperature causes changes in materials",
+        "K21: Identify the conditions under which reversible and irreversible changes occur",
+        "S19: Observe and describe changes in materials when heated or cooled",
+        "S20: Classify changes as reversible or irreversible based on evidence",
+        "S21: Conduct simple investigations involving heating and cooling",
+        "S22: Record observations and use evidence to support arguments",
+        "S23: Communicate findings about reversible and irreversible changes",
+        "V16: Show curiosity about physical and chemical changes",
+        "V17: Demonstrate safety awareness when working with heat",
+        "V18: Respect evidence when constructing arguments about changes",
+        "V19: Work cooperatively in practical investigations"
       ],
-      "summary": "Learners are expected to:Knowledge● Define the terms: ○ Matter ○ Characteristics ○ Properties ○ Solid ○ Liquid ○ Gas ○ Materials ○ Properties ○ Texture ○ Hard/Soft ○ Flexible ○ Elastic ○ Rigid ○ Natur"
+      "summary": "Learners are expected to:Knowledge● Define the terms: ○ Matter ○ Characteristics ○ Properties ○ Solid ○ Liquid ○ Gas ○ Materials ○ Properties ○ Texture ○ Hard/Soft ○ Flexible ○ Elastic ○ Rigid ○ Natur",
+      "eloGroups": [
+        {
+          "elo": "ELO 1: Plan and conduct an investigation to describe and classify different kinds of materials by their observable properties.",
+          "scoRange": [
+            0,
+            19
+          ]
+        },
+        {
+          "elo": "ELO 2: Analyze data obtained from testing different materials to determine which materials have the properties best suited for an intended purpose.",
+          "scoRange": [
+            20,
+            35
+          ]
+        },
+        {
+          "elo": "ELO 3: Make observations to construct an evidence-based account of how an object made of a small set of pieces can be disassembled and made into a new object.",
+          "scoRange": [
+            36,
+            48
+          ]
+        },
+        {
+          "elo": "ELO 4: Construct an argument with evidence that some changes caused by heating or cooling can be reversed and some cannot.",
+          "scoRange": [
+            49,
+            62
+          ]
+        }
+      ]
     },
     {
       "id": "grade2-social-studies-civic-participation",
@@ -2262,25 +2875,27 @@
         "questions"
       ],
       "essentialOutcomes": [
-        "ELO 1: Understand that our islands are made up of many diverse regions and communities"
+        "ELO 1: Spatial Thinking - Understanding weather and climate patterns in the community"
       ],
       "specificOutcomes": [
-        "K6: Describe weather patterns in your community",
-        "S6: Assess the impact of weather conditions on the community at different times of the year",
-        "V6: Appreciate how the weather affects the environment",
-        "K7: Identify the natural environment as a resource",
-        "S7: Investigate how resources found in the local environment are useful to us",
-        "V7: Value the importance of the local environment and its link to human survival",
-        "K8: Identify ways in which people harm the environment",
-        "S8: Gather information on the ways we harm and protect our environment",
-        "V8: Appreciate each other's role in caring for the environment"
+        "K1: Identify the basic elements of weather (temperature, wind, precipitation)",
+        "K2: Describe how weather affects daily life and activities",
+        "K3: Identify the seasons and their characteristics",
+        "K4: Describe the climate of their country",
+        "S1: Observe and record daily weather conditions",
+        "S2: Use simple weather instruments to measure weather elements",
+        "S3: Compare weather patterns over time",
+        "S4: Create simple weather charts and graphs",
+        "V1: Appreciate the importance of weather in daily life",
+        "V2: Show awareness of how to prepare for different weather conditions",
+        "V3: Demonstrate concern for the environment and climate change"
       ],
       "eloGroups": [
         {
-          "elo": "ELO 1: Understand that our islands are made up of many diverse regions and communities",
+          "elo": "ELO 1: Spatial Thinking - Understanding weather and climate patterns in the community",
           "scoRange": [
             0,
-            8
+            10
           ]
         }
       ],
