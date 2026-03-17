@@ -98,6 +98,38 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
   const highlightTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Draggable divider: right panel width in pixels
+  const [rightPanelWidth, setRightPanelWidth] = useState(320);
+  const isDragging = React.useRef(false);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const handleDividerMouseDown = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDragging.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const newRight = rect.right - ev.clientX;
+      const min = 200;
+      const max = rect.width * 0.5;
+      setRightPanelWidth(Math.max(min, Math.min(max, newRight)));
+    };
+
+    const onMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }, []);
+
   const teacherId = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user')!).username
     : 'default_teacher';
@@ -718,10 +750,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         </div>
       </div>
 
-      {/* Main content: Left tree (75%) + Right progress tree (25%) */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main content: Left tree + draggable divider + Right progress tree */}
+      <div className="flex-1 flex overflow-hidden" ref={containerRef}>
         {/* Left panel - Tree View */}
-        <div className="flex-[3] overflow-y-auto p-6" data-tutorial="tree-view">
+        <div className="flex-1 overflow-y-auto p-6" data-tutorial="tree-view">
           <div className="max-w-5xl mx-auto rounded-xl p-6 widget-glass">
             {treeData.length === 0 ? (
               <div className="text-center py-16">
@@ -737,8 +769,24 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           </div>
         </div>
 
+        {/* Draggable divider */}
+        <div
+          className="flex-shrink-0 relative z-10 group"
+          style={{ width: '6px', cursor: 'col-resize' }}
+          onMouseDown={handleDividerMouseDown}
+        >
+          <div
+            className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px transition-all duration-150 group-hover:w-1 group-active:w-1"
+            style={{ backgroundColor: `${accentColor}30` }}
+          />
+          <div
+            className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            style={{ backgroundColor: `${accentColor}10` }}
+          />
+        </div>
+
         {/* Right panel - Progress Tree */}
-        <div className="flex-1 border-l border-theme overflow-hidden">
+        <div className="flex-shrink-0 overflow-hidden" style={{ width: rightPanelWidth }}>
           <CurriculumSkillTree
             treeData={treeData}
             accentColor={accentColor}
