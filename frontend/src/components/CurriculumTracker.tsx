@@ -47,6 +47,29 @@ import SmartTextArea from './SmartTextArea';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
+import curriculumIndex from '../data/curriculumIndex.json';
+import CurriculumSkillTree from './CurriculumSkillTree';
+
+const curriculumPages = (curriculumIndex as any).indexedPages || [];
+
+interface EloGroup {
+  elo: string;
+  scoRange: [number, number]; // [startIndex, endIndex] inclusive
+}
+
+// Build lookups: topic_id -> eloGroups (structured) or essentialOutcomes (fallback)
+const eloGroupsLookup = new Map<string, EloGroup[]>();
+const eloLookup = new Map<string, string[]>();
+curriculumPages.forEach((page: any) => {
+  if (page.id) {
+    if (page.eloGroups) {
+      eloGroupsLookup.set(page.id, page.eloGroups);
+    }
+    if (page.essentialOutcomes) {
+      eloLookup.set(page.id, page.essentialOutcomes);
+    }
+  }
+});
 
 interface CurriculumTrackerProps {
   tabId: string;
@@ -72,6 +95,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     status: ''
   });
   const [expandedChecklists, setExpandedChecklists] = useState<Set<string>>(new Set());
+  const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
+  const highlightTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const teacherId = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user')!).username
@@ -249,18 +274,36 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     });
   };
 
+  // Optimistically update a milestone in local state without full reload
+  const updateMilestoneLocally = (milestoneId: string, updates: Partial<Milestone>) => {
+    setMilestones(prev => prev.map(m =>
+      m.id === milestoneId ? { ...m, ...updates } : m
+    ));
+  };
+
   const handleUpdateMilestone = async (
     milestoneId: string,
     update: Partial<Milestone>
   ) => {
     try {
+      // When marking as completed, auto-check all checklist items
+      if (update.status === 'completed') {
+        const milestone = milestones.find(m => m.id === milestoneId);
+        if (milestone && milestone.checklist && milestone.checklist.length > 0) {
+          const allChecked = milestone.checklist.map(item => ({ ...item, checked: true }));
+          update = { ...update, checklist: allChecked, checklist_json: JSON.stringify(allChecked) };
+        }
+      }
+      // Optimistic local update
+      updateMilestoneLocally(milestoneId, update as Partial<Milestone>);
       await milestoneApi.updateMilestone(milestoneId, update);
-      await loadMilestones();
       if (selectedMilestone?.id === milestoneId) {
         setSelectedMilestone(null);
       }
     } catch (error) {
       console.error('Failed to update milestone:', error);
+      // Reload on error to restore correct state
+      await loadMilestones();
     }
   };
 
@@ -268,18 +311,20 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     const updatedChecklist = milestone.checklist.map((item, i) =>
       i === index ? { ...item, checked: !item.checked } : item
     );
-    const update: any = {
-      checklist_json: JSON.stringify(updatedChecklist)
-    };
+    const updates: Partial<Milestone> = { checklist: updatedChecklist };
     // Auto-switch to in_progress when first outcome is checked on a not_started milestone
     if (milestone.status === 'not_started' && updatedChecklist.some(c => c.checked)) {
-      update.status = 'in_progress';
+      updates.status = 'in_progress';
     }
+    // Optimistic local update (no reload, no scroll jump)
+    updateMilestoneLocally(milestone.id, updates);
     try {
-      await milestoneApi.updateMilestone(milestone.id, update);
-      await loadMilestones();
+      const apiUpdate: any = { checklist_json: JSON.stringify(updatedChecklist) };
+      if (updates.status) apiUpdate.status = updates.status;
+      await milestoneApi.updateMilestone(milestone.id, apiUpdate);
     } catch (error) {
       console.error('Failed to update checklist:', error);
+      await loadMilestones();
     }
   };
 
@@ -314,6 +359,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     const checklist = milestone.checklist || [];
     const checkedCount = checklist.filter(c => c.checked).length;
     const isChecklistExpanded = expandedChecklists.has(milestone.id);
+    const elos = eloLookup.get(milestone.topic_id) || [];
+    const eloGroups = eloGroupsLookup.get(milestone.topic_id) || [];
 
     return (
       <div
@@ -331,10 +378,10 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       >
         <div className="flex items-center justify-between">
           <div
-            className={`flex items-center space-x-3 flex-1 ${checklist.length > 0 ? 'cursor-pointer' : ''}`}
-            onClick={() => checklist.length > 0 && toggleChecklist(milestone.id)}
+            className={`flex items-center space-x-3 flex-1 ${(checklist.length > 0 || elos.length > 0) ? 'cursor-pointer' : ''}`}
+            onClick={() => (checklist.length > 0 || elos.length > 0) && toggleChecklist(milestone.id)}
           >
-            {checklist.length > 0 ? (
+            {(checklist.length > 0 || elos.length > 0) ? (
               isChecklistExpanded
                 ? <ChevronDown className="w-5 h-5 text-theme-muted flex-shrink-0" />
                 : <ChevronRight className="w-5 h-5 text-theme-muted flex-shrink-0" />
@@ -401,27 +448,112 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           </div>
         </div>
 
-        {/* Expandable checklist */}
-        {isChecklistExpanded && checklist.length > 0 && (
-          <div className="mt-3 ml-8 space-y-1 border-t border-theme pt-3">
-            {checklist.map((item, index) => (
-              <label
-                key={item.key}
-                className="flex items-start space-x-2 py-1 px-2 rounded hover:bg-theme-hover cursor-pointer transition-colors group"
-              >
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() => handleChecklistToggle(milestone, index)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 cursor-pointer"
-                  style={{ accentColor }}
-                />
-                <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
-                  {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
-                  {item.text}
-                </span>
-              </label>
-            ))}
+        {/* Expandable ELO + SCO breakdown */}
+        {isChecklistExpanded && (
+          <div className="mt-3 ml-8 border-t border-theme pt-3 space-y-4">
+            {eloGroups.length > 0 ? (
+              /* Structured view: each ELO with its SCOs */
+              eloGroups.map((group, gi) => {
+                const groupScos = checklist.slice(group.scoRange[0], group.scoRange[1] + 1);
+                const groupChecked = groupScos.filter(s => s.checked).length;
+                return (
+                  <div key={`elo-group-${gi}`} className="space-y-2">
+                    {/* ELO header */}
+                    <div className="flex items-start space-x-2">
+                      <Target className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: accentColor }} />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                            ELO {eloGroups.length > 1 ? gi + 1 : ''}
+                          </span>
+                          <span className="text-xs text-theme-muted">
+                            ({groupChecked}/{groupScos.length} SCOs)
+                          </span>
+                        </div>
+                        <p className="text-sm text-theme-label mt-1 bg-theme-tertiary rounded-lg px-3 py-2">
+                          {group.elo}
+                        </p>
+                      </div>
+                    </div>
+                    {/* SCOs under this ELO */}
+                    <div className="space-y-1 ml-6">
+                      {groupScos.map((item, si) => {
+                        const globalIndex = group.scoRange[0] + si;
+                        return (
+                          <label
+                            key={`sco-${gi}-${si}`}
+                            className="flex items-start space-x-2 py-1 px-2 rounded hover:bg-theme-hover cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={item.checked}
+                              onChange={() => handleChecklistToggle(milestone, globalIndex)}
+                              className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 cursor-pointer"
+                              style={{ accentColor }}
+                            />
+                            <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
+                              {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
+                              {item.text}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              /* Fallback: show ELOs then flat SCO list */
+              <>
+                {elos.length > 0 && (
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Target className="w-4 h-4" style={{ color: accentColor }} />
+                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                        Essential Learning Outcomes
+                      </span>
+                    </div>
+                    <div className="space-y-1 ml-6">
+                      {elos.map((elo, i) => (
+                        <div key={`elo-${i}`} className="text-sm text-theme-label bg-theme-tertiary rounded-lg px-3 py-2">
+                          {elo}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {checklist.length > 0 && (
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <ListChecks className="w-4 h-4" style={{ color: accentColor }} />
+                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                        Specific Curriculum Outcomes ({checkedCount}/{checklist.length})
+                      </span>
+                    </div>
+                    <div className="space-y-1 ml-6">
+                      {checklist.map((item, index) => (
+                        <label
+                          key={`${item.key}-${index}`}
+                          className="flex items-start space-x-2 py-1 px-2 rounded hover:bg-theme-hover cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={item.checked}
+                            onChange={() => handleChecklistToggle(milestone, index)}
+                            className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 cursor-pointer"
+                            style={{ accentColor }}
+                          />
+                          <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
+                            {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
+                            {item.text}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -431,11 +563,17 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const renderNode = (node: MilestoneTreeNode) => {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = (node.children && node.children.length > 0) || (node.milestones && node.milestones.length > 0);
+    const isHighlighted = highlightedNodeId === node.id;
 
     return (
-      <div key={node.id} className="mb-2">
+      <div key={node.id} className="mb-2" data-node-id={node.id}>
         <div
-          className="flex items-center space-x-2 p-3 rounded-lg hover:bg-theme-hover cursor-pointer transition-colors"
+          className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+            isHighlighted
+              ? 'ring-2 shadow-sm'
+              : 'hover:bg-theme-hover'
+          }`}
+          style={isHighlighted ? { ringColor: accentColor, '--tw-ring-color': accentColor, backgroundColor: `${accentColor}10` } as any : {}}
           onClick={() => hasChildren && toggleNode(node.id)}
           data-tutorial={node.type === 'grade' ? 'grade-node' : node.type === 'subject' ? 'subject-node' : 'strand-node'}
         >
@@ -447,7 +585,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 
           <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
 
-          <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? (node.label === 'K' ? 'Kindergarten' : `Grade ${node.label}`) : node.label}</span>
+          <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? (node.label === 'K' ? 'Kindergarten' : `Grade ${node.label}`) : node.type === 'strand' ? node.label.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : node.label}</span>
 
           {node.progress && (
             <div className="flex items-center space-x-2" data-tutorial="node-progress">
@@ -580,20 +718,69 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         </div>
       </div>
 
-      {/* Tree View */}
-      <div className="flex-1 overflow-y-auto p-6" data-tutorial="tree-view">
-        <div className="max-w-6xl mx-auto rounded-xl p-6 widget-glass">
-          {treeData.length === 0 ? (
-            <div className="text-center py-16">
-              <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-theme-muted font-semibold">No milestones found</p>
-              <p className="text-theme-hint text-sm mt-2">Try adjusting your filters</p>
-            </div>
-          ) : (
-            <div className="space-y-2" data-tutorial="curriculum-tree">
-              {treeData.map(renderNode)}
-            </div>
-          )}
+      {/* Main content: Left tree (75%) + Right progress tree (25%) */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left panel - Tree View */}
+        <div className="flex-[3] overflow-y-auto p-6" data-tutorial="tree-view">
+          <div className="max-w-5xl mx-auto rounded-xl p-6 widget-glass">
+            {treeData.length === 0 ? (
+              <div className="text-center py-16">
+                <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-theme-muted font-semibold">No milestones found</p>
+                <p className="text-theme-hint text-sm mt-2">Try adjusting your filters</p>
+              </div>
+            ) : (
+              <div className="space-y-2" data-tutorial="curriculum-tree">
+                {treeData.map(renderNode)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right panel - Progress Tree */}
+        <div className="flex-1 border-l border-theme overflow-hidden">
+          <CurriculumSkillTree
+            treeData={treeData}
+            accentColor={accentColor}
+            onNavigate={(expandIds, highlightId) => {
+              setExpandedNodes(new Set(expandIds));
+              // If a strand was clicked, expand all its milestone checklists
+              if (highlightId?.startsWith('strand-')) {
+                const strandMilestoneIds = new Set<string>();
+                for (const grade of treeData) {
+                  for (const subject of grade.children || []) {
+                    for (const strand of subject.children || []) {
+                      if (strand.id === highlightId && strand.milestones) {
+                        strand.milestones.forEach(m => strandMilestoneIds.add(m.id));
+                      }
+                    }
+                  }
+                }
+                if (strandMilestoneIds.size > 0) {
+                  setExpandedChecklists(prev => {
+                    const next = new Set(prev);
+                    strandMilestoneIds.forEach(id => next.add(id));
+                    return next;
+                  });
+                }
+              }
+              // Set highlight and auto-clear after 2.5s
+              if (highlightId) {
+                setHighlightedNodeId(highlightId);
+                if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+                highlightTimerRef.current = setTimeout(() => setHighlightedNodeId(null), 2500);
+                // Scroll the highlighted node into view after DOM updates
+                requestAnimationFrame(() => {
+                  setTimeout(() => {
+                    const el = document.querySelector(`[data-node-id="${highlightId}"]`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 50);
+                });
+              } else {
+                setHighlightedNodeId(null);
+              }
+            }}
+          />
         </div>
       </div>
 
@@ -674,7 +861,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   <div className="border border-theme-strong rounded-lg max-h-64 overflow-y-auto">
                     {selectedMilestone.checklist.map((item, index) => (
                       <label
-                        key={item.key}
+                        key={`${item.key}-${index}`}
                         className="flex items-start space-x-3 px-4 py-2 hover:bg-theme-hover cursor-pointer transition-colors border-b border-theme last:border-b-0"
                       >
                         <input
