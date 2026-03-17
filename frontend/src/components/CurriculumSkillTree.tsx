@@ -227,13 +227,28 @@ const TreeConnectors: React.FC<{
         zIndex: 0,
         width: '100%',
         height: '100%',
-        opacity: visible ? 1 : 0,
-        transition: 'opacity 0.25s ease',
       }}
     >
-      {paths.map((d, i) => (
-        <path key={i} d={d} fill="none" stroke={accentColor} strokeWidth="2" strokeOpacity={0.3} />
-      ))}
+      {paths.map((d, i) => {
+        // Stagger each line slightly for a spreading effect
+        const delay = i * 0.06;
+        return (
+          <path
+            key={i}
+            d={d}
+            fill="none"
+            stroke={accentColor}
+            strokeWidth="2"
+            strokeOpacity={0.3}
+            strokeDasharray="1000"
+            strokeDashoffset={visible ? '0' : '1000'}
+            style={{
+              transition: `stroke-dashoffset 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, opacity 0.3s ease ${delay}s`,
+              opacity: visible ? 1 : 0,
+            }}
+          />
+        );
+      })}
     </svg>
   );
 };
