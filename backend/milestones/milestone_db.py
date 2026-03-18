@@ -88,10 +88,15 @@ class MilestoneDB:
         logger.info(f"Milestone database initialized at {self.db_path}")
 
     @staticmethod
-    def _extract_key_and_text(outcome: str, index: int) -> tuple:
-        """Extract a stable key and display text from an outcome string.
-        Handles: '1.1 text', 'K1: text', '3-CP-K-1: text', plain text.
+    def _extract_key_and_text(outcome, index: int) -> tuple:
+        """Extract a stable key and display text from an outcome string or dict.
+        Handles: '1.1 text', 'K1: text', '3-CP-K-1: text', plain text,
+        or dict with 'id'/'text' keys.
         """
+        if isinstance(outcome, dict):
+            key = outcome.get('id', str(index))
+            text = outcome.get('text', '').strip()
+            return key, text
         text = outcome.strip()
         if not text:
             return str(index), text
@@ -115,10 +120,13 @@ class MilestoneDB:
 
     @staticmethod
     def _parse_outcomes_to_checklist(specific_outcomes: list) -> str:
-        """Convert specificOutcomes strings into checklist JSON."""
+        """Convert specificOutcomes (strings or dicts) into checklist JSON."""
         checklist = []
         for i, outcome in enumerate(specific_outcomes):
-            if not outcome.strip():
+            if isinstance(outcome, dict):
+                if not outcome.get('text', '').strip():
+                    continue
+            elif not outcome.strip():
                 continue
             key, text = MilestoneDB._extract_key_and_text(outcome, i)
             checklist.append({"key": key, "text": text, "checked": False})
@@ -132,7 +140,10 @@ class MilestoneDB:
 
         checklist = []
         for i, outcome in enumerate(specific_outcomes):
-            if not outcome.strip():
+            if isinstance(outcome, dict):
+                if not outcome.get('text', '').strip():
+                    continue
+            elif not outcome.strip():
                 continue
             key, text = MilestoneDB._extract_key_and_text(outcome, i)
             checklist.append({"key": key, "text": text, "checked": existing_map.get(key, False)})

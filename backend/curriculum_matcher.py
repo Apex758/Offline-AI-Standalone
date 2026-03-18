@@ -231,13 +231,15 @@ class CurriculumMatcher:
 
         eo = page.get('essentialOutcomes', [])
         if eo:
-            lines.append(f"\nEssential Outcome: {eo[0]}")
+            eo_text = eo[0].get('text', '') if isinstance(eo[0], dict) else eo[0]
+            lines.append(f"\nEssential Outcome: {eo_text}")
 
         so = page.get('specificOutcomes', [])
         if so:
             lines.append("\nSpecific Outcomes (students should be able to):")
             for outcome in so:
-                lines.append(f"  - {outcome}")
+                o_text = outcome.get('text', '') if isinstance(outcome, dict) else outcome
+                lines.append(f"  - {o_text}")
 
         return "\n".join(lines)
 
