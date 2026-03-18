@@ -1136,6 +1136,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     strand={formData.strand}
                     useCurriculum={useCurriculum}
                     essentialOutcomes={formData.essentialOutcomes}
+                    specificOutcomes={formData.specificOutcomes}
                   />
                 </div>
 

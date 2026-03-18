@@ -547,6 +547,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                       <Target className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: accentColor }} />
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
+                          {(group as any).eloId && (
+                            <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded" style={{ background: `${accentColor}15`, color: accentColor }}>
+                              {(group as any).eloId}
+                            </span>
+                          )}
                           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
                             ELO {eloGroups.length > 1 ? gi + 1 : ''}
                           </span>
@@ -576,6 +581,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                               style={{ accentColor }}
                             />
                             <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
+                              {item.key && !item.key.match(/^\d/) && (
+                                <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded mr-1" style={{ background: `${accentColor}15`, color: accentColor }}>
+                                  {item.key}
+                                </span>
+                              )}
                               {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
                               {item.text}
                             </span>
@@ -628,6 +638,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                             style={{ accentColor }}
                           />
                           <span className={`text-sm ${item.checked ? 'line-through text-theme-hint' : 'text-theme-label'}`}>
+                            {item.key && !item.key.match(/^\d/) && (
+                              <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded mr-1" style={{ background: `${accentColor}15`, color: accentColor }}>
+                                {item.key}
+                              </span>
+                            )}
                             {item.key.match(/^\d/) && <span className="font-medium mr-1">{item.key}</span>}
                             {item.text}
                           </span>

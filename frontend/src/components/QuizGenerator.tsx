@@ -1332,6 +1332,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         strand={formData.strand}
                         useCurriculum={useCurriculum}
                         essentialOutcomes={formData.essentialOutcomes}
+                        specificOutcomes={formData.specificOutcomes}
                       />
                     </div>
                   </>

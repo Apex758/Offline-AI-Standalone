@@ -1060,6 +1060,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         strand={formData.strand}
                         useCurriculum={useCurriculum}
                         essentialOutcomes={formData.essentialOutcomes}
+                        specificOutcomes={formData.specificOutcomes}
                       />
                     </div>
 

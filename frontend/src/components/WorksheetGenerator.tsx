@@ -1134,6 +1134,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                   strand={formData.strand}
                   useCurriculum={useCurriculum}
                   essentialOutcomes={formData.essentialOutcomes}
+                  specificOutcomes={formData.specificOutcomes}
                   onOpenCurriculum={handleOpenCurriculum}
                 />
               </div>

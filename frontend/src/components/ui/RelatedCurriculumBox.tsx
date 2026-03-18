@@ -24,6 +24,7 @@ interface RelatedCurriculumBoxProps {
   strand: string;
   useCurriculum: boolean;
   essentialOutcomes?: string;
+  specificOutcomes?: string;
   onOpenCurriculum?: (route: string) => void;
   accentColor?: string;
 }
@@ -38,6 +39,7 @@ export default function RelatedCurriculumBox({
   strand,
   useCurriculum,
   essentialOutcomes,
+  specificOutcomes,
   onOpenCurriculum,
   accentColor,
 }: RelatedCurriculumBoxProps) {
@@ -56,6 +58,10 @@ export default function RelatedCurriculumBox({
   const selectedELOs: string[] = essentialOutcomes
     ? essentialOutcomes.split('\n').filter(s => s.trim())
     : [];
+
+  const selectedSCOSet = new Set(
+    specificOutcomes ? specificOutcomes.split('\n').filter(s => s.trim()) : []
+  );
 
   const accent = accentColor || 'var(--text-accent, #6366f1)';
 
@@ -151,7 +157,11 @@ export default function RelatedCurriculumBox({
         {matches.map((ref) => {
           const isExpanded = expanded === ref.id;
           const elos = ref.essentialOutcomes || [];
-          const scos = ref.specificOutcomes || [];
+          const allScos = ref.specificOutcomes || [];
+          // Only show SCOs that the user has selected, or all if none selected
+          const scos = selectedSCOSet.size > 0
+            ? allScos.filter(o => selectedSCOSet.has(getOutcomeText(o)))
+            : allScos;
 
           return (
             <div key={ref.id}>

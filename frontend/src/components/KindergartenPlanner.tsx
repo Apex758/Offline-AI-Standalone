@@ -1273,6 +1273,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                     strand={formData.strand}
                     useCurriculum={useCurriculum}
                     essentialOutcomes={formData.essentialOutcomes}
+                    specificOutcomes={formData.specificOutcomes}
                   />
                 </div>
 

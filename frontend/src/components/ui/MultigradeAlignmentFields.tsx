@@ -9,7 +9,7 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
 };
 
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
-import { getStrands, getELOs, getSCOs } from '../../utils/curriculumHelpers';
+import { getStrands, getELOs, getSCOs, getELOsStructured, getSCOsStructured, type OutcomeEntry } from '../../utils/curriculumHelpers';
 import SmartTextArea from '../SmartTextArea';
 
 interface MultigradeAlignmentFieldsProps {
@@ -103,27 +103,31 @@ export default function MultigradeAlignmentFields({
     new Set(gradeLevels.flatMap(g => getStrands(subject, g)))
   );
 
-  // Get ELOs from ALL grade levels, grouped by grade
-  const elosByGrade: { grade: string; elos: string[] }[] = strand
+  // Get ELOs from ALL grade levels, grouped by grade (structured with IDs)
+  const elosByGrade: { grade: string; elos: OutcomeEntry[] }[] = strand
     ? gradeLevels
-        .map(g => ({ grade: g, elos: getELOs(subject, g, strand) }))
+        .map(g => ({ grade: g, elos: getELOsStructured(subject, g, strand) }))
         .filter(g => g.elos.length > 0)
     : [];
-  const allELOs = elosByGrade.flatMap(g => g.elos);
+  const allELOEntries = elosByGrade.flatMap(g => g.elos);
+  const allELOs = allELOEntries.map(e => e.text);
+  const eloIdMap = new Map(allELOEntries.map(e => [e.text, e.id]));
 
-  // Get SCOs from ALL selected ELOs across ALL grade levels
-  const allSCOs: string[] = [];
+  // Get SCOs from ALL selected ELOs across ALL grade levels (structured with IDs)
+  const allSCOEntries: OutcomeEntry[] = [];
   const seenSCOs = new Set<string>();
   selectedELOs.forEach(elo => {
     gradeLevels.forEach(g => {
-      getSCOs(subject, g, strand, elo).forEach(sco => {
-        if (!seenSCOs.has(sco)) {
-          seenSCOs.add(sco);
-          allSCOs.push(sco);
+      getSCOsStructured(subject, g, strand, elo).forEach(sco => {
+        if (!seenSCOs.has(sco.text)) {
+          seenSCOs.add(sco.text);
+          allSCOEntries.push(sco);
         }
       });
     });
   });
+  const allSCOs = allSCOEntries.map(s => s.text);
+  const scoIdMap = new Map(allSCOEntries.map(s => [s.text, s.id]));
 
   return (
     <div className="space-y-4">
@@ -223,12 +227,13 @@ export default function MultigradeAlignmentFields({
                         >
                           <input
                             type="checkbox"
-                            checked={selectedELOs.includes(elo)}
-                            onChange={() => toggleELO(elo)}
+                            checked={selectedELOs.includes(elo.text)}
+                            onChange={() => toggleELO(elo.text)}
                             className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
                           />
                           <span className="text-sm text-theme-heading">
-                            {elo.length > 120 ? elo.substring(0, 120) + '...' : elo}
+                            {elo.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 mr-1.5">{elo.id}</span>}
+                            {elo.text.length > 120 ? elo.text.substring(0, 120) + '...' : elo.text}
                           </span>
                         </label>
                       ))}
@@ -244,21 +249,25 @@ export default function MultigradeAlignmentFields({
           )}
           {selectedELOs.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
-              {selectedELOs.map((elo, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-indigo-100 text-indigo-800 rounded-full"
-                >
-                  <span className="max-w-[200px] truncate">{elo}</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleELO(elo)}
-                    className="hover:text-indigo-600"
+              {selectedELOs.map((elo, idx) => {
+                const eloId = eloIdMap.get(elo);
+                return (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-full"
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
+                    {eloId && <span className="font-mono font-semibold text-[10px] opacity-80">{eloId}</span>}
+                    <span className="max-w-[200px] truncate">{elo}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleELO(elo)}
+                      className="hover:text-indigo-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
@@ -306,18 +315,21 @@ export default function MultigradeAlignmentFields({
                       {selectedSCOs.length === allSCOs.length ? 'Deselect All' : 'Select All'}
                     </button>
                   </div>
-                  {allSCOs.map((sco, idx) => (
+                  {allSCOEntries.map((sco, idx) => (
                     <label
                       key={idx}
                       className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
                     >
                       <input
                         type="checkbox"
-                        checked={selectedSCOs.includes(sco)}
-                        onChange={() => toggleSCO(sco)}
+                        checked={selectedSCOs.includes(sco.text)}
+                        onChange={() => toggleSCO(sco.text)}
                         className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
                       />
-                      <span className="text-sm text-theme-heading">{sco}</span>
+                      <span className="text-sm text-theme-heading">
+                        {sco.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{sco.id}</span>}
+                        {sco.text}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -330,21 +342,25 @@ export default function MultigradeAlignmentFields({
           )}
           {selectedSCOs.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
-              {selectedSCOs.map((sco, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
-                >
-                  <span className="max-w-[200px] truncate">{sco}</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleSCO(sco)}
-                    className="hover:text-blue-600"
+              {selectedSCOs.map((sco, idx) => {
+                const scoId = scoIdMap.get(sco);
+                return (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full"
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
+                    {scoId && <span className="font-mono font-semibold text-[10px] opacity-80">{scoId}</span>}
+                    <span className="max-w-[200px] truncate">{sco}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleSCO(sco)}
+                      className="hover:text-blue-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>

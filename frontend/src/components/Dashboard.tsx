@@ -531,6 +531,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     // Ensure brain-dump always has a color
     if (!colors['brain-dump']) colors['brain-dump'] = generateColorVariants('#a855f7'); // purple-500
 
+    // Ensure performance-metrics always has a color
+    if (!colors['performance-metrics']) colors['performance-metrics'] = generateColorVariants('#10b981'); // emerald-500
+
     return colors;
   }, [settings.tabColors]);
   

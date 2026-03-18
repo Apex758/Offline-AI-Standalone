@@ -6,7 +6,7 @@ import type { MilestoneTreeNode } from '../types/milestone';
 import curriculumIndex from '../data/curriculumIndex.json';
 
 const currPages = (curriculumIndex as any).indexedPages || [];
-const eloGroupsMap = new Map<string, { elo: string; scoRange: [number, number] }[]>();
+const eloGroupsMap = new Map<string, { elo: string; scoRange: [number, number]; eloId?: string }[]>();
 const prereqMap = new Map<string, string[]>();
 const relatedMap = new Map<string, string[]>();
 const pageInfoMap = new Map<string, { displayName: string; grade: string; subject: string; strand: string }>();
@@ -36,6 +36,7 @@ interface SkillNode {
   topicId?: string;
   prereqCount?: number;
   relatedCount?: number;
+  outcomeId?: string;
 }
 
 /* ── Helpers ── */
@@ -97,6 +98,7 @@ function buildSkillTree(treeData: MilestoneTreeNode[]): SkillNode[] {
               progress: scos.length > 0 ? Math.round((checked / scos.length) * 100) : 0,
               total: scos.length,
               completed: checked,
+              outcomeId: g.eloId || '',
               children: scos.map((sco, si) => ({
                 id: `sco-${m.id}-${gi}-${si}`,
                 label: sco.text,
@@ -110,6 +112,7 @@ function buildSkillTree(treeData: MilestoneTreeNode[]): SkillNode[] {
                 checked: sco.checked,
                 milestoneId: m.id,
                 checklistIndex: g.scoRange[0] + si,
+                outcomeId: sco.key || '',
               })),
             });
           });
@@ -602,12 +605,17 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
                   onClick={() => node.children.length > 0 && zoomIn(i)}
                   style={node.progress === 100 ? { borderColor: `${accentColor}40` } : {}}
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    {node.outcomeId && (
+                      <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded" style={{ background: `${accentColor}15`, color: accentColor }}>
+                        {node.outcomeId}
+                      </span>
+                    )}
                     <span className="font-bold text-[10px]" style={{ color: accentColor }}>
                       {node.shortLabel}
                     </span>
                     <span className="text-[9px] text-theme-hint">
-                      {node.completed}/{node.total} SCOs
+                      ({node.completed}/{node.total} SCOs)
                     </span>
                   </div>
                   <div className="line-clamp-2">{node.label}</div>
@@ -648,7 +656,14 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
                       </svg>
                     )}
                   </div>
-                  <span>{node.label}</span>
+                  <span>
+                    {node.outcomeId && (
+                      <span className="inline-block text-[9px] font-mono font-semibold px-1 py-0.5 rounded mr-1" style={{ background: `${accentColor}15`, color: accentColor }}>
+                        {node.outcomeId}
+                      </span>
+                    )}
+                    {node.label}
+                  </span>
                 </div>
               ))}
             </div>

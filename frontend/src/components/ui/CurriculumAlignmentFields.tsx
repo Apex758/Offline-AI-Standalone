@@ -9,7 +9,7 @@ const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSPropertie
 };
 
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
-import { getStrands, getELOs, getSCOs } from '../../utils/curriculumHelpers';
+import { getStrands, getELOs, getSCOs, getELOsStructured, getSCOsStructured, type OutcomeEntry } from '../../utils/curriculumHelpers';
 import SmartTextArea from '../SmartTextArea';
 
 interface CurriculumAlignmentFieldsProps {
@@ -119,8 +119,8 @@ export default function CurriculumAlignmentFields({
             Essential Learning Outcome <span className="text-red-500">*</span>
           </label>
           {(() => {
-            const elos = getELOs(subject, gradeLevel, strand);
-            return elos.length > 0 ? (
+            const elosStructured = getELOsStructured(subject, gradeLevel, strand);
+            return elosStructured.length > 0 ? (
               <select
                 value={essentialOutcomes}
                 onChange={(e) => {
@@ -131,9 +131,9 @@ export default function CurriculumAlignmentFields({
                 style={ringStyle}
               >
                 <option value="">Select an Essential Learning Outcome</option>
-                {elos.map((elo, idx) => (
-                  <option key={idx} value={elo} title={elo}>
-                    {elo.length > 120 ? elo.substring(0, 120) + '...' : elo}
+                {elosStructured.map((elo, idx) => (
+                  <option key={idx} value={elo.text} title={elo.text}>
+                    {elo.id ? `[${elo.id}] ` : ''}{elo.text.length > 100 ? elo.text.substring(0, 100) + '...' : elo.text}
                   </option>
                 ))}
               </select>
@@ -152,8 +152,10 @@ export default function CurriculumAlignmentFields({
             Specific Curriculum Outcomes <span className="text-red-500">*</span>
           </label>
           {(() => {
-            const scos = getSCOs(subject, gradeLevel, strand, essentialOutcomes);
-            return scos.length > 0 ? (
+            const scosStructured = getSCOsStructured(subject, gradeLevel, strand, essentialOutcomes);
+            const scoTexts = scosStructured.map(s => s.text);
+            const scoIdMap = new Map(scosStructured.map(s => [s.text, s.id]));
+            return scosStructured.length > 0 ? (
               <div className="relative">
                 <button
                   type="button"
@@ -174,34 +176,37 @@ export default function CurriculumAlignmentFields({
                   <div className="absolute z-50 w-full mt-1 border border-theme-strong rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-80 overflow-y-auto">
                     <div className="p-2 border-b border-theme flex justify-between items-center">
                       <span className="text-xs text-theme-muted font-medium">
-                        {selectedSCOs.length} of {scos.length} selected
+                        {selectedSCOs.length} of {scosStructured.length} selected
                       </span>
                       <button
                         type="button"
                         onClick={() => {
-                          if (selectedSCOs.length === scos.length) {
+                          if (selectedSCOs.length === scosStructured.length) {
                             onSCOsChange('');
                           } else {
-                            onSCOsChange(scos.join('\n'));
+                            onSCOsChange(scoTexts.join('\n'));
                           }
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        {selectedSCOs.length === scos.length ? 'Deselect All' : 'Select All'}
+                        {selectedSCOs.length === scosStructured.length ? 'Deselect All' : 'Select All'}
                       </button>
                     </div>
-                    {scos.map((sco, idx) => (
+                    {scosStructured.map((sco, idx) => (
                       <label
                         key={idx}
                         className="flex items-start gap-2 px-3 py-2 hover:bg-theme-secondary cursor-pointer border-b border-theme last:border-b-0"
                       >
                         <input
                           type="checkbox"
-                          checked={selectedSCOs.includes(sco)}
-                          onChange={() => toggleSCO(sco)}
+                          checked={selectedSCOs.includes(sco.text)}
+                          onChange={() => toggleSCO(sco.text)}
                           className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
                         />
-                        <span className="text-sm text-theme-heading">{sco}</span>
+                        <span className="text-sm text-theme-heading">
+                          {sco.id && <span className="inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 mr-1.5">{sco.id}</span>}
+                          {sco.text}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -215,11 +220,14 @@ export default function CurriculumAlignmentFields({
           })()}
           {selectedSCOs.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
-              {selectedSCOs.map((sco, idx) => (
+              {selectedSCOs.map((sco, idx) => {
+                const scoId = scoIdMap?.get(sco);
+                return (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full"
                 >
+                  {scoId && <span className="font-mono font-semibold text-[10px] opacity-80">{scoId}</span>}
                   <span className="max-w-[200px] truncate">{sco}</span>
                   <button
                     type="button"
@@ -229,7 +237,8 @@ export default function CurriculumAlignmentFields({
                     <X className="w-3 h-3" />
                   </button>
                 </span>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
