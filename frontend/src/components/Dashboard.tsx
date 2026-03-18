@@ -33,6 +33,7 @@ import GitMergeIconData from '@hugeicons/core-free-icons/GitMergeIcon';
 import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
+import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -77,6 +78,7 @@ const Merge: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
 const AlertTriangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
 const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
+const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Activity01IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 
@@ -98,6 +100,7 @@ const ImageStudio = React.lazy(() => import('./ImageStudio'));
 const ClassManagement = React.lazy(() => import('./ClassManagement'));
 const SupportReporting = React.lazy(() => import('./SupportReporting'));
 const BrainDump = React.lazy(() => import('./BrainDump'));
+const PerformanceMetrics = React.lazy(() => import('./PerformanceMetrics'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -223,6 +226,13 @@ const tools: Tool[] = [
     group: 'lesson-planners'
   },
   {
+    id: 'performance-metrics',
+    name: 'Performance',
+    icon: 'Speedometer',
+    type: 'performance-metrics',
+    description: 'Model benchmarks and system performance'
+  },
+  {
     id: 'support',
     name: 'Support & Reporting',
     icon: 'HelpCircle',
@@ -283,7 +293,8 @@ const iconMap: { [key: string]: React.ElementType } = {
   Merge,
   HelpCircle,
   AlertTriangle,
-  Brain
+  Brain,
+  Speedometer
 };
 
 const WELCOME_TIPS = [
@@ -417,7 +428,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
@@ -676,6 +687,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [settings.visualStudioEnabled, tabs, activeTabId, closeConnection]);
 
+  // Close Performance Metrics tab when disabled
+  useEffect(() => {
+    if (!settings.performanceMetricsEnabled) {
+      const metricsTabs = tabs.filter(tab => tab.type === 'performance-metrics');
+      if (metricsTabs.length > 0) {
+        const updatedTabs = tabs.filter(tab => tab.type !== 'performance-metrics');
+        setTabs(updatedTabs);
+        const activeTab = tabs.find(t => t.id === activeTabId);
+        if (activeTab && activeTab.type === 'performance-metrics') {
+          setActiveTabId(updatedTabs.length > 0 ? updatedTabs[updatedTabs.length - 1].id : null);
+        }
+      }
+    }
+  }, [settings.performanceMetricsEnabled]);
 
   const migrateLegacySplitTabs = (savedTabs: Tab[]): Tab[] => {
     const splitTabs = savedTabs.filter(t => t.type === 'split' as any);
@@ -733,7 +758,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -1367,6 +1392,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'support':
         return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} initialScreenshot={tab.data?.initialScreenshot || null} />;
+      case 'performance-metrics':
+        return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'brain-dump':
         return (
           <BrainDump
@@ -1507,7 +1534,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, {} as { [key: string]: Tab[] }), [tabs]);
 
   // Group tools by category (static — tools array never changes)
-  const regularTools = useMemo(() => tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support'), []);
+  const regularTools = useMemo(() => tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support' && (t.type !== 'performance-metrics' || settings.performanceMetricsEnabled)), [settings.performanceMetricsEnabled]);
   const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
   const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
   const otherGroupedTools = useMemo(() => tools.filter(t => t.group === 'tools'), []);
@@ -1716,7 +1743,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     {tool.name}
                   </p>
-                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' && tool.type !== 'brain-dump' && count > 0 && (
+                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' && tool.type !== 'brain-dump' && tool.type !== 'performance-metrics' && count > 0 && (
                     <p
                       className="text-xs whitespace-nowrap"
                       style={{ color: 'var(--sidebar-text-muted)' }}

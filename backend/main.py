@@ -48,6 +48,7 @@ from process_pool import submit_task, shutdown_executor
 from llama_inference import run_llama_inference
 from curriculum_matcher import CurriculumMatcher
 from chat_memory import get_chat_memory
+from metrics_service import get_metrics_collector
 sys.stdout.reconfigure(encoding='utf-8')
 
 # Set up logging
@@ -4129,6 +4130,69 @@ async def factory_reset():
         "deleted": deleted,
         "errors": errors
     }
+
+
+# ============================================================================
+# PERFORMANCE METRICS ENDPOINTS
+# ============================================================================
+
+@app.get("/api/metrics/summary")
+async def metrics_summary():
+    """Get aggregated performance summary with system specs."""
+    try:
+        collector = get_metrics_collector()
+        return collector.get_summary()
+    except Exception as e:
+        logger.error(f"Error getting metrics summary: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/metrics/history")
+async def metrics_history(type: str = "text", limit: int = 100, task_type: Optional[str] = None):
+    """Get recent metrics history. type=text|image"""
+    try:
+        collector = get_metrics_collector()
+        if type == "image":
+            return {"metrics": collector.get_image_history(limit=limit)}
+        else:
+            return {"metrics": collector.get_inference_history(limit=limit, task_type=task_type)}
+    except Exception as e:
+        logger.error(f"Error getting metrics history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/metrics/export")
+async def metrics_export():
+    """Export full performance report for documentation."""
+    try:
+        collector = get_metrics_collector()
+        return collector.export_report()
+    except Exception as e:
+        logger.error(f"Error exporting metrics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/metrics/system-specs")
+async def metrics_system_specs():
+    """Get system hardware specs."""
+    try:
+        collector = get_metrics_collector()
+        return collector.get_system_specs()
+    except Exception as e:
+        logger.error(f"Error getting system specs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/metrics/clear")
+async def metrics_clear():
+    """Clear all metrics data."""
+    try:
+        collector = get_metrics_collector()
+        collector.clear_metrics()
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Error clearing metrics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 

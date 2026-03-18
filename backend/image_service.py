@@ -486,7 +486,22 @@ class ImageService:
                 return None
 
             gen_elapsed = time.time() - gen_start
+            gen_elapsed_ms = gen_elapsed * 1000
             logger.info(f"Generation took {gen_elapsed:.1f}s ({num_inference_steps} steps, {width}x{height})")
+
+            # Record metrics
+            try:
+                from metrics_service import get_metrics_collector
+                get_metrics_collector().record_image_generation(
+                    model_name=self.model_key or "unknown",
+                    backend=backend,
+                    width=width,
+                    height=height,
+                    steps=num_inference_steps,
+                    total_time_ms=gen_elapsed_ms,
+                )
+            except Exception as me:
+                logger.debug(f"Metrics recording skipped: {me}")
 
             image = result.images[0]
 

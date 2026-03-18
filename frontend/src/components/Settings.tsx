@@ -385,6 +385,10 @@ const Settings: React.FC<SettingsProps> = () => {
       { type: 'worksheet-generator', label: 'Worksheet Builder', defaultColor: '#8b5cf6' },
       { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
     ] : []),
+    // Performance metrics
+    ...(settings.performanceMetricsEnabled ? [
+      { type: 'performance-metrics', label: 'Performance', defaultColor: '#10b981' },
+    ] : []),
     // Bottom tools
     { type: 'support', label: 'Support & Reporting', defaultColor: '#3b82f6' },
     { type: 'settings', label: 'Settings', defaultColor: '#6b7280' },
@@ -1623,6 +1627,31 @@ const Settings: React.FC<SettingsProps> = () => {
                         type="checkbox"
                         checked={settings.visualStudioEnabled}
                         onChange={(e) => updateSettings({ visualStudioEnabled: e.target.checked })}
+                        className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                    </label>
+                  </CardContent>
+                </Card>
+
+                {/* Performance Metrics */}
+                <Card data-search-section="performance-metrics">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Icon icon={CpuIconData} className="w-4.5 h-4.5 text-theme-secondary" />
+                      Performance Metrics
+                    </CardTitle>
+                    <CardDescription>Track AI model performance, tokens/sec, and system benchmarks</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                      <div>
+                        <p className="text-sm font-medium text-theme-label">Show Performance tab in sidebar</p>
+                        <p className="text-xs text-theme-hint">When enabled, a Performance tab appears in the sidebar to view model benchmarks and system stats.</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={settings.performanceMetricsEnabled}
+                        onChange={(e) => updateSettings({ performanceMetricsEnabled: e.target.checked })}
                         className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
                       />
                     </label>

@@ -3,6 +3,7 @@ import asyncio
 import sys
 import os
 import queue
+import time
 from typing import Optional, Dict, Any
 from llama_cpp import Llama
 
@@ -77,7 +78,9 @@ class LlamaInference:
             prompt = prompt_template if prompt_template else input_data
             if stop is None:
                 stop = ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]
-            
+
+            gen_start = time.perf_counter()
+
             # Run in thread pool (blocking call)
             def blocking_generate():
                 with SilenceOutput():
@@ -89,13 +92,30 @@ class LlamaInference:
                         stop=stop,
                         echo=False,
                     )
-            
+
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(None, blocking_generate)
-            
+
+            gen_end = time.perf_counter()
+            total_time_ms = (gen_end - gen_start) * 1000
+
             generated = response["choices"][0]["text"]
             usage = response.get("usage", {})
-            
+
+            # Record metrics
+            try:
+                from metrics_service import get_metrics_collector
+                get_metrics_collector().record_inference(
+                    model_name=os.path.basename(self.model_path),
+                    task_type=tool_name,
+                    prompt_tokens=usage.get("prompt_tokens", 0),
+                    completion_tokens=usage.get("completion_tokens", 0),
+                    ttft_ms=total_time_ms,  # Non-streaming: TTFT ≈ total time
+                    total_time_ms=total_time_ms,
+                )
+            except Exception as me:
+                logger.debug(f"Metrics recording skipped: {me}")
+
             return {
                 "tool_name": tool_name,
                 "input_summary": input_data[:100] + "..." if len(input_data) > 100 else input_data,
@@ -142,11 +162,16 @@ class LlamaInference:
             prompt = prompt_template if prompt_template else input_data
             if stop is None:
                 stop = ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"]
-            
+
             # ✅ Queue for real-time communication (thread -> async)
             token_queue = queue.Queue(maxsize=100)
             DONE = object()  # Sentinel value
-            
+
+            # Metrics timing
+            gen_start = time.perf_counter()
+            first_token_time = [None]  # Mutable container for thread access
+            token_count = [0]
+
             def stream_in_thread():
                 """Runs in thread - puts tokens in queue AS they're generated."""
                 try:
@@ -162,16 +187,19 @@ class LlamaInference:
                         )
                         for output in stream:
                             token = output["choices"][0]["text"]
+                            if first_token_time[0] is None:
+                                first_token_time[0] = time.perf_counter()
+                            token_count[0] += 1
                             token_queue.put(token)  # Put immediately!
                 except Exception as e:
                     token_queue.put(("ERROR", str(e)))
                 finally:
                     token_queue.put(DONE)  # Signal completion
-            
+
             # ✅ Start streaming in background thread
             loop = asyncio.get_event_loop()
             stream_task = loop.run_in_executor(None, stream_in_thread)
-            
+
             # ✅ Yield tokens as they arrive in queue
             while True:
                 # Get next token (non-blocking with timeout)
@@ -183,25 +211,41 @@ class LlamaInference:
                 except queue.Empty:
                     await asyncio.sleep(0)
                     continue
-                
+
                 # Check if done
                 if item is DONE:
                     break
-                
+
                 # Check for error
                 if isinstance(item, tuple) and item[0] == "ERROR":
                     yield {"token": None, "finished": True, "error": item[1]}
                     return
-                
+
                 # Yield token IMMEDIATELY
                 yield {"token": item, "finished": False}
                 await asyncio.sleep(0)  # Let other tasks run
-            
+
             # All done!
             yield {"token": "", "finished": True}
-            
+
             # Wait for thread to finish
             await stream_task
+
+            # Record metrics after generation completes
+            gen_end = time.perf_counter()
+            total_time_ms = (gen_end - gen_start) * 1000
+            ttft_ms = ((first_token_time[0] - gen_start) * 1000) if first_token_time[0] else 0
+            try:
+                from metrics_service import get_metrics_collector
+                get_metrics_collector().record_inference(
+                    model_name=os.path.basename(self.model_path),
+                    task_type=tool_name,
+                    completion_tokens=token_count[0],
+                    ttft_ms=ttft_ms,
+                    total_time_ms=total_time_ms,
+                )
+            except Exception as me:
+                logger.debug(f"Metrics recording skipped: {me}")
         
         except Exception as e:
             logger.error(f"❌ Streaming error: {e}")

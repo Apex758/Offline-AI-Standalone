@@ -19,6 +19,7 @@ export interface TabColors {
   support: string;
   settings: string;
   'brain-dump': string;
+  'performance-metrics': string;
 }
 
 export interface TutorialState {
@@ -57,6 +58,7 @@ export interface Settings {
   autocorrectEnabled: boolean;
   autoFinishEnabled: boolean;
   dictionaryEnabled: boolean;
+  performanceMetricsEnabled: boolean;
 }
 
 export interface SettingsContextValue {
@@ -89,7 +91,8 @@ export const DEFAULT_SETTINGS: Settings = {
     'class-management': '#f97316',
     'support': '#3b82f6',
     'settings': '#6b7280',
-    'brain-dump': '#a855f7'
+    'brain-dump': '#a855f7',
+    'performance-metrics': '#10b981'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',
@@ -120,6 +123,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autocorrectEnabled: true,
   autoFinishEnabled: false,
   dictionaryEnabled: true,
+  performanceMetricsEnabled: false,
 };
 
 // localStorage key
