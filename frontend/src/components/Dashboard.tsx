@@ -1537,10 +1537,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, {} as { [key: string]: Tab[] }), [tabs]);
 
   // Group tools by category (static — tools array never changes)
-  const regularTools = useMemo(() => tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support' && (t.type !== 'performance-metrics' || settings.performanceMetricsEnabled)), [settings.performanceMetricsEnabled]);
+  const regularTools = useMemo(() => tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support' && t.type !== 'performance-metrics'), []);
   const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
   const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
   const otherGroupedTools = useMemo(() => tools.filter(t => t.group === 'tools'), []);
+  const performanceTool = useMemo(() => tools.find(t => t.type === 'performance-metrics'), []);
   const supportTool = useMemo(() => tools.find(t => t.type === 'support'), []);
   const settingsTool = useMemo(() => tools.find(t => t.type === 'settings'), []);
 
@@ -1712,22 +1713,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                  if (icon && !isActiveToolType && toolColor) {
+                    icon.style.color = toolColor;
+                    icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = isActiveToolType
                     ? ('var(--sidebar-active)')
                     : 'transparent';
+                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                  if (icon && !isActiveToolType) {
+                    icon.style.color = 'var(--sidebar-text-muted)';
+                    icon.style.filter = '';
+                  }
                 }}
               >
                 <Icon
-                  className={`w-5 h-5 flex-shrink-0 ${
+                  className={`w-5 h-5 flex-shrink-0 sidebar-icon ${
                     isActiveToolType ? 'icon-glow' : ''
                   }`}
-                  style={
-                    isActiveToolType && toolColor
-                      ? { color: toolColor }
-                      : { color: 'var(--sidebar-text-muted)' }
-                  }
+                  style={{
+                    color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
+                    transition: 'color 0.25s, filter 0.25s'
+                  }}
                 />
                 <div
                   className="flex-1 text-left overflow-hidden"
@@ -1795,22 +1805,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                  if (icon && !isActiveToolType && toolColor) {
+                    icon.style.color = toolColor;
+                    icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = isActiveToolType
                     ? ('var(--sidebar-active)')
                     : 'transparent';
+                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                  if (icon && !isActiveToolType) {
+                    icon.style.color = 'var(--sidebar-text-muted)';
+                    icon.style.filter = '';
+                  }
                 }}
               >
                 <Icon
-                  className={`w-5 h-5 flex-shrink-0 ${
+                  className={`w-5 h-5 flex-shrink-0 sidebar-icon ${
                     isActiveToolType ? 'icon-glow' : ''
                   }`}
-                  style={
-                    isActiveToolType && toolColor
-                      ? { color: toolColor }
-                      : { color: 'var(--sidebar-text-muted)' }
-                  }
+                  style={{
+                    color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
+                    transition: 'color 0.25s, filter 0.25s'
+                  }}
                 />
                 <div
                   className="flex-1 text-left overflow-hidden"
@@ -1939,22 +1958,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                        if (icon && !isActiveToolType && toolColor) {
+                          icon.style.color = toolColor;
+                          icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = isActiveToolType
                           ? 'var(--sidebar-active)'
                           : 'transparent';
+                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                        if (icon && !isActiveToolType) {
+                          icon.style.color = 'var(--sidebar-text-muted)';
+                          icon.style.filter = '';
+                        }
                       }}
                     >
                       <Icon
-                        className={`w-4 h-4 flex-shrink-0 ${
+                        className={`w-4 h-4 flex-shrink-0 sidebar-icon ${
                           isActiveToolType ? 'icon-glow' : ''
                         }`}
-                        style={
-                          isActiveToolType && toolColor
-                            ? { color: toolColor }
-                            : { color: 'var(--sidebar-text-muted)' }
-                        }
+                        style={{
+                          color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
+                          transition: 'color 0.25s, filter 0.25s'
+                        }}
                       />
                       <div className="flex-1 text-left overflow-hidden">
                         <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
@@ -2072,22 +2100,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                        if (icon && !isActiveToolType && toolColor) {
+                          icon.style.color = toolColor;
+                          icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = isActiveToolType
                           ? 'var(--sidebar-active)'
                           : 'transparent';
+                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                        if (icon && !isActiveToolType) {
+                          icon.style.color = 'var(--sidebar-text-muted)';
+                          icon.style.filter = '';
+                        }
                       }}
                     >
                       <Icon
-                        className={`w-4 h-4 flex-shrink-0 ${
+                        className={`w-4 h-4 flex-shrink-0 sidebar-icon ${
                           isActiveToolType ? 'icon-glow' : ''
                         }`}
-                        style={
-                          isActiveToolType && toolColor
-                            ? { color: toolColor }
-                            : { color: 'var(--sidebar-text-muted)' }
-                        }
+                        style={{
+                          color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
+                          transition: 'color 0.25s, filter 0.25s'
+                        }}
                       />
                       <div className="flex-1 text-left overflow-hidden">
                         <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
@@ -2107,6 +2144,69 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* Glass divider */}
           <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
+
+          {/* Performance Metrics Tool */}
+          {performanceTool && settings.performanceMetricsEnabled && (() => {
+            const PerfIcon = iconMap[performanceTool.icon];
+            const activeTab = tabs.find(t => t.id === activeTabId);
+            const isActiveToolType = activeTab?.type === performanceTool.type;
+            const toolColor = settings.tabColors[performanceTool.type as keyof typeof settings.tabColors] || '#10b981';
+
+            return (
+              <button
+                data-tool-type={performanceTool.type}
+                onClick={() => openTool(performanceTool)}
+                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
+                title={!sidebarOpen ? performanceTool.name : ''}
+                style={{
+                  backgroundColor: isActiveToolType ? 'var(--sidebar-active)' : 'transparent',
+                  transition: 'background-color 0.25s, box-shadow 0.25s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                  if (icon && !isActiveToolType && toolColor) {
+                    icon.style.color = toolColor;
+                    icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isActiveToolType ? 'var(--sidebar-active)' : 'transparent';
+                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                  if (icon && !isActiveToolType) {
+                    icon.style.color = 'var(--sidebar-text-muted)';
+                    icon.style.filter = '';
+                  }
+                }}
+              >
+                <PerfIcon
+                  className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`}
+                  style={{
+                    color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
+                    transition: 'color 0.25s, filter 0.25s'
+                  }}
+                />
+                <div
+                  className="flex-1 text-left overflow-hidden"
+                  style={{
+                    opacity: sidebarOpen ? 1 : 0,
+                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    pointerEvents: sidebarOpen ? 'auto' : 'none'
+                  }}
+                >
+                  <p
+                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                    style={{
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    }}
+                  >
+                    {performanceTool.name}
+                  </p>
+                </div>
+              </button>
+            );
+          })()}
 
           {/* Support & Reporting Tool */}
           {supportTool && (
@@ -2129,14 +2229,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
+                      const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                      if (icon && !isActiveToolType && toolColor) {
+                        icon.style.color = toolColor;
+                        icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
+                      const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
+                      if (icon && !isActiveToolType) {
+                        icon.style.color = 'var(--sidebar-text-muted)';
+                        icon.style.filter = '';
+                      }
                     }}
                   >
                     <SupportIcon
-                      className={`w-5 h-5 flex-shrink-0 ${isActiveToolType ? 'icon-glow' : ''}`}
-                      style={isActiveToolType ? { color: toolColor } : { color: 'var(--sidebar-text-muted)' }}
+                      className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`}
+                      style={{
+                        color: isActiveToolType ? toolColor : 'var(--sidebar-text-muted)',
+                        transition: 'color 0.25s, filter 0.25s'
+                      }}
                     />
                     <div
                       className="flex-1 text-left overflow-hidden"

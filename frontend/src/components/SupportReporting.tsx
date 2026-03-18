@@ -64,6 +64,36 @@ const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 import { useSettings } from '../contexts/SettingsContext';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
+import axios from 'axios';
+
+const METRICS_API = 'http://localhost:8000/api';
+
+async function fetchSystemSnapshot(): Promise<SystemSnapshot | undefined> {
+  try {
+    const [specsRes, liveRes, histRes, modelRes] = await Promise.all([
+      axios.get(`${METRICS_API}/metrics/system-specs`).catch(() => null),
+      axios.get(`${METRICS_API}/metrics/live-stats`).catch(() => null),
+      axios.get(`${METRICS_API}/metrics/history?type=text&limit=5`).catch(() => null),
+      axios.get(`${METRICS_API}/models/active`).catch(() => null),
+    ]);
+
+    return {
+      system_specs: specsRes?.data || {},
+      live: liveRes?.data || {},
+      recent_generations: (histRes?.data?.metrics || []).map((m: any) => ({
+        model_name: m.model_name,
+        task_type: m.task_type,
+        tokens_per_second: m.tokens_per_second,
+        ttft_ms: m.ttft_ms,
+        total_time_ms: m.total_time_ms,
+        timestamp: m.timestamp,
+      })),
+      active_model: modelRes?.data?.modelName || 'unknown',
+    };
+  } catch {
+    return undefined;
+  }
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -80,10 +110,37 @@ interface FAQCategory {
   color: string; description: string; items: FAQItem[];
 }
 
+interface SystemSnapshot {
+  system_specs: {
+    os: string;
+    processor: string;
+    cpu_count_logical: number;
+    ram_total_gb?: number;
+    ram_available_gb?: number;
+  };
+  live: {
+    cpu_percent_system: number;
+    ram_percent: number;
+    ram_used_gb: number;
+    ram_total_gb: number;
+    app_cpu_percent: number;
+    app_ram_mb: number;
+  };
+  recent_generations: {
+    model_name: string;
+    task_type: string;
+    tokens_per_second: number;
+    ttft_ms: number;
+    total_time_ms: number;
+    timestamp: string;
+  }[];
+  active_model: string;
+}
+
 interface Ticket {
   id: string; category: string; subject: string; description: string;
   priority: 'low' | 'medium' | 'high'; status: 'open' | 'in-review' | 'resolved';
-  createdAt: string; screenshot?: string;
+  createdAt: string; screenshot?: string; systemSnapshot?: SystemSnapshot;
 }
 
 // ─── FAQ Data ───────────────────────────────────────────────────────────
@@ -320,12 +377,19 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
   const handleSubmit = async () => {
     if (!subject.trim() || !description.trim()) return;
     setSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    // Fetch system snapshot in parallel with the submit delay
+    const [snapshot] = await Promise.all([
+      fetchSystemSnapshot(),
+      new Promise(resolve => setTimeout(resolve, 800)),
+    ]);
+
     const newTicket: Ticket = {
       id: `TK-${String(tickets.length + 1).padStart(4, '0')}`,
       category, subject: subject.trim(), description: description.trim(),
       priority, status: 'open', createdAt: new Date().toISOString(),
       screenshot: screenshot || undefined,
+      systemSnapshot: snapshot,
     };
     const updatedTickets = [newTicket, ...tickets];
     setTickets(updatedTickets);
@@ -336,6 +400,20 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
       setSubject(''); setDescription(''); setPriority('medium');
       setCategory('bug'); setScreenshot(null); setReportView('list');
     }, 2000);
+  };
+
+  const handleExportTicket = (ticket: Ticket) => {
+    const exportData = {
+      ...ticket,
+      screenshot: ticket.screenshot ? '(screenshot attached as base64)' : undefined,
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${ticket.id}-${new Date(ticket.createdAt).toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const filteredTickets = tickets
@@ -792,10 +870,82 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                       <img src={ticket.screenshot} alt="Ticket screenshot" className="w-full max-h-80 object-contain" style={{ background: 'var(--bg-primary)' }} />
                                     </div>
                                   )}
+
+                                  {/* System Snapshot */}
+                                  {ticket.systemSnapshot && (
+                                    <div className="mt-3 rounded-lg p-3" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-primary)' }}>
+                                      <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>System Diagnostics</p>
+                                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                                        {ticket.systemSnapshot.system_specs?.os && (
+                                          <div>
+                                            <span style={{ color: 'var(--text-muted)' }}>OS: </span>
+                                            <span style={{ color: 'var(--text-primary)' }}>{ticket.systemSnapshot.system_specs.os}</span>
+                                          </div>
+                                        )}
+                                        {ticket.systemSnapshot.system_specs?.processor && (
+                                          <div className="col-span-2 sm:col-span-1">
+                                            <span style={{ color: 'var(--text-muted)' }}>CPU: </span>
+                                            <span style={{ color: 'var(--text-primary)' }}>{ticket.systemSnapshot.system_specs.processor}</span>
+                                          </div>
+                                        )}
+                                        {ticket.systemSnapshot.system_specs?.ram_total_gb && (
+                                          <div>
+                                            <span style={{ color: 'var(--text-muted)' }}>RAM: </span>
+                                            <span style={{ color: 'var(--text-primary)' }}>{ticket.systemSnapshot.system_specs.ram_total_gb} GB</span>
+                                          </div>
+                                        )}
+                                        {ticket.systemSnapshot.live && (
+                                          <>
+                                            <div>
+                                              <span style={{ color: 'var(--text-muted)' }}>CPU Usage: </span>
+                                              <span style={{ color: 'var(--text-primary)' }}>{ticket.systemSnapshot.live.cpu_percent_system?.toFixed(1)}%</span>
+                                            </div>
+                                            <div>
+                                              <span style={{ color: 'var(--text-muted)' }}>RAM Usage: </span>
+                                              <span style={{ color: 'var(--text-primary)' }}>{ticket.systemSnapshot.live.ram_used_gb?.toFixed(1)} / {ticket.systemSnapshot.live.ram_total_gb?.toFixed(1)} GB</span>
+                                            </div>
+                                            <div>
+                                              <span style={{ color: 'var(--text-muted)' }}>App RAM: </span>
+                                              <span style={{ color: 'var(--text-primary)' }}>{(ticket.systemSnapshot.live.app_ram_mb / 1024).toFixed(2)} GB</span>
+                                            </div>
+                                          </>
+                                        )}
+                                        {ticket.systemSnapshot.active_model && (
+                                          <div className="col-span-2 sm:col-span-3">
+                                            <span style={{ color: 'var(--text-muted)' }}>Model: </span>
+                                            <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{ticket.systemSnapshot.active_model}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                      {ticket.systemSnapshot.recent_generations?.length > 0 && (
+                                        <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-primary)' }}>
+                                          <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Recent Performance</p>
+                                          <div className="space-y-1">
+                                            {ticket.systemSnapshot.recent_generations.map((gen, gi) => (
+                                              <div key={gi} className="flex items-center gap-3 text-xs font-mono">
+                                                <span style={{ color: 'var(--text-muted)' }}>{gen.task_type}</span>
+                                                <span style={{ color: '#22c55e' }}>{gen.tokens_per_second} tok/s</span>
+                                                <span style={{ color: 'var(--text-muted)' }}>TTFT {gen.ttft_ms < 1000 ? `${Math.round(gen.ttft_ms)}ms` : `${(gen.ttft_ms / 1000).toFixed(1)}s`}</span>
+                                                <span style={{ color: 'var(--text-muted)' }}>Total {gen.total_time_ms < 1000 ? `${Math.round(gen.total_time_ms)}ms` : `${(gen.total_time_ms / 1000).toFixed(1)}s`}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
                                   <div className="flex items-center gap-4 mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                                     <span>Category: {catInfo?.label}</span>
                                     <span>Priority: {ticket.priority}</span>
                                     <span>Created: {new Date(ticket.createdAt).toLocaleString()}</span>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleExportTicket(ticket); }}
+                                      className="ml-auto flex items-center gap-1 px-2 py-1 rounded-md transition-colors"
+                                      style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-primary)', color: 'var(--text-secondary)' }}
+                                    >
+                                      <FileText className="w-3 h-3" /> Export
+                                    </button>
                                   </div>
                                 </div>
                               )}
