@@ -146,6 +146,36 @@ class MetricsCollector:
             pass
         return self._system_specs
 
+    def get_live_stats(self) -> Dict[str, Any]:
+        """Get real-time system resource usage. Called by polling endpoint."""
+        stats: Dict[str, Any] = {
+            "cpu_percent_system": 0.0,
+            "cpu_percent_per_core": [],
+            "ram_total_gb": 0.0,
+            "ram_used_gb": 0.0,
+            "ram_available_gb": 0.0,
+            "ram_percent": 0.0,
+            "app_cpu_percent": 0.0,
+            "app_ram_mb": 0.0,
+        }
+        try:
+            import psutil
+            # System-wide
+            stats["cpu_percent_system"] = psutil.cpu_percent(interval=None)
+            stats["cpu_percent_per_core"] = psutil.cpu_percent(interval=None, percpu=True)
+            mem = psutil.virtual_memory()
+            stats["ram_total_gb"] = round(mem.total / (1024 ** 3), 2)
+            stats["ram_used_gb"] = round(mem.used / (1024 ** 3), 2)
+            stats["ram_available_gb"] = round(mem.available / (1024 ** 3), 2)
+            stats["ram_percent"] = mem.percent
+            # App process
+            proc = psutil.Process(os.getpid())
+            stats["app_cpu_percent"] = proc.cpu_percent(interval=None)
+            stats["app_ram_mb"] = round(proc.memory_info().rss / (1024 * 1024), 2)
+        except ImportError:
+            pass
+        return stats
+
     def _get_resource_snapshot(self) -> Dict[str, float]:
         """Quick CPU + RAM snapshot."""
         snapshot = {"cpu_percent": 0.0, "ram_usage_mb": 0.0}

@@ -4183,6 +4183,17 @@ async def metrics_system_specs():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/metrics/live-stats")
+async def metrics_live_stats():
+    """Get real-time CPU and RAM usage (system-wide + app process)."""
+    try:
+        collector = get_metrics_collector()
+        return collector.get_live_stats()
+    except Exception as e:
+        logger.error(f"Error getting live stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.delete("/api/metrics/clear")
 async def metrics_clear():
     """Clear all metrics data."""

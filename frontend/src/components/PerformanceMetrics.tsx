@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
@@ -8,9 +8,13 @@ import ComputerIconData from '@hugeicons/core-free-icons/ComputerIcon';
 import ImageIconData from '@hugeicons/core-free-icons/Image01Icon';
 import TextIconData from '@hugeicons/core-free-icons/TextIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { useContainerSize } from '../hooks/useContainerSize';
 import axios from 'axios';
 
 const API = 'http://localhost:8000/api';
+const POLL_INTERVAL = 2500;
+const MAX_HISTORY = 30;
 
 interface TextSummary {
   model_name: string;
@@ -70,6 +74,25 @@ interface InferenceMetric {
   ram_usage_mb: number;
 }
 
+interface LiveStats {
+  cpu_percent_system: number;
+  cpu_percent_per_core: number[];
+  ram_total_gb: number;
+  ram_used_gb: number;
+  ram_available_gb: number;
+  ram_percent: number;
+  app_cpu_percent: number;
+  app_ram_mb: number;
+}
+
+interface LiveSnapshot {
+  time: string;
+  systemCpu: number;
+  systemRam: number;
+  appCpu: number;
+  appRamGb: number;
+}
+
 interface Props {
   tabId: string;
   savedData?: any;
@@ -90,11 +113,149 @@ function formatTime(iso: string): string {
   return d.toLocaleString();
 }
 
+// ── Area Graph Card ──────────────────────────────────────────────────────────
+
+const GRAPH_SERIES: { key: keyof LiveSnapshot; name: string; color: string }[] = [
+  { key: 'systemCpu', name: 'System CPU', color: '#3b82f6' },
+  { key: 'appCpu',    name: 'App CPU',    color: '#f59e0b' },
+];
+
+const RAM_SERIES: { key: keyof LiveSnapshot; name: string; color: string }[] = [
+  { key: 'systemRam', name: 'System RAM %', color: '#8b5cf6' },
+  { key: 'appRamGb',  name: 'App RAM (GB)', color: '#ec4899' },
+];
+
+const LiveAreaChart: React.FC<{
+  data: LiveSnapshot[];
+  series: { key: keyof LiveSnapshot; name: string; color: string }[];
+  title: string;
+  yDomain?: [number, number];
+  yFormatter?: (v: number) => string;
+}> = ({ data, series, title, yDomain = [0, 100], yFormatter }) => {
+  const { ref: containerRef, width: chartWidth } = useContainerSize();
+  const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+
+  const toggleSeries = (key: string) =>
+    setHiddenSeries(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div
+        className="rounded-xl p-3"
+        style={{
+          backgroundColor: 'var(--dash-card-bg, var(--color-bg-surface))',
+          border: '1px solid var(--dash-border, var(--color-border))',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+          minWidth: 140,
+        }}
+      >
+        <p className="font-semibold mb-2 text-xs text-theme-muted">{label}</p>
+        {payload.map((entry: any, i: number) => (
+          <div key={i} className="flex items-center gap-2 text-xs mb-1">
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color, flexShrink: 0, display: 'inline-block' }} />
+            <span className="text-theme-muted">{entry.name}</span>
+            <span className="font-semibold ml-auto text-theme-primary">
+              {yFormatter ? yFormatter(entry.value) : `${entry.value.toFixed(1)}%`}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="rounded-xl border border-theme-border bg-theme-surface p-5 flex flex-col">
+      <h3 className="font-semibold text-theme-primary mb-3">{title}</h3>
+      <div ref={containerRef} style={{ width: '100%', height: 200 }}>
+        {chartWidth > 0 && (
+          <AreaChart width={chartWidth} height={200} data={data} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
+            <defs>
+              {series.map(s => (
+                <linearGradient key={s.key} id={`live-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={s.color} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={s.color} stopOpacity={0.04} />
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border, rgba(128,128,128,0.15))" vertical={false} />
+            <XAxis
+              dataKey="time"
+              tick={{ fontSize: 10, fill: 'var(--dash-axis-tick, #888)' }}
+              axisLine={false}
+              tickLine={false}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              domain={yDomain}
+              tick={{ fontSize: 10, fill: 'var(--dash-axis-tick, #888)' }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={yFormatter}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            {series.map(s => (
+              <Area
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.name}
+                stroke={s.color}
+                strokeWidth={2}
+                fill={`url(#live-${s.key})`}
+                dot={false}
+                activeDot={{ r: 4, fill: s.color, strokeWidth: 0 }}
+                connectNulls
+                hide={hiddenSeries.has(s.key)}
+              />
+            ))}
+          </AreaChart>
+        )}
+      </div>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+        {series.map(s => {
+          const hidden = hiddenSeries.has(s.key);
+          return (
+            <button
+              key={s.key}
+              onClick={() => toggleSeries(s.key)}
+              className="flex items-center gap-1.5 transition-opacity"
+              style={{ opacity: hidden ? 0.35 : 1, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+            >
+              <span style={{
+                width: 10, height: 10, borderRadius: '50%',
+                background: hidden ? '#666' : s.color,
+                flexShrink: 0, display: 'inline-block',
+              }} />
+              <span style={{
+                fontSize: 12,
+                color: hidden ? '#888' : undefined,
+                textDecoration: hidden ? 'line-through' : 'none',
+              }} className="text-theme-muted">
+                {s.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ── Main Component ───────────────────────────────────────────────────────────
+
 const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
   const [summary, setSummary] = useState<MetricsSummary | null>(null);
   const [history, setHistory] = useState<InferenceMetric[]>([]);
+  const [liveStats, setLiveStats] = useState<LiveStats | null>(null);
+  const [liveHistory, setLiveHistory] = useState<LiveSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -112,9 +273,42 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
     }
   }, []);
 
+  const fetchLiveStats = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/metrics/live-stats`);
+      const stats: LiveStats = res.data;
+      setLiveStats(stats);
+
+      const now = new Date();
+      const timeLabel = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      const cores = stats.cpu_percent_per_core?.length || 1;
+
+      setLiveHistory(prev => {
+        const next = [...prev, {
+          time: timeLabel,
+          systemCpu: stats.cpu_percent_system,
+          systemRam: stats.ram_percent,
+          appCpu: Math.min(100, stats.app_cpu_percent / cores),
+          appRamGb: parseFloat((stats.app_ram_mb / 1024).toFixed(2)),
+        }];
+        return next.length > MAX_HISTORY ? next.slice(-MAX_HISTORY) : next;
+      });
+    } catch {
+      // Silently ignore
+    }
+  }, []);
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchLiveStats();
+  }, [fetchData, fetchLiveStats]);
+
+  useEffect(() => {
+    pollRef.current = setInterval(fetchLiveStats, POLL_INTERVAL);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [fetchLiveStats]);
 
   const handleExport = async () => {
     try {
@@ -150,6 +344,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
   }
 
   const specs = summary?.system_specs;
+  const maxRamGb = liveStats?.ram_total_gb || 16;
 
   return (
     <div className="h-full overflow-y-auto p-6 space-y-6">
@@ -211,25 +406,52 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
               <div className="text-theme-muted">RAM</div>
               <div className="text-theme-primary font-medium">
                 {specs.ram_total_gb ? `${specs.ram_total_gb} GB total` : 'N/A'}
-                {specs.ram_available_gb ? ` (${specs.ram_available_gb} GB free)` : ''}
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Live Resource Monitor — Area Graphs */}
+      {liveHistory.length > 1 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <h2 className="font-semibold text-theme-primary">Live Resource Monitor</h2>
+            <span className="text-xs text-theme-muted ml-auto">Updates every {POLL_INTERVAL / 1000}s</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <LiveAreaChart
+              data={liveHistory}
+              series={GRAPH_SERIES}
+              title="CPU Usage (%)"
+              yDomain={[0, 100]}
+            />
+            <LiveAreaChart
+              data={liveHistory}
+              series={RAM_SERIES}
+              title="RAM Usage"
+              yDomain={[0, Math.ceil(maxRamGb)]}
+              yFormatter={(v) => `${v}`}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Current values */}
+      {liveStats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <LiveStatCard label="System CPU" value={`${liveStats.cpu_percent_system.toFixed(1)}%`} color="#3b82f6" />
+          <LiveStatCard label="System RAM" value={`${liveStats.ram_used_gb.toFixed(1)} / ${liveStats.ram_total_gb.toFixed(1)} GB`} color="#8b5cf6" />
+          <LiveStatCard label="App CPU" value={`${(liveStats.app_cpu_percent / (specs?.cpu_count_logical || 1)).toFixed(1)}%`} color="#f59e0b" />
+          <LiveStatCard label="App RAM" value={`${(liveStats.app_ram_mb / 1024).toFixed(2)} GB`} color="#ec4899" />
+        </div>
+      )}
+
       {/* Stats Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          label="Text Generations"
-          value={summary?.total_text_generations ?? 0}
-          icon={TextIconData}
-        />
-        <StatCard
-          label="Image Generations"
-          value={summary?.total_image_generations ?? 0}
-          icon={ImageIconData}
-        />
+        <StatCard label="Text Generations" value={summary?.total_text_generations ?? 0} icon={TextIconData} />
+        <StatCard label="Image Generations" value={summary?.total_image_generations ?? 0} icon={ImageIconData} />
         <StatCard
           label="Avg Tokens/sec"
           value={
@@ -276,7 +498,6 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
 
       {activeTab === 'overview' ? (
         <div className="space-y-6">
-          {/* Text Generation Summary */}
           {summary?.text_summary && summary.text_summary.length > 0 && (
             <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
               <div className="flex items-center gap-2 mb-4">
@@ -318,7 +539,6 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
             </div>
           )}
 
-          {/* Image Generation Summary */}
           {summary?.image_summary && summary.image_summary.length > 0 && (
             <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
               <div className="flex items-center gap-2 mb-4">
@@ -358,19 +578,17 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
             </div>
           )}
 
-          {/* Empty State */}
           {(!summary?.text_summary?.length && !summary?.image_summary?.length) && (
             <div className="rounded-xl border border-theme-border bg-theme-surface p-12 text-center">
               <Icon icon={Activity01IconData} size={48} className="text-theme-muted mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-theme-primary mb-2">No metrics recorded yet</h3>
               <p className="text-theme-muted text-sm">
-                Start using PEARL AI to generate content. Performance data will appear here automatically.
+                Start generating content. Performance data will appear here automatically.
               </p>
             </div>
           )}
         </div>
       ) : (
-        /* History Tab */
         <div className="rounded-xl border border-theme-border bg-theme-surface p-5">
           <h2 className="font-semibold text-theme-primary mb-4">Recent Generations</h2>
           {history.length === 0 ? (
@@ -420,6 +638,16 @@ const StatCard: React.FC<{ label: string; value: string | number; icon: any }> =
       <span className="text-xs text-theme-muted">{label}</span>
     </div>
     <div className="text-2xl font-bold text-theme-primary">{value}</div>
+  </div>
+);
+
+const LiveStatCard: React.FC<{ label: string; value: string; color: string }> = ({ label, value, color }) => (
+  <div className="rounded-xl border border-theme-border bg-theme-surface p-4">
+    <div className="flex items-center gap-2 mb-2">
+      <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: color, display: 'inline-block' }} />
+      <span className="text-xs text-theme-muted">{label}</span>
+    </div>
+    <div className="text-lg font-bold font-mono text-theme-primary">{value}</div>
   </div>
 );
 
