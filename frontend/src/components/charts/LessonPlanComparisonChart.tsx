@@ -1,5 +1,6 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import { useContainerSize } from '../../hooks/useContainerSize';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
 
@@ -19,6 +20,7 @@ interface LessonPlanComparisonChartProps {
 }
 
 const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ data }) => {
+  const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
   // Natural color palette
   const colorMap: { [key: string]: string } = {
     'Standard': '#1D362D',
@@ -63,8 +65,9 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+      <div ref={chartContainerRef} style={{ width: '100%', height: 250 }}>
+        {chartWidth > 0 && (
+        <BarChart width={chartWidth} height={250} data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E8EAE3" />
           <XAxis
             dataKey="type"
@@ -82,7 +85,8 @@ const LessonPlanComparisonChart: React.FC<LessonPlanComparisonChartProps> = ({ d
             ))}
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+        )}
+      </div>
 
       {/* Summary */}
       <div className="mt-4 pt-4" style={{ borderTop: '1px solid #E8EAE3' }}>

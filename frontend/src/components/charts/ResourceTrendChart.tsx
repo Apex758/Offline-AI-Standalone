@@ -9,7 +9,8 @@ const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperti
 };
 
 const TrendingUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ChartIncreaseIconData} {...p} />;
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { useContainerSize } from '../../hooks/useContainerSize';
 import { format, parseISO } from 'date-fns';
 import type { ResourceTrendData, Timeframe } from '../../types/analytics';
 
@@ -34,6 +35,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
   timeframe,
   tabColors = {}
 }) => {
+  const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
   const toggleSeries = (key: string) =>
@@ -91,8 +93,9 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
       </div>
 
       {/* Stacked Area Chart */}
-      <ResponsiveContainer width="100%" height={340}>
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
+      <div ref={chartContainerRef} style={{ width: '100%', height: 340 }}>
+        {chartWidth > 0 && (
+        <AreaChart width={chartWidth} height={340} data={data} margin={{ top: 8, right: 8, left: 0, bottom: 5 }}>
           <defs>
             {SERIES.map((s) => {
               const color = getColor(s.toolType);
@@ -146,7 +149,8 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
             );
           })}
         </AreaChart>
-      </ResponsiveContainer>
+        )}
+      </div>
 
       {/* Toggleable Legend */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 px-1">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from 'recharts';
+import { RadialBarChart, RadialBar, Tooltip } from 'recharts';
+import { useContainerSize } from '../../hooks/useContainerSize';
 import { HugeiconsIcon } from '@hugeicons/react';
 import BarChartIconData from '@hugeicons/core-free-icons/BarChartIcon';
 
@@ -29,6 +30,7 @@ const resourceToToolType: { [key: string]: string } = {
 };
 
 const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ data, tabColors = {} }) => {
+  const { ref: chartContainerRef, width: chartWidth } = useContainerSize();
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
 
   const toggleItem = (name: string) =>
@@ -93,9 +95,11 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
       {/* Chart + Legend */}
       <div className="flex gap-0 items-center flex-1 min-h-0">
         {/* Radial Bar Chart */}
-        <div className="flex-1">
-          <ResponsiveContainer width="100%" height={380}>
+        <div className="flex-1" ref={chartContainerRef} style={{ minHeight: 380 }}>
+          {chartWidth > 0 && (
             <RadialBarChart
+              width={chartWidth}
+              height={380}
               cx="50%"
               cy="50%"
               innerRadius={28}
@@ -112,7 +116,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({ d
               />
               <Tooltip content={<CustomTooltip />} />
             </RadialBarChart>
-          </ResponsiveContainer>
+          )}
         </div>
 
         {/* Toggleable Legend */}

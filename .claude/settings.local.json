@@ -23,7 +23,8 @@
       "Read(//c/Users/LG/Desktop/Projects/Offline AI Standalone/**)",
       "Bash(done)",
       "Bash(where magick:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
