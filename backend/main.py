@@ -51,6 +51,34 @@ from chat_memory import get_chat_memory
 from metrics_service import get_metrics_collector
 sys.stdout.reconfigure(encoding='utf-8')
 
+# ── Ring-buffer log handler (captures recent logs for support tickets) ──
+class _RingBufferHandler(logging.Handler):
+    """Keeps the last N log records in memory for support diagnostics."""
+    def __init__(self, capacity: int = 200):
+        super().__init__()
+        from collections import deque
+        self._buffer: "deque[dict]" = deque(maxlen=capacity)
+
+    def emit(self, record: logging.LogRecord):
+        try:
+            self._buffer.append({
+                "ts": self.format(record).split(" ")[0] if False else
+                      datetime.utcnow().isoformat(timespec="milliseconds"),
+                "level": record.levelname,
+                "logger": record.name,
+                "msg": record.getMessage()[:500],  # cap long messages
+            })
+        except Exception:
+            pass
+
+    def recent(self, limit: int = 100) -> list:
+        items = list(self._buffer)
+        return items[-limit:]
+
+_log_ring = _RingBufferHandler(capacity=200)
+_log_ring.setLevel(logging.DEBUG)
+logging.root.addHandler(_log_ring)
+
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -4206,6 +4234,15 @@ async def metrics_clear():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/logs/recent")
+async def logs_recent(limit: int = 100):
+    """Return recent backend log entries for support ticket diagnostics."""
+    try:
+        entries = _log_ring.recent(min(limit, 200))
+        return {"logs": entries}
+    except Exception as e:
+        logger.error(f"Error fetching logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 

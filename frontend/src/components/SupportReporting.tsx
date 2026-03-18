@@ -67,14 +67,55 @@ import SmartInput from './SmartInput';
 import axios from 'axios';
 
 const METRICS_API = 'http://localhost:8000/api';
+const TICKETS_STORAGE_KEY = 'olh_support_tickets';
+
+// ── Frontend console log ring buffer ──
+const _frontendLogBuffer: { ts: string; level: string; msg: string }[] = [];
+const _MAX_FRONTEND_LOGS = 100;
+const _origConsole = { log: console.log, warn: console.warn, error: console.error };
+
+function _captureFrontendLog(level: string, args: any[]) {
+  const msg = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').slice(0, 300);
+  _frontendLogBuffer.push({ ts: new Date().toISOString(), level, msg });
+  if (_frontendLogBuffer.length > _MAX_FRONTEND_LOGS) _frontendLogBuffer.shift();
+}
+
+// Patch once on module load
+if (!(console as any).__olhPatched) {
+  console.log = (...args) => { _captureFrontendLog('INFO', args); _origConsole.log(...args); };
+  console.warn = (...args) => { _captureFrontendLog('WARN', args); _origConsole.warn(...args); };
+  console.error = (...args) => { _captureFrontendLog('ERROR', args); _origConsole.error(...args); };
+  (console as any).__olhPatched = true;
+}
+
+function loadTicketsFromStorage(): Ticket[] {
+  try {
+    const raw = localStorage.getItem(TICKETS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveTicketsToStorage(tickets: Ticket[]) {
+  try {
+    // Try saving with full screenshots first
+    localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
+  } catch {
+    // If quota exceeded, strip screenshots and retry
+    try {
+      const slim = tickets.map(t => ({ ...t, screenshot: undefined }));
+      localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(slim));
+    } catch { /* still too big — ignore */ }
+  }
+}
 
 async function fetchSystemSnapshot(): Promise<SystemSnapshot | undefined> {
   try {
-    const [specsRes, liveRes, histRes, modelRes] = await Promise.all([
+    const [specsRes, liveRes, histRes, modelRes, logsRes] = await Promise.all([
       axios.get(`${METRICS_API}/metrics/system-specs`).catch(() => null),
       axios.get(`${METRICS_API}/metrics/live-stats`).catch(() => null),
       axios.get(`${METRICS_API}/metrics/history?type=text&limit=5`).catch(() => null),
       axios.get(`${METRICS_API}/models/active`).catch(() => null),
+      axios.get(`${METRICS_API}/logs/recent?limit=50`).catch(() => null),
     ]);
 
     return {
@@ -89,6 +130,8 @@ async function fetchSystemSnapshot(): Promise<SystemSnapshot | undefined> {
         timestamp: m.timestamp,
       })),
       active_model: modelRes?.data?.modelName || 'unknown',
+      backend_logs: logsRes?.data?.logs || [],
+      frontend_logs: [..._frontendLogBuffer].slice(-50),
     };
   } catch {
     return undefined;
@@ -135,12 +178,15 @@ interface SystemSnapshot {
     timestamp: string;
   }[];
   active_model: string;
+  backend_logs?: { ts: string; level: string; logger: string; msg: string }[];
+  frontend_logs?: { ts: string; level: string; msg: string }[];
 }
 
 interface Ticket {
   id: string; category: string; subject: string; description: string;
   priority: 'low' | 'medium' | 'high'; status: 'open' | 'in-review' | 'resolved';
   createdAt: string; screenshot?: string; systemSnapshot?: SystemSnapshot;
+  sent?: boolean;
 }
 
 // ─── FAQ Data ───────────────────────────────────────────────────────────
@@ -284,7 +330,11 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
 
   // ── Reporting state ──
   const [reportView, setReportView] = useState<'list' | 'create'>(savedData?.reportView || 'list');
-  const [tickets, setTickets] = useState<Ticket[]>(savedData?.tickets || []);
+  const [tickets, setTickets] = useState<Ticket[]>(() => {
+    // Prefer savedData (tab state) but fall back to localStorage for persistence
+    if (savedData?.tickets?.length) return savedData.tickets;
+    return loadTicketsFromStorage();
+  });
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -307,6 +357,11 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
       setDescription('(Screenshot attached — please describe what you see or what went wrong)');
     }
   }, [initialScreenshot]);
+
+  // Persist tickets to localStorage so they survive tab close/reopen
+  useEffect(() => {
+    if (tickets.length > 0) saveTicketsToStorage(tickets);
+  }, [tickets]);
 
   // Persist state via useEffect instead of during render
   const persistTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -855,6 +910,9 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                       <StatusIcon className="w-2.5 h-2.5" />{statusInfo.label}
                                     </span>
                                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ background: `${prioInfo?.color}18`, color: prioInfo?.color }}>{ticket.priority}</span>
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ background: ticket.sent ? 'rgba(16,185,129,0.12)' : 'rgba(148,163,184,0.15)', color: ticket.sent ? '#10b981' : '#94a3b8' }}>
+                                      {ticket.sent ? 'Sent' : 'Local'}
+                                    </span>
                                     {ticket.screenshot && <Image className="w-3 h-3" style={{ color: 'var(--text-muted)' }} />}
                                   </div>
                                   <p className="text-sm font-medium mt-0.5 truncate" style={{ color: 'var(--text-primary)' }}>{ticket.subject}</p>
@@ -932,6 +990,37 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                           </div>
                                         </div>
                                       )}
+
+                                      {/* Backend Logs */}
+                                      {ticket.systemSnapshot.backend_logs && ticket.systemSnapshot.backend_logs.length > 0 && (
+                                        <details className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-primary)' }}>
+                                          <summary className="text-[10px] font-semibold uppercase tracking-wider cursor-pointer select-none" style={{ color: 'var(--text-muted)' }}>
+                                            Backend Logs ({ticket.systemSnapshot.backend_logs.length})
+                                          </summary>
+                                          <pre
+                                            className="mt-2 p-3 rounded-lg text-[10px] font-mono overflow-x-auto max-h-48 overflow-y-auto leading-relaxed"
+                                            style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-primary)' }}
+                                          >{ticket.systemSnapshot.backend_logs.map(l =>
+                                            `[${l.ts}] ${l.level.padEnd(5)} ${l.logger}: ${l.msg}`
+                                          ).join('\n')}</pre>
+                                        </details>
+                                      )}
+
+                                      {/* Frontend Logs */}
+                                      {ticket.systemSnapshot.frontend_logs && ticket.systemSnapshot.frontend_logs.length > 0 && (
+                                        <details className="mt-2 pt-2" style={{ borderTop: '1px solid var(--border-primary)' }}>
+                                          <summary className="text-[10px] font-semibold uppercase tracking-wider cursor-pointer select-none" style={{ color: 'var(--text-muted)' }}>
+                                            Frontend Logs ({ticket.systemSnapshot.frontend_logs.length})
+                                          </summary>
+                                          <pre
+                                            className="mt-2 p-3 rounded-lg text-[10px] font-mono overflow-x-auto max-h-48 overflow-y-auto leading-relaxed"
+                                            style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-primary)' }}
+                                          >{ticket.systemSnapshot.frontend_logs.map(l =>
+                                            `[${l.ts}] ${l.level.padEnd(5)} ${l.msg}`
+                                          ).join('\n')}</pre>
+                                        </details>
+                                      )}
+
                                     </div>
                                   )}
 
