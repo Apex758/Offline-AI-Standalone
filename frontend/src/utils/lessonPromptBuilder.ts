@@ -9,8 +9,8 @@ interface CurriculumReference {
   strand: string;
   route: string;
   keywords: string[];
-  essentialOutcomes: string[];
-  specificOutcomes: string[];
+  essentialOutcomes: (string | { id: string; text: string })[];
+  specificOutcomes: (string | { id: string; text: string; eloRef?: string })[];
 }
 
 const GRADE_SPECS = BASE_GRADE_SPECS;
@@ -38,7 +38,8 @@ ${formData.learningStyles ? `LEARNING STYLES: ${formData.learningStyles}\n` : ''
    Grade: ${ref.grade} | Subject: ${ref.subject} | Strand: ${ref.strand}
 `;
       if (ref.essentialOutcomes && ref.essentialOutcomes.length > 0) {
-        prompt += `   Essential Outcome: ${ref.essentialOutcomes[0]}
+        const elo = ref.essentialOutcomes[0];
+        prompt += `   Essential Outcome: ${typeof elo === 'string' ? elo : elo.text}
 `;
       }
     });

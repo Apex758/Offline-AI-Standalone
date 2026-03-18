@@ -35,7 +35,7 @@ export function getELOs(subject: string, grade: string, strand: string): string[
       page.strand?.toLowerCase() === strand.toLowerCase() &&
       page.essentialOutcomes
     ) {
-      page.essentialOutcomes.forEach((elo: string) => elosSet.add(elo));
+      page.essentialOutcomes.forEach((elo: any) => elosSet.add(typeof elo === 'string' ? elo : elo.text));
     }
   });
   return Array.from(elosSet);
@@ -52,10 +52,10 @@ export function getSCOs(subject: string, grade: string, strand: string, elo: str
       page.subject?.toLowerCase() === subject.toLowerCase() &&
       page.grade?.toString() === grade.toString() &&
       page.strand?.toLowerCase() === strand.toLowerCase() &&
-      page.essentialOutcomes?.some((e: string) => e === elo) &&
+      page.essentialOutcomes?.some((e: any) => (typeof e === 'string' ? e : e.text) === elo) &&
       page.specificOutcomes
     ) {
-      page.specificOutcomes.forEach((sco: string) => scosSet.add(sco));
+      page.specificOutcomes.forEach((sco: any) => scosSet.add(typeof sco === 'string' ? sco : sco.text));
     }
   });
   return Array.from(scosSet);

@@ -39,8 +39,8 @@ interface CurriculumReference {
   strand: string;
   route: string;
   keywords?: string[];
-  essentialOutcomes?: string[];
-  specificOutcomes?: string[];
+  essentialOutcomes?: (string | { id: string; text: string })[];
+  specificOutcomes?: (string | { id: string; text: string; eloRef?: string })[];
 }
 
 // Form data interface for parsing context

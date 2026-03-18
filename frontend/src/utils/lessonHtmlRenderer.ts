@@ -378,7 +378,7 @@ export function generateLessonHTML(text: string, options: RenderOptions): string
                 color: #374151;
                 line-height: 1.5;
               ">
-                <strong>Essential Outcome:</strong> ${ref.essentialOutcomes[0]}
+                <strong>Essential Outcome:</strong> ${typeof ref.essentialOutcomes[0] === 'string' ? ref.essentialOutcomes[0] : ref.essentialOutcomes[0].text}
               </div>
             ` : ''}
           </div>

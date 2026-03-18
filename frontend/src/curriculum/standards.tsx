@@ -36,13 +36,14 @@ function getAllCurriculumStandards(): CurriculumStandard[] {
   const standards: CurriculumStandard[] = []
   for (const page of pages) {
     if (page.specificOutcomes) {
-      for (const sco of page.specificOutcomes) {
+      for (const rawSco of page.specificOutcomes) {
+        const scoText = typeof rawSco === 'string' ? rawSco : rawSco.text;
         standards.push({
           subject: (page.subject || '').toLowerCase().replace(/\s+/g, '-'),
           grade_level: page.grade || '',
           strand: page.strand || '',
-          code: sco.match(/^(\d+\.\d+)/)?.[1] || '',
-          description: sco,
+          code: typeof rawSco === 'string' ? (scoText.match(/^(\d+\.\d+)/)?.[1] || '') : (rawSco.id || scoText.match(/^(\d+\.\d+)/)?.[1] || ''),
+          description: scoText,
         })
       }
     }

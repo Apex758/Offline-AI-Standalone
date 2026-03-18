@@ -66,7 +66,7 @@ curriculumPages.forEach((page: any) => {
       eloGroupsLookup.set(page.id, page.eloGroups);
     }
     if (page.essentialOutcomes) {
-      eloLookup.set(page.id, page.essentialOutcomes);
+      eloLookup.set(page.id, page.essentialOutcomes.map((e: any) => typeof e === 'string' ? e : e.text));
     }
   }
 });
