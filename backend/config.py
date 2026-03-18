@@ -170,26 +170,33 @@ def get_image_model_path(model_key: str = None) -> Path:
         return IMAGE_MODELS_DIR / model_key
     return IMAGE_MODELS_DIR / info["folder"]
 
+_config_printed = False
+
 def resolve_model_path(model_filename: str) -> str:
     """Resolve model path: check user data directory first, then bundled."""
     user_models_dir = Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"
     user_model_path = user_models_dir / model_filename
 
     if user_model_path.exists():
-        print(f"✓ [CONFIG] Using model from user data: {user_model_path}", flush=True)
+        if not _config_printed:
+            print(f"✓ [CONFIG] Using model from user data: {user_model_path}", flush=True)
         return str(user_model_path)
     else:
         bundled_path = MODELS_DIR / model_filename
-        print(f"✓ [CONFIG] Using bundled model: {bundled_path}", flush=True)
+        if not _config_printed:
+            print(f"✓ [CONFIG] Using bundled model: {bundled_path}", flush=True)
         return str(bundled_path)
 
 def get_model_path():
     """Get the full path to the currently selected model."""
+    global _config_printed
     selected_model = get_selected_model()
     model_path = resolve_model_path(selected_model)
-    print(f"✓ [CONFIG] Selected model: {selected_model}", flush=True)
-    print(f"✓ [CONFIG] Full model path: {model_path}", flush=True)
-    print(f"✓ [CONFIG] Model exists: {Path(model_path).exists()}", flush=True)
+    if not _config_printed:
+        print(f"✓ [CONFIG] Selected model: {selected_model}", flush=True)
+        print(f"✓ [CONFIG] Full model path: {model_path}", flush=True)
+        print(f"✓ [CONFIG] Model exists: {Path(model_path).exists()}", flush=True)
+        _config_printed = True
     return model_path
 
 # Update MODEL_PATH to use selected model
@@ -263,14 +270,6 @@ INFERENCE_BACKEND = os.environ.get("INFERENCE_BACKEND", "local")
 # Gemma API configuration (only used if INFERENCE_BACKEND="gemma_api")
 GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY", "")
 
-print(f"✓ [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
-if INFERENCE_BACKEND == "gemma_api":
-    if GEMMA_API_KEY:
-        print(f"✓ [CONFIG] Gemma API key configured", flush=True)
-    else:
-        print(f"✗ [CONFIG] WARNING: INFERENCE_BACKEND is 'gemma_api' but GEMMA_API_KEY not set!", flush=True)
-        
-        
 # ============================================================================
 # INFERENCE BACKEND CONFIGURATION
 # ============================================================================

@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     electron: process.versions.electron
   },
 
+  // Forward renderer logs to main.logs
+  sendLog: (level, message) => ipcRenderer.send('frontend-log', { level, message }),
+
   // Gated updates (license-gated in renderer)
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (_event, info) => cb(info)),

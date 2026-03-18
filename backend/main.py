@@ -298,6 +298,16 @@ app.include_router(milestones.router)
 from scene_api_endpoints import router as scene_router
 app.include_router(scene_router)
 
+# Suppress noisy polling endpoints from uvicorn access logs
+class _QuietPollFilter(logging.Filter):
+    """Hide repetitive polling requests from the access log."""
+    _quiet_paths = {"/api/metrics/live-stats", "/api/logs/recent"}
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        return not any(p in msg for p in self._quiet_paths)
+
+logging.getLogger("uvicorn.access").addFilter(_QuietPollFilter())
+
 # Add CORS middleware AFTER creating app
 app.add_middleware(
     CORSMiddleware,

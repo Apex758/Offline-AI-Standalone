@@ -49,6 +49,15 @@ log.info(`Platform: ${process.platform} ${process.arch}`);
 log.info(`Development mode: ${isDev}`);
 log.info('='.repeat(80));
 
+// ── Session error tracking ──
+let sessionHasErrors = false;
+
+// Wrap electron-log so any error/warn call flips the flag
+const _origLogError = log.error.bind(log);
+const _origLogWarn = log.warn.bind(log);
+log.error = (...args) => { sessionHasErrors = true; _origLogError(...args); };
+log.warn = (...args) => { sessionHasErrors = true; _origLogWarn(...args); };
+
 let mainWindow;
 let splashWindow;
 let backendProcess;
@@ -310,7 +319,13 @@ async function startBackend() {
     
     backendProcess.stderr.on('data', (data) => {
       errorOutput += data.toString();
-      log.info(`Backend: ${data.toString().trim()}`); // Uvicorn logs to stderr
+      const text = data.toString().trim();
+      // Detect actual errors vs normal uvicorn INFO output
+      if (/\b(ERROR|CRITICAL|Traceback|Exception|FAILED)\b/i.test(text)) {
+        log.error(`Backend: ${text}`);
+      } else {
+        log.info(`Backend: ${text}`);
+      }
       checkStarted(data);
     });
     
@@ -584,6 +599,14 @@ ipcMain.handle('check-for-updates', async () => {
   }
 });
 
+// Frontend log forwarding — renderer sends logs here so they appear in main.logs
+ipcMain.on('frontend-log', (event, { level, message }) => {
+  const prefix = `[Frontend] ${message}`;
+  if (level === 'error') log.error(prefix);
+  else if (level === 'warn') log.warn(prefix);
+  else log.info(prefix);
+});
+
 ipcMain.on('install-update', () => {
   log.info('User requested update install, quitting and installing...');
   autoUpdater.quitAndInstall();
@@ -733,6 +756,24 @@ app.on('will-quit', () => {
       killProcessTree(backendProcess.pid);
     } catch (error) {
       log.error('Error in final cleanup:', error.message);
+    }
+  }
+
+  // If no errors occurred this session, replace log file with a clean message
+  if (!sessionHasErrors) {
+    try {
+      const logPath = path.join(logsDir, 'main.logs');
+      const cleanMsg = [
+        `Session ended: ${new Date().toISOString()}`,
+        `App version: ${app.getVersion()}`,
+        `Platform: ${process.platform} ${process.arch}`,
+        '',
+        'No errors occurred during this session.',
+        '',
+      ].join('\n');
+      fs.writeFileSync(logPath, cleanMsg, 'utf-8');
+    } catch (e) {
+      // Can't log here — just ignore
     }
   }
 });

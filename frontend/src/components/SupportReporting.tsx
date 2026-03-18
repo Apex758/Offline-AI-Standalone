@@ -80,11 +80,22 @@ function _captureFrontendLog(level: string, args: any[]) {
   if (_frontendLogBuffer.length > _MAX_FRONTEND_LOGS) _frontendLogBuffer.shift();
 }
 
+// Forward a log to electron's main.logs (if running in Electron)
+function _forwardToMain(level: string, args: any[]) {
+  try {
+    const api = (window as any).electronAPI;
+    if (api?.sendLog) {
+      const msg = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').slice(0, 500);
+      api.sendLog(level === 'INFO' ? 'info' : level === 'WARN' ? 'warn' : 'error', msg);
+    }
+  } catch { /* not in Electron — ignore */ }
+}
+
 // Patch once on module load
 if (!(console as any).__olhPatched) {
-  console.log = (...args) => { _captureFrontendLog('INFO', args); _origConsole.log(...args); };
-  console.warn = (...args) => { _captureFrontendLog('WARN', args); _origConsole.warn(...args); };
-  console.error = (...args) => { _captureFrontendLog('ERROR', args); _origConsole.error(...args); };
+  console.log = (...args) => { _captureFrontendLog('INFO', args); _forwardToMain('INFO', args); _origConsole.log(...args); };
+  console.warn = (...args) => { _captureFrontendLog('WARN', args); _forwardToMain('WARN', args); _origConsole.warn(...args); };
+  console.error = (...args) => { _captureFrontendLog('ERROR', args); _forwardToMain('ERROR', args); _origConsole.error(...args); };
   (console as any).__olhPatched = true;
 }
 
