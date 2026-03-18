@@ -16,6 +16,8 @@ import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
+import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -39,6 +41,8 @@ const Clock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={AlertCircleIconData} {...p} />;
 const ChevronUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowUp01IconData} {...p} />;
 const ListChecks: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckListIconData} {...p} />;
+const PrereqIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={HierarchySquare02IconData} {...p} />;
+const RelatedIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={FlowConnectionIconData} {...p} />;
 import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
@@ -60,13 +64,23 @@ interface EloGroup {
 // Build lookups: topic_id -> eloGroups (structured) or essentialOutcomes (fallback)
 const eloGroupsLookup = new Map<string, EloGroup[]>();
 const eloLookup = new Map<string, string[]>();
+const prereqLookup = new Map<string, string[]>();
+const relatedLookup = new Map<string, string[]>();
+const pageInfoLookup = new Map<string, { id: string; displayName: string; grade: string; subject: string; strand: string }>();
 curriculumPages.forEach((page: any) => {
   if (page.id) {
+    pageInfoLookup.set(page.id, { id: page.id, displayName: page.displayName, grade: page.grade, subject: page.subject, strand: page.strand });
     if (page.eloGroups) {
       eloGroupsLookup.set(page.id, page.eloGroups);
     }
     if (page.essentialOutcomes) {
       eloLookup.set(page.id, page.essentialOutcomes.map((e: any) => typeof e === 'string' ? e : e.text));
+    }
+    if (page.prerequisiteEntries?.length > 0) {
+      prereqLookup.set(page.id, page.prerequisiteEntries);
+    }
+    if (page.relatedEntries?.length > 0) {
+      relatedLookup.set(page.id, page.relatedEntries);
     }
   }
 });
@@ -309,6 +323,38 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         next.add(nodeId);
       }
       return next;
+    });
+  };
+
+  const navigateToPage = (pageId: string) => {
+    const info = pageInfoLookup.get(pageId);
+    if (!info) return;
+    const gradeId = `grade-${info.grade}`;
+    const subjectId = `subject-${info.grade}-${info.subject}`;
+    const strandId = `strand-${info.grade}-${info.subject}-${info.strand}`;
+    setExpandedNodes(new Set([gradeId, subjectId, strandId]));
+    setHighlightedNodeId(strandId);
+    // Expand milestone checklists within that strand
+    for (const grade of treeData) {
+      for (const subject of grade.children || []) {
+        for (const strand of subject.children || []) {
+          if (strand.id === strandId && strand.milestones) {
+            setExpandedChecklists(prev => {
+              const next = new Set(prev);
+              strand.milestones!.forEach(m => next.add(m.id));
+              return next;
+            });
+          }
+        }
+      }
+    }
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => setHighlightedNodeId(null), 2500);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = document.querySelector(`[data-node-id="${strandId}"]`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
     });
   };
 
@@ -592,6 +638,84 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                 )}
               </>
             )}
+
+            {/* Prerequisites */}
+            {(() => {
+              const prereqIds = prereqLookup.get(milestone.topic_id) || [];
+              if (prereqIds.length === 0) return null;
+              return (
+                <div className="mt-4 pt-3 border-t border-theme">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <PrereqIcon className="w-4 h-4" style={{ color: accentColor }} />
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                      Prerequisites
+                    </span>
+                  </div>
+                  <div className="space-y-1 ml-6">
+                    {prereqIds.map(pid => {
+                      const info = pageInfoLookup.get(pid);
+                      if (!info) return null;
+                      const prereqMilestone = milestones.find(m => m.topic_id === pid);
+                      const isComplete = prereqMilestone?.status === 'completed';
+                      return (
+                        <div
+                          key={pid}
+                          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-theme-hover cursor-pointer transition-colors"
+                          onClick={() => navigateToPage(pid)}
+                        >
+                          {isComplete
+                            ? <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            : <Circle className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          }
+                          <div className="flex-1 min-w-0">
+                            <span className={`text-sm font-medium ${isComplete ? 'text-theme-hint line-through' : 'text-theme-label'}`}>
+                              {info.displayName}
+                            </span>
+                            <span className="text-xs text-theme-hint ml-2">
+                              {info.grade === 'K' ? 'Kindergarten' : `Grade ${info.grade}`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Related Topics */}
+            {(() => {
+              const relatedIds = relatedLookup.get(milestone.topic_id) || [];
+              if (relatedIds.length === 0) return null;
+              return (
+                <div className="mt-4 pt-3 border-t border-theme">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <RelatedIcon className="w-4 h-4" style={{ color: accentColor }} />
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                      Related Topics
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 ml-6">
+                    {relatedIds.map(rid => {
+                      const info = pageInfoLookup.get(rid);
+                      if (!info) return null;
+                      return (
+                        <button
+                          key={rid}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-theme hover:border-opacity-80 transition-colors hover:bg-theme-hover"
+                          style={{ color: accentColor, borderColor: `${accentColor}40` }}
+                          onClick={() => navigateToPage(rid)}
+                          title={`${info.displayName} — ${info.grade === 'K' ? 'Kindergarten' : `Grade ${info.grade}`} ${info.subject}`}
+                        >
+                          {info.displayName}
+                          <span className="text-theme-hint text-[10px]">G{info.grade}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

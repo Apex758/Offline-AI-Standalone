@@ -1,11 +1,22 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
+import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
 import type { MilestoneTreeNode } from '../types/milestone';
 import curriculumIndex from '../data/curriculumIndex.json';
 
 const currPages = (curriculumIndex as any).indexedPages || [];
 const eloGroupsMap = new Map<string, { elo: string; scoRange: [number, number] }[]>();
+const prereqMap = new Map<string, string[]>();
+const relatedMap = new Map<string, string[]>();
+const pageInfoMap = new Map<string, { displayName: string; grade: string; subject: string; strand: string }>();
 currPages.forEach((p: any) => {
-  if (p.id && p.eloGroups) eloGroupsMap.set(p.id, p.eloGroups);
+  if (p.id) {
+    if (p.eloGroups) eloGroupsMap.set(p.id, p.eloGroups);
+    pageInfoMap.set(p.id, { displayName: p.displayName, grade: p.grade, subject: p.subject, strand: p.strand });
+    if (p.prerequisiteEntries?.length > 0) prereqMap.set(p.id, p.prerequisiteEntries);
+    if (p.relatedEntries?.length > 0) relatedMap.set(p.id, p.relatedEntries);
+  }
 });
 
 /* ── Progress tree node types ── */
@@ -22,6 +33,9 @@ interface SkillNode {
   checked?: boolean;
   milestoneId?: string;
   checklistIndex?: number;
+  topicId?: string;
+  prereqCount?: number;
+  relatedCount?: number;
 }
 
 /* ── Helpers ── */
@@ -100,6 +114,7 @@ function buildSkillTree(treeData: MilestoneTreeNode[]): SkillNode[] {
             });
           });
         });
+        const strandTopicId = (strand.milestones || [])[0]?.topic_id;
         return {
           id: strand.id,
           label: formatStrand(strand.label),
@@ -112,6 +127,9 @@ function buildSkillTree(treeData: MilestoneTreeNode[]): SkillNode[] {
           total: strand.progress?.total ?? 0,
           completed: strand.progress?.completed ?? 0,
           children: eloChildren,
+          topicId: strandTopicId,
+          prereqCount: strandTopicId ? (prereqMap.get(strandTopicId)?.length || 0) : 0,
+          relatedCount: strandTopicId ? (relatedMap.get(strandTopicId)?.length || 0) : 0,
         };
       }),
     })),
@@ -536,6 +554,30 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
                           <span className="opacity-60"> ({node.completed}/{node.total})</span>
                         </div>
                       )}
+                      {node.type === 'strand' && ((node.prereqCount || 0) > 0 || (node.relatedCount || 0) > 0) && (
+                        <div className="flex items-center justify-center gap-1 mt-0.5">
+                          {(node.prereqCount || 0) > 0 && (
+                            <span
+                              className="flex items-center gap-px px-1 py-px rounded-full"
+                              style={{ backgroundColor: `${accentColor}15`, color: accentColor, fontSize: '8px' }}
+                              title={`${node.prereqCount} prerequisite(s)`}
+                            >
+                              <HugeiconsIcon icon={HierarchySquare02IconData} size={8} />
+                              {node.prereqCount}
+                            </span>
+                          )}
+                          {(node.relatedCount || 0) > 0 && (
+                            <span
+                              className="flex items-center gap-px px-1 py-px rounded-full"
+                              style={{ backgroundColor: `${accentColor}10`, color: `${accentColor}90`, fontSize: '8px' }}
+                              title={`${node.relatedCount} related topic(s)`}
+                            >
+                              <HugeiconsIcon icon={FlowConnectionIconData} size={8} />
+                              {node.relatedCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -609,6 +651,89 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
                   <span>{node.label}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Connections panel for strand level */}
+          {childType === 'strand' && currentView.nodes.some(n => (n.prereqCount || 0) + (n.relatedCount || 0) > 0) && (
+            <div className="mt-6 space-y-2.5 px-1">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-theme-hint mb-2">
+                Connections
+              </div>
+              {currentView.nodes.map(node => {
+                if (!node.topicId) return null;
+                const prereqs = prereqMap.get(node.topicId) || [];
+                const related = relatedMap.get(node.topicId) || [];
+                if (prereqs.length === 0 && related.length === 0) return null;
+                return (
+                  <div key={node.id} className="p-2.5 rounded-lg border border-theme bg-theme-surface text-[11px]">
+                    <div className="font-semibold text-theme-title mb-1.5 text-[10px]">{node.label}</div>
+                    {prereqs.length > 0 && (
+                      <div className="mb-1.5">
+                        <div className="flex items-center gap-1 mb-1">
+                          <HugeiconsIcon icon={HierarchySquare02IconData} size={10} style={{ color: accentColor }} />
+                          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                            Prerequisites
+                          </span>
+                        </div>
+                        {prereqs.map(pid => {
+                          const info = pageInfoMap.get(pid);
+                          if (!info) return null;
+                          return (
+                            <div
+                              key={pid}
+                              className="ml-3 text-theme-label cursor-pointer hover:underline py-0.5"
+                              onClick={() => {
+                                const gId = `grade-${info.grade}`;
+                                const sId = `subject-${info.grade}-${info.subject}`;
+                                const stId = `strand-${info.grade}-${info.subject}-${info.strand}`;
+                                onNavigate([gId, sId, stId], stId);
+                              }}
+                            >
+                              {info.displayName}
+                              <span className="text-theme-hint ml-1">
+                                ({info.grade === 'K' ? 'K' : `G${info.grade}`})
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {related.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1 mb-1">
+                          <HugeiconsIcon icon={FlowConnectionIconData} size={10} style={{ color: `${accentColor}90` }} />
+                          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: `${accentColor}90` }}>
+                            Related
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 ml-3">
+                          {related.map(rid => {
+                            const info = pageInfoMap.get(rid);
+                            if (!info) return null;
+                            return (
+                              <button
+                                key={rid}
+                                className="px-1.5 py-0.5 rounded-full border text-[9px] hover:bg-theme-hover transition-colors"
+                                style={{ borderColor: `${accentColor}30`, color: accentColor }}
+                                onClick={() => {
+                                  const gId = `grade-${info.grade}`;
+                                  const sId = `subject-${info.grade}-${info.subject}`;
+                                  const stId = `strand-${info.grade}-${info.subject}-${info.strand}`;
+                                  onNavigate([gId, sId, stId], stId);
+                                }}
+                                title={`${info.displayName} — ${info.grade === 'K' ? 'K' : `Grade ${info.grade}`} ${info.subject}`}
+                              >
+                                {info.displayName}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
