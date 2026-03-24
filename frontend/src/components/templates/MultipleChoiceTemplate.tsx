@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 interface MultipleChoiceTemplateProps {
   subject?: string;
@@ -18,6 +19,11 @@ interface MultipleChoiceTemplateProps {
   }>;
   showAnswers?: boolean;
   loading?: boolean;
+  accentColor?: string;
+  studentName?: string;
+  studentId?: string;
+  className?: string;
+  isAnswerKey?: boolean;
 }
 
 const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
@@ -31,6 +37,11 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   questions,
   showAnswers = false,
   loading = false,
+  accentColor,
+  studentName,
+  studentId,
+  className,
+  isAnswerKey = false,
 }) => {
   const displayQuestions = questions || Array.from({ length: questionCount }, (_, i) => ({
     id: `sample_${i}`,
@@ -38,10 +49,19 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
     options: ['First option here', 'Second option here', 'Third option here', 'Fourth option here'],
   }));
 
-  const ACCENT = '#2563eb';
+  const ACCENT = accentColor || '#2563eb';
+  const palette = deriveWorksheetPalette(ACCENT);
+  const effectiveShowAnswers = isAnswerKey || showAnswers;
 
   return (
     <div style={{ background: '#fff', maxWidth: 800, margin: '0 auto', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+
+      {/* Answer Key Banner */}
+      {isAnswerKey && (
+        <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+        </div>
+      )}
 
       {/* Thick top bar */}
       <div style={{ height: 7, background: ACCENT }} />
@@ -58,14 +78,20 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
           }
         </div>
         <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
-          <div>Name: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span></div>
-          <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span></div>
+          <div>Name: {studentName
+            ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
+            : <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span>
+          }</div>
+          {studentId && (
+            <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
+          )}
+          <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: studentName ? 100 : 130 }}>&nbsp;</span></div>
           <div>Score: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 55 }}>&nbsp;</span> / {questionCount}</div>
         </div>
       </div>
 
       {/* Directions */}
-      <div style={{ background: '#eff6ff', padding: '9px 36px', borderBottom: '1px solid #bfdbfe', fontSize: 13, color: '#1e40af' }}>
+      <div style={{ background: palette.accentLighter, padding: '9px 36px', borderBottom: `1px solid ${palette.accentBorder}`, fontSize: 13, color: palette.accentText }}>
         <strong>Directions:</strong> Read each question. Circle the letter of the best answer.
       </div>
 
@@ -108,17 +134,17 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
                     <div key={oi} style={{
                       display: 'flex', alignItems: 'center', gap: 9,
                       padding: '7px 11px',
-                      border: `1.5px solid ${isCorrect && showAnswers ? '#16a34a' : '#e2e8f0'}`,
+                      border: `1.5px solid ${isCorrect && effectiveShowAnswers ? '#16a34a' : '#e2e8f0'}`,
                       borderRadius: 7,
-                      background: isCorrect && showAnswers ? '#f0fdf4' : '#fafafa',
+                      background: isCorrect && effectiveShowAnswers ? '#f0fdf4' : '#fafafa',
                     }}>
                       <div style={{
                         width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                        border: `2px solid ${isCorrect && showAnswers ? '#16a34a' : '#475569'}`,
-                        background: isCorrect && showAnswers ? '#16a34a' : 'transparent',
+                        border: `2px solid ${isCorrect && effectiveShowAnswers ? '#16a34a' : '#475569'}`,
+                        background: isCorrect && effectiveShowAnswers ? '#16a34a' : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 10, fontWeight: 900,
-                        color: isCorrect && showAnswers ? '#fff' : '#475569',
+                        color: isCorrect && effectiveShowAnswers ? '#fff' : '#475569',
                       }}>{LETTERS[oi]}</div>
                       {loading
                         ? <Skeleton style={{ height: 12, flex: 1, background: '#e2e8f0', borderRadius: 3 }} />
@@ -132,6 +158,14 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Footer */}
+      {studentName && !isAnswerKey && (
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+          <span>Score: _____ / {questionCount}</span>
+          <span>Teacher: _________________________</span>
+        </div>
+      )}
 
       <div style={{ height: 6, background: ACCENT }} />
     </div>

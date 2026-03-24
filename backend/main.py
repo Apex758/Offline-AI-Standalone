@@ -374,6 +374,16 @@ class QuizGradeCreate(BaseModel):
     letter_grade: str
     answers: Optional[dict] = {}
 
+class WorksheetGradeCreate(BaseModel):
+    student_id: str
+    worksheet_title: str
+    subject: str
+    score: float
+    total_points: float
+    percentage: float
+    letter_grade: str
+    answers: Optional[dict] = {}
+
 class AttendanceRecord(BaseModel):
     student_id: str
     class_name: str
@@ -2287,6 +2297,14 @@ async def add_quiz_grade(grade: QuizGradeCreate):
 async def get_grades_for_student(student_id: str):
     return student_service.get_student_grades(student_id)
 
+@app.post("/api/worksheet-grades")
+async def add_worksheet_grade(grade: WorksheetGradeCreate):
+    return student_service.save_worksheet_grade(grade.model_dump())
+
+@app.get("/api/worksheet-grades/student/{student_id}")
+async def get_worksheet_grades_for_student(student_id: str):
+    return student_service.get_worksheet_grades(student_id)
+
 @app.get("/api/attendance")
 async def get_attendance(class_name: str, date: str):
     return student_service.get_attendance(class_name, date)
@@ -2638,6 +2656,98 @@ async def bulk_grade(
     return graded_results
 
 
+@app.post("/api/bulk-grade-worksheet")
+async def bulk_grade_worksheet(
+    worksheet_json: str = Form(...),
+    student_files: List[UploadFile] = File(...),
+):
+    """
+    Accept a worksheet answer key (as JSON) and multiple student files.
+    Extract student answers from each file using LLM, then auto-grade.
+    """
+    try:
+        ws_data = json.loads(worksheet_json)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid worksheet_json")
+
+    ws_questions = ws_data.get('questions', [])
+    if not ws_questions:
+        raise HTTPException(status_code=400, detail="Worksheet has no questions")
+
+    from inference_factory import get_inference_instance
+
+    graded_results = []
+
+    for upload in student_files:
+        file_result = {
+            'file_name': upload.filename,
+            'student_name': None,
+            'error': None,
+            'score': 0,
+            'total_points': 0,
+            'percentage': 0,
+            'letter_grade': 'F',
+            'details': [],
+        }
+
+        try:
+            content = await upload.read()
+            content_type = upload.content_type or ''
+
+            text, extract_error = _extract_text_from_file(content, upload.filename or '', content_type)
+            if extract_error:
+                file_result['error'] = extract_error
+                graded_results.append(file_result)
+                continue
+
+            if not text.strip():
+                file_result['error'] = 'No text could be extracted from this file.'
+                graded_results.append(file_result)
+                continue
+
+            prompt = _build_extraction_prompt(ws_questions, text)
+            inference = get_inference_instance()
+            llm_result = await inference.generate(
+                tool_name='bulk_grade_extract',
+                input_data=text[:500],
+                prompt_template=prompt,
+                max_tokens=600,
+                temperature=0.1,
+                stop=['```', '\n\n\n'],
+            )
+
+            raw_output = llm_result.get('result') or ''
+
+            import re as _re
+            json_match = _re.search(r'\{[\s\S]*\}', raw_output)
+            if not json_match:
+                file_result['error'] = 'LLM could not extract answers from this file.'
+                graded_results.append(file_result)
+                continue
+
+            extracted = json.loads(json_match.group())
+            student_name = extracted.get('student_name')
+            extracted_answers = extracted.get('answers', {})
+
+            grading = _grade_extracted_answers(ws_questions, extracted_answers)
+
+            file_result.update({
+                'student_name': student_name,
+                'score': grading['score'],
+                'total_points': grading['total_points'],
+                'percentage': grading['percentage'],
+                'letter_grade': grading['letter_grade'],
+                'details': grading['results'],
+            })
+
+        except Exception as e:
+            file_result['error'] = f'Processing error: {str(e)}'
+
+        graded_results.append(file_result)
+
+    return graded_results
+
+
 @app.get("/api/rubric-history")
 async def get_rubric_history():
     return load_json_data("rubric_history.json")
@@ -2802,11 +2912,19 @@ def scan_models_directory():
     
     model_extensions = ['.gguf', '.bin', '.ggml']
     
+    # Vision projector files are auxiliary — hide them from the selector
+    vision_keywords = ["vision", "mmproj", "clip-model"]
+
     try:
         for file_path in MODELS_DIR.iterdir():
             if file_path.is_file() and file_path.suffix.lower() in model_extensions:
+                # Skip vision projector files
+                name_lower = file_path.name.lower()
+                if any(kw in name_lower for kw in vision_keywords):
+                    continue
+
                 file_size_mb = file_path.stat().st_size / (1024 * 1024)
-                
+
                 model_info = {
                     "name": file_path.name,
                     "path": str(file_path),
@@ -2815,7 +2933,7 @@ def scan_models_directory():
                     "is_active": file_path.name == get_selected_model()
                 }
                 models.append(model_info)
-        
+
         models.sort(key=lambda x: x["name"])
         
     except Exception as e:
@@ -2893,11 +3011,20 @@ async def get_active_model():
     try:
         selected_model = get_selected_model()
         model_path = get_model_path()
-        
+
+        has_vision = False
+        try:
+            from inference_factory import get_inference_instance
+            instance = get_inference_instance(use_singleton=True)
+            has_vision = getattr(instance, "has_vision", False)
+        except Exception:
+            pass
+
         return JSONResponse(content={
             "modelName": selected_model,
             "modelPath": model_path,
-            "exists": Path(model_path).exists()
+            "exists": Path(model_path).exists(),
+            "has_vision": has_vision,
         })
     except Exception as e:
         logger.error(f"Error getting active model: {e}")
@@ -2905,6 +3032,61 @@ async def get_active_model():
             status_code=500,
             content={"error": str(e)}
         )
+
+
+@app.get("/api/vision/status")
+async def vision_status():
+    """Check if the current model has vision capabilities."""
+    try:
+        from inference_factory import get_inference_instance
+        instance = get_inference_instance(use_singleton=True)
+        has_vision = getattr(instance, "has_vision", False)
+        return {"has_vision": has_vision, "model": get_selected_model()}
+    except Exception as e:
+        return {"has_vision": False, "error": str(e)}
+
+
+@app.post("/api/vision/analyze")
+async def vision_analyze(request: Request):
+    """Analyze an image using the multimodal model's vision capabilities.
+
+    Expects JSON: { "image": "<base64>", "prompt": "Describe this image." }
+    """
+    try:
+        data = await request.json()
+        image_b64 = data.get("image")
+        prompt = data.get("prompt", "Describe this image in detail.")
+
+        if not image_b64:
+            return JSONResponse(status_code=400, content={"error": "image (base64) is required"})
+
+        from inference_factory import get_inference_instance
+        instance = get_inference_instance(use_singleton=True)
+
+        if not getattr(instance, "has_vision", False):
+            return JSONResponse(status_code=400, content={
+                "error": "Vision not available. The current model does not have a vision projector loaded."
+            })
+
+        result = await instance.analyze_image(
+            image_base64=image_b64,
+            prompt=prompt,
+            max_tokens=data.get("max_tokens", 1024),
+            temperature=data.get("temperature", 0.4),
+        )
+
+        if result["metadata"]["status"] == "error":
+            return JSONResponse(status_code=500, content={"error": result["metadata"]["error_message"]})
+
+        return {
+            "success": True,
+            "result": result["result"],
+            "metadata": result["metadata"],
+        }
+
+    except Exception as e:
+        logger.error(f"Vision analyze error: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/models/open-folder")

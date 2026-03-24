@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 interface MatchingTemplateProps {
   subject?: string;
@@ -11,8 +12,15 @@ interface MatchingTemplateProps {
   includeImages?: boolean;
   columnA?: string[];
   columnB?: string[];
+  shuffledColumnB?: string[];
   showAnswers?: boolean;
   loading?: boolean;
+  accentColor?: string;
+  studentName?: string;
+  studentId?: string;
+  className?: string;
+  isAnswerKey?: boolean;
+  matchingAnswerMap?: Record<number, string>;
 }
 
 const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
@@ -23,13 +31,22 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
   worksheetTitle,
   columnA,
   columnB,
+  shuffledColumnB: externalShuffledB,
   showAnswers = false,
   loading = false,
+  accentColor,
+  studentName,
+  studentId,
+  className,
+  isAnswerKey = false,
+  matchingAnswerMap,
 }) => {
   const displayColumnA = columnA || Array.from({ length: questionCount }, (_, i) => `Term or item ${i + 1}`);
   const displayColumnB = columnB || Array.from({ length: questionCount }, (_, i) => `Definition or description ${i + 1}`);
 
+  // Use externally shuffled column B if provided (for per-student randomization), otherwise shuffle locally
   const shuffledB = React.useMemo(() => {
+    if (externalShuffledB) return externalShuffledB;
     if (!columnB) return displayColumnB;
     const arr = [...displayColumnB];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -37,16 +54,25 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }, [columnB]);
+  }, [columnB, externalShuffledB]);
 
-  const ACCENT = '#ea580c';
+  const ACCENT = accentColor || '#ea580c';
+  const palette = deriveWorksheetPalette(ACCENT);
+  const effectiveShowAnswers = isAnswerKey || showAnswers;
 
   return (
     <div style={{ background: '#fff', maxWidth: 800, margin: '0 auto', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
 
+      {/* Answer Key Banner */}
+      {isAnswerKey && (
+        <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+        </div>
+      )}
+
       {/* Header — diagonal stripe pattern top */}
       <div style={{
-        background: '#fff7ed',
+        background: palette.accentLighter,
         borderBottom: '2px solid #0f172a',
         padding: '22px 36px 18px',
         position: 'relative',
@@ -55,7 +81,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
         {/* Subtle stripe background */}
         <div style={{
           position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: `repeating-linear-gradient(45deg, #ea580c 0, #ea580c 2px, transparent 2px, transparent 12px)`,
+          backgroundImage: `repeating-linear-gradient(45deg, ${ACCENT} 0, ${ACCENT} 2px, transparent 2px, transparent 12px)`,
           pointerEvents: 'none',
         }} />
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20 }}>
@@ -64,20 +90,29 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
               {subject} · {gradeLevel} · Matching
             </div>
             {loading
-              ? <Skeleton style={{ height: 28, width: 280, background: '#fed7aa', borderRadius: 3 }} />
+              ? <Skeleton style={{ height: 28, width: 280, background: palette.accentBorder, borderRadius: 3 }} />
               : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle}</h1>
             }
             {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#78716c' }}>{topic}</p>}
           </div>
           <div style={{ fontSize: 12, color: '#57534e', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
-            <div>Name: <span style={{ borderBottom: '1px solid #a8a29e', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
-            <div>Date: <span style={{ borderBottom: '1px solid #a8a29e', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
+            <div>Name: {studentName
+              ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
+              : <span style={{ borderBottom: '1px solid #a8a29e', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span>
+            }</div>
+            {studentId && (
+              <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
+            )}
+            {className && (
+              <div>Class: <span style={{ fontWeight: 700, color: '#0f172a' }}>{className}</span></div>
+            )}
+            <div>Date: <span style={{ borderBottom: '1px solid #a8a29e', display: 'inline-block', width: studentName ? 100 : 130, paddingBottom: 1 }}>&nbsp;</span></div>
           </div>
         </div>
       </div>
 
       {/* Directions */}
-      <div style={{ padding: '10px 36px', background: '#fff7ed', borderBottom: '1px solid #fed7aa', fontSize: 13, color: '#9a3412' }}>
+      <div style={{ padding: '10px 36px', background: palette.accentLighter, borderBottom: `1px solid ${palette.accentBorder}`, fontSize: 13, color: palette.accentText }}>
         <strong>Directions:</strong> Draw a line to match each item in Column A with the correct answer in Column B.
       </div>
 
@@ -88,8 +123,8 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
           <div style={{ background: ACCENT, padding: '8px 14px', borderRadius: '4px 0 0 4px' }}>
             <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Column A</span>
           </div>
-          <div style={{ background: '#fff7ed', borderTop: `1.5px solid ${ACCENT}`, borderBottom: `1.5px solid ${ACCENT}` }} />
-          <div style={{ background: '#c2410c', padding: '8px 14px', borderRadius: '0 4px 4px 0', textAlign: 'right' }}>
+          <div style={{ background: palette.accentLighter, borderTop: `1.5px solid ${ACCENT}`, borderBottom: `1.5px solid ${ACCENT}` }} />
+          <div style={{ background: palette.accentDark, padding: '8px 14px', borderRadius: '0 4px 4px 0', textAlign: 'right' }}>
             <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Column B</span>
           </div>
         </div>
@@ -107,7 +142,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
             {/* Column A item */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10,
-              border: `1.5px solid ${loading ? '#fed7aa' : '#e7e5e4'}`,
+              border: `1.5px solid ${loading ? palette.accentBorder : '#e7e5e4'}`,
               borderRadius: '6px 0 0 6px',
               padding: '9px 12px',
               background: '#fafaf9',
@@ -120,7 +155,7 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
                 fontSize: 11, fontWeight: 900,
               }}>{i + 1}</div>
               {loading
-                ? <Skeleton style={{ height: 13, flex: 1, background: '#fed7aa', borderRadius: 3 }} />
+                ? <Skeleton style={{ height: 13, flex: 1, background: palette.accentBorder, borderRadius: 3 }} />
                 : <span style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.4, fontWeight: 500 }}>{displayColumnA[i] || ''}</span>
               }
               {/* Dot on right side — for drawing lines */}
@@ -133,22 +168,22 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
             {/* Column B item */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10,
-              border: `1.5px solid ${loading ? '#fed7aa' : '#e7e5e4'}`,
+              border: `1.5px solid ${loading ? palette.accentBorder : '#e7e5e4'}`,
               borderRadius: '0 6px 6px 0',
               padding: '9px 12px',
-              background: '#fff7ed',
+              background: palette.accentLighter,
               minHeight: 42,
             }}>
               {/* Dot on left side */}
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#c2410c', flexShrink: 0 }} />
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: palette.accentDark, flexShrink: 0 }} />
               <div style={{
                 flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-                background: '#c2410c', color: '#fff',
+                background: palette.accentDark, color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 900,
               }}>{String.fromCharCode(65 + i)}</div>
               {loading
-                ? <Skeleton style={{ height: 13, flex: 1, background: '#fed7aa', borderRadius: 3 }} />
+                ? <Skeleton style={{ height: 13, flex: 1, background: palette.accentBorder, borderRadius: 3 }} />
                 : <span style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.4, fontWeight: 500 }}>{shuffledB[i] || ''}</span>
               }
             </div>
@@ -156,21 +191,36 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
         ))}
 
         {/* Answer Key */}
-        {showAnswers && columnA && columnB && (
-          <div style={{ marginTop: 28, border: '1.5px solid #fed7aa', borderRadius: 6, overflow: 'hidden' }}>
+        {effectiveShowAnswers && columnA && columnB && (
+          <div style={{ marginTop: 28, border: `1.5px solid ${palette.accentBorder}`, borderRadius: 6, overflow: 'hidden' }}>
             <div style={{ background: ACCENT, padding: '7px 16px' }}>
               <span style={{ color: '#fff', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Answer Key</span>
             </div>
             <div style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {columnA.map((_, idx) => (
-                <div key={idx} style={{ padding: '4px 12px', background: '#fff7ed', border: `1.5px solid ${ACCENT}`, borderRadius: 4, fontSize: 12, fontWeight: 700, color: ACCENT }}>
-                  {idx + 1} → {String.fromCharCode(65 + idx)}
-                </div>
-              ))}
+              {matchingAnswerMap
+                ? Object.entries(matchingAnswerMap).map(([num, letter]) => (
+                    <div key={num} style={{ padding: '4px 12px', background: palette.accentLighter, border: `1.5px solid ${ACCENT}`, borderRadius: 4, fontSize: 12, fontWeight: 700, color: ACCENT }}>
+                      {num} → {letter}
+                    </div>
+                  ))
+                : columnA.map((_, idx) => (
+                    <div key={idx} style={{ padding: '4px 12px', background: palette.accentLighter, border: `1.5px solid ${ACCENT}`, borderRadius: 4, fontSize: 12, fontWeight: 700, color: ACCENT }}>
+                      {idx + 1} → {String.fromCharCode(65 + idx)}
+                    </div>
+                  ))
+              }
             </div>
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      {studentName && !isAnswerKey && (
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+          <span>Score: _____ / {displayColumnA.length}</span>
+          <span>Teacher: _________________________</span>
+        </div>
+      )}
 
       <div style={{ borderTop: '1.5px solid #e7e5e4', margin: '0 36px', padding: '10px 0 18px', display: 'flex', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 11, color: '#94a3b8' }}>Generated for educational purposes</span>

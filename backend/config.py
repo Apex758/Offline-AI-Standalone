@@ -2,6 +2,7 @@ import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 from pathlib import Path
+from typing import Optional
 import json
 
 # Base directory
@@ -169,6 +170,31 @@ def get_image_model_path(model_key: str = None) -> Path:
         # Fall back to treating model_key as a folder name
         return IMAGE_MODELS_DIR / model_key
     return IMAGE_MODELS_DIR / info["folder"]
+
+def resolve_vision_projector_path(model_filename: str) -> Optional[str]:
+    """Find a vision projector GGUF that pairs with the given model.
+
+    Convention: looks for files containing 'vision' in the same directory.
+    e.g. phi4-mm-Q4_K_M.gguf  →  phi4-mm-vision-q8.gguf
+    """
+    # Derive the model prefix (everything before the quant tag)
+    # e.g. "phi4-mm-Q4_K_M.gguf" → "phi4-mm"
+    base = model_filename.replace(".gguf", "").replace(".bin", "")
+
+    # Try exact prefix match first
+    prefix = base.split("-Q")[0].split("-q")[0]  # strip quant suffix
+
+    for search_dir in [MODELS_DIR, Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"]:
+        if not search_dir.exists():
+            continue
+        for f in search_dir.iterdir():
+            if f.is_file() and "vision" in f.name.lower() and f.suffix.lower() == ".gguf":
+                # Check if same model family
+                if prefix and f.name.lower().startswith(prefix.lower()):
+                    print(f"✓ [CONFIG] Found vision projector: {f.name}", flush=True)
+                    return str(f)
+
+    return None
 
 _config_printed = False
 

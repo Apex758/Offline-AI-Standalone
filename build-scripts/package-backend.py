@@ -112,28 +112,64 @@ def copy_llama_cli(bundle_dir):
         print_error("llama-cli directory not found!")
         print_warning("Please ensure llama-cli is built and located in backend/bin/Release/")
 
+def detect_nvidia_gpu():
+    """Detect NVIDIA GPU via nvidia-smi."""
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            gpu_info = result.stdout.strip().split("\n")[0]
+            gpu_name, vram_mb = [x.strip() for x in gpu_info.split(",")]
+            print_success(f"NVIDIA GPU detected: {gpu_name} ({vram_mb} MB VRAM)")
+            return True
+    except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+        pass
+    print_warning("No NVIDIA GPU detected, will use CPU-only mode")
+    return False
+
 def install_python_dependencies(bundle_dir):
     """Install Python dependencies to bundle."""
     print_step("Installing Python dependencies...")
-    
+
     requirements_file = os.path.join("backend", "requirements-lock.txt")
-    
+
     if not os.path.exists(requirements_file):
         print_error("requirements.txt not found!")
         return False
-    
+
     python_libs_dir = os.path.join(bundle_dir, "python_libs")
     os.makedirs(python_libs_dir, exist_ok=True)
-    
+
+    has_gpu = detect_nvidia_gpu()
+
     try:
-        # Install dependencies
+        # Install all dependencies
         subprocess.run([
             sys.executable, "-m", "pip", "install",
             "-r", requirements_file,
             "--target", python_libs_dir,
             "--upgrade"
         ], check=True, capture_output=True, text=True)
-        
+
+        # Reinstall llama-cpp-python with CUDA if GPU available
+        if has_gpu:
+            print_step("Reinstalling llama-cpp-python with CUDA support...")
+            result = subprocess.run([
+                sys.executable, "-m", "pip", "install",
+                "llama-cpp-python==0.3.16",
+                "--target", python_libs_dir,
+                "--force-reinstall", "--no-deps",
+                "--extra-index-url", "https://abetlen.github.io/llama-cpp-python/whl/cu124"
+            ], capture_output=True, text=True)
+            if result.returncode == 0:
+                print_success("llama-cpp-python (CUDA) installed successfully")
+            else:
+                print_warning("CUDA install failed, keeping CPU-only llama-cpp-python")
+        else:
+            print_step("Using CPU-only llama-cpp-python")
+
         # Also install for embedded Python if it exists
         embedded_python = os.path.join(bundle_dir, "python-embed", "python.exe")
         if os.path.exists(embedded_python):

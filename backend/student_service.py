@@ -94,6 +94,21 @@ def init_db():
                 FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
             )
         ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS worksheet_grades (
+                id           TEXT PRIMARY KEY,
+                student_id   TEXT NOT NULL,
+                worksheet_title TEXT,
+                subject      TEXT,
+                score        REAL,
+                total_points REAL,
+                percentage   REAL,
+                letter_grade TEXT,
+                answers      TEXT,
+                graded_at    TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+            )
+        ''')
         conn.commit()
     finally:
         conn.close()
@@ -144,6 +159,11 @@ def get_student(student_id: str) -> dict | None:
             (student_id,)
         ).fetchall()
         student['quiz_grades'] = [dict(g) for g in grades]
+        ws_grades = conn.execute(
+            'SELECT * FROM worksheet_grades WHERE student_id = ? ORDER BY graded_at DESC',
+            (student_id,)
+        ).fetchall()
+        student['worksheet_grades'] = [dict(g) for g in ws_grades]
         return student
     finally:
         conn.close()
@@ -357,6 +377,47 @@ def get_attendance(class_name: str, date: str) -> list[dict]:
                WHERE a.class_name = ? AND a.date = ?
                ORDER BY s.full_name''',
             (class_name, date)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# ── Worksheet Grades ─────────────────────────────────────────────────────────
+
+def save_worksheet_grade(data: dict) -> dict:
+    conn = _get_conn()
+    try:
+        grade_id = str(uuid.uuid4())
+        conn.execute(
+            '''INSERT INTO worksheet_grades
+               (id, student_id, worksheet_title, subject, score, total_points, percentage, letter_grade, answers)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            (
+                grade_id,
+                data.get('student_id'),
+                data.get('worksheet_title'),
+                data.get('subject'),
+                data.get('score'),
+                data.get('total_points'),
+                data.get('percentage'),
+                data.get('letter_grade'),
+                json.dumps(data.get('answers', {})),
+            )
+        )
+        conn.commit()
+        row = conn.execute('SELECT * FROM worksheet_grades WHERE id = ?', (grade_id,)).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def get_worksheet_grades(student_id: str) -> list[dict]:
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT * FROM worksheet_grades WHERE student_id = ? ORDER BY graded_at DESC',
+            (student_id,)
         ).fetchall()
         return [dict(r) for r in rows]
     finally:

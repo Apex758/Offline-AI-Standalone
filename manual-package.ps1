@@ -93,12 +93,57 @@ if (-not $pythonCmd) {
     exit 1
 }
 
+# ========================================
+# Detect GPU and install llama-cpp-python
+# ========================================
+Write-Host "Detecting GPU..." -ForegroundColor Yellow
+$hasNvidiaGpu = $false
+try {
+    $nvidiaSmi = Get-Command "nvidia-smi" -ErrorAction SilentlyContinue
+    if ($nvidiaSmi) {
+        $gpuInfo = & nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>$null
+        if ($LASTEXITCODE -eq 0 -and $gpuInfo) {
+            $gpuName = ($gpuInfo -split ",")[0].Trim()
+            $gpuVram = ($gpuInfo -split ",")[1].Trim()
+            Write-Host "NVIDIA GPU detected: $gpuName ($gpuVram MB VRAM)" -ForegroundColor Green
+            $hasNvidiaGpu = $true
+        }
+    }
+} catch {
+    Write-Host "GPU detection failed, defaulting to CPU" -ForegroundColor Yellow
+}
+
+if (-not $hasNvidiaGpu) {
+    Write-Host "No NVIDIA GPU detected, will use CPU-only mode" -ForegroundColor Yellow
+}
+
+# Install dependencies (excluding llama-cpp-python, which needs special handling)
 Write-Host "Installing dependencies..." -ForegroundColor Yellow
 & $pythonCmd -m pip install `
     -r backend/requirements-lock.txt `
     --target "$bundleDir\python_libs" `
     --no-warn-script-location `
     --disable-pip-version-check
+
+# Reinstall llama-cpp-python with GPU support if available
+if ($hasNvidiaGpu) {
+    Write-Host "Installing llama-cpp-python with CUDA support..." -ForegroundColor Cyan
+    & $pythonCmd -m pip install `
+        llama-cpp-python==0.3.16 `
+        --target "$bundleDir\python_libs" `
+        --force-reinstall --no-deps `
+        --no-warn-script-location `
+        --disable-pip-version-check `
+        --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "llama-cpp-python (CUDA) installed successfully" -ForegroundColor Green
+    } else {
+        Write-Host "CUDA install failed, falling back to CPU-only llama-cpp-python" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "Using CPU-only llama-cpp-python (from requirements-lock.txt)" -ForegroundColor Yellow
+}
 
 Write-Host "Copying embedded Python..." -ForegroundColor Yellow
 if (Test-Path "backend\python-embed") {

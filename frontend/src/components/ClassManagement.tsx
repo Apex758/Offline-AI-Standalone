@@ -74,11 +74,23 @@ interface Student {
   contact_info?: string;
   created_at?: string;
   quiz_grades?: QuizGrade[];
+  worksheet_grades?: WorksheetGrade[];
 }
 
 interface QuizGrade {
   id: string;
   quiz_title: string;
+  subject: string;
+  score: number;
+  total_points: number;
+  percentage: number;
+  letter_grade: string;
+  graded_at: string;
+}
+
+interface WorksheetGrade {
+  id: string;
+  worksheet_title: string;
   subject: string;
   score: number;
   total_points: number;
@@ -1415,8 +1427,11 @@ ${tabScript}
       <div className="flex items-center justify-center h-full text-theme-muted text-sm">Loading...</div>
     );
     const grades = activeStudent.quiz_grades ?? [];
-    const avgPct = grades.length > 0
-      ? Math.round(grades.reduce((s, g) => s + g.percentage, 0) / grades.length) : null;
+    const wsGrades = activeStudent.worksheet_grades ?? [];
+    const allGrades = [...grades.map(g => ({ percentage: g.percentage, subject: g.subject, letter_grade: g.letter_grade })),
+                       ...wsGrades.map(g => ({ percentage: g.percentage, subject: g.subject, letter_grade: g.letter_grade }))];
+    const avgPct = allGrades.length > 0
+      ? Math.round(allGrades.reduce((s, g) => s + g.percentage, 0) / allGrades.length) : null;
     const getLetterGrade = (pct: number) => pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
     const getStatus = (pct: number) => pct >= 90 ? 'Excellent' : pct >= 80 ? 'Good' : pct >= 70 ? 'Satisfactory' : pct >= 60 ? 'Needs Improvement' : 'Failing';
     const gradeColor = (letter: string) => {
@@ -1424,9 +1439,9 @@ ${tabScript}
       return m[letter] || '#6b7280';
     };
 
-    // Group grades by subject
+    // Group all grades (quizzes + worksheets) by subject
     const subjectGrades: Record<string, { scores: number[]; letters: string[] }> = {};
-    for (const g of grades) {
+    for (const g of allGrades) {
       const subj = g.subject || 'General';
       if (!subjectGrades[subj]) subjectGrades[subj] = { scores: [], letters: [] };
       subjectGrades[subj].scores.push(g.percentage);
@@ -1526,7 +1541,7 @@ ${tabScript}
             <div className="rounded-xl p-5 flex items-center justify-between" style={{ background: `${accentColor}08`, border: `2px solid ${accentColor}30` }}>
               <div>
                 <p className="text-sm font-semibold text-theme-label">Overall Grade Average</p>
-                <p className="text-xs text-theme-muted mt-0.5">Based on {grades.length} quiz{grades.length !== 1 ? 'zes' : ''}</p>
+                <p className="text-xs text-theme-muted mt-0.5">Based on {grades.length} quiz{grades.length !== 1 ? 'zes' : ''} and {wsGrades.length} worksheet{wsGrades.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-2xl font-extrabold" style={{ color: accentColor }}>{avgPct}%</span>
@@ -1550,7 +1565,7 @@ ${tabScript}
                 <thead>
                   <tr className="border-b border-theme" style={{ background: `${accentColor}08` }}>
                     <th className="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Subject</th>
-                    <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Quizzes</th>
+                    <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Assessments</th>
                     <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Average</th>
                     <th className="text-center px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Grade</th>
                     <th className="text-left px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-theme-muted">Status</th>
@@ -1615,6 +1630,42 @@ ${tabScript}
                   <div key={g.id} className="rounded-xl px-4 py-3 flex items-center gap-4 widget-glass">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-theme-label text-sm truncate">{g.quiz_title}</p>
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-theme-muted">
+                        <span>{g.subject}</span>
+                        <span>·</span>
+                        <span>{new Date(g.graded_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-theme-label">{g.score}/{g.total_points}</p>
+                        <p className="text-xs text-theme-muted">{g.percentage}%</p>
+                      </div>
+                      <span className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold border ${gradeBadgeColor(g.letter_grade)}`}>
+                        {g.letter_grade}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Worksheet History */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: accentColor }}>
+              <ClipboardCheck className="w-3.5 h-3.5" /> Worksheet History ({(activeStudent.worksheet_grades ?? []).length})
+            </h2>
+            {(activeStudent.worksheet_grades ?? []).length === 0 ? (
+              <div className="rounded-xl border border-dashed border-theme p-8 text-center text-sm text-theme-muted">
+                No worksheet results yet. Grade a worksheet in the Worksheet Generator to see results here.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {(activeStudent.worksheet_grades ?? []).map(g => (
+                  <div key={g.id} className="rounded-xl px-4 py-3 flex items-center gap-4 widget-glass">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-theme-label text-sm truncate">{g.worksheet_title}</p>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-theme-muted">
                         <span>{g.subject}</span>
                         <span>·</span>

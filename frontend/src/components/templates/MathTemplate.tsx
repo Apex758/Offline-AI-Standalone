@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { deriveWorksheetPalette } from '../../utils/worksheetColorUtils';
 
 export interface MathProblem {
   id: string;
@@ -22,6 +23,11 @@ interface MathTemplateProps {
   showAnswers?: boolean;
   questionCount?: number;
   loading?: boolean;
+  accentColor?: string;
+  studentName?: string;
+  studentId?: string;
+  className?: string;
+  isAnswerKey?: boolean;
 }
 
 const MathTemplate: React.FC<MathTemplateProps> = ({
@@ -37,6 +43,11 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
   showAnswers = false,
   questionCount = 10,
   loading = false,
+  accentColor,
+  studentName,
+  studentId,
+  className,
+  isAnswerKey = false,
 }) => {
 
   const isComputationalStrand = () => {
@@ -76,11 +87,20 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
 
   const displayOp = (op: string) => op === '*' ? '×' : op === '/' ? '÷' : op;
 
-  const ACCENT = '#0891b2';
+  const ACCENT = accentColor || '#0891b2';
+  const palette = deriveWorksheetPalette(ACCENT);
+  const effectiveShowAnswers = isAnswerKey || showAnswers;
   const cols = Math.min(columnCount, 4);
 
   return (
     <div style={{ background: '#fff', maxWidth: 800, margin: '0 auto', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+
+      {/* Answer Key Banner */}
+      {isAnswerKey && (
+        <div style={{ background: '#dc2626', padding: '10px 36px', textAlign: 'center' }}>
+          <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Answer Key — For Teacher Use Only</span>
+        </div>
+      )}
 
       {/* Header — graph-paper feel */}
       <div style={{
@@ -92,7 +112,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
         {/* Grid texture strip */}
         <div style={{
           height: 10,
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 9px, #e0f2fe 9px, #e0f2fe 10px), repeating-linear-gradient(90deg, transparent, transparent 9px, #e0f2fe 9px, #e0f2fe 10px)`,
+          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 9px, ${palette.accentLight} 9px, ${palette.accentLight} 10px), repeating-linear-gradient(90deg, transparent, transparent 9px, ${palette.accentLight} 9px, ${palette.accentLight} 10px)`,
           background: `${ACCENT}`,
         }} />
         <div style={{ padding: '18px 36px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20 }}>
@@ -106,15 +126,21 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
             }
           </div>
           <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
-            <div>Name: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
-            <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
+            <div>Name: {studentName
+              ? <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentName}</span>
+              : <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span>
+            }</div>
+            {studentId && (
+              <div>ID: <span style={{ fontWeight: 700, color: '#0f172a' }}>{studentId}</span></div>
+            )}
+            <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: studentName ? 100 : 130, paddingBottom: 1 }}>&nbsp;</span></div>
             <div>Score: <span style={{ borderBottom: '1px solid #94a3b8', display: 'inline-block', width: 55, paddingBottom: 1 }}>&nbsp;</span> / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</div>
           </div>
         </div>
       </div>
 
       {/* Directions */}
-      <div style={{ padding: '9px 36px', background: '#ecfeff', borderBottom: '1px solid #a5f3fc', fontSize: 13, color: '#0e7490' }}>
+      <div style={{ padding: '9px 36px', background: palette.accentLighter, borderBottom: `1px solid ${palette.accentBorder}`, fontSize: 13, color: palette.accentText }}>
         <strong>Directions:</strong> {instructions}
       </div>
 
@@ -126,11 +152,11 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
                 {Array.from({ length: questionCount }, (_, i) => (
                   <div key={i} style={{ border: '2px solid #e2e8f0', borderRadius: 6, padding: '16px 12px', background: '#f8fafc' }}>
-                    <Skeleton style={{ width: 16, height: 16, borderRadius: '50%', background: '#a5f3fc', marginBottom: 12 }} />
+                    <Skeleton style={{ width: 16, height: 16, borderRadius: '50%', background: palette.accentBorder, marginBottom: 12 }} />
                     <div style={{ textAlign: 'right' }}>
-                      <Skeleton style={{ height: 22, width: 64, background: '#cffafe', borderRadius: 3, marginBottom: 6, marginLeft: 'auto' }} />
+                      <Skeleton style={{ height: 22, width: 64, background: palette.accentLight, borderRadius: 3, marginBottom: 6, marginLeft: 'auto' }} />
                       <div style={{ borderBottom: '2px solid #94a3b8', marginBottom: 8 }} />
-                      <Skeleton style={{ height: 22, width: 64, background: '#cffafe', borderRadius: 3, marginLeft: 'auto' }} />
+                      <Skeleton style={{ height: 22, width: 64, background: palette.accentLight, borderRadius: 3, marginLeft: 'auto' }} />
                     </div>
                   </div>
                 ))}
@@ -140,7 +166,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {Array.from({ length: questionCount }, (_, i) => (
                   <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <Skeleton style={{ width: 28, height: 28, borderRadius: 4, background: '#cffafe', flexShrink: 0 }} />
+                    <Skeleton style={{ width: 28, height: 28, borderRadius: 4, background: palette.accentLight, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <Skeleton style={{ height: 14, width: '72%', background: '#e2e8f0', borderRadius: 3, marginBottom: 10 }} />
                       <div style={{ borderBottom: '1.5px solid #e2e8f0', marginBottom: 24 }} />
@@ -174,15 +200,15 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                   {/* Answer box */}
                   <div style={{
                     height: 36,
-                    border: showAnswers && prob.answer !== undefined ? `2px solid #16a34a` : '1.5px dashed #94a3b8',
+                    border: effectiveShowAnswers && prob.answer !== undefined ? `2px solid #16a34a` : '1.5px dashed #94a3b8',
                     borderRadius: 4,
-                    background: showAnswers && prob.answer !== undefined ? '#f0fdf4' : '#fff',
+                    background: effectiveShowAnswers && prob.answer !== undefined ? '#f0fdf4' : '#fff',
                     display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                     paddingRight: 8,
                     color: '#16a34a',
                     fontSize: 20,
                   }}>
-                    {showAnswers && prob.answer !== undefined ? prob.answer : ''}
+                    {effectiveShowAnswers && prob.answer !== undefined ? prob.answer : ''}
                   </div>
                 </div>
               </div>
@@ -203,7 +229,7 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
                 }}>{i + 1}</div>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: '2px 0 10px', fontSize: 14, color: '#1e293b', fontWeight: 600, lineHeight: 1.5 }}>{q.question}</p>
-                  {showAnswers && q.correctAnswer
+                  {effectiveShowAnswers && q.correctAnswer
                     ? <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 5, padding: '7px 12px', fontSize: 13, color: '#15803d', fontWeight: 600 }}>
                         Answer: {q.correctAnswer}
                       </div>
@@ -218,6 +244,14 @@ const MathTemplate: React.FC<MathTemplateProps> = ({
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      {studentName && !isAnswerKey && (
+        <div style={{ padding: '0 36px 10px', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b' }}>
+          <span>Score: _____ / {useVerticalLayout ? displayProblems.length : displayQuestions.length}</span>
+          <span>Teacher: _________________________</span>
+        </div>
+      )}
 
       <div style={{ height: 6, background: ACCENT }} />
     </div>

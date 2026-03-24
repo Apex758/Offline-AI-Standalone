@@ -26,6 +26,62 @@ export interface ParsedWorksheet {
   wordBank?: string[]; // For word bank worksheets - the list of available words
 }
 
+// ── Class-connected worksheet types ─────────────────────────────────────────
+
+export interface StudentWorksheetVersion {
+  student: { id: string; full_name: string; class_name?: string; grade_level?: string };
+  questions: WorksheetQuestion[];
+  answerMap: Record<string, string | number>;
+  optionMaps?: Record<string, number[]>;
+  shuffledColumnB?: string[];
+  matchingAnswerMap?: Record<number, string>;
+  shuffledWordBank?: string[];
+  printed: boolean;
+}
+
+export interface WorksheetPackage {
+  baseWorksheet: ParsedWorksheet;
+  studentVersions: StudentWorksheetVersion[];
+  randomized: boolean;
+  templateId: string;
+  formData: WorksheetClassFormData;
+  createdAt: string;
+}
+
+export interface WorksheetClassFormData {
+  subject: string;
+  gradeLevel: string;
+  strand: string;
+  topic: string;
+  questionCount: string;
+  questionType: string;
+  selectedTemplate: string;
+  worksheetTitle: string;
+  includeImages: boolean;
+  imageStyle: string;
+  imagePlacement: string;
+  essentialOutcomes: string;
+  specificOutcomes: string;
+  accentColor?: string;
+  classMode: boolean;
+  selectedClassName: string;
+  randomizeQuestions: boolean;
+  randomizeOptions: boolean;
+}
+
+export interface WorksheetGrade {
+  id: string;
+  student_id: string;
+  worksheet_title: string;
+  subject: string;
+  score: number;
+  total_points: number;
+  percentage: number;
+  letter_grade: string;
+  answers: string;
+  graded_at: string;
+}
+
 // Helper function to parse multiple choice questions
 function parseMultipleChoiceQuestion(questionText: string, questionBody: string, index: number): WorksheetQuestion | null {
   // Extract options with deduplication

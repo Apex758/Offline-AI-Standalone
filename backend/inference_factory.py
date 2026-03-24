@@ -15,7 +15,9 @@ from config import (
     OPENROUTER_API_KEY,
     OPENROUTER_MODEL,
     MODEL_PATH,
-    MODEL_N_CTX
+    MODEL_N_CTX,
+    get_selected_model,
+    resolve_vision_projector_path,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,7 +70,8 @@ def get_inference_instance(use_singleton: bool = True):
         else:
             logger.info("Creating new local Llama instance (simultaneous mode)...")
             from llama_inference import LlamaInference
-            return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
+            clip_path = resolve_vision_projector_path(get_selected_model())
+            return LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
 
     else:
         raise ValueError(
@@ -90,7 +93,8 @@ def _get_local_singleton():
 
         logger.info("Loading local Llama model (singleton)...")
         from llama_inference import LlamaInference
-        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
+        clip_path = resolve_vision_projector_path(get_selected_model())
+        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
         return _local_instance
 
 
@@ -108,5 +112,6 @@ def reload_local_model():
             _local_instance = None
         logger.info("Reloading local model...")
         from llama_inference import LlamaInference
-        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX)
+        clip_path = resolve_vision_projector_path(get_selected_model())
+        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
         return _local_instance

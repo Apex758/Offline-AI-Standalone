@@ -643,6 +643,159 @@ function ColorPicker({ primary, bg, onPrimary, onBg, theme, styleId }: { primary
 }
 
 /* ═══════════════════════════════════════
+   SLIDE SKELETON (loading placeholder)
+═══════════════════════════════════════ */
+
+function SlideSkeleton({ index, primaryColor }: { index: number; primaryColor: string }) {
+  const delay = index * 150;
+  return (
+    <div
+      className="rounded-lg overflow-hidden flex-shrink-0"
+      style={{ width: 160, height: 90, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)', position: 'relative' }}
+    >
+      {/* Shimmer overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(90deg, transparent 0%, ${primaryColor}12 50%, transparent 100%)`,
+          animation: `shimmer 1.8s ease-in-out infinite`,
+          animationDelay: `${delay}ms`,
+        }}
+      />
+      {/* Fake content lines */}
+      <div className="p-2.5 space-y-1.5">
+        <div className="rounded" style={{ width: '65%', height: 8, background: `${primaryColor}30`, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${delay}ms` }} />
+        <div className="rounded" style={{ width: '45%', height: 5, background: `${primaryColor}18`, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${delay + 100}ms` }} />
+        <div className="mt-2 space-y-1">
+          <div className="rounded" style={{ width: '90%', height: 4, background: `${primaryColor}12`, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${delay + 200}ms` }} />
+          <div className="rounded" style={{ width: '70%', height: 4, background: `${primaryColor}12`, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${delay + 300}ms` }} />
+          <div className="rounded" style={{ width: '80%', height: 4, background: `${primaryColor}12`, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${delay + 400}ms` }} />
+        </div>
+      </div>
+      {/* Slide number */}
+      <div className="absolute bottom-1 right-2 text-[8px] font-bold" style={{ color: `${primaryColor}50` }}>{index + 1}</div>
+    </div>
+  );
+}
+
+function SkeletonStage({ primaryColor, streamingText, parsedCount }: { primaryColor: string; streamingText: string; parsedCount: number }) {
+  const EXPECTED_SLIDES = 8;
+  return (
+    <div className="flex flex-col items-center gap-4 w-full max-w-[700px]">
+      {/* Main skeleton slide (large) */}
+      <div
+        className="rounded-lg overflow-hidden relative"
+        style={{ width: 480, height: 270, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)', boxShadow: `0 4px 32px ${primaryColor}18` }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(90deg, transparent 0%, ${primaryColor}12 50%, transparent 100%)`,
+            animation: 'shimmer 1.8s ease-in-out infinite',
+          }}
+        />
+        <div className="p-6 space-y-3">
+          <div className="rounded" style={{ width: '55%', height: 16, background: `${primaryColor}30`, animation: 'pulse 1.5s ease-in-out infinite' }} />
+          <div className="rounded" style={{ width: '35%', height: 10, background: `${primaryColor}18`, animation: 'pulse 1.5s ease-in-out infinite', animationDelay: '150ms' }} />
+          <div className="mt-4 space-y-2">
+            <div className="rounded" style={{ width: '90%', height: 8, background: `${primaryColor}12`, animation: 'pulse 1.5s ease-in-out infinite', animationDelay: '300ms' }} />
+            <div className="rounded" style={{ width: '75%', height: 8, background: `${primaryColor}12`, animation: 'pulse 1.5s ease-in-out infinite', animationDelay: '450ms' }} />
+            <div className="rounded" style={{ width: '82%', height: 8, background: `${primaryColor}12`, animation: 'pulse 1.5s ease-in-out infinite', animationDelay: '600ms' }} />
+            <div className="rounded" style={{ width: '60%', height: 8, background: `${primaryColor}12`, animation: 'pulse 1.5s ease-in-out infinite', animationDelay: '750ms' }} />
+          </div>
+        </div>
+        {/* Progress badge */}
+        <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: `${primaryColor}20` }}>
+          <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: primaryColor }} />
+          <span className="text-[10px] font-bold" style={{ color: primaryColor }}>
+            {parsedCount > 0 ? `${parsedCount} / ~${EXPECTED_SLIDES} slides` : 'Generating...'}
+          </span>
+        </div>
+      </div>
+
+      {/* Thumbnail skeleton strip */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {Array.from({ length: EXPECTED_SLIDES }).map((_, i) => (
+          <div key={i} className="relative">
+            {i < parsedCount ? (
+              <div className="rounded-lg overflow-hidden flex-shrink-0 ring-2" style={{ width: 160, height: 90, ringColor: `${primaryColor}60` }}>
+                <div className="w-full h-full flex items-center justify-center" style={{ background: `${primaryColor}10` }}>
+                  <span className="text-[10px] font-bold" style={{ color: primaryColor }}>Slide {i + 1} ✓</span>
+                </div>
+              </div>
+            ) : (
+              <SlideSkeleton index={i} primaryColor={primaryColor} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Streaming text preview */}
+      {streamingText && (
+        <div className="w-full max-w-[480px] max-h-[80px] overflow-hidden rounded-lg border border-theme-border bg-theme-secondary px-3 py-2">
+          <div className="text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1">Live Stream</div>
+          <div className="text-xs text-theme-muted font-mono leading-relaxed overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {streamingText.slice(-200)}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes shimmer {
+          0%, 100% { opacity: 0; }
+          50% { opacity: 1; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   PROGRESSIVE JSON PARSING
+═══════════════════════════════════════ */
+
+function tryParsePartialSlides(raw: string): Slide[] {
+  // Try to extract fully-formed slide objects from partial JSON stream
+  const slides: Slide[] = [];
+  // Find the slides array start
+  const arrStart = raw.indexOf('"slides"');
+  if (arrStart === -1) return slides;
+  const bracketStart = raw.indexOf('[', arrStart);
+  if (bracketStart === -1) return slides;
+
+  // Walk through looking for complete {...} objects at the top array level
+  let depth = 0;
+  let objStart = -1;
+  for (let i = bracketStart + 1; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ch === '{') {
+      if (depth === 0) objStart = i;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0 && objStart !== -1) {
+        try {
+          const obj = JSON.parse(raw.substring(objStart, i + 1));
+          if (obj.id || obj.layout || obj.content) {
+            slides.push({
+              id: obj.id || `slide-${slides.length}`,
+              layout: obj.layout || 'instruction',
+              content: obj.content || {},
+            });
+          }
+        } catch { /* incomplete JSON object, skip */ }
+        objStart = -1;
+      }
+    }
+  }
+  return slides;
+}
+
+/* ═══════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════ */
 
@@ -685,6 +838,10 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [presentationHistory, setPresentationHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  // Streaming state for progressive rendering
+  const [streamingSlides, setStreamingSlides] = useState<Slide[]>([]);
+  const [streamTick, setStreamTick] = useState(0);
+
   // View state: 'input' | 'editor'
   const [view, setView] = useState<'input' | 'editor'>(savedData?.slides?.length > 0 ? 'editor' : 'input');
 
@@ -715,20 +872,37 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
-  // Subscribe to streaming
+  // Subscribe to streaming — force re-renders on each token for live display
   useEffect(() => {
-    const unsub = subscribe(tabId, ENDPOINT, () => {});
+    const unsub = subscribe(tabId, ENDPOINT, () => {
+      setStreamTick(t => t + 1);
+    });
     return unsub;
   }, [tabId]);
 
-  // Watch for streaming completion
+  // Watch for streaming content — progressive parsing
   const streamingContent = getStreamingContent(tabId, ENDPOINT);
   const isStreaming = getIsStreaming(tabId, ENDPOINT);
   const prevIsStreamingRef = useRef(false);
 
+  // Progressive slide parsing during streaming
+  useEffect(() => {
+    if (isStreaming && streamingContent) {
+      const parsed = tryParsePartialSlides(streamingContent);
+      if (parsed.length > streamingSlides.length) {
+        setStreamingSlides(parsed);
+      }
+      // Switch to editor view as soon as streaming starts
+      if (view !== 'editor') {
+        setView('editor');
+      }
+    }
+  }, [streamTick, isStreaming, streamingContent]);
+
+  // Watch for streaming completion
   useEffect(() => {
     if (prevIsStreamingRef.current && !isStreaming && streamingContent) {
-      // Streaming just finished — parse the result
+      // Streaming just finished — final parse
       try {
         const m = streamingContent.match(/\{[\s\S]*\}/);
         const parsed = JSON.parse(m ? m[0] : streamingContent.trim());
@@ -742,6 +916,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         setError('Failed to parse slide data: ' + e.message);
       }
       setLoading(false);
+      setStreamingSlides([]);
       clearStreaming(tabId, ENDPOINT);
     }
     prevIsStreamingRef.current = isStreaming;
@@ -1234,6 +1409,42 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 </span>
               )}
             </button>
+
+            {/* Streaming progress in input view */}
+            {loading && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-xs text-theme-muted">
+                  <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
+                  <span>
+                    {streamingSlides.length > 0
+                      ? `${streamingSlides.length} slide${streamingSlides.length > 1 ? 's' : ''} parsed so far...`
+                      : 'Waiting for response...'}
+                  </span>
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <SlideSkeleton key={i} index={i} primaryColor={primaryColor} />
+                  ))}
+                </div>
+                {streamingContent && (
+                  <div className="rounded-lg border border-theme-border bg-theme-secondary px-3 py-2 max-h-[60px] overflow-hidden">
+                    <div className="text-xs text-theme-muted font-mono leading-relaxed" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {streamingContent.slice(-150)}
+                    </div>
+                  </div>
+                )}
+                <style>{`
+                  @keyframes shimmer {
+                    0%, 100% { opacity: 0; }
+                    50% { opacity: 1; }
+                  }
+                  @keyframes pulse {
+                    0%, 100% { opacity: 0.4; }
+                    50% { opacity: 1; }
+                  }
+                `}</style>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1399,11 +1610,18 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
         {/* CENTER: Main stage */}
         <div className="flex-1 flex flex-col items-center justify-center gap-3 p-5 overflow-hidden">
-          {slides.length === 0 ? (
+          {loading && slides.length === 0 ? (
+            /* Skeleton loading with progressive streaming */
+            <SkeletonStage
+              primaryColor={primaryColor}
+              streamingText={streamingContent || ''}
+              parsedCount={streamingSlides.length}
+            />
+          ) : slides.length === 0 ? (
             <div className="flex flex-col items-center gap-3">
               <div className="text-theme-muted text-sm">No slides generated yet</div>
               <button onClick={handleGenerate} disabled={loading} className="px-6 py-2 rounded-lg font-bold text-sm" style={{ background: primaryColor, color: hexLum(primaryColor) > 0.5 ? '#000' : '#fff' }}>
-                {loading ? 'Generating...' : 'Generate Slides'}
+                Generate Slides
               </button>
             </div>
           ) : (

@@ -14,6 +14,10 @@ import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import UndoIconData from '@hugeicons/core-free-icons/UndoIcon';
+import ShuffleIconData from '@hugeicons/core-free-icons/ShuffleIcon';
+import PrinterIconData from '@hugeicons/core-free-icons/PrinterIcon';
+import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -35,6 +39,10 @@ const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
 const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
 const Undo2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UndoIconData} {...p} />;
+const Shuffle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ShuffleIconData} {...p} />;
+const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
+const PaintBrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
+const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
 import curriculumIndex from '../data/curriculumIndex.json';
 import {
   MultipleChoiceTemplate,
@@ -48,7 +56,9 @@ import { imageApi } from '../lib/imageApi';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { buildWorksheetPrompt } from '../utils/worksheetPromptBuilder';
-import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText } from '../types/worksheet';
+import { parseWorksheetFromAI, ParsedWorksheet, worksheetToDisplayText, StudentWorksheetVersion, WorksheetPackage } from '../types/worksheet';
+import { generateStudentVersions } from '../utils/worksheetRandomizer';
+import { deriveWorksheetPalette } from '../utils/worksheetColorUtils';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { SceneSpec, ImagePreset, StyleProfile } from '../types/scene';
@@ -370,6 +380,77 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingStructured, setIsEditingStructured] = useState(false);
   const [editBuffer, setEditBuffer] = useState('');
+
+  // ── Class Mode State ──
+  const [classMode, setClassMode] = useState(false);
+  const [availableClasses, setAvailableClasses] = useState<Array<{ class_name: string; grade_level: string }>>([]);
+  const [selectedClassName, setSelectedClassName] = useState('');
+  const [classStudents, setClassStudents] = useState<Array<{ id: string; full_name: string; class_name?: string; grade_level?: string }>>([]);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [randomizeQuestions, setRandomizeQuestions] = useState(false);
+  const [randomizeOptions, setRandomizeOptions] = useState(false);
+  const [accentColor, setAccentColor] = useState<string>('');
+  const [worksheetPackage, setWorksheetPackage] = useState<WorksheetPackage | null>(null);
+  const [selectedStudentIndex, setSelectedStudentIndex] = useState(-1); // -1 = answer key
+  const [printedStudents, setPrintedStudents] = useState<Set<string>>(new Set());
+  const [studentSearch, setStudentSearch] = useState('');
+
+  const COLOR_PRESETS = ['#2563eb', '#0d9488', '#ea580c', '#7c3aed', '#0891b2', '#dc2626', '#16a34a', '#db2777', '#d97706', '#475569'];
+
+  // Load classes when class mode is toggled
+  useEffect(() => {
+    if (classMode) {
+      axios.get('http://localhost:8000/api/classes').then(res => {
+        setAvailableClasses(res.data);
+      }).catch(err => console.error('Failed to load classes:', err));
+    }
+  }, [classMode]);
+
+  // Load students when a class is selected
+  useEffect(() => {
+    if (selectedClassName) {
+      axios.get(`http://localhost:8000/api/students?class_name=${encodeURIComponent(selectedClassName)}`).then(res => {
+        const students = res.data;
+        setClassStudents(students);
+        setSelectedStudentIds(new Set(students.map((s: any) => s.id)));
+      }).catch(err => console.error('Failed to load students:', err));
+    } else {
+      setClassStudents([]);
+      setSelectedStudentIds(new Set());
+    }
+  }, [selectedClassName]);
+
+  // Generate student versions when worksheet is parsed and class mode is on
+  useEffect(() => {
+    if (classMode && parsedWorksheet && classStudents.length > 0 && selectedStudentIds.size > 0) {
+      const selectedStudents = classStudents.filter(s => selectedStudentIds.has(s.id));
+      const versions = generateStudentVersions(
+        parsedWorksheet,
+        selectedStudents,
+        randomizeQuestions,
+        randomizeOptions,
+        formData.selectedTemplate
+      );
+      setWorksheetPackage({
+        baseWorksheet: parsedWorksheet,
+        studentVersions: versions,
+        randomized: randomizeQuestions || randomizeOptions,
+        templateId: formData.selectedTemplate,
+        formData: {
+          ...formData,
+          accentColor: accentColor || undefined,
+          classMode,
+          selectedClassName,
+          randomizeQuestions,
+          randomizeOptions,
+        },
+        createdAt: new Date().toISOString(),
+      });
+      setSelectedStudentIndex(-1); // Start on answer key
+    } else if (!classMode) {
+      setWorksheetPackage(null);
+    }
+  }, [classMode, parsedWorksheet, classStudents, selectedStudentIds, randomizeQuestions, randomizeOptions]);
 
   // ✅ Connect WebSocket on mount
   useEffect(() => {
@@ -756,7 +837,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       includeImages: formData.includeImages,
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
-      showAnswers: viewMode === 'teacher'
+      showAnswers: viewMode === 'teacher',
+      accentColor: accentColor || undefined,
     };
 
     switch (selectedTemplate.id) {
@@ -773,6 +855,55 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       default:
         return null;
     }
+  };
+
+  // Render a specific student version or answer key using the template
+  const renderStudentVersion = (version: StudentWorksheetVersion | null, isAnswer: boolean) => {
+    if (!parsedWorksheet) return null;
+    const baseProps = {
+      subject: formData.subject,
+      gradeLevel: formData.gradeLevel,
+      topic: formData.topic,
+      strand: formData.strand,
+      questionType: formData.questionType,
+      worksheetTitle: formData.worksheetTitle || parsedWorksheet.metadata.title,
+      includeImages: formData.includeImages,
+      imagePlacement: formData.imagePlacement,
+      generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
+      accentColor: accentColor || undefined,
+      showAnswers: isAnswer,
+      isAnswerKey: isAnswer,
+      studentName: version?.student.full_name,
+      studentId: version?.student.id,
+      className: version?.student.class_name,
+    };
+
+    const questions = version ? version.questions : parsedWorksheet.questions;
+
+    switch (formData.selectedTemplate) {
+      case 'multiple-choice':
+        return <MultipleChoiceTemplate {...baseProps} questionCount={questions.length} questions={questions.map(q => ({ id: q.id, question: q.question, options: q.options, correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : undefined }))} />;
+      case 'comprehension':
+        return <ComprehensionTemplate {...baseProps} questionCount={questions.length} passage={parsedWorksheet.passage} questions={questions} />;
+      case 'matching':
+        return <MatchingTemplate {...baseProps} questionCount={questions.length} columnA={parsedWorksheet.matchingItems?.columnA} columnB={parsedWorksheet.matchingItems?.columnB} shuffledColumnB={version?.shuffledColumnB} matchingAnswerMap={version?.matchingAnswerMap} />;
+      case 'list-based':
+        return <ListBasedTemplate {...baseProps} questionCount={questions.length} questions={questions} wordBank={version?.shuffledWordBank || parsedWorksheet.wordBank} />;
+      case 'math':
+        return <MathTemplate {...baseProps} questionCount={questions.length} questions={questions} />;
+      default:
+        return null;
+    }
+  };
+
+  const handlePrintAll = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow || !worksheetPackage) return;
+    const palette = deriveWorksheetPalette(accentColor || '#2563eb');
+    printWindow.document.write('<html><head><title>Print All Worksheets</title><style>@media print { .page-break { page-break-after: always; } } body { margin: 0; }</style></head><body>');
+    printWindow.document.write('<div id="print-root"></div></body></html>');
+    printWindow.document.close();
+    setTimeout(() => { printWindow.print(); }, 500);
   };
 
   const renderTemplateWithLoading = () => {
@@ -803,7 +934,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       imagePlacement: formData.imagePlacement,
       generatedImage: generatedImages.length > 0 ? generatedImages[0] : null,
       showAnswers: viewMode === 'teacher',
-      loading: true
+      loading: true,
+      accentColor: accentColor || undefined,
     };
 
     switch (template) {
@@ -1399,6 +1531,164 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
               </div>
             )}
+
+            {/* ── Worksheet Color ── */}
+            {formData.selectedTemplate && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-theme-heading flex items-center">
+                  <PaintBrush className="w-5 h-5 mr-2" />
+                  Worksheet Color
+                </h3>
+                <p className="text-sm text-theme-hint">Choose an accent color for the worksheet</p>
+                <div className="flex flex-wrap gap-2 items-center">
+                  {COLOR_PRESETS.map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setAccentColor(accentColor === color ? '' : color)}
+                      className="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
+                      style={{
+                        background: color,
+                        borderColor: accentColor === color ? '#0f172a' : 'transparent',
+                        transform: accentColor === color ? 'scale(1.15)' : undefined,
+                        boxShadow: accentColor === color ? '0 0 0 2px white, 0 0 0 4px ' + color : undefined,
+                      }}
+                      title={color}
+                    />
+                  ))}
+                  <div className="flex items-center gap-2 ml-2">
+                    <input
+                      type="color"
+                      value={accentColor || '#2563eb'}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="w-8 h-8 rounded cursor-pointer border border-theme-strong"
+                      title="Custom color"
+                    />
+                    {accentColor && (
+                      <button
+                        onClick={() => setAccentColor('')}
+                        className="text-xs text-theme-hint hover:text-theme-label transition"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Generate for Class ── */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-theme-heading flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  Generate for Class
+                </h3>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={classMode}
+                    onChange={(e) => {
+                      setClassMode(e.target.checked);
+                      if (!e.target.checked) {
+                        setWorksheetPackage(null);
+                        setSelectedClassName('');
+                      }
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+                </label>
+              </div>
+              <p className="text-sm text-theme-hint">Generate personalized copies with student names and IDs</p>
+
+              {classMode && (
+                <div className="space-y-4 p-4 bg-theme-secondary border border-theme rounded-lg">
+                  {/* Class Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-label mb-2">Select Class</label>
+                    <select
+                      value={selectedClassName}
+                      onChange={(e) => setSelectedClassName(e.target.value)}
+                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Choose a class...</option>
+                      {availableClasses.map(c => (
+                        <option key={c.class_name} value={c.class_name}>
+                          {c.grade_level && `Grade ${c.grade_level} - `}{c.class_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Student List */}
+                  {classStudents.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-theme-label">
+                          Students ({selectedStudentIds.size} of {classStudents.length} selected)
+                        </label>
+                        <button
+                          onClick={() => {
+                            if (selectedStudentIds.size === classStudents.length) {
+                              setSelectedStudentIds(new Set());
+                            } else {
+                              setSelectedStudentIds(new Set(classStudents.map(s => s.id)));
+                            }
+                          }}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          {selectedStudentIds.size === classStudents.length ? 'Deselect All' : 'Select All'}
+                        </button>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto border border-theme rounded-lg divide-y divide-theme">
+                        {classStudents.map(student => (
+                          <label key={student.id} className="flex items-center gap-3 px-3 py-2 hover:bg-theme-subtle cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedStudentIds.has(student.id)}
+                              onChange={(e) => {
+                                const next = new Set(selectedStudentIds);
+                                if (e.target.checked) next.add(student.id);
+                                else next.delete(student.id);
+                                setSelectedStudentIds(next);
+                              }}
+                              className="rounded border-theme-strong text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-theme-heading flex-1">{student.full_name}</span>
+                            <span className="text-xs text-theme-hint font-mono">{student.id}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Randomize Options */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={randomizeQuestions}
+                        onChange={(e) => setRandomizeQuestions(e.target.checked)}
+                        className="rounded border-theme-strong text-blue-600 focus:ring-blue-500"
+                      />
+                      <Shuffle className="w-4 h-4 text-theme-muted" />
+                      <span className="text-sm text-theme-label">Randomize question order per student</span>
+                    </label>
+                    {randomizeQuestions && (
+                      <label className="flex items-center gap-2 cursor-pointer ml-6">
+                        <input
+                          type="checkbox"
+                          checked={randomizeOptions}
+                          onChange={(e) => setRandomizeOptions(e.target.checked)}
+                          className="rounded border-theme-strong text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-theme-label">Also randomize answer options (MC/Matching)</span>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1430,7 +1720,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 ) : (
                   <>
                     <FileText className="w-5 h-5 mr-2" />
-                    Generate Worksheet
+                    {classMode && selectedStudentIds.size > 0
+                      ? `Generate for ${selectedStudentIds.size} Students`
+                      : 'Generate Worksheet'}
                   </>
                 )}
               </button>
@@ -1698,6 +1990,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                          correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : undefined
                        }))}
                        showAnswers={viewMode === 'teacher'}
+                       accentColor={accentColor || undefined}
                      />
                    )}
                   {formData.selectedTemplate === 'comprehension' && (
@@ -1714,6 +2007,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       passage={parsedWorksheet.passage}
                       questions={parsedWorksheet.questions}
                       showAnswers={viewMode === 'teacher'}
+                      accentColor={accentColor || undefined}
                     />
                   )}
                   {formData.selectedTemplate === 'matching' && (
@@ -1728,6 +2022,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       columnA={parsedWorksheet.matchingItems?.columnA}
                       columnB={parsedWorksheet.matchingItems?.columnB}
                       showAnswers={viewMode === 'teacher'}
+                      accentColor={accentColor || undefined}
                     />
                   )}
                   {formData.selectedTemplate === 'list-based' && (
@@ -1743,6 +2038,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questions={parsedWorksheet.questions}
                       wordBank={parsedWorksheet.wordBank}
                       showAnswers={viewMode === 'teacher'}
+                      accentColor={accentColor || undefined}
                     />
                   )}
                   {formData.selectedTemplate === 'math' && (
@@ -1755,6 +2051,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questions={parsedWorksheet.questions}
                       showAnswers={viewMode === 'teacher'}
                       questionCount={parsedWorksheet.questions.length}
+                      accentColor={accentColor || undefined}
                     />
                   )}
                 </div>
@@ -1782,6 +2079,174 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           )}
         </div>
  
+        {/* ── Student Versions Panel ── */}
+        {worksheetPackage && parsedWorksheet && (
+          <div className="absolute inset-0 z-30 flex flex-col bg-theme-surface">
+            {/* Top bar */}
+            <div className="p-3 border-b border-theme flex items-center justify-between bg-theme-secondary">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                <span className="font-semibold text-theme-heading">
+                  {selectedStudentIndex === -1
+                    ? 'Answer Key'
+                    : `${worksheetPackage.studentVersions[selectedStudentIndex]?.student.full_name} — ${worksheetPackage.studentVersions[selectedStudentIndex]?.student.id}`
+                  }
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-theme-hint">
+                  {worksheetPackage.studentVersions.length} versions
+                  {worksheetPackage.randomized && ' • Randomized'}
+                </span>
+                <button
+                  onClick={() => {
+                    const el = document.getElementById('student-versions-preview');
+                    if (el) {
+                      const pw = window.open('', '_blank');
+                      if (pw) {
+                        pw.document.write('<html><head><title>Print</title></head><body>' + el.innerHTML + '</body></html>');
+                        pw.document.close();
+                        setTimeout(() => pw.print(), 300);
+                      }
+                    }
+                  }}
+                  className="flex items-center px-3 py-1.5 text-xs bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover border border-theme-strong"
+                >
+                  <Printer className="w-3.5 h-3.5 mr-1.5" />
+                  Print This
+                </button>
+                <ExportButton
+                  dataType="worksheet"
+                  data={{
+                    content: generatedWorksheet,
+                    parsedWorksheet: parsedWorksheet,
+                    formData: { ...formData, viewMode },
+                    accentColor: accentColor || '#3b82f6',
+                    generatedImages: generatedImages
+                  }}
+                  filename={`worksheet-${selectedStudentIndex === -1 ? 'answer-key' : worksheetPackage.studentVersions[selectedStudentIndex]?.student.id}`}
+                  className="!px-3 !py-1.5 !text-xs"
+                />
+                <button
+                  onClick={() => setWorksheetPackage(null)}
+                  className="p-1.5 rounded hover:bg-theme-hover transition"
+                  title="Close student versions"
+                >
+                  <X className="w-4 h-4 text-theme-muted" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 flex overflow-hidden">
+              {/* Left sidebar — student list */}
+              <div className="w-64 border-r border-theme flex flex-col bg-theme-secondary overflow-hidden">
+                {/* Search */}
+                <div className="p-2 border-b border-theme">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-theme-hint" />
+                    <input
+                      value={studentSearch}
+                      onChange={(e) => setStudentSearch(e.target.value)}
+                      placeholder="Search students..."
+                      className="w-full pl-8 pr-3 py-1.5 text-xs border border-theme-strong rounded-lg focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Answer Key button */}
+                <button
+                  onClick={() => setSelectedStudentIndex(-1)}
+                  className={`flex items-center gap-2 px-3 py-2.5 text-left border-b border-theme transition ${
+                    selectedStudentIndex === -1
+                      ? 'bg-red-50 border-l-4 border-l-red-500'
+                      : 'hover:bg-theme-subtle border-l-4 border-l-transparent'
+                  }`}
+                >
+                  <GraduationCap className="w-4 h-4 text-red-600" />
+                  <div>
+                    <div className="text-sm font-semibold text-red-700">Answer Key</div>
+                    <div className="text-xs text-red-500">Teacher version</div>
+                  </div>
+                </button>
+
+                {/* Student list */}
+                <div className="flex-1 overflow-y-auto">
+                  {worksheetPackage.studentVersions
+                    .filter(v => !studentSearch || v.student.full_name.toLowerCase().includes(studentSearch.toLowerCase()) || v.student.id.toLowerCase().includes(studentSearch.toLowerCase()))
+                    .map((version, idx) => {
+                      const realIdx = worksheetPackage.studentVersions.indexOf(version);
+                      return (
+                        <button
+                          key={version.student.id}
+                          onClick={() => setSelectedStudentIndex(realIdx)}
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-left border-b border-theme transition ${
+                            selectedStudentIndex === realIdx
+                              ? 'bg-blue-50 border-l-4 border-l-blue-500'
+                              : 'hover:bg-theme-subtle border-l-4 border-l-transparent'
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-theme-heading truncate">{version.student.full_name}</div>
+                            <div className="text-xs text-theme-hint font-mono">{version.student.id}</div>
+                          </div>
+                          {printedStudents.has(version.student.id) && (
+                            <Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Right side — preview */}
+              <div className="flex-1 overflow-y-auto p-4" id="student-versions-preview">
+                <div className="transform scale-[0.85] origin-top">
+                  {selectedStudentIndex === -1
+                    ? renderStudentVersion(null, true)
+                    : renderStudentVersion(worksheetPackage.studentVersions[selectedStudentIndex], false)
+                  }
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom action bar */}
+            <div className="p-3 border-t border-theme bg-theme-secondary flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrintAll}
+                  className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print All Student Worksheets
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedStudentIndex(-1);
+                    const el = document.getElementById('student-versions-preview');
+                    if (el) {
+                      const pw = window.open('', '_blank');
+                      if (pw) {
+                        pw.document.write('<html><head><title>Answer Key</title></head><body>' + el.innerHTML + '</body></html>');
+                        pw.document.close();
+                        setTimeout(() => pw.print(), 300);
+                      }
+                    }
+                  }}
+                  className="flex items-center px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                >
+                  <GraduationCap className="w-4 h-4 mr-2" />
+                  Print Answer Key
+                </button>
+              </div>
+              <div className="text-xs text-theme-hint">
+                {worksheetPackage.studentVersions.length} versions
+                {worksheetPackage.randomized && ' • Questions randomized'}
+                {' • '}{formData.selectedTemplate} template
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* History Panel - Slides in from right as overlay */}
         {historyOpen && (
           <>

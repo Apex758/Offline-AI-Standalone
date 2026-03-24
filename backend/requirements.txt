@@ -41,4 +41,13 @@ soupsieve==2.8
 # MANUAL INSTALLATION REQUIRED
 # ========================================
 # llama-cpp-python must be installed separately:
-# pip install llama-cpp-python --no-build-isolation --config-settings=builddir=build
+#
+# CPU only:
+#   pip install llama-cpp-python --no-build-isolation --config-settings=builddir=build
+#
+# With CUDA (NVIDIA GPU):
+#   pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+#
+# GPU is auto-detected at runtime via nvidia-smi. The build scripts
+# (manual-package.ps1, package-backend.py) also auto-detect and install
+# the correct wheel when packaging.
