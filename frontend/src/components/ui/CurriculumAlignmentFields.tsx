@@ -46,6 +46,9 @@ export default function CurriculumAlignmentFields({
     ? specificOutcomes.split('\n').filter(s => s.trim())
     : [];
 
+  const scosStructuredAll = getSCOsStructured(subject, gradeLevel, strand, essentialOutcomes);
+  const scoIdMap = new Map(scosStructuredAll.map(s => [s.text, s.id]));
+
   const toggleSCO = (sco: string) => {
     const current = selectedSCOs;
     let updated: string[];
@@ -152,9 +155,8 @@ export default function CurriculumAlignmentFields({
             Specific Curriculum Outcomes <span className="text-red-500">*</span>
           </label>
           {(() => {
-            const scosStructured = getSCOsStructured(subject, gradeLevel, strand, essentialOutcomes);
+            const scosStructured = scosStructuredAll;
             const scoTexts = scosStructured.map(s => s.text);
-            const scoIdMap = new Map(scosStructured.map(s => [s.text, s.id]));
             return scosStructured.length > 0 ? (
               <div className="relative">
                 <button

@@ -117,7 +117,7 @@ import { SearchEntry } from '../data/searchIndex';
 import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
 import Grainient from './Grainient';
-import Galaxy from './Galaxy';
+import LightRays from './LightRays';
 
 
 interface DashboardProps {
@@ -2694,20 +2694,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               {/* Background layer */}
               {isDarkMode ? (
                 <div className="absolute inset-0" style={{ zIndex: 0 }}>
-                  <Galaxy
-                    mouseRepulsion
-                    mouseInteraction
-                    density={1}
-                    glowIntensity={0.3}
-                    saturation={0}
-                    hueShift={140}
-                    twinkleIntensity={0.3}
-                    rotationSpeed={0.1}
-                    repulsionStrength={2}
-                    autoCenterRepulsion={0}
-                    starSpeed={0.5}
-                    speed={1}
-                    transparent={false}
+                  <LightRays
+                    raysOrigin="top-center"
+                    raysColor="#ffffff"
+                    raysSpeed={1}
+                    lightSpread={0.5}
+                    rayLength={3}
+                    followMouse={true}
+                    mouseInfluence={0.1}
+                    noiseAmount={0}
+                    distortion={0}
+                    pulsating={false}
+                    fadeDistance={1}
+                    saturation={1}
                   />
                 </div>
               ) : (
