@@ -9,6 +9,7 @@ export interface ResourceTrendData {
   crossCurricular: number;
   worksheets: number;
   images: number;
+  presentations: number;
 }
 
 export interface DistributionData {

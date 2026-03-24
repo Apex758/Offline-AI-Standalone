@@ -384,6 +384,7 @@ const Settings: React.FC<SettingsProps> = () => {
     ...(settings.visualStudioEnabled ? [
       { type: 'worksheet-generator', label: 'Worksheet Builder', defaultColor: '#8b5cf6' },
       { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
+      { type: 'presentation-builder', label: 'Slide Deck', defaultColor: '#f97316' },
     ] : []),
     // Performance metrics
     ...(settings.performanceMetricsEnabled ? [

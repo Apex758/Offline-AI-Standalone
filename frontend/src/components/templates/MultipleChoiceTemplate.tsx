@@ -25,160 +25,115 @@ const MultipleChoiceTemplate: React.FC<MultipleChoiceTemplateProps> = ({
   gradeLevel = 'Grade',
   topic = 'Topic',
   questionCount = 10,
-  questionType = 'Multiple Choice', // eslint-disable-line @typescript-eslint/no-unused-vars
   worksheetTitle,
   includeImages = false,
   generatedImage = null,
   questions,
   showAnswers = false,
-  loading = false
+  loading = false,
 }) => {
-  // Use actual questions if provided, otherwise generate placeholders
   const displayQuestions = questions || Array.from({ length: questionCount }, (_, i) => ({
     id: `sample_${i}`,
-    question: `Sample multiple choice question ${i + 1}: Which of the following is correct?`,
-    options: ['Option A', 'Option B', 'Option C', 'Option D']
+    question: `Sample question ${i + 1}: Which of the following is correct?`,
+    options: ['First option here', 'Second option here', 'Third option here', 'Fourth option here'],
   }));
 
+  const ACCENT = '#2563eb';
+
   return (
-    <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
+    <div style={{ background: '#fff', maxWidth: 800, margin: '0 auto', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+
+      {/* Thick top bar */}
+      <div style={{ height: 7, background: ACCENT }} />
+
       {/* Header */}
-      <div className="border-b-2 border-gray-800 pb-4 mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            {loading ? (
-              <>
-                <Skeleton className="h-7 w-64 mb-2 bg-gray-200" />
-                <Skeleton className="h-4 w-48 mb-1 bg-gray-200" />
-                <Skeleton className="h-4 w-36 bg-gray-200" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle}</h1>
-                <p className="text-gray-600">
-                  <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Topic:</strong> {topic}
-                </p>
-              </>
-            )}
+      <div style={{ padding: '22px 36px 18px', borderBottom: '2px solid #0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20 }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: ACCENT, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+            {subject} · {gradeLevel} · {topic}
           </div>
-          <div className="text-right">
-            <p className="text-gray-600">Name: ____________________</p>
-            <p className="text-gray-600">Date: ____________________</p>
-          </div>
+          {loading
+            ? <Skeleton style={{ height: 28, width: 300, background: '#e2e8f0', borderRadius: 3 }} />
+            : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.01em' }}>{worksheetTitle}</h1>
+          }
+        </div>
+        <div style={{ fontSize: 12, color: '#475569', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
+          <div>Name: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span></div>
+          <div>Date: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 130 }}>&nbsp;</span></div>
+          <div>Score: <span style={{ borderBottom: '1px solid #94a3b8', paddingBottom: 1, display: 'inline-block', width: 55 }}>&nbsp;</span> / {questionCount}</div>
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
-        {loading ? (
-          <Skeleton className="h-4 w-80 bg-gray-200" />
-        ) : (
-          <p className="text-gray-700">
-            Read each question and circle the correct answer (A, B, C, or D).
-          </p>
-        )}
+      {/* Directions */}
+      <div style={{ background: '#eff6ff', padding: '9px 36px', borderBottom: '1px solid #bfdbfe', fontSize: 13, color: '#1e40af' }}>
+        <strong>Directions:</strong> Read each question. Circle the letter of the best answer.
       </div>
 
-      {/* Shared Image */}
+      {/* Image */}
       {includeImages && (
-        <div className="mb-6">
-          {loading ? (
-            <Skeleton className="w-48 h-32 mx-auto bg-gray-200" />
-          ) : generatedImage ? (
-            <img
-              src={generatedImage}
-              alt="Generated worksheet image"
-              className="w-48 h-32 object-contain border border-gray-300 rounded mx-auto"
-            />
-          ) : (
-            <div className="w-48 h-32 bg-gray-200 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-500 mx-auto">
-              [Shared Image Placeholder]
-            </div>
-          )}
+        <div style={{ padding: '20px 36px 0', textAlign: 'center' }}>
+          {loading
+            ? <Skeleton style={{ width: 220, height: 130, display: 'inline-block', background: '#e2e8f0', borderRadius: 4 }} />
+            : generatedImage
+              ? <img src={generatedImage} alt="" style={{ maxWidth: 220, border: '1.5px solid #e2e8f0', borderRadius: 4 }} />
+              : <div style={{ display: 'inline-flex', width: 220, height: 130, background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: 4, alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 12 }}>image placeholder</div>
+          }
         </div>
       )}
 
       {/* Questions */}
-      <div className="space-y-6">
-        {loading ? (
-          Array.from({ length: questionCount }, (_, i) => (
-            <div key={`skeleton_${i}`} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
-                  {i + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="mb-3">
-                    <Skeleton className="h-4 w-5/6 bg-gray-200" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[0, 1, 2, 3].map((optIndex) => (
-                      <div key={optIndex} className="flex items-center space-x-2">
-                        <div className="w-6 h-6 border-2 rounded-full border-gray-300 flex items-center justify-center">
-                          <span className="text-xs font-semibold">{String.fromCharCode(65 + optIndex)}</span>
-                        </div>
-                        <Skeleton className="h-3.5 w-24 bg-gray-200" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          displayQuestions.map((q, i) => (
-            <div key={q.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
-                  {i + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="mb-3">
-                    <p className="text-gray-800 font-medium">
-                      {q.question}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {q.options?.map((option, optIndex) => {
-                      const isCorrect = typeof q.correctAnswer === 'number' && q.correctAnswer === optIndex;
-                      return (
-                        <div key={optIndex} className="flex items-center space-x-2">
-                          <div
-                            className={`w-6 h-6 border-2 rounded-full flex items-center justify-center cursor-pointer ${
-                              isCorrect && showAnswers
-                                ? 'border-green-500 bg-green-50 text-green-700'
-                                : 'border-gray-300 hover:border-blue-500'
-                            }`}
-                          >
-                            <span className="text-xs font-semibold">{String.fromCharCode(65 + optIndex)}</span>
-                          </div>
-                          <span className={`text-gray-700 ${isCorrect && showAnswers ? 'font-semibold' : ''}`}>
-                            {option}
-                          </span>
-                          {isCorrect && showAnswers && (
-                            <span className="text-xs text-green-700 ml-1">(Answer)</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-       </div>
+      <div style={{ padding: '22px 36px 36px' }}>
+        {displayQuestions.map((q, i) => (
+          <div key={q.id} style={{ display: 'flex', gap: 14, marginBottom: 24, pageBreakInside: 'avoid' }}>
 
-      {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-gray-300">
-        <p className="text-center text-gray-500 text-xs">
-          Worksheet generated for educational purposes
-        </p>
+            {/* Number bubble */}
+            <div style={{
+              flexShrink: 0, width: 34, height: 34, borderRadius: '50%',
+              background: ACCENT, color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 900, fontSize: 13, marginTop: 2,
+            }}>{i + 1}</div>
+
+            <div style={{ flex: 1 }}>
+              {loading
+                ? <Skeleton style={{ height: 15, width: '78%', background: '#e2e8f0', borderRadius: 3, marginBottom: 12, display: 'block' }} />
+                : <p style={{ margin: '4px 0 14px', fontSize: 14, color: '#1e293b', lineHeight: 1.55, fontWeight: 600 }}>{q.question}</p>
+              }
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px 18px' }}>
+                {(q.options || ['', '', '', '']).map((opt, oi) => {
+                  const isCorrect = typeof q.correctAnswer === 'number' && q.correctAnswer === oi;
+                  const LETTERS = ['A', 'B', 'C', 'D'];
+                  return (
+                    <div key={oi} style={{
+                      display: 'flex', alignItems: 'center', gap: 9,
+                      padding: '7px 11px',
+                      border: `1.5px solid ${isCorrect && showAnswers ? '#16a34a' : '#e2e8f0'}`,
+                      borderRadius: 7,
+                      background: isCorrect && showAnswers ? '#f0fdf4' : '#fafafa',
+                    }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                        border: `2px solid ${isCorrect && showAnswers ? '#16a34a' : '#475569'}`,
+                        background: isCorrect && showAnswers ? '#16a34a' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, fontWeight: 900,
+                        color: isCorrect && showAnswers ? '#fff' : '#475569',
+                      }}>{LETTERS[oi]}</div>
+                      {loading
+                        ? <Skeleton style={{ height: 12, flex: 1, background: '#e2e8f0', borderRadius: 3 }} />
+                        : <span style={{ fontSize: 13, color: '#334155' }}>{opt}</span>
+                      }
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      <div style={{ height: 6, background: ACCENT }} />
     </div>
   );
 };

@@ -145,6 +145,15 @@ const searchIndex: SearchEntry[] = [
     toolType: 'image-studio',
   },
   {
+    id: 'tool-presentation-builder',
+    title: 'Slide Deck',
+    description: 'Create presentations from lesson plans',
+    keywords: ['presentation', 'slides', 'slide deck', 'ppt', 'powerpoint', 'pptx', 'slideshow', 'present'],
+    category: 'tool',
+    icon: 'Presentation',
+    toolType: 'presentation-builder',
+  },
+  {
     id: 'tool-settings',
     title: 'Settings',
     description: 'Models, themes, and preferences',

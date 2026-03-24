@@ -58,7 +58,8 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
     multigrade: 0,
     crossCurricular: 0,
     worksheets: 0,
-    images: 0
+    images: 0,
+    presentations: 0
   });
 
   // Initialize buckets across the range
@@ -122,6 +123,9 @@ export function processResourceTrends(resources: any[], timeframe: Timeframe): R
             case 'image':
               data.images++;
               break;
+            case 'presentation':
+              data.presentations++;
+              break;
           }
         }
       }
@@ -146,7 +150,8 @@ export function calculateDistribution(resources: any[], tabColors: { [key: strin
     multigrade: 'Multi-Level Plans',
     'cross-curricular': 'Integrated Lesson Plans',
     worksheet: 'Worksheets',
-    image: 'Images'
+    image: 'Images',
+    presentation: 'Presentations'
   };
 
   // Map resource types to tool types for color lookup
@@ -158,7 +163,8 @@ export function calculateDistribution(resources: any[], tabColors: { [key: strin
     multigrade: 'multigrade-planner',
     'cross-curricular': 'cross-curricular-planner',
     worksheet: 'worksheet-generator',
-    image: 'image-studio'
+    image: 'image-studio',
+    presentation: 'presentation-builder'
   };
 
   // Get color for a resource type

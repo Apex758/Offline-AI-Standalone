@@ -163,7 +163,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     setLoading(true);
     try {
       // Load resources
-      const [lessonPlans, rubrics, quizzes, kindergarten, multigrade, crossCurricular, worksheets, images] = await Promise.all([
+      const [lessonPlans, rubrics, quizzes, kindergarten, multigrade, crossCurricular, worksheets, images, presentations] = await Promise.all([
         axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/rubric-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
@@ -171,7 +171,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/worksheet-history').catch(() => ({ data: [] })),
-        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] }))
+        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/presentation-history').catch(() => ({ data: [] }))
       ]);
 
       // Combine all resources with type labels
@@ -183,7 +184,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
         ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
         ...worksheets.data.map((r: any) => ({ ...r, type: 'worksheet' })),
-        ...images.data.map((r: any) => ({ ...r, type: 'image' }))
+        ...images.data.map((r: any) => ({ ...r, type: 'image' })),
+        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' }))
       ];
 
       setAllResourcesData(allResources);

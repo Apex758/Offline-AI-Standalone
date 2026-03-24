@@ -92,7 +92,8 @@ export const DEFAULT_SETTINGS: Settings = {
     'support': '#3b82f6',
     'settings': '#6b7280',
     'brain-dump': '#a855f7',
-    'performance-metrics': '#10b981'
+    'performance-metrics': '#10b981',
+    'presentation-builder': '#f97316'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',

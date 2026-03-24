@@ -34,6 +34,7 @@ import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
 import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
+import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -79,6 +80,7 @@ const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const AlertTriangle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
 const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
 const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Activity01IconData} {...p} />;
+const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
 
@@ -101,6 +103,7 @@ const ClassManagement = React.lazy(() => import('./ClassManagement'));
 const SupportReporting = React.lazy(() => import('./SupportReporting'));
 const BrainDump = React.lazy(() => import('./BrainDump'));
 const PerformanceMetrics = React.lazy(() => import('./PerformanceMetrics'));
+const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -262,6 +265,14 @@ const tools: Tool[] = [
     type: 'image-studio',
     description: 'Generate and edit classroom visuals',
     group: 'visual-studio'
+  },
+  {
+    id: 'presentation-builder',
+    name: 'Slide Deck',
+    icon: 'Presentation',
+    type: 'presentation-builder',
+    description: 'Create presentations from lesson plans',
+    group: 'visual-studio'
   }
 ];
 
@@ -294,7 +305,8 @@ const iconMap: { [key: string]: React.ElementType } = {
   HelpCircle,
   AlertTriangle,
   Brain,
-  Speedometer
+  Speedometer,
+  Presentation
 };
 
 const WELCOME_TIPS = [
@@ -1389,6 +1401,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         />;
       case 'image-studio':
         return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+      case 'presentation-builder':
+        return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'settings':
         return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'class-management':

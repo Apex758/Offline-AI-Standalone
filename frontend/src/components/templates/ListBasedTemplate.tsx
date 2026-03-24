@@ -30,259 +30,175 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
   questions,
   wordBank,
   showAnswers = false,
-  loading = false
+  loading = false,
 }) => {
-  // Determine if we're in preview mode (no questions yet) or rendered mode (have questions)
   const isPreviewMode = !questions || questions.length === 0;
 
-  return (
-    <div className="w-full max-w-4xl mx-auto bg-white p-8">
-      {/* Header */}
-      <div className="border-b-2 border-gray-800 pb-4 mb-6">
-        {loading ? (
-          <>
-            <Skeleton className="h-7 w-64 mx-auto mb-2 bg-gray-200" />
-            <div className="flex justify-between text-sm text-gray-600">
-              <Skeleton className="h-4 w-24 bg-gray-200" />
-              <Skeleton className="h-4 w-20 bg-gray-200" />
-              <span>Name: _________________</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl font-bold text-center mb-2">{worksheetTitle}</h1>
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Subject: {subject}</span>
-              <span>Grade: {gradeLevel}</span>
-              <span>Name: _________________</span>
-            </div>
-          </>
-        )}
-      </div>
+  const ACCENT = '#7c3aed';
 
-      {/* Word Bank Section */}
-      {loading && (questionType === 'Word Bank') ? (
-        <div className="mb-8 p-4 border-2 border-gray-400 rounded-lg bg-gray-50">
-          <h3 className="font-bold text-lg mb-2">Word Bank</h3>
-          <div className="flex flex-wrap gap-3">
-            {Array.from({ length: 6 }, (_, i) => (
-              <Skeleton key={i} className="h-8 w-20 rounded bg-gray-200" />
-            ))}
-          </div>
-        </div>
-      ) : wordBank && wordBank.length > 0 ? (
-        <div className="mb-8 p-4 border-2 border-gray-400 rounded-lg bg-gray-50">
-          <h3 className="font-bold text-lg mb-2">Word Bank</h3>
-          <div className="flex flex-wrap gap-3">
-            {wordBank.map((word, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-white border border-gray-300 rounded shadow-sm"
-              >
-                {word}
-              </span>
-            ))}
-          </div>
-        </div>
-      ) : null}
+  const DIRECTIONS: Record<string, string> = {
+    'Word Bank': 'Use the words in the Word Bank to fill in each blank. Cross off each word as you use it.',
+    'True / False': 'Read each statement. Write TRUE or FALSE on the line provided.',
+    'Fill in the Blank': 'Fill in each blank with the correct word or phrase to complete the sentence.',
+    'Short Answer': 'Answer each question in 2–4 complete sentences.',
+  };
 
-      {/* Instructions */}
-      <div className="mb-6 p-3 bg-blue-50 border-l-4 border-blue-500">
-        {loading ? (
-          <Skeleton className="h-4 w-80 bg-blue-100" />
-        ) : (
-          <p className="text-sm">
-            {questionType === 'Word Bank'
-              ? 'Use the words from the word bank above to fill in the blanks in each sentence.'
-              : questionType === 'True / False'
-              ? 'Read each statement carefully and circle True or False.'
-              : questionType === 'Fill in the Blank'
-              ? 'Complete each sentence by filling in the blank with the correct word or phrase.'
-              : questionType === 'Short Answer'
-              ? 'Answer each question in 2-4 complete sentences.'
-              : 'Answer the following questions.'}
+  const renderQuestion = (question: WorksheetQuestion, index: number) => {
+    const base = (
+      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 20, pageBreakInside: 'avoid' }}>
+        <div style={{
+          flexShrink: 0, minWidth: 28, height: 28,
+          background: ACCENT, borderRadius: 4,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 12, fontWeight: 900, color: '#fff',
+        }}>{index + 1}</div>
+
+        <div style={{ flex: 1, paddingTop: 3 }}>
+          <p style={{ margin: '0 0 10px', fontSize: 14, color: '#1e293b', lineHeight: 1.55, fontWeight: 600 }}>
+            {question.question}
           </p>
-        )}
-      </div>
 
-      {/* Image (if shared mode) */}
-      {includeImages && (
-        <div className="mb-6 flex justify-center">
-          {loading ? (
-            <Skeleton className="max-w-md h-48 w-full bg-gray-200 rounded-lg" />
-          ) : generatedImage ? (
-            <img
-              src={generatedImage}
-              alt="Worksheet illustration"
-              className="max-w-md rounded-lg shadow-md"
-            />
-          ) : (
-            <div className="max-w-md h-48 bg-gray-200 border border-gray-300 rounded-lg flex items-center justify-center text-sm text-gray-500">
-              [Shared Image Placeholder]
+          {(questionType === 'True / False' || question.type === 'true-false') && (
+            <div style={{ display: 'flex', gap: 20, paddingLeft: 2 }}>
+              {['True', 'False'].map(val => (
+                <div key={val} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{
+                    width: 18, height: 18,
+                    border: `2px solid ${val === 'True' ? '#16a34a' : '#dc2626'}`,
+                    borderRadius: 3,
+                  }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: val === 'True' ? '#16a34a' : '#dc2626' }}>{val}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(questionType === 'Short Answer' || question.type === 'short-answer') && (
+            <div style={{ marginTop: 4 }}>
+              {[1, 2, 3].map(l => (
+                <div key={l} style={{ borderBottom: '1.5px solid #cbd5e1', height: 28, marginBottom: 4 }} />
+              ))}
+            </div>
+          )}
+
+          {(questionType === 'Fill in the Blank' || questionType === 'Word Bank') && (
+            <div style={{ borderBottom: '1.5px solid #cbd5e1', height: 28 }} />
+          )}
+
+          {showAnswers && question.correctAnswer !== undefined && question.correctAnswer !== '' && (
+            <div style={{ marginTop: 8, background: '#f5f3ff', border: '1.5px solid #a78bfa', borderRadius: 5, padding: '6px 12px', fontSize: 12, color: ACCENT, fontWeight: 700 }}>
+              Answer: {String(question.correctAnswer)}
             </div>
           )}
         </div>
-      )}
+      </div>
+    );
+    return base;
+  };
 
-      {/* Questions Section */}
-      <div className="space-y-6">
-        {loading ? (
-          // Loading Mode - Show skeleton placeholders
-          <>
-            {Array.from({ length: questionCount }).map((_, index) => (
-              <div key={`skeleton_${index}`} className="border-b border-gray-300 pb-4">
-                <div className="flex items-start space-x-3">
-                  <span className="font-bold">{index + 1}.</span>
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-5/6 mb-2 bg-gray-200" />
-                    {(questionType === 'True / False') ? (
-                      <div className="flex space-x-4 ml-6">
-                        <Skeleton className="h-4 w-12 bg-gray-200" />
-                        <Skeleton className="h-4 w-12 bg-gray-200" />
-                      </div>
-                    ) : (questionType === 'Short Answer') ? (
-                      <div className="space-y-2 mt-2">
-                        <div className="border-b border-gray-300 h-8"></div>
-                        <div className="border-b border-gray-300 h-8"></div>
-                      </div>
-                    ) : (
-                      <Skeleton className="h-4 w-2/3 bg-gray-200" />
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        ) : isPreviewMode ? (
-          // Preview Mode - Show placeholders
-          <>
-            {Array.from({ length: questionCount }).map((_, index) => (
-              <div key={index} className="border-b border-gray-300 pb-4">
-                <div className="flex items-start space-x-3">
-                  <span className="font-bold">{index + 1}.</span>
-                  <div className="flex-1">
-                    {questionType === 'Word Bank' || questionType === 'Fill in the Blank' ? (
-                      <p className="text-gray-600 mb-2">
-                        Sample sentence with _____________ to complete.
-                      </p>
-                    ) : questionType === 'True / False' ? (
-                      <>
-                        <p className="text-gray-600 mb-2">
-                          Sample statement about {topic}.
-                        </p>
-                        <div className="flex space-x-4 ml-6">
-                          <label className="flex items-center space-x-2">
-                            <input type="radio" name={`q${index}`} disabled />
-                            <span>True</span>
-                          </label>
-                          <label className="flex items-center space-x-2">
-                            <input type="radio" name={`q${index}`} disabled />
-                            <span>False</span>
-                          </label>
-                        </div>
-                      </>
-                    ) : questionType === 'Short Answer' ? (
-                      <>
-                        <p className="text-gray-600 mb-2">
-                          Sample question about {topic}?
-                        </p>
-                        <div className="space-y-2 mt-2">
-                          <div className="border-b border-gray-300 h-8"></div>
-                          <div className="border-b border-gray-300 h-8"></div>
-                          <div className="border-b border-gray-300 h-8"></div>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-gray-600">Sample question text</p>
-                    )}
+  return (
+    <div style={{ background: '#fff', maxWidth: 800, margin: '0 auto', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
 
-                    {/* Image per question removed; only shared image is supported */}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        ) : (
-          // Rendered Mode - Show actual questions
-          <>
-            {questions!.map((question, index) => (
-              <div key={question.id} className="border-b border-gray-300 pb-4">
-                <div className="flex items-start space-x-3">
-                  <span className="font-bold">{index + 1}.</span>
-                  <div className="flex-1">
-                    {/* ✅ Render the actual question text */}
-                     {questionType === 'Word Bank' || question.type === 'word-bank' ? (
-                       // Word Bank question - just the sentence with blank
-                       <p className="text-gray-800 leading-relaxed">
-                         {question.question}
-                       </p>
-                     ) : questionType === 'Fill in the Blank' || question.type === 'fill-blank' ? (
-                      // Fill in blank - sentence with blank
-                      <p className="text-gray-800 leading-relaxed">
-                        {question.question}
-                      </p>
-                    ) : questionType === 'True / False' || question.type === 'true-false' ? (
-                      // True/False - statement with radio buttons
-                      <>
-                        <p className="text-gray-800 leading-relaxed mb-2">
-                          {question.question}
-                        </p>
-                        <div className="flex space-x-4 ml-6">
-                          <label className="flex items-center space-x-2">
-                            <input 
-                              type="radio" 
-                              name={`q${index}`} 
-                              className="w-4 h-4"
-                            />
-                            <span>True</span>
-                          </label>
-                          <label className="flex items-center space-x-2">
-                            <input 
-                              type="radio" 
-                              name={`q${index}`} 
-                              className="w-4 h-4"
-                            />
-                            <span>False</span>
-                          </label>
-                        </div>
-                      </>
-                     ) : questionType === 'Short Answer' || question.type === 'short-answer' ? (
-                       // Short answer - question with lines
-                       <>
-                         <p className="text-gray-800 leading-relaxed mb-2">
-                           {question.question}
-                         </p>
-                        <div className="space-y-2 mt-3">
-                          <div className="border-b border-gray-400 h-8"></div>
-                          <div className="border-b border-gray-400 h-8"></div>
-                          <div className="border-b border-gray-400 h-8"></div>
-                        </div>
-                      </>
-                     ) : (
-                       // Default - just show question
-                       <p className="text-gray-800 leading-relaxed">
-                         {question.question}
-                       </p>
-                     )}
-
-                    {showAnswers && question.correctAnswer !== undefined && question.correctAnswer !== '' && (
-                      <div className="mt-2 text-sm text-green-700">
-                        Answer: {String(question.correctAnswer)}
-                      </div>
-                    )}
-
-                    {/* Image per question removed; only shared image is supported */}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
+      {/* Header */}
+      <div style={{ background: ACCENT, padding: '22px 36px 18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20 }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+              {subject} · {gradeLevel} · {questionType}
+            </div>
+            {loading
+              ? <Skeleton style={{ height: 28, width: 280, background: 'rgba(255,255,255,0.25)', borderRadius: 3 }} />
+              : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{worksheetTitle}</h1>
+            }
+            {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{topic}</p>}
+          </div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
+            <div>Name: <span style={{ borderBottom: '1px solid rgba(255,255,255,0.5)', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
+            <div>Date: <span style={{ borderBottom: '1px solid rgba(255,255,255,0.5)', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
+          </div>
+        </div>
       </div>
 
-      {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
-        <p>Generated for educational purposes</p>
+      <div style={{ padding: '22px 36px 36px' }}>
+
+        {/* Word Bank */}
+        {(loading && questionType === 'Word Bank')
+          ? (
+            <div style={{ marginBottom: 24, border: `2px solid ${ACCENT}`, borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ background: ACCENT, padding: '6px 16px' }}>
+                <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Word Bank</span>
+              </div>
+              <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} style={{ height: 28, width: 72, background: '#ede9fe', borderRadius: 4 }} />)}
+              </div>
+            </div>
+          )
+          : wordBank && wordBank.length > 0
+            ? (
+              <div style={{ marginBottom: 24, border: `2px solid ${ACCENT}`, borderRadius: 6, overflow: 'hidden' }}>
+                <div style={{ background: ACCENT, padding: '6px 16px' }}>
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Word Bank</span>
+                </div>
+                <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {wordBank.map((word, i) => (
+                    <span key={i} style={{ padding: '5px 12px', background: '#f5f3ff', border: `1.5px solid #a78bfa`, borderRadius: 4, fontSize: 13, fontWeight: 700, color: ACCENT }}>
+                      {word}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+            : null
+        }
+
+        {/* Directions */}
+        <div style={{ background: '#fafafa', border: '1.5px solid #e2e8f0', borderLeft: `4px solid ${ACCENT}`, borderRadius: 4, padding: '10px 16px', marginBottom: 24, fontSize: 13, color: '#334155' }}>
+          <strong>Directions:</strong> {DIRECTIONS[questionType] || 'Answer each question below.'}
+        </div>
+
+        {/* Shared image */}
+        {includeImages && (
+          <div style={{ marginBottom: 24, textAlign: 'center' }}>
+            {loading
+              ? <Skeleton style={{ width: 280, height: 160, display: 'inline-block', background: '#ede9fe', borderRadius: 4 }} />
+              : generatedImage
+                ? <img src={generatedImage} alt="" style={{ maxWidth: 280, border: `1.5px solid #a78bfa`, borderRadius: 4 }} />
+                : <div style={{ display: 'inline-flex', width: 280, height: 160, background: '#f5f3ff', border: '1.5px dashed #a78bfa', borderRadius: 4, alignItems: 'center', justifyContent: 'center', color: '#a78bfa', fontSize: 12 }}>image placeholder</div>
+            }
+          </div>
+        )}
+
+        {/* Ruled divider line before questions */}
+        <div style={{ borderTop: '2px solid #0f172a', marginBottom: 20 }} />
+
+        {/* Questions */}
+        {loading
+          ? Array.from({ length: questionCount }, (_, i) => (
+              <div key={`sk_${i}`} style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
+                <Skeleton style={{ width: 28, height: 28, background: '#ede9fe', borderRadius: 4, flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <Skeleton style={{ height: 14, width: '75%', background: '#e2e8f0', borderRadius: 3, marginBottom: 10 }} />
+                  <div style={{ borderBottom: '1.5px solid #e2e8f0', height: 24 }} />
+                </div>
+              </div>
+            ))
+          : isPreviewMode
+            ? Array.from({ length: questionCount }, (_, i) => renderQuestion({
+                id: `preview_${i}`,
+                question: questionType === 'True / False'
+                  ? `Sample statement about ${topic} that is either true or false.`
+                  : questionType === 'Short Answer'
+                  ? `Sample question about ${topic}?`
+                  : `Sample sentence with _____________ to complete about ${topic}.`,
+                type: questionType.toLowerCase().replace(/ /g, '-'),
+              }, i))
+            : questions!.map((q, i) => renderQuestion(q, i))
+        }
+      </div>
+
+      <div style={{ borderTop: '1.5px solid #e2e8f0', margin: '0 36px', padding: '10px 0 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 11, color: '#94a3b8' }}>Generated for educational purposes</span>
+        <div style={{ width: 20, height: 5, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>
   );

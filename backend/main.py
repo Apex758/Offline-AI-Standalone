@@ -1902,6 +1902,118 @@ async def worksheet_websocket(websocket: WebSocket):
     except Exception as e:
         logger.error(f"Worksheet WebSocket error: {str(e)}")
 
+
+@app.websocket("/ws/presentation")
+async def presentation_websocket(websocket: WebSocket):
+    """Generate presentation slide JSON from lesson content."""
+    await websocket.accept()
+    from generation_gate import acquire_generation_slot, release_generation_slot
+
+    cancelled_job_ids = set()
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            # Handle cancellation message
+            if isinstance(data, dict) and data.get("type") == "cancel" and "jobId" in data:
+                cancelled_job_ids.add(data["jobId"])
+                await websocket.send_json({"type": "cancelled", "jobId": data["jobId"]})
+                continue
+
+            prompt = data.get("prompt", "")
+            job_id = data.get("jobId") or data.get("id") or "presentation"
+            generation_mode = data.get("generationMode", "queued")
+
+            if not prompt:
+                continue
+
+            system_prompt = (
+                "You are an expert presentation designer for educational content. "
+                "Convert lesson plans into concise, visually-oriented slide decks. "
+                "Return ONLY valid JSON with no markdown fences or explanation. "
+                "Each slide should have punchy headlines (max 7 words) and short bullet points (max 12 words each)."
+            )
+
+            full_prompt = "<|begin_of_text|>"
+            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+            full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+            slot_mode = None
+            try:
+                slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+
+                token_buffer = []
+                last_send = time.time()
+                async for chunk in inference.generate_stream(
+                    tool_name="presentation",
+                    input_data=prompt,
+                    prompt_template=full_prompt,
+                    max_tokens=4000,
+                    temperature=0.7
+                ):
+                    if job_id in cancelled_job_ids:
+                        await websocket.send_json({"type": "cancelled", "jobId": job_id})
+                        break
+
+                    if chunk.get("error"):
+                        try:
+                            await websocket.send_json({"type": "error", "message": chunk["error"]})
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send error message - connection closed")
+                        break
+
+                    if chunk.get("finished"):
+                        if token_buffer:
+                            try:
+                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                                await asyncio.sleep(0)
+                            except Exception as e:
+                                logger.error(f"Error sending final tokens: {e}")
+                        try:
+                            await websocket.send_json({"type": "done"})
+                            await asyncio.sleep(0)
+                        except:
+                            logger.error("Could not send done message - connection closed")
+                        break
+
+                    if chunk.get("token"):
+                        token_buffer.append(chunk["token"])
+                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                            try:
+                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
+                                token_buffer = []
+                                last_send = time.time()
+                                await asyncio.sleep(0)
+                            except Exception as e:
+                                logger.error(f"Error sending token: {e}")
+                                break
+
+            except Exception as e:
+                logger.error(f"Presentation generation error: {e}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                try:
+                    await websocket.send_json({"type": "error", "message": str(e)})
+                except:
+                    logger.error("Could not send error message - connection closed")
+            finally:
+                try:
+                    release_generation_slot(slot_mode or generation_mode)
+                except Exception as e:
+                    logger.error(f"Error releasing generation slot: {e}")
+
+    except WebSocketDisconnect:
+        logger.info("Presentation WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Presentation WebSocket error: {str(e)}")
+
+
 @app.websocket("/ws/brain-dump")
 async def brain_dump_websocket(websocket: WebSocket):
     """Analyze free-form teacher brain dump and map to app actions."""
@@ -2653,6 +2765,30 @@ async def delete_images_history(image_id: str):
     histories = load_json_data("images_history.json")
     histories = [h for h in histories if h.get("id") != image_id]
     save_json_data("images_history.json", histories)
+    return {"success": True}
+
+
+# ── Presentation History ──
+
+@app.get("/api/presentation-history")
+async def get_presentation_history():
+    return load_json_data("presentation_history.json")
+
+@app.post("/api/presentation-history")
+async def save_presentation_history(data: dict):
+    histories = load_json_data("presentation_history.json")
+    existing = next((h for h in histories if h.get("id") == data.get("id")), None)
+    if existing:
+        histories = [h for h in histories if h.get("id") != data.get("id")]
+    histories.append(data)
+    save_json_data("presentation_history.json", histories[-20:])
+    return {"success": True}
+
+@app.delete("/api/presentation-history/{presentation_id}")
+async def delete_presentation_history(presentation_id: str):
+    histories = load_json_data("presentation_history.json")
+    histories = [h for h in histories if h.get("id") != presentation_id]
+    save_json_data("presentation_history.json", histories)
     return {"success": True}
 
 

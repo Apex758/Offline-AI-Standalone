@@ -18,6 +18,7 @@ import SortingDownIconData from '@hugeicons/core-free-icons/SortingDownIcon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
 import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
 import axios from 'axios';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -44,6 +45,7 @@ const ArrowUpDown: React.FC<{ className?: string; style?: React.CSSProperties }>
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Image: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Image01IconData} {...p} />;
 const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
+const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 
@@ -81,7 +83,8 @@ const resourceTypes = [
   { key: 'kindergarten', label: 'Kindergarten', icon: GraduationCap },
   { key: 'multigrade', label: 'Multigrade', icon: Users },
   { key: 'cross-curricular', label: 'Cross-Curricular', icon: Link2 },
-  { key: 'images', label: 'Images', icon: Image }
+  { key: 'images', label: 'Images', icon: Image },
+  { key: 'presentation', label: 'Presentations', icon: Presentation }
 ];
 
 const ResourceManager: React.FC<ResourceManagerProps> = ({
@@ -116,7 +119,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const loadAllResources = async () => {
     setLoading(true);
     try {
-      const [lessonPlans, quizzes, worksheets, rubrics, kindergarten, multigrade, crossCurricular, images] = await Promise.all([
+      const [lessonPlans, quizzes, worksheets, rubrics, kindergarten, multigrade, crossCurricular, images, presentations] = await Promise.all([
         axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/worksheet-history').catch(() => ({ data: [] })),
@@ -124,7 +127,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         axios.get('http://localhost:8000/api/kindergarten-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
         axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] })),
-        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] }))
+        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/presentation-history').catch(() => ({ data: [] }))
       ]);
 
       const allResources: Resource[] = [
@@ -135,7 +139,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         ...kindergarten.data.map((r: any) => ({ ...r, type: 'kindergarten' })),
         ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
         ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
-        ...images.data.map((r: any) => ({ ...r, type: 'images' }))
+        ...images.data.map((r: any) => ({ ...r, type: 'images' })),
+        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' }))
       ];
 
       setResources(allResources);
@@ -253,7 +258,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'kindergarten': 'http://localhost:8000/api/kindergarten-history',
       'multigrade': 'http://localhost:8000/api/multigrade-history',
       'cross-curricular': 'http://localhost:8000/api/cross-curricular-history',
-      'images': 'http://localhost:8000/api/images-history'
+      'images': 'http://localhost:8000/api/images-history',
+      'presentation': 'http://localhost:8000/api/presentation-history'
     };
     return endpoints[type];
   };
@@ -280,7 +286,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'kindergarten': GraduationCap,
       'multigrade': Users,
       'cross-curricular': Link2,
-      'images': Image
+      'images': Image,
+      'presentation': Presentation
     };
     const Icon = icons[type] || FileText;
     return Icon;
@@ -295,7 +302,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'kindergarten': 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-700',
       'multigrade': 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700',
       'cross-curricular': 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700',
-      'images': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700'
+      'images': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
+      'presentation': 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700'
     };
     return colors[type] || 'bg-theme-tertiary text-theme-label border-theme';
   };
@@ -309,7 +317,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
       'kindergarten': 'bg-pink-500',
       'multigrade': 'bg-indigo-500',
       'cross-curricular': 'bg-teal-500',
-      'images': 'bg-green-500'
+      'images': 'bg-green-500',
+      'presentation': 'bg-orange-500'
     };
     return colors[type] || 'bg-gray-500';
   };

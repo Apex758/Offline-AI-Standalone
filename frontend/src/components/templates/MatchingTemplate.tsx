@@ -20,147 +20,161 @@ const MatchingTemplate: React.FC<MatchingTemplateProps> = ({
   gradeLevel = 'Grade',
   topic = 'Topic',
   questionCount = 10,
-  questionType = 'Matching', // eslint-disable-line @typescript-eslint/no-unused-vars
   worksheetTitle,
-  includeImages = false, // eslint-disable-line @typescript-eslint/no-unused-vars
   columnA,
   columnB,
   showAnswers = false,
-  loading = false
+  loading = false,
 }) => {
-  // Use actual data if provided, otherwise use placeholders
-  const displayColumnA = columnA || Array.from({ length: questionCount }, (_, i) =>
-    `Sample prompt ${i + 1}: Item ${String.fromCharCode(65 + i)}`
-  );
+  const displayColumnA = columnA || Array.from({ length: questionCount }, (_, i) => `Term or item ${i + 1}`);
+  const displayColumnB = columnB || Array.from({ length: questionCount }, (_, i) => `Definition or description ${i + 1}`);
 
-  const displayColumnB = columnB || Array.from({ length: questionCount }, (_, i) =>
-    `Sample answer ${i + 1}: Definition ${String.fromCharCode(65 + i)}`
-  );
+  const shuffledB = React.useMemo(() => {
+    if (!columnB) return displayColumnB;
+    const arr = [...displayColumnB];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [columnB]);
+
+  const ACCENT = '#ea580c';
+
   return (
-    <div className="bg-white p-6 max-w-4xl mx-auto font-sans text-sm">
-      {/* Header */}
-      <div className="border-b-2 border-gray-800 pb-4 mb-6">
-        <div className="flex justify-between items-start">
+    <div style={{ background: '#fff', maxWidth: 800, margin: '0 auto', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+
+      {/* Header — diagonal stripe pattern top */}
+      <div style={{
+        background: '#fff7ed',
+        borderBottom: '2px solid #0f172a',
+        padding: '22px 36px 18px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle stripe background */}
+        <div style={{
+          position: 'absolute', inset: 0, opacity: 0.04,
+          backgroundImage: `repeating-linear-gradient(45deg, #ea580c 0, #ea580c 2px, transparent 2px, transparent 12px)`,
+          pointerEvents: 'none',
+        }} />
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20 }}>
           <div>
-            {loading ? (
-              <>
-                <Skeleton className="h-7 w-64 mb-2 bg-gray-200" />
-                <Skeleton className="h-4 w-48 mb-1 bg-gray-200" />
-                <Skeleton className="h-4 w-36 bg-gray-200" />
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">{worksheetTitle}</h1>
-                <p className="text-gray-600">
-                  <strong>Subject:</strong> {subject} | <strong>Grade:</strong> {gradeLevel}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Topic:</strong> {topic}
-                </p>
-              </>
-            )}
+            <div style={{ fontSize: 10, fontWeight: 700, color: ACCENT, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+              {subject} · {gradeLevel} · Matching
+            </div>
+            {loading
+              ? <Skeleton style={{ height: 28, width: 280, background: '#fed7aa', borderRadius: 3 }} />
+              : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0f172a', lineHeight: 1.1 }}>{worksheetTitle}</h1>
+            }
+            {!loading && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#78716c' }}>{topic}</p>}
           </div>
-          <div className="text-right">
-            <p className="text-gray-600">Name: ____________________</p>
-            <p className="text-gray-600">Date: ____________________</p>
+          <div style={{ fontSize: 12, color: '#57534e', lineHeight: 2.2, textAlign: 'right', flexShrink: 0 }}>
+            <div>Name: <span style={{ borderBottom: '1px solid #a8a29e', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
+            <div>Date: <span style={{ borderBottom: '1px solid #a8a29e', display: 'inline-block', width: 130, paddingBottom: 1 }}>&nbsp;</span></div>
           </div>
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Instructions:</h2>
-        {loading ? (
-          <Skeleton className="h-4 w-80 bg-gray-200" />
-        ) : (
-          <p className="text-gray-700">
-            Draw lines to match the items in Column A with the correct items in Column B.
-          </p>
+      {/* Directions */}
+      <div style={{ padding: '10px 36px', background: '#fff7ed', borderBottom: '1px solid #fed7aa', fontSize: 13, color: '#9a3412' }}>
+        <strong>Directions:</strong> Draw a line to match each item in Column A with the correct answer in Column B.
+      </div>
+
+      <div style={{ padding: '24px 36px 36px' }}>
+
+        {/* Column headers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 32px 1fr', gap: 0, marginBottom: 14 }}>
+          <div style={{ background: ACCENT, padding: '8px 14px', borderRadius: '4px 0 0 4px' }}>
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Column A</span>
+          </div>
+          <div style={{ background: '#fff7ed', borderTop: `1.5px solid ${ACCENT}`, borderBottom: `1.5px solid ${ACCENT}` }} />
+          <div style={{ background: '#c2410c', padding: '8px 14px', borderRadius: '0 4px 4px 0', textAlign: 'right' }}>
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Column B</span>
+          </div>
+        </div>
+
+        {/* Rows */}
+        {Array.from({ length: Math.max(displayColumnA.length, shuffledB.length) }, (_, i) => (
+          <div key={i} style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 32px 1fr',
+            gap: 0,
+            marginBottom: 10,
+            pageBreakInside: 'avoid',
+            alignItems: 'center',
+          }}>
+            {/* Column A item */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              border: `1.5px solid ${loading ? '#fed7aa' : '#e7e5e4'}`,
+              borderRadius: '6px 0 0 6px',
+              padding: '9px 12px',
+              background: '#fafaf9',
+              minHeight: 42,
+            }}>
+              <div style={{
+                flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
+                background: ACCENT, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 900,
+              }}>{i + 1}</div>
+              {loading
+                ? <Skeleton style={{ height: 13, flex: 1, background: '#fed7aa', borderRadius: 3 }} />
+                : <span style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.4, fontWeight: 500 }}>{displayColumnA[i] || ''}</span>
+              }
+              {/* Dot on right side — for drawing lines */}
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: ACCENT, flexShrink: 0, marginLeft: 'auto' }} />
+            </div>
+
+            {/* Center gap (where lines get drawn) */}
+            <div style={{ background: '#fff', borderTop: '1.5px solid #e7e5e4', borderBottom: '1.5px solid #e7e5e4', height: '100%' }} />
+
+            {/* Column B item */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              border: `1.5px solid ${loading ? '#fed7aa' : '#e7e5e4'}`,
+              borderRadius: '0 6px 6px 0',
+              padding: '9px 12px',
+              background: '#fff7ed',
+              minHeight: 42,
+            }}>
+              {/* Dot on left side */}
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#c2410c', flexShrink: 0 }} />
+              <div style={{
+                flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
+                background: '#c2410c', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 900,
+              }}>{String.fromCharCode(65 + i)}</div>
+              {loading
+                ? <Skeleton style={{ height: 13, flex: 1, background: '#fed7aa', borderRadius: 3 }} />
+                : <span style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.4, fontWeight: 500 }}>{shuffledB[i] || ''}</span>
+              }
+            </div>
+          </div>
+        ))}
+
+        {/* Answer Key */}
+        {showAnswers && columnA && columnB && (
+          <div style={{ marginTop: 28, border: '1.5px solid #fed7aa', borderRadius: 6, overflow: 'hidden' }}>
+            <div style={{ background: ACCENT, padding: '7px 16px' }}>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Answer Key</span>
+            </div>
+            <div style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {columnA.map((_, idx) => (
+                <div key={idx} style={{ padding: '4px 12px', background: '#fff7ed', border: `1.5px solid ${ACCENT}`, borderRadius: 4, fontSize: 12, fontWeight: 700, color: ACCENT }}>
+                  {idx + 1} → {String.fromCharCode(65 + idx)}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Matching Section */}
-       <div className="mb-8">
-         <div className="grid grid-cols-2 gap-8">
-           {/* Column A - Prompts */}
-           <div>
-             <h3 className="text-lg font-semibold text-gray-800 mb-4">Column A</h3>
-            <div className="space-y-4">
-              {loading ? (
-                Array.from({ length: questionCount }, (_, i) => (
-                  <div key={`skA_${i}`} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
-                      {i + 1}
-                    </div>
-                    <Skeleton className="h-4 flex-1 bg-gray-200" />
-                  </div>
-                ))
-              ) : (
-                displayColumnA.map((item, i) => (
-                  <div key={i} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-800">{item}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            </div>
-
-            {/* Column B - Answers */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Column B</h3>
-              <div className="space-y-4">
-                {loading ? (
-                  Array.from({ length: questionCount }, (_, i) => (
-                    <div key={`skB_${i}`} className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
-                        {String.fromCharCode(65 + i)}
-                      </div>
-                      <Skeleton className="h-4 flex-1 bg-gray-200" />
-                    </div>
-                  ))
-                ) : (
-                  displayColumnB.map((item, i) => (
-                    <div key={i} className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-semibold">
-                        {String.fromCharCode(65 + i)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-gray-800">{item}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-         </div>
-       </div>
-
-       {showAnswers && columnA && columnB && (
-         <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
-           <h4 className="font-semibold mb-2">Answer Key</h4>
-           <ul className="space-y-1 list-disc list-inside">
-             {columnA.map((item, idx) => {
-               const answer = columnB[idx] ?? columnB[Math.min(idx, columnB.length - 1)];
-               return (
-                 <li key={idx}>
-                   {idx + 1}. {item} — {answer ?? 'N/A'}
-                 </li>
-               );
-             })}
-           </ul>
-         </div>
-       )}
-
-      {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-gray-300">
-        <p className="text-center text-gray-500 text-xs">
-          Worksheet generated for educational purposes
-        </p>
+      <div style={{ borderTop: '1.5px solid #e7e5e4', margin: '0 36px', padding: '10px 0 18px', display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 11, color: '#94a3b8' }}>Generated for educational purposes</span>
+        <div style={{ width: 20, height: 5, background: ACCENT, borderRadius: 3 }} />
       </div>
     </div>
   );
