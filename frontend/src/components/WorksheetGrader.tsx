@@ -5,15 +5,21 @@ import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircl
 import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
 import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
-import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
-import UserIconData from '@hugeicons/core-free-icons/UserIcon';
+import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
 import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
-import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
-import { ParsedWorksheet, WorksheetQuestion } from '../types/worksheet';
+import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
+import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
+import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import { ParsedWorksheet } from '../types/worksheet';
+import { useSettings } from '../contexts/SettingsContext';
+import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import axios from 'axios';
+
+const API_BASE = 'http://localhost:8000';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -26,26 +32,47 @@ const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }>
 const XCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
 const Award: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Award01IconData} {...p} />;
 const RotateCcw: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ReloadIconData} {...p} />;
-const Save: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SaveIconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
-const User: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserIconData} {...p} />;
+const ChevronUp: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowUp01IconData} {...p} />;
 const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
 const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
 const ClipboardCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CheckListIconData} {...p} />;
-const Users: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
 const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={File01IconData} {...p} />;
-import { useSettings } from '../contexts/SettingsContext';
-import axios from 'axios';
-import WorksheetBulkGrader from './WorksheetBulkGrader';
-import { HeartbeatLoader } from './ui/HeartbeatLoader';
+const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
+const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
+const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
 
-const API_BASE = 'http://localhost:8000';
-
-interface Student {
+interface PackageSummary {
   id: string;
-  full_name: string;
-  class_name?: string;
-  grade_level?: string;
+  worksheet_title: string;
+  subject: string;
+  grade_level: string;
+  class_name: string;
+  randomized: number;
+  created_at: string;
+  graded: number;
+}
+
+interface WorksheetHistoryItem {
+  id: string;
+  title: string;
+  timestamp: string;
+  formData: { subject: string; gradeLevel: string; strand?: string; topic?: string };
+  parsedWorksheet: ParsedWorksheet | null;
+}
+
+interface GradedResult {
+  file_name: string;
+  student_name: string | null;
+  student_id: string | null;
+  error: string | null;
+  score: number;
+  total_points: number;
+  percentage: number;
+  letter_grade: string;
+  details: Record<string, { answer: any; earned: number; max: number; feedback?: string }>;
+  unclear: number[];
+  saved: boolean;
 }
 
 interface WorksheetGraderProps {
@@ -53,136 +80,198 @@ interface WorksheetGraderProps {
   onClose: () => void;
 }
 
-type GraderTab = 'single' | 'bulk';
-type SinglePhase = 'select-student' | 'answer' | 'results';
-
-interface StudentAnswer {
-  questionId: string;
-  value: string | number | null;
+function gradeColorBg(g: string) {
+  const m: Record<string, string> = { A: '#059669', B: '#2563eb', C: '#d97706', D: '#ea580c', F: '#dc2626' };
+  return m[g] || '#6b7280';
 }
 
-interface QuestionResult {
-  question: WorksheetQuestion;
-  studentAnswer: string | number | null;
-  correct: boolean;
-  pointsEarned: number;
-}
+type Phase = 'select-source' | 'upload' | 'grading' | 'results';
+type SourceType = 'package' | 'history' | 'upload';
 
-function isGradeable(q: WorksheetQuestion): boolean {
-  return q.type === 'multiple-choice' || q.type === 'true-false' || q.type === 'fill-blank' || q.type === 'word-bank';
-}
-
-function gradeAnswer(question: WorksheetQuestion, studentAnswer: string | number | null): boolean {
-  if (studentAnswer === null || studentAnswer === undefined) return false;
-  if (question.type === 'multiple-choice') return Number(studentAnswer) === Number(question.correctAnswer);
-  if (question.type === 'true-false') return String(studentAnswer).toLowerCase().trim() === String(question.correctAnswer).toLowerCase().trim();
-  if (question.type === 'fill-blank' || question.type === 'word-bank') {
-    const student = String(studentAnswer).trim().toLowerCase();
-    const accepted = String(question.correctAnswer ?? '').split(/[,/]/).map(a => a.trim().toLowerCase());
-    return accepted.some(a => a === student);
-  }
-  return false;
-}
-
-function getLetterGrade(pct: number): string {
-  if (pct >= 90) return 'A';
-  if (pct >= 80) return 'B';
-  if (pct >= 70) return 'C';
-  if (pct >= 60) return 'D';
-  return 'F';
-}
-
-function letterGradeColor(grade: string): string {
-  const m: Record<string, string> = {
-    A: 'text-green-600 bg-green-50 border-green-200',
-    B: 'text-blue-600 bg-blue-50 border-blue-200',
-    C: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    D: 'text-orange-600 bg-orange-50 border-orange-200',
-  };
-  return m[grade] ?? 'text-red-600 bg-red-50 border-red-200';
-}
-
-const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet: worksheetProp, onClose }) => {
+const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose }) => {
   const { settings } = useSettings();
   const accentColor = settings.tabColors['worksheet-generator'] ?? '#3b82f6';
 
-  const [activeWorksheet, setActiveWorksheet] = useState<ParsedWorksheet | null>(worksheetProp);
-  const [activeTab, setActiveTab] = useState<GraderTab>('single');
+  const [phase, setPhase] = useState<Phase>('select-source');
+  const [packages, setPackages] = useState<PackageSummary[]>([]);
+  const [histories, setHistories] = useState<WorksheetHistoryItem[]>([]);
 
-  // Single-student state
-  const [phase, setPhase] = useState<SinglePhase>('select-student');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [studentSearch, setStudentSearch] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [answers, setAnswers] = useState<StudentAnswer[]>([]);
-  const [results, setResults] = useState<QuestionResult[]>([]);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  // Selected answer key source
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [selectedWorksheet, setSelectedWorksheet] = useState<ParsedWorksheet | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+
+  // Teacher file upload
+  const [teacherFile, setTeacherFile] = useState<File | null>(null);
+  const [teacherDragging, setTeacherDragging] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const teacherFileRef = useRef<HTMLInputElement>(null);
+
+  // Student files
+  const [files, setFiles] = useState<File[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const [grading, setGrading] = useState(false);
+  const [results, setResults] = useState<GradedResult[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Active tab in source selection
+  const [sourceTab, setSourceTab] = useState<SourceType>('package');
 
   useEffect(() => {
-    if (activeWorksheet) {
-      setAnswers(activeWorksheet.questions.filter(isGradeable).map(q => ({ questionId: q.id, value: null })));
-    }
-  }, [activeWorksheet]);
-
-  useEffect(() => {
-    axios.get(`${API_BASE}/api/students`).then(r => setStudents(r.data)).catch(() => {});
+    loadPackages();
+    loadHistories();
   }, []);
 
-  const gradeableQuestions = activeWorksheet?.questions.filter(isGradeable) ?? [];
-  const filteredStudents = students.filter(s => s.full_name.toLowerCase().includes(studentSearch.toLowerCase()));
-
-  const setAnswer = (questionId: string, value: string | number | null) => {
-    setAnswers(prev => prev.map(a => a.questionId === questionId ? { ...a, value } : a));
-  };
-
-  const handleGrade = () => {
-    const questionResults: QuestionResult[] = gradeableQuestions.map(q => {
-      const ans = answers.find(a => a.questionId === q.id);
-      const correct = gradeAnswer(q, ans?.value ?? null);
-      return { question: q, studentAnswer: ans?.value ?? null, correct, pointsEarned: correct ? (q.points ?? 1) : 0 };
-    });
-    setResults(questionResults);
-    setPhase('results');
-  };
-
-  const totalPoints = gradeableQuestions.reduce((sum, q) => sum + (q.points ?? 1), 0);
-  const earnedPoints = results.reduce((sum, r) => sum + r.pointsEarned, 0);
-  const percentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
-  const letterGrade = getLetterGrade(percentage);
-  const allAnswered = gradeableQuestions.every(q => answers.find(a => a.questionId === q.id)?.value !== null);
-
-  const handleSave = async () => {
-    if (!selectedStudent || !activeWorksheet) return;
-    setSaveStatus('saving');
+  const loadPackages = async () => {
     try {
-      const answerMap: Record<string, any> = {};
-      results.forEach(r => {
-        answerMap[r.question.id] = { question: r.question.question, studentAnswer: r.studentAnswer, correct: r.correct, pointsEarned: r.pointsEarned };
-      });
-      await axios.post(`${API_BASE}/api/worksheet-grades`, {
-        student_id: selectedStudent.id,
-        worksheet_title: activeWorksheet.metadata.title,
-        subject: activeWorksheet.metadata.subject,
-        score: earnedPoints,
-        total_points: totalPoints,
-        percentage,
-        letter_grade: letterGrade,
-        answers: answerMap,
-      });
-      setSaveStatus('saved');
-    } catch {
-      setSaveStatus('error');
+      const res = await axios.get(`${API_BASE}/api/worksheet-packages`);
+      setPackages(res.data);
+    } catch (err) {
+      console.error('Failed to load packages:', err);
     }
   };
 
-  const handleReset = () => {
-    setPhase('select-student');
-    setSelectedStudent(null);
-    setStudentSearch('');
-    setAnswers(activeWorksheet?.questions.filter(isGradeable).map(q => ({ questionId: q.id, value: null })) ?? []);
+  const loadHistories = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/worksheet-history`);
+      setHistories(res.data);
+    } catch (err) {
+      console.error('Failed to load histories:', err);
+    }
+  };
+
+  // Select from packages (class mode)
+  const handleSelectPackage = (pkg: PackageSummary) => {
+    setSelectedPackageId(pkg.id);
+    setSelectedWorksheet(null);
+    setSelectedTitle(pkg.worksheet_title);
+    setSelectedSubject(pkg.subject);
+    setPhase('upload');
+  };
+
+  // Select from history
+  const handleSelectHistory = (h: WorksheetHistoryItem) => {
+    if (!h.parsedWorksheet) return;
+    setSelectedPackageId(null);
+    setSelectedWorksheet(h.parsedWorksheet);
+    setSelectedTitle(h.title);
+    setSelectedSubject(h.formData?.subject || 'General');
+    setPhase('upload');
+  };
+
+  // Teacher file upload + parse
+  const handleTeacherDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setTeacherDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) { setTeacherFile(file); setParseError(null); }
+  }, []);
+
+  const handleParseTeacherFile = async () => {
+    if (!teacherFile) return;
+    setParsing(true);
+    setParseError(null);
+    try {
+      const form = new FormData();
+      form.append('teacher_file', teacherFile);
+      const res = await axios.post(`${API_BASE}/api/parse-teacher-quiz`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      // The parse endpoint returns a ParsedQuiz-like structure, adapt it
+      const parsed = res.data;
+      setSelectedPackageId(null);
+      setSelectedWorksheet({
+        metadata: parsed.metadata || { title: 'Uploaded Worksheet', subject: 'General', gradeLevel: '', totalQuestions: 0, template: '' },
+        questions: parsed.questions || [],
+        passage: parsed.passage,
+        matchingItems: parsed.matchingItems,
+        wordBank: parsed.wordBank,
+      });
+      setSelectedTitle(parsed.metadata?.title || teacherFile.name);
+      setSelectedSubject(parsed.metadata?.subject || 'General');
+      setPhase('upload');
+    } catch (err: any) {
+      setParseError(err?.response?.data?.detail ?? 'Could not parse file. Try an HTML or PDF exported from this app.');
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  // Student file handling
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = Array.from(e.dataTransfer.files).filter(f =>
+      f.type.startsWith('image/') || f.type === 'application/pdf'
+    );
+    setFiles(prev => [...prev, ...dropped]);
+  }, []);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selected = Array.from(e.target.files).filter(f =>
+        f.type.startsWith('image/') || f.type === 'application/pdf'
+      );
+      setFiles(prev => [...prev, ...selected]);
+    }
+    if (e.target) e.target.value = '';
+  };
+
+  const removeFile = (idx: number) => setFiles(prev => prev.filter((_, i) => i !== idx));
+
+  // Grade
+  const handleGrade = async () => {
+    if (files.length === 0 || (!selectedPackageId && !selectedWorksheet)) return;
+
+    setGrading(true);
+    setPhase('grading');
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      files.forEach(f => formData.append('student_files', f));
+
+      if (selectedPackageId) {
+        formData.append('package_id', selectedPackageId);
+      } else if (selectedWorksheet) {
+        formData.append('worksheet_json', JSON.stringify(selectedWorksheet));
+        formData.append('worksheet_title', selectedTitle);
+        formData.append('worksheet_subject', selectedSubject);
+      }
+
+      const res = await axios.post(`${API_BASE}/api/grade-scanned-worksheets`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 600000,
+      });
+
+      setResults(res.data);
+      setPhase('results');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Grading failed');
+      setPhase('upload');
+    } finally {
+      setGrading(false);
+    }
+  };
+
+  const successCount = results.filter(r => r.saved).length;
+  const errorCount = results.filter(r => r.error).length;
+
+  const resetAll = () => {
+    setPhase('select-source');
+    setSelectedPackageId(null);
+    setSelectedWorksheet(null);
+    setSelectedTitle('');
+    setSelectedSubject('');
+    setFiles([]);
     setResults([]);
-    setSaveStatus('idle');
+    setError(null);
+    setTeacherFile(null);
+    setParseError(null);
   };
 
   return (
@@ -191,14 +280,13 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet: worksheetP
       {/* Header */}
       <div className="border-b border-theme px-6 py-4 flex items-center justify-between flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
         <div>
-          <h2 className="text-xl font-semibold text-theme-heading">Grade Worksheet</h2>
-          {activeWorksheet ? (
-            <p className="text-sm text-theme-hint">
-              {activeWorksheet.metadata.subject} · {activeWorksheet.metadata.gradeLevel} · {gradeableQuestions.length} gradeable questions
-            </p>
-          ) : (
-            <p className="text-sm text-theme-hint">Select a worksheet to grade</p>
-          )}
+          <h2 className="text-xl font-semibold text-theme-heading">Grade Worksheets</h2>
+          <p className="text-sm text-theme-hint">
+            {phase === 'select-source' && 'Select a worksheet or upload a teacher version'}
+            {phase === 'upload' && `Upload scanned papers for: ${selectedTitle}`}
+            {phase === 'grading' && 'AI is reading and grading papers...'}
+            {phase === 'results' && `${successCount} of ${results.length} graded & saved`}
+          </p>
         </div>
         <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme">
           <RotateCcw className="w-4 h-4" />
@@ -206,226 +294,403 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet: worksheetP
         </button>
       </div>
 
-      {/* Tabs */}
-      {activeWorksheet && (
-        <div className="flex border-b border-theme px-6 flex-shrink-0">
-          {(['single', 'bulk'] as GraderTab[]).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition ${
-                activeTab === tab
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-theme-muted hover:text-theme-label'
-              }`}
-            >
-              {tab === 'single' ? 'Single Student' : 'Bulk Grade'}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="flex-1 overflow-y-auto p-6">
 
-      {/* Content */}
-      {!activeWorksheet ? (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="text-center">
-            <FileText className="w-16 h-16 mx-auto mb-4 text-theme-hint" />
-            <h3 className="text-lg font-semibold text-theme-heading">No Worksheet Loaded</h3>
-            <p className="text-sm text-theme-hint mt-2">Generate a worksheet first, then click "Grade Worksheets"</p>
-          </div>
-        </div>
-      ) : activeTab === 'bulk' ? (
-        <WorksheetBulkGrader worksheet={activeWorksheet} onClose={onClose} embedded />
-      ) : (
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-2xl mx-auto space-y-6">
+        {/* ── Phase 1: Select Source ── */}
+        {phase === 'select-source' && (
+          <div className="max-w-2xl mx-auto">
+            {/* Tabs */}
+            <div className="flex border-b border-theme mb-4">
+              {([
+                ['package', ClipboardCheck, 'Class Worksheets'] as const,
+                ['history', History, 'Worksheet History'] as const,
+                ['upload', Upload, 'Upload Teacher Version'] as const,
+              ]).map(([tab, TabIcon, label]) => (
+                <button
+                  key={tab}
+                  onClick={() => setSourceTab(tab)}
+                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition ${
+                    sourceTab === tab ? 'border-current' : 'border-transparent text-theme-muted hover:text-theme-label'
+                  }`}
+                  style={sourceTab === tab ? { borderBottomColor: accentColor, color: accentColor } : {}}
+                >
+                  <TabIcon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
 
-            {/* Select Student */}
-            {phase === 'select-student' && (
-              <div className="space-y-4">
-                <div className="text-center mb-6">
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-3" style={{ backgroundColor: `${accentColor}15` }}>
-                    <User className="w-7 h-7" style={{ color: accentColor }} />
+            {/* Class Worksheets (packages) */}
+            {sourceTab === 'package' && (
+              <div className="space-y-3">
+                {packages.length === 0 ? (
+                  <div className="text-center py-10 text-theme-hint">
+                    <ClipboardCheck className="w-10 h-10 mx-auto mb-3" style={{ opacity: 0.3 }} />
+                    <p className="text-sm">No class worksheet packages yet.</p>
+                    <p className="text-xs mt-1">Generate a worksheet using Class Mode to create packages.</p>
+                    <p className="text-xs mt-3">Try the <strong>Worksheet History</strong> or <strong>Upload</strong> tab instead.</p>
                   </div>
-                  <h3 className="text-lg font-semibold text-theme-heading">Select Student</h3>
-                  <p className="text-sm text-theme-hint">Choose the student whose worksheet you're grading</p>
-                </div>
-
-                <div className="relative">
-                  <input
-                    value={studentSearch}
-                    onChange={(e) => { setStudentSearch(e.target.value); setShowDropdown(true); }}
-                    onFocus={() => setShowDropdown(true)}
-                    placeholder="Search by name..."
-                    className="w-full px-4 py-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                  {showDropdown && filteredStudents.length > 0 && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-theme-surface border border-theme rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
-                        {filteredStudents.map(s => (
-                          <button
-                            key={s.id}
-                            onClick={() => {
-                              setSelectedStudent(s);
-                              setStudentSearch(s.full_name);
-                              setShowDropdown(false);
-                              setPhase('answer');
-                            }}
-                            className="w-full text-left px-4 py-2.5 hover:bg-theme-subtle flex items-center justify-between"
-                          >
-                            <span className="text-sm font-medium text-theme-heading">{s.full_name}</span>
-                            <span className="text-xs text-theme-hint font-mono">{s.id}</span>
-                          </button>
-                        ))}
+                ) : (
+                  packages.map(pkg => (
+                    <button
+                      key={pkg.id}
+                      onClick={() => handleSelectPackage(pkg)}
+                      className="w-full text-left p-4 rounded-xl border border-theme hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-theme-heading group-hover:text-blue-600 transition-colors">{pkg.worksheet_title}</h4>
+                          <p className="text-xs text-theme-hint mt-0.5">
+                            {pkg.subject} · Grade {pkg.grade_level} · {pkg.class_name}
+                            {pkg.randomized ? ' · Randomized' : ''}
+                          </p>
+                          <p className="text-xs text-theme-hint mt-0.5">
+                            {new Date(pkg.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        </div>
+                        {pkg.graded ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium">Graded</span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium">Ungraded</span>
+                        )}
                       </div>
-                    </>
-                  )}
-                </div>
+                    </button>
+                  ))
+                )}
               </div>
             )}
 
-            {/* Answer Entry */}
-            {phase === 'answer' && selectedStudent && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-theme-secondary rounded-lg border border-theme">
-                  <div>
-                    <span className="text-sm font-semibold text-theme-heading">{selectedStudent.full_name}</span>
-                    <span className="text-xs text-theme-hint ml-2 font-mono">{selectedStudent.id}</span>
+            {/* Worksheet History */}
+            {sourceTab === 'history' && (
+              <div className="space-y-3">
+                {histories.length === 0 ? (
+                  <div className="text-center py-10 text-theme-hint">
+                    <History className="w-10 h-10 mx-auto mb-3" style={{ opacity: 0.3 }} />
+                    <p className="text-sm">No saved worksheets found.</p>
+                    <p className="text-xs mt-1">Generate and save a worksheet first.</p>
                   </div>
-                  <button onClick={handleReset} className="text-xs text-blue-600 hover:underline">Change student</button>
+                ) : (
+                  histories.filter(h => h.parsedWorksheet).map(h => (
+                    <button
+                      key={h.id}
+                      onClick={() => handleSelectHistory(h)}
+                      className="w-full text-left p-4 rounded-xl border border-theme hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-theme-heading group-hover:text-blue-600 transition-colors">{h.title}</h4>
+                          <p className="text-xs text-theme-hint mt-0.5">
+                            {h.formData?.subject || 'General'} · Grade {h.formData?.gradeLevel || '—'}
+                            {h.formData?.topic ? ` · ${h.formData.topic}` : ''}
+                          </p>
+                          <p className="text-xs text-theme-hint mt-0.5">
+                            {new Date(h.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <span className="text-xs text-theme-hint">
+                          {h.parsedWorksheet?.questions?.length || 0} questions
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Upload Teacher Version */}
+            {sourceTab === 'upload' && (
+              <div className="space-y-4">
+                <div
+                  onDrop={handleTeacherDrop}
+                  onDragOver={e => { e.preventDefault(); setTeacherDragging(true); }}
+                  onDragLeave={() => setTeacherDragging(false)}
+                  onClick={() => teacherFileRef.current?.click()}
+                  className="rounded-xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors"
+                  style={teacherDragging ? { borderColor: accentColor, backgroundColor: `${accentColor}10` } : {}}
+                >
+                  <Upload className="w-8 h-8 mx-auto mb-3 text-theme-muted" />
+                  {teacherFile ? (
+                    <div>
+                      <p className="text-sm font-medium text-theme-label">{teacherFile.name}</p>
+                      <p className="text-xs text-theme-muted mt-1">{(teacherFile.size / 1024).toFixed(1)} KB · click to change</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium text-theme-label">Drop teacher worksheet here</p>
+                      <p className="text-xs text-theme-muted mt-1">HTML or PDF exported from this app</p>
+                    </div>
+                  )}
+                  <input
+                    ref={teacherFileRef}
+                    type="file"
+                    accept=".html,.htm,.pdf,.txt"
+                    className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) { setTeacherFile(f); setParseError(null); } if (e.target) e.target.value = ''; }}
+                  />
                 </div>
 
-                {gradeableQuestions.map((q, i) => (
-                  <div key={q.id} className="p-4 border border-theme rounded-lg space-y-3">
-                    <div className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: accentColor }}>{i + 1}</span>
-                      <p className="text-sm font-medium text-theme-heading flex-1">{q.question}</p>
-                    </div>
-
-                    {q.type === 'multiple-choice' && q.options && (
-                      <div className="grid grid-cols-2 gap-2 ml-10">
-                        {q.options.map((opt, oi) => (
-                          <button
-                            key={oi}
-                            onClick={() => setAnswer(q.id, oi)}
-                            className={`text-left px-3 py-2 rounded-lg border text-sm transition ${
-                              answers.find(a => a.questionId === q.id)?.value === oi
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-theme hover:bg-theme-subtle text-theme-label'
-                            }`}
-                          >
-                            <span className="font-bold mr-2">{String.fromCharCode(65 + oi)}.</span>{opt}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {q.type === 'true-false' && (
-                      <div className="flex gap-3 ml-10">
-                        {['True', 'False'].map(val => (
-                          <button
-                            key={val}
-                            onClick={() => setAnswer(q.id, val)}
-                            className={`px-6 py-2 rounded-lg border text-sm font-medium transition ${
-                              answers.find(a => a.questionId === q.id)?.value === val
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-theme hover:bg-theme-subtle text-theme-label'
-                            }`}
-                          >
-                            {val}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {(q.type === 'fill-blank' || q.type === 'word-bank') && (
-                      <div className="ml-10">
-                        <input
-                          value={String(answers.find(a => a.questionId === q.id)?.value ?? '')}
-                          onChange={(e) => setAnswer(q.id, e.target.value)}
-                          placeholder="Student's answer..."
-                          className="w-full px-3 py-2 border border-theme-strong rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {parseError && (
+                  <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">{parseError}</div>
+                )}
 
                 <button
-                  onClick={handleGrade}
-                  disabled={!allAnswered}
-                  className="w-full py-3 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-40"
+                  onClick={handleParseTeacherFile}
+                  disabled={!teacherFile || parsing}
+                  className="w-full py-3 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ backgroundColor: accentColor }}
                 >
-                  <ClipboardCheck className="w-5 h-5" />
-                  Grade Worksheet
+                  {parsing ? <><HeartbeatLoader className="w-4 h-4" />Parsing answer key...</> : 'Load Answer Key'}
                 </button>
               </div>
             )}
+          </div>
+        )}
 
-            {/* Results */}
-            {phase === 'results' && selectedStudent && (
-              <div className="space-y-4">
-                {/* Score card */}
-                <div className="text-center p-6 rounded-xl border-2" style={{ borderColor: `${accentColor}40`, background: `${accentColor}08` }}>
-                  <Award className="w-10 h-10 mx-auto mb-2" style={{ color: accentColor }} />
-                  <div className="text-4xl font-black text-theme-heading">{earnedPoints} / {totalPoints}</div>
-                  <div className="text-lg text-theme-hint mt-1">{percentage}%</div>
-                  <div className={`inline-block mt-2 px-4 py-1 rounded-full border text-sm font-bold ${letterGradeColor(letterGrade)}`}>
-                    {letterGrade}
-                  </div>
-                  <div className="text-sm text-theme-hint mt-2">{selectedStudent.full_name} · {selectedStudent.id}</div>
+        {/* ── Phase 2: Upload Student Scans ── */}
+        {phase === 'upload' && (
+          <div className="max-w-2xl mx-auto space-y-4">
+            {/* Source indicator */}
+            <div className="p-3 rounded-lg bg-theme-secondary text-sm flex items-center gap-2">
+              <ClipboardCheck className="w-4 h-4" style={{ color: accentColor }} />
+              <span className="text-theme-body">
+                Grading: <strong>{selectedTitle}</strong> · {selectedSubject}
+                {selectedPackageId && ' · Class Package'}
+              </span>
+            </div>
+
+            {/* Drop zone */}
+            <div
+              onDrop={onDrop}
+              onDragOver={e => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onClick={() => fileRef.current?.click()}
+              className="rounded-xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors"
+              style={dragging ? { borderColor: accentColor, backgroundColor: `${accentColor}10` } : {}}
+            >
+              <Upload className="w-8 h-8 mx-auto mb-3 text-theme-muted" />
+              <p className="text-sm font-medium text-theme-label">Drop scanned student papers here</p>
+              <p className="text-xs text-theme-muted mt-1">JPG, PNG, or PDF — one file per student</p>
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+
+            {/* File list */}
+            {files.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-theme-heading">{files.length} file{files.length !== 1 ? 's' : ''}</span>
+                  <button onClick={() => setFiles([])} className="text-xs text-red-500 hover:text-red-600">Clear all</button>
                 </div>
-
-                {/* Per-question breakdown */}
-                {results.map((r, i) => (
-                  <div key={r.question.id} className={`flex items-start gap-3 p-3 rounded-lg border ${r.correct ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                    {r.correct
-                      ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      : <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    }
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-theme-heading">{i + 1}. {r.question.question}</p>
-                      <p className="text-xs mt-1">
-                        <span className={r.correct ? 'text-green-700' : 'text-red-700'}>
-                          Answer: {String(r.studentAnswer)}
-                        </span>
-                        {!r.correct && r.question.correctAnswer !== undefined && (
-                          <span className="text-green-700 ml-2">
-                            (Correct: {String(r.question.correctAnswer)})
-                          </span>
-                        )}
-                      </p>
+                <div className="max-h-48 overflow-y-auto space-y-1.5">
+                  {files.map((f, i) => (
+                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-theme-secondary text-sm">
+                      <FileText className="w-4 h-4 text-theme-muted shrink-0" />
+                      <span className="flex-1 truncate text-theme-body">{f.name}</span>
+                      <span className="text-xs text-theme-hint shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
+                      <button onClick={() => removeFile(i)} className="p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded shrink-0">
+                        <Trash2 className="w-3.5 h-3.5" style={{ color: '#ef4444' }} />
+                      </button>
                     </div>
-                    <span className="text-xs font-bold">{r.pointsEarned}/{r.question.points ?? 1}</span>
-                  </div>
-                ))}
-
-                {/* Action buttons */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleSave}
-                    disabled={saveStatus === 'saving' || saveStatus === 'saved'}
-                    className="flex-1 py-3 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-50"
-                    style={{ backgroundColor: saveStatus === 'saved' ? '#16a34a' : accentColor }}
-                  >
-                    <Save className="w-5 h-5" />
-                    {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved to Profile!' : saveStatus === 'error' ? 'Error — Retry' : 'Save Grade'}
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    className="px-6 py-3 rounded-lg border border-theme text-theme-label font-medium hover:bg-theme-hover transition"
-                  >
-                    Grade Another
-                  </button>
+                  ))}
                 </div>
               </div>
             )}
 
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={resetAll}
+                className="px-4 py-3 rounded-lg border border-theme text-sm font-medium text-theme-body hover:bg-theme-secondary transition-colors"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleGrade}
+                disabled={files.length === 0}
+                className="flex-1 py-3 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ backgroundColor: accentColor }}
+              >
+                Grade {files.length} Paper{files.length !== 1 ? 's' : ''}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* ── Phase 3: Grading ── */}
+        {phase === 'grading' && (
+          <div className="max-w-md mx-auto text-center py-16">
+            <div className="mb-6">
+              <HeartbeatLoader className="w-12 h-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-semibold text-theme-heading mb-2">Reading & Grading Papers</h3>
+            <p className="text-sm text-theme-hint">
+              The vision model is scanning {files.length} paper{files.length !== 1 ? 's' : ''}.
+              This takes ~30 seconds per paper.
+            </p>
+          </div>
+        )}
+
+        {/* ── Phase 4: Results ── */}
+        {phase === 'results' && (
+          <div className="max-w-4xl mx-auto space-y-4">
+            {/* Summary */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="p-3 rounded-xl bg-theme-secondary text-center">
+                <div className="text-2xl font-bold text-theme-heading">{results.length}</div>
+                <div className="text-xs text-theme-hint">Papers</div>
+              </div>
+              <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/10 text-center">
+                <div className="text-2xl font-bold text-green-600">{successCount}</div>
+                <div className="text-xs text-green-600">Saved</div>
+              </div>
+              {errorCount > 0 && (
+                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/10 text-center">
+                  <div className="text-2xl font-bold text-red-600">{errorCount}</div>
+                  <div className="text-xs text-red-600">Errors</div>
+                </div>
+              )}
+              <div className="p-3 rounded-xl bg-theme-secondary text-center">
+                <div className="text-2xl font-bold text-theme-heading">
+                  {results.filter(r => !r.error).length > 0
+                    ? Math.round(results.filter(r => !r.error).reduce((s, r) => s + r.percentage, 0) / results.filter(r => !r.error).length)
+                    : 0}%
+                </div>
+                <div className="text-xs text-theme-hint">Class Avg</div>
+              </div>
+            </div>
+
+            {/* Results table */}
+            <div className="border border-theme rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-theme-secondary text-left text-xs uppercase tracking-wider">
+                    <th className="px-4 py-2.5 font-semibold text-theme-hint">Student</th>
+                    <th className="px-4 py-2.5 font-semibold text-theme-hint">Score</th>
+                    <th className="px-4 py-2.5 font-semibold text-theme-hint">%</th>
+                    <th className="px-4 py-2.5 font-semibold text-theme-hint">Grade</th>
+                    <th className="px-4 py-2.5 font-semibold text-theme-hint">Status</th>
+                    <th className="px-4 py-2.5 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((r, i) => (
+                    <React.Fragment key={i}>
+                      <tr
+                        className={`border-t border-theme hover:bg-theme-secondary/50 cursor-pointer transition-colors ${r.error ? 'bg-red-50/30 dark:bg-red-900/5' : ''}`}
+                        onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-theme-heading">{r.student_name || r.file_name}</div>
+                          {r.student_id && <div className="text-xs text-theme-hint">{r.student_id}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-theme-body">{r.error ? '—' : `${r.score}/${r.total_points}`}</td>
+                        <td className="px-4 py-3 text-theme-body">{r.error ? '—' : `${r.percentage}%`}</td>
+                        <td className="px-4 py-3">
+                          {!r.error && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: gradeColorBg(r.letter_grade) }}>
+                              {r.letter_grade}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {r.error ? (
+                            <XCircle className="w-4 h-4" style={{ color: '#dc2626' }} />
+                          ) : r.saved ? (
+                            <CheckCircle className="w-4 h-4" style={{ color: '#059669' }} />
+                          ) : (
+                            <AlertCircle className="w-4 h-4" style={{ color: '#d97706' }} />
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {expandedIdx === i ? <ChevronUp className="w-4 h-4 text-theme-muted" /> : <ChevronDown className="w-4 h-4 text-theme-muted" />}
+                        </td>
+                      </tr>
+
+                      {expandedIdx === i && (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-3 bg-theme-secondary/20">
+                            {r.error ? (
+                              <div className="text-sm text-red-600 dark:text-red-400 p-2">{r.error}</div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                {Object.entries(r.details).map(([qNum, d]) => {
+                                  const isUnclear = r.unclear?.includes(Number(qNum));
+                                  return (
+                                    <div
+                                      key={qNum}
+                                      className={`flex items-start gap-3 p-2.5 rounded-lg text-xs ${
+                                        isUnclear
+                                          ? 'bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800'
+                                          : d.earned === d.max
+                                          ? 'bg-green-50 dark:bg-green-900/10'
+                                          : d.earned > 0
+                                          ? 'bg-amber-50/50 dark:bg-amber-900/5'
+                                          : 'bg-red-50 dark:bg-red-900/10'
+                                      }`}
+                                    >
+                                      <span className="font-bold text-theme-heading w-8 shrink-0">Q{qNum}</span>
+                                      <span className="flex-1 text-theme-body break-words">
+                                        {typeof d.answer === 'object' ? JSON.stringify(d.answer) : String(d.answer ?? '—')}
+                                      </span>
+                                      <span className={`font-bold shrink-0 ${d.earned === d.max ? 'text-green-600' : d.earned > 0 ? 'text-amber-600' : 'text-red-600'}`}>
+                                        {d.earned}/{d.max}
+                                      </span>
+                                      {isUnclear && <span className="text-amber-600 font-medium shrink-0">Unclear</span>}
+                                    </div>
+                                  );
+                                })}
+                                {Object.entries(r.details).some(([, d]) => d.feedback) && (
+                                  <div className="mt-2 pt-2 border-t border-theme space-y-1">
+                                    <p className="text-xs font-semibold text-theme-hint uppercase tracking-wider">AI Feedback</p>
+                                    {Object.entries(r.details)
+                                      .filter(([, d]) => d.feedback)
+                                      .map(([qNum, d]) => (
+                                        <p key={qNum} className="text-xs text-theme-hint">
+                                          <span className="font-semibold">Q{qNum}:</span> {d.feedback}
+                                        </p>
+                                      ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => { setPhase('upload'); setFiles([]); setResults([]); setError(null); }}
+                className="px-4 py-2.5 rounded-lg border border-theme text-sm font-medium text-theme-body hover:bg-theme-secondary transition-colors"
+              >
+                Grade More Papers
+              </button>
+              <button
+                onClick={resetAll}
+                className="px-4 py-2.5 rounded-lg border border-theme text-sm font-medium text-theme-body hover:bg-theme-secondary transition-colors"
+              >
+                Different Worksheet
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

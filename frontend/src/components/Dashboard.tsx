@@ -440,7 +440,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
@@ -773,7 +773,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {

@@ -67,6 +67,7 @@ import WorksheetStructuredEditor from './WorksheetStructuredEditor';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
+import WorksheetGrader from './WorksheetGrader';
 import SmartTextArea from './SmartTextArea';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import SmartInput from './SmartInput';
@@ -379,6 +380,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingStructured, setIsEditingStructured] = useState(false);
+  const [isGrading, setIsGrading] = useState(false);
   const [editBuffer, setEditBuffer] = useState('');
 
   // ── Class Mode State ──
@@ -431,7 +433,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         randomizeOptions,
         formData.selectedTemplate
       );
-      setWorksheetPackage({
+      const pkg: WorksheetPackage = {
         baseWorksheet: parsedWorksheet,
         studentVersions: versions,
         randomized: randomizeQuestions || randomizeOptions,
@@ -445,8 +447,23 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           randomizeOptions,
         },
         createdAt: new Date().toISOString(),
-      });
+      };
+      setWorksheetPackage(pkg);
       setSelectedStudentIndex(-1); // Start on answer key
+
+      // Persist package for scan-to-grade
+      const packageId = `pkg_${Date.now()}`;
+      axios.post('http://localhost:8000/api/worksheet-packages', {
+        id: packageId,
+        worksheet_title: formData.worksheetTitle || `${formData.subject} - Grade ${formData.gradeLevel} Worksheet`,
+        subject: formData.subject,
+        grade_level: formData.gradeLevel,
+        class_name: selectedClassName,
+        base_worksheet: parsedWorksheet,
+        student_versions: versions,
+        form_data: pkg.formData,
+        randomized: pkg.randomized,
+      }).catch(err => console.error('Failed to save worksheet package:', err));
     } else if (!classMode) {
       setWorksheetPackage(null);
     }
@@ -1157,9 +1174,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     <div className="h-full tab-content-bg grid grid-cols-2" data-tutorial="worksheet-generator-welcome">
       {/* Left Panel - Configuration (50%) */}
       <div className="flex flex-col border-r border-theme overflow-y-auto">
-        <div className="border-b border-theme p-4" data-tutorial="worksheet-generator-header">
-          <h2 className="text-xl font-semibold text-theme-heading">Worksheet Generator</h2>
-          <p className="text-sm text-theme-hint">Create customized worksheets with curriculum alignment</p>
+        <div className="border-b border-theme p-4 flex items-center justify-between" data-tutorial="worksheet-generator-header">
+          <div>
+            <h2 className="text-xl font-semibold text-theme-heading">Worksheet Generator</h2>
+            <p className="text-sm text-theme-hint">Create customized worksheets with curriculum alignment</p>
+          </div>
+          <button
+            onClick={() => setIsGrading(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition text-sm font-medium text-emerald-600 border border-emerald-200 shrink-0"
+            title="Grade scanned worksheets"
+          >
+            <Check className="w-4 h-4" />
+            Grade Worksheets
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
@@ -1731,8 +1758,30 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         </div>
       </div>
 
-      {/* Right Panel - Preview (50%) */}
-      <div className="bg-theme-secondary border-l border-theme flex flex-col overflow-y-auto relative" data-tutorial="worksheet-generator-preview">
+      {/* Right Panel - Preview (50%) with flip animation */}
+      <div className="bg-theme-secondary border-l border-theme flex flex-col overflow-hidden relative" style={{ perspective: '2000px' }} data-tutorial="worksheet-generator-preview">
+        <div
+          className="flex-1 flex flex-col"
+          style={{
+            transformStyle: 'preserve-3d',
+            transition: 'transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1)',
+            transform: isGrading ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            position: 'relative',
+            minHeight: 0,
+          }}
+        >
+          {/* FRONT FACE — Worksheet Preview */}
+          <div
+            className="flex-1 flex flex-col bg-theme-secondary overflow-y-auto"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              position: isGrading ? 'absolute' : 'relative',
+              inset: 0,
+              minHeight: 0,
+              pointerEvents: isGrading ? 'none' : 'auto',
+            }}
+          >
         <div className="p-4 border-b border-theme">
           <div className="flex items-center justify-between">
           <div>
@@ -1792,6 +1841,15 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       Save
                     </>
                   )}
+                </button>
+
+                <button
+                  onClick={() => setIsGrading(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-[13.5px] rounded-lg hover:bg-emerald-50 transition font-medium text-emerald-600 border border-emerald-200"
+                  title="Grade scanned worksheets"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  Grade
                 </button>
 
                 <div className="relative">
@@ -2312,6 +2370,29 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         </div>
       </>
     )}
+          </div>
+
+          {/* BACK FACE — Worksheet Grader */}
+          <div
+            className="flex-1 flex flex-col bg-theme-surface"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              position: isGrading ? 'relative' : 'absolute',
+              inset: 0,
+              minHeight: 0,
+              pointerEvents: isGrading ? 'auto' : 'none',
+            }}
+          >
+            {isGrading && (
+              <WorksheetGrader
+                worksheet={parsedWorksheet}
+                onClose={() => setIsGrading(false)}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

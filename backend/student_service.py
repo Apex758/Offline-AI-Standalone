@@ -109,6 +109,21 @@ def init_db():
                 FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
             )
         ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS worksheet_packages (
+                id               TEXT PRIMARY KEY,
+                worksheet_title  TEXT,
+                subject          TEXT,
+                grade_level      TEXT,
+                class_name       TEXT,
+                base_worksheet   TEXT,
+                student_versions TEXT,
+                form_data        TEXT,
+                randomized       INTEGER DEFAULT 0,
+                created_at       TEXT DEFAULT CURRENT_TIMESTAMP,
+                graded           INTEGER DEFAULT 0
+            )
+        ''')
         conn.commit()
     finally:
         conn.close()
@@ -420,6 +435,73 @@ def get_worksheet_grades(student_id: str) -> list[dict]:
             (student_id,)
         ).fetchall()
         return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# ── Worksheet Packages ────────────────────────────────────────────────────────
+
+def save_worksheet_package(data: dict) -> dict:
+    conn = _get_conn()
+    try:
+        pkg_id = data.get('id') or str(uuid.uuid4())
+        conn.execute(
+            '''INSERT OR REPLACE INTO worksheet_packages
+               (id, worksheet_title, subject, grade_level, class_name,
+                base_worksheet, student_versions, form_data, randomized)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            (
+                pkg_id,
+                data.get('worksheet_title'),
+                data.get('subject'),
+                data.get('grade_level'),
+                data.get('class_name'),
+                json.dumps(data.get('base_worksheet', {})),
+                json.dumps(data.get('student_versions', [])),
+                json.dumps(data.get('form_data', {})),
+                1 if data.get('randomized') else 0,
+            )
+        )
+        conn.commit()
+        row = conn.execute('SELECT * FROM worksheet_packages WHERE id = ?', (pkg_id,)).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def get_worksheet_package(package_id: str) -> dict | None:
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT * FROM worksheet_packages WHERE id = ?', (package_id,)
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def list_worksheet_packages(class_name: str | None = None) -> list[dict]:
+    conn = _get_conn()
+    try:
+        if class_name:
+            rows = conn.execute(
+                'SELECT id, worksheet_title, subject, grade_level, class_name, randomized, created_at, graded FROM worksheet_packages WHERE class_name = ? ORDER BY created_at DESC',
+                (class_name,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                'SELECT id, worksheet_title, subject, grade_level, class_name, randomized, created_at, graded FROM worksheet_packages ORDER BY created_at DESC'
+            ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def mark_package_graded(package_id: str) -> None:
+    conn = _get_conn()
+    try:
+        conn.execute('UPDATE worksheet_packages SET graded = 1 WHERE id = ?', (package_id,))
+        conn.commit()
     finally:
         conn.close()
 

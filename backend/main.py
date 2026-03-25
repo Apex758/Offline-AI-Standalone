@@ -2305,6 +2305,25 @@ async def add_worksheet_grade(grade: WorksheetGradeCreate):
 async def get_worksheet_grades_for_student(student_id: str):
     return student_service.get_worksheet_grades(student_id)
 
+
+# ── Worksheet Packages ───────────────────────────────────────────────────────
+
+@app.post("/api/worksheet-packages")
+async def save_worksheet_package(data: dict):
+    return student_service.save_worksheet_package(data)
+
+@app.get("/api/worksheet-packages")
+async def list_worksheet_packages(class_name: Optional[str] = None):
+    return student_service.list_worksheet_packages(class_name)
+
+@app.get("/api/worksheet-packages/{package_id}")
+async def get_worksheet_package(package_id: str):
+    pkg = student_service.get_worksheet_package(package_id)
+    if not pkg:
+        raise HTTPException(status_code=404, detail="Package not found")
+    return pkg
+
+
 @app.get("/api/attendance")
 async def get_attendance(class_name: str, date: str):
     return student_service.get_attendance(class_name, date)
@@ -2744,6 +2763,251 @@ async def bulk_grade_worksheet(
             file_result['error'] = f'Processing error: {str(e)}'
 
         graded_results.append(file_result)
+
+    return graded_results
+
+
+# ── Scan-to-Grade (Vision) ────────────────────────────────────────────────────
+
+def _build_vision_grading_prompt(base_worksheet: dict, student_versions: list) -> str:
+    """Build a prompt for the vision model to read and grade a scanned worksheet."""
+    questions = base_worksheet.get('questions', [])
+    passage = base_worksheet.get('passage', '')
+    matching = base_worksheet.get('matchingItems', {})
+    word_bank = base_worksheet.get('wordBank', [])
+
+    lines = []
+    for i, q in enumerate(questions, 1):
+        qtype = q.get('type', '')
+        pts = q.get('points', 1) or 1
+        q_text = q.get('question', '')
+        correct = q.get('correctAnswer', '')
+
+        if qtype == 'multiple-choice':
+            options = q.get('options', [])
+            opts_str = ', '.join(f"{chr(65+j)}) {o}" for j, o in enumerate(options))
+            correct_letter = chr(65 + int(correct)) if isinstance(correct, (int, float)) else correct
+            lines.append(f"Q{i} [Multiple Choice, {pts}pt]: \"{q_text}\" Options: {opts_str} → Correct: {correct_letter}")
+
+        elif qtype == 'true-false':
+            lines.append(f"Q{i} [True/False, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+
+        elif qtype == 'fill-blank':
+            lines.append(f"Q{i} [Fill-in-the-blank, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+
+        elif qtype == 'word-bank':
+            lines.append(f"Q{i} [Word Bank, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+
+        elif qtype == 'matching':
+            lines.append(f"Q{i} [Matching, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+
+        elif qtype == 'short-answer':
+            lines.append(f"Q{i} [Short Answer, {pts}pt]: \"{q_text}\" → Reference: {correct}")
+
+        elif qtype == 'comprehension':
+            lines.append(f"Q{i} [Comprehension, {pts}pt]: \"{q_text}\" → Reference: {correct}")
+
+        else:
+            lines.append(f"Q{i} [{qtype}, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+
+    answer_key_block = '\n'.join(lines)
+
+    # Add matching columns if present
+    matching_block = ''
+    if matching:
+        col_a = matching.get('columnA', [])
+        col_b = matching.get('columnB', [])
+        if col_a and col_b:
+            matching_block = f"\n\nMatching Columns:\nColumn A: {', '.join(f'{j+1}. {a}' for j, a in enumerate(col_a))}\nColumn B: {', '.join(f'{chr(65+j)}. {b}' for j, b in enumerate(col_b))}"
+
+    # Add word bank if present
+    word_bank_block = ''
+    if word_bank:
+        word_bank_block = f"\n\nWord Bank: {', '.join(word_bank)}"
+
+    # Add passage if present
+    passage_block = ''
+    if passage:
+        passage_block = f'\n\nPassage used:\n"""{passage[:1500]}"""'
+
+    # Student IDs for matching
+    student_ids = [sv.get('student', {}).get('id', '') for sv in student_versions]
+    id_block = f"\n\nKnown student IDs in this class: {', '.join(student_ids)}" if student_ids else ''
+
+    return f"""You are grading a student's handwritten worksheet from a scanned image.
+Read the image carefully and grade every question.
+
+ANSWER KEY:
+{answer_key_block}{matching_block}{word_bank_block}{passage_block}{id_block}
+
+INSTRUCTIONS:
+1. Find the student's name and student ID printed at the top of the page.
+2. Questions may appear in a DIFFERENT ORDER on the student's paper. Match each question by its content, not its number. Use the Q numbers from the answer key above.
+3. Read what the student wrote for each question.
+
+GRADING RULES:
+- Multiple Choice: correct only if the exact letter matches. Return the letter.
+- True/False: correct only if it matches exactly. Return "True" or "False".
+- Fill-in-the-blank: correct if the word/phrase matches (minor spelling errors OK for young students). Return the word(s).
+- Word Bank: correct if it matches the expected word. Return the word.
+- Matching: correct for each pair that matches. Return an object mapping item numbers to letters.
+- Math: correct if the numerical answer matches. Return the number.
+- Comprehension / Short Answer: award partial credit (0 to max points) based on accuracy and completeness. Return the student's full written response.
+
+If you cannot read an answer, set earned to 0 and add the question number to "unclear".
+
+Return ONLY valid JSON with no extra text:
+{{
+  "student_name": "name or null",
+  "student_id": "ID or null",
+  "results": {{
+    "1": {{"answer": "B", "earned": 1, "max": 1}},
+    "2": {{"answer": "True", "earned": 1, "max": 1}},
+    "3": {{"answer": "the student wrote this...", "earned": 2, "max": 2, "feedback": "brief reason"}}
+  }},
+  "unclear": []
+}}"""
+
+
+@app.post("/api/grade-scanned-worksheets")
+async def grade_scanned_worksheets(
+    student_files: List[UploadFile] = File(...),
+    package_id: Optional[str] = Form(None),
+    worksheet_json: Optional[str] = Form(None),
+    worksheet_title: Optional[str] = Form("Worksheet"),
+    worksheet_subject: Optional[str] = Form("General"),
+):
+    """Grade scanned student worksheets using the vision model.
+
+    Accepts either a package_id (for class-mode worksheets) or
+    worksheet_json (a ParsedWorksheet JSON for standalone worksheets).
+    """
+    # 1. Load answer key from package or direct JSON
+    package = None
+    base_worksheet = None
+    student_versions = []
+
+    if package_id:
+        package = student_service.get_worksheet_package(package_id)
+        if not package:
+            raise HTTPException(status_code=404, detail="Worksheet package not found")
+        base_worksheet = json.loads(package['base_worksheet']) if isinstance(package['base_worksheet'], str) else package['base_worksheet']
+        student_versions = json.loads(package['student_versions']) if isinstance(package['student_versions'], str) else package['student_versions']
+    elif worksheet_json:
+        try:
+            base_worksheet = json.loads(worksheet_json)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid worksheet JSON")
+    else:
+        raise HTTPException(status_code=400, detail="Provide either package_id or worksheet_json")
+
+    # 2. Build prompt
+    prompt = _build_vision_grading_prompt(base_worksheet, student_versions)
+
+    # 3. Get inference instance
+    from inference_factory import get_inference_instance
+    inference = get_inference_instance()
+
+    if not getattr(inference, 'has_vision', False):
+        raise HTTPException(status_code=400, detail="Vision model not available. Load a multimodal model to grade scanned worksheets.")
+
+    graded_results = []
+
+    for upload in student_files:
+        file_result = {
+            'file_name': upload.filename,
+            'student_name': None,
+            'student_id': None,
+            'error': None,
+            'score': 0,
+            'total_points': 0,
+            'percentage': 0,
+            'letter_grade': 'F',
+            'details': {},
+            'unclear': [],
+            'saved': False,
+        }
+
+        try:
+            # 4. Read image → base64
+            content = await upload.read()
+            image_b64 = base64.b64encode(content).decode('utf-8')
+
+            # 5. Send to vision model
+            response = await inference.analyze_image(
+                image_base64=image_b64,
+                prompt=prompt,
+                max_tokens=2000,
+                temperature=0.1,
+            )
+
+            raw_output = response.get('result') or ''
+
+            # 6. Parse JSON from response
+            import re as _re
+            json_match = _re.search(r'\{[\s\S]*\}', raw_output)
+            if not json_match:
+                file_result['error'] = 'Vision model could not extract answers from this image.'
+                graded_results.append(file_result)
+                continue
+
+            parsed = json.loads(json_match.group())
+            student_name = parsed.get('student_name')
+            student_id = parsed.get('student_id')
+            results = parsed.get('results', {})
+            unclear = parsed.get('unclear', [])
+
+            # 7. Calculate totals
+            total_earned = sum(r.get('earned', 0) for r in results.values())
+            total_max = sum(r.get('max', 1) for r in results.values())
+            percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
+
+            file_result.update({
+                'student_name': student_name,
+                'student_id': student_id,
+                'score': total_earned,
+                'total_points': total_max,
+                'percentage': percentage,
+                'letter_grade': student_service.get_letter_grade(percentage),
+                'details': results,
+                'unclear': unclear,
+            })
+
+            # 8. Auto-save grade if student ID matched
+            if student_id:
+                title = package['worksheet_title'] if package else worksheet_title
+                subject = package['subject'] if package else worksheet_subject
+
+                # For package mode, verify student exists in package
+                should_save = True
+                if student_versions:
+                    should_save = any(
+                        sv.get('student', {}).get('id') == student_id
+                        for sv in student_versions
+                    )
+
+                if should_save:
+                    student_service.save_worksheet_grade({
+                        'student_id': student_id,
+                        'worksheet_title': title,
+                        'subject': subject,
+                        'score': total_earned,
+                        'total_points': total_max,
+                        'percentage': percentage,
+                        'letter_grade': student_service.get_letter_grade(percentage),
+                        'answers': results,
+                    })
+                    file_result['saved'] = True
+
+        except Exception as e:
+            logger.error(f"Scan grading error for {upload.filename}: {e}")
+            file_result['error'] = f'Processing error: {str(e)}'
+
+        graded_results.append(file_result)
+
+    # 9. Mark package as graded if all saved
+    if package_id and all(r.get('saved') for r in graded_results if not r.get('error')):
+        student_service.mark_package_graded(package_id)
 
     return graded_results
 
