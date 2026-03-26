@@ -35,6 +35,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Forward renderer logs to main.logs
   sendLog: (level, message) => ipcRenderer.send('frontend-log', { level, message }),
 
+  // System behavior
+  setMinimizeToTray: (enabled) => ipcRenderer.invoke('set-minimize-to-tray', enabled),
+  setStartOnBoot: (enabled) => ipcRenderer.invoke('set-start-on-boot', enabled),
+
   // Gated updates (license-gated in renderer)
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (_event, info) => cb(info)),

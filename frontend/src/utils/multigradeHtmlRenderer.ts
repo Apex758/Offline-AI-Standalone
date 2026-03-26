@@ -1,3 +1,5 @@
+import { getLogoFooterHTML } from './logoBase64';
+
 // utils/multigradeHtmlRenderer.ts
 /**
  * HTML renderer for multigrade lesson plan content
@@ -299,17 +301,7 @@ export function generateMultigradeHTML(text: string, options: RenderOptions): st
     ${htmlContent}
   </div>
 
-  <!-- Footer -->
-  <div style="
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-    color: #9ca3af;
-    font-size: 0.75rem;
-    text-align: center;
-  ">
-    Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-  </div>
+  ${getLogoFooterHTML()}
 </body>
 </html>
   `;

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -61,6 +61,9 @@ log.warn = (...args) => { sessionHasErrors = true; _origLogWarn(...args); };
 let mainWindow;
 let splashWindow;
 let backendProcess;
+let tray = null;
+let minimizeToTray = false;
+let isQuitting = false;
 const BACKEND_PORT = 8000;
 const FRONTEND_PORT = 5173;
 
@@ -467,6 +470,15 @@ function createWindow() {
     log.info(`Window console [${level}]: ${message}`);
   });
   
+  // Intercept close to minimize to tray instead of quitting
+  mainWindow.on('close', (event) => {
+    if (minimizeToTray && !isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+      log.info('Window hidden to tray');
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -612,6 +624,96 @@ ipcMain.on('install-update', () => {
   autoUpdater.quitAndInstall();
 });
 
+// ── System tray ──
+function getTrayIconPath() {
+  if (isDev) {
+    return path.join(__dirname, '..', 'frontend', 'public', 'OECS.png');
+  }
+  // In production, the icon is bundled via extraResources
+  const icoPath = path.join(process.resourcesPath, 'tray-icon.ico');
+  if (fs.existsSync(icoPath)) return icoPath;
+  const pngPath = path.join(process.resourcesPath, 'tray-icon.png');
+  if (fs.existsSync(pngPath)) return pngPath;
+  // Fallback: use the app exe icon
+  return app.getPath('exe');
+}
+
+function createTray() {
+  if (tray) return; // already created
+
+  const iconPath = getTrayIconPath();
+  let trayIcon;
+  try {
+    trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+  } catch (err) {
+    log.warn('Could not load tray icon, using empty image:', err.message);
+    trayIcon = nativeImage.createEmpty();
+  }
+
+  tray = new Tray(trayIcon);
+  tray.setToolTip('OECS Learning Hub');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show OECS Learning Hub',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Quit',
+      click: () => {
+        isQuitting = true;
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setContextMenu(contextMenu);
+  tray.on('double-click', () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  log.info('System tray created');
+}
+
+function destroyTray() {
+  if (tray) {
+    tray.destroy();
+    tray = null;
+    log.info('System tray destroyed');
+  }
+}
+
+// IPC: toggle minimize-to-tray
+ipcMain.handle('set-minimize-to-tray', (event, enabled) => {
+  minimizeToTray = enabled;
+  log.info(`Minimize to tray: ${enabled}`);
+  if (enabled) {
+    createTray();
+  } else {
+    destroyTray();
+  }
+  return true;
+});
+
+// IPC: toggle start on boot
+ipcMain.handle('set-start-on-boot', (event, enabled) => {
+  log.info(`Start on boot: ${enabled}`);
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    path: app.getPath('exe')
+  });
+  return true;
+});
+
 autoUpdater.on('update-available', (info) => {
   log.info('Update available:', info.version);
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -690,6 +792,8 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
+  // Don't quit if minimized to tray
+  if (minimizeToTray) return;
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -718,6 +822,7 @@ function killProcessTree(pid) {
 }
 
 app.on('before-quit', (event) => {
+  isQuitting = true;
   log.info('App is quitting, cleaning up backend processes...');
   
   if (backendProcess && !backendProcess.killed) {
@@ -751,6 +856,7 @@ app.on('before-quit', (event) => {
 // Handle app quit to ensure cleanup
 app.on('will-quit', () => {
   log.info('App will quit, final cleanup...');
+  destroyTray();
   if (backendProcess && !backendProcess.killed) {
     try {
       killProcessTree(backendProcess.pid);

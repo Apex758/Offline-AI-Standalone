@@ -39,6 +39,29 @@ export interface UserProfile {
   filterContentByProfile: boolean;
 }
 
+export interface SidebarItemConfig {
+  id: string;
+  enabled: boolean;
+}
+
+// Canonical list of reorderable sidebar items (excludes pinned: analytics at top, support+settings at bottom)
+export const DEFAULT_SIDEBAR_ORDER: SidebarItemConfig[] = [
+  { id: 'brain-dump', enabled: true },
+  { id: 'curriculum-tracker', enabled: true },
+  { id: 'resource-manager', enabled: true },
+  { id: 'chat', enabled: true },
+  { id: 'curriculum', enabled: true },
+  { id: 'quiz-generator', enabled: true },
+  { id: 'rubric-generator', enabled: true },
+  { id: 'class-management', enabled: true },
+  { id: 'lesson-planners', enabled: true },
+  { id: 'visual-studio', enabled: false },
+  { id: 'performance-metrics', enabled: false },
+];
+
+// All valid reorderable IDs
+const CANONICAL_IDS = DEFAULT_SIDEBAR_ORDER.map(i => i.id);
+
 export interface Settings {
   fontSize: number; // Percentage (100 = default)
   tabColors: TabColors;
@@ -49,16 +72,19 @@ export interface Settings {
   sidebarColor: string;
   tutorials: TutorialState;
   generationMode: 'queued' | 'simultaneous';
-  visualStudioEnabled: boolean;
   teacherSubjects: string[];
   teacherGradeLevels: string[];
   profile: UserProfile;
+  // Sidebar ordering & visibility
+  sidebarOrder: SidebarItemConfig[];
   // Writing assistant features
   spellCheckEnabled: boolean;
   autocorrectEnabled: boolean;
   autoFinishEnabled: boolean;
   dictionaryEnabled: boolean;
-  performanceMetricsEnabled: boolean;
+  // System behavior
+  minimizeToTray: boolean;
+  startOnBoot: boolean;
 }
 
 export interface SettingsContextValue {
@@ -69,6 +95,7 @@ export interface SettingsContextValue {
   isTutorialCompleted: (tutorialId: string) => boolean;
   resetTutorials: () => void;
   setWelcomeSeen: (seen: boolean) => void;
+  isSidebarItemEnabled: (id: string) => boolean;
 }
 
 // Default Settings (hex colors matching Settings.tsx defaults)
@@ -109,7 +136,6 @@ export const DEFAULT_SETTINGS: Settings = {
     }
   },
   generationMode: 'queued',
-  visualStudioEnabled: false,
   teacherSubjects: [],
   teacherGradeLevels: [],
   profile: {
@@ -119,12 +145,15 @@ export const DEFAULT_SETTINGS: Settings = {
     subjects: [],
     filterContentByProfile: false,
   },
+  sidebarOrder: DEFAULT_SIDEBAR_ORDER,
   // Writing assistant defaults
   spellCheckEnabled: true,
   autocorrectEnabled: true,
   autoFinishEnabled: false,
   dictionaryEnabled: true,
-  performanceMetricsEnabled: false,
+  // System behavior
+  minimizeToTray: false,
+  startOnBoot: false,
 };
 
 // localStorage key
@@ -136,7 +165,7 @@ const SettingsContext = createContext<SettingsContextValue | undefined>(undefine
 // Helper function to migrate old tutorial data
 const migrateTutorialData = (): Partial<TutorialState> => {
   const migrated: Partial<TutorialState> = {};
-  
+
   try {
     // Migrate old dashboard tutorial completion
     const oldDashboardTutorial = localStorage.getItem('dashboard-tutorial-completed');
@@ -149,8 +178,38 @@ const migrateTutorialData = (): Partial<TutorialState> => {
   } catch (error) {
     console.error('Error migrating tutorial data:', error);
   }
-  
+
   return migrated;
+};
+
+// Migrate old visualStudioEnabled / performanceMetricsEnabled into sidebarOrder
+const migrateSidebarOrder = (parsed: any): SidebarItemConfig[] => {
+  // If sidebarOrder already exists, validate and fill in missing items
+  if (Array.isArray(parsed.sidebarOrder) && parsed.sidebarOrder.length > 0) {
+    const existingIds = new Set(parsed.sidebarOrder.map((i: any) => i.id));
+    const order = [...parsed.sidebarOrder];
+    // Append any new canonical IDs that weren't in the saved order
+    for (const item of DEFAULT_SIDEBAR_ORDER) {
+      if (!existingIds.has(item.id)) {
+        order.push({ ...item });
+      }
+    }
+    // Remove any IDs that are no longer canonical
+    return order.filter((i: any) => CANONICAL_IDS.includes(i.id));
+  }
+
+  // No sidebarOrder — build from old boolean flags
+  const order = DEFAULT_SIDEBAR_ORDER.map(item => {
+    if (item.id === 'visual-studio' && parsed.visualStudioEnabled !== undefined) {
+      return { ...item, enabled: !!parsed.visualStudioEnabled };
+    }
+    if (item.id === 'performance-metrics' && parsed.performanceMetricsEnabled !== undefined) {
+      return { ...item, enabled: !!parsed.performanceMetricsEnabled };
+    }
+    return { ...item };
+  });
+
+  return order;
 };
 
 // Helper function to safely load from localStorage
@@ -158,13 +217,19 @@ const loadSettingsFromStorage = (): Settings => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     const migratedTutorials = migrateTutorialData();
-    
+
     if (stored) {
       const parsed = JSON.parse(stored);
+      const sidebarOrder = migrateSidebarOrder(parsed);
+
       // Merge with defaults to ensure all fields exist
       return {
         ...DEFAULT_SETTINGS,
         ...parsed,
+        // Remove legacy fields
+        visualStudioEnabled: undefined,
+        performanceMetricsEnabled: undefined,
+        sidebarOrder,
         tabColors: {
           ...DEFAULT_SETTINGS.tabColors,
           ...(parsed.tabColors || {})
@@ -180,7 +245,7 @@ const loadSettingsFromStorage = (): Settings => {
           completedTutorials: [
             ...(parsed.tutorials?.completedTutorials || []),
             ...(migratedTutorials.completedTutorials || [])
-          ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates
+          ].filter((v: string, i: number, a: string[]) => a.indexOf(v) === i),
           tutorialPreferences: {
             ...DEFAULT_SETTINGS.tutorials.tutorialPreferences,
             ...(parsed.tutorials?.tutorialPreferences || {})
@@ -188,7 +253,7 @@ const loadSettingsFromStorage = (): Settings => {
         }
       };
     }
-    
+
     // If no stored settings, check for migration data
     if (Object.keys(migratedTutorials).length > 0) {
       return {
@@ -227,10 +292,24 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     saveSettingsToStorage(settings);
   }, [settings]);
 
+  // Sync system behavior settings to main process on mount
+  useEffect(() => {
+    const api = (window as any).electronAPI;
+    if (api) {
+      if (settings.minimizeToTray) {
+        api.setMinimizeToTray?.(true);
+      }
+      if (settings.startOnBoot) {
+        api.setStartOnBoot?.(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const updateSettings = (updates: Partial<Settings>) => {
     setSettings(prevSettings => {
       const newSettings = { ...prevSettings, ...updates };
-      
+
       // Special handling for nested tabColors
       if (updates.tabColors) {
         newSettings.tabColors = {
@@ -261,7 +340,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       const newCompletedTutorials = prevSettings.tutorials.completedTutorials.includes(tutorialId)
         ? prevSettings.tutorials.completedTutorials
         : [...prevSettings.tutorials.completedTutorials, tutorialId];
-      
+
       return {
         ...prevSettings,
         tutorials: {
@@ -274,6 +353,11 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const isTutorialCompleted = (tutorialId: string): boolean => {
     return settings.tutorials.completedTutorials.includes(tutorialId);
+  };
+
+  const isSidebarItemEnabled = (id: string): boolean => {
+    const item = settings.sidebarOrder.find(i => i.id === id);
+    return item?.enabled ?? false;
   };
 
   const resetTutorials = () => {
@@ -300,7 +384,8 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     markTutorialComplete,
     isTutorialCompleted,
     resetTutorials,
-    setWelcomeSeen
+    setWelcomeSeen,
+    isSidebarItemEnabled
   };
 
   return (

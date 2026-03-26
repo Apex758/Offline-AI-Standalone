@@ -363,14 +363,28 @@ def export_to_docx_from_html(html: str, accent_color: str, form_data: dict) -> b
                 p = doc.add_paragraph(text)
                 p.paragraph_format.space_after = Pt(6)
     
-    # Add footer
+    # Add footer with OECS logo
     footer = doc.sections[0].footer
     footer_p = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
-    footer_p.text = f"Generated on {form_data.get('date', 'N/A')}"
-    footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    footer_run = footer_p.runs[0]
-    footer_run.font.size = Pt(9)
-    footer_run.font.color.rgb = RGBColor(156, 163, 175)
+    footer_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+    # Add "Generated on" text as left-aligned tab, then logo right-aligned
+    text_run = footer_p.add_run(f"Generated on {form_data.get('date', 'N/A')}")
+    text_run.font.size = Pt(9)
+    text_run.font.color.rgb = RGBColor(156, 163, 175)
+
+    # Add OECS logo to footer
+    import os
+    logo_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build', 'OECS.png'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'public', 'OECS.png'),
+    ]
+    for logo_path in logo_paths:
+        if os.path.isfile(logo_path):
+            footer_p.add_run("    ")
+            logo_run = footer_p.add_run()
+            logo_run.add_picture(logo_path, height=Pt(30))
+            break
     
     # Save to bytes
     buf = io.BytesIO()

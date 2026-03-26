@@ -34,6 +34,19 @@ import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import DropletIconData from '@hugeicons/core-free-icons/DropletIcon';
 import BlendIconData from '@hugeicons/core-free-icons/BlendIcon';
+import ComputerSettingsIconData from '@hugeicons/core-free-icons/ComputerSettingsIcon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import Rocket01IconData from '@hugeicons/core-free-icons/Rocket01Icon';
+import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
+import LockIconData from '@hugeicons/core-free-icons/LockIcon';
+import DashboardSquare01IconData from '@hugeicons/core-free-icons/DashboardSquare01Icon';
+import Brain01IconData from '@hugeicons/core-free-icons/Brain01Icon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { SidebarItemConfig, DEFAULT_SIDEBAR_ORDER } from '../contexts/SettingsContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -75,6 +88,101 @@ const Plus: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) 
 const Paintbrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
 const Droplets: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DropletIconData} {...p} />;
 const Blend: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BlendIconData} {...p} />;
+const ComputerSettings: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ComputerSettingsIconData} {...p} />;
+const ArrowDownTray: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const Rocket: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Rocket01IconData} {...p} />;
+const GripVertical: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DragDropVerticalIconData} {...p} />;
+const Lock: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LockIconData} {...p} />;
+const LayoutDashboardIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={DashboardSquare01IconData} {...p} />;
+const BrainIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Brain01IconData} {...p} />;
+const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const MessageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+
+// Sidebar item metadata for Features section
+const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ className?: string; style?: React.CSSProperties }>; description?: string; childCount?: number }> = {
+  'analytics': { name: 'My Overview', icon: LayoutDashboardIcon },
+  'brain-dump': { name: 'Brain Dump', icon: BrainIcon },
+  'curriculum-tracker': { name: 'Progress Tracker', icon: (p) => <Icon icon={Layers01IconData} {...p} /> },
+  'resource-manager': { name: 'My Resources', icon: FolderOpen },
+  'chat': { name: 'Ask PEARL', icon: MessageIcon },
+  'curriculum': { name: 'Curriculum Browser', icon: SearchIcon },
+  'quiz-generator': { name: 'Quiz Builder', icon: PenTool },
+  'rubric-generator': { name: 'Rubric Builder', icon: (p) => <Icon icon={BookOpen01IconData} {...p} /> },
+  'class-management': { name: 'My Classes', icon: User },
+  'lesson-planners': { name: 'Lesson Planners', icon: (p) => <Icon icon={BookOpen01IconData} {...p} />, childCount: 4 },
+  'visual-studio': { name: 'Visual Studio', icon: PenTool, childCount: 3 },
+  'performance-metrics': { name: 'Performance Metrics', icon: Cpu },
+  'support': { name: 'Support & Reporting', icon: (p) => <Icon icon={AlertCircleIconData} {...p} /> },
+  'settings': { name: 'Settings', icon: SettingsIcon },
+};
+
+const PINNED_TOP = ['analytics'];
+const PINNED_BOTTOM = ['support', 'settings'];
+const NON_TOGGLEABLE = new Set(['analytics', 'settings']);
+
+// Sortable sidebar item component
+const SortableSidebarItem: React.FC<{
+  item: SidebarItemConfig;
+  onToggle: (id: string, enabled: boolean) => void;
+}> = ({ item, onToggle }) => {
+  const meta = SIDEBAR_ITEM_META[item.id];
+  const isLocked = NON_TOGGLEABLE.has(item.id);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  if (!meta) return null;
+  const ItemIcon = meta.icon;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+        isDragging
+          ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40 shadow-lg'
+          : 'bg-theme-surface border-theme-strong/10 hover:bg-theme-subtle'
+      } ${!item.enabled && !isLocked ? 'opacity-50' : ''}`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing flex-shrink-0 text-theme-muted hover:text-theme-label"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+      <ItemIcon className="w-4.5 h-4.5 text-theme-secondary flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-theme-label truncate">{meta.name}</p>
+        {meta.childCount && (
+          <p className="text-xs text-theme-hint">{meta.childCount} tools</p>
+        )}
+      </div>
+      {isLocked ? (
+        <Lock className="w-4 h-4 text-theme-muted flex-shrink-0" />
+      ) : (
+        <input
+          type="checkbox"
+          checked={item.enabled}
+          onChange={(e) => onToggle(item.id, e.target.checked)}
+          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+        />
+      )}
+    </div>
+  );
+};
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -104,6 +212,11 @@ interface ModelInfo {
 
 const Settings: React.FC<SettingsProps> = () => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials } = useSettings();
+  // dnd-kit sensors for sidebar reordering (must be at top level)
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showWipeDialog, setShowWipeDialog] = useState(false);
@@ -383,13 +496,13 @@ const Settings: React.FC<SettingsProps> = () => {
     { type: 'multigrade-planner', label: 'Multi-Level', defaultColor: '#06b6d4' },
     { type: 'cross-curricular-planner', label: 'Integrated Lesson', defaultColor: '#6366f1' },
     // Visual studio group
-    ...(settings.visualStudioEnabled ? [
+    ...(settings.sidebarOrder.find(i => i.id === 'visual-studio')?.enabled ? [
       { type: 'worksheet-generator', label: 'Worksheet Builder', defaultColor: '#8b5cf6' },
       { type: 'image-studio', label: 'Image Studio', defaultColor: '#ec4899' },
       { type: 'presentation-builder', label: 'Slide Deck', defaultColor: '#f97316' },
     ] : []),
     // Performance metrics
-    ...(settings.performanceMetricsEnabled ? [
+    ...(settings.sidebarOrder.find(i => i.id === 'performance-metrics')?.enabled ? [
       { type: 'performance-metrics', label: 'Performance', defaultColor: '#10b981' },
     ] : []),
     // Bottom tools
@@ -1609,56 +1722,116 @@ const Settings: React.FC<SettingsProps> = () => {
               <div className="space-y-6">
                 <div className="mb-2">
                   <h2 className="text-2xl font-bold text-theme-title">Features</h2>
-                  <p className="text-sm text-theme-muted mt-1">Enable or disable optional tools</p>
+                  <p className="text-sm text-theme-muted mt-1">Enable, disable, and reorder your sidebar tools</p>
                 </div>
 
-                <Card data-search-section="visual-studio">
+                {/* Sidebar Tools — Reorderable */}
+                <Card data-search-section="sidebar-tools">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <PenTool className="w-4.5 h-4.5 text-theme-secondary" />
-                      Visual Studio
+                      <Sliders className="w-4.5 h-4.5 text-theme-secondary" />
+                      Sidebar Tools
                     </CardTitle>
-                    <CardDescription>Control access to Visual Studio tools (Worksheet Builder, Image Studio)</CardDescription>
+                    <CardDescription>Drag to reorder, toggle to show or hide. Locked items cannot be disabled.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
-                      <div>
-                        <p className="text-sm font-medium text-theme-label">Enable Visual Studio tools</p>
-                        <p className="text-xs text-theme-hint">When disabled, Visual Studio tools are hidden from the sidebar and cannot be accessed.</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={settings.visualStudioEnabled}
-                        onChange={(e) => updateSettings({ visualStudioEnabled: e.target.checked })}
-                        className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
-                      />
-                    </label>
-                  </CardContent>
-                </Card>
+                    {(() => {
+                      // Build full list: pinned top + reorderable middle + pinned bottom
+                      const pinnedTopItems: SidebarItemConfig[] = PINNED_TOP.map(id => ({ id, enabled: true }));
+                      const pinnedBottomItems: SidebarItemConfig[] = PINNED_BOTTOM.map(id => {
+                        const found = settings.sidebarOrder.find(i => i.id === id);
+                        return found ?? { id, enabled: true };
+                      });
+                      const reorderableItems = settings.sidebarOrder.filter(
+                        i => !PINNED_TOP.includes(i.id) && !PINNED_BOTTOM.includes(i.id)
+                      );
 
-                {/* Performance Metrics */}
-                <Card data-search-section="performance-metrics">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icon icon={CpuIconData} className="w-4.5 h-4.5 text-theme-secondary" />
-                      Performance Metrics
-                    </CardTitle>
-                    <CardDescription>Track AI model performance, tokens/sec, and system benchmarks</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
-                      <div>
-                        <p className="text-sm font-medium text-theme-label">Show Performance tab in sidebar</p>
-                        <p className="text-xs text-theme-hint">When enabled, a Performance tab appears in the sidebar to view model benchmarks and system stats.</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={settings.performanceMetricsEnabled}
-                        onChange={(e) => updateSettings({ performanceMetricsEnabled: e.target.checked })}
-                        className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
-                      />
-                    </label>
-                  </CardContent>
+                      const handleDragEnd = (event: DragEndEvent) => {
+                        const { active, over } = event;
+                        if (!over || active.id === over.id) return;
+
+                        const oldIndex = reorderableItems.findIndex(i => i.id === active.id);
+                        const newIndex = reorderableItems.findIndex(i => i.id === over.id);
+                        if (oldIndex === -1 || newIndex === -1) return;
+
+                        const newReorderable = arrayMove(reorderableItems, oldIndex, newIndex);
+                        updateSettings({ sidebarOrder: newReorderable });
+                      };
+
+                      const handleToggle = (id: string, enabled: boolean) => {
+                        const newOrder = settings.sidebarOrder.map(item =>
+                          item.id === id ? { ...item, enabled } : item
+                        );
+                        updateSettings({ sidebarOrder: newOrder });
+                      };
+
+                      return (
+                        <div className="space-y-2">
+                          {/* Pinned top */}
+                          {pinnedTopItems.map(item => (
+                            <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-theme-surface border border-theme-strong/10">
+                              <div className="flex-shrink-0 text-theme-muted/30">
+                                <GripVertical className="w-4 h-4" />
+                              </div>
+                              {(() => { const M = SIDEBAR_ITEM_META[item.id]; const I = M?.icon; return I ? <I className="w-4.5 h-4.5 text-theme-secondary flex-shrink-0" /> : null; })()}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-theme-label truncate">{SIDEBAR_ITEM_META[item.id]?.name}</p>
+                                <p className="text-xs text-theme-hint">Pinned to top</p>
+                              </div>
+                              <Lock className="w-4 h-4 text-theme-muted flex-shrink-0" />
+                            </div>
+                          ))}
+
+                          {/* Reorderable middle */}
+                          <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                            <SortableContext items={reorderableItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                              {reorderableItems.map(item => (
+                                <SortableSidebarItem key={item.id} item={item} onToggle={handleToggle} />
+                              ))}
+                            </SortableContext>
+                          </DndContext>
+
+                          {/* Pinned bottom */}
+                          {pinnedBottomItems.map(item => {
+                            const isLocked = NON_TOGGLEABLE.has(item.id);
+                            const meta = SIDEBAR_ITEM_META[item.id];
+                            const ItemIcon = meta?.icon;
+                            return (
+                              <div key={item.id} className={`flex items-center gap-3 p-3 rounded-lg bg-theme-surface border border-theme-strong/10 ${!item.enabled && !isLocked ? 'opacity-50' : ''}`}>
+                                <div className="flex-shrink-0 text-theme-muted/30">
+                                  <GripVertical className="w-4 h-4" />
+                                </div>
+                                {ItemIcon && <ItemIcon className="w-4.5 h-4.5 text-theme-secondary flex-shrink-0" />}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-theme-label truncate">{meta?.name}</p>
+                                  <p className="text-xs text-theme-hint">Pinned to bottom</p>
+                                </div>
+                                {isLocked ? (
+                                  <Lock className="w-4 h-4 text-theme-muted flex-shrink-0" />
+                                ) : (
+                                  <input
+                                    type="checkbox"
+                                    checked={item.enabled}
+                                    onChange={(e) => handleToggle(item.id, e.target.checked)}
+                                    className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {/* Reset button */}
+                          <div className="pt-2">
+                            <button
+                              onClick={() => updateSettings({ sidebarOrder: [...DEFAULT_SIDEBAR_ORDER] })}
+                              className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                            >
+                              Reset to default order
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}</CardContent>
                 </Card>
 
                 {/* Writing Assistant */}
@@ -1744,6 +1917,59 @@ const Settings: React.FC<SettingsProps> = () => {
                           </p>
                         </div>
                       )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* System Behavior */}
+                <Card data-search-section="system-behavior">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ComputerSettings className="w-4.5 h-4.5 text-theme-secondary" />
+                      System Behavior
+                    </CardTitle>
+                    <CardDescription>Control how the app starts and runs in the background</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-1">
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <ArrowDownTray className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Minimize to Tray</p>
+                            <p className="text-xs text-theme-hint">When you close the window, the app stays running in the system tray instead of quitting</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.minimizeToTray}
+                          onChange={(e) => {
+                            const enabled = e.target.checked;
+                            updateSettings({ minimizeToTray: enabled });
+                            window.electronAPI?.setMinimizeToTray?.(enabled);
+                          }}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div className="flex items-start gap-3">
+                          <Rocket className="w-4 h-4 text-theme-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Start on Boot</p>
+                            <p className="text-xs text-theme-hint">Automatically launch OECS Learning Hub when you log in to Windows</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={settings.startOnBoot}
+                          onChange={(e) => {
+                            const enabled = e.target.checked;
+                            updateSettings({ startOnBoot: enabled });
+                            window.electronAPI?.setStartOnBoot?.(enabled);
+                          }}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                        />
+                      </label>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,3 +1,5 @@
+import { getLogoFooterHTML } from './logoBase64';
+
 // utils/quizHtmlRenderer.ts
 /**
  * Unified HTML renderer for quiz content with conditional rendering
@@ -509,19 +511,9 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     ${htmlContent}
   </div>
 
-  <!-- Footer -->
-  <div style="
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-    color: #9ca3af;
-    font-size: 0.75rem;
-    text-align: center;
-  ">
-    Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-    ${showAnswerKey && !showExplanations ? ' • Answer Key Only' : ''}
-    ${showAnswerKey && showExplanations ? ' • Full Answer Key with Explanations' : ''}
-  </div>
+  ${getLogoFooterHTML(
+    `${showAnswerKey && !showExplanations ? ' • Answer Key Only' : ''}${showAnswerKey && showExplanations ? ' • Full Answer Key with Explanations' : ''}`
+  )}
 </body>
 </html>
   `;

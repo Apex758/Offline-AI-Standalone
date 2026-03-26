@@ -72,6 +72,10 @@
         ]
       },
       {
+        "from": "build/OECS.ico",
+        "to": "tray-icon.ico"
+      },
+      {
         "from": "frontend/src/data",
         "to": "frontend/src/data",
         "filter": [

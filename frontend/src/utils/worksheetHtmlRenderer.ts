@@ -1,4 +1,5 @@
 import { ParsedWorksheet } from '../types/worksheet';
+import { getLogoFooterHTML } from './logoBase64';
 
 interface RenderOptions {
   accentColor: string;
@@ -210,11 +211,7 @@ function generateMathHTML(
         `).join('')}
       </div>
 
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
-        <p style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin: 0;">
-          Worksheet generated for educational purposes
-        </p>
-      </div>
+      ${getLogoFooterHTML()}
     </div>
     `;
   }
@@ -300,11 +297,7 @@ function generateMultipleChoiceHTML(
       </div>
 
       <!-- Footer -->
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
-        <p style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin: 0;">
-          Worksheet generated for educational purposes
-        </p>
-      </div>
+      ${getLogoFooterHTML()}
     </div>
   `;
 }
@@ -404,11 +397,7 @@ function generateComprehensionHTML(
       </div>
 
       <!-- Footer -->
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
-        <p style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin: 0;">
-          Worksheet generated for educational purposes
-        </p>
-      </div>
+      ${getLogoFooterHTML()}
     </div>
   `;
 }
@@ -493,11 +482,7 @@ function generateMatchingHTML(
       ` : ''}
 
       <!-- Footer -->
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
-        <p style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin: 0;">
-          Worksheet generated for educational purposes
-        </p>
-      </div>
+      ${getLogoFooterHTML()}
     </div>
   `;
 }
@@ -568,10 +553,7 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
         `).join('')}
       </div>
 
-      <!-- Footer -->
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d1d5db; text-align: center; font-size: 0.75rem; color: #9ca3af;">
-        <p style="margin: 0;">Generated for educational purposes</p>
-      </div>
+      ${getLogoFooterHTML()}
     </div>
   `;
 }

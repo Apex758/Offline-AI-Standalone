@@ -1,3 +1,5 @@
+import { getLogoFooterHTML } from './logoBase64';
+
 // utils/kindergartenHtmlRenderer.ts
 /**
  * HTML renderer for kindergarten plan content
@@ -408,17 +410,7 @@ function generateStructuredHTML(plan: ParsedKindergartenPlan, accentColor: strin
     ${contentHTML}
   </div>
 
-  <!-- Footer -->
-  <div style="
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-    color: #9ca3af;
-    font-size: 0.75rem;
-    text-align: center;
-  ">
-    Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-  </div>
+  ${getLogoFooterHTML()}
 </body>
 </html>
   `;
@@ -713,17 +705,7 @@ export function generateKindergartenHTML(text: string, options: RenderOptions): 
     ${htmlContent}
   </div>
 
-  <!-- Footer -->
-  <div style="
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-    color: #9ca3af;
-    font-size: 0.75rem;
-    text-align: center;
-  ">
-    Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
-  </div>
+  ${getLogoFooterHTML()}
 </body>
 </html>
   `;

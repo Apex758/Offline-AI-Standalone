@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { OECS_LOGO_BASE64 } from '../utils/logoBase64';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Message01IconData from '@hugeicons/core-free-icons/Message01Icon';
@@ -443,7 +444,7 @@ const MAX_TABS_PER_TYPE = 3;
 const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
-  const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted } = useSettings();
+  const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled } = useSettings();
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
   const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
@@ -664,58 +665,51 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [tabs.length, settings, isTutorialCompleted]);
 
-  // Close Visual Studio tabs when Visual Studio is disabled
+  // Mapping from sidebar item IDs to the tab types they control
+  const SIDEBAR_ID_TO_TAB_TYPES: Record<string, string[]> = {
+    'visual-studio': ['worksheet-generator', 'image-studio', 'presentation-builder'],
+    'lesson-planners': ['lesson-planner', 'kindergarten-planner', 'multigrade-planner', 'cross-curricular-planner'],
+    'performance-metrics': ['performance-metrics'],
+    'brain-dump': ['brain-dump'],
+    'curriculum-tracker': ['curriculum-tracker'],
+    'resource-manager': ['resource-manager'],
+    'chat': ['chat'],
+    'curriculum': ['curriculum'],
+    'quiz-generator': ['quiz-generator'],
+    'rubric-generator': ['rubric-generator'],
+    'class-management': ['class-management'],
+    'support': ['support'],
+  };
+
+  // Close tabs when any sidebar item is disabled
   useEffect(() => {
-    if (!settings.visualStudioEnabled) {
-      const visualStudioTabs = tabs.filter(tab =>
-        tab.type === 'worksheet-generator' || tab.type === 'image-studio'
-      );
-      if (visualStudioTabs.length > 0) {
-        const updatedTabs = tabs.filter(tab =>
-          tab.type !== 'worksheet-generator' && tab.type !== 'image-studio'
-        );
-        setTabs(updatedTabs);
-
-        // If the active tab was a Visual Studio tab, switch to another tab or null
-        const activeTab = tabs.find(t => t.id === activeTabId);
-        if (activeTab && (activeTab.type === 'worksheet-generator' || activeTab.type === 'image-studio')) {
-          setActiveTabId(updatedTabs.length > 0 ? updatedTabs[updatedTabs.length - 1].id : null);
-        }
-
-        // Close WebSocket connections for Visual Studio tabs
-        visualStudioTabs.forEach(tab => {
-          const endpoints = [
-            '/ws/chat',
-            '/ws/lesson-plan',
-            '/ws/quiz',
-            '/ws/rubric',
-            '/ws/kindergarten',
-            '/ws/multigrade',
-            '/ws/cross-curricular'
-          ];
-
-          endpoints.forEach(endpoint => {
-            closeConnection(tab.id, endpoint);
-          });
-        });
+    const disabledTabTypes = new Set<string>();
+    for (const item of settings.sidebarOrder) {
+      if (!item.enabled) {
+        const types = SIDEBAR_ID_TO_TAB_TYPES[item.id];
+        if (types) types.forEach(t => disabledTabTypes.add(t));
       }
     }
-  }, [settings.visualStudioEnabled, tabs, activeTabId, closeConnection]);
 
-  // Close Performance Metrics tab when disabled
-  useEffect(() => {
-    if (!settings.performanceMetricsEnabled) {
-      const metricsTabs = tabs.filter(tab => tab.type === 'performance-metrics');
-      if (metricsTabs.length > 0) {
-        const updatedTabs = tabs.filter(tab => tab.type !== 'performance-metrics');
-        setTabs(updatedTabs);
-        const activeTab = tabs.find(t => t.id === activeTabId);
-        if (activeTab && activeTab.type === 'performance-metrics') {
-          setActiveTabId(updatedTabs.length > 0 ? updatedTabs[updatedTabs.length - 1].id : null);
-        }
-      }
+    if (disabledTabTypes.size === 0) return;
+
+    const tabsToClose = tabs.filter(tab => disabledTabTypes.has(tab.type));
+    if (tabsToClose.length === 0) return;
+
+    const updatedTabs = tabs.filter(tab => !disabledTabTypes.has(tab.type));
+    setTabs(updatedTabs);
+
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    if (activeTab && disabledTabTypes.has(activeTab.type)) {
+      setActiveTabId(updatedTabs.length > 0 ? updatedTabs[updatedTabs.length - 1].id : null);
     }
-  }, [settings.performanceMetricsEnabled]);
+
+    // Close WebSocket connections
+    tabsToClose.forEach(tab => {
+      const endpoints = ['/ws/chat', '/ws/lesson-plan', '/ws/quiz', '/ws/rubric', '/ws/kindergarten', '/ws/multigrade', '/ws/cross-curricular'];
+      endpoints.forEach(endpoint => { closeConnection(tab.id, endpoint); });
+    });
+  }, [settings.sidebarOrder]);
 
   const migrateLegacySplitTabs = (savedTabs: Tab[]): Tab[] => {
     const splitTabs = savedTabs.filter(t => t.type === 'split' as any);
@@ -1551,13 +1545,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, {} as { [key: string]: Tab[] }), [tabs]);
 
   // Group tools by category (static — tools array never changes)
-  const regularTools = useMemo(() => tools.filter(t => !t.group && t.type !== 'settings' && t.type !== 'support' && t.type !== 'performance-metrics'), []);
   const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
   const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
-  const otherGroupedTools = useMemo(() => tools.filter(t => t.group === 'tools'), []);
-  const performanceTool = useMemo(() => tools.find(t => t.type === 'performance-metrics'), []);
-  const supportTool = useMemo(() => tools.find(t => t.type === 'support'), []);
-  const settingsTool = useMemo(() => tools.find(t => t.type === 'settings'), []);
 
   return (
     <div
@@ -1691,662 +1680,152 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           >
             Tools
           </div>
-          
-          {/* Regular Tools */}
-          {regularTools.map((tool, i) => {
-            const Icon = iconMap[tool.icon];
-            const count = getTabCountByType(tool.type);
-            const activeTab = tabs.find(t => t.id === activeTabId);
-            const isActiveToolType = activeTab?.type === tool.type;
-            const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors] || (tabColors[tool.type]?.border);
-            const isSingleReg = SINGLE_INSTANCE_TABS.has(tool.type);
-            const maxForReg = isSingleReg ? 1 : MAX_TABS_PER_TYPE;
 
-            return (
-              <button
-                key={tool.id}
-                data-tool-type={tool.type}
-                onClick={() => openTool(tool)}
-                data-tutorial={
-                  tool.type === 'analytics'
-                    ? 'tool-analytics'
-                    : tool.type === 'chat'
-                    ? 'tool-chat'
-                    : tool.type === 'curriculum'
-                    ? 'tool-curriculum'
-                    : undefined
-                }
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                title={!sidebarOpen ? `${tool.name}${!isSingleReg ? ` (${count}/${maxForReg} open)` : ''}` : ''}
-                style={{
-                  backgroundColor: isActiveToolType
-                    ? ('var(--sidebar-active)')
-                    : 'transparent',
-                  transition: 'background-color 0.25s, box-shadow 0.25s',
-                  animationDelay: `${i * 40}ms`
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                  if (icon && !isActiveToolType && toolColor) {
-                    icon.style.color = toolColor;
-                    icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isActiveToolType
-                    ? ('var(--sidebar-active)')
-                    : 'transparent';
-                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                  if (icon && !isActiveToolType) {
-                    icon.style.color = 'var(--sidebar-text-muted)';
-                    icon.style.filter = '';
-                  }
-                }}
-              >
-                <Icon
-                  className={`w-5 h-5 flex-shrink-0 sidebar-icon ${
-                    isActiveToolType ? 'icon-glow' : ''
-                  }`}
-                  style={{
-                    color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
-                    transition: 'color 0.25s, filter 0.25s'
-                  }}
-                />
-                <div
-                  className="flex-1 text-left overflow-hidden"
-                  style={{
-                    opacity: sidebarOpen ? 1 : 0,
-                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    pointerEvents: sidebarOpen ? 'auto' : 'none'
-                  }}
-                >
-                  <p
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    style={{
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                    }}
-                  >
-                    {tool.name}
-                  </p>
-                  {tool.type !== 'analytics' && tool.type !== 'curriculum-tracker' && tool.type !== 'resource-manager' && tool.type !== 'curriculum' && tool.type !== 'brain-dump' && tool.type !== 'performance-metrics' && count > 0 && (
-                    <p
-                      className="text-xs whitespace-nowrap"
-                      style={{ color: 'var(--sidebar-text-muted)' }}
-                    >
-                      {count}/{MAX_TABS_PER_TYPE} open
-                    </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-
-          {/* Glass divider */}
-          <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
-
-          {/* Other Grouped Tools */}
-          {otherGroupedTools.map((tool, i) => {
-            const Icon = iconMap[tool.icon];
-            const count = getTabCountByType(tool.type);
-            const activeTab = tabs.find(t => t.id === activeTabId);
-            const isActiveToolType = activeTab?.type === tool.type;
-            const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-            const isSingle = SINGLE_INSTANCE_TABS.has(tool.type);
-            const maxForTool = isSingle ? 1 : MAX_TABS_PER_TYPE;
-
-            return (
-              <button
-                key={tool.id}
-                data-tool-type={tool.type}
-                onClick={() => openTool(tool)}
-                data-tutorial={
-                  tool.type === 'quiz-generator'
-                    ? 'tool-quiz'
-                    : tool.type === 'rubric-generator'
-                    ? 'tool-rubric'
-                    : undefined
-                }
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                title={!sidebarOpen ? `${tool.name}${!isSingle ? ` (${count}/${maxForTool} open)` : ''}` : ''}
-                style={{
-                  backgroundColor: isActiveToolType
-                    ? ('var(--sidebar-active)')
-                    : 'transparent',
-                  transition: 'background-color 0.25s, box-shadow 0.25s',
-                  animationDelay: `${(i + regularTools.length) * 40}ms`
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                  if (icon && !isActiveToolType && toolColor) {
-                    icon.style.color = toolColor;
-                    icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isActiveToolType
-                    ? ('var(--sidebar-active)')
-                    : 'transparent';
-                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                  if (icon && !isActiveToolType) {
-                    icon.style.color = 'var(--sidebar-text-muted)';
-                    icon.style.filter = '';
-                  }
-                }}
-              >
-                <Icon
-                  className={`w-5 h-5 flex-shrink-0 sidebar-icon ${
-                    isActiveToolType ? 'icon-glow' : ''
-                  }`}
-                  style={{
-                    color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
-                    transition: 'color 0.25s, filter 0.25s'
-                  }}
-                />
-                <div
-                  className="flex-1 text-left overflow-hidden"
-                  style={{
-                    opacity: sidebarOpen ? 1 : 0,
-                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    pointerEvents: sidebarOpen ? 'auto' : 'none'
-                  }}
-                >
-                  <p
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    style={{
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                    }}
-                  >
-                    {tool.name}
-                  </p>
-                  {!SINGLE_INSTANCE_TABS.has(tool.type) && count > 0 && (
-                    <p
-                      className="text-xs whitespace-nowrap"
-                      style={{ color: 'var(--sidebar-text-muted)' }}
-                    >
-                      {count}/{maxForTool} open
-                    </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-
-          {/* Glass divider */}
-          <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
-
-          {/* Lesson Planners Dropdown */}
-          <div className="mt-2" data-tutorial="lesson-planners-group">
-            {(() => {
+          {/* === Dynamic Sidebar rendered from sidebarOrder === */}
+          {(() => {
+            // Helper: render a single tool button
+            const renderToolButton = (tool: Tool, dataTutorial?: string) => {
+              const Icon = iconMap[tool.icon];
+              const count = getTabCountByType(tool.type);
               const activeTab = tabs.find(t => t.id === activeTabId);
-              const activeLPTool = !sidebarOpen && activeTab ? lessonPlannerTools.find(t => t.type === activeTab.type) : null;
-              const LPIcon = activeLPTool ? iconMap[activeLPTool.icon] : BookOpen;
-              const lpToolColor = activeLPTool ? settings.tabColors[activeLPTool.type as keyof typeof settings.tabColors] : undefined;
+              const isActiveToolType = activeTab?.type === tool.type;
+              const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors] || (tabColors[tool.type]?.border);
+              const isSingle = SINGLE_INSTANCE_TABS.has(tool.type);
+              const maxForTool = isSingle ? 1 : MAX_TABS_PER_TYPE;
               return (
                 <button
-                  onClick={() => setLessonPlannerExpanded(!lessonPlannerExpanded)}
-                  data-tutorial-click="lesson-planners-group"
-                  className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
-                  title={!sidebarOpen ? (activeLPTool ? activeLPTool.name : 'Lesson Planners') : ''}
-                  style={{
-                    backgroundColor: 'transparent',
-                    transition: 'background-color 0.25s, box-shadow 0.25s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
+                  key={tool.id}
+                  data-tool-type={tool.type}
+                  data-tutorial={dataTutorial}
+                  onClick={() => openTool(tool)}
+                  className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
+                  title={!sidebarOpen ? `${tool.name}${!isSingle ? ` (${count}/${maxForTool} open)` : ''}` : ''}
+                  style={{ backgroundColor: isActiveToolType ? 'var(--sidebar-active)' : 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveToolType && toolColor) { icon.style.color = toolColor; icon.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActiveToolType ? 'var(--sidebar-active)' : 'transparent'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveToolType) { icon.style.color = 'var(--sidebar-text-muted)'; icon.style.filter = ''; } }}
                 >
-                  <LPIcon
-                    className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeLPTool ? 'icon-glow' : ''}`}
-                    style={{
-                      color: activeLPTool && lpToolColor ? lpToolColor : ('var(--sidebar-text-muted)'),
-                      transition: 'color 0.3s, filter 0.3s'
-                    }}
-                  />
-              <div
-                className="flex-1 text-left overflow-hidden"
-                style={{
-                  opacity: sidebarOpen ? 1 : 0,
-                  transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  pointerEvents: sidebarOpen ? 'auto' : 'none'
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <p
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1"
-                    style={{
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                    }}
-                  >
-                    Lesson Planners
-                  </p>
-                  <ChevronDown
-                    className="w-4 h-4 text-gray-400 chevron-icon ml-2 flex-shrink-0"
-                    style={{
-                      transform: lessonPlannerExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  />
-                </div>
-              </div>
+                  <Icon className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`} style={{ color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
+                  <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
+                    <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
+                    {!isSingle && count > 0 && (<p className="text-xs whitespace-nowrap" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{maxForTool} open</p>)}
+                  </div>
                 </button>
               );
-            })()}
+            };
 
-            <div
-              className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
-              style={{
-                borderColor: 'var(--sidebar-border)',
-                opacity: lessonPlannerExpanded && sidebarOpen ? 1 : 0,
-                transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                pointerEvents: lessonPlannerExpanded && sidebarOpen ? 'auto' : 'none',
-                maxHeight: lessonPlannerExpanded && sidebarOpen ? '500px' : '0',
-                overflow: 'hidden'
-              }}
-            >
-                {lessonPlannerTools.map((tool) => {
-                  const Icon = iconMap[tool.icon];
-                  const count = getTabCountByType(tool.type);
-                  const activeTab = tabs.find(t => t.id === activeTabId);
-                  const isActiveToolType = activeTab?.type === tool.type;
-                  const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-                  
-                  return (
-                    <button
-                      key={tool.id}
-                      data-tool-type={tool.type}
-                      onClick={() => openTool(tool)}
-                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm`}
-                      style={{
-                        backgroundColor: isActiveToolType
-                          ? 'var(--sidebar-active)'
-                          : 'transparent',
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                        if (icon && !isActiveToolType && toolColor) {
-                          icon.style.color = toolColor;
-                          icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = isActiveToolType
-                          ? 'var(--sidebar-active)'
-                          : 'transparent';
-                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                        if (icon && !isActiveToolType) {
-                          icon.style.color = 'var(--sidebar-text-muted)';
-                          icon.style.filter = '';
-                        }
-                      }}
-                    >
-                      <Icon
-                        className={`w-4 h-4 flex-shrink-0 sidebar-icon ${
-                          isActiveToolType ? 'icon-glow' : ''
-                        }`}
-                        style={{
-                          color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
-                          transition: 'color 0.25s, filter 0.25s'
-                        }}
-                      />
-                      <div className="flex-1 text-left overflow-hidden">
-                        <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
-                           style={{
-                             maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                             WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                           }}>
-                          {tool.name}
-                        </p>
-                        {count > 0 && (
-                          <p
-                            className="text-xs"
-                            style={{ color: 'var(--sidebar-text-muted)' }}
-                          >
-                            {count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}
-                          </p>
-                        )}
+            // Helper: render a collapsible group (lesson-planners or visual-studio)
+            const renderGroup = (groupId: string, label: string, groupTools: Tool[], expanded: boolean, setExpanded: (v: boolean) => void, defaultIcon: React.ElementType) => {
+              const activeTab = tabs.find(t => t.id === activeTabId);
+              const activeGroupTool = !sidebarOpen && activeTab ? groupTools.find(t => t.type === activeTab.type) : null;
+              const GroupIcon = activeGroupTool ? iconMap[activeGroupTool.icon] : defaultIcon;
+              const groupToolColor = activeGroupTool ? settings.tabColors[activeGroupTool.type as keyof typeof settings.tabColors] : undefined;
+              return (
+                <div className="mt-2" data-tutorial={groupId === 'lesson-planners' ? 'lesson-planners-group' : undefined} key={groupId}>
+                  <button
+                    onClick={() => setExpanded(!expanded)}
+                    data-tutorial-click={groupId === 'lesson-planners' ? 'lesson-planners-group' : undefined}
+                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
+                    title={!sidebarOpen ? (activeGroupTool ? activeGroupTool.name : label) : ''}
+                    style={{ backgroundColor: 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    <GroupIcon className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeGroupTool ? 'icon-glow' : ''}`} style={{ color: activeGroupTool && groupToolColor ? groupToolColor : 'var(--sidebar-text-muted)', transition: 'color 0.3s, filter 0.3s' }} />
+                    <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{label}</p>
+                        <ChevronDown className="w-4 h-4 text-gray-400 chevron-icon ml-2 flex-shrink-0" style={{ transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
                       </div>
-                    </button>
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* Visual Studio Dropdown */}
-          {settings.visualStudioEnabled && (
-            <div className="mt-2">
-              {(() => {
-                const activeTab = tabs.find(t => t.id === activeTabId);
-                const activeVSTool = !sidebarOpen && activeTab ? visualStudioTools.find(t => t.type === activeTab.type) : null;
-                const VSIcon = activeVSTool ? iconMap[activeVSTool.icon] : Palette;
-                const vsToolColor = activeVSTool ? settings.tabColors[activeVSTool.type as keyof typeof settings.tabColors] : undefined;
-                return (
-              <button
-                onClick={() => setVisualStudioExpanded(!visualStudioExpanded)}
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition`}
-                title={!sidebarOpen ? (activeVSTool ? activeVSTool.name : 'Visual Studio') : ''}
-                style={{
-                  backgroundColor: 'transparent',
-                  transition: 'background-color 0.25s, box-shadow 0.25s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                    <VSIcon
-                      className={`w-5 h-5 flex-shrink-0 ${sidebarOpen ? '' : 'mx-auto'} ${activeVSTool ? 'icon-glow' : ''}`}
-                      style={{
-                        color: activeVSTool && vsToolColor ? vsToolColor : ('var(--sidebar-text-muted)'),
-                        transition: 'color 0.3s, filter 0.3s'
-                      }}
-                    />
-                <div
-                  className="flex-1 text-left overflow-hidden"
-                  style={{
-                    opacity: sidebarOpen ? 1 : 0,
-                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    pointerEvents: sidebarOpen ? 'auto' : 'none'
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <p
-                      className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1"
-                      style={{
-                        maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                        WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                      }}
-                    >
-                      Visual Studio
-                    </p>
-                    <ChevronDown
-                      className="w-4 h-4 text-gray-400 chevron-icon ml-2 flex-shrink-0"
-                      style={{
-                        transform: visualStudioExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                    />
+                    </div>
+                  </button>
+                  <div className="ml-4 mt-2 space-y-1 border-l-2 pl-2" style={{ borderColor: 'var(--sidebar-border)', opacity: expanded && sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: expanded && sidebarOpen ? 'auto' : 'none', maxHeight: expanded && sidebarOpen ? '500px' : '0', overflow: 'hidden' }}>
+                    {groupTools.map((tool) => {
+                      const Icon = iconMap[tool.icon];
+                      const count = getTabCountByType(tool.type);
+                      const at = tabs.find(t => t.id === activeTabId);
+                      const isActive = at?.type === tool.type;
+                      const tc = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+                      return (
+                        <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', transition: 'background-color 0.2s' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive && tc) { ic.style.color = tc; ic.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActive ? 'var(--sidebar-active)' : 'transparent'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive) { ic.style.color = 'var(--sidebar-text-muted)'; ic.style.filter = ''; } }}
+                        >
+                          <Icon className={`w-4 h-4 flex-shrink-0 sidebar-icon ${isActive ? 'icon-glow' : ''}`} style={{ color: isActive && tc ? tc : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
+                          <div className="flex-1 text-left overflow-hidden">
+                            <p className="text-xs font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
+                            {count > 0 && (<p className="text-xs" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}</p>)}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-              </button>
-                );
-              })()}
+              );
+            };
 
-              <div
-                className="ml-4 mt-2 space-y-1 border-l-2 pl-2"
-                style={{
-                  borderColor: 'var(--sidebar-border)',
-                  opacity: visualStudioExpanded && sidebarOpen ? 1 : 0,
-                  transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  pointerEvents: visualStudioExpanded && sidebarOpen ? 'auto' : 'none',
-                  maxHeight: visualStudioExpanded && sidebarOpen ? '500px' : '0',
-                  overflow: 'hidden'
-                }}
-              >
-                {visualStudioTools.map((tool) => {
-                  const Icon = iconMap[tool.icon];
-                  const count = getTabCountByType(tool.type);
-                  const activeTab = tabs.find(t => t.id === activeTabId);
-                  const isActiveToolType = activeTab?.type === tool.type;
-                  const toolColor = settings.tabColors[tool.type as keyof typeof settings.tabColors];
-                  return (
-                    <button
-                      key={tool.id}
-                      data-tool-type={tool.type}
-                      onClick={() => openTool(tool)}
-                      className={`w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm`}
-                      style={{
-                        backgroundColor: isActiveToolType
-                          ? 'var(--sidebar-active)'
-                          : 'transparent',
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                        if (icon && !isActiveToolType && toolColor) {
-                          icon.style.color = toolColor;
-                          icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = isActiveToolType
-                          ? 'var(--sidebar-active)'
-                          : 'transparent';
-                        const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                        if (icon && !isActiveToolType) {
-                          icon.style.color = 'var(--sidebar-text-muted)';
-                          icon.style.filter = '';
-                        }
-                      }}
-                    >
-                      <Icon
-                        className={`w-4 h-4 flex-shrink-0 sidebar-icon ${
-                          isActiveToolType ? 'icon-glow' : ''
-                        }`}
-                        style={{
-                          color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
-                          transition: 'color 0.25s, filter 0.25s'
-                        }}
-                      />
-                      <div className="flex-1 text-left overflow-hidden">
-                        <p className="text-xs font-medium whitespace-nowrap overflow-hidden"
-                           style={{
-                             maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                             WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                           }}>
-                          {tool.name}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            // Tool lookup helpers
+            const toolById = (id: string) => tools.find(t => t.type === id || t.id === id);
+            const tutorialMap: Record<string, string> = { 'analytics': 'tool-analytics', 'chat': 'tool-chat', 'curriculum': 'tool-curriculum', 'quiz-generator': 'tool-quiz', 'rubric-generator': 'tool-rubric' };
 
-          {/* Glass divider */}
-          <div className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />
+            // Render sidebar items
+            const elements: React.ReactNode[] = [];
 
-          {/* Performance Metrics Tool */}
-          {performanceTool && settings.performanceMetricsEnabled && (() => {
-            const PerfIcon = iconMap[performanceTool.icon];
-            const activeTab = tabs.find(t => t.id === activeTabId);
-            const isActiveToolType = activeTab?.type === performanceTool.type;
-            const toolColor = settings.tabColors[performanceTool.type as keyof typeof settings.tabColors] || '#10b981';
+            // 1. Pinned top: analytics
+            const analyticsTool = toolById('analytics');
+            if (analyticsTool) elements.push(renderToolButton(analyticsTool, 'tool-analytics'));
 
-            return (
-              <button
-                data-tool-type={performanceTool.type}
-                onClick={() => openTool(performanceTool)}
-                className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                title={!sidebarOpen ? performanceTool.name : ''}
-                style={{
-                  backgroundColor: isActiveToolType ? 'var(--sidebar-active)' : 'transparent',
-                  transition: 'background-color 0.25s, box-shadow 0.25s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                  if (icon && !isActiveToolType && toolColor) {
-                    icon.style.color = toolColor;
-                    icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isActiveToolType ? 'var(--sidebar-active)' : 'transparent';
-                  const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                  if (icon && !isActiveToolType) {
-                    icon.style.color = 'var(--sidebar-text-muted)';
-                    icon.style.filter = '';
-                  }
-                }}
-              >
-                <PerfIcon
-                  className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`}
-                  style={{
-                    color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)',
-                    transition: 'color 0.25s, filter 0.25s'
-                  }}
-                />
-                <div
-                  className="flex-1 text-left overflow-hidden"
-                  style={{
-                    opacity: sidebarOpen ? 1 : 0,
-                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    pointerEvents: sidebarOpen ? 'auto' : 'none'
-                  }}
-                >
-                  <p
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    style={{
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                    }}
+            // 2. Reorderable middle from sidebarOrder
+            for (const item of settings.sidebarOrder) {
+              if (!item.enabled) continue;
+              // Skip pinned items (they're rendered separately)
+              if (item.id === 'analytics' || item.id === 'support' || item.id === 'settings') continue;
+
+              if (item.id === 'lesson-planners') {
+                elements.push(renderGroup('lesson-planners', 'Lesson Planners', lessonPlannerTools, lessonPlannerExpanded, setLessonPlannerExpanded, BookOpen));
+              } else if (item.id === 'visual-studio') {
+                elements.push(renderGroup('visual-studio', 'Visual Studio', visualStudioTools, visualStudioExpanded, setVisualStudioExpanded, Palette));
+              } else {
+                const tool = toolById(item.id);
+                if (tool) elements.push(renderToolButton(tool, tutorialMap[item.id]));
+              }
+            }
+
+            // 3. Divider before bottom pinned items
+            elements.push(<div key="bottom-divider" className="glass-divider" style={{ background: 'linear-gradient(90deg, transparent, var(--sidebar-divider), transparent)' }} />);
+
+            // 4. Pinned bottom: support (if enabled) + settings
+            const supportItem = settings.sidebarOrder.find(i => i.id === 'support');
+            if (supportItem?.enabled !== false) {
+              const st = toolById('support');
+              if (st) elements.push(<div key="support-wrapper" className="mt-2">{renderToolButton(st)}</div>);
+            }
+            const settingsTl = toolById('settings');
+            if (settingsTl) {
+              const SettIcon = iconMap[settingsTl.icon];
+              const at = tabs.find(t => t.id === activeTabId);
+              const isActiveSt = at?.type === settingsTl.type;
+              elements.push(
+                <div key="settings-wrapper" className="mt-2">
+                  <button
+                    data-tool-type={settingsTl.type}
+                    onClick={() => openTool(settingsTl)}
+                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
+                    title={!sidebarOpen ? settingsTl.name : ''}
+                    style={{ backgroundColor: 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
-                    {performanceTool.name}
-                  </p>
+                    <SettIcon className={`w-5 h-5 flex-shrink-0 ${isActiveSt ? 'icon-glow' : ''}`} style={isActiveSt ? { color: '#64748b' } : { color: 'var(--sidebar-text-muted)' }} />
+                    <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
+                      <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{settingsTl.name}</p>
+                    </div>
+                  </button>
                 </div>
-              </button>
-            );
+              );
+            }
+
+            return <>{elements}</>;
           })()}
-
-          {/* Support & Reporting Tool */}
-          {supportTool && (
-            <div className="mt-2">
-              {(() => {
-                const SupportIcon = iconMap[supportTool.icon];
-                const activeTab = tabs.find(t => t.id === activeTabId);
-                const isActiveToolType = activeTab?.type === supportTool.type;
-                const toolColor = settings.tabColors[supportTool.type as keyof typeof settings.tabColors] || '#3b82f6';
-
-                return (
-                  <button
-                    data-tool-type={supportTool.type}
-                    onClick={() => openTool(supportTool)}
-                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                    title={!sidebarOpen ? supportTool.name : ''}
-                    style={{
-                      backgroundColor: 'transparent',
-                      transition: 'background-color 0.25s, box-shadow 0.25s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                      const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                      if (icon && !isActiveToolType && toolColor) {
-                        icon.style.color = toolColor;
-                        icon.style.filter = 'drop-shadow(0 0 8px currentColor)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement;
-                      if (icon && !isActiveToolType) {
-                        icon.style.color = 'var(--sidebar-text-muted)';
-                        icon.style.filter = '';
-                      }
-                    }}
-                  >
-                    <SupportIcon
-                      className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`}
-                      style={{
-                        color: isActiveToolType ? toolColor : 'var(--sidebar-text-muted)',
-                        transition: 'color 0.25s, filter 0.25s'
-                      }}
-                    />
-                    <div
-                      className="flex-1 text-left overflow-hidden"
-                      style={{
-                        opacity: sidebarOpen ? 1 : 0,
-                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        pointerEvents: sidebarOpen ? 'auto' : 'none'
-                      }}
-                    >
-                      <p
-                        className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                        style={{
-                          maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                          WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                        }}
-                      >
-                        {supportTool.name}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })()}
-            </div>
-          )}
-
-          {/* Settings Tool */}
-          {settingsTool && (
-            <div className="mt-2">
-              {(() => {
-                const Icon = iconMap[settingsTool.icon];
-                const activeTab = tabs.find(t => t.id === activeTabId);
-                const isActiveToolType = activeTab?.type === settingsTool.type;
-
-                return (
-                  <button
-                    data-tool-type={settingsTool.type}
-                    onClick={() => openTool(settingsTool)}
-                    className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                    title={!sidebarOpen ? settingsTool.name : ''}
-                    style={{
-                      backgroundColor: 'transparent',
-                      transition: 'background-color 0.25s, box-shadow 0.25s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <Icon
-                      className={`w-5 h-5 flex-shrink-0 ${
-                        isActiveToolType ? 'icon-glow' : ''
-                      }`}
-                      style={
-                        isActiveToolType
-                          ? { color: '#64748b' }
-                          : { color: 'var(--sidebar-text-muted)' }
-                      }
-                    />
-                    <div
-                      className="flex-1 text-left overflow-hidden"
-                      style={{
-                        opacity: sidebarOpen ? 1 : 0,
-                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        pointerEvents: sidebarOpen ? 'auto' : 'none'
-                      }}
-                    >
-                      <p
-                        className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                        style={{
-                          maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                          WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
-                        }}
-                      >
-                        {settingsTool.name}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })()}
-            </div>
-          )}
         </div>
 
         <div
@@ -2757,7 +2236,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <div className="glass-card p-10 max-w-lg w-full mx-6 dashboard-welcome-enter">
                   <div className="text-center">
                     <img
-                      src="/OECS.png"
+                      src={OECS_LOGO_BASE64}
                       alt="OECS"
                       className="mx-auto mb-6 w-28 h-28 object-contain oecs-logo-pulse"
                       style={{
