@@ -1499,8 +1499,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     if (!el) return;
     const ro = new ResizeObserver(entries => {
       for (const entry of entries) {
-        const w = entry.contentRect.width - 40;
-        const h = entry.contentRect.height - 40;
+        const w = entry.contentRect.width - 24;
+        const h = entry.contentRect.height - 24;
         const maxW = Math.min(w, h / 0.5625);
         setStageWidth(Math.max(400, Math.floor(maxW)));
       }
@@ -2650,7 +2650,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         </div>
 
         {/* CENTER: Main stage */}
-        <div ref={stageRef} className="flex-1 flex flex-col items-center justify-center gap-3 p-5 overflow-hidden">
+        <div ref={stageRef} className="flex-1 flex flex-col items-center justify-center gap-2 p-3 overflow-hidden">
           {loading && slides.length === 0 ? (
             <SkeletonStage
               primaryColor={primaryColor}
