@@ -15,6 +15,7 @@ import Presentation01Icon from '@hugeicons/core-free-icons/Presentation01Icon';
 import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
 import SaveIcon from '@hugeicons/core-free-icons/SaveIcon';
 import FolderOpenIcon from '@hugeicons/core-free-icons/FolderOpenIcon';
+import ArrowDown01Icon from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
@@ -66,7 +67,7 @@ interface LessonPlanRecord {
 }
 
 type InputMode = 'scratch' | 'lesson';
-type RightTab = 'color' | 'edit';
+type RightTab = 'color' | 'edit' | 'layouts';
 
 const SLIDE_LAYOUTS = ['title', 'objectives', 'hook', 'instruction', 'activity', 'assessment', 'closing'];
 
@@ -1452,14 +1453,15 @@ function SlideSkeleton({ index, primaryColor }: { index: number; primaryColor: s
   );
 }
 
-function SkeletonStage({ primaryColor, streamingText, parsedCount }: { primaryColor: string; streamingText: string; parsedCount: number }) {
+function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth }: { primaryColor: string; streamingText: string; parsedCount: number; stageWidth: number }) {
   const EXPECTED_SLIDES = 8;
+  const slideHeight = Math.round(stageWidth * 0.5625);
   return (
-    <div className="flex flex-col items-center gap-4 w-full max-w-[700px]">
-      {/* Main skeleton slide (large) */}
+    <div className="flex flex-col items-center gap-4 w-full">
+      {/* Main skeleton slide — same size as generated slides */}
       <div
         className="rounded-lg overflow-hidden relative"
-        style={{ width: 480, height: 270, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)', boxShadow: `0 4px 32px ${primaryColor}18` }}
+        style={{ width: stageWidth, height: slideHeight, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)', boxShadow: `0 4px 32px ${primaryColor}18` }}
       >
         <div
           className="absolute inset-0"
@@ -1487,32 +1489,26 @@ function SkeletonStage({ primaryColor, streamingText, parsedCount }: { primaryCo
         </div>
       </div>
 
-      {/* Thumbnail skeleton strip */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {Array.from({ length: EXPECTED_SLIDES }).map((_, i) => (
-          <div key={i} className="relative">
-            {i < parsedCount ? (
-              <div className="rounded-lg overflow-hidden flex-shrink-0 ring-2" style={{ width: 160, height: 90, ringColor: `${primaryColor}60` }}>
-                <div className="w-full h-full flex items-center justify-center" style={{ background: `${primaryColor}10` }}>
-                  <span className="text-[10px] font-bold" style={{ color: primaryColor }}>Slide {i + 1} ✓</span>
-                </div>
-              </div>
-            ) : (
-              <SlideSkeleton index={i} primaryColor={primaryColor} />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Streaming text preview */}
-      {streamingText && (
-        <div className="w-full max-w-[480px] max-h-[80px] overflow-hidden rounded-lg border border-theme-border bg-theme-secondary px-3 py-2">
-          <div className="text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1">Live Stream</div>
-          <div className="text-xs text-theme-muted font-mono leading-relaxed overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {streamingText.slice(-200)}
-          </div>
+      {/* Progress bar below skeleton — matches the one shown after slides appear */}
+      <div className="w-full rounded-lg border border-theme bg-theme-secondary px-4 py-3" style={{ maxWidth: stageWidth }}>
+        <div className="flex items-center gap-2 mb-2">
+          <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
+          <span className="text-xs font-semibold text-theme-heading">
+            {parsedCount > 0
+              ? `Building slide ${parsedCount + 1} of ~${EXPECTED_SLIDES}...`
+              : 'Preparing slides...'}
+          </span>
         </div>
-      )}
+        <div className="flex gap-1">
+          {Array.from({ length: EXPECTED_SLIDES }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 h-1.5 rounded-full transition-all duration-500"
+              style={{ background: i < parsedCount ? primaryColor : `${primaryColor}22` }}
+            />
+          ))}
+        </div>
+      </div>
 
       <style>{`
         @keyframes shimmer {
@@ -1597,6 +1593,26 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [bgColor, setBgColor] = useState(savedData?.bgColor || '#020617');
   const [styleId, setStyleId] = useState(savedData?.styleId || 'dark');
   const [rightTab, setRightTab] = useState<RightTab>('color');
+  const [proOpen, setProOpen] = useState(false);
+  const [kidsOpen, setKidsOpen] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageWidth, setStageWidth] = useState(800);
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width - 40; // subtract padding
+        const h = entry.contentRect.height - 40;
+        // Fit 16:9 slide into available space
+        const maxW = Math.min(w, h / 0.5625);
+        setStageWidth(Math.max(400, Math.floor(maxW)));
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Generation state
   const [loading, setLoading] = useState(false);
@@ -1660,12 +1676,18 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const isStreaming = getIsStreaming(tabId, ENDPOINT);
   const prevIsStreamingRef = useRef(false);
 
-  // Progressive slide parsing during streaming
+  // Progressive slide parsing during streaming — update live slides
   useEffect(() => {
     if (isStreaming && streamingContent) {
       const parsed = tryParsePartialSlides(streamingContent);
       if (parsed.length > streamingSlides.length) {
         setStreamingSlides(parsed);
+        // Immediately push parsed slides into the real slides state so users can click/preview them
+        setSlides(parsed);
+        // Auto-select the latest slide as it appears
+        if (parsed.length > 0) {
+          setSel(parsed.length - 1);
+        }
       }
       // Switch to editor view as soon as streaming starts
       if (view !== 'editor') {
@@ -1782,7 +1804,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     if (inputMode === 'lesson') {
       const plan = lessonPlans.find(p => p.id === selectedPlanId);
       if (!plan) { setError('Please select a lesson plan first.'); return; }
-      prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan);
+      prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData);
     } else {
       if (!formData.subject || !formData.gradeLevel || !formData.topic) {
         setError('Please fill in Subject, Grade Level, and Topic.');
@@ -1925,13 +1947,15 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       <div className="h-full flex bg-theme-primary">
         <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="flex-shrink-0 border-b border-theme-border px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Icon icon={Presentation01Icon} className="w-6" style={{ color: tabColor }} />
-            <div className="flex-1">
-              <h1 className="text-lg font-bold text-theme-heading">Presentation Builder</h1>
-              <p className="text-xs text-theme-muted">Create slide decks from scratch or from existing lesson plans</p>
-            </div>
+        <div className="border-b border-theme p-4 flex items-center justify-between" style={{ borderBottomColor: `${tabColor}33` }}>
+          <div>
+            <h2 className="text-xl font-semibold text-theme-heading flex items-center">
+              <Icon icon={Presentation01Icon} className="w-5 inline mr-2" style={{ color: tabColor }} />
+              Presentation Builder
+            </h2>
+            <p className="text-sm text-theme-hint mt-0.5">Create slide decks from scratch or from existing lesson plans</p>
+          </div>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadPresentationHistory(); }}
               className="p-2 rounded-lg hover:bg-theme-hover transition"
@@ -1995,7 +2019,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <label className="block text-sm font-semibold text-theme-heading mb-1">Topic *</label>
                   <SmartInput
                     value={formData.topic}
-                    onChange={e => updateField('topic', e.target.value)}
+                    onChange={v => updateField('topic', v)}
                     placeholder="e.g. Light Interactions, Fractions, Community Helpers..."
                     className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none"
                   />
@@ -2042,7 +2066,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <label className="block text-sm font-semibold text-theme-heading mb-1">Additional Instructions</label>
                   <SmartTextArea
                     value={formData.additionalInstructions}
-                    onChange={e => updateField('additionalInstructions', e.target.value)}
+                    onChange={v => updateField('additionalInstructions', v)}
                     placeholder="Any special focus areas, activities to include, etc."
                     rows={3}
                     className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm resize-none"
@@ -2118,51 +2142,49 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
             {error && <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</div>}
 
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="w-full py-3 rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: tabColor, color: hexLum(tabColor) > 0.5 ? '#000' : '#fff' }}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Icon icon={Loading02Icon} className="w-4 animate-spin" /> Generating Slides...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Icon icon={Presentation01Icon} className="w-4" /> Generate Presentation
-                </span>
-              )}
-            </button>
+            <div className="flex justify-end">
+              <button
+                onClick={handleGenerate}
+                disabled={loading}
+                className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Icon icon={Loading02Icon} className="w-5 inline mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon={Presentation01Icon} className="w-5 inline mr-2" />
+                    Generate Presentation
+                  </>
+                )}
+              </button>
+            </div>
 
             {/* Streaming progress in input view */}
             {loading && (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs text-theme-muted">
-                  <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: tabColor }} />
-                  <span>
-                    {streamingSlides.length > 0
-                      ? `${streamingSlides.length} slide${streamingSlides.length > 1 ? 's' : ''} parsed so far...`
-                      : 'Waiting for response...'}
-                  </span>
-                </div>
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <SlideSkeleton key={i} index={i} primaryColor={tabColor} />
-                  ))}
-                </div>
-                {streamingContent && (
-                  <div className="rounded-lg border border-theme-border bg-theme-secondary px-3 py-2 max-h-[60px] overflow-hidden">
-                    <div className="text-xs text-theme-muted font-mono leading-relaxed" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {streamingContent.slice(-150)}
-                    </div>
+                <div className="rounded-lg border border-theme bg-theme-secondary px-4 py-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: tabColor }} />
+                    <span className="text-sm font-semibold text-theme-heading">
+                      {streamingSlides.length > 0
+                        ? `Building slide ${streamingSlides.length + 1} of ~8...`
+                        : 'Preparing your presentation...'}
+                    </span>
                   </div>
-                )}
+                  <div className="flex gap-1">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 h-1.5 rounded-full transition-all duration-300"
+                        style={{ background: i < streamingSlides.length ? tabColor : `${tabColor}22` }}
+                      />
+                    ))}
+                  </div>
+                </div>
                 <style>{`
-                  @keyframes shimmer {
-                    0%, 100% { opacity: 0; }
-                    50% { opacity: 1; }
-                  }
                   @keyframes pulse {
                     0%, 100% { opacity: 0.4; }
                     50% { opacity: 1; }
@@ -2245,161 +2267,173 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     <div className="h-full flex bg-theme-primary">
       <div className="flex-1 flex flex-col min-w-0 relative">
       {/* Top bar */}
-      <div className="flex-shrink-0 px-4 py-2 border-b border-theme-border flex items-center gap-2 flex-wrap">
-        <button
-          onClick={() => setView('input')}
-          className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-theme-secondary border border-theme-border text-theme-muted hover:text-theme-heading transition-colors"
-        >
-          <Icon icon={ArrowLeft01Icon} className="w-3.5 inline mr-1" /> Back
-        </button>
-        <div className="flex-1 min-w-[120px]">
-          <div className="text-xs text-theme-muted">
-            {formData.subject && `Grade ${formData.gradeLevel} · ${formData.subject} · ${formData.duration} min`}
+      <div className="flex-shrink-0 p-4 border-b border-theme">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => setView('input')}
+              className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
+            >
+              <Icon icon={ArrowLeft01Icon} className="w-3.5 inline mr-1.5" /> Back
+            </button>
+            <div className="min-w-0">
+              <h3 className="text-lg font-semibold text-theme-heading flex items-center">
+                <Icon icon={Presentation01Icon} className="w-5 inline mr-2" />
+                Preview
+              </h3>
+              <div className="text-xs text-theme-muted truncate">
+                {formData.topic || 'Presentation'}{formData.subject ? ` · Grade ${formData.gradeLevel} · ${formData.subject}` : ''}
+              </div>
+            </div>
           </div>
-          <div className="text-sm font-bold text-theme-heading truncate">{formData.topic || 'Presentation'}</div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-theme-secondary border rounded-lg" style={{ borderColor: `${primaryColor}33` }}>
-            <div className="w-2 h-2 rounded-full" style={{ background: primaryColor }} />
-            <span className="text-xs font-semibold" style={{ color: primaryColor }}>{ALL_STYLES.find(s => s.id === styleId)?.label}</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadPresentationHistory(); }}
+              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              title="Presentation History"
+            >
+              <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
+            </button>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-theme-secondary border border-theme rounded-lg">
+              <div className="w-2 h-2 rounded-full" style={{ background: primaryColor }} />
+              <span className="text-xs font-semibold" style={{ color: primaryColor }}>{ALL_STYLES.find(s => s.id === styleId)?.label}</span>
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              <Icon icon={Loading02Icon} className="w-3.5 inline mr-1.5" />
+              {loading ? 'Generating...' : 'Regenerate'}
+            </button>
+            {slides.length > 0 && (
+              <>
+                <button
+                  onClick={savePresentation}
+                  disabled={saveStatus === 'saving'}
+                  className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                >
+                  <Icon icon={SaveIcon} className="w-3.5 inline mr-1.5" />
+                  {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : 'Save'}
+                </button>
+                <button
+                  onClick={exportPPTX}
+                  className="flex items-center px-3.5 py-1.5 text-[13.5px] bg-theme-tertiary text-theme-label rounded-lg hover:bg-theme-hover transition border border-theme-strong"
+                >
+                  <Icon icon={Download01Icon} className="w-3.5 inline mr-1.5" /> PPTX
+                </button>
+              </>
+            )}
           </div>
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="px-4 py-1.5 rounded-lg font-bold text-sm disabled:opacity-50"
-            style={{ background: primaryColor, color: hexLum(primaryColor) > 0.5 ? '#000' : '#fff' }}
-          >
-            {loading ? 'Generating...' : 'Regenerate'}
-          </button>
-          {slides.length > 0 && (
-            <>
-              <button
-                onClick={savePresentation}
-                disabled={saveStatus === 'saving'}
-                className="px-3 py-1.5 rounded-lg font-semibold text-sm border transition-all"
-                style={{
-                  color: saveStatus === 'saved' ? '#22c55e' : primaryColor,
-                  borderColor: saveStatus === 'saved' ? '#22c55e44' : `${primaryColor}44`,
-                }}
-              >
-                <Icon icon={SaveIcon} className="w-3.5 inline mr-1" />
-                {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Save'}
-              </button>
-              <button
-                onClick={exportPPTX}
-                className="px-3 py-1.5 rounded-lg font-semibold text-sm border"
-                style={{ color: primaryColor, borderColor: `${primaryColor}44` }}
-              >
-                <Icon icon={Download01Icon} className="w-3.5 inline mr-1" /> PPTX
-              </button>
-            </>
-          )}
-          <button
-            onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadPresentationHistory(); }}
-            className="p-2 rounded-lg hover:bg-theme-hover transition"
-            title="Presentation History"
-          >
-            <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
-          </button>
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Style list */}
-        <div className="w-[170px] flex-shrink-0 border-r border-theme-border bg-theme-secondary overflow-y-auto flex flex-col">
-          <div className="px-2.5 pt-2.5 pb-1 text-[9px] font-extrabold text-theme-muted uppercase tracking-wider">Professional</div>
-          {ALL_STYLES.filter(s => s.tag === 'PRO').map(s => {
-            const active = styleId === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setStyleId(s.id)}
-                className="px-2.5 py-2 text-left flex flex-col gap-0.5 border-l-[3px] transition-all"
-                style={{
-                  background: active ? `${primaryColor}14` : 'transparent',
-                  borderLeftColor: active ? primaryColor : 'transparent',
-                }}
-              >
-                <span className="text-xs font-bold" style={{ color: active ? primaryColor : undefined }}>{s.label}</span>
-                <span className="text-[10px] text-theme-muted leading-tight">{s.desc}</span>
+        {/* LEFT: Slide list */}
+        <div className="w-[170px] flex-shrink-0 border-r border-theme bg-theme-secondary flex flex-col">
+          <div className="px-2.5 pt-2.5 pb-1.5 text-[9px] font-extrabold text-theme-muted uppercase tracking-wider flex items-center justify-between">
+            <span>Slides</span>
+            {slides.length > 0 && <span style={{ color: primaryColor }}>{slides.length}</span>}
+          </div>
+          <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-1.5">
+            {slides.map((slide, i) => (
+              <Thumbnail key={slide.id || i} slide={slide} theme={theme} selected={i === sel} onClick={() => setSel(i)} index={i} styleId={styleId} />
+            ))}
+            {/* Placeholder skeletons for slides still generating */}
+            {loading && Array.from({ length: Math.max(0, 8 - slides.length) }).map((_, i) => (
+              <div key={`skel-${i}`} className="rounded overflow-hidden" style={{ width: '100%', height: 82, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)' }}>
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="rounded" style={{ width: '50%', height: 6, background: `${primaryColor}20`, animation: 'pulse 1.5s ease-in-out infinite' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Move controls */}
+          {slides.length > 0 && !loading && (
+            <div className="flex-shrink-0 px-2 py-2 border-t border-theme flex items-center justify-center gap-1.5">
+              <button onClick={() => moveSlide(-1)} disabled={sel === 0} className="flex items-center px-2 py-1 text-[10px] rounded bg-theme-tertiary text-theme-label border border-theme-strong hover:bg-theme-hover transition disabled:opacity-30">
+                <Icon icon={ArrowLeft01Icon} className="w-2.5 inline" />
               </button>
-            );
-          })}
-          <div className="px-2.5 pt-3 pb-1 text-[9px] font-extrabold text-theme-muted uppercase tracking-wider mt-1 border-t border-theme-border">For Kids</div>
-          {ALL_STYLES.filter(s => s.tag === 'KIDS').map(s => {
-            const active = styleId === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setStyleId(s.id)}
-                className="px-2.5 py-2 text-left flex flex-col gap-0.5 border-l-[3px] transition-all"
-                style={{
-                  background: active ? `${primaryColor}14` : 'transparent',
-                  borderLeftColor: active ? primaryColor : 'transparent',
-                }}
-              >
-                <span className="text-xs font-bold" style={{ color: active ? primaryColor : undefined }}>{s.label}</span>
-                <span className="text-[10px] text-theme-muted leading-tight">{s.desc}</span>
+              <span className="text-[10px] text-theme-muted min-w-[36px] text-center font-medium">{sel + 1}/{slides.length}</span>
+              <button onClick={() => moveSlide(1)} disabled={sel >= slides.length - 1} className="flex items-center px-2 py-1 text-[10px] rounded bg-theme-tertiary text-theme-label border border-theme-strong hover:bg-theme-hover transition disabled:opacity-30">
+                <Icon icon={ArrowRight01Icon} className="w-2.5 inline" />
               </button>
-            );
-          })}
+            </div>
+          )}
         </div>
 
         {/* CENTER: Main stage */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-5 overflow-hidden">
+        <div ref={stageRef} className="flex-1 flex flex-col items-center justify-center gap-3 p-5 overflow-hidden">
           {loading && slides.length === 0 ? (
-            /* Skeleton loading with progressive streaming */
+            /* Skeleton loading before any slides are parsed */
             <SkeletonStage
               primaryColor={primaryColor}
               streamingText={streamingContent || ''}
               parsedCount={streamingSlides.length}
+              stageWidth={stageWidth}
             />
           ) : slides.length === 0 ? (
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-4">
+              <Icon icon={Presentation01Icon} className="w-10" style={{ color: 'var(--sidebar-text-muted)', opacity: 0.4 }} />
               <div className="text-theme-muted text-sm">No slides generated yet</div>
-              <button onClick={handleGenerate} disabled={loading} className="px-6 py-2 rounded-lg font-bold text-sm" style={{ background: primaryColor, color: hexLum(primaryColor) > 0.5 ? '#000' : '#fff' }}>
+              <button onClick={handleGenerate} disabled={loading} className="flex items-center px-5 py-2 text-[13.5px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+                <Icon icon={Presentation01Icon} className="w-3.5 inline mr-1.5" />
                 Generate Slides
               </button>
             </div>
           ) : (
             <>
               {cur && (
-                <div className="rounded-lg overflow-hidden" style={{ boxShadow: `0 4px 32px ${primaryColor}18` }}>
-                  <SlideCanvas slide={cur} theme={theme} width={640} styleId={styleId} />
+                <div className="rounded-lg overflow-hidden relative" style={{ boxShadow: `0 4px 32px ${primaryColor}18` }}>
+                  <SlideCanvas slide={cur} theme={theme} width={stageWidth} styleId={styleId} />
+                  {/* Generating badge on current slide */}
+                  {loading && (
+                    <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: `${primaryColor}cc` }}>
+                      <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
+                      <span className="text-[10px] font-bold text-white">
+                        {slides.length} / ~8 slides
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
-              {/* Slide strip */}
-              <div className="flex gap-1.5 overflow-x-auto max-w-[700px] pb-1">
-                {slides.map((slide, i) => (
-                  <Thumbnail key={slide.id || i} slide={slide} theme={theme} selected={i === sel} onClick={() => { setSel(i); setRightTab('edit'); }} index={i} styleId={styleId} />
-                ))}
-              </div>
-              <div className="flex gap-2 items-center">
-                <button onClick={() => moveSlide(-1)} disabled={sel === 0} className="px-3 py-1 rounded text-xs font-semibold bg-theme-secondary border border-theme-border text-theme-muted disabled:opacity-30">
-                  <Icon icon={ArrowLeft01Icon} className="w-3 inline" /> Move
-                </button>
-                <span className="text-xs text-theme-muted min-w-[52px] text-center">{sel + 1} / {slides.length}</span>
-                <button onClick={() => moveSlide(1)} disabled={sel >= slides.length - 1} className="px-3 py-1 rounded text-xs font-semibold bg-theme-secondary border border-theme-border text-theme-muted disabled:opacity-30">
-                  Move <Icon icon={ArrowRight01Icon} className="w-3 inline" />
-                </button>
-              </div>
+              {/* Streaming progress bar below preview */}
+              {loading && (
+                <div className="w-full rounded-lg border border-theme bg-theme-secondary px-4 py-3" style={{ maxWidth: stageWidth }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
+                    <span className="text-xs font-semibold text-theme-heading">
+                      Building slide {slides.length + 1} of ~8...
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 h-1.5 rounded-full transition-all duration-500"
+                        style={{ background: i < slides.length ? primaryColor : `${primaryColor}22` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
           {error && <div className="text-red-400 text-sm max-w-[340px] text-center">{error}</div>}
         </div>
 
-        {/* RIGHT: Tabs (Color | Edit) */}
-        <div className="w-[258px] flex-shrink-0 border-l border-theme-border bg-theme-secondary flex flex-col">
+        {/* RIGHT: Tabs (Colours | Edit Slide | Layouts) */}
+        <div className="w-[258px] flex-shrink-0 border-l border-theme bg-theme-secondary flex flex-col">
           {/* Tab switcher */}
-          <div className="flex border-b border-theme-border flex-shrink-0">
-            {(['color', 'edit'] as const).map(tab => (
+          <div className="flex border-b border-theme flex-shrink-0">
+            {(['color', 'edit', 'layouts'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setRightTab(tab)}
-                className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wide transition-all border-b-2 ${rightTab === tab ? '' : 'border-transparent text-theme-muted'}`}
+                className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all border-b-2 ${rightTab === tab ? '' : 'border-transparent text-theme-muted'}`}
                 style={rightTab === tab ? { color: primaryColor, borderBottomColor: primaryColor, background: `${primaryColor}12` } : undefined}
               >
-                {tab === 'color' ? 'Colours' : 'Edit Slide'}
+                {tab === 'color' ? 'Colours' : tab === 'edit' ? 'Edit Slide' : 'Layouts'}
               </button>
             ))}
           </div>
@@ -2407,6 +2441,71 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           <div className="flex-1 overflow-y-auto p-3.5">
             {rightTab === 'color' && (
               <ColorPicker primary={primaryColor} bg={bgColor} onPrimary={setPrimaryColor} onBg={setBgColor} theme={theme} styleId={styleId} />
+            )}
+            {rightTab === 'layouts' && (
+              <div className="space-y-1">
+                {/* Professional — collapsible */}
+                <button
+                  onClick={() => setProOpen(p => !p)}
+                  className="w-full flex items-center justify-between px-1 py-1.5 rounded hover:bg-theme-hover transition"
+                >
+                  <span className="text-[10px] font-extrabold text-theme-muted uppercase tracking-wider">Professional</span>
+                  <Icon icon={ArrowDown01Icon} className="w-3" style={{ color: 'var(--sidebar-text-muted)', transform: proOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                </button>
+                <div
+                  className="space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out"
+                  style={{ maxHeight: proOpen ? `${ALL_STYLES.filter(s => s.tag === 'PRO').length * 52}px` : '0px', opacity: proOpen ? 1 : 0 }}
+                >
+                  {ALL_STYLES.filter(s => s.tag === 'PRO').map(s => {
+                    const active = styleId === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => setStyleId(s.id)}
+                        className="w-full px-2.5 py-2 text-left flex flex-col gap-0.5 border-l-[3px] rounded-r transition-all"
+                        style={{
+                          background: active ? `${primaryColor}14` : 'transparent',
+                          borderLeftColor: active ? primaryColor : 'transparent',
+                        }}
+                      >
+                        <span className="text-xs font-bold" style={{ color: active ? primaryColor : undefined }}>{s.label}</span>
+                        <span className="text-[10px] text-theme-muted leading-tight">{s.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* For Kids — collapsible */}
+                <button
+                  onClick={() => setKidsOpen(p => !p)}
+                  className="w-full flex items-center justify-between px-1 py-1.5 rounded hover:bg-theme-hover transition mt-1 border-t border-theme pt-2"
+                >
+                  <span className="text-[10px] font-extrabold text-theme-muted uppercase tracking-wider">For Kids</span>
+                  <Icon icon={ArrowDown01Icon} className="w-3" style={{ color: 'var(--sidebar-text-muted)', transform: kidsOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                </button>
+                <div
+                  className="space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out"
+                  style={{ maxHeight: kidsOpen ? `${ALL_STYLES.filter(s => s.tag === 'KIDS').length * 52}px` : '0px', opacity: kidsOpen ? 1 : 0 }}
+                >
+                  {ALL_STYLES.filter(s => s.tag === 'KIDS').map(s => {
+                    const active = styleId === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => setStyleId(s.id)}
+                        className="w-full px-2.5 py-2 text-left flex flex-col gap-0.5 border-l-[3px] rounded-r transition-all"
+                        style={{
+                          background: active ? `${primaryColor}14` : 'transparent',
+                          borderLeftColor: active ? primaryColor : 'transparent',
+                        }}
+                      >
+                        <span className="text-xs font-bold" style={{ color: active ? primaryColor : undefined }}>{s.label}</span>
+                        <span className="text-[10px] text-theme-muted leading-tight">{s.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
             {rightTab === 'edit' && cur && (
               <div className="space-y-1">

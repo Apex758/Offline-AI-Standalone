@@ -62,7 +62,7 @@ RULES:
 - headline: max 7 words, clear and engaging
 - bullets: max 12 words each, max 3-4 bullets per slide
 - 8-9 slides total in this order: title → objectives → hook → instruction → instruction → instruction → activity → assessment → closing
-- Title slide: headline = topic, subtitle = "Grade {grade} · {subject}", badge = "Grade {grade} · {subject}"
+- Title slide: headline = topic, subtitle = "Grade ${formData.gradeLevel} · ${formData.subject}", badge = "Grade ${formData.gradeLevel} · ${formData.subject}"
 - Objectives slide: 2-3 clear learning objectives as bullets
 - Hook slide: an engaging question or scenario as headline, body text for context
 - Instruction slides: break key concepts into digestible chunks with bullets
@@ -76,8 +76,14 @@ RULES:
 /**
  * Build a prompt for generating presentation slides from an existing parsed lesson plan.
  */
-export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string): string {
-  const meta = lesson.metadata || {};
+export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>): string {
+  const fb = formFallback || {};
+  const meta = {
+    ...(lesson.metadata || {}),
+    subject: lesson.metadata?.subject || fb.subject || 'General',
+    grade: lesson.metadata?.grade || fb.gradeLevel || 'K-6',
+    topic: lesson.metadata?.topic || fb.topic || 'Lesson',
+  };
   const objectives = (lesson.learningObjectives || []).join('\n- ');
   const sections = (lesson.sections || [])
     .map(s => `${s.name || 'Section'}:\n${s.content || ''}`)
@@ -99,10 +105,10 @@ Return ONLY valid JSON — no markdown, no code fences, no explanation.
 
 LESSON PLAN:
 Title: ${meta.title || meta.topic || 'Lesson'}
-Subject: ${meta.subject || 'Unknown'}
-Grade: ${meta.grade || 'Unknown'}
+Subject: ${meta.subject}
+Grade: ${meta.grade}
 Strand: ${meta.strand || ''}
-Topic: ${meta.topic || ''}
+Topic: ${meta.topic}
 Duration: ${meta.duration || ''}
 ${curriculumRef}
 
@@ -122,7 +128,7 @@ RULES:
 - headline: max 7 words, clear and engaging
 - bullets: max 12 words each, max 3-4 bullets per slide
 - 8-9 slides total in this order: title → objectives → hook → instruction → instruction → instruction → activity → assessment → closing
-- Title slide: headline = topic, subtitle = "Grade {grade} · {subject}", badge = "Grade {grade} · {subject}"
+- Title slide: headline = topic, subtitle = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}", badge = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}"
 - Objectives slide: use the actual learning objectives from the lesson plan as bullets
 - Hook slide: extract the hook/introduction from the lesson as an engaging question
 - Instruction slides: break the direct instruction content into digestible chunks with bullets
