@@ -101,7 +101,20 @@ const ALL_STYLES = [
   { id: 'safari', label: 'Safari Park', tag: 'KIDS', desc: 'Animal spots & binoculars' },
   { id: 'music', label: 'Music Jam', tag: 'KIDS', desc: 'Notes, instruments & rhythms' },
   { id: 'blocks', label: 'Block Builder', tag: 'KIDS', desc: 'Colorful building block shapes' },
+  // Professional themes
+  { id: 'corporate-blue', label: 'Corporate Blue', tag: 'PRO', desc: 'Clean navy & white, boardroom ready' },
+  { id: 'minimal-dark', label: 'Minimal Dark', tag: 'PRO', desc: 'Sleek dark with subtle accents' },
+  { id: 'modern-gradient', label: 'Modern Gradient', tag: 'PRO', desc: 'Smooth gradients, contemporary feel' },
+  { id: 'slate-gold', label: 'Slate & Gold', tag: 'PRO', desc: 'Elegant grey with gold accents' },
+  { id: 'nordic-clean', label: 'Nordic Clean', tag: 'PRO', desc: 'Light, airy Scandinavian minimalism' },
+  { id: 'monochrome', label: 'Monochrome', tag: 'PRO', desc: 'Black & white, strong typography' },
+  { id: 'tech-modern', label: 'Tech Modern', tag: 'PRO', desc: 'Digital-inspired geometric shapes' },
+  { id: 'earth-tones', label: 'Earth Tones', tag: 'PRO', desc: 'Warm naturals, sophisticated & grounded' },
+  { id: 'coral-bloom', label: 'Coral Bloom', tag: 'PRO', desc: 'Soft coral & cream, elegant warmth' },
+  { id: 'midnight-luxe', label: 'Midnight Luxe', tag: 'PRO', desc: 'Deep navy with metallic accents' },
 ];
+
+type PresentationMode = 'kids' | 'professional';
 
 /* ═══════════════════════════════════════
    COLOR UTILITIES
@@ -1504,6 +1517,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({});
   const [imageMode, setImageMode] = useState<ImageMode>(savedData?.imageMode || 'none');
   const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
+  const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
+  const [maxImages, setMaxImages] = useState<number>(savedData?.maxImages ?? 0); // 0 = auto (AI decides)
   const [uploadedImages, setUploadedImages] = useState<Array<{ id: string; dataUri: string; filename: string }>>(savedData?.uploadedImages || []);
   const [generationPhase, setGenerationPhase] = useState<'idle' | 'analyzing' | 'generating'>('idle');
   const [dragOver, setDragOver] = useState(false);
@@ -1531,11 +1546,31 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   const theme = deriveTheme(primaryColor, bgColor);
 
+  // Auto-switch theme when presentation mode changes
+  useEffect(() => {
+    const currentTheme = ALL_STYLES.find(s => s.id === styleId);
+    if (presentationMode === 'professional' && currentTheme?.tag === 'KIDS') {
+      setStyleId('corporate-blue');
+      setPrimaryColor('#2563eb');
+      setBgColor('#ffffff');
+    } else if (presentationMode === 'kids' && currentTheme?.tag === 'PRO') {
+      setStyleId('bubbly');
+      setPrimaryColor('#38bdf8');
+      setBgColor('#020617');
+    }
+  }, [presentationMode]);
+
+  // Filtered styles based on mode
+  const filteredStyles = ALL_STYLES.filter(s =>
+    presentationMode === 'professional' ? s.tag === 'PRO' : s.tag === 'KIDS'
+  );
+
   // Persist state
   useEffect(() => {
     onDataChange({
       inputMode, formData, useCurriculum, selectedPlanId,
       slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount,
+      presentationMode, maxImages,
     });
   }, [inputMode, formData, useCurriculum, selectedPlanId, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount]);
 
@@ -1655,6 +1690,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         primaryColor,
         bgColor,
         slideCount: slides.length,
+        presentationMode,
       };
       await axios.post('http://localhost:8000/api/presentation-history', data);
       setCurrentPresentationId(id);
@@ -1668,6 +1704,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   const loadPresentation = (pres: any) => {
     setSlides(pres.slides || []);
+    setPresentationMode(pres.presentationMode || 'kids');
     setStyleId(pres.styleId || 'bubbly');
     setPrimaryColor(pres.primaryColor || '#38bdf8');
     setBgColor(pres.bgColor || '#020617');
@@ -1734,14 +1771,14 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       if (inputMode === 'lesson') {
         const plan = lessonPlans.find(p => p.id === selectedPlanId);
         if (!plan) { setError('Please select a lesson plan first.'); setLoading(false); return; }
-        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount) + imageContext;
+        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode) + imageContext;
       } else {
         if (!formData.subject || !formData.gradeLevel || !formData.topic) {
           setError('Please fill in Subject, Grade Level, and Topic.');
           setLoading(false);
           return;
         }
-        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount) + imageContext;
+        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount, presentationMode) + imageContext;
       }
 
       if (queueEnabled) {
@@ -1909,6 +1946,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
     if (slidesNeedingImages.length === 0) return;
 
+    // Apply max images cap
+    if (maxImages > 0 && slidesNeedingImages.length > maxImages) {
+      slidesNeedingImages = slidesNeedingImages.slice(0, maxImages);
+    }
+
     setBatchImageProgress({ current: 0, total: slidesNeedingImages.length, generating: true });
 
     const styleHint = ALL_STYLES.find(st => st.id === styleId);
@@ -1921,8 +1963,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       try {
         // Use imageScene directly — no separate LLM prompt-generation call needed
         const sceneDesc = slide.content.imageScene || slide.content.body || slide.content.bullets?.join(', ') || slide.content.headline || '';
-        const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
-        const negativePrompt = 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
+        const prompt = presentationMode === 'professional'
+          ? `${styleName} style professional illustration: ${sceneDesc}. Clean, modern, minimalist, corporate, high quality, no text, no words, no letters`
+          : `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
+        const negativePrompt = presentationMode === 'professional'
+          ? 'text, words, letters, numbers, writing, labels, captions, watermark, signature, childish, cartoon, clipart, low quality'
+          : 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
         const placement = slide.content.imagePlacement && slide.content.imagePlacement !== 'none'
           ? slide.content.imagePlacement
           : defaultPlacementForLayout(slide.layout, index);
@@ -2210,6 +2256,36 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
             {error && <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</div>}
 
+            {/* Presentation Mode Toggle */}
+            <div className="space-y-2 p-4 rounded-xl bg-theme-secondary border border-theme-border">
+              <div className="text-sm font-semibold text-theme-heading flex items-center gap-2">
+                <Icon icon={Presentation01Icon} className="w-4" style={{ color: tabColor }} />
+                Presentation Style
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { id: 'kids' as PresentationMode, label: 'For Students', desc: 'Interactive, engaging, classroom-ready' },
+                  { id: 'professional' as PresentationMode, label: 'Professional', desc: 'Formal, structured, information-dense' },
+                ] as const).map(opt => {
+                  const active = presentationMode === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => setPresentationMode(opt.id)}
+                      className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center"
+                      style={{
+                        borderColor: active ? tabColor : 'var(--border-color, #333)',
+                        background: active ? `${tabColor}14` : 'transparent',
+                      }}
+                    >
+                      <span className="text-xs font-bold" style={{ color: active ? tabColor : undefined }}>{opt.label}</span>
+                      <span className="text-[10px] text-theme-muted leading-tight">{opt.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Image Mode + Slide Count */}
             <div className="space-y-4 p-4 rounded-xl bg-theme-secondary border border-theme-border">
               {/* Image mode selector */}
@@ -2305,6 +2381,33 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <span>15 slides</span>
                 </div>
               </div>
+
+              {/* Max images control — only for AI image mode */}
+              {imageMode === 'ai' && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-theme-heading">Max Images</span>
+                    <span className="text-sm font-bold" style={{ color: tabColor }}>
+                      {maxImages === 0 ? 'Auto' : maxImages}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={slideCount}
+                    value={maxImages}
+                    onChange={e => setMaxImages(Number(e.target.value))}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, ${tabColor} 0%, ${tabColor} ${(maxImages / slideCount) * 100}%, var(--bg-tertiary, #333) ${(maxImages / slideCount) * 100}%, var(--bg-tertiary, #333) 100%)`,
+                    }}
+                  />
+                  <div className="flex justify-between text-[10px] text-theme-muted">
+                    <span>Auto (AI decides)</span>
+                    <span>{slideCount} (all slides)</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end">
@@ -2462,6 +2565,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <Icon icon={Clock01Icon} className="w-5" style={{ color: 'var(--sidebar-text-muted)' }} />
             </button>
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-theme-secondary border border-theme rounded-lg">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{
+                background: presentationMode === 'professional' ? '#6366f120' : `${tabColor}20`,
+                color: presentationMode === 'professional' ? '#818cf8' : tabColor,
+              }}>
+                {presentationMode === 'professional' ? 'PRO' : 'KIDS'}
+              </span>
               <div className="w-2 h-2 rounded-full" style={{ background: primaryColor }} />
               <span className="text-xs font-semibold" style={{ color: primaryColor }}>{ALL_STYLES.find(s => s.id === styleId)?.label}</span>
             </div>
@@ -2634,9 +2743,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             {rightTab === 'layouts' && (
               <div className="space-y-0.5">
                 <div className="px-1 py-1.5">
-                  <span className="text-[10px] font-extrabold text-theme-muted uppercase tracking-wider">Themes</span>
+                  <span className="text-[10px] font-extrabold text-theme-muted uppercase tracking-wider">
+                    {presentationMode === 'professional' ? 'Professional Themes' : 'Kids Themes'}
+                  </span>
                 </div>
-                {ALL_STYLES.map(s => {
+                {filteredStyles.map(s => {
                   const active = styleId === s.id;
                   return (
                     <button

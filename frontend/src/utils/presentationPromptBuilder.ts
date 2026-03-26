@@ -36,8 +36,9 @@ export interface ParsedLessonInput {
 /**
  * Build a prompt for generating presentation slides from form data (scratch mode).
  */
-export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number): string {
+export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional'): string {
   const sc = slideCount || 8;
+  const isKids = presentationMode === 'kids';
   const curriculumSection = buildCurriculumPromptSection(
     formData.essentialOutcomes || '',
     formData.specificOutcomes || '',
@@ -72,7 +73,18 @@ RULES:
 - Assessment slide: assessment method with criteria as bullets
 - Closing slide: summary and takeaway as headline, review points as bullets
 - Make content grade-appropriate for Grade ${formData.gradeLevel} students
-- Keep language clear and educational${includeImages ? `
+- Keep language clear and educational${isKids ? `
+- IMPORTANT: This presentation is FOR STUDENTS to view in the classroom. Write as if you are TEACHING the students directly.
+- Use simple, age-appropriate language that Grade ${formData.gradeLevel} students can understand
+- Include interactive prompts like "Can you think of...?", "Let's try...", "Turn to your partner and...", "What do you notice?"
+- Make hook slides genuinely engaging with fun questions or surprising facts
+- Activity slides should have clear, step-by-step student instructions
+- Use encouraging, warm tone throughout — make learning feel exciting` : `
+- This is a PROFESSIONAL teacher reference presentation — formal, structured, and information-dense
+- Use precise academic language and proper terminology
+- Focus on clear delivery of content, key concepts, and curriculum alignment
+- Keep tone neutral and professional — suitable for staff meetings or parent presentations
+- Include data points, standards references, and measurable outcomes where relevant`}${includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
 }
@@ -80,8 +92,9 @@ RULES:
 /**
  * Build a prompt for generating presentation slides from an existing parsed lesson plan.
  */
-export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number): string {
+export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional'): string {
   const sc = slideCount || 8;
+  const isKids = presentationMode === 'kids';
   const fb = formFallback || {};
   const meta = {
     ...(lesson.metadata || {}),
@@ -143,7 +156,18 @@ RULES:
 - Closing slide: summary and review points from the lesson closure
 - Make content grade-appropriate for Grade ${meta.grade || 'K-6'} students
 - Keep language clear and educational
-- Use the ACTUAL content from the lesson plan — do not make up new content${includeImages ? `
+- Use the ACTUAL content from the lesson plan — do not make up new content${isKids ? `
+- IMPORTANT: This presentation is FOR STUDENTS to view in the classroom. Write as if you are TEACHING the students directly.
+- Use simple, age-appropriate language that Grade ${meta.grade || 'K-6'} students can understand
+- Include interactive prompts like "Can you think of...?", "Let's try...", "Turn to your partner and...", "What do you notice?"
+- Make hook slides genuinely engaging with fun questions or surprising facts
+- Activity slides should have clear, step-by-step student instructions
+- Use encouraging, warm tone throughout — make learning feel exciting` : `
+- This is a PROFESSIONAL teacher reference presentation — formal, structured, and information-dense
+- Use precise academic language and proper terminology
+- Focus on clear delivery of content, key concepts, and curriculum alignment
+- Keep tone neutral and professional — suitable for staff meetings or parent presentations
+- Include data points, standards references, and measurable outcomes where relevant`}${includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
 }
