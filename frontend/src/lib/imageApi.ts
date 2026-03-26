@@ -98,6 +98,25 @@ export interface SavedImageRecord {
 // API Client
 // ========================================
 
+// Cached model config from backend
+let _cachedSteps: number | null = null;
+
+async function getDefaultSteps(): Promise<number> {
+  if (_cachedSteps !== null) return _cachedSteps;
+  try {
+    const response = await axios.get(`${API_URL}/diffusion-models/active`);
+    _cachedSteps = response.data.steps ?? 4;
+    return _cachedSteps!;
+  } catch {
+    return 4; // fallback if backend unreachable
+  }
+}
+
+// Call this when the user switches diffusion models to reset the cache
+export function resetStepsCache() {
+  _cachedSteps = null;
+}
+
 export const imageApi = {
   /**
    * Generate an optimized image prompt using LLaMA model
@@ -124,6 +143,7 @@ export const imageApi = {
    */
   generateImage: async (request: ImageGenerationRequest): Promise<Blob> => {
     try {
+      const steps = request.numInferenceSteps || await getDefaultSteps();
       const response = await axios.post(
         `${API_URL}/generate-image`,
         {
@@ -131,7 +151,7 @@ export const imageApi = {
           negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
           width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 4
+          numInferenceSteps: steps
         },
         {
           responseType: 'blob' // Important: receive as binary data
@@ -151,6 +171,7 @@ export const imageApi = {
    */
   generateImageBase64: async (request: ImageGenerationRequest): Promise<ImageBase64Response> => {
     try {
+      const steps = request.numInferenceSteps || await getDefaultSteps();
       const response = await axios.post<ImageBase64Response>(
         `${API_URL}/generate-image-base64`,
         {
@@ -158,7 +179,7 @@ export const imageApi = {
           negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
           width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 4,
+          numInferenceSteps: steps,
           ...(request.initImage && { initImage: request.initImage }),
           ...(request.strength !== undefined && { strength: request.strength })
         }
@@ -324,6 +345,7 @@ export const imageApi = {
    */
   generateBatchImagesBase64: async (request: BatchImageGenerationRequest): Promise<BatchImageResponse> => {
     try {
+      const steps = request.numInferenceSteps || await getDefaultSteps();
       const response = await axios.post<BatchImageResponse>(
         `${API_URL}/generate-batch-images-base64`,
         {
@@ -331,7 +353,7 @@ export const imageApi = {
           negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
           width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 4,
+          numInferenceSteps: steps,
           numImages: request.numImages
         }
       );
@@ -349,6 +371,7 @@ export const imageApi = {
    */
   generateImageFromSeed: async (request: SeedImageGenerationRequest): Promise<SeedImageResponse> => {
     try {
+      const steps = request.numInferenceSteps || await getDefaultSteps();
       const response = await axios.post<SeedImageResponse>(
         `${API_URL}/generate-image-from-seed`,
         {
@@ -356,7 +379,7 @@ export const imageApi = {
           negativePrompt: request.negativePrompt || 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality',
           width: request.width || 512,
           height: request.height || 512,
-          numInferenceSteps: request.numInferenceSteps || 4,
+          numInferenceSteps: steps,
           seed: request.seed,
           initImage: request.initImage,
           ...(request.strength !== undefined && { strength: request.strength })

@@ -57,7 +57,7 @@ Class Size: ${formData.studentCount} students
 ${curriculumSection}
 ${formData.additionalInstructions ? `ADDITIONAL INSTRUCTIONS: ${formData.additionalInstructions}\n` : ''}
 JSON SCHEMA:
-{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|background|bottom-right|none"' : ''}}}]}
+{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none"' : ''}}}]}
 
 RULES:
 - headline: max 7 words, clear and engaging
@@ -73,7 +73,7 @@ RULES:
 - Closing slide: summary and takeaway as headline, review points as bullets
 - Make content grade-appropriate for Grade ${formData.gradeLevel} students
 - Keep language clear and educational${includeImages ? `
-- imagePlacement: choose where the AI-generated image should appear on each slide. Use "background" for title slides, "right" or "left" for content slides, "bottom-right" for activity/assessment slides, "none" for text-heavy slides like objectives` : ''}`;
+- imagePlacement: VARY the image position across slides for visual variety. Options: "background" or "half" for title slides (background = full page with overlay, half = right 50%), "right", "left", or "top" for content slides (ALTERNATE between these — do NOT use "right" for every slide), "bottom-right" for activity/assessment slides, "none" for text-heavy slides like objectives. Consecutive content slides MUST use different placements.` : ''}`;
 }
 
 /**
@@ -126,7 +126,7 @@ ASSESSMENT:
 ${assessments || 'Not specified'}
 
 JSON SCHEMA:
-{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|background|bottom-right|none"' : ''}}}]}
+{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none"' : ''}}}]}
 
 RULES:
 - headline: max 7 words, clear and engaging
@@ -143,5 +143,5 @@ RULES:
 - Make content grade-appropriate for Grade ${meta.grade || 'K-6'} students
 - Keep language clear and educational
 - Use the ACTUAL content from the lesson plan — do not make up new content${includeImages ? `
-- imagePlacement: choose where the AI-generated image should appear on each slide. Use "background" for title slides, "right" or "left" for content slides, "bottom-right" for activity/assessment slides, "none" for text-heavy slides like objectives` : ''}`;
+- imagePlacement: VARY the image position across slides for visual variety. Options: "background" or "half" for title slides (background = full page with overlay, half = right 50%), "right", "left", or "top" for content slides (ALTERNATE between these — do NOT use "right" for every slide), "bottom-right" for activity/assessment slides, "none" for text-heavy slides like objectives. Consecutive content slides MUST use different placements.` : ''}`;
 }

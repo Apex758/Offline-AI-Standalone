@@ -49,7 +49,7 @@ interface SlideContent {
   body?: string;
   bullets?: string[];
   image?: string; // base64 data URI
-  imagePlacement?: 'right' | 'left' | 'top' | 'background' | 'bottom-right' | 'none';
+  imagePlacement?: 'right' | 'left' | 'top' | 'half' | 'background' | 'bottom-right' | 'none';
   assignedImage?: number;
 }
 
@@ -155,6 +155,18 @@ interface SlideRendererProps {
   w: number;
 }
 
+function defaultPlacementForLayout(layout: string, slideIndex?: number): string {
+  if (layout === 'title') {
+    // Alternate between full-page background and half-page for title slides
+    return (slideIndex !== undefined && slideIndex % 2 === 1) ? 'half' : 'background';
+  }
+  if (layout === 'activity' || layout === 'assessment') return 'bottom-right';
+  // Cycle through positions for content slides to add visual variety
+  const contentPlacements = ['right', 'left', 'top', 'right', 'left'] as const;
+  const idx = slideIndex !== undefined ? slideIndex : 0;
+  return contentPlacements[idx % contentPlacements.length];
+}
+
 function ImageZone({ image, placement, sc, theme }: { image?: string; placement?: string; sc: number; theme: ThemeColors }) {
   if (!placement || placement === 'none') return null;
 
@@ -162,6 +174,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
     right: { position: 'absolute', right: 0, top: 0, bottom: 0, width: '35%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
     left: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '35%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
     top: { position: 'absolute', top: 0, left: 0, right: 0, height: '40%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    half: { position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
     background: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
     'bottom-right': { position: 'absolute', right: 12 * sc, bottom: 12 * sc, width: '25%', height: '40%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   };
@@ -170,7 +183,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
 
   if (image) {
     return (
-      <div style={{ ...style, overflow: 'hidden', borderRadius: placement === 'background' ? 0 : 10 * sc }}>
+      <div style={{ ...style, overflow: 'hidden', borderRadius: (placement === 'background' || placement === 'half') ? 0 : 10 * sc }}>
         <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {placement === 'background' && <div style={{ position: 'absolute', inset: 0, background: `${theme.bg}88` }} />}
       </div>
@@ -182,7 +195,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
     <div style={{
       ...style,
       border: `${2 * sc}px dashed ${theme.primary}40`,
-      borderRadius: placement === 'background' ? 0 : 10 * sc,
+      borderRadius: (placement === 'background' || placement === 'half') ? 0 : 10 * sc,
       background: `${theme.primary}08`,
       flexDirection: 'column',
       gap: 4 * sc,
@@ -1172,9 +1185,13 @@ function BlocksSlide({ slide, t, w }: SlideRendererProps) {
    SLIDE CANVAS ROUTER
 ═══════════════════════════════════════ */
 
-function SlideCanvas({ slide, theme, width = 640, styleId = 'bubbly' }: { slide: Slide; theme: ThemeColors; width?: number; styleId?: string }) {
+function SlideCanvas({ slide, theme, width = 640, styleId = 'bubbly', imageMode, slideIndex = 0 }: { slide: Slide; theme: ThemeColors; width?: number; styleId?: string; imageMode?: string; slideIndex?: number }) {
   if (!slide) return null;
-  const p = { slide, t: theme, w: width };
+  // When imageMode is 'ai', ensure every slide has a default imagePlacement so placeholders show
+  const effectiveSlide = imageMode === 'ai' && !slide.content.imagePlacement
+    ? { ...slide, content: { ...slide.content, imagePlacement: defaultPlacementForLayout(slide.layout, slideIndex) as any } }
+    : slide;
+  const p = { slide: effectiveSlide, t: theme, w: width };
   const renderers: Record<string, React.FC<SlideRendererProps>> = {
     bubbly: BubblySlide, chalkboard: ChalkboardSlide, storybook: StorybookSlide, comic: ComicSlide, scrapbook: ScrapbookSlide,
     space: SpaceSlide, candy: CandySlide, underwater: UnderwaterSlide, jungle: JungleSlide,
@@ -1192,12 +1209,12 @@ function SlideCanvas({ slide, theme, width = 640, styleId = 'bubbly' }: { slide:
    THUMBNAIL
 ═══════════════════════════════════════ */
 
-function Thumbnail({ slide, theme, selected, onClick, index, styleId }: { slide: Slide; theme: ThemeColors; selected: boolean; onClick: () => void; index: number; styleId: string }) {
+function Thumbnail({ slide, theme, selected, onClick, index, styleId, imageMode }: { slide: Slide; theme: ThemeColors; selected: boolean; onClick: () => void; index: number; styleId: string; imageMode?: string }) {
   const W = 144, scale = W / 640;
   return (
     <div onClick={onClick} style={{ cursor: 'pointer', borderRadius: 5, overflow: 'hidden', border: `2px solid ${selected ? theme.primary : 'transparent'}`, width: W, height: 82, position: 'relative', flexShrink: 0 }}>
       <div style={{ position: 'absolute', top: 0, left: 0, transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-        <SlideCanvas slide={slide} theme={theme} width={640} styleId={styleId} />
+        <SlideCanvas slide={slide} theme={theme} width={640} styleId={styleId} imageMode={imageMode} slideIndex={index} />
       </div>
       <div style={{ position: 'absolute', bottom: 3, left: 4, fontSize: 9, fontWeight: 700, color: selected ? theme.primary : '#475569', background: '#000000aa', padding: '1px 4px', borderRadius: 3 }}>{index + 1}</div>
     </div>
@@ -1676,7 +1693,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             const analyses = analysisRes.data.analyses;
             imageContext = '\n\nTEACHER-PROVIDED IMAGES:\n' +
               analyses.map((a: any, i: number) => `Image ${i + 1} ("${a.filename}"): ${a.description}`).join('\n') +
-              '\n\nIMPORTANT: Assign each teacher-provided image to the most relevant slide by setting imagePlacement to "right", "left", or "background" and adding "assignedImage" field with the image number (1-indexed). Not every slide needs an image. Only assign images where they genuinely enhance understanding.';
+              '\n\nIMPORTANT: Assign each teacher-provided image to the most relevant slide by setting imagePlacement to "right", "left", "top", "half", or "background" and adding "assignedImage" field with the image number (1-indexed). VARY the placement across slides — do NOT use the same position for every slide. Not every slide needs an image. Only assign images where they genuinely enhance understanding.';
           }
         } catch (e: any) {
           console.error('Image analysis failed:', e);
@@ -1807,10 +1824,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         negativePrompt: promptRes.negativePrompt,
         width: 1024,
         height: 576,
-        numInferenceSteps: 4,
       });
       if (imgRes.success && imgRes.imageData) {
-        setSlides(prev => prev.map((sl, i) => i === slideIdx ? { ...sl, content: { ...sl.content, image: imgRes.imageData } } : sl));
+        const placement = s.content.imagePlacement && s.content.imagePlacement !== 'none'
+          ? s.content.imagePlacement
+          : defaultPlacementForLayout(s.layout, slideIdx);
+        setSlides(prev => prev.map((sl, i) => i === slideIdx ? { ...sl, content: { ...sl.content, image: imgRes.imageData, imagePlacement: placement } } : sl));
       }
     } catch (e: any) {
       console.error('Image generation failed:', e);
@@ -1820,11 +1839,14 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Batch image generation
   const generateAllImages = async () => {
-    const slidesNeedingImages = slides
+    let slidesNeedingImages = slides
       .map((s, i) => ({ slide: s, index: i }))
-      .filter(({ slide }) => slide.content.imagePlacement && slide.content.imagePlacement !== 'none' && !slide.content.image);
+      .filter(({ slide }) => !slide.content.image);
 
-    if (slidesNeedingImages.length === 0) return;
+    // If all slides already have images, regenerate all of them
+    if (slidesNeedingImages.length === 0) {
+      slidesNeedingImages = slides.map((s, i) => ({ slide: s, index: i }));
+    }
 
     setBatchImageProgress({ current: 0, total: slidesNeedingImages.length, generating: true });
 
@@ -1845,10 +1867,12 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           negativePrompt: promptRes.negativePrompt,
           width: 1024,
           height: 576,
-          numInferenceSteps: 4,
         });
         if (imgRes.success && imgRes.imageData) {
-          setSlides(prev => prev.map((sl, idx) => idx === index ? { ...sl, content: { ...sl.content, image: imgRes.imageData } } : sl));
+          const placement = slide.content.imagePlacement && slide.content.imagePlacement !== 'none'
+            ? slide.content.imagePlacement
+            : defaultPlacementForLayout(slide.layout, index);
+          setSlides(prev => prev.map((sl, idx) => idx === index ? { ...sl, content: { ...sl.content, image: imgRes.imageData, imagePlacement: placement } } : sl));
         }
       } catch (e: any) {
         console.error('Batch image generation failed for slide:', index, e);
@@ -1876,10 +1900,14 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         if (placement === 'background') {
           s.addImage({ data: c.image, x: 0, y: 0, w: '100%', h: '100%', sizing: { type: 'cover', w: 13.33, h: 7.5 } });
           s.addShape('rect' as any, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: bgHex, transparency: 60 } });
+        } else if (placement === 'half') {
+          s.addImage({ data: c.image, x: 6.67, y: 0, w: 6.66, h: 7.5, sizing: { type: 'cover', w: 6.66, h: 7.5 } });
         } else if (placement === 'right') {
           s.addImage({ data: c.image, x: 8.66, y: 0, w: 4.67, h: 7.5, sizing: { type: 'cover', w: 4.67, h: 7.5 } });
         } else if (placement === 'left') {
           s.addImage({ data: c.image, x: 0, y: 0, w: 4.67, h: 7.5, sizing: { type: 'cover', w: 4.67, h: 7.5 } });
+        } else if (placement === 'top') {
+          s.addImage({ data: c.image, x: 0, y: 0, w: 13.33, h: 3.0, sizing: { type: 'cover', w: 13.33, h: 3.0 } });
         } else if (placement === 'bottom-right') {
           s.addImage({ data: c.image, x: 9.33, y: 4.5, w: 3.5, h: 3, sizing: { type: 'cover', w: 3.5, h: 3 } });
         }
@@ -2392,7 +2420,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 >
                   <Icon icon={Download01Icon} className="w-3.5 inline mr-1.5" /> PPTX
                 </button>
-                {imageMode === 'ai' && slides.some(s => s.content.imagePlacement && s.content.imagePlacement !== 'none' && !s.content.image) && (
+                {imageMode === 'ai' && (
                   <button
                     onClick={generateAllImages}
                     disabled={batchImageProgress.generating}
@@ -2402,7 +2430,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <Icon icon={Image01Icon} className="w-3.5 inline mr-1.5" />
                     {batchImageProgress.generating
                       ? `Images ${batchImageProgress.current}/${batchImageProgress.total}...`
-                      : 'Generate All Images'}
+                      : slides.every(s => s.content.image) ? 'Regenerate All Images' : 'Generate All Images'}
                   </button>
                 )}
               </>
@@ -2420,7 +2448,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           </div>
           <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-1.5">
             {slides.map((slide, i) => (
-              <Thumbnail key={slide.id || i} slide={slide} theme={theme} selected={i === sel} onClick={() => setSel(i)} index={i} styleId={styleId} />
+              <Thumbnail key={slide.id || i} slide={slide} theme={theme} selected={i === sel} onClick={() => setSel(i)} index={i} styleId={styleId} imageMode={imageMode} />
             ))}
             {loading && Array.from({ length: Math.max(0, slideCount - slides.length) }).map((_, i) => (
               <div key={`skel-${i}`} className="rounded overflow-hidden" style={{ width: '100%', height: 82, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)' }}>
@@ -2466,7 +2494,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             <>
               {cur && (
                 <div className="rounded-lg overflow-hidden relative" style={{ boxShadow: `0 4px 32px ${primaryColor}18` }}>
-                  <SlideCanvas slide={cur} theme={theme} width={stageWidth} styleId={styleId} />
+                  <SlideCanvas slide={cur} theme={theme} width={stageWidth} styleId={styleId} imageMode={imageMode} slideIndex={sel} />
                   {loading && (
                     <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: `${primaryColor}cc` }}>
                       <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />

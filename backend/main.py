@@ -37,7 +37,7 @@ from config import (
     LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR,
     MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE,
     IMAGE_MODELS_DIR, get_selected_diffusion_model, set_selected_diffusion_model,
-    get_diffusion_model_path, scan_diffusion_models
+    get_diffusion_model_path, scan_diffusion_models, get_image_model_info
 )
 from pathlib import Path
 from datetime import datetime
@@ -3511,11 +3511,14 @@ async def get_active_diffusion_model():
     try:
         selected_model = get_selected_diffusion_model()
         model_path = get_diffusion_model_path()
+        model_info = get_image_model_info(selected_model)
 
         return JSONResponse(content={
             "modelName": selected_model,
             "modelPath": model_path,
-            "exists": Path(model_path).exists()
+            "exists": Path(model_path).exists(),
+            "steps": model_info.get("steps", 4),
+            "guidance": model_info.get("guidance", 0.0),
         })
     except Exception as e:
         logger.error(f"Error getting active diffusion model: {e}")
@@ -3937,7 +3940,7 @@ async def generate_image(request: Request):
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
-        num_steps = data.get('numInferenceSteps', 2)
+        num_steps = data.get('numInferenceSteps', None)
         
         if not prompt:
             return JSONResponse(
@@ -4004,7 +4007,7 @@ async def generate_image_base64(request: Request):
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
-        num_steps = data.get('numInferenceSteps', 2)
+        num_steps = data.get('numInferenceSteps', None)
         init_image_b64 = data.get('initImage')
         strength = data.get('strength', 0.5)
 
@@ -4099,7 +4102,7 @@ async def generate_batch_images_base64(request: Request):
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
-        num_steps = data.get('numInferenceSteps', 2)
+        num_steps = data.get('numInferenceSteps', None)
         num_images = data.get('numImages', 1)
 
         if not prompt:
@@ -4186,7 +4189,7 @@ async def generate_image_from_seed(request: Request):
         negative_prompt = data.get('negativePrompt', 'deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, bad anatomy, extra limbs, fused fingers, too many fingers, ugly, low quality, worst quality')
         width = data.get('width', 1024)
         height = data.get('height', 512)
-        num_steps = data.get('numInferenceSteps', 2)
+        num_steps = data.get('numInferenceSteps', None)
         seed = data.get('seed')
         init_image_b64 = data.get('initImage')
         strength = data.get('strength', 0.5)

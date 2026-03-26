@@ -1046,7 +1046,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
         negativePrompt: 'multiple people, group, crowd, deformed, distorted, blurry',
         width: 512,
         height: 512,
-        numInferenceSteps: 2
       });
 
       if (response.success && response.imageData) {

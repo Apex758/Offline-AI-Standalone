@@ -623,7 +623,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     const negPrompt = profile?.negative_prompt || negativePrompt;
     const w = profile?.sdxl_settings?.width || 512;
     const h = profile?.sdxl_settings?.height || 512;
-    const steps = profile?.sdxl_settings?.num_inference_steps || 4;
+    const steps = profile?.sdxl_settings?.num_inference_steps || numInferenceSteps;
 
     const results: Array<{ imageData: string | null; seed: number | null; status: string }> = [];
 

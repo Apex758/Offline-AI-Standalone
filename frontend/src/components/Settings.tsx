@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { resetStepsCache } from '../lib/imageApi';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Settings01IconData from '@hugeicons/core-free-icons/Settings01Icon';
 import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
@@ -334,6 +335,7 @@ const Settings: React.FC<SettingsProps> = () => {
 
       if (response.ok) {
         setSelectedDiffusionModel(modelName);
+        resetStepsCache();
         setDiffusionModelChangeMessage(`Model changed to ${modelName}. Please restart the app for changes to take effect.`);
       } else {
         const error = await response.json();

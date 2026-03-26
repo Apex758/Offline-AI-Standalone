@@ -18,6 +18,7 @@ from typing import Dict, List, Optional
 from scene_schema import SceneSchemaBuilder, SceneSpec, save_scene_spec_to_json
 from ip_adapter_manager import get_ip_adapter_manager
 from image_asset_store import get_image_asset_store
+from config import get_image_model_info
 from image_service import get_image_service
 
 logger = logging.getLogger(__name__)
@@ -116,9 +117,16 @@ async def get_style_profiles():
         
         with open(profiles_path, 'r', encoding='utf-8') as f:
             profiles = json.load(f)
-        
-        logger.info(f"✅ Loaded {len(profiles)} style profiles from {profiles_path}")
-        
+
+        # Override num_inference_steps from the active diffusion model config
+        model_info = get_image_model_info()
+        config_steps = model_info.get("steps", 4)
+        for profile in profiles.values():
+            if "sdxl_settings" in profile:
+                profile["sdxl_settings"]["num_inference_steps"] = config_steps
+
+        logger.info(f"✅ Loaded {len(profiles)} style profiles from {profiles_path} (steps={config_steps})")
+
         return JSONResponse(content={
             "success": True,
             "profiles": profiles
@@ -219,7 +227,7 @@ async def generate_scene_image(request: Request):
             negative_prompt=negative_prompt,
             width=settings.get("width", 512),
             height=settings.get("height", 512),
-            num_inference_steps=settings.get("num_inference_steps", 4),
+            num_inference_steps=settings.get("num_inference_steps", get_image_model_info().get("steps", 4)),
             guidance_scale=settings.get("guidance_scale", 0.0)
         )
         
