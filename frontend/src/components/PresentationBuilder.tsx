@@ -2623,45 +2623,21 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   </>
                 )}
 
-                {/* Image generation */}
-                <div className="mt-4 pt-3.5 border-t border-theme-border">
-                  <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">Slide Image</label>
-                  {cur.content.image ? (
+                {/* Slide image display */}
+                {cur.content.image && (
+                  <div className="mt-4 pt-3.5 border-t border-theme-border">
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">Slide Image</label>
                     <div className="space-y-2">
                       <img src={cur.content.image} alt="Slide" className="w-full rounded border border-theme-border" />
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => generateSlideImage(sel)}
-                          disabled={imageLoading[sel]}
-                          className="flex-1 px-2 py-1.5 rounded text-xs font-semibold border"
-                          style={{ color: primaryColor, borderColor: `${primaryColor}28`, background: `${primaryColor}14` }}
-                        >
-                          {imageLoading[sel] ? <><Icon icon={Loading02Icon} className="w-3 inline animate-spin mr-1" /> Regenerating...</> : 'Regenerate'}
-                        </button>
-                        <button
-                          onClick={() => updateSlide('image', undefined)}
-                          className="px-2 py-1.5 rounded text-xs bg-theme-primary border border-theme-border text-red-400"
-                        >
-                          Remove
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => updateSlide('image', undefined)}
+                        className="px-2 py-1.5 rounded text-xs bg-theme-primary border border-theme-border text-red-400"
+                      >
+                        Remove
+                      </button>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => generateSlideImage(sel)}
-                      disabled={imageLoading[sel]}
-                      className="w-full px-3 py-2 rounded-lg text-xs font-semibold border transition-all"
-                      style={{ color: primaryColor, borderColor: `${primaryColor}28`, background: `${primaryColor}14` }}
-                    >
-                      {imageLoading[sel] ? (
-                        <><Icon icon={Loading02Icon} className="w-3.5 inline animate-spin mr-1" /> Generating Image...</>
-                      ) : (
-                        <><Icon icon={Image01Icon} className="w-3.5 inline mr-1" /> Generate Image</>
-                      )}
-                    </button>
-                  )}
-                  <div className="text-[10px] text-theme-muted mt-1.5">Uses your selected image model</div>
-                </div>
+                  </div>
+                )}
               </div>
             )}
             {rightTab === 'edit' && !cur && (
