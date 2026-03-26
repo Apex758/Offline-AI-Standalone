@@ -143,14 +143,14 @@ IMAGE_MODEL_REGISTRY = {
         "folder":      "sdxl-turbo-openvino",
         "backend":     "openvino",
         "description": "SDXL-Turbo (OpenVINO) — 4 steps, ~4 GB",
-        "steps":       4,
+        "steps":       2,
         "guidance":    0.0,
     },
     "flux-schnell": {
         "folder":      "flux-schnell",
         "backend":     "openvino_flux",
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
-        "steps":       4,
+        "steps":       2,
         "guidance":    0.0,
     },
 }
