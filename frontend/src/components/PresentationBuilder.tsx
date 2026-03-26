@@ -183,7 +183,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
 
   if (image) {
     return (
-      <div style={{ ...style, overflow: 'hidden', borderRadius: (placement === 'background' || placement === 'half') ? 0 : 10 * sc }}>
+      <div style={{ ...style, overflow: 'hidden', borderRadius: (placement === 'background' || placement === 'half') ? 0 : 10 * sc, zIndex: 0 }}>
         <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {placement === 'background' && <div style={{ position: 'absolute', inset: 0, background: `${theme.bg}88` }} />}
       </div>
@@ -200,6 +200,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
       flexDirection: 'column',
       gap: 4 * sc,
       opacity: 0.5,
+      zIndex: 0,
     }}>
       <HugeiconsIcon icon={Image01Icon} size={24 * sc} style={{ color: theme.primary, opacity: 0.4 }} />
       <span style={{ fontSize: 8 * sc, color: theme.primary, opacity: 0.5, fontFamily: 'system-ui', fontWeight: 600 }}>Image</span>
@@ -208,7 +209,8 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
 }
 
 function imageAwareInsets(placement: string | undefined, w: number): React.CSSProperties {
-  if (!placement || placement === 'none' || placement === 'background') return {};
+  if (!placement || placement === 'none') return {};
+  if (placement === 'background') return { zIndex: 1 };
   const H = w * 0.5625;
   switch (placement) {
     case 'right': return { right: w * 0.37 };
@@ -216,6 +218,17 @@ function imageAwareInsets(placement: string | undefined, w: number): React.CSSPr
     case 'half': return { right: w * 0.52 };
     case 'top': return { top: H * 0.43 };
     default: return {};
+  }
+}
+
+function imageDimensionsForPlacement(placement: string | undefined): { width: number; height: number } {
+  switch (placement) {
+    case 'background': return { width: 1024, height: 576 };
+    case 'half': return { width: 512, height: 768 };
+    case 'right': case 'left': return { width: 512, height: 768 };
+    case 'top': return { width: 1024, height: 448 };
+    case 'bottom-right': return { width: 576, height: 576 };
+    default: return { width: 1024, height: 576 };
   }
 }
 
@@ -235,7 +248,7 @@ function BubblySlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', bottom: -30 * sc, left: -30 * sc, width: 120 * sc, height: 120 * sc, borderRadius: '50%', background: blob2, opacity: 0.4 }} />
       <div style={{ position: 'absolute', top: 40 * sc, right: 60 * sc, width: 40 * sc, height: 40 * sc, borderRadius: '50%', background: p, opacity: 0.15 }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px ${50 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px ${50 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${6 * sc}px ${16 * sc}px`, background: p, borderRadius: 24 * sc, color: hexLum(p) > 0.5 ? '#000' : '#fff', fontSize: 10 * sc, fontWeight: 800, letterSpacing: '0.06em', marginBottom: 18 * sc, boxShadow: `0 ${4 * sc}px 0 ${darken(p, 0.2)}` }}>{c.badge}</div>}
           <div style={{ fontSize: 38 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 14 * sc, color: darken(p, 0.2), fontWeight: 600, background: `${p}20`, padding: `${6 * sc}px ${14 * sc}px`, borderRadius: 12 * sc }}>{c.subtitle}</div>}
@@ -270,7 +283,7 @@ function ChalkboardSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', inset: 0, opacity: 0.04, backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent ${2 * sc}px,${chalk} ${2 * sc}px,${chalk} ${3 * sc}px)`, backgroundSize: `${2 * sc}px ${3 * sc}px` }} />
       <div style={{ position: 'absolute', inset: 0, border: `${3 * sc}px dashed ${chalk}30`, borderRadius: 6 * sc, pointerEvents: 'none' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ border: `${2 * sc}px dashed ${p}`, borderRadius: 4 * sc, padding: `${4 * sc}px ${14 * sc}px`, color: p, fontSize: 9 * sc, fontWeight: 700, letterSpacing: '0.18em', marginBottom: 18 * sc, textTransform: 'uppercase' }}>{c.badge}</div>}
           <div style={{ fontSize: 34 * sc, fontWeight: 700, color: chalk, lineHeight: 1.15, marginBottom: 12 * sc, textShadow: `${1 * sc}px ${1 * sc}px 0 ${chalk}22` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: p, fontWeight: 600, borderBottom: `${2 * sc}px solid ${p}`, paddingBottom: 4 * sc, letterSpacing: '0.06em' }}>{c.subtitle}</div>}
@@ -307,7 +320,7 @@ function StorybookSlide({ slide, t, w }: SlideRendererProps) {
     <div style={{ width: w, height: H, background: warmBg, position: 'relative', overflow: 'hidden', borderRadius: 10 * sc, fontFamily: 'Georgia,serif', flexShrink: 0 }}>
       <div style={{ position: 'absolute', inset: `${18 * sc}px`, border: `1px solid ${borderColor}`, borderRadius: 6 * sc, pointerEvents: 'none' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${50 * sc}px ${55 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${50 * sc}px ${55 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ fontSize: 9 * sc, color: accentWarm, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 * sc, fontFamily: 'system-ui,sans-serif' }}>{c.badge}</div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.1, marginBottom: 16 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ display: 'flex', alignItems: 'center', gap: 10 * sc }}>
@@ -347,7 +360,7 @@ function ComicSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', inset: 0, opacity: 0.05, backgroundImage: `radial-gradient(circle,${ink} ${1 * sc}px,transparent ${1 * sc}px)`, backgroundSize: `${10 * sc}px ${10 * sc}px` }} />
       <div style={{ position: 'absolute', top: -20 * sc, right: -20 * sc, width: 140 * sc, height: 140 * sc, background: `conic-gradient(${p}22 0deg 10deg,transparent 10deg 20deg,${p}18 20deg 30deg,transparent 30deg 40deg,${p}14 40deg 50deg,transparent 50deg 360deg)`, borderRadius: '50%' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${30 * sc}px ${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${30 * sc}px ${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', marginBottom: 14 * sc, alignSelf: 'flex-start', position: 'relative' }}>
             <div style={{ padding: `${8 * sc}px ${18 * sc}px`, background: p, border: `${3 * sc}px solid ${ink}`, borderRadius: 4 * sc, transform: 'rotate(-2deg)', boxShadow: `${4 * sc}px ${4 * sc}px 0 ${ink}` }}>
               <span style={{ fontSize: 22 * sc, fontWeight: 900, color: hexLum(p) > 0.5 ? '#000' : '#fff', letterSpacing: '0.04em' }}>{tagWord}</span>
@@ -395,7 +408,7 @@ function ScrapbookSlide({ slide, t, w }: SlideRendererProps) {
     <div style={{ width: w, height: H, background: bg, position: 'relative', overflow: 'hidden', borderRadius: 6 * sc, fontFamily: 'Georgia,serif', flexShrink: 0 }}>
       <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(transparent,transparent ${22 * sc}px,${t.isDark ? p + '06' : '#c8b89033'} ${22 * sc}px,${t.isDark ? p + '06' : '#c8b89033'} ${23 * sc}px)`, pointerEvents: 'none' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, padding: `${36 * sc}px ${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, padding: `${36 * sc}px ${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ position: 'absolute', top: 10 * sc, left: '30%', width: '40%', height: 14 * sc, background: tapeColor, opacity: 0.6, borderRadius: 1 * sc, transform: 'rotate(-1.5deg)' }} />
           <div style={{ marginTop: 20 * sc }}>
             <div style={{ fontSize: 9 * sc, fontWeight: 700, color: p, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 * sc, fontFamily: 'system-ui,sans-serif' }}>{c.badge || 'Lesson'}</div>
@@ -437,7 +450,7 @@ function SpaceSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', bottom: -30 * sc, right: 30 * sc, width: 60 * sc, height: 60 * sc, borderRadius: '50%', background: `radial-gradient(circle at 35% 35%, #ffd700 0%, ${p} 50%, transparent 60%)`, boxShadow: `0 0 ${20 * sc}px ${p}44`, opacity: 0.7 }} />
       <div style={{ position: 'absolute', top: 20 * sc, right: 60 * sc, width: 30 * sc, height: 30 * sc, borderRadius: '50%', background: `radial-gradient(circle at 40% 40%, #888 0%, #444 70%)`, boxShadow: `inset -${3 * sc}px -${3 * sc}px ${5 * sc}px rgba(0,0,0,0.5)`, opacity: 0.5 }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: `${p}30`, border: `1px solid ${p}60`, borderRadius: 20 * sc, marginBottom: 16 * sc }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: p, letterSpacing: '0.15em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: '#ffffff', lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 0 ${12 * sc}px ${p}66` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: '#8888cc' }}>{c.subtitle}</div>}
@@ -473,7 +486,7 @@ function CandySlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', top: -20 * sc, right: -20 * sc, width: 100 * sc, height: 100 * sc, borderRadius: '50%', background: `${pastel1}66` }} />
       <div style={{ position: 'absolute', bottom: -15 * sc, left: -15 * sc, width: 80 * sc, height: 80 * sc, borderRadius: '50%', background: `${pastel2}55` }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${6 * sc}px ${18 * sc}px`, background: `linear-gradient(135deg, ${p}, ${lighten(p, 0.3)})`, borderRadius: 24 * sc, color: '#fff', fontSize: 10 * sc, fontWeight: 800, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken(p, 0.15)}` }}>{c.badge}</div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(p, 0.1), fontWeight: 600, padding: `${5 * sc}px ${14 * sc}px`, background: `${p}15`, borderRadius: 14 * sc }}>{c.subtitle}</div>}
@@ -509,7 +522,7 @@ function UnderwaterSlide({ slide, t, w }: SlideRendererProps) {
         <path d={`M0,40 Q80,25 160,40 T320,40 T480,40 T640,40 L640,60 L0,60 Z`} fill={`${wave}10`} />
       </svg>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: `${p}30`, borderRadius: 20 * sc, marginBottom: 16 * sc, border: `1px solid ${p}50` }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: wave, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: '#ffffff', lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${6 * sc}px rgba(0,0,0,0.3)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: wave }}>{c.subtitle}</div>}
@@ -545,7 +558,7 @@ function JungleSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', bottom: -20 * sc, right: -30 * sc, width: 140 * sc, height: 100 * sc, background: `${leaf}14`, borderRadius: '50% 60% 40% 50%', transform: 'rotate(15deg)' }} />
       <div style={{ position: 'absolute', top: 10 * sc, right: 40 * sc, width: 50 * sc, height: 80 * sc, background: `${leaf}10`, borderRadius: '50% 50% 50% 50%', transform: 'rotate(20deg)' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${36 * sc}px ${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${36 * sc}px ${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: earthy, borderRadius: 4 * sc, marginBottom: 14 * sc, alignSelf: 'flex-start' }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: '#1a1a0a', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 34 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${4 * sc}px rgba(0,0,0,0.3)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: earthy, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -582,7 +595,7 @@ function PixelSlide({ slide, t, w }: SlideRendererProps) {
         <span style={{ fontSize: 7 * sc, color: hexLum(p) > 0.5 ? '#000' : '#fff', fontWeight: 700, marginLeft: 6 * sc }}>PIXEL_DECK.exe</span>
       </div>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', top: 24 * sc, left: 20 * sc, right: 20 * sc, bottom: 12 * sc, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top: 24 * sc, left: 20 * sc, right: 20 * sc, bottom: 12 * sc, display: 'flex', flexDirection: 'column', justifyContent: 'center', ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ fontSize: 9 * sc, color: p, marginBottom: 10 * sc }}>{'>'} {c.badge}</div>}
           <div style={{ fontSize: 28 * sc, fontWeight: 700, color: ink, lineHeight: 1.1, marginBottom: 12 * sc, textShadow: `0 0 ${6 * sc}px ${ink}44` }}>{'> '}{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 11 * sc, color: dim, marginTop: 4 * sc }}>{'// '}{c.subtitle}</div>}
@@ -618,7 +631,7 @@ function RainbowSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 5 * sc, background: `linear-gradient(90deg, ${rainbow.join(',')})` }} />
       <div style={{ position: 'absolute', top: -60 * sc, right: -60 * sc, width: 180 * sc, height: 180 * sc, borderRadius: '50%', background: 'transparent', border: `${12 * sc}px solid transparent`, borderTopColor: rainbow[0], borderRightColor: rainbow[2], borderBottomColor: rainbow[4], borderLeftColor: rainbow[6], opacity: 0.15 }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: `linear-gradient(90deg, ${rainbow[0]}22, ${rainbow[3]}22, ${rainbow[6]}22)`, borderRadius: 20 * sc, marginBottom: 16 * sc }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: p, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 38 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: t.textMuted, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -651,7 +664,7 @@ function CrayonSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', inset: 0, background: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' type='fractalNoise'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E")`, opacity: 0.5 }} />
       <div style={{ position: 'absolute', top: 6 * sc, left: 6 * sc, right: 6 * sc, bottom: 6 * sc, border: `${3 * sc}px solid ${p}30`, borderRadius: 6 * sc, pointerEvents: 'none' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ fontSize: 10 * sc, fontWeight: 700, color: p, marginBottom: 12 * sc, padding: `${4 * sc}px ${14 * sc}px`, background: `${p}15`, borderRadius: 8 * sc, transform: 'rotate(-1deg)' }}>{c.badge}</div>}
           <div style={{ fontSize: 34 * sc, fontWeight: 700, color: ink, lineHeight: 1.1, marginBottom: 14 * sc, textDecoration: `underline wavy ${p}`, textDecorationThickness: `${2 * sc}px`, textUnderlineOffset: `${6 * sc}px` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(p, 0.2), fontWeight: 600 }}>{c.subtitle}</div>}
@@ -687,7 +700,7 @@ function OrigamiSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', top: '40%', right: 50 * sc, width: 40 * sc, height: 40 * sc, background: p, transform: 'rotate(45deg)', opacity: 0.1 }} />
       <div style={{ position: 'absolute', top: 20 * sc, left: 30 * sc, width: 20 * sc, height: 20 * sc, background: `linear-gradient(135deg, ${fold}80 50%, ${fold}40 50%)`, transform: 'rotate(45deg)' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${40 * sc}px ${44 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${40 * sc}px ${44 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: p, color: hexLum(p) > 0.5 ? '#000' : '#fff', fontSize: 9 * sc, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 * sc, clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%)' }}>{c.badge}</div>}
           <div style={{ fontSize: 34 * sc, fontWeight: 800, color: ink, lineHeight: 1.1, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: t.textMuted, fontWeight: 500 }}>{c.subtitle}</div>}
@@ -730,7 +743,7 @@ function TreehouseSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', top: -8 * sc, right: -10 * sc, width: 40 * sc, height: 40 * sc, background: `${leafGreen}16`, borderRadius: '50%' }} />
       <div style={{ position: 'absolute', top: 0 * sc, right: 20 * sc, width: 25 * sc, height: 25 * sc, background: `${leafGreen}12`, borderRadius: '50%' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: `${16 * sc}px`, background: `${bg}cc`, border: `${2 * sc}px solid ${wood}44`, borderRadius: 6 * sc, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${30 * sc}px ${36 * sc}px`, backdropFilter: 'blur(8px)' }}>
+        <div style={{ position: 'absolute', inset: `${16 * sc}px`, background: `${bg}cc`, border: `${2 * sc}px solid ${wood}44`, borderRadius: 6 * sc, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${30 * sc}px ${36 * sc}px`, backdropFilter: 'blur(8px)', ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${wood}22`, borderRadius: 4 * sc, marginBottom: 12 * sc, alignSelf: 'flex-start', border: `1px solid ${wood}44` }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: wood, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 34 * sc, fontWeight: 800, color: ink, lineHeight: 1.1, marginBottom: 12 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: wood, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -764,7 +777,7 @@ function SuperheroSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5 * sc, background: `linear-gradient(90deg, ${p}, ${gold}, ${p})` }} />
       <div style={{ position: 'absolute', top: '50%', left: '50%', width: 300 * sc, height: 300 * sc, transform: 'translate(-50%,-50%)', background: `conic-gradient(from 0deg, transparent 0deg 30deg, ${p}08 30deg 60deg, transparent 60deg 90deg, ${p}05 90deg 120deg, transparent 120deg 150deg, ${p}08 150deg 180deg, transparent 180deg 360deg)`, borderRadius: '50%' }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${6 * sc}px ${20 * sc}px`, background: p, clipPath: 'polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%)', marginBottom: 16 * sc }}><span style={{ fontSize: 10 * sc, fontWeight: 900, color: hexLum(p) > 0.5 ? '#000' : '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 38 * sc, fontWeight: 900, color: '#ffffff', lineHeight: 1.0, textTransform: 'uppercase', letterSpacing: '-0.02em', textShadow: `${2 * sc}px ${2 * sc}px 0 ${p}, ${4 * sc}px ${4 * sc}px 0 rgba(0,0,0,0.3)`, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 12 * sc, color: gold, fontWeight: 700, fontFamily: 'system-ui,sans-serif', letterSpacing: '0.08em' }}>{c.subtitle}</div>}
@@ -809,7 +822,7 @@ function DinosaurSlide({ slide, t, w }: SlideRendererProps) {
       {[...Array(6)].map((_, i) => <div key={i} style={{ position: 'absolute', width: (3 + i % 3) * sc, height: (3 + i % 3) * sc, borderRadius: '50%', background: fossil, opacity: 0.15, top: `${12 + (i * 18) % 70}%`, left: `${10 + (i * 23) % 80}%` }} />)}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4 * sc, background: `linear-gradient(90deg, ${lava}44, ${lava}88, ${lava}44)` }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: `${lava}33`, border: `1px solid ${lava}66`, borderRadius: 20 * sc, marginBottom: 16 * sc }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: lava, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${6 * sc}px rgba(0,0,0,0.4)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: fossil, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -850,7 +863,7 @@ function PirateSlide({ slide, t, w }: SlideRendererProps) {
         <div style={{ position: 'absolute', top: '50%', left: '50%', width: 1 * sc, height: 10 * sc, background: gold, transform: 'translate(-50%,-100%) rotate(30deg)', transformOrigin: 'bottom center' }} />
       </div>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: gold, borderRadius: 4 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken('#ffd700', 0.3)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#1a1a0a', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${6 * sc}px rgba(0,0,0,0.4)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: gold, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -889,7 +902,7 @@ function FairySlide({ slide, t, w }: SlideRendererProps) {
         <div style={{ position: 'absolute', top: -10 * sc, right: 5 * sc, width: 10 * sc, height: 20 * sc, background: `${castle}22`, borderRadius: `${4 * sc}px ${4 * sc}px 0 0` }} />
       </div>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${18 * sc}px`, background: `linear-gradient(135deg, ${p}44, ${sparkle}66)`, borderRadius: 24 * sc, marginBottom: 16 * sc, backdropFilter: 'blur(8px)', boxShadow: `0 ${3 * sc}px ${10 * sc}px ${sparkle}33` }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: ink, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 800, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(sparkle, 0.3), fontWeight: 600, fontStyle: 'italic' }}>{c.subtitle}</div>}
@@ -931,7 +944,7 @@ function RobotSlide({ slide, t, w }: SlideRendererProps) {
       {/* LED dots */}
       {[...Array(4)].map((_, i) => <div key={i} style={{ position: 'absolute', width: 4 * sc, height: 4 * sc, borderRadius: '50%', background: led, opacity: 0.3, top: `${20 + i * 20}%`, right: 10 * sc, boxShadow: `0 0 ${4 * sc}px ${led}` }} />)}
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: `${led}22`, border: `1px solid ${led}55`, borderRadius: 4 * sc, marginBottom: 16 * sc }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: led, letterSpacing: '0.15em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: silver }}>{c.subtitle}</div>}
@@ -971,7 +984,7 @@ function FarmSlide({ slide, t, w }: SlideRendererProps) {
         {[...Array(Math.ceil(w / (14 * sc)))].map((_, i) => <div key={i} style={{ width: 3 * sc, height: 12 * sc, background: `${barn}44`, borderRadius: `${1 * sc}px ${1 * sc}px 0 0`, flexShrink: 0 }} />)}
       </div>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: `${20 * sc}px`, background: 'rgba(255,255,255,0.75)', borderRadius: 14 * sc, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${30 * sc}px`, backdropFilter: 'blur(8px)', boxShadow: `0 ${4 * sc}px ${16 * sc}px rgba(0,0,0,0.1)` }}>
+        <div style={{ position: 'absolute', inset: `${20 * sc}px`, background: 'rgba(255,255,255,0.75)', borderRadius: 14 * sc, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${30 * sc}px`, backdropFilter: 'blur(8px)', boxShadow: `0 ${4 * sc}px ${16 * sc}px rgba(0,0,0,0.1)`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: grass, borderRadius: 20 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken(grass, 0.2)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(grass, 0.2), fontWeight: 600 }}>{c.subtitle}</div>}
@@ -1010,7 +1023,7 @@ function CircusSlide({ slide, t, w }: SlideRendererProps) {
       {/* Star bursts */}
       {[...Array(5)].map((_, i) => <div key={i} style={{ position: 'absolute', width: 6 * sc, height: 6 * sc, background: yellow, clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)', opacity: 0.25, top: `${25 + (i * 17) % 60}%`, left: `${5 + (i * 22) % 85}%` }} />)}
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${6 * sc}px ${18 * sc}px`, background: red, borderRadius: 24 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken(red, 0.2)}` }}><span style={{ fontSize: 10 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.08em' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 38 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: red, fontWeight: 700 }}>{c.subtitle}</div>}
@@ -1050,7 +1063,7 @@ function IceCreamSlide({ slide, t, w }: SlideRendererProps) {
       {/* Sprinkle dots */}
       {[...Array(8)].map((_, i) => <div key={i} style={{ position: 'absolute', width: 3 * sc, height: 6 * sc, borderRadius: 3 * sc, background: [pink, mint, '#ffd700', p, '#ff6b6b'][i % 5], opacity: 0.3, top: `${15 + (i * 14) % 65}%`, left: `${8 + (i * 19) % 80}%`, transform: `rotate(${i * 45}deg)` }} />)}
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${18 * sc}px`, background: `linear-gradient(135deg, ${pink}, ${mint})`, borderRadius: 24 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px ${8 * sc}px ${pink}44` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(pink, 0.3), fontWeight: 600 }}>{c.subtitle}</div>}
@@ -1090,7 +1103,7 @@ function SafariSlide({ slide, t, w }: SlideRendererProps) {
         <div style={{ width: 14 * sc, height: 14 * sc, borderRadius: '50%', border: `2px solid ${tan}` }} />
       </div>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${36 * sc}px ${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `${36 * sc}px ${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: orange, borderRadius: 4 * sc, marginBottom: 14 * sc, alignSelf: 'flex-start', boxShadow: `0 ${3 * sc}px 0 ${darken(orange, 0.2)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 ${2 * sc}px ${6 * sc}px rgba(0,0,0,0.4)` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: tan, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -1128,7 +1141,7 @@ function MusicSlide({ slide, t, w }: SlideRendererProps) {
       <div style={{ position: 'absolute', top: 15 * sc, right: 30 * sc, fontSize: 20 * sc, color: `${gold}22`, fontWeight: 900, transform: 'rotate(15deg)' }}>&#9835;</div>
       <div style={{ position: 'absolute', top: 40 * sc, right: 70 * sc, fontSize: 14 * sc, color: `${purple}25`, fontWeight: 900, transform: 'rotate(-10deg)' }}>&#9834;</div>
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${36 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${16 * sc}px`, background: `${gold}22`, border: `1px solid ${gold}55`, borderRadius: 20 * sc, marginBottom: 16 * sc }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: gold, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 36 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc, textShadow: `0 0 ${12 * sc}px ${purple}66` }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: gold, fontWeight: 600 }}>{c.subtitle}</div>}
@@ -1170,7 +1183,7 @@ function BlocksSlide({ slide, t, w }: SlideRendererProps) {
       </div>
       <div style={{ position: 'absolute', top: '40%', left: -15 * sc, width: 40 * sc, height: 20 * sc, background: colors[2], borderRadius: 4 * sc, opacity: 0.2 }} />
       {L === 'title' ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px` }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: `${40 * sc}px`, ...imageAwareInsets(c.imagePlacement, w) }}>
           {c.badge && <div style={{ padding: `${5 * sc}px ${18 * sc}px`, background: colors[0], borderRadius: 6 * sc, marginBottom: 16 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken(colors[0], 0.2)}` }}><span style={{ fontSize: 10 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.08em' }}>{c.badge}</span></div>}
           <div style={{ fontSize: 38 * sc, fontWeight: 900, color: ink, lineHeight: 1.05, marginBottom: 14 * sc }}>{c.headline}</div>
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: '#666', fontWeight: 600 }}>{c.subtitle}</div>}
@@ -1829,16 +1842,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       const sceneDesc = s.content.imageScene || s.content.body || s.content.bullets?.join(', ') || s.content.headline || '';
       const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
       const negativePrompt = 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
+      const placement = s.content.imagePlacement && s.content.imagePlacement !== 'none'
+        ? s.content.imagePlacement
+        : defaultPlacementForLayout(s.layout, slideIdx);
+      const dims = imageDimensionsForPlacement(placement);
       const imgRes = await imageApi.generateImageBase64({
         prompt,
         negativePrompt,
-        width: 1024,
-        height: 576,
+        width: dims.width,
+        height: dims.height,
       });
       if (imgRes.success && imgRes.imageData) {
-        const placement = s.content.imagePlacement && s.content.imagePlacement !== 'none'
-          ? s.content.imagePlacement
-          : defaultPlacementForLayout(s.layout, slideIdx);
         setSlides(prev => prev.map((sl, i) => i === slideIdx ? { ...sl, content: { ...sl.content, image: imgRes.imageData, imagePlacement: placement } } : sl));
       }
     } catch (e: any) {
@@ -1849,30 +1863,47 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Batch image generation — only for slides with imageScene descriptions
   const generateAllImages = async () => {
+    // Determine which slides need images:
+    // 1. Slides with imageScene (LLM followed the prompt)
+    // 2. Fallback: slides with imagePlacement set and not 'none' (LLM set placement but not scene)
+    // 3. Legacy: if neither field exists, generate for ~half the slides
     const hasScenes = slides.some(s => s.content.imageScene);
+    const hasPlacements = slides.some(s => s.content.imagePlacement && s.content.imagePlacement !== 'none');
 
     let slidesNeedingImages: Array<{ slide: Slide; index: number }>;
 
     if (hasScenes) {
-      // New flow: only generate for slides with scene descriptions
       slidesNeedingImages = slides
         .map((s, i) => ({ slide: s, index: i }))
         .filter(({ slide }) => slide.content.imageScene && !slide.content.image);
 
-      // If all scene-slides already have images, regenerate them
       if (slidesNeedingImages.length === 0) {
         slidesNeedingImages = slides
           .map((s, i) => ({ slide: s, index: i }))
           .filter(({ slide }) => slide.content.imageScene);
       }
-    } else {
-      // Legacy flow: generate for all slides (backward compat)
+    } else if (hasPlacements) {
+      // LLM set imagePlacement but not imageScene — use placement as proxy
       slidesNeedingImages = slides
         .map((s, i) => ({ slide: s, index: i }))
-        .filter(({ slide }) => !slide.content.image);
+        .filter(({ slide }) => slide.content.imagePlacement && slide.content.imagePlacement !== 'none' && !slide.content.image);
 
       if (slidesNeedingImages.length === 0) {
-        slidesNeedingImages = slides.map((s, i) => ({ slide: s, index: i }));
+        slidesNeedingImages = slides
+          .map((s, i) => ({ slide: s, index: i }))
+          .filter(({ slide }) => slide.content.imagePlacement && slide.content.imagePlacement !== 'none');
+      }
+    } else {
+      // Legacy: no imageScene or imagePlacement — generate for ~half (skip objectives, closing)
+      const skipLayouts = ['objectives', 'closing'];
+      slidesNeedingImages = slides
+        .map((s, i) => ({ slide: s, index: i }))
+        .filter(({ slide }) => !skipLayouts.includes(slide.layout) && !slide.content.image);
+
+      if (slidesNeedingImages.length === 0) {
+        slidesNeedingImages = slides
+          .map((s, i) => ({ slide: s, index: i }))
+          .filter(({ slide }) => !skipLayouts.includes(slide.layout));
       }
     }
 
@@ -1892,16 +1923,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         const sceneDesc = slide.content.imageScene || slide.content.body || slide.content.bullets?.join(', ') || slide.content.headline || '';
         const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
         const negativePrompt = 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
+        const placement = slide.content.imagePlacement && slide.content.imagePlacement !== 'none'
+          ? slide.content.imagePlacement
+          : defaultPlacementForLayout(slide.layout, index);
+        const dims = imageDimensionsForPlacement(placement);
         const imgRes = await imageApi.generateImageBase64({
           prompt,
           negativePrompt,
-          width: 1024,
-          height: 576,
+          width: dims.width,
+          height: dims.height,
         });
         if (imgRes.success && imgRes.imageData) {
-          const placement = slide.content.imagePlacement && slide.content.imagePlacement !== 'none'
-            ? slide.content.imagePlacement
-            : defaultPlacementForLayout(slide.layout, index);
           setSlides(prev => prev.map((sl, idx) => idx === index ? { ...sl, content: { ...sl.content, image: imgRes.imageData, imagePlacement: placement } } : sl));
         }
       } catch (e: any) {
@@ -2533,53 +2565,45 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 <div className="rounded-lg overflow-hidden relative" style={{ boxShadow: `0 4px 32px ${primaryColor}18` }}>
                   <SlideCanvas slide={cur} theme={theme} width={stageWidth} styleId={styleId} imageMode={imageMode} slideIndex={sel} />
                   {loading && (
-                    <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: `${primaryColor}cc` }}>
-                      <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
-                      <span className="text-[10px] font-bold text-white">
-                        {slides.length} / ~{slideCount} slides
-                      </span>
+                    <div className="absolute bottom-0 left-0 right-0 p-3" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
+                        <span className="text-[10px] font-bold text-white">
+                          {generationPhase === 'analyzing'
+                            ? 'Analyzing your images...'
+                            : `Building slide ${slides.length + 1} of ~${slideCount}...`}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        {Array.from({ length: slideCount }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="flex-1 h-1.5 rounded-full transition-all duration-500"
+                            style={{ background: i < slides.length ? '#fff' : 'rgba(255,255,255,0.25)' }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
-                </div>
-              )}
-              {loading && (
-                <div className="w-full rounded-lg border border-theme bg-theme-secondary px-4 py-3" style={{ maxWidth: stageWidth }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
-                    <span className="text-xs font-semibold text-theme-heading">
-                      {generationPhase === 'analyzing'
-                        ? 'Analyzing your images...'
-                        : `Building slide ${slides.length + 1} of ~${slideCount}...`}
-                    </span>
-                  </div>
-                  <div className="flex gap-1">
-                    {Array.from({ length: slideCount }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 h-1.5 rounded-full transition-all duration-500"
-                        style={{ background: i < slides.length ? primaryColor : `${primaryColor}22` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {batchImageProgress.generating && (
-                <div className="w-full rounded-lg border border-theme bg-theme-secondary px-4 py-3" style={{ maxWidth: stageWidth }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
-                    <span className="text-xs font-semibold text-theme-heading">
-                      Generating image {batchImageProgress.current} of {batchImageProgress.total}...
-                    </span>
-                  </div>
-                  <div className="flex gap-1">
-                    {Array.from({ length: batchImageProgress.total }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 h-1.5 rounded-full transition-all duration-500"
-                        style={{ background: i < batchImageProgress.current ? primaryColor : `${primaryColor}22` }}
-                      />
-                    ))}
-                  </div>
+                  {batchImageProgress.generating && (
+                    <div className="absolute bottom-0 left-0 right-0 p-3" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
+                        <span className="text-[10px] font-bold text-white">
+                          Generating image {batchImageProgress.current} of {batchImageProgress.total}...
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        {Array.from({ length: batchImageProgress.total }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="flex-1 h-1.5 rounded-full transition-all duration-500"
+                            style={{ background: i < batchImageProgress.current ? '#fff' : 'rgba(255,255,255,0.25)' }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>
