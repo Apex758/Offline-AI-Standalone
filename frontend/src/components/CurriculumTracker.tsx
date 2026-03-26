@@ -180,7 +180,11 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     try {
       // On first load, always initialize/sync to pick up curriculum changes
       if (!hasSynced && !filters.grade && !filters.subject && !filters.status) {
-        await milestoneApi.initialize(teacherId);
+        try {
+          await milestoneApi.initialize(teacherId);
+        } catch (initError: any) {
+          console.error('Failed to initialize milestones:', initError?.response?.data?.detail || initError?.message || JSON.stringify(initError));
+        }
         setHasSynced(true);
       }
 
@@ -190,8 +194,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         status: filters.status || undefined
       });
       setMilestones(data);
-    } catch (error) {
-      console.error('Failed to load milestones:', error);
+    } catch (error: any) {
+      console.error('Failed to load milestones:', error?.response?.data?.detail || error?.message || JSON.stringify(error));
     } finally {
       setLoading(false);
     }
