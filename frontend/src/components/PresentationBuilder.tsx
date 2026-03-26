@@ -50,6 +50,7 @@ interface SlideContent {
   bullets?: string[];
   image?: string; // base64 data URI
   imagePlacement?: 'right' | 'left' | 'top' | 'half' | 'background' | 'bottom-right' | 'none';
+  imageScene?: string; // scene description for AI image generation
   assignedImage?: number;
 }
 
@@ -157,14 +158,13 @@ interface SlideRendererProps {
 
 function defaultPlacementForLayout(layout: string, slideIndex?: number): string {
   if (layout === 'title') {
-    // Alternate between full-page background and half-page for title slides
-    return (slideIndex !== undefined && slideIndex % 2 === 1) ? 'half' : 'background';
+    const titleOptions = ['background', 'half'] as const;
+    return titleOptions[Math.floor(Math.random() * titleOptions.length)];
   }
   if (layout === 'activity' || layout === 'assessment') return 'bottom-right';
-  // Cycle through positions for content slides to add visual variety
-  const contentPlacements = ['right', 'left', 'top', 'right', 'left'] as const;
-  const idx = slideIndex !== undefined ? slideIndex : 0;
-  return contentPlacements[idx % contentPlacements.length];
+  // Randomly pick from content placements for visual variety
+  const contentPlacements = ['right', 'left', 'top'] as const;
+  return contentPlacements[Math.floor(Math.random() * contentPlacements.length)];
 }
 
 function ImageZone({ image, placement, sc, theme }: { image?: string; placement?: string; sc: number; theme: ThemeColors }) {
@@ -207,6 +207,18 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
   );
 }
 
+function imageAwareInsets(placement: string | undefined, w: number): React.CSSProperties {
+  if (!placement || placement === 'none' || placement === 'background') return {};
+  const H = w * 0.5625;
+  switch (placement) {
+    case 'right': return { right: w * 0.37 };
+    case 'left': return { left: w * 0.37 };
+    case 'half': return { right: w * 0.52 };
+    case 'top': return { top: H * 0.43 };
+    default: return {};
+  }
+}
+
 /* ═══════════════════════════════════════
    SLIDE RENDERERS — KIDS STYLES
 ═══════════════════════════════════════ */
@@ -229,7 +241,7 @@ function BubblySlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 14 * sc, color: darken(p, 0.2), fontWeight: 600, background: `${p}20`, padding: `${6 * sc}px ${14 * sc}px`, borderRadius: 12 * sc }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 28 * sc, right: 28 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 28 * sc, right: 28 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: p, borderRadius: 20 * sc, marginBottom: 10 * sc, boxShadow: `0 ${3 * sc}px 0 ${darken(p, 0.2)}` }}>
             <span style={{ fontSize: 9 * sc, fontWeight: 800, color: hexLum(p) > 0.5 ? '#000' : '#fff', letterSpacing: '0.08em' }}>{c.badge || L.toUpperCase()}</span>
           </div>
@@ -264,7 +276,7 @@ function ChalkboardSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: p, fontWeight: 600, borderBottom: `${2 * sc}px solid ${p}`, paddingBottom: 4 * sc, letterSpacing: '0.06em' }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 26 * sc, left: 28 * sc, right: 28 * sc, bottom: 20 * sc }}>
+        <div style={{ position: 'absolute', top: 26 * sc, left: 28 * sc, right: 28 * sc, bottom: 20 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 * sc, marginBottom: 10 * sc }}>
             <div style={{ width: 18 * sc, height: 18 * sc, border: `${2 * sc}px solid ${p}`, borderRadius: 3 * sc, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 9 * sc, fontWeight: 700, color: p }}>{SLIDE_LAYOUTS.indexOf(L) + 1}</span></div>
             <span style={{ fontSize: 9 * sc, color: p, letterSpacing: '0.16em', fontWeight: 700, textTransform: 'uppercase' }}>{c.badge || L}</span>
@@ -305,7 +317,7 @@ function StorybookSlide({ slide, t, w }: SlideRendererProps) {
           </div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 30 * sc, left: 38 * sc, right: 38 * sc, bottom: 24 * sc }}>
+        <div style={{ position: 'absolute', top: 30 * sc, left: 38 * sc, right: 38 * sc, bottom: 24 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ fontSize: 9 * sc, color: accentWarm, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8 * sc, fontFamily: 'system-ui,sans-serif' }}>{c.badge || L}</div>
           <div style={{ fontSize: L === 'hook' ? 20 * sc : 21 * sc, fontWeight: 700, color: ink, lineHeight: 1.25, marginBottom: 14 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           <div style={{ width: 38 * sc, height: 1.5 * sc, background: accentWarm, marginBottom: 12 * sc, opacity: 0.6 }} />
@@ -345,7 +357,7 @@ function ComicSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: p, fontWeight: 800, borderTop: `${2 * sc}px solid ${ink}`, paddingTop: 9 * sc, fontFamily: 'system-ui,sans-serif' }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ background: p, borderBottom: `${3 * sc}px solid ${ink}`, padding: `${6 * sc}px ${18 * sc}px`, display: 'flex', alignItems: 'center', gap: 12 * sc }}>
             <span style={{ fontSize: 12 * sc, fontWeight: 900, color: hexLum(p) > 0.5 ? '#000' : '#fff' }}>{tagWord}</span>
             <span style={{ fontSize: 9 * sc, fontWeight: 700, color: hexLum(p) > 0.5 ? '#000000aa' : '#ffffffaa', letterSpacing: '0.12em', textTransform: 'uppercase' }}>{c.badge || L}</span>
@@ -396,7 +408,7 @@ function ScrapbookSlide({ slide, t, w }: SlideRendererProps) {
           </div>
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 18 * sc, left: 22 * sc, right: 22 * sc, bottom: 14 * sc }}>
+        <div style={{ position: 'absolute', top: 18 * sc, left: 22 * sc, right: 22 * sc, bottom: 14 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ position: 'absolute', top: -4 * sc, left: 8 * sc, width: 48 * sc, height: 12 * sc, background: tapeColor, opacity: 0.55, borderRadius: 1 * sc, transform: 'rotate(-1deg)' }} />
           <div style={{ fontSize: 9 * sc, fontWeight: 700, color: p, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8 * sc, marginTop: 10 * sc, fontFamily: 'system-ui,sans-serif' }}>{c.badge || L}</div>
           <div style={{ fontSize: L === 'hook' ? 19 * sc : 21 * sc, fontWeight: 700, color: ink, lineHeight: 1.2, marginBottom: 12 * sc, transform: 'rotate(-0.3deg)' }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
@@ -431,7 +443,7 @@ function SpaceSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: '#8888cc' }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${p}25`, borderRadius: 14 * sc, marginBottom: 8 * sc, border: `1px solid ${p}50` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: p, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: '#ffffff', lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: '#aaaadd', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.05)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -467,7 +479,7 @@ function CandySlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(p, 0.1), fontWeight: 600, padding: `${5 * sc}px ${14 * sc}px`, background: `${p}15`, borderRadius: 14 * sc }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: `linear-gradient(135deg, ${p}, ${lighten(p, 0.2)})`, borderRadius: 20 * sc, marginBottom: 10 * sc, boxShadow: `0 ${2 * sc}px 0 ${darken(p, 0.15)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff', letterSpacing: '0.06em' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 21 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: darken(p, 0.3), lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${p}12`, borderRadius: 10 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -503,7 +515,7 @@ function UnderwaterSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: wave }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 20 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 20 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${p}25`, borderRadius: 14 * sc, marginBottom: 8 * sc }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: wave, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: '#ffffff', lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.06)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -539,7 +551,7 @@ function JungleSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: earthy, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${earthy}33`, borderRadius: 4 * sc, marginBottom: 8 * sc, border: `1px solid ${earthy}55` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: earthy, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: 'rgba(255,255,240,0.7)', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.05)', borderRadius: 6 * sc, borderLeft: `3px solid ${earthy}`, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -577,7 +589,7 @@ function PixelSlide({ slide, t, w }: SlideRendererProps) {
           <div style={{ fontSize: 10 * sc, color: `${ink}55`, marginTop: 16 * sc }}>{'█'.repeat(20)} LOADING... 100%</div>
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 24 * sc, left: 16 * sc, right: 16 * sc, bottom: 12 * sc }}>
+        <div style={{ position: 'absolute', top: 24 * sc, left: 16 * sc, right: 16 * sc, bottom: 12 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ fontSize: 9 * sc, color: p, marginBottom: 6 * sc }}>{'['}STAGE {SLIDE_LAYOUTS.indexOf(L) + 1}{'] '}{(c.badge || L).toUpperCase()}</div>
           <div style={{ fontSize: 16 * sc, fontWeight: 700, color: ink, lineHeight: 1.2, marginBottom: 10 * sc, textShadow: `0 0 ${4 * sc}px ${ink}33` }}>{L === 'hook' ? `"${c.headline}"` : `> ${c.headline}`}</div>
           {c.body && <div style={{ fontSize: 10 * sc, color: dim, lineHeight: 1.6, marginBottom: 8 * sc, padding: `${6 * sc}px ${8 * sc}px`, border: `1px solid ${ink}33`, borderRadius: 0 }}>{c.body}</div>}
@@ -612,7 +624,7 @@ function RainbowSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: t.textMuted, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 20 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 20 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `linear-gradient(90deg, ${rainbow[0]}18, ${rainbow[3]}18)`, borderRadius: 14 * sc, marginBottom: 8 * sc }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: p, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 21 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: t.textMuted, lineHeight: 1.6, marginBottom: 10 * sc }}>{c.body}</div>}
@@ -645,7 +657,7 @@ function CrayonSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(p, 0.2), fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 20 * sc, left: 24 * sc, right: 24 * sc, bottom: 14 * sc }}>
+        <div style={{ position: 'absolute', top: 20 * sc, left: 24 * sc, right: 24 * sc, bottom: 14 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ fontSize: 10 * sc, fontWeight: 700, color: p, marginBottom: 8 * sc, transform: 'rotate(-0.5deg)' }}>{c.badge || L.toUpperCase()}</div>
           <div style={{ fontSize: 20 * sc, fontWeight: 700, color: ink, lineHeight: 1.2, marginBottom: 12 * sc, transform: 'rotate(0.3deg)' }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: t.textMuted, lineHeight: 1.65, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${p}0d`, borderRadius: 6 * sc, transform: 'rotate(-0.3deg)' }}>{c.body}</div>}
@@ -681,7 +693,7 @@ function OrigamiSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: t.textMuted, fontWeight: 500 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 * sc, marginBottom: 8 * sc }}>
             <div style={{ width: 16 * sc, height: 16 * sc, background: p, transform: 'rotate(45deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><span style={{ fontSize: 7 * sc, fontWeight: 700, color: hexLum(p) > 0.5 ? '#000' : '#fff', transform: 'rotate(-45deg)' }}>{SLIDE_LAYOUTS.indexOf(L) + 1}</span></div>
             <span style={{ fontSize: 8 * sc, fontWeight: 700, color: p, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{c.badge || L}</span>
@@ -724,7 +736,7 @@ function TreehouseSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: wood, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 18 * sc, left: 22 * sc, right: 22 * sc, bottom: 14 * sc }}>
+        <div style={{ position: 'absolute', top: 18 * sc, left: 22 * sc, right: 22 * sc, bottom: 14 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${wood}22`, borderRadius: 4 * sc, marginBottom: 8 * sc, border: `1px solid ${wood}33` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: wood, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: t.textMuted, lineHeight: 1.65, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${wood}0d`, borderRadius: 4 * sc, border: `1px solid ${wood}22` }}>{c.body}</div>}
@@ -758,7 +770,7 @@ function SuperheroSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 12 * sc, color: gold, fontWeight: 700, fontFamily: 'system-ui,sans-serif', letterSpacing: '0.08em' }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ background: `linear-gradient(90deg, ${p}, ${darken(p, 0.2)})`, padding: `${7 * sc}px ${18 * sc}px`, display: 'flex', alignItems: 'center', gap: 10 * sc }}>
             <span style={{ fontSize: 10 * sc, fontWeight: 900, color: hexLum(p) > 0.5 ? '#000' : '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span>
           </div>
@@ -803,7 +815,7 @@ function DinosaurSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: fossil, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${lava}25`, borderRadius: 14 * sc, marginBottom: 8 * sc, border: `1px solid ${lava}50` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: lava, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: `${ink}bb`, lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.05)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)', boxShadow: `0 ${2 * sc}px ${8 * sc}px rgba(0,0,0,0.2)` }}>{c.body}</div>}
@@ -844,7 +856,7 @@ function PirateSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: gold, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${gold}22`, borderRadius: 4 * sc, marginBottom: 8 * sc, border: `1px solid ${gold}55` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: gold, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: `${ink}bb`, lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.06)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -883,7 +895,7 @@ function FairySlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(sparkle, 0.3), fontWeight: 600, fontStyle: 'italic' }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 28 * sc, right: 28 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 28 * sc, right: 28 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${14 * sc}px`, background: `${sparkle}33`, borderRadius: 16 * sc, marginBottom: 8 * sc, border: `1px solid ${sparkle}55` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: ink, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 700, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: darken(sparkle, 0.5), lineHeight: 1.65, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${sparkle}15`, borderRadius: 10 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -925,7 +937,7 @@ function RobotSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: silver }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${led}15`, border: `1px solid ${led}40`, borderRadius: 4 * sc, marginBottom: 8 * sc }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: led, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: silver, lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${led}08`, border: `1px solid ${led}22`, borderRadius: 6 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -965,7 +977,7 @@ function FarmSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(grass, 0.2), fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 14 * sc, left: 20 * sc, right: 20 * sc, bottom: 18 * sc, background: 'rgba(255,255,255,0.7)', borderRadius: 12 * sc, padding: `${14 * sc}px ${18 * sc}px`, backdropFilter: 'blur(8px)' }}>
+        <div style={{ position: 'absolute', top: 14 * sc, left: 20 * sc, right: 20 * sc, bottom: 18 * sc, ...imageAwareInsets(c.imagePlacement, w), background: 'rgba(255,255,255,0.7)', borderRadius: 12 * sc, padding: `${14 * sc}px ${18 * sc}px`, backdropFilter: 'blur(8px)' }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: grass, borderRadius: 14 * sc, marginBottom: 8 * sc }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: '#fff', letterSpacing: '0.08em' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 10 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: '#555', lineHeight: 1.6, marginBottom: 10 * sc }}>{c.body}</div>}
@@ -1004,7 +1016,7 @@ function CircusSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: red, fontWeight: 700 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 28 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 28 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: red, borderRadius: 20 * sc, marginBottom: 10 * sc, boxShadow: `0 ${2 * sc}px 0 ${darken(red, 0.2)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 21 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: '#555', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: `${yellow}18`, borderRadius: 10 * sc }}>{c.body}</div>}
@@ -1044,7 +1056,7 @@ function IceCreamSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: darken(pink, 0.3), fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: `linear-gradient(135deg, ${pink}88, ${mint}88)`, borderRadius: 20 * sc, marginBottom: 10 * sc }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 21 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: darken(pink, 0.5), lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.6)', borderRadius: 10 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -1084,7 +1096,7 @@ function SafariSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: tan, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${orange}33`, borderRadius: 4 * sc, marginBottom: 8 * sc, border: `1px solid ${orange}55` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: orange, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: `${ink}bb`, lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.06)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -1122,7 +1134,7 @@ function MusicSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: gold, fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${4 * sc}px ${12 * sc}px`, background: `${purple}33`, borderRadius: 14 * sc, marginBottom: 8 * sc, border: `1px solid ${purple}55` }}><span style={{ fontSize: 8 * sc, fontWeight: 700, color: gold, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{c.badge || L}</span></div>
           <div style={{ fontSize: 20 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: `${ink}bb`, lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.05)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)' }}>{c.body}</div>}
@@ -1164,7 +1176,7 @@ function BlocksSlide({ slide, t, w }: SlideRendererProps) {
           {c.subtitle && <div style={{ fontSize: 13 * sc, color: '#666', fontWeight: 600 }}>{c.subtitle}</div>}
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc }}>
+        <div style={{ position: 'absolute', top: 22 * sc, left: 26 * sc, right: 26 * sc, bottom: 16 * sc, ...imageAwareInsets(c.imagePlacement, w) }}>
           <div style={{ display: 'inline-flex', padding: `${5 * sc}px ${14 * sc}px`, background: colors[1], borderRadius: 6 * sc, marginBottom: 10 * sc, boxShadow: `0 ${2 * sc}px 0 ${darken(colors[1], 0.2)}` }}><span style={{ fontSize: 9 * sc, fontWeight: 800, color: '#fff' }}>{c.badge || L.toUpperCase()}</span></div>
           <div style={{ fontSize: 22 * sc, fontWeight: 800, color: ink, lineHeight: 1.2, marginBottom: 12 * sc }}>{L === 'hook' ? `"${c.headline}"` : c.headline}</div>
           {c.body && <div style={{ fontSize: 11 * sc, color: '#555', lineHeight: 1.6, marginBottom: 10 * sc, padding: `${8 * sc}px ${12 * sc}px`, background: 'rgba(255,255,255,0.7)', borderRadius: 8 * sc, backdropFilter: 'blur(8px)', boxShadow: `0 ${2 * sc}px ${8 * sc}px rgba(0,0,0,0.08)` }}>{c.body}</div>}
@@ -1188,7 +1200,7 @@ function BlocksSlide({ slide, t, w }: SlideRendererProps) {
 function SlideCanvas({ slide, theme, width = 640, styleId = 'bubbly', imageMode, slideIndex = 0 }: { slide: Slide; theme: ThemeColors; width?: number; styleId?: string; imageMode?: string; slideIndex?: number }) {
   if (!slide) return null;
   // When imageMode is 'ai', ensure every slide has a default imagePlacement so placeholders show
-  const effectiveSlide = imageMode === 'ai' && !slide.content.imagePlacement
+  const effectiveSlide = imageMode === 'ai' && slide.content.imageScene && !slide.content.imagePlacement
     ? { ...slide, content: { ...slide.content, imagePlacement: defaultPlacementForLayout(slide.layout, slideIndex) as any } }
     : slide;
   const p = { slide: effectiveSlide, t: theme, w: width };
@@ -1813,15 +1825,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     setImageLoading(prev => ({ ...prev, [slideIdx]: true }));
     try {
       const styleHint = ALL_STYLES.find(st => st.id === styleId);
-      const promptRes = await imageApi.generatePrompt({
-        subject: formData.subject || 'Education',
-        grade: formData.gradeLevel || '4',
-        topic: s.content.headline || formData.topic || 'Lesson',
-        additionalContext: `This is a presentation slide image for kids. Style: ${styleHint?.label || 'fun'}. Cartoon/illustration style suitable for young children. The slide is about: ${s.content.body || s.content.bullets?.join(', ') || s.content.headline || ''}`,
-      });
+      const styleName = styleHint?.label || 'fun';
+      const sceneDesc = s.content.imageScene || s.content.body || s.content.bullets?.join(', ') || s.content.headline || '';
+      const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
+      const negativePrompt = 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
       const imgRes = await imageApi.generateImageBase64({
-        prompt: promptRes.prompt,
-        negativePrompt: promptRes.negativePrompt,
+        prompt,
+        negativePrompt,
         width: 1024,
         height: 576,
       });
@@ -1837,34 +1847,54 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     setImageLoading(prev => ({ ...prev, [slideIdx]: false }));
   };
 
-  // Batch image generation
+  // Batch image generation — only for slides with imageScene descriptions
   const generateAllImages = async () => {
-    let slidesNeedingImages = slides
-      .map((s, i) => ({ slide: s, index: i }))
-      .filter(({ slide }) => !slide.content.image);
+    const hasScenes = slides.some(s => s.content.imageScene);
 
-    // If all slides already have images, regenerate all of them
-    if (slidesNeedingImages.length === 0) {
-      slidesNeedingImages = slides.map((s, i) => ({ slide: s, index: i }));
+    let slidesNeedingImages: Array<{ slide: Slide; index: number }>;
+
+    if (hasScenes) {
+      // New flow: only generate for slides with scene descriptions
+      slidesNeedingImages = slides
+        .map((s, i) => ({ slide: s, index: i }))
+        .filter(({ slide }) => slide.content.imageScene && !slide.content.image);
+
+      // If all scene-slides already have images, regenerate them
+      if (slidesNeedingImages.length === 0) {
+        slidesNeedingImages = slides
+          .map((s, i) => ({ slide: s, index: i }))
+          .filter(({ slide }) => slide.content.imageScene);
+      }
+    } else {
+      // Legacy flow: generate for all slides (backward compat)
+      slidesNeedingImages = slides
+        .map((s, i) => ({ slide: s, index: i }))
+        .filter(({ slide }) => !slide.content.image);
+
+      if (slidesNeedingImages.length === 0) {
+        slidesNeedingImages = slides.map((s, i) => ({ slide: s, index: i }));
+      }
     }
 
+    if (slidesNeedingImages.length === 0) return;
+
     setBatchImageProgress({ current: 0, total: slidesNeedingImages.length, generating: true });
+
+    const styleHint = ALL_STYLES.find(st => st.id === styleId);
+    const styleName = styleHint?.label || 'fun';
 
     for (let i = 0; i < slidesNeedingImages.length; i++) {
       const { slide, index } = slidesNeedingImages[i];
       setBatchImageProgress(prev => ({ ...prev, current: i + 1 }));
 
       try {
-        const styleHint = ALL_STYLES.find(st => st.id === styleId);
-        const promptRes = await imageApi.generatePrompt({
-          subject: formData.subject || 'Education',
-          grade: formData.gradeLevel || '4',
-          topic: slide.content.headline || formData.topic || 'Lesson',
-          additionalContext: `This is a presentation slide image for kids. Style: ${styleHint?.label || 'fun'}. Cartoon/illustration style suitable for young children. The slide is about: ${slide.content.body || slide.content.bullets?.join(', ') || slide.content.headline || ''}`,
-        });
+        // Use imageScene directly — no separate LLM prompt-generation call needed
+        const sceneDesc = slide.content.imageScene || slide.content.body || slide.content.bullets?.join(', ') || slide.content.headline || '';
+        const prompt = `${styleName} style illustration for children: ${sceneDesc}. Cartoon, colorful, kid-friendly, educational, no text, no words, no letters`;
+        const negativePrompt = 'text, words, letters, numbers, writing, labels, captions, watermark, signature, adult content, scary, violent, realistic photo';
         const imgRes = await imageApi.generateImageBase64({
-          prompt: promptRes.prompt,
-          negativePrompt: promptRes.negativePrompt,
+          prompt,
+          negativePrompt,
           width: 1024,
           height: 576,
         });
@@ -1913,15 +1943,22 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         }
       }
 
+      // Adjust text bounds based on image placement to prevent overlap
+      const pl = c.imagePlacement || '';
+      const txOff = pl === 'left' ? 4.8 : 0;
+      const txBase = 0.5 + txOff;
+      const txW = pl === 'right' ? 7.5 : pl === 'half' ? 5.5 : pl === 'left' ? 7.5 : 9.5;
+      const tyOff = pl === 'top' ? 3.2 : 0;
+
       if (slide.layout === 'title') {
-        if (c.badge) s.addText(c.badge, { x: 0.5, y: 0.65, w: 5, h: 0.25, fontSize: 9, color: pc, bold: true, charSpacing: 2 });
-        s.addText(c.headline || '', { x: 0.5, y: 1.05, w: 9.5, h: 1.5, fontSize: 34, bold: true, color: tc, fontFace: 'Georgia' });
-        if (c.subtitle) s.addText(c.subtitle, { x: 0.5, y: 2.7, w: 9, h: 0.4, fontSize: 13, color: '777777' });
+        if (c.badge) s.addText(c.badge, { x: txBase, y: 0.65 + tyOff, w: Math.min(5, txW), h: 0.25, fontSize: 9, color: pc, bold: true, charSpacing: 2 });
+        s.addText(c.headline || '', { x: txBase, y: 1.05 + tyOff, w: txW, h: 1.5, fontSize: 34, bold: true, color: tc, fontFace: 'Georgia' });
+        if (c.subtitle) s.addText(c.subtitle, { x: txBase, y: 2.7 + tyOff, w: Math.min(9, txW), h: 0.4, fontSize: 13, color: '777777' });
       } else {
-        if (c.badge) s.addText(c.badge, { x: 0.5, y: 0.38, w: 4, h: 0.22, fontSize: 9, color: pc, bold: true });
-        s.addText(c.headline || '', { x: 0.5, y: c.badge ? 0.68 : 0.48, w: 9.5, h: 0.85, fontSize: 20, bold: true, color: tc, fontFace: 'Georgia' });
-        if (c.body) s.addText(c.body, { x: 0.5, y: 1.65, w: 9, h: 1.5, fontSize: 13, color: tc, wrap: true } as any);
-        (c.bullets || []).forEach((b, i) => s.addText(`•  ${b}`, { x: 0.7, y: 1.62 + i * 0.52, w: 8.8, h: 0.48, fontSize: 12, color: tc, wrap: true } as any));
+        if (c.badge) s.addText(c.badge, { x: txBase, y: 0.38 + tyOff, w: Math.min(4, txW), h: 0.22, fontSize: 9, color: pc, bold: true });
+        s.addText(c.headline || '', { x: txBase, y: (c.badge ? 0.68 : 0.48) + tyOff, w: txW, h: 0.85, fontSize: 20, bold: true, color: tc, fontFace: 'Georgia' });
+        if (c.body) s.addText(c.body, { x: txBase, y: 1.65 + tyOff, w: Math.min(9, txW), h: 1.5, fontSize: 13, color: tc, wrap: true } as any);
+        (c.bullets || []).forEach((b, i) => s.addText(`•  ${b}`, { x: txBase + 0.2, y: 1.62 + tyOff + i * 0.52, w: Math.min(8.8, txW - 0.2), h: 0.48, fontSize: 12, color: tc, wrap: true } as any));
       }
     });
     const topicSlug = (formData.topic || 'presentation').replace(/\s+/g, '_');

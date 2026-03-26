@@ -57,7 +57,7 @@ Class Size: ${formData.studentCount} students
 ${curriculumSection}
 ${formData.additionalInstructions ? `ADDITIONAL INSTRUCTIONS: ${formData.additionalInstructions}\n` : ''}
 JSON SCHEMA:
-{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none"' : ''}}}]}
+{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none","imageScene":"string (optional, short scene description for image)"' : ''}}}]}
 
 RULES:
 - headline: max 7 words, clear and engaging
@@ -73,7 +73,8 @@ RULES:
 - Closing slide: summary and takeaway as headline, review points as bullets
 - Make content grade-appropriate for Grade ${formData.gradeLevel} students
 - Keep language clear and educational${includeImages ? `
-- imagePlacement: VARY the image position across slides for visual variety. Options: "background" or "half" for title slides (background = full page with overlay, half = right 50%), "right", "left", or "top" for content slides (ALTERNATE between these — do NOT use "right" for every slide), "bottom-right" for activity/assessment slides, "none" for text-heavy slides like objectives. Consecutive content slides MUST use different placements.` : ''}`;
+- imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
+- imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
 }
 
 /**
@@ -126,7 +127,7 @@ ASSESSMENT:
 ${assessments || 'Not specified'}
 
 JSON SCHEMA:
-{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none"' : ''}}}]}
+{"slides":[{"id":"s1","layout":"title|objectives|hook|instruction|activity|assessment|closing","content":{"headline":"string","subtitle":"string","badge":"string","body":"string","bullets":["string"]${includeImages ? ',"imagePlacement":"right|left|top|half|background|bottom-right|none","imageScene":"string (optional, short scene description for image)"' : ''}}}]}
 
 RULES:
 - headline: max 7 words, clear and engaging
@@ -143,5 +144,6 @@ RULES:
 - Make content grade-appropriate for Grade ${meta.grade || 'K-6'} students
 - Keep language clear and educational
 - Use the ACTUAL content from the lesson plan — do not make up new content${includeImages ? `
-- imagePlacement: VARY the image position across slides for visual variety. Options: "background" or "half" for title slides (background = full page with overlay, half = right 50%), "right", "left", or "top" for content slides (ALTERNATE between these — do NOT use "right" for every slide), "bottom-right" for activity/assessment slides, "none" for text-heavy slides like objectives. Consecutive content slides MUST use different placements.` : ''}`;
+- imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
+- imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
 }
