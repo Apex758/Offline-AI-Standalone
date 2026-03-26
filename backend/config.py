@@ -150,7 +150,7 @@ IMAGE_MODEL_REGISTRY = {
         "folder":      "flux-schnell",
         "backend":     "openvino_flux",
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
-        "steps":       2,
+        "steps":       3,
         "guidance":    0.0,
     },
 }
