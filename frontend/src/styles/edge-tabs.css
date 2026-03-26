@@ -79,6 +79,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: color 0.15s ease;
+  color: #333;
 }
 
 /* Group button styling */
@@ -113,6 +114,12 @@
 .edge-tab-group[data-active="true"] svg {
   color: #2a2a2a !important;
   stroke: #2a2a2a;
+}
+
+.dark .edge-tab-group[data-active="true"] .tab-text,
+.dark .edge-tab-group[data-active="true"] svg {
+  color: #f9f8f6 !important;
+  stroke: #f9f8f6;
 }
 
 .edge-tab-group[data-collapsed="true"] {
@@ -173,7 +180,7 @@
 }
 
 .dark .edge-tab-bar {
-  background: #21201e;
+  background: var(--tab-content-bg, #252422);
 }
 
 .dark .edge-tab-bar-border {
@@ -187,6 +194,14 @@
 .dark .edge-tab-close:hover {
   background: rgba(249, 248, 246, 0.1);
   color: #eeedeb;
+}
+
+.dark .edge-tab-label {
+  color: #a8a6a2;
+}
+
+.dark .edge-tab[data-active="true"] .edge-tab-label {
+  color: #fff;
 }
 
 /* Highlight bar beneath the tab strip, above content */
@@ -247,6 +262,6 @@
 /* Dark mode overrides - media query fallback */
 @media (prefers-color-scheme: dark) {
   .edge-tab-bar {
-    background: #21201e;
+    background: var(--tab-content-bg, #252422);
   }
 }

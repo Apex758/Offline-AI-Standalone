@@ -2464,7 +2464,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <span
                       className="edge-tab-label"
                       style={{
-                        color: isActive ? '#fff' : isHover ? '#444' : '#333',
+                        color: isActive ? '#fff' : undefined,
                         fontWeight: isActive ? 600 : 400,
                         maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                         WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
@@ -2597,7 +2597,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           <span
                             className="edge-tab-label"
                             style={{
-                              color: isTabActive ? '#fff' : isTabHover ? '#444' : '#333',
+                              color: isTabActive ? '#fff' : undefined,
                               fontWeight: isTabActive ? 600 : 400,
                               fontSize: '0.75rem',
                               maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',

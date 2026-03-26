@@ -682,11 +682,20 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     };
 
     ws.addEventListener('message', handleMessage);
-    ws.send(JSON.stringify({
-      text,
-      jobId: `brain-dump-${Date.now()}`,
-      generationMode: 'queued',
-    }));
+
+    const sendPayload = () => {
+      ws.send(JSON.stringify({
+        text,
+        jobId: `brain-dump-${Date.now()}`,
+        generationMode: 'queued',
+      }));
+    };
+
+    if (ws.readyState === WebSocket.OPEN) {
+      sendPayload();
+    } else {
+      ws.addEventListener('open', sendPayload, { once: true });
+    }
   }, [getPlainText, isAnalyzing, tabId, getConnection, parseActions]);
 
   // Accept an action
@@ -821,7 +830,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         <div className={`image-studio-flip-inner h-full ${flipped ? 'flipped' : ''}`}>
 
           {/* ═══════ FRONT: Brain Dump Input ═══════ */}
-          <div className="image-studio-flip-front p-4 md:p-6 space-y-5">
+          <div className="image-studio-flip-front p-4 md:p-6 space-y-5 h-full flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -848,7 +857,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
             </div>
 
             {/* Main content area - scrollable */}
-            <div className="flex-1 overflow-y-auto space-y-4 pb-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <div className="flex-1 overflow-y-auto space-y-4 pb-4 min-h-0">
               {/* Text Input Area with Rich Text Toolbar */}
               <div className={`flex rounded-2xl bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden transition-all ${activeTool ? 'max-h-[60px]' : ''}`}
                 style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
@@ -869,6 +878,17 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                     className={`rich-text w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
                     style={{ wordBreak: 'break-word' }}
                   />
+                  {/* Live transcript overlay */}
+                  {isListening && interimText && (
+                    <div className="absolute bottom-16 left-3 right-3 pointer-events-none">
+                      <div className="bg-theme-bg-secondary/90 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-red-500/20 shadow-lg">
+                        <p className="text-sm text-theme-label/80 italic leading-relaxed">
+                          {interimText}
+                          <span className="inline-block w-0.5 h-4 bg-red-500 ml-0.5 align-middle animate-pulse" />
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   {/* Mic button */}
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
                     <button

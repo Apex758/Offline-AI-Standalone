@@ -214,14 +214,11 @@ export function useTTS() {
 // STT Hook — uses refs for callbacks to avoid re-creating recognition
 // Uses continuous mode with a silence timeout so the mic stays on longer
 // ========================================
-const SILENCE_TIMEOUT_MS = 5000; // 5 seconds of silence before auto-stopping
-
 export function useSTT(onResult: (text: string) => void, onInterim?: (text: string) => void) {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const onResultRef = useRef(onResult);
   const onInterimRef = useRef(onInterim);
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accumulatedRef = useRef('');
   const isListeningRef = useRef(false);
 
@@ -229,15 +226,7 @@ export function useSTT(onResult: (text: string) => void, onInterim?: (text: stri
   useEffect(() => { onInterimRef.current = onInterim; }, [onInterim]);
   useEffect(() => { isListeningRef.current = isListening; }, [isListening]);
 
-  const clearSilenceTimer = useCallback(() => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-  }, []);
-
   const finalize = useCallback(() => {
-    clearSilenceTimer();
     const text = accumulatedRef.current.trim();
     if (text) {
       onResultRef.current(text);
@@ -247,12 +236,7 @@ export function useSTT(onResult: (text: string) => void, onInterim?: (text: stri
       try { recognitionRef.current.stop(); } catch { /* ignore */ }
     }
     setIsListening(false);
-  }, [clearSilenceTimer]);
-
-  const resetSilenceTimer = useCallback(() => {
-    clearSilenceTimer();
-    silenceTimerRef.current = setTimeout(finalize, SILENCE_TIMEOUT_MS);
-  }, [clearSilenceTimer, finalize]);
+  }, []);
 
   // Create recognition once on mount
   useEffect(() => {
@@ -277,45 +261,34 @@ export function useSTT(onResult: (text: string) => void, onInterim?: (text: stri
         }
       }
 
-      // Accumulate final segments
       if (finalTranscript) {
         accumulatedRef.current += (accumulatedRef.current ? ' ' : '') + finalTranscript;
-        // Show accumulated + any interim in the input
         if (onInterimRef.current) {
           onInterimRef.current(accumulatedRef.current);
         }
       } else if (interimTranscript && onInterimRef.current) {
-        // Show accumulated so far + current interim
         const preview = accumulatedRef.current
           ? accumulatedRef.current + ' ' + interimTranscript
           : interimTranscript;
         onInterimRef.current(preview);
       }
-
-      // Reset silence timer on any speech activity
-      if (isListeningRef.current) {
-        resetSilenceTimer();
-      }
     };
 
     recognition.onerror = () => {
-      clearSilenceTimer();
       accumulatedRef.current = '';
       setIsListening(false);
     };
 
     recognition.onend = () => {
-      // In continuous mode, the browser may stop on its own (e.g., network issue)
-      // If we're still supposed to be listening, finalize what we have
+      // Browser may stop continuous recognition on its own — restart if still listening
       if (isListeningRef.current) {
-        finalize();
+        try { recognition.start(); } catch { /* ignore */ }
       }
     };
 
     recognitionRef.current = recognition;
 
     return () => {
-      clearSilenceTimer();
       recognition.abort();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -326,13 +299,11 @@ export function useSTT(onResult: (text: string) => void, onInterim?: (text: stri
         accumulatedRef.current = '';
         recognitionRef.current.start();
         setIsListening(true);
-        // Start silence timer — if no speech at all within timeout, stop
-        resetSilenceTimer();
       } catch {
         // Already started
       }
     }
-  }, [isListening, resetSilenceTimer]);
+  }, [isListening]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
