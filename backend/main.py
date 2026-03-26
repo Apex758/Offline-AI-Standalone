@@ -3142,6 +3142,63 @@ async def delete_images_history(image_id: str):
     return {"success": True}
 
 
+# ── Presentation Image Analysis ──
+
+@app.post("/api/analyze-presentation-images")
+async def analyze_presentation_images(request: Request):
+    """Analyze uploaded images using the multimodal model for presentation context."""
+    data = await request.json()
+    images = data.get("images", [])  # list of { dataUri, filename }
+    subject = data.get("subject", "General")
+    grade = data.get("grade", "4")
+    topic = data.get("topic", "Lesson")
+
+    if not images:
+        raise HTTPException(status_code=400, detail="No images provided.")
+
+    from inference_factory import get_inference_instance
+    inference = get_inference_instance()
+
+    if not getattr(inference, 'has_vision', False):
+        raise HTTPException(status_code=400, detail="Vision model not available. Load a multimodal model to analyze images.")
+
+    analyses = []
+    for i, img in enumerate(images):
+        image_b64 = img.get("dataUri", "")
+        if not image_b64:
+            continue
+
+        # Strip data URI prefix — analyze_image handles the re-addition
+        raw_b64 = image_b64.split(",", 1)[1] if "," in image_b64 else image_b64
+
+        prompt = (
+            f"This image will be used in an educational presentation for Grade {grade} {subject} "
+            f"about '{topic}'. Describe what this image shows in 2-3 sentences. "
+            f"Focus on: what is depicted, the educational relevance, and which part of a lesson "
+            f"(introduction/hook, instruction, activity, or assessment) this image would best support."
+        )
+
+        try:
+            result = await inference.analyze_image(
+                image_base64=raw_b64,
+                prompt=prompt,
+                max_tokens=300,
+                temperature=0.4,
+            )
+            description = result.get("result", "Unable to analyze image")
+        except Exception as e:
+            logger.error(f"Image analysis failed for image {i}: {e}")
+            description = "Unable to analyze image"
+
+        analyses.append({
+            "imageIndex": i,
+            "filename": img.get("filename", f"image_{i}"),
+            "description": description,
+        })
+
+    return {"success": True, "analyses": analyses}
+
+
 # ── Presentation History ──
 
 @app.get("/api/presentation-history")

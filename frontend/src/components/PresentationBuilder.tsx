@@ -50,6 +50,7 @@ interface SlideContent {
   bullets?: string[];
   image?: string; // base64 data URI
   imagePlacement?: 'right' | 'left' | 'top' | 'background' | 'bottom-right' | 'none';
+  assignedImage?: number;
 }
 
 interface Slide {
@@ -69,6 +70,7 @@ interface LessonPlanRecord {
 
 type InputMode = 'scratch' | 'lesson';
 type RightTab = 'color' | 'edit' | 'layouts';
+type ImageMode = 'none' | 'ai' | 'my-images';
 
 const SLIDE_LAYOUTS = ['title', 'objectives', 'hook', 'instruction', 'activity', 'assessment', 'closing'];
 
@@ -1301,8 +1303,7 @@ function SlideSkeleton({ index, primaryColor }: { index: number; primaryColor: s
   );
 }
 
-function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth }: { primaryColor: string; streamingText: string; parsedCount: number; stageWidth: number }) {
-  const EXPECTED_SLIDES = 8;
+function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth, expectedSlides = 8 }: { primaryColor: string; streamingText: string; parsedCount: number; stageWidth: number; expectedSlides?: number }) {
   const slideHeight = Math.round(stageWidth * 0.5625);
   return (
     <div className="flex flex-col items-center gap-4 w-full">
@@ -1330,7 +1331,7 @@ function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth }:
         <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: `${primaryColor}20` }}>
           <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: primaryColor }} />
           <span className="text-[10px] font-bold" style={{ color: primaryColor }}>
-            {parsedCount > 0 ? `${parsedCount} / ~${EXPECTED_SLIDES} slides` : 'Generating...'}
+            {parsedCount > 0 ? `${parsedCount} / ~${expectedSlides} slides` : 'Generating...'}
           </span>
         </div>
       </div>
@@ -1340,12 +1341,12 @@ function SkeletonStage({ primaryColor, streamingText, parsedCount, stageWidth }:
           <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
           <span className="text-xs font-semibold text-theme-heading">
             {parsedCount > 0
-              ? `Building slide ${parsedCount + 1} of ~${EXPECTED_SLIDES}...`
+              ? `Building slide ${parsedCount + 1} of ~${expectedSlides}...`
               : 'Preparing slides...'}
           </span>
         </div>
         <div className="flex gap-1">
-          {Array.from({ length: EXPECTED_SLIDES }).map((_, i) => (
+          {Array.from({ length: expectedSlides }).map((_, i) => (
             <div
               key={i}
               className="flex-1 h-1.5 rounded-full transition-all duration-500"
@@ -1459,7 +1460,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Image generation state
   const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({});
-  const [includeImages, setIncludeImages] = useState(savedData?.includeImages ?? false);
+  const [imageMode, setImageMode] = useState<ImageMode>(savedData?.imageMode || 'none');
+  const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
+  const [uploadedImages, setUploadedImages] = useState<Array<{ id: string; dataUri: string; filename: string }>>(savedData?.uploadedImages || []);
+  const [generationPhase, setGenerationPhase] = useState<'idle' | 'analyzing' | 'generating'>('idle');
+  const [dragOver, setDragOver] = useState(false);
   const [batchImageProgress, setBatchImageProgress] = useState<{ current: number; total: number; generating: boolean }>({ current: 0, total: 0, generating: false });
 
   // Save/History state
@@ -1488,9 +1493,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   useEffect(() => {
     onDataChange({
       inputMode, formData, useCurriculum, selectedPlanId,
-      slides, primaryColor, bgColor, styleId, currentPresentationId, includeImages,
+      slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount,
     });
-  }, [inputMode, formData, useCurriculum, selectedPlanId, slides, primaryColor, bgColor, styleId, currentPresentationId, includeImages]);
+  }, [inputMode, formData, useCurriculum, selectedPlanId, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount]);
 
   // Load lesson plan history
   useEffect(() => {
@@ -1516,6 +1521,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const streamingContent = getStreamingContent(tabId, ENDPOINT);
   const isStreaming = getIsStreaming(tabId, ENDPOINT);
   const prevIsStreamingRef = useRef(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Progressive slide parsing during streaming
   useEffect(() => {
@@ -1542,6 +1548,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         const parsed = JSON.parse(m ? m[0] : streamingContent.trim());
         const newSlides = parsed.slides || [];
         setSlides(newSlides);
+        // Assign uploaded images to slides
+        if (imageMode === 'my-images' && uploadedImages.length > 0) {
+          const finalSlides = newSlides.map((slide: Slide) => {
+            const assignedIdx = (slide.content as any).assignedImage;
+            if (assignedIdx && uploadedImages[assignedIdx - 1]) {
+              return { ...slide, content: { ...slide.content, image: uploadedImages[assignedIdx - 1].dataUri } };
+            }
+            return slide;
+          });
+          setSlides(finalSlides);
+        }
         setSel(0);
         setView('editor');
         setRightTab('edit');
@@ -1550,6 +1567,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         setError('Failed to parse slide data: ' + e.message);
       }
       setLoading(false);
+      setGenerationPhase('idle');
       setStreamingSlides([]);
       clearStreaming(tabId, ENDPOINT);
     }
@@ -1634,47 +1652,83 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setError(null);
-    let prompt: string;
-
-    if (inputMode === 'lesson') {
-      const plan = lessonPlans.find(p => p.id === selectedPlanId);
-      if (!plan) { setError('Please select a lesson plan first.'); return; }
-      prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImages);
-    } else {
-      if (!formData.subject || !formData.gradeLevel || !formData.topic) {
-        setError('Please fill in Subject, Grade Level, and Topic.');
-        return;
-      }
-      prompt = buildPresentationPromptFromForm(formData, includeImages);
-    }
-
     setLoading(true);
-
-    if (queueEnabled) {
-      enqueue({
-        label: `Presentation - ${formData.topic || 'Lesson'}`,
-        toolType: 'Presentation',
-        tabId,
-        endpoint: ENDPOINT,
-        prompt,
-        generationMode: settings.generationMode,
-      });
-      return;
-    }
-
-    const ws = getConnection(tabId, ENDPOINT);
-    if (ws.readyState !== WebSocket.OPEN) {
-      setError('Connection not ready. Please wait and try again.');
-      setLoading(false);
-      return;
-    }
+    setGenerationPhase('idle');
 
     try {
-      ws.send(JSON.stringify({ prompt, generationMode: settings.generationMode }));
+      let imageContext = '';
+
+      // Pass 1: Analyze uploaded images (only for 'my-images' mode)
+      if (imageMode === 'my-images' && uploadedImages.length > 0) {
+        setGenerationPhase('analyzing');
+        try {
+          const analysisRes = await axios.post('http://localhost:8000/api/analyze-presentation-images', {
+            images: uploadedImages.map(img => ({ dataUri: img.dataUri, filename: img.filename })),
+            subject: formData.subject || 'General',
+            grade: formData.gradeLevel || '4',
+            topic: formData.topic || 'Lesson',
+            slideCount,
+          });
+
+          if (analysisRes.data.success) {
+            const analyses = analysisRes.data.analyses;
+            imageContext = '\n\nTEACHER-PROVIDED IMAGES:\n' +
+              analyses.map((a: any, i: number) => `Image ${i + 1} ("${a.filename}"): ${a.description}`).join('\n') +
+              '\n\nIMPORTANT: Assign each teacher-provided image to the most relevant slide by setting imagePlacement to "right", "left", or "background" and adding "assignedImage" field with the image number (1-indexed). Not every slide needs an image. Only assign images where they genuinely enhance understanding.';
+          }
+        } catch (e: any) {
+          console.error('Image analysis failed:', e);
+          // Continue without image context — don't block generation
+        }
+      }
+
+      // Pass 2: Generate slides
+      setGenerationPhase('generating');
+      const includeImagePlacement = imageMode !== 'none';
+      let prompt: string;
+
+      if (inputMode === 'lesson') {
+        const plan = lessonPlans.find(p => p.id === selectedPlanId);
+        if (!plan) { setError('Please select a lesson plan first.'); setLoading(false); return; }
+        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount) + imageContext;
+      } else {
+        if (!formData.subject || !formData.gradeLevel || !formData.topic) {
+          setError('Please fill in Subject, Grade Level, and Topic.');
+          setLoading(false);
+          return;
+        }
+        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount) + imageContext;
+      }
+
+      if (queueEnabled) {
+        enqueue({
+          label: `Presentation - ${formData.topic || 'Lesson'}`,
+          toolType: 'Presentation',
+          tabId,
+          endpoint: ENDPOINT,
+          prompt,
+          generationMode: settings.generationMode,
+        });
+        return;
+      }
+
+      const ws = getConnection(tabId, ENDPOINT);
+      if (ws.readyState !== WebSocket.OPEN) {
+        setError('Connection not ready. Please wait and try again.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        ws.send(JSON.stringify({ prompt, generationMode: settings.generationMode }));
+      } catch (e: any) {
+        setError('Failed to send request: ' + e.message);
+        setLoading(false);
+      }
     } catch (e: any) {
-      setError('Failed to send request: ' + e.message);
+      setError('Generation failed: ' + e.message);
       setLoading(false);
     }
   };
@@ -1696,6 +1750,40 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     [ns[sel], ns[ni]] = [ns[ni], ns[sel]];
     setSlides(ns);
     setSel(ni);
+  };
+
+  // Image upload handlers
+  const handleImageFiles = (files: FileList) => {
+    const maxImages = 10;
+    const remaining = maxImages - uploadedImages.length;
+    const filesToProcess = Array.from(files).slice(0, remaining);
+    filesToProcess.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUploadedImages(prev => [...prev, {
+          id: `img_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          dataUri: reader.result as string,
+          filename: file.name,
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files) handleImageFiles(e.dataTransfer.files);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) handleImageFiles(e.target.files);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  const removeUploadedImage = (id: string) => {
+    setUploadedImages(prev => prev.filter(img => img.id !== id));
   };
 
   const hasBullets = cur && (['objectives', 'instruction', 'assessment'].includes(cur.layout) || (cur.content?.bullets?.length || 0) > 0);
@@ -2025,22 +2113,101 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
             {error && <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</div>}
 
-            {/* Include Images toggle */}
-            <div className="flex items-center justify-between p-3 rounded-lg bg-theme-secondary border border-theme-border">
-              <div className="flex items-center gap-2">
-                <Icon icon={Image01Icon} className="w-4" style={{ color: tabColor }} />
-                <div>
-                  <div className="text-sm font-semibold text-theme-heading">Include Images</div>
-                  <div className="text-[11px] text-theme-muted">AI will mark where images should go</div>
+            {/* Image Mode + Slide Count */}
+            <div className="space-y-4 p-4 rounded-xl bg-theme-secondary border border-theme-border">
+              {/* Image mode selector */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold text-theme-heading flex items-center gap-2">
+                  <Icon icon={Image01Icon} className="w-4" style={{ color: tabColor }} />
+                  Images
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { id: 'none' as ImageMode, label: 'No Images', desc: 'Text only' },
+                    { id: 'ai' as ImageMode, label: 'AI Generated', desc: 'Auto-create images' },
+                    { id: 'my-images' as ImageMode, label: 'My Images', desc: 'Upload your own' },
+                  ] as const).map(opt => {
+                    const active = imageMode === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => setImageMode(opt.id)}
+                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center"
+                        style={{
+                          borderColor: active ? tabColor : 'var(--border-color, #333)',
+                          background: active ? `${tabColor}14` : 'transparent',
+                        }}
+                      >
+                        <span className="text-xs font-bold" style={{ color: active ? tabColor : undefined }}>{opt.label}</span>
+                        <span className="text-[10px] text-theme-muted leading-tight">{opt.desc}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <button
-                onClick={() => setIncludeImages(p => !p)}
-                className="relative w-10 h-5 rounded-full transition-colors"
-                style={{ background: includeImages ? tabColor : 'var(--bg-tertiary, #333)' }}
-              >
-                <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform" style={{ transform: includeImages ? 'translateX(20px)' : 'translateX(0)' }} />
-              </button>
+
+              {/* Upload area for my-images mode */}
+              {imageMode === 'my-images' && (
+                <div className="space-y-3">
+                  <div
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+                    onDragEnter={e => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleImageDrop}
+                    onClick={() => imageInputRef.current?.click()}
+                    className="border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all"
+                    style={{
+                      borderColor: dragOver ? tabColor : `${tabColor}40`,
+                      background: dragOver ? `${tabColor}12` : 'transparent',
+                    }}
+                  >
+                    <Icon icon={Image01Icon} className="w-7 mx-auto mb-1.5" style={{ color: `${tabColor}66` }} />
+                    <div className="text-xs font-semibold text-theme-heading">Drop images here or click to browse</div>
+                    <div className="text-[10px] text-theme-muted mt-0.5">PNG, JPG — up to 10 images</div>
+                    <input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelect} />
+                  </div>
+
+                  {uploadedImages.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2">
+                      {uploadedImages.map(img => (
+                        <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-video border border-theme-border">
+                          <img src={img.dataUri} alt={img.filename} className="w-full h-full object-cover" />
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeUploadedImage(img.id); }}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                          >
+                            <Icon icon={Cancel01Icon} className="w-3" style={{ color: '#fff' }} />
+                          </button>
+                          <div className="absolute bottom-0 left-0 right-0 px-1.5 py-0.5 bg-black/50 text-[8px] text-white truncate">{img.filename}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Slide count slider */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-theme-heading">Slide Count</span>
+                  <span className="text-sm font-bold" style={{ color: tabColor }}>{slideCount}</span>
+                </div>
+                <input
+                  type="range"
+                  min={5}
+                  max={15}
+                  value={slideCount}
+                  onChange={e => setSlideCount(Number(e.target.value))}
+                  className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${tabColor} 0%, ${tabColor} ${((slideCount - 5) / 10) * 100}%, var(--bg-tertiary, #333) ${((slideCount - 5) / 10) * 100}%, var(--bg-tertiary, #333) 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-[10px] text-theme-muted">
+                  <span>5 slides</span>
+                  <span>15 slides</span>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end">
@@ -2070,13 +2237,15 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <div className="flex items-center gap-2 mb-2">
                     <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: tabColor }} />
                     <span className="text-sm font-semibold text-theme-heading">
-                      {streamingSlides.length > 0
-                        ? `Building slide ${streamingSlides.length + 1} of ~8...`
-                        : 'Preparing your presentation...'}
+                      {generationPhase === 'analyzing'
+                        ? 'Analyzing your images...'
+                        : streamingSlides.length > 0
+                          ? `Building slide ${streamingSlides.length + 1} of ~${slideCount}...`
+                          : 'Preparing your presentation...'}
                     </span>
                   </div>
                   <div className="flex gap-1">
-                    {Array.from({ length: 8 }).map((_, i) => (
+                    {Array.from({ length: slideCount }).map((_, i) => (
                       <div
                         key={i}
                         className="flex-1 h-1.5 rounded-full transition-all duration-300"
@@ -2223,7 +2392,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 >
                   <Icon icon={Download01Icon} className="w-3.5 inline mr-1.5" /> PPTX
                 </button>
-                {includeImages && slides.some(s => s.content.imagePlacement && s.content.imagePlacement !== 'none' && !s.content.image) && (
+                {imageMode === 'ai' && slides.some(s => s.content.imagePlacement && s.content.imagePlacement !== 'none' && !s.content.image) && (
                   <button
                     onClick={generateAllImages}
                     disabled={batchImageProgress.generating}
@@ -2253,7 +2422,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             {slides.map((slide, i) => (
               <Thumbnail key={slide.id || i} slide={slide} theme={theme} selected={i === sel} onClick={() => setSel(i)} index={i} styleId={styleId} />
             ))}
-            {loading && Array.from({ length: Math.max(0, 8 - slides.length) }).map((_, i) => (
+            {loading && Array.from({ length: Math.max(0, slideCount - slides.length) }).map((_, i) => (
               <div key={`skel-${i}`} className="rounded overflow-hidden" style={{ width: '100%', height: 82, background: 'var(--bg-secondary, #1e1e1e)', border: '1px solid var(--border-color, #333)' }}>
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="rounded" style={{ width: '50%', height: 6, background: `${primaryColor}20`, animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -2282,6 +2451,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               streamingText={streamingContent || ''}
               parsedCount={streamingSlides.length}
               stageWidth={stageWidth}
+              expectedSlides={slideCount}
             />
           ) : slides.length === 0 ? (
             <div className="flex flex-col items-center gap-4">
@@ -2301,7 +2471,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: `${primaryColor}cc` }}>
                       <Icon icon={Loading02Icon} className="w-3 animate-spin" style={{ color: '#fff' }} />
                       <span className="text-[10px] font-bold text-white">
-                        {slides.length} / ~8 slides
+                        {slides.length} / ~{slideCount} slides
                       </span>
                     </div>
                   )}
@@ -2312,11 +2482,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <div className="flex items-center gap-2 mb-2">
                     <Icon icon={Loading02Icon} className="w-3.5 animate-spin" style={{ color: primaryColor }} />
                     <span className="text-xs font-semibold text-theme-heading">
-                      Building slide {slides.length + 1} of ~8...
+                      {generationPhase === 'analyzing'
+                        ? 'Analyzing your images...'
+                        : `Building slide ${slides.length + 1} of ~${slideCount}...`}
                     </span>
                   </div>
                   <div className="flex gap-1">
-                    {Array.from({ length: 8 }).map((_, i) => (
+                    {Array.from({ length: slideCount }).map((_, i) => (
                       <div
                         key={i}
                         className="flex-1 h-1.5 rounded-full transition-all duration-500"

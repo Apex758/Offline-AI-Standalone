@@ -830,7 +830,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         <div className={`image-studio-flip-inner h-full ${flipped ? 'flipped' : ''}`}>
 
           {/* ═══════ FRONT: Brain Dump Input ═══════ */}
-          <div className="image-studio-flip-front p-4 md:p-6 space-y-5 h-full flex flex-col overflow-hidden">
+          <div className="image-studio-flip-front p-4 md:p-6 space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -856,164 +856,201 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
               </button>
             </div>
 
-            {/* Main content area - scrollable */}
-            <div className="flex-1 overflow-y-auto space-y-4 pb-4 min-h-0">
-              {/* Text Input Area with Rich Text Toolbar */}
-              <div className={`flex rounded-2xl bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden transition-all ${activeTool ? 'max-h-[60px]' : ''}`}
-                style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                {/* Content-editable editor */}
-                <div className="flex-1 relative">
-                  <div
-                    ref={editorRef}
-                    contentEditable={!isAnalyzing}
-                    suppressContentEditableWarning
-                    onInput={() => { if (editorRef.current) setDumpText(editorRef.current.innerHTML); }}
-                    onPaste={(e) => {
-                      e.preventDefault();
-                      const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
-                      document.execCommand('insertHTML', false, text);
-                      if (editorRef.current) setDumpText(editorRef.current.innerHTML);
-                    }}
-                    data-placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything!"
-                    className={`rich-text w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
-                    style={{ wordBreak: 'break-word' }}
-                  />
-                  {/* Live transcript overlay */}
-                  {isListening && interimText && (
-                    <div className="absolute bottom-16 left-3 right-3 pointer-events-none">
-                      <div className="bg-theme-bg-secondary/90 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-red-500/20 shadow-lg">
-                        <p className="text-sm text-theme-label/80 italic leading-relaxed">
-                          {interimText}
-                          <span className="inline-block w-0.5 h-4 bg-red-500 ml-0.5 align-middle animate-pulse" />
-                        </p>
+            {/* Main content area */}
+            <div className="space-y-4 pb-4">
+
+              {/* ─── Input Mode: show text editor + buttons when no actions yet ─── */}
+              {actions.length === 0 && (
+                <>
+                  {/* Text Input Area with Rich Text Toolbar */}
+                  <div className={`flex rounded-2xl bg-theme-surface ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden transition-all ${activeTool ? 'max-h-[60px]' : ''}`}
+                    style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                    {/* Content-editable editor */}
+                    <div className="flex-1 relative">
+                      <div
+                        ref={editorRef}
+                        contentEditable={!isAnalyzing}
+                        suppressContentEditableWarning
+                        onInput={() => { if (editorRef.current) setDumpText(editorRef.current.innerHTML); }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+                          document.execCommand('insertHTML', false, text);
+                          if (editorRef.current) setDumpText(editorRef.current.innerHTML);
+                        }}
+                        data-placeholder="What's on your mind? Type your thoughts, ideas, tasks, plans... anything!"
+                        className={`rich-text w-full h-full bg-transparent p-4 text-sm text-theme-label focus:outline-none transition-all overflow-y-auto empty:before:content-[attr(data-placeholder)] empty:before:text-theme-hint empty:before:pointer-events-none ${activeTool ? 'min-h-[60px] max-h-[60px]' : 'min-h-[480px]'}`}
+                        style={{ wordBreak: 'break-word' }}
+                      />
+                      {/* Live transcript overlay */}
+                      {isListening && interimText && (
+                        <div className="absolute bottom-16 left-3 right-3 pointer-events-none">
+                          <div className="bg-theme-bg-secondary/90 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-red-500/20 shadow-lg">
+                            <p className="text-sm text-theme-label/80 italic leading-relaxed">
+                              {interimText}
+                              <span className="inline-block w-0.5 h-4 bg-red-500 ml-0.5 align-middle animate-pulse" />
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {/* Mic button */}
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                        <button
+                          onClick={toggleListening}
+                          className={`p-3.5 rounded-2xl transition-all active:scale-90 ${
+                            isListening
+                              ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/40 animate-pulse shadow-lg shadow-red-500/20'
+                              : 'bg-red-500/12 text-red-500 hover:bg-red-500/20 ring-1 ring-red-500/20 hover:ring-red-500/30'
+                          }`}
+                          title={isListening ? 'Stop listening' : 'Start voice input'}
+                        >
+                          {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                        </button>
                       </div>
                     </div>
-                  )}
-                  {/* Mic button */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
-                    <button
-                      onClick={toggleListening}
-                      className={`p-3.5 rounded-2xl transition-all active:scale-90 ${
-                        isListening
-                          ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/40 animate-pulse shadow-lg shadow-red-500/20'
-                          : 'bg-red-500/12 text-red-500 hover:bg-red-500/20 ring-1 ring-red-500/20 hover:ring-red-500/30'
-                      }`}
-                      title={isListening ? 'Stop listening' : 'Start voice input'}
-                    >
-                      {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-                {/* Rich Text Toolbar — expandable right panel */}
-                {!activeTool && (
-                  <div className="flex">
-                    {/* Toggle strip */}
-                    <button
-                      onClick={() => setShowToolbar(!showToolbar)}
-                      className="flex items-center justify-center w-8 border-l transition-all"
-                      style={{
-                        borderColor: showToolbar ? `${accentColor}33` : undefined,
-                        background: showToolbar ? `${accentColor}0d` : undefined,
-                      }}
-                      title={showToolbar ? 'Hide formatting' : 'Show formatting'}
-                    >
-                      {showToolbar ? (
-                        <ChevronRight className="w-4 h-4" style={{ color: accentColor }} />
-                      ) : (
-                        <Type className="w-4 h-4 text-theme-hint" />
-                      )}
-                    </button>
-                    {/* Toolbar icons */}
-                    {showToolbar && (
-                      <div
-                        className="flex flex-col items-center gap-1 p-2 border-l overflow-y-auto"
-                        style={{ borderColor: `${accentColor}26`, background: `${accentColor}0a` }}
-                      >
-                        {([
-                          { iconData: TextBoldIconData,          tip: 'Bold',          cmd: 'bold' },
-                          { iconData: TextItalicIconData,        tip: 'Italic',        cmd: 'italic' },
-                          { iconData: TextUnderlineIconData,     tip: 'Underline',     cmd: 'underline' },
-                          { iconData: TextStrikethroughIconData, tip: 'Strikethrough', cmd: 'strikeThrough' },
-                          { divider: true },
-                          { iconData: Heading01IconData,      tip: 'Heading 1',     cmd: 'formatBlock', value: '<h1>' },
-                          { iconData: Heading02IconData,      tip: 'Heading 2',     cmd: 'formatBlock', value: '<h2>' },
-                          { divider: true },
-                          { iconData: LeftToRightListBulletIconData, tip: 'Bullet list',   cmd: 'insertUnorderedList' },
-                          { iconData: LeftToRightListNumberIconData, tip: 'Numbered list', cmd: 'insertOrderedList' },
-                          { iconData: QuoteDownIconData,         tip: 'Quote',         cmd: 'formatBlock', value: '<blockquote>' },
-                          { divider: true },
-                          { iconData: Link01IconData,          tip: 'Link',          cmd: 'createLink', prompt: true },
-                          { iconData: MinusSignIconData,       tip: 'Divider',       cmd: 'insertHorizontalRule' },
-                        ] as Array<{ iconData?: any; tip?: string; cmd?: string; value?: string; prompt?: boolean; divider?: boolean }>).map((item, i) => {
-                          if (item.divider) {
-                            return <div key={`d-${i}`} className="w-7 h-px my-0.5" style={{ background: `${accentColor}1a` }} />;
-                          }
-                          return (
-                            <button
-                              key={item.tip}
-                              title={item.tip}
-                              tabIndex={-1}
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => {
-                                if (item.prompt) {
-                                  const url = window.prompt('Enter URL:');
-                                  if (url) execFormat(item.cmd!, url);
-                                } else {
-                                  execFormat(item.cmd!, item.value);
-                                }
-                              }}
-                              className="p-2 rounded-xl text-theme-muted transition-all active:scale-90 hover:shadow-sm"
-                              onMouseEnter={(e) => { e.currentTarget.style.color = accentColor; e.currentTarget.style.background = `${accentColor}1f`; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.background = ''; }}
-                            >
-                              <HugeiconsIcon icon={item.iconData!} size={18} strokeWidth={2} />
-                            </button>
-                          );
-                        })}
+                    {/* Rich Text Toolbar — expandable right panel */}
+                    {!activeTool && (
+                      <div className="flex">
+                        {/* Toggle strip */}
+                        <button
+                          onClick={() => setShowToolbar(!showToolbar)}
+                          className="flex items-center justify-center w-8 border-l transition-all"
+                          style={{
+                            borderColor: showToolbar ? `${accentColor}33` : undefined,
+                            background: showToolbar ? `${accentColor}0d` : undefined,
+                          }}
+                          title={showToolbar ? 'Hide formatting' : 'Show formatting'}
+                        >
+                          {showToolbar ? (
+                            <ChevronRight className="w-4 h-4" style={{ color: accentColor }} />
+                          ) : (
+                            <Type className="w-4 h-4 text-theme-hint" />
+                          )}
+                        </button>
+                        {/* Toolbar icons */}
+                        {showToolbar && (
+                          <div
+                            className="flex flex-col items-center gap-1 p-2 border-l overflow-y-auto"
+                            style={{ borderColor: `${accentColor}26`, background: `${accentColor}0a` }}
+                          >
+                            {([
+                              { iconData: TextBoldIconData,          tip: 'Bold',          cmd: 'bold' },
+                              { iconData: TextItalicIconData,        tip: 'Italic',        cmd: 'italic' },
+                              { iconData: TextUnderlineIconData,     tip: 'Underline',     cmd: 'underline' },
+                              { iconData: TextStrikethroughIconData, tip: 'Strikethrough', cmd: 'strikeThrough' },
+                              { divider: true },
+                              { iconData: Heading01IconData,      tip: 'Heading 1',     cmd: 'formatBlock', value: '<h1>' },
+                              { iconData: Heading02IconData,      tip: 'Heading 2',     cmd: 'formatBlock', value: '<h2>' },
+                              { divider: true },
+                              { iconData: LeftToRightListBulletIconData, tip: 'Bullet list',   cmd: 'insertUnorderedList' },
+                              { iconData: LeftToRightListNumberIconData, tip: 'Numbered list', cmd: 'insertOrderedList' },
+                              { iconData: QuoteDownIconData,         tip: 'Quote',         cmd: 'formatBlock', value: '<blockquote>' },
+                              { divider: true },
+                              { iconData: Link01IconData,          tip: 'Link',          cmd: 'createLink', prompt: true },
+                              { iconData: MinusSignIconData,       tip: 'Divider',       cmd: 'insertHorizontalRule' },
+                            ] as Array<{ iconData?: any; tip?: string; cmd?: string; value?: string; prompt?: boolean; divider?: boolean }>).map((item, i) => {
+                              if (item.divider) {
+                                return <div key={`d-${i}`} className="w-7 h-px my-0.5" style={{ background: `${accentColor}1a` }} />;
+                              }
+                              return (
+                                <button
+                                  key={item.tip}
+                                  title={item.tip}
+                                  tabIndex={-1}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    if (item.prompt) {
+                                      const url = window.prompt('Enter URL:');
+                                      if (url) execFormat(item.cmd!, url);
+                                    } else {
+                                      execFormat(item.cmd!, item.value);
+                                    }
+                                  }}
+                                  className="p-2 rounded-xl text-theme-muted transition-all active:scale-90 hover:shadow-sm"
+                                  onMouseEnter={(e) => { e.currentTarget.style.color = accentColor; e.currentTarget.style.background = `${accentColor}1f`; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.background = ''; }}
+                                >
+                                  <HugeiconsIcon icon={item.iconData!} size={18} strokeWidth={2} />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Action Buttons Row */}
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAnalyze}
-                  disabled={!hasContent || isAnalyzing}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-4 h-4" />
-                      Analyze & Organize
-                    </>
+                  {/* Action Buttons Row */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAnalyze}
+                      disabled={!hasContent || isAnalyzing}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          Analyze & Organize
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleSaveTextAsNote}
+                      disabled={!hasContent || isAnalyzing}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
+                      title="Save as note without analyzing"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Note
+                    </button>
+                  </div>
+
+                  {/* Error message */}
+                  {analysisError && (
+                    <div className="p-3.5 rounded-2xl bg-red-500/8 ring-1 ring-red-500/15 text-red-600 dark:text-red-400 text-sm">
+                      {analysisError}
+                    </div>
                   )}
-                </button>
-                <button
-                  onClick={handleSaveTextAsNote}
-                  disabled={!hasContent || isAnalyzing}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
-                  title="Save as note without analyzing"
-                >
-                  <Save className="w-4 h-4" />
-                  Save Note
-                </button>
-              </div>
 
-              {/* Error message */}
-              {analysisError && (
-                <div className="p-3.5 rounded-2xl bg-red-500/8 ring-1 ring-red-500/15 text-red-600 dark:text-red-400 text-sm">
-                  {analysisError}
-                </div>
+                  {/* ─── Quick Tools ─── */}
+                  <div className="pt-2">
+                    <h3 className="text-[11px] font-bold text-theme-hint uppercase tracking-widest mb-3">Quick Tools</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      {quickTools.map(tool => {
+                        const isActive = activeTool === tool.id;
+                        return (
+                          <button
+                            key={tool.id}
+                            onClick={() => setActiveTool(isActive ? null : tool.id)}
+                            className={`group flex flex-col items-center gap-2 p-3.5 rounded-2xl text-xs font-semibold transition-all active:scale-95 ${
+                              isActive
+                                ? 'bg-purple-500/15 text-purple-500 ring-1 ring-purple-500/25 shadow-lg shadow-purple-500/10'
+                                : `${tool.bg} ${tool.color} ring-1 ring-transparent hover:ring-current/10`
+                            }`}
+                          >
+                            <tool.icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
+                            {tool.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {activeTool && (
+                      <div className="mt-3 p-5 rounded-2xl bg-theme-surface ring-1 ring-theme" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                        {activeTool === 'calculator' && <MiniCalculator />}
+                        {activeTool === 'stopwatch' && <MiniStopwatch />}
+                        {activeTool === 'timer' && <MiniTimer />}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
 
-              {/* Action List */}
+              {/* ─── Results Mode: show suggested actions when generated ─── */}
               {actions.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -1024,15 +1061,24 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         {actions.length}
                       </span>
                     </h3>
-                    {(actions.length > 0 && (hasContent || actions.some(a => a.status !== 'pending'))) && (
+                    <div className="flex items-center gap-2">
+                      {(hasContent || actions.some(a => a.status !== 'pending')) && (
+                        <button
+                          onClick={handleSaveToNotes}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 transition-all active:scale-95"
+                        >
+                          <StickyNote className="w-3 h-3" />
+                          Save All to Notes
+                        </button>
+                      )}
                       <button
-                        onClick={handleSaveToNotes}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 transition-all active:scale-95"
+                        onClick={() => { setActions([]); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 ring-1 ring-purple-500/15 transition-all active:scale-95"
                       >
-                        <StickyNote className="w-3 h-3" />
-                        Save All to Notes
+                        <Brain className="w-3 h-3" />
+                        New Dump
                       </button>
-                    )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -1117,37 +1163,6 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                   </div>
                 </div>
               )}
-
-              {/* ─── Quick Tools ─── */}
-              <div className="pt-2">
-                <h3 className="text-[11px] font-bold text-theme-hint uppercase tracking-widest mb-3">Quick Tools</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {quickTools.map(tool => {
-                    const isActive = activeTool === tool.id;
-                    return (
-                      <button
-                        key={tool.id}
-                        onClick={() => setActiveTool(isActive ? null : tool.id)}
-                        className={`group flex flex-col items-center gap-2 p-3.5 rounded-2xl text-xs font-semibold transition-all active:scale-95 ${
-                          isActive
-                            ? 'bg-purple-500/15 text-purple-500 ring-1 ring-purple-500/25 shadow-lg shadow-purple-500/10'
-                            : `${tool.bg} ${tool.color} ring-1 ring-transparent hover:ring-current/10`
-                        }`}
-                      >
-                        <tool.icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
-                        {tool.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {activeTool && (
-                  <div className="mt-3 p-5 rounded-2xl bg-theme-surface ring-1 ring-theme" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
-                    {activeTool === 'calculator' && <MiniCalculator />}
-                    {activeTool === 'stopwatch' && <MiniStopwatch />}
-                    {activeTool === 'timer' && <MiniTimer />}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 

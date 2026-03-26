@@ -36,7 +36,8 @@ export interface ParsedLessonInput {
 /**
  * Build a prompt for generating presentation slides from form data (scratch mode).
  */
-export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean): string {
+export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number): string {
+  const sc = slideCount || 8;
   const curriculumSection = buildCurriculumPromptSection(
     formData.essentialOutcomes || '',
     formData.specificOutcomes || '',
@@ -61,7 +62,8 @@ JSON SCHEMA:
 RULES:
 - headline: max 7 words, clear and engaging
 - bullets: max 12 words each, max 3-4 bullets per slide
-- 8-9 slides total in this order: title → objectives → hook → instruction → instruction → instruction → activity → assessment → closing
+- Generate exactly ${sc} slides
+- Slide order: title (1) → objectives (1) → hook (1) → ${Math.max(1, sc - 6)} instruction slide(s) → activity (1) → assessment (1) → closing (1)${sc <= 6 ? '\n- With fewer slides, combine assessment into closing slide' : ''}${sc >= 12 ? '\n- With more slides, add more instruction sub-topics and consider splitting activity into guided + independent practice' : ''}
 - Title slide: headline = topic, subtitle = "Grade ${formData.gradeLevel} · ${formData.subject}", badge = "Grade ${formData.gradeLevel} · ${formData.subject}"
 - Objectives slide: 2-3 clear learning objectives as bullets
 - Hook slide: an engaging question or scenario as headline, body text for context
@@ -77,7 +79,8 @@ RULES:
 /**
  * Build a prompt for generating presentation slides from an existing parsed lesson plan.
  */
-export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean): string {
+export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number): string {
+  const sc = slideCount || 8;
   const fb = formFallback || {};
   const meta = {
     ...(lesson.metadata || {}),
@@ -128,7 +131,8 @@ JSON SCHEMA:
 RULES:
 - headline: max 7 words, clear and engaging
 - bullets: max 12 words each, max 3-4 bullets per slide
-- 8-9 slides total in this order: title → objectives → hook → instruction → instruction → instruction → activity → assessment → closing
+- Generate exactly ${sc} slides
+- Slide order: title (1) → objectives (1) → hook (1) → ${Math.max(1, sc - 6)} instruction slide(s) → activity (1) → assessment (1) → closing (1)${sc <= 6 ? '\n- With fewer slides, combine assessment into closing slide' : ''}${sc >= 12 ? '\n- With more slides, add more instruction sub-topics and consider splitting activity into guided + independent practice' : ''}
 - Title slide: headline = topic, subtitle = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}", badge = "Grade ${meta.grade || 'K-6'} · ${meta.subject || 'General'}"
 - Objectives slide: use the actual learning objectives from the lesson plan as bullets
 - Hook slide: extract the hook/introduction from the lesson as an engaging question

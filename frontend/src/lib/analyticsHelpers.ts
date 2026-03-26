@@ -213,6 +213,11 @@ export function groupTasksByStatus(tasks: Task[]): TasksByStatus {
       return;
     }
 
+    if (!task.date) {
+      upcoming.push(task);
+      return;
+    }
+
     try {
       const taskDate = startOfDay(parseISO(task.date));
       
@@ -231,7 +236,7 @@ export function groupTasksByStatus(tasks: Task[]): TasksByStatus {
 
   // Sort each group by date, then priority
   const sortByDateAndPriority = (a: Task, b: Task) => {
-    const dateCompare = a.date.localeCompare(b.date);
+    const dateCompare = (a.date || '').localeCompare(b.date || '');
     if (dateCompare !== 0) return dateCompare;
     
     const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
