@@ -13,8 +13,10 @@ import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 function AppContent() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Login bypassed — auto-login as default user
+  const defaultUser: User = { id: 1, username: 'admin', role: 'admin' } as User;
+  const [user, setUser] = useState<User | null>(defaultUser);
+  const [loading, setLoading] = useState(false);
 
   // Apply theme
   useTheme();
@@ -26,28 +28,13 @@ function AppContent() {
     return () => { document.documentElement.style.fontSize = ''; };
   }, [settings.fontSize]);
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('user');
-      }
-    }
-    setLoading(false);
-  }, []);
-
   const handleLoginSuccess = (userData: User) => {
     setUser(userData);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    setUser(null);
+    // Login disabled — just reload instead of logging out
+    setUser(defaultUser);
   };
 
   if (loading) {

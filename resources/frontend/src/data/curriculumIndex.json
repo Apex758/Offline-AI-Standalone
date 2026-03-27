@@ -13894,76 +13894,58 @@
       "eloGroups": [
         {
           "eloId": "MATH-G4-MSR-ELO1",
-          "title": "Developing an understanding of measurable attributes",
-          "scoIds": [
-            "MATH-G4-MSR-SCO1",
-            "MATH-G4-MSR-SCO2",
-            "MATH-G4-MSR-SCO3",
-            "MATH-G4-MSR-SCO4",
-            "MATH-G4-MSR-SCO5",
-            "MATH-G4-MSR-SCO6",
-            "MATH-G4-MSR-SCO7",
-            "MATH-G4-MSR-SCO8",
-            "MATH-G4-MSR-SCO9",
-            "MATH-G4-MSR-SCO10"
+          "elo": "Developing an understanding of measurable attributes",
+          "scoRange": [
+            0,
+            9
           ]
         },
         {
           "eloId": "MATH-G4-MSR-ELO2",
-          "title": "Comparing and ordering based on measurable attributes",
-          "scoIds": [
-            "MATH-G4-MSR-SCO11",
-            "MATH-G4-MSR-SCO12",
-            "MATH-G4-MSR-SCO13",
-            "MATH-G4-MSR-SCO14",
-            "MATH-G4-MSR-SCO15",
-            "MATH-G4-MSR-SCO16",
-            "MATH-G4-MSR-SCO17",
-            "MATH-G4-MSR-SCO18"
+          "elo": "Comparing and ordering based on measurable attributes",
+          "scoRange": [
+            10,
+            17
           ]
         },
         {
           "eloId": "MATH-G4-MSR-ELO3",
-          "title": "Developing and applying non-standard units of measure",
-          "scoIds": [
-            "MATH-G4-MSR-SCO19",
-            "MATH-G4-MSR-SCO20",
-            "MATH-G4-MSR-SCO21",
-            "MATH-G4-MSR-SCO22"
+          "elo": "Developing and applying non-standard units of measure",
+          "scoRange": [
+            18,
+            21
           ]
         },
         {
           "eloId": "MATH-G4-MSR-ELO4",
-          "title": "Developing and applying standard units of measure",
-          "scoIds": [
-            "MATH-G4-MSR-SCO23",
-            "MATH-G4-MSR-SCO24",
-            "MATH-G4-MSR-SCO25"
+          "elo": "Developing and applying standard units of measure",
+          "scoRange": [
+            22,
+            24
           ]
         },
         {
           "eloId": "MATH-G4-MSR-ELO5",
-          "title": "Developing personal referents for measuring attributes",
-          "scoIds": [
-            "MATH-G4-MSR-SCO26",
-            "MATH-G4-MSR-SCO27",
-            "MATH-G4-MSR-SCO28"
+          "elo": "Developing personal referents for measuring attributes",
+          "scoRange": [
+            25,
+            27
           ]
         },
         {
           "eloId": "MATH-G4-MSR-ELO6",
-          "title": "Time",
-          "scoIds": [
-            "MATH-G4-MSR-SCO29",
-            "MATH-G4-MSR-SCO30"
+          "elo": "Time",
+          "scoRange": [
+            28,
+            29
           ]
         },
         {
           "eloId": "MATH-G4-MSR-ELO7",
-          "title": "Money",
-          "scoIds": [
-            "MATH-G4-MSR-SCO31",
-            "MATH-G4-MSR-SCO32"
+          "elo": "Money",
+          "scoRange": [
+            30,
+            31
           ]
         }
       ],
@@ -17146,33 +17128,18 @@
       "eloGroups": [
         {
           "eloId": "MATH-G5-GEO-ELO1",
-          "title": "Developing a spatial sense",
-          "scoIds": [
-            "MATH-G5-GEO-SCO1",
-            "MATH-G5-GEO-SCO2",
-            "MATH-G5-GEO-SCO3",
-            "MATH-G5-GEO-SCO4",
-            "MATH-G5-GEO-SCO5",
-            "MATH-G5-GEO-SCO6",
-            "MATH-G5-GEO-SCO7",
-            "MATH-G5-GEO-SCO8",
-            "MATH-G5-GEO-SCO9"
+          "elo": "Developing a spatial sense",
+          "scoRange": [
+            0,
+            8
           ]
         },
         {
           "eloId": "MATH-G5-GEO-ELO2",
-          "title": "Sorting, patterning, and building with 2D & 3D Shapes",
-          "scoIds": [
-            "MATH-G5-GEO-SCO10",
-            "MATH-G5-GEO-SCO11",
-            "MATH-G5-GEO-SCO12",
-            "MATH-G5-GEO-SCO13",
-            "MATH-G5-GEO-SCO14",
-            "MATH-G5-GEO-SCO15",
-            "MATH-G5-GEO-SCO16",
-            "MATH-G5-GEO-SCO17",
-            "MATH-G5-GEO-SCO18",
-            "MATH-G5-GEO-SCO19"
+          "elo": "Sorting, patterning, and building with 2D & 3D Shapes",
+          "scoRange": [
+            9,
+            18
           ]
         }
       ],
@@ -23038,21 +23005,10 @@
       "eloGroups": [
         {
           "eloId": "SCI-G6-HE-ELO1",
-          "title": "Evidence of past plate motions",
-          "scoIds": [
-            "SCI-G6-HE-SCO1",
-            "SCI-G6-HE-SCO2",
-            "SCI-G6-HE-SCO3",
-            "SCI-G6-HE-SCO4",
-            "SCI-G6-HE-SCO5",
-            "SCI-G6-HE-SCO6",
-            "SCI-G6-HE-SCO7",
-            "SCI-G6-HE-SCO8",
-            "SCI-G6-HE-SCO9",
-            "SCI-G6-HE-SCO10",
-            "SCI-G6-HE-SCO11",
-            "SCI-G6-HE-SCO12",
-            "SCI-G6-HE-SCO13"
+          "elo": "Evidence of past plate motions",
+          "scoRange": [
+            0,
+            12
           ]
         }
       ],
@@ -23208,31 +23164,10 @@
       "eloGroups": [
         {
           "eloId": "SCI-G6-MEO-ELO1",
-          "title": "Effects of resource availability on organisms and ecosystems",
-          "scoIds": [
-            "SCI-G6-MEO-SCO1",
-            "SCI-G6-MEO-SCO2",
-            "SCI-G6-MEO-SCO3",
-            "SCI-G6-MEO-SCO4",
-            "SCI-G6-MEO-SCO5",
-            "SCI-G6-MEO-SCO6",
-            "SCI-G6-MEO-SCO7",
-            "SCI-G6-MEO-SCO8",
-            "SCI-G6-MEO-SCO9",
-            "SCI-G6-MEO-SCO10",
-            "SCI-G6-MEO-SCO11",
-            "SCI-G6-MEO-SCO12",
-            "SCI-G6-MEO-SCO13",
-            "SCI-G6-MEO-SCO14",
-            "SCI-G6-MEO-SCO15",
-            "SCI-G6-MEO-SCO16",
-            "SCI-G6-MEO-SCO17",
-            "SCI-G6-MEO-SCO18",
-            "SCI-G6-MEO-SCO19",
-            "SCI-G6-MEO-SCO20",
-            "SCI-G6-MEO-SCO21",
-            "SCI-G6-MEO-SCO22",
-            "SCI-G6-MEO-SCO23"
+          "elo": "Effects of resource availability on organisms and ecosystems",
+          "scoRange": [
+            0,
+            22
           ]
         }
       ],
@@ -23833,65 +23768,26 @@
       "eloGroups": [
         {
           "eloId": "SCI-G6-FI-ELO1",
-          "title": "Newton's Third Law and colliding objects",
-          "scoIds": [
-            "SCI-G6-FI-SCO1",
-            "SCI-G6-FI-SCO2",
-            "SCI-G6-FI-SCO3",
-            "SCI-G6-FI-SCO4",
-            "SCI-G6-FI-SCO5",
-            "SCI-G6-FI-SCO6",
-            "SCI-G6-FI-SCO7",
-            "SCI-G6-FI-SCO8",
-            "SCI-G6-FI-SCO9",
-            "SCI-G6-FI-SCO10",
-            "SCI-G6-FI-SCO11",
-            "SCI-G6-FI-SCO12",
-            "SCI-G6-FI-SCO13",
-            "SCI-G6-FI-SCO14",
-            "SCI-G6-FI-SCO15"
+          "elo": "Newton's Third Law and colliding objects",
+          "scoRange": [
+            0,
+            14
           ]
         },
         {
           "eloId": "SCI-G6-FI-ELO2",
-          "title": "Sum of forces, mass and motion",
-          "scoIds": [
-            "SCI-G6-FI-SCO16",
-            "SCI-G6-FI-SCO17",
-            "SCI-G6-FI-SCO18",
-            "SCI-G6-FI-SCO19",
-            "SCI-G6-FI-SCO20",
-            "SCI-G6-FI-SCO21",
-            "SCI-G6-FI-SCO22",
-            "SCI-G6-FI-SCO23",
-            "SCI-G6-FI-SCO24",
-            "SCI-G6-FI-SCO25",
-            "SCI-G6-FI-SCO26"
+          "elo": "Sum of forces, mass and motion",
+          "scoRange": [
+            15,
+            25
           ]
         },
         {
           "eloId": "SCI-G6-FI-ELO3",
-          "title": "Electric and magnetic forces",
-          "scoIds": [
-            "SCI-G6-FI-SCO27",
-            "SCI-G6-FI-SCO28",
-            "SCI-G6-FI-SCO29",
-            "SCI-G6-FI-SCO30",
-            "SCI-G6-FI-SCO31",
-            "SCI-G6-FI-SCO32",
-            "SCI-G6-FI-SCO33",
-            "SCI-G6-FI-SCO34",
-            "SCI-G6-FI-SCO35",
-            "SCI-G6-FI-SCO36",
-            "SCI-G6-FI-SCO37",
-            "SCI-G6-FI-SCO38",
-            "SCI-G6-FI-SCO39",
-            "SCI-G6-FI-SCO40",
-            "SCI-G6-FI-SCO41",
-            "SCI-G6-FI-SCO42",
-            "SCI-G6-FI-SCO43",
-            "SCI-G6-FI-SCO44",
-            "SCI-G6-FI-SCO45"
+          "elo": "Electric and magnetic forces",
+          "scoRange": [
+            26,
+            44
           ]
         }
       ],
@@ -24197,58 +24093,10 @@
       "eloGroups": [
         {
           "eloId": "SCI-G6-IV-ELO1",
-          "title": "Life cycles of organisms",
-          "scoIds": [
-            "SCI-G6-IV-SCO1",
-            "SCI-G6-IV-SCO2",
-            "SCI-G6-IV-SCO3",
-            "SCI-G6-IV-SCO4",
-            "SCI-G6-IV-SCO5",
-            "SCI-G6-IV-SCO6",
-            "SCI-G6-IV-SCO7",
-            "SCI-G6-IV-SCO8",
-            "SCI-G6-IV-SCO9",
-            "SCI-G6-IV-SCO10",
-            "SCI-G6-IV-SCO11",
-            "SCI-G6-IV-SCO12",
-            "SCI-G6-IV-SCO13",
-            "SCI-G6-IV-SCO14",
-            "SCI-G6-IV-SCO15",
-            "SCI-G6-IV-SCO16",
-            "SCI-G6-IV-SCO17",
-            "SCI-G6-IV-SCO18",
-            "SCI-G6-IV-SCO19",
-            "SCI-G6-IV-SCO20",
-            "SCI-G6-IV-SCO21",
-            "SCI-G6-IV-SCO22",
-            "SCI-G6-IV-SCO23",
-            "SCI-G6-IV-SCO24",
-            "SCI-G6-IV-SCO25",
-            "SCI-G6-IV-SCO26",
-            "SCI-G6-IV-SCO27",
-            "SCI-G6-IV-SCO28",
-            "SCI-G6-IV-SCO29",
-            "SCI-G6-IV-SCO30",
-            "SCI-G6-IV-SCO31",
-            "SCI-G6-IV-SCO32",
-            "SCI-G6-IV-SCO33",
-            "SCI-G6-IV-SCO34",
-            "SCI-G6-IV-SCO35",
-            "SCI-G6-IV-SCO36",
-            "SCI-G6-IV-SCO37",
-            "SCI-G6-IV-SCO38",
-            "SCI-G6-IV-SCO39",
-            "SCI-G6-IV-SCO40",
-            "SCI-G6-IV-SCO41",
-            "SCI-G6-IV-SCO42",
-            "SCI-G6-IV-SCO43",
-            "SCI-G6-IV-SCO44",
-            "SCI-G6-IV-SCO45",
-            "SCI-G6-IV-SCO46",
-            "SCI-G6-IV-SCO47",
-            "SCI-G6-IV-SCO48",
-            "SCI-G6-IV-SCO49",
-            "SCI-G6-IV-SCO50"
+          "elo": "Life cycles of organisms",
+          "scoRange": [
+            0,
+            49
           ]
         }
       ],

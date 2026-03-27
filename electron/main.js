@@ -1041,24 +1041,19 @@ app.whenReady().then(async () => {
   log.info('App ready, starting initialization...');
 
   try {
-    // === Create main window with splashscreen ===
-    createWindow();
-    
-    // === First install cleanup logic ===
+    // === First install cleanup logic (must run before window creation) ===
     const userDataPath = app.getPath('userData');
     const firstRunFlag = path.join(userDataPath, 'firstrun.json');
     const { session } = require('electron');
 
     if (!fs.existsSync(firstRunFlag)) {
-      log.info('First install detected — clearing cache, storage, and history.');
+      log.info('First install detected — clearing cache and stale data.');
       const defaultSession = session.defaultSession;
 
       await defaultSession.clearCache();
       await defaultSession.clearStorageData({
         storages: [
           'cookies',
-          'localstorage',
-          'sessionstorage',
           'indexdb',
           'serviceworkers'
         ],
@@ -1066,6 +1061,9 @@ app.whenReady().then(async () => {
 
       fs.writeFileSync(firstRunFlag, JSON.stringify({ initialized: true }));
     }
+
+    // === Create main window with splashscreen ===
+    createWindow();
 
     // === Setup image generation models (first run only) ===
     await setupImageGenerationModels();

@@ -87,6 +87,7 @@ function buildSkillTree(treeData: MilestoneTreeNode[]): SkillNode[] {
           const groups = eloGroupsMap.get(m.topic_id) || [];
           const cl = m.checklist || [];
           groups.forEach((g, gi) => {
+            if (!g.scoRange) return; // skip malformed entries without scoRange
             const scos = cl.slice(g.scoRange[0], g.scoRange[1] + 1);
             const checked = scos.filter(s => s.checked).length;
             eloChildren.push({

@@ -26,7 +26,23 @@
       "Bash(node:*)",
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -type f \\\\\\(-name *.env* -o -name *seed* -o -name *password* -o -name *credential* -o -name *secret* \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -maxdepth 3 -type f \\\\\\(-name *.env* -o -name *config*.py -o -name *settings*.py \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -maxdepth 3 -type f \\\\\\(-name README* -o -name *.md \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -maxdepth 3 -type f \\\\\\(-name *.json \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -maxdepth 3 -type f \\\\\\(-name *.sql -o -name *init* -o -name *setup* \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend' -maxdepth 2 -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -maxdepth 3 -type f \\\\\\(-name *.db -o -name *.sqlite -o -name *auth* -o -name *user* \\\\\\))",
+      "Bash(xargs wc:*)",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/backend' -type f \\\\\\(-name *.json -o -name *.py \\\\\\) -size +1M)",
+      "Bash(2)",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\) -exec wc -l {} +)",
+      "Read(//c/Users/LG/Desktop/Projects/**)",
+      "Bash(while read:*)",
+      "Bash(do ls:*)",
+      "Bash(cp frontend/src/data/curriculumIndex.json resources/frontend/src/data/curriculumIndex.json)",
+      "Bash(cp frontend/src/data/curriculumIndex.json backend-bundle/data/curriculumIndex.json)"
     ]
   }
 }

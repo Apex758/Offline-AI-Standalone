@@ -541,7 +541,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <div className="mt-3 ml-8 border-t border-theme pt-3 space-y-4">
             {eloGroups.length > 0 ? (
               /* Structured view: each ELO with its SCOs */
-              eloGroups.map((group, gi) => {
+              eloGroups.filter(g => g.scoRange).map((group, gi) => {
                 const groupScos = checklist.slice(group.scoRange[0], group.scoRange[1] + 1);
                 const groupChecked = groupScos.filter(s => s.checked).length;
                 return (
