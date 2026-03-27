@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog, shell } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -712,6 +712,314 @@ ipcMain.handle('set-start-on-boot', (event, enabled) => {
     path: app.getPath('exe')
   });
   return true;
+});
+
+// ══════════════════════════════════════════════════════════════
+// File Explorer IPC Handlers
+// ══════════════════════════════════════════════════════════════
+
+const FILE_EXPLORER_CONFIG_PATH = path.join(app.getPath('userData'), 'file-explorer-config.json');
+const ALLOWED_EXTENSIONS = new Set([
+  '.docx', '.pptx', '.pdf', '.txt', '.md', '.xlsx', '.csv',
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.doc', '.ppt', '.xls'
+]);
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+// Helper: load allowed folders from disk
+function loadAllowedFolders() {
+  try {
+    if (fs.existsSync(FILE_EXPLORER_CONFIG_PATH)) {
+      const data = JSON.parse(fs.readFileSync(FILE_EXPLORER_CONFIG_PATH, 'utf8'));
+      return data.allowedFolders || [];
+    }
+  } catch (err) {
+    log.error('Error loading file explorer config:', err);
+  }
+  // Defaults: Downloads + Desktop
+  return [app.getPath('downloads'), app.getPath('desktop')];
+}
+
+// Helper: save allowed folders to disk
+function saveAllowedFoldersToDisk(folders) {
+  try {
+    const dir = path.dirname(FILE_EXPLORER_CONFIG_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(FILE_EXPLORER_CONFIG_PATH, JSON.stringify({ allowedFolders: folders }, null, 2));
+    return true;
+  } catch (err) {
+    log.error('Error saving file explorer config:', err);
+    return false;
+  }
+}
+
+// Helper: validate that a path is inside an allowed folder
+function isPathAllowed(targetPath, allowedFolders) {
+  const resolved = path.resolve(targetPath);
+  return allowedFolders.some(folder => {
+    const resolvedFolder = path.resolve(folder);
+    return resolved === resolvedFolder || resolved.startsWith(resolvedFolder + path.sep);
+  });
+}
+
+// IPC: Open native folder picker dialog
+ipcMain.handle('select-folder', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'Select a folder to allow access'
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+// IPC: Get allowed folders list
+ipcMain.handle('get-allowed-folders', async () => {
+  return loadAllowedFolders();
+});
+
+// IPC: Save allowed folders list
+ipcMain.handle('save-allowed-folders', async (event, folders) => {
+  return saveAllowedFoldersToDisk(folders);
+});
+
+// IPC: Browse folder contents (lazy, non-recursive)
+ipcMain.handle('browse-folder', async (event, { folderPath }) => {
+  const allowedFolders = loadAllowedFolders();
+  if (!isPathAllowed(folderPath, allowedFolders)) {
+    return { error: 'Access denied: folder is not in your allowed list' };
+  }
+
+  try {
+    const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+    const items = [];
+    for (const entry of entries) {
+      // Skip hidden files and system files
+      if (entry.name.startsWith('.') || entry.name === 'desktop.ini' || entry.name === 'Thumbs.db') continue;
+
+      const fullPath = path.join(folderPath, entry.name);
+      const isDirectory = entry.isDirectory();
+      const ext = isDirectory ? '' : path.extname(entry.name).toLowerCase();
+
+      // For files, only include allowed extensions
+      if (!isDirectory && !ALLOWED_EXTENSIONS.has(ext)) continue;
+
+      try {
+        const stats = fs.statSync(fullPath);
+        items.push({
+          name: entry.name,
+          path: fullPath,
+          isDirectory,
+          size: stats.size,
+          modifiedTime: stats.mtime.toISOString(),
+          extension: ext,
+        });
+      } catch (statErr) {
+        // Skip files we can't stat (permission errors, etc.)
+      }
+    }
+
+    // Sort: directories first, then by name
+    items.sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    });
+
+    return { items };
+  } catch (err) {
+    log.error('Error browsing folder:', err);
+    return { error: err.message };
+  }
+});
+
+// IPC: Read file content (returns base64 to avoid ArrayBuffer serialization issues)
+ipcMain.handle('read-file-content', async (event, { filePath }) => {
+  const allowedFolders = loadAllowedFolders();
+  if (!isPathAllowed(filePath, allowedFolders)) {
+    return { error: 'Access denied: file is not in an allowed folder' };
+  }
+
+  try {
+    const stats = fs.statSync(filePath);
+    if (stats.size > MAX_FILE_SIZE) {
+      return { error: `File too large (${(stats.size / 1024 / 1024).toFixed(1)}MB). Maximum is 50MB.` };
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    return {
+      base64: buffer.toString('base64'),
+      fileName: path.basename(filePath),
+      size: stats.size,
+      extension: ext,
+    };
+  } catch (err) {
+    log.error('Error reading file:', err);
+    return { error: err.message };
+  }
+});
+
+// IPC: Open file in default external application (Word, PowerPoint, etc.)
+ipcMain.handle('open-file-external', async (event, { filePath }) => {
+  const allowedFolders = loadAllowedFolders();
+  if (!isPathAllowed(filePath, allowedFolders)) {
+    return { error: 'Access denied: file is not in an allowed folder' };
+  }
+
+  try {
+    const result = await shell.openPath(filePath);
+    if (result) {
+      return { error: result }; // shell.openPath returns empty string on success, error message on failure
+    }
+    return { success: true };
+  } catch (err) {
+    log.error('Error opening file externally:', err);
+    return { error: err.message };
+  }
+});
+
+// IPC: Search files recursively across allowed folders
+ipcMain.handle('search-files', async (event, { query, folders, extensions }) => {
+  const allowedFolders = loadAllowedFolders();
+  const searchFolders = (folders || allowedFolders).filter(f => isPathAllowed(f, allowedFolders));
+  const queryLower = query.toLowerCase();
+  const results = [];
+  const MAX_RESULTS = 200;
+
+  function searchDir(dirPath, depth) {
+    if (results.length >= MAX_RESULTS || depth > 10) return;
+    try {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (results.length >= MAX_RESULTS) break;
+        if (entry.name.startsWith('.')) continue;
+
+        const fullPath = path.join(dirPath, entry.name);
+
+        if (entry.isDirectory()) {
+          searchDir(fullPath, depth + 1);
+        } else {
+          const ext = path.extname(entry.name).toLowerCase();
+          if (!ALLOWED_EXTENSIONS.has(ext)) continue;
+          if (extensions && extensions.length > 0 && !extensions.includes(ext)) continue;
+          if (!entry.name.toLowerCase().includes(queryLower)) continue;
+
+          try {
+            const stats = fs.statSync(fullPath);
+            results.push({
+              name: entry.name,
+              path: fullPath,
+              isDirectory: false,
+              size: stats.size,
+              modifiedTime: stats.mtime.toISOString(),
+              extension: ext,
+            });
+          } catch (statErr) {
+            // Skip files we can't stat
+          }
+        }
+      }
+    } catch (err) {
+      // Skip directories we can't read
+    }
+  }
+
+  for (const folder of searchFolders) {
+    if (results.length >= MAX_RESULTS) break;
+    searchDir(folder, 0);
+  }
+
+  return { items: results };
+});
+
+// IPC: Create a new folder inside an allowed folder
+ipcMain.handle('create-folder', async (event, { folderPath }) => {
+  const allowedFolders = loadAllowedFolders();
+  if (!isPathAllowed(folderPath, allowedFolders)) {
+    return { error: 'Access denied: path is not in an allowed folder' };
+  }
+
+  try {
+    if (fs.existsSync(folderPath)) {
+      return { success: true, alreadyExists: true };
+    }
+    fs.mkdirSync(folderPath, { recursive: true });
+    log.info(`Created folder: ${folderPath}`);
+    return { success: true };
+  } catch (err) {
+    log.error('Error creating folder:', err);
+    return { error: err.message };
+  }
+});
+
+// IPC: Move a single file (both source and destination must be in allowed folders)
+ipcMain.handle('move-file', async (event, { sourcePath, destPath }) => {
+  const allowedFolders = loadAllowedFolders();
+  if (!isPathAllowed(sourcePath, allowedFolders) || !isPathAllowed(destPath, allowedFolders)) {
+    return { error: 'Access denied: source or destination is not in an allowed folder' };
+  }
+
+  try {
+    if (fs.existsSync(destPath)) {
+      return { error: 'A file with this name already exists at the destination' };
+    }
+    // Ensure destination directory exists
+    const destDir = path.dirname(destPath);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    // Try rename first (atomic on same drive), fall back to copy+delete
+    try {
+      fs.renameSync(sourcePath, destPath);
+    } catch (renameErr) {
+      fs.copyFileSync(sourcePath, destPath);
+      fs.unlinkSync(sourcePath);
+    }
+    log.info(`Moved file: ${sourcePath} -> ${destPath}`);
+    return { success: true };
+  } catch (err) {
+    log.error('Error moving file:', err);
+    return { error: err.message };
+  }
+});
+
+// IPC: Move multiple files at once (for AI-organized cleanup)
+ipcMain.handle('move-files-batch', async (event, { moves }) => {
+  // moves: Array of { sourcePath, destPath }
+  const allowedFolders = loadAllowedFolders();
+  const results = [];
+  const undoLog = [];
+
+  for (const move of moves) {
+    if (!isPathAllowed(move.sourcePath, allowedFolders) || !isPathAllowed(move.destPath, allowedFolders)) {
+      results.push({ source: move.sourcePath, success: false, error: 'Access denied' });
+      continue;
+    }
+
+    try {
+      if (fs.existsSync(move.destPath)) {
+        results.push({ source: move.sourcePath, success: false, error: 'File already exists at destination' });
+        continue;
+      }
+      const destDir = path.dirname(move.destPath);
+      if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+      }
+      try {
+        fs.renameSync(move.sourcePath, move.destPath);
+      } catch (renameErr) {
+        fs.copyFileSync(move.sourcePath, move.destPath);
+        fs.unlinkSync(move.sourcePath);
+      }
+      results.push({ source: move.sourcePath, success: true });
+      undoLog.push({ sourcePath: move.destPath, destPath: move.sourcePath });
+    } catch (err) {
+      results.push({ source: move.sourcePath, success: false, error: err.message });
+    }
+  }
+
+  const succeeded = results.filter(r => r.success).length;
+  log.info(`Batch move: ${succeeded}/${moves.length} files moved successfully`);
+  return { results, undoLog };
 });
 
 autoUpdater.on('update-available', (info) => {

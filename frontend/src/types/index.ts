@@ -6,11 +6,22 @@ export interface User {
 
 export type Theme = 'light' | 'dark' | 'system';
 
+export interface FileOperationPlan {
+  action: string;
+  description: string;
+  folders_to_create: string[];
+  moves: { file: string; from: string; to: string }[];
+  folderPath?: string;  // the source folder being organized
+  status?: 'pending' | 'approved' | 'executed' | 'rejected';
+  result?: { success: number; failed: number; errors?: string[] };
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  filePlan?: FileOperationPlan;
 }
 
 export interface SplitViewState {

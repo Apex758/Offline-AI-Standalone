@@ -4673,7 +4673,6 @@
         "grade2-mathematics-number-sense",
         "grade2-mathematics-operations-with-numbers",
         "grade2-mathematics-patterns-relationships",
-        "grade2-social-studies-weather-climate",
         "grade2-science-earth-systems",
         "grade2-science-interdependent-relationships",
         "grade2-science-engineering-design"
@@ -6342,8 +6341,7 @@
       "relatedEntries": [
         "grade2-science-engineering-design",
         "grade2-science-interdependent-relationships",
-        "grade2-science-structure-properties-matter",
-        "grade2-social-studies-weather-climate"
+        "grade2-science-structure-properties-matter"
       ]
     },
     {
@@ -7086,8 +7084,7 @@
       "relatedEntries": [
         "grade2-science-earth-systems",
         "grade2-science-engineering-design",
-        "grade2-science-structure-properties-matter",
-        "grade2-social-studies-weather-climate"
+        "grade2-science-structure-properties-matter"
       ]
     },
     {
@@ -7615,155 +7612,10 @@
         "grade1-social-studies-civic-participation"
       ],
       "relatedEntries": [
-        "grade2-social-studies-economic-decision-making",
         "grade2-social-studies-historical-cultural-thinking",
-        "grade2-social-studies-weather-climate",
         "grade2-language-arts-listening-speaking",
-        "grade2-language-arts-writing-representing"
-      ]
-    },
-    {
-      "id": "grade2-social-studies-economic-decision-making",
-      "route": "/curriculum/grade2-subjects/social-studies/economic-decision-making",
-      "displayName": "Economic Decision Making",
-      "grade": "2",
-      "subject": "Social Studies",
-      "strand": "economic-decision-making",
-      "keywords": [
-        "communities",
-        "community",
-        "decision",
-        "describe",
-        "different",
-        "economic",
-        "goods",
-        "human",
-        "identify",
-        "knowledge",
-        "land",
-        "making",
-        "needs",
-        "people",
-        "persons"
-      ],
-      "essentialOutcomes": [
-        {
-          "id": "SS-G2-EDM-ELO1",
-          "text": "ELO 1: Understand how our communities provide goods and services to meet our needs and wants"
-        }
-      ],
-      "specificOutcomes": [
-        {
-          "id": "SS-G2-EDM-SCO1",
-          "text": "K: Identify people in the community that are resource persons.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO2",
-          "text": "S: Categorize human and natural resources in your local environment.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO3",
-          "text": "V: Appreciate the importance of respecting the value of our human and natural resources for meeting our basic needs.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO4",
-          "text": "K: Describe different uses of land in your community.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO5",
-          "text": "S: Explain how land use affects the environment.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO6",
-          "text": "V: Value the need to treat land with respect.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO7",
-          "text": "K: Identify some of the people who live and work in the community.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO8",
-          "text": "S: Draw pictures to illustrate the roles of workers in the community.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO9",
-          "text": "V: Appreciate the diverse range of people who make up my community.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO10",
-          "text": "K: Identify goods and services available in my community.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO11",
-          "text": "S: Classify workers who provide goods and services.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO12",
-          "text": "V: Appreciate that goods and services provide both needs and wants.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO13",
-          "text": "K: Identify types of jobs in the community.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO14",
-          "text": "S: Compare the types of jobs traditionally done by males and females or both and discuss how this has changed.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO15",
-          "text": "V: Appreciate that jobs can be done by both men and women.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO16",
-          "text": "K: Understand that rules help workers in the workplace.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO17",
-          "text": "S: Recognize how to safely follow appropriate rules when carrying out jobs.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        },
-        {
-          "id": "SS-G2-EDM-SCO18",
-          "text": "V: Appreciate the importance of rules and laws in protecting our rights.",
-          "eloRef": "SS-G2-EDM-ELO1"
-        }
-      ],
-      "summary": "Understand how our communities provide goods and services to meet our needs and wants",
-      "eloGroups": [
-        {
-          "elo": "ELO 1: Understand how our communities provide goods and services to meet our needs and wants",
-          "scoRange": [
-            0,
-            17
-          ],
-          "eloId": "SS-G2-EDM-ELO1"
-        }
-      ],
-      "prerequisiteEntries": [
-        "grade1-social-studies-economic-decision-making"
-      ],
-      "relatedEntries": [
-        "grade2-social-studies-civic-participation",
-        "grade2-social-studies-historical-cultural-thinking",
-        "grade2-social-studies-weather-climate",
-        "grade2-mathematics-operations-with-numbers",
-        "grade2-mathematics-data-probability"
+        "grade2-language-arts-writing-representing",
+        "grade2-social-studies-spatial-thinking"
       ]
     },
     {
@@ -7904,122 +7756,173 @@
       ],
       "relatedEntries": [
         "grade2-social-studies-civic-participation",
-        "grade2-social-studies-economic-decision-making",
-        "grade2-social-studies-weather-climate",
         "grade2-language-arts-reading-viewing",
-        "grade2-language-arts-writing-representing"
+        "grade2-language-arts-writing-representing",
+        "grade2-social-studies-spatial-thinking"
       ]
     },
     {
-      "id": "grade2-social-studies-weather-climate",
-      "route": "/curriculum/grade2-subjects/social-studies/weather-climate",
-      "displayName": "Weather & Climate",
+      "id": "grade2-social-studies-spatial-thinking",
+      "route": "/curriculum/grade2-subjects/social-studies/spatial-thinking",
+      "displayName": "Spatial Thinking",
       "grade": "2",
       "subject": "Social Studies",
-      "strand": "weather-climate",
+      "strand": "spatial-thinking",
       "keywords": [
-        "actions",
+        "animals",
         "caring",
-        "communities",
         "community",
-        "describe",
-        "diverse",
+        "directions",
         "environment",
-        "focusing",
-        "humans",
-        "individual",
-        "islands",
-        "knowledge",
-        "patterns",
-        "protect",
-        "questions"
+        "features",
+        "maps",
+        "natural",
+        "plants",
+        "regions",
+        "resource",
+        "spatial",
+        "weather"
       ],
       "essentialOutcomes": [
         {
-          "id": "SS-G2-WC-ELO1",
-          "text": "ELO 1: Spatial Thinking - Understanding weather and climate patterns in the community"
+          "id": "SS-G2-ST-ELO1",
+          "text": "ELO 1: Understand that our islands are made up of many diverse regions and communities"
         }
       ],
       "specificOutcomes": [
         {
-          "id": "SS-G2-WC-SCO1",
-          "text": "K1: Identify the basic elements of weather (temperature, wind, precipitation)",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO1",
+          "text": "ST Knowledge 1: State and label the four cardinal directions",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO2",
-          "text": "K2: Describe how weather affects daily life and activities",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO2",
+          "text": "ST Skills 1: Give directions to your community in relation to other districts or parishes using cardinal direction",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO3",
-          "text": "K3: Identify the seasons and their characteristics",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO3",
+          "text": "ST Values 1: Appreciate the value of directions for finding your way",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO4",
-          "text": "K4: Describe the climate of their country",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO4",
+          "text": "ST Knowledge 2: Describe the important natural and built features of your community",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO5",
-          "text": "S1: Observe and record daily weather conditions",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO5",
+          "text": "ST Skills 2: Observe and illustrate the various natural and built features of your community",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO6",
-          "text": "S2: Use simple weather instruments to measure weather elements",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO6",
+          "text": "ST Values 2: Appreciate the unique landmark features of your community that you find interesting",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO7",
-          "text": "S3: Compare weather patterns over time",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO7",
+          "text": "ST Knowledge 3: Identify the basic features of a map including title, key, compass rose, border",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO8",
-          "text": "S4: Create simple weather charts and graphs",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO8",
+          "text": "ST Skills 3: Draw a map of your community which includes basic features",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO9",
-          "text": "V1: Appreciate the importance of weather in daily life",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO9",
+          "text": "ST Values 3: Appreciate that a map can be used to show our important landmarks in the community",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO10",
-          "text": "V2: Show awareness of how to prepare for different weather conditions",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO10",
+          "text": "ST Knowledge 4: Identify some of the plants and animals in your community",
+          "eloRef": "SS-G2-ST-ELO1"
         },
         {
-          "id": "SS-G2-WC-SCO11",
-          "text": "V3: Demonstrate concern for the environment and climate change",
-          "eloRef": "SS-G2-WC-ELO1"
+          "id": "SS-G2-ST-SCO11",
+          "text": "ST Skills 4: Classify the animals according to wild, domestic, food or pets",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO12",
+          "text": "ST Knowledge 5: Identify some of the plants in your community",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO13",
+          "text": "ST Skills 5: Classify the plants according to wild, domestic and uses such as food, medicine",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO14",
+          "text": "ST Values 5: Appreciate the importance of caring for/protecting the plants and animals in our community",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO15",
+          "text": "ST Knowledge 6: Describe weather patterns in your community",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO16",
+          "text": "ST Skills 6: Assess the impact of weather conditions on the community at different times of the year",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO17",
+          "text": "ST Values 6: Appreciate how the weather affects the environment",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO18",
+          "text": "ST Knowledge 7: Identify the natural environment as a resource",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO19",
+          "text": "ST Skills 7: Investigate how resources found in the local environment are useful to us",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO20",
+          "text": "ST Values 7: Value the importance of the local environment and its link to human survival",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO21",
+          "text": "ST Knowledge 8: Identify ways in which people harm the environment",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO22",
+          "text": "ST Skills 8: Gather information on the ways we harm and protect our environment",
+          "eloRef": "SS-G2-ST-ELO1"
+        },
+        {
+          "id": "SS-G2-ST-SCO23",
+          "text": "ST Values 8: Appreciate each other's role in caring for the environment",
+          "eloRef": "SS-G2-ST-ELO1"
         }
       ],
+      "summary": "Understand that our islands are made up of many diverse regions and communities through spatial thinking about directions, features, maps, plants, animals, weather, and environment.",
       "eloGroups": [
         {
-          "elo": "ELO 1: Spatial Thinking - Understanding weather and climate patterns in the community",
+          "elo": "ELO 1: Understand that our islands are made up of many diverse regions and communities",
           "scoRange": [
             0,
-            10
+            22
           ],
-          "eloId": "SS-G2-WC-ELO1"
+          "eloId": "SS-G2-ST-ELO1"
         }
       ],
-      "summary": "Sections 5-7 of the Spatial Thinking strand covering Weather, The Environment as a Resource, and Caring for the Environment. Learners describe weather patterns, assess weather impacts, identify natural resources, and understand how to care for the environment.",
       "prerequisiteEntries": [
-        "grade1-mathematics-data-probability",
         "grade1-social-studies-spatial-thinking"
       ],
       "relatedEntries": [
-        "grade2-social-studies-civic-participation",
-        "grade2-social-studies-economic-decision-making",
         "grade2-social-studies-historical-cultural-thinking",
-        "grade2-science-earth-systems",
-        "grade2-science-interdependent-relationships",
-        "grade2-mathematics-measurement",
-        "grade2-mathematics-data-probability"
+        "grade2-social-studies-civic-participation"
       ]
     },
     {
@@ -11476,9 +11379,7 @@
           "eloId": "SCI-G3-WC-ELO3"
         }
       ],
-      "prerequisiteEntries": [
-        "grade2-social-studies-weather-climate"
-      ],
+      "prerequisiteEntries": [],
       "relatedEntries": [
         "grade3-science-forces-interactions",
         "grade3-science-inheritance-variation",
@@ -11848,9 +11749,7 @@
           "eloId": "SS-G3-EDM-ELO3"
         }
       ],
-      "prerequisiteEntries": [
-        "grade2-social-studies-economic-decision-making"
-      ],
+      "prerequisiteEntries": [],
       "relatedEntries": [
         "grade3-social-studies-civic-participation",
         "grade3-social-studies-historical-cultural-thinking",
@@ -13554,8 +13453,7 @@
         "grade4-mathematics-geometrical-thinking",
         "grade4-mathematics-number-sense",
         "grade4-mathematics-operations-with-numbers",
-        "grade4-mathematics-patterns-relationships",
-        "grade4-science-earth-systems"
+        "grade4-mathematics-patterns-relationships"
       ]
     },
     {
@@ -13774,8 +13672,308 @@
         "grade4-mathematics-number-sense",
         "grade4-mathematics-operations-with-numbers",
         "grade4-mathematics-patterns-relationships",
-        "grade4-social-studies-spatial-thinking",
-        "grade4-science-structure-function"
+        "grade4-social-studies-spatial-thinking"
+      ]
+    },
+    {
+      "id": "grade4-mathematics-measurement",
+      "route": "/curriculum/grade4-subjects/mathematics/measurement",
+      "displayName": "Measurement",
+      "grade": "4",
+      "subject": "Mathematics",
+      "strand": "measurement",
+      "keywords": [
+        "mass",
+        "weight",
+        "capacity",
+        "grams",
+        "kilograms",
+        "litres",
+        "millilitres",
+        "metric",
+        "time",
+        "money",
+        "estimation",
+        "units",
+        "measuring",
+        "area"
+      ],
+      "essentialOutcomes": [
+        {
+          "id": "MATH-G4-MSR-ELO1",
+          "text": "Understanding What and How We Measure - Developing an understanding of measurable attributes"
+        },
+        {
+          "id": "MATH-G4-MSR-ELO2",
+          "text": "Understanding What and How We Measure - Comparing and ordering based on measurable attributes"
+        },
+        {
+          "id": "MATH-G4-MSR-ELO3",
+          "text": "Understanding What and How We Measure - Developing and applying non-standard units of measure"
+        },
+        {
+          "id": "MATH-G4-MSR-ELO4",
+          "text": "Understanding What and How We Measure - Developing and applying standard units of measure"
+        },
+        {
+          "id": "MATH-G4-MSR-ELO5",
+          "text": "Applying Techniques, Tools and Formulae for Measuring - Developing personal referents for measuring attributes"
+        },
+        {
+          "id": "MATH-G4-MSR-ELO6",
+          "text": "Applying Techniques, Tools and Formulae for Measuring - Time"
+        },
+        {
+          "id": "MATH-G4-MSR-ELO7",
+          "text": "Applying Techniques, Tools and Formulae for Measuring - Money"
+        }
+      ],
+      "specificOutcomes": [
+        {
+          "id": "MATH-G4-MSR-SCO1",
+          "text": "Use the language relating to measurement terms (mass, kg, g)",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO2",
+          "text": "Differentiate between items using measurement of mass and capacity",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO3",
+          "text": "Name relative sizes of the measurement units within one system of units (grams and kilograms)",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO4",
+          "text": "State the relationship between grams and kilograms",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO5",
+          "text": "Estimate the mass of objects using benchmarks",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO6",
+          "text": "Explain the relationship between litres and millilitres as metric units of capacity, and use benchmarks to estimate mass and capacity",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO7",
+          "text": "Use metric prefixes to describe the relative size of different metric units, and choose appropriate units and tools to measure length, mass, and capacity",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO8",
+          "text": "Choose appropriate tools to measure length, mass and capacity",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO9",
+          "text": "Design a poster to show the appropriate terms and units of measurement",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO10",
+          "text": "Recognize the importance of estimation by solving everyday problems involving units of measurement",
+          "eloRef": "MATH-G4-MSR-ELO1"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO11",
+          "text": "Differentiate between weight and mass",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO12",
+          "text": "Explain the term weight",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO13",
+          "text": "Explain the term mass",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO14",
+          "text": "Compare objects by measuring and ordering based on their heaviness/lightness",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO15",
+          "text": "Solve real world and mathematical problems involving area of rectangles, including finding the area given the side lengths and finding an unknown side length",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO16",
+          "text": "Estimate the area of shapes and other objects",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO17",
+          "text": "Ensure accuracy in estimating mass by paying close attention to detail",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO18",
+          "text": "Design a poster on measuring everyday solids",
+          "eloRef": "MATH-G4-MSR-ELO2"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO19",
+          "text": "Describe scenarios involving mass",
+          "eloRef": "MATH-G4-MSR-ELO3"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO20",
+          "text": "Find the mass of objects by counting weighted units/objects and improvised units",
+          "eloRef": "MATH-G4-MSR-ELO3"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO21",
+          "text": "Find the mass of objects by using concrete materials such as cubes and counters (nonstandard method)",
+          "eloRef": "MATH-G4-MSR-ELO3"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO22",
+          "text": "Promote the need for measuring the mass of items",
+          "eloRef": "MATH-G4-MSR-ELO3"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO23",
+          "text": "Identify standard units of measure (mass): mg, g, kg",
+          "eloRef": "MATH-G4-MSR-ELO4"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO24",
+          "text": "Measure and read the mass of objects using a kitchen scale",
+          "eloRef": "MATH-G4-MSR-ELO4"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO25",
+          "text": "Engage in cooperative teaching and learning through group work and peer assessment",
+          "eloRef": "MATH-G4-MSR-ELO4"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO26",
+          "text": "Estimate the mass of various objects without weighing them, then verify the estimates by actually measuring their mass",
+          "eloRef": "MATH-G4-MSR-ELO5"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO27",
+          "text": "Apply appropriate units of measurement and mathematical operations when solving worded problems related to mass measurement",
+          "eloRef": "MATH-G4-MSR-ELO5"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO28",
+          "text": "Share various objects of interest with peers relaying mass measurement and explaining why that unit of measurement is used",
+          "eloRef": "MATH-G4-MSR-ELO5"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO29",
+          "text": "Convert minutes to hours and vice versa",
+          "eloRef": "MATH-G4-MSR-ELO6"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO30",
+          "text": "Calculate time elapsed using the relationship between units of time (seconds, minutes, hours)",
+          "eloRef": "MATH-G4-MSR-ELO6"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO31",
+          "text": "Identify six methods of payment used",
+          "eloRef": "MATH-G4-MSR-ELO7"
+        },
+        {
+          "id": "MATH-G4-MSR-SCO32",
+          "text": "Estimate and calculate the cost of multiple items priced in whole dollar amounts and change needed mentally",
+          "eloRef": "MATH-G4-MSR-ELO7"
+        }
+      ],
+      "summary": "Develops understanding of measurable attributes including mass, weight, capacity, area, time and money. Learners use standard and non-standard units, estimate and verify measurements, solve real-world problems involving measurement, and develop skills with metric units and time/money calculations.",
+      "eloGroups": [
+        {
+          "eloId": "MATH-G4-MSR-ELO1",
+          "title": "Developing an understanding of measurable attributes",
+          "scoIds": [
+            "MATH-G4-MSR-SCO1",
+            "MATH-G4-MSR-SCO2",
+            "MATH-G4-MSR-SCO3",
+            "MATH-G4-MSR-SCO4",
+            "MATH-G4-MSR-SCO5",
+            "MATH-G4-MSR-SCO6",
+            "MATH-G4-MSR-SCO7",
+            "MATH-G4-MSR-SCO8",
+            "MATH-G4-MSR-SCO9",
+            "MATH-G4-MSR-SCO10"
+          ]
+        },
+        {
+          "eloId": "MATH-G4-MSR-ELO2",
+          "title": "Comparing and ordering based on measurable attributes",
+          "scoIds": [
+            "MATH-G4-MSR-SCO11",
+            "MATH-G4-MSR-SCO12",
+            "MATH-G4-MSR-SCO13",
+            "MATH-G4-MSR-SCO14",
+            "MATH-G4-MSR-SCO15",
+            "MATH-G4-MSR-SCO16",
+            "MATH-G4-MSR-SCO17",
+            "MATH-G4-MSR-SCO18"
+          ]
+        },
+        {
+          "eloId": "MATH-G4-MSR-ELO3",
+          "title": "Developing and applying non-standard units of measure",
+          "scoIds": [
+            "MATH-G4-MSR-SCO19",
+            "MATH-G4-MSR-SCO20",
+            "MATH-G4-MSR-SCO21",
+            "MATH-G4-MSR-SCO22"
+          ]
+        },
+        {
+          "eloId": "MATH-G4-MSR-ELO4",
+          "title": "Developing and applying standard units of measure",
+          "scoIds": [
+            "MATH-G4-MSR-SCO23",
+            "MATH-G4-MSR-SCO24",
+            "MATH-G4-MSR-SCO25"
+          ]
+        },
+        {
+          "eloId": "MATH-G4-MSR-ELO5",
+          "title": "Developing personal referents for measuring attributes",
+          "scoIds": [
+            "MATH-G4-MSR-SCO26",
+            "MATH-G4-MSR-SCO27",
+            "MATH-G4-MSR-SCO28"
+          ]
+        },
+        {
+          "eloId": "MATH-G4-MSR-ELO6",
+          "title": "Time",
+          "scoIds": [
+            "MATH-G4-MSR-SCO29",
+            "MATH-G4-MSR-SCO30"
+          ]
+        },
+        {
+          "eloId": "MATH-G4-MSR-ELO7",
+          "title": "Money",
+          "scoIds": [
+            "MATH-G4-MSR-SCO31",
+            "MATH-G4-MSR-SCO32"
+          ]
+        }
+      ],
+      "prerequisiteEntries": [
+        "grade3-mathematics-measurement"
+      ],
+      "relatedEntries": [
+        "grade4-mathematics-number-sense",
+        "grade4-mathematics-operations-with-numbers",
+        "grade4-mathematics-data-probability"
       ]
     },
     {
@@ -14389,547 +14587,6 @@
       ]
     },
     {
-      "id": "grade4-science-earth-systems",
-      "route": "/curriculum/grade4-subjects/science/earth-systems",
-      "displayName": "Earth Systems",
-      "grade": "4",
-      "subject": "Science",
-      "strand": "earth-systems",
-      "keywords": [
-        "activity",
-        "analyze",
-        "assessment",
-        "boundaries",
-        "boundary",
-        "building",
-        "changes",
-        "clarification",
-        "compare",
-        "continental",
-        "could",
-        "describe",
-        "designing",
-        "earth",
-        "earthquake"
-      ],
-      "essentialOutcomes": [
-        {
-          "id": "SCI-G4-ERS-ELO1",
-          "text": "ELO 1: Identify evidence from patterns in rock formations and fossils in rock layers to support an explanation for changes in a landscape over time"
-        },
-        {
-          "id": "SCI-G4-ERS-ELO2",
-          "text": "ELO 2: Make observations and/or measurements to provide evidence of the effects of weathering or the rate of erosion by water, ice, wind, or vegetation"
-        },
-        {
-          "id": "SCI-G4-ERS-ELO3",
-          "text": "ELO 3: Analyze and interpret data from maps to describe patterns of Earth's features"
-        },
-        {
-          "id": "SCI-G4-ERS-ELO4",
-          "text": "ELO 4: Generate and compare multiple solutions to reduce the impacts of natural Earth processes on humans"
-        }
-      ],
-      "specificOutcomes": [
-        {
-          "id": "SCI-G4-ERS-SCO1",
-          "text": "K: Define terms: Igneous rock, Sedimentary rock, Metamorphic rock, Weathering, Minerals, Erosion, Deposition, Fossils, Slate, Granite, Limestone, Marble",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO2",
-          "text": "K: Demonstrate understanding of how layers of rocks are formed",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO3",
-          "text": "K: Recognise how rock formations result in landscape changes",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO4",
-          "text": "K: Create a representation of a canyon",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO5",
-          "text": "K: Illustrate changes in the landscape",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO6",
-          "text": "K: Outline how soils are made from rocks",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO7",
-          "text": "K: Collect and classify rocks in their country",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO8",
-          "text": "K: Describe how people use rocks for different purposes",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO9",
-          "text": "K: Define soil erosion, listing types of soil erosion and ways of preventing it",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO10",
-          "text": "S: Investigate how layers of rocks are formed",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO11",
-          "text": "S: Observe how fossils in layers indicate landscape change",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO12",
-          "text": "S: Communicate effectively how landscape changes",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO13",
-          "text": "S: Interpret what fossils and rock formations suggest about past environments",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO14",
-          "text": "S: Research information about landscape changes caused by glaciers and volcanoes",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO15",
-          "text": "V: Express desire to find answers through exploring",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO16",
-          "text": "V: Willingly work with others regardless of age, gender, physical or cultural characteristics",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO17",
-          "text": "V: Keep work area clean",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO18",
-          "text": "V: Willingly contribute to group activity",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO19",
-          "text": "V: In group work demonstrate sensitivity and assistance to students with physical challenges",
-          "eloRef": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO20",
-          "text": "K: Define terms: Core, Crust, Mantle, Weathering, Mechanical/Physical weathering, Biological weathering, Chemical weathering, Erosion, Sediment, Deposition, Deforestation, Delta, Meandering river",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO21",
-          "text": "K: Identify the layers of the earth: crust, mantle and core",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO22",
-          "text": "K: Demonstrate an understanding of weathering and the factors that contribute",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO23",
-          "text": "K: Demonstrate an understanding of erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO24",
-          "text": "K: Describe the factors that increase or reduce the rate of erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO25",
-          "text": "K: Identify meandering rivers in the Caribbean",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO26",
-          "text": "K: Define soil erosion and list types and prevention",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO27",
-          "text": "K: Name and describe methods of soil conservation",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO28",
-          "text": "S: Observe layers of the earth and evidence of weathering and erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO29",
-          "text": "S: Make inferences about factors contributing to weathering and erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO30",
-          "text": "S: Classify types of weathering as mechanical/physical and chemical",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO31",
-          "text": "S: Investigate factors contributing to weathering and erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO32",
-          "text": "S: Compare and contrast weathering and erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO33",
-          "text": "S: Observe and account for erosion in a water table",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO34",
-          "text": "S: Use a model to investigate variables impacting erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO35",
-          "text": "S: Communicate experimental results by making a model",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO36",
-          "text": "V: Display sensitivity and offer assistance to peers with physical or learning challenges",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO37",
-          "text": "V: Express desire to explore and contribute solutions to erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO38",
-          "text": "V: Show concern and present community solutions to deforestation and erosion",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO39",
-          "text": "V: Consider solutions to flooding and run-off",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO40",
-          "text": "V: Participate actively in classroom discussions",
-          "eloRef": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO41",
-          "text": "K: Define terms: Map, Globe, Boundary, Continent, Mountain, Mountain Range, Volcano, Ocean, Ocean trenches, Crust, Ridge, Earthquake, Features, Landscape, Pangaea, Continental drift, Tectonic plates, Lithosphere, Convergent Boundaries, Divergent Boundaries, Transform fault, Mountain ranges, Elevation, Contour lines",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO42",
-          "text": "K: Identify on a world map mountains, continents, oceans, ocean floor structures, volcanoes and earthquake areas",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO43",
-          "text": "K: Identify patterns in the location of earth's features",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO44",
-          "text": "K: Explain the concept of continental drift",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO45",
-          "text": "K: Relay the evidence and logic that continental drift of tectonic plates is a viable theory",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO46",
-          "text": "K: Demonstrate an understanding of tectonic terms using drawings and descriptions",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO47",
-          "text": "K: Explain that mountains, volcanoes, earthquakes and ocean trenches are formed because of tectonic plate movement",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO48",
-          "text": "K: Explain how knowledge of locations of mountains, earthquakes and volcanoes affects lives",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO49",
-          "text": "K: Describe an earthquake as a natural occurrence and explain causes",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO50",
-          "text": "K: Identify volcanic activity as a natural process and explain how volcanoes are formed",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO51",
-          "text": "K: Identify ways earthquakes impact the environment",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO52",
-          "text": "K: Describe safety measures during earthquake",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO53",
-          "text": "K: Explain how volcanoes are formed",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO54",
-          "text": "K: Outline useful and harmful effects of volcanoes",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO55",
-          "text": "K: Identify mountains in country and account for volcanic activity prevalence in Caribbean",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO56",
-          "text": "S: Draw diagrams or formulate models to represent earth features",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO57",
-          "text": "S: Predict locations where earthquakes or volcanoes could occur",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO58",
-          "text": "S: Use crayons/markers/seeds to locate features on blank map",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO59",
-          "text": "S: Draw diagrams showing three ways plate boundaries interact",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO60",
-          "text": "S: Account for how plate interactions create mountains and cause earthquakes and volcanoes",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO61",
-          "text": "S: Effectively communicate information based on observation",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO62",
-          "text": "S: Identify mountains and volcanoes in country",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO63",
-          "text": "V: Actively participate in class discussions",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO64",
-          "text": "V: Display sensitivity and offer assistance",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO65",
-          "text": "V: Work respectfully analyzing maps and charts",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO66",
-          "text": "V: Develop awareness that earth events affect environment and lives",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO67",
-          "text": "K: Define terms: Earthquake, Flood, Volcanic eruption, Tsunami, Hurricane, Mudslides, Risk assessment, Risk reduction",
-          "eloRef": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO68",
-          "text": "K: Describe causes of earthquakes, hurricanes, floods, tsunamis, volcanic eruptions, mudslides",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO69",
-          "text": "K: Describe mechanisms of earthquakes, hurricanes, floods, tsunamis, volcanic eruptions, mudslides",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO70",
-          "text": "K: Assess risks associated with natural earth processes",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO71",
-          "text": "K: Demonstrate an understanding of monitoring systems for detection of different natural earth processes",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO72",
-          "text": "K: Explain the significance of early warning signals",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO73",
-          "text": "K: Demonstrate an understanding of structural factors that contribute to stability of buildings",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO74",
-          "text": "K: Apply understanding of structural principles to buildings that can withstand seismic forces",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO75",
-          "text": "K: Describe methods of reducing flooding and impacts",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO76",
-          "text": "K: Apply structural principles to designing buildings able to withstand tsunami force",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO77",
-          "text": "K: Describe methods of reducing mudslide impacts",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO78",
-          "text": "S: Brainstorm with peers ways to reduce impact of natural forces",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO79",
-          "text": "S: Identify problems in community with respect to natural forces",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO80",
-          "text": "S: Problem solve solutions",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO81",
-          "text": "S: Secure feedback from community leaders",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO82",
-          "text": "S: Predict how building design affects ability to withstand natural earth processes",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO83",
-          "text": "S: Observe and identify features of buildings resilient to natural earth processes",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO84",
-          "text": "S: Design a simple earth-resistant structure",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO85",
-          "text": "S: Design a simple structure appropriate for tsunami-prone area",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO86",
-          "text": "V: Develop a sense of concern for persons affected by natural earth processes",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO87",
-          "text": "V: Appreciate importance of developing resilient structures",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO88",
-          "text": "V: Appreciate importance of paying attention to early warning signals",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO89",
-          "text": "V: Value practices that lead to flood prevention",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        },
-        {
-          "id": "SCI-G4-ERS-SCO90",
-          "text": "V: Recognize importance of teamwork in mitigating effects",
-          "eloRef": "SCI-G4-ERS-ELO4"
-        }
-      ],
-      "summary": "Identify evidence from patterns in rock formations and fossils in rock layers to support an explanation for changes in a landscape over time",
-      "eloGroups": [
-        {
-          "elo": "ELO 1: Identify evidence from patterns in rock formations and fossils in rock layers to support an explanation for changes in a landscape over time",
-          "scoRange": [
-            0,
-            18
-          ],
-          "eloId": "SCI-G4-ERS-ELO1"
-        },
-        {
-          "elo": "ELO 2: Make observations and/or measurements to provide evidence of the effects of weathering or the rate of erosion by water, ice, wind, or vegetation",
-          "scoRange": [
-            19,
-            39
-          ],
-          "eloId": "SCI-G4-ERS-ELO2"
-        },
-        {
-          "elo": "ELO 3: Analyze and interpret data from maps to describe patterns of Earth's features",
-          "scoRange": [
-            40,
-            66
-          ],
-          "eloId": "SCI-G4-ERS-ELO3"
-        },
-        {
-          "elo": "ELO 4: Generate and compare multiple solutions to reduce the impacts of natural Earth processes on humans",
-          "scoRange": [
-            67,
-            89
-          ],
-          "eloId": "SCI-G4-ERS-ELO4"
-        }
-      ],
-      "prerequisiteEntries": [
-        "grade3-mathematics-data-probability",
-        "grade3-science-interdependent-relationships",
-        "grade3-science-weather-climate",
-        "grade3-social-studies-spatial-thinking"
-      ],
-      "relatedEntries": [
-        "grade4-science-energy",
-        "grade4-science-structure-function",
-        "grade4-science-waves"
-      ]
-    },
-    {
       "id": "grade4-science-energy",
       "route": "/curriculum/grade4-subjects/science/energy",
       "displayName": "Energy",
@@ -15265,241 +14922,6 @@
         "grade3-science-forces-interactions"
       ],
       "relatedEntries": [
-        "grade4-science-earth-systems",
-        "grade4-science-structure-function",
-        "grade4-science-waves"
-      ]
-    },
-    {
-      "id": "grade4-science-structure-function",
-      "route": "/curriculum/grade4-subjects/science/structure-function",
-      "displayName": "Structure & Function",
-      "grade": "4",
-      "subject": "Science",
-      "strand": "structure-function",
-      "keywords": [
-        "absorb",
-        "animal",
-        "animals",
-        "argument",
-        "assessment",
-        "beginning",
-        "behavior",
-        "bioluminescent",
-        "boundary",
-        "brain",
-        "clarification",
-        "colored",
-        "construct",
-        "could",
-        "curriculum"
-      ],
-      "essentialOutcomes": [
-        {
-          "id": "SCI-G4-SF-ELO1",
-          "text": "ELO 1: Develop a model to describe that light reflecting from objects and entering the eye allows objects to be seen"
-        },
-        {
-          "id": "SCI-G4-SF-ELO2",
-          "text": "ELO 2: Construct an argument that plants and animals have internal and external structures that function to support survival, growth, behavior, and reproduction"
-        },
-        {
-          "id": "SCI-G4-SF-ELO3",
-          "text": "ELO 3: Use a model to describe that animals receive different information through their senses, process it in their brain and respond to it differently"
-        }
-      ],
-      "specificOutcomes": [
-        {
-          "id": "SCI-G4-SF-SCO1",
-          "text": "K: Define reflection, refraction, light ray, cornea, retina, optic nerve, lens, pupil",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO2",
-          "text": "K: Explain the process by which light reflects off objects and enters the eye",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO3",
-          "text": "K: Describe the structure and function of the human eye",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO4",
-          "text": "K: Explain how the brain interprets light signals to form images",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO5",
-          "text": "S: Construct a model showing how light reflects off objects and enters the eye",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO6",
-          "text": "S: Investigate how the eye responds to different light conditions",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO7",
-          "text": "S: Demonstrate how images are formed on the retina",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO8",
-          "text": "V: Appreciate the importance of eye care and protection",
-          "eloRef": "SCI-G4-SF-ELO1"
-        },
-        {
-          "id": "SCI-G4-SF-SCO9",
-          "text": "K: Define internal structures, external structures, function, adaptation, reproduction, survival",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO10",
-          "text": "K: Identify and describe internal structures of plants and their functions",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO11",
-          "text": "K: Identify and describe external structures of plants and their functions",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO12",
-          "text": "K: Identify and describe internal structures of animals and their functions",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO13",
-          "text": "K: Identify and describe external structures of animals and their functions",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO14",
-          "text": "K: Explain how structures support survival, growth, behavior and reproduction",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO15",
-          "text": "S: Observe and record internal and external structures of plants",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO16",
-          "text": "S: Observe and record internal and external structures of animals",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO17",
-          "text": "S: Classify structures by function",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO18",
-          "text": "S: Construct an argument with evidence about how structures support survival",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO19",
-          "text": "S: Compare structures across different plants and animals",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO20",
-          "text": "V: Appreciate the diversity of structures in living things",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO21",
-          "text": "V: Develop concern for the preservation of living organisms",
-          "eloRef": "SCI-G4-SF-ELO2"
-        },
-        {
-          "id": "SCI-G4-SF-SCO22",
-          "text": "K: Define senses, stimulus, response, sensory organ, nervous system, brain, receptor",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO23",
-          "text": "K: Identify the five senses and their corresponding organs",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO24",
-          "text": "K: Describe how sensory information travels to the brain",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO25",
-          "text": "K: Explain how the brain processes information and coordinates responses",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO26",
-          "text": "K: Describe how different animals use their senses differently",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO27",
-          "text": "S: Investigate how different senses work",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO28",
-          "text": "S: Design experiments to test sensory responses",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO29",
-          "text": "S: Construct a model showing how the nervous system processes information",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO30",
-          "text": "V: Appreciate the importance of the senses in survival",
-          "eloRef": "SCI-G4-SF-ELO3"
-        },
-        {
-          "id": "SCI-G4-SF-SCO31",
-          "text": "V: Show sensitivity toward individuals with sensory impairments",
-          "eloRef": "SCI-G4-SF-ELO3"
-        }
-      ],
-      "summary": "Learners are expected to:Knowledge* Define the terms: * reflect * specular reflection * glare * diffuse reflection * translucent * lens * retina * absorb * white light * luminescent * bioluminescent *",
-      "eloGroups": [
-        {
-          "elo": "ELO 1: Develop a model to describe that light reflecting from objects and entering the eye allows objects to be seen",
-          "scoRange": [
-            0,
-            7
-          ],
-          "eloId": "SCI-G4-SF-ELO1"
-        },
-        {
-          "elo": "ELO 2: Construct an argument that plants and animals have internal and external structures that function to support survival, growth, behavior, and reproduction",
-          "scoRange": [
-            8,
-            20
-          ],
-          "eloId": "SCI-G4-SF-ELO2"
-        },
-        {
-          "elo": "ELO 3: Use a model to describe that animals receive different information through their senses, process it in their brain and respond to it differently",
-          "scoRange": [
-            21,
-            30
-          ],
-          "eloId": "SCI-G4-SF-ELO3"
-        }
-      ],
-      "prerequisiteEntries": [
-        "grade3-mathematics-geometrical-thinking",
-        "grade3-science-forces-interactions",
-        "grade3-science-inheritance-variation"
-      ],
-      "relatedEntries": [
-        "grade4-science-earth-systems",
-        "grade4-science-energy",
         "grade4-science-waves"
       ]
     },
@@ -15693,9 +15115,7 @@
         "grade3-science-forces-interactions"
       ],
       "relatedEntries": [
-        "grade4-science-earth-systems",
-        "grade4-science-energy",
-        "grade4-science-structure-function"
+        "grade4-science-energy"
       ]
     },
     {
@@ -16692,8 +16112,7 @@
         "grade4-social-studies-civic-participation",
         "grade4-social-studies-economic-decision-making",
         "grade4-social-studies-historical-cultural-thinking",
-        "grade4-mathematics-geometrical-thinking",
-        "grade4-science-earth-systems"
+        "grade4-mathematics-geometrical-thinking"
       ]
     },
     {
@@ -17588,6 +17007,181 @@
         "grade5-mathematics-operations-with-numbers",
         "grade5-mathematics-patterns-relationships",
         "grade5-science-earth-systems"
+      ]
+    },
+    {
+      "id": "grade5-mathematics-geometrical-thinking",
+      "route": "/curriculum/grade5-subjects/mathematics/geometrical-thinking",
+      "displayName": "Geometrical Thinking",
+      "grade": "5",
+      "subject": "Mathematics",
+      "strand": "geometrical-thinking",
+      "keywords": [
+        "angles",
+        "acute",
+        "obtuse",
+        "right",
+        "shapes",
+        "2D",
+        "3D",
+        "spatial",
+        "isometric",
+        "nets",
+        "pyramids",
+        "prisms",
+        "cylinders",
+        "cones",
+        "transformation",
+        "geometric",
+        "patterns"
+      ],
+      "essentialOutcomes": [
+        {
+          "id": "MATH-G5-GEO-ELO1",
+          "text": "Explore and Analyse Geometric Shapes and Relationships - Developing a spatial sense"
+        },
+        {
+          "id": "MATH-G5-GEO-ELO2",
+          "text": "Explore and Analyze Geometric Shapes and Relationships - Sorting, patterning, and building with 2D & 3D Shapes"
+        }
+      ],
+      "specificOutcomes": [
+        {
+          "id": "MATH-G5-GEO-SCO1",
+          "text": "Describe shapes, objects orally and in writing, using language and gestures",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO2",
+          "text": "Identify specific shapes from a picture or object in world contexts",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO3",
+          "text": "Describe an object undergoing transformation",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO4",
+          "text": "Make predictions based on spatial reasoning (3D shape by combining and dissecting shapes and as a result of a single transformation)",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO5",
+          "text": "Recognise a shape or object seen from various points of view",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO6",
+          "text": "Describe a shape or object seen from various distances (e.g. 3D objects from isometric drawings)",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO7",
+          "text": "Write a description of a picture (e.g. isometric drawing, 3D shapes combining and dissecting)",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO8",
+          "text": "Draw a picture or build a model from a picture or description",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO9",
+          "text": "Respect the point of view of others by paying attention to specific details",
+          "eloRef": "MATH-G5-GEO-ELO1"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO10",
+          "text": "Identify pyramids, prisms, cylinders and cones based on their attributes",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO11",
+          "text": "Identify three types of angles (obtuse, acute and right) in various geometric shapes",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO12",
+          "text": "Explain the characteristics of right, obtuse and acute angles",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO13",
+          "text": "Sort objects as being pyramids, cylinders, prisms and cones",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO14",
+          "text": "Create and complete patterns using objects",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO15",
+          "text": "Construct 3-d objects using nets and skeletons",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO16",
+          "text": "Deconstruct 3-D objects using nets",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO17",
+          "text": "Create 3D shapes from isometric drawings",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO18",
+          "text": "Draw acute, right and obtuse angles",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        },
+        {
+          "id": "MATH-G5-GEO-SCO19",
+          "text": "Make connections with shapes and types of angles by comparing them with actual objects in the environment",
+          "eloRef": "MATH-G5-GEO-ELO2"
+        }
+      ],
+      "summary": "Geometric thinking describes understanding of properties of geometric shapes and spatial relationships. Learners explore shapes from different perspectives, use transformations, work with 2D and 3D shapes including pyramids, prisms, cylinders and cones, and identify types of angles.",
+      "eloGroups": [
+        {
+          "eloId": "MATH-G5-GEO-ELO1",
+          "title": "Developing a spatial sense",
+          "scoIds": [
+            "MATH-G5-GEO-SCO1",
+            "MATH-G5-GEO-SCO2",
+            "MATH-G5-GEO-SCO3",
+            "MATH-G5-GEO-SCO4",
+            "MATH-G5-GEO-SCO5",
+            "MATH-G5-GEO-SCO6",
+            "MATH-G5-GEO-SCO7",
+            "MATH-G5-GEO-SCO8",
+            "MATH-G5-GEO-SCO9"
+          ]
+        },
+        {
+          "eloId": "MATH-G5-GEO-ELO2",
+          "title": "Sorting, patterning, and building with 2D & 3D Shapes",
+          "scoIds": [
+            "MATH-G5-GEO-SCO10",
+            "MATH-G5-GEO-SCO11",
+            "MATH-G5-GEO-SCO12",
+            "MATH-G5-GEO-SCO13",
+            "MATH-G5-GEO-SCO14",
+            "MATH-G5-GEO-SCO15",
+            "MATH-G5-GEO-SCO16",
+            "MATH-G5-GEO-SCO17",
+            "MATH-G5-GEO-SCO18",
+            "MATH-G5-GEO-SCO19"
+          ]
+        }
+      ],
+      "prerequisiteEntries": [
+        "grade4-mathematics-geometrical-thinking"
+      ],
+      "relatedEntries": [
+        "grade5-mathematics-measurement",
+        "grade5-mathematics-patterns-relationships"
       ]
     },
     {
@@ -19281,9 +18875,7 @@
           "eloId": "SCI-G5-ERS-ELO3"
         }
       ],
-      "prerequisiteEntries": [
-        "grade4-science-earth-systems"
-      ],
+      "prerequisiteEntries": [],
       "relatedEntries": [
         "grade5-science-energy",
         "grade5-science-space-systems",
@@ -19688,9 +19280,7 @@
           "eloId": "SCI-G5-SSY-ELO4"
         }
       ],
-      "prerequisiteEntries": [
-        "grade4-science-earth-systems"
-      ],
+      "prerequisiteEntries": [],
       "relatedEntries": [
         "grade5-science-earth-systems",
         "grade5-science-energy",
@@ -19916,9 +19506,7 @@
           "eloId": "SCI-G5-SPM-ELO4"
         }
       ],
-      "prerequisiteEntries": [
-        "grade4-science-structure-function"
-      ],
+      "prerequisiteEntries": [],
       "relatedEntries": [
         "grade5-science-earth-systems",
         "grade5-science-energy",
@@ -23354,6 +22942,309 @@
       ]
     },
     {
+      "id": "grade6-science-history-earth",
+      "route": "/curriculum/grade6-subjects/science/history-earth",
+      "displayName": "History of the Earth",
+      "grade": "6",
+      "subject": "Science",
+      "strand": "history-earth",
+      "keywords": [
+        "fossils",
+        "Pangaea",
+        "continental drift",
+        "tectonic plates",
+        "convection currents",
+        "plate margins",
+        "ocean ridges",
+        "lithosphere",
+        "subduction",
+        "tsunamis",
+        "volcanoes"
+      ],
+      "essentialOutcomes": [
+        {
+          "id": "SCI-G6-HE-ELO1",
+          "text": "Analyse and interpret data on the distribution of fossils and rocks, continental shapes, and seafloor structures to provide evidence of the past plate motions"
+        }
+      ],
+      "specificOutcomes": [
+        {
+          "id": "SCI-G6-HE-SCO1",
+          "text": "Define the terms: Pangaea, continental drift, core, mantle, crust, tectonic plates, convection currents, plate margins, ocean ridges, lithosphere, constructive or divergent shift, destructive or convergent shift, transform or conservative shift, subduction zones, fault line, tsunamis, volcanoes",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO2",
+          "text": "Demonstrate they understand how fossil records support the idea of a single continent (Pangaea)",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO3",
+          "text": "Compare different types of tectonic movement processes",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO4",
+          "text": "Give examples of fossil records that support Pangaea existence",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO5",
+          "text": "Analyse media that demonstrate the separation of Pangaea into smaller continents",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO6",
+          "text": "Show with diagrams the three types of tectonic plate interactions",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO7",
+          "text": "Account for the formation of ocean ridges",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO8",
+          "text": "Appreciate that continental drift happens over a very long period of time",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO9",
+          "text": "Appreciate that estimates of fossil age are based on scientific data but remain estimates",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO10",
+          "text": "Show interest and curiosity in how landforms are created especially in our own region",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO11",
+          "text": "Show respect for evidence of fossils",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO12",
+          "text": "Display sensitivity and offer assistance to peers who may have physical or learning challenges during group work",
+          "eloRef": "SCI-G6-HE-ELO1"
+        },
+        {
+          "id": "SCI-G6-HE-SCO13",
+          "text": "Participate actively in classroom discussions",
+          "eloRef": "SCI-G6-HE-ELO1"
+        }
+      ],
+      "summary": "Analyse and interpret data on the distribution of fossils and rocks, continental shapes, and seafloor structures to provide evidence of past plate motions including Pangaea, tectonic plate interactions, and formation of ocean ridges.",
+      "eloGroups": [
+        {
+          "eloId": "SCI-G6-HE-ELO1",
+          "title": "Evidence of past plate motions",
+          "scoIds": [
+            "SCI-G6-HE-SCO1",
+            "SCI-G6-HE-SCO2",
+            "SCI-G6-HE-SCO3",
+            "SCI-G6-HE-SCO4",
+            "SCI-G6-HE-SCO5",
+            "SCI-G6-HE-SCO6",
+            "SCI-G6-HE-SCO7",
+            "SCI-G6-HE-SCO8",
+            "SCI-G6-HE-SCO9",
+            "SCI-G6-HE-SCO10",
+            "SCI-G6-HE-SCO11",
+            "SCI-G6-HE-SCO12",
+            "SCI-G6-HE-SCO13"
+          ]
+        }
+      ],
+      "prerequisiteEntries": [
+        "grade5-science-earth-systems"
+      ],
+      "relatedEntries": [
+        "grade6-science-earth-systems"
+      ]
+    },
+    {
+      "id": "grade6-science-matter-energy-organisms",
+      "route": "/curriculum/grade6-subjects/science/matter-energy-organisms",
+      "displayName": "Matter and Energy in Organisms and Ecosystems",
+      "grade": "6",
+      "subject": "Science",
+      "strand": "matter-energy-organisms",
+      "keywords": [
+        "ecosystem",
+        "population",
+        "resources",
+        "food web",
+        "competition",
+        "over-population",
+        "under-population",
+        "cause and effect",
+        "balance of nature"
+      ],
+      "essentialOutcomes": [
+        {
+          "id": "SCI-G6-MEO-ELO1",
+          "text": "Analyse and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem"
+        }
+      ],
+      "specificOutcomes": [
+        {
+          "id": "SCI-G6-MEO-SCO1",
+          "text": "Define the terms: species, population, over-population, under-population, death rate, birth rate, ecosystem, cause and effect, scarce, abundant",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO2",
+          "text": "Identify animals competing for food in a food web",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO3",
+          "text": "Explain competition among living organisms in an environment",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO4",
+          "text": "Identify and describe the impact of under- and over-population of organisms in an environment",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO5",
+          "text": "Demonstrate they understand the concept of cause and effect relationships in ecosystems",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO6",
+          "text": "Identify the impact of abundant and scarce resources on the growth of individual organisms and the numbers of organisms in ecosystems",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO7",
+          "text": "List some factors that can affect population growth",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO8",
+          "text": "Estimate the population number of a given organism in a small habitat",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO9",
+          "text": "Identify factors that may disrupt the balance of nature",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO10",
+          "text": "State the consequences of disrupting the balance of nature",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO11",
+          "text": "Infer that food webs help to keep nature in balance",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO12",
+          "text": "Communicate effectively with peers",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO13",
+          "text": "Hypothesize the effect on an ecosystem if one or more organisms are removed from the food web",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO14",
+          "text": "Hypothesize the effect of resource scarcity on the ecosystem due to natural or man-made disasters",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO15",
+          "text": "Construct graphs depicting the number of organisms in an ecosystem",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO16",
+          "text": "Apply knowledge of cause and effect relationships to predict the impact of resource availability on ecosystems",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO17",
+          "text": "Analyze real-life examples of cause and effect relationships in ecosystems",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO18",
+          "text": "Estimate the population number of a given organism in a small habitat using sampling techniques",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO19",
+          "text": "Show respect for living things by making an effort to conserve resources",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO20",
+          "text": "Display sensitivity and offer assistance to peers who may have physical or learning challenges during group work",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO21",
+          "text": "Participate actively in classroom discussions",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO22",
+          "text": "Participate in class discussions in an orderly manner",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        },
+        {
+          "id": "SCI-G6-MEO-SCO23",
+          "text": "Respect each other's opinions when engaging in class discussions",
+          "eloRef": "SCI-G6-MEO-ELO1"
+        }
+      ],
+      "summary": "Analyse and interpret data to provide evidence for the effects of resource availability on organisms and populations in an ecosystem, including concepts of competition, population dynamics, food webs, and the balance of nature.",
+      "eloGroups": [
+        {
+          "eloId": "SCI-G6-MEO-ELO1",
+          "title": "Effects of resource availability on organisms and ecosystems",
+          "scoIds": [
+            "SCI-G6-MEO-SCO1",
+            "SCI-G6-MEO-SCO2",
+            "SCI-G6-MEO-SCO3",
+            "SCI-G6-MEO-SCO4",
+            "SCI-G6-MEO-SCO5",
+            "SCI-G6-MEO-SCO6",
+            "SCI-G6-MEO-SCO7",
+            "SCI-G6-MEO-SCO8",
+            "SCI-G6-MEO-SCO9",
+            "SCI-G6-MEO-SCO10",
+            "SCI-G6-MEO-SCO11",
+            "SCI-G6-MEO-SCO12",
+            "SCI-G6-MEO-SCO13",
+            "SCI-G6-MEO-SCO14",
+            "SCI-G6-MEO-SCO15",
+            "SCI-G6-MEO-SCO16",
+            "SCI-G6-MEO-SCO17",
+            "SCI-G6-MEO-SCO18",
+            "SCI-G6-MEO-SCO19",
+            "SCI-G6-MEO-SCO20",
+            "SCI-G6-MEO-SCO21",
+            "SCI-G6-MEO-SCO22",
+            "SCI-G6-MEO-SCO23"
+          ]
+        }
+      ],
+      "prerequisiteEntries": [
+        "grade5-science-structure-properties-matter"
+      ],
+      "relatedEntries": [
+        "grade6-science-interdependent-relationships",
+        "grade6-science-energy"
+      ]
+    },
+    {
       "id": "grade6-science-energy",
       "route": "/curriculum/grade6-subjects/science/energy",
       "displayName": "Energy",
@@ -23682,211 +23573,326 @@
       "subject": "Science",
       "strand": "forces-interactions",
       "keywords": [
-        "affect",
-        "apply",
-        "change",
-        "colliding",
-        "depends",
-        "design",
-        "determine",
-        "electric",
-        "evidence",
-        "factors",
         "forces",
-        "interactions",
-        "investigation",
-        "involving",
-        "magnetic"
+        "Newton",
+        "third law",
+        "collision",
+        "motion",
+        "mass",
+        "balanced",
+        "unbalanced",
+        "friction",
+        "gravity",
+        "momentum",
+        "electromagnet",
+        "magnetic forces",
+        "electric current"
       ],
       "essentialOutcomes": [
         {
           "id": "SCI-G6-FI-ELO1",
-          "text": "ELO 1: Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects"
+          "text": "Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects"
         },
         {
           "id": "SCI-G6-FI-ELO2",
-          "text": "ELO 2: Plan an investigation to provide evidence that the change in an object's motion depends on the sum of the forces on the object and the mass of the object"
+          "text": "Plan an investigation to provide evidence that the change in an object's motion depends on the sum of the forces on the object and the mass of the object"
+        },
+        {
+          "id": "SCI-G6-FI-ELO3",
+          "text": "Ask questions about data to determine the factors that affect the strength of electric and magnetic forces"
         }
       ],
       "specificOutcomes": [
         {
           "id": "SCI-G6-FI-SCO1",
-          "text": "6-FI-K-1: Define force, motion, collision, Newton's Third Law, action force, and reaction force",
+          "text": "Define the terms: Force, Magnitude, Free-body diagram, Action, Reaction, Collision",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO2",
-          "text": "6-FI-K-2: State Newton's Third Law: for every action there is an equal and opposite reaction",
+          "text": "Define Newton's Third Law of Motion",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO3",
-          "text": "6-FI-K-3: Identify action-reaction pairs in everyday situations",
+          "text": "Identify action and reaction forces in everyday life",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO4",
-          "text": "6-FI-K-4: Explain how collisions involve the exchange of forces between objects",
+          "text": "Describe the effects of action and reaction forces on colliding objects",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO5",
-          "text": "6-FI-K-5: Describe the factors that affect the outcome of collisions",
+          "text": "Explain how we can apply Newton's Third Law of Motion to car safety",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO6",
-          "text": "6-FI-K-6: Give examples of Newton's Third Law in sports, transportation, and nature",
+          "text": "Observe that Newton's third law describes an equal and opposite force acting on two objects",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO7",
-          "text": "6-FI-K-7: Explain the concept of momentum in simple terms",
+          "text": "Create a balloon rocket model to test Newton's third law",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO8",
-          "text": "6-FI-S-1: Investigate collisions between objects using laboratory simulations or physical models",
+          "text": "Design and build a unique toy car to test how we can absorb an equal and opposite force acting on colliding objects",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO9",
-          "text": "6-FI-S-2: Apply Newton's Third Law to design a device that uses reaction forces to solve a problem",
+          "text": "Draw free-body diagrams to represent opposing forces",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO10",
-          "text": "6-FI-S-3: Test and evaluate the designed solution",
+          "text": "Develop interest and curiosity in motion and the laws which govern it",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO11",
-          "text": "6-FI-S-4: Collect and analyse motion data from collisions",
+          "text": "Develop an interest and curiosity in how Newton's laws are applied to practical problems such as car safety",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO12",
-          "text": "6-FI-S-5: Communicate design process and results",
+          "text": "Persist in problem-solving of practical experiments despite failure",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO13",
-          "text": "6-FI-S-6: Redesign the solution based on evidence",
+          "text": "Display sensitivity and help peers who may have physical or learning challenges during group work",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO14",
-          "text": "6-FI-S-7: Apply understanding of Newton's Third Law to real-world engineering contexts",
+          "text": "Participate actively in classroom discussions",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO15",
-          "text": "6-FI-V-1: Appreciate the elegance of Newton's Third Law in explaining natural phenomena",
+          "text": "Consider a career in the automotive design field",
           "eloRef": "SCI-G6-FI-ELO1"
         },
         {
           "id": "SCI-G6-FI-SCO16",
-          "text": "6-FI-V-2: Develop interest in engineering applications of force and motion",
-          "eloRef": "SCI-G6-FI-ELO1"
+          "text": "Define the terms: force, balanced/unbalanced force, mass, Newton (N), pull/push, speed/velocity, inertia, motion, friction, gravity, momentum, acceleration, elastic collision, inelastic collision, direction/position, net force",
+          "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO17",
-          "text": "6-FI-V-3: Participate actively and safely in investigations",
-          "eloRef": "SCI-G6-FI-ELO1"
+          "text": "Predict the outcome of collisions",
+          "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO18",
-          "text": "6-FI-K-8: Define net force, balanced forces, unbalanced forces, acceleration, and inertia",
+          "text": "Calculate net force for simple aligned or opposing forces",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO19",
-          "text": "6-FI-K-9: State Newton's Second Law: F = ma",
+          "text": "Observe the mass of objects, the speed at which they move and direction these objects end up after a collision",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO20",
-          "text": "6-FI-K-10: Explain how the sum of forces on an object determines its acceleration",
+          "text": "Infer what will happen if two objects of the same mass, moving at same speed in opposite directions collide",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO21",
-          "text": "6-FI-K-11: Explain the relationship between mass and acceleration given a constant force",
+          "text": "Carry out experiments to develop an intuition that both the mass and the speed will impact where the joined mass will end up after they collide",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO22",
-          "text": "6-FI-K-12: Identify balanced and unbalanced forces in real-world situations",
+          "text": "Collect data from experiments; record, analyse and interpret the data to make predictions on balanced and unbalanced forces",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO23",
-          "text": "6-FI-K-13: Describe how friction and gravity act on moving objects",
+          "text": "Predict the direction an object will go with different mass, velocity and moving in the opposite direction upon collision",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO24",
-          "text": "6-FI-S-8: Plan and conduct a controlled investigation on forces and motion",
+          "text": "Develop curiosity and persistency for science facts in recognizing the importance of forces in our everyday life",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO25",
-          "text": "6-FI-S-9: Measure forces using spring scales and motion using timing devices",
+          "text": "Work collaboratively/cooperatively with peers on classroom activities and discussions on balanced/unbalanced forces",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO26",
-          "text": "6-FI-S-10: Collect and analyse data to determine the relationship between force, mass, and acceleration",
+          "text": "Display respect and practice safety precautions during practical and group work",
           "eloRef": "SCI-G6-FI-ELO2"
         },
         {
           "id": "SCI-G6-FI-SCO27",
-          "text": "6-FI-S-11: Represent force data graphically",
-          "eloRef": "SCI-G6-FI-ELO2"
+          "text": "Define the terms: magnetic forces, electromagnet, attraction, repulsion, electric current, magnetic poles, magnetic field, compass",
+          "eloRef": "SCI-G6-FI-ELO3"
         },
         {
           "id": "SCI-G6-FI-SCO28",
-          "text": "6-FI-S-12: Use evidence to support claims about force and motion",
-          "eloRef": "SCI-G6-FI-ELO2"
+          "text": "Differentiate/Compare permanent magnets and electromagnets",
+          "eloRef": "SCI-G6-FI-ELO3"
         },
         {
           "id": "SCI-G6-FI-SCO29",
-          "text": "6-FI-S-13: Communicate investigation findings clearly",
-          "eloRef": "SCI-G6-FI-ELO2"
+          "text": "Explain how electromagnets work",
+          "eloRef": "SCI-G6-FI-ELO3"
         },
         {
           "id": "SCI-G6-FI-SCO30",
-          "text": "6-FI-V-4: Value evidence-based approaches to understanding motion",
-          "eloRef": "SCI-G6-FI-ELO2"
+          "text": "Identify uses of electromagnets",
+          "eloRef": "SCI-G6-FI-ELO3"
         },
         {
           "id": "SCI-G6-FI-SCO31",
-          "text": "6-FI-V-5: Appreciate the practical importance of understanding forces",
-          "eloRef": "SCI-G6-FI-ELO2"
+          "text": "Determine the factors that affect the strength of an electromagnet",
+          "eloRef": "SCI-G6-FI-ELO3"
         },
         {
           "id": "SCI-G6-FI-SCO32",
-          "text": "6-FI-V-6: Develop confidence in conducting controlled scientific investigations",
-          "eloRef": "SCI-G6-FI-ELO2"
+          "text": "Design or engineer an electromagnet prototype",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO33",
+          "text": "Create a data table to show how the addition of turns of wire on a nail affects the magnetic field strength",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO34",
+          "text": "Observe and describe ways in which the strength of an electromagnet can be altered",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO35",
+          "text": "Collect data from experiments; record, analyse and interpret the data to make predictions on the strength of electromagnets",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO36",
+          "text": "Plot graphs of electromagnetic strength",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO37",
+          "text": "Interpret and extrapolate an electromagnetic strength graph",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO38",
+          "text": "Research and communicate an example of an advanced application of electromagnets",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO39",
+          "text": "Appreciate the wide-spread importance of electromagnetism applications to solve real human problems",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO40",
+          "text": "Work collaboratively/cooperatively with peers on classroom activities",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO41",
+          "text": "Develop interest and curiosity about electromagnetism by asking questions and conducting experiments",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO42",
+          "text": "Display sensitivity and help peers who may have physical or learning challenges during group work",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO43",
+          "text": "Display respect and practice safety precautions during practical and group work",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO44",
+          "text": "Participate actively in classroom discussions",
+          "eloRef": "SCI-G6-FI-ELO3"
+        },
+        {
+          "id": "SCI-G6-FI-SCO45",
+          "text": "Consider careers that build upon ideas developed in study of electromagnets",
+          "eloRef": "SCI-G6-FI-ELO3"
         }
       ],
       "summary": "Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects.",
       "eloGroups": [
         {
-          "scoRange": [
-            0,
-            16
-          ],
-          "elo": "ELO 1: Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects",
-          "eloId": "SCI-G6-FI-ELO1"
+          "eloId": "SCI-G6-FI-ELO1",
+          "title": "Newton's Third Law and colliding objects",
+          "scoIds": [
+            "SCI-G6-FI-SCO1",
+            "SCI-G6-FI-SCO2",
+            "SCI-G6-FI-SCO3",
+            "SCI-G6-FI-SCO4",
+            "SCI-G6-FI-SCO5",
+            "SCI-G6-FI-SCO6",
+            "SCI-G6-FI-SCO7",
+            "SCI-G6-FI-SCO8",
+            "SCI-G6-FI-SCO9",
+            "SCI-G6-FI-SCO10",
+            "SCI-G6-FI-SCO11",
+            "SCI-G6-FI-SCO12",
+            "SCI-G6-FI-SCO13",
+            "SCI-G6-FI-SCO14",
+            "SCI-G6-FI-SCO15"
+          ]
         },
         {
-          "scoRange": [
-            17,
-            31
-          ],
-          "elo": "ELO 2: Plan an investigation to provide evidence that the change in an object's motion depends on the sum of the forces on the object and the mass of the object",
-          "eloId": "SCI-G6-FI-ELO2"
+          "eloId": "SCI-G6-FI-ELO2",
+          "title": "Sum of forces, mass and motion",
+          "scoIds": [
+            "SCI-G6-FI-SCO16",
+            "SCI-G6-FI-SCO17",
+            "SCI-G6-FI-SCO18",
+            "SCI-G6-FI-SCO19",
+            "SCI-G6-FI-SCO20",
+            "SCI-G6-FI-SCO21",
+            "SCI-G6-FI-SCO22",
+            "SCI-G6-FI-SCO23",
+            "SCI-G6-FI-SCO24",
+            "SCI-G6-FI-SCO25",
+            "SCI-G6-FI-SCO26"
+          ]
+        },
+        {
+          "eloId": "SCI-G6-FI-ELO3",
+          "title": "Electric and magnetic forces",
+          "scoIds": [
+            "SCI-G6-FI-SCO27",
+            "SCI-G6-FI-SCO28",
+            "SCI-G6-FI-SCO29",
+            "SCI-G6-FI-SCO30",
+            "SCI-G6-FI-SCO31",
+            "SCI-G6-FI-SCO32",
+            "SCI-G6-FI-SCO33",
+            "SCI-G6-FI-SCO34",
+            "SCI-G6-FI-SCO35",
+            "SCI-G6-FI-SCO36",
+            "SCI-G6-FI-SCO37",
+            "SCI-G6-FI-SCO38",
+            "SCI-G6-FI-SCO39",
+            "SCI-G6-FI-SCO40",
+            "SCI-G6-FI-SCO41",
+            "SCI-G6-FI-SCO42",
+            "SCI-G6-FI-SCO43",
+            "SCI-G6-FI-SCO44",
+            "SCI-G6-FI-SCO45"
+          ]
         }
       ],
       "prerequisiteEntries": [
@@ -23913,200 +23919,337 @@
       "subject": "Science",
       "strand": "inheritance-variation",
       "keywords": [
-        "curriculum",
-        "cycles",
-        "life",
-        "specific"
+        "life cycle",
+        "organisms",
+        "birth",
+        "growth",
+        "reproduction",
+        "death",
+        "metamorphosis",
+        "plants",
+        "animals",
+        "insects",
+        "pollination",
+        "fertilization",
+        "seeds",
+        "habitats",
+        "life stages"
       ],
       "essentialOutcomes": [
         {
           "id": "SCI-G6-IV-ELO1",
-          "text": "ELO 1: Analyse and interpret data for patterns in the fossil record that document the existence, diversity, extinction, and change of life forms throughout the history of life on Earth"
-        },
-        {
-          "id": "SCI-G6-IV-ELO2",
-          "text": "ELO 2: Apply concepts of statistics and probability to explain the variation and distribution of expressed traits in a population"
+          "text": "Develop models to describe that organisms have unique and diverse life cycles but all have in common birth, growth, reproduction, and death"
         }
       ],
       "specificOutcomes": [
         {
           "id": "SCI-G6-IV-SCO1",
-          "text": "6-IV-K-1: Define fossil, fossil record, extinction, biodiversity, natural selection, and adaptation",
+          "text": "Define the following: life stages, life cycle, offspring, reproduce, metamorphosis, pupa, chrysalis, larva, proboscis, Dengue fever, Zika virus, Yellow fever, Chikungunya",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO2",
-          "text": "6-IV-K-2: Explain how fossils form and what they tell us about past life",
+          "text": "Describe the major stages in the life cycles of selected plants and animals",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO3",
-          "text": "6-IV-K-3: Describe patterns in the fossil record including appearance, diversity, and extinction of organisms",
+          "text": "Identify the stages of the life cycle of selected plants and animals",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO4",
-          "text": "6-IV-K-4: Explain the concept of evolution through natural selection",
+          "text": "Identify common characteristics of the life cycles of animals and plants",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO5",
-          "text": "6-IV-K-5: Compare organisms from different geological periods using fossil evidence",
+          "text": "Explain the need for reproduction in living things and explain the concept of life cycle of an animal",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO6",
-          "text": "6-IV-K-6: Give examples of mass extinctions and their possible causes",
+          "text": "Demonstrate they understand living things grow and change over time",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO7",
-          "text": "6-IV-K-7: Describe how the fossil record provides evidence for change in life forms over time",
+          "text": "Demonstrate an understanding that different types of animals and plants have different life cycles",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO8",
-          "text": "6-IV-S-1: Analyse fossil record data to identify patterns of change over time",
+          "text": "Recognize that different stages of the same organism can have different names",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO9",
-          "text": "6-IV-S-2: Interpret diagrams of evolutionary relationships",
+          "text": "Demonstrate an understanding that the life cycles of all plants and animals include the stages of birth, growth, reproduction, and death",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO10",
-          "text": "6-IV-S-3: Research the fossil record of a selected organism group",
+          "text": "Demonstrate an understanding that some plant and animal life cycles are shorter or longer than others",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO11",
-          "text": "6-IV-S-4: Construct a timeline of major events in the history of life on Earth",
+          "text": "Demonstrate an understanding that some plant and animal life cycles include dramatic changes",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO12",
-          "text": "6-IV-S-5: Communicate findings from fossil record analysis",
+          "text": "Realize that life cycles can help us predict patterns in the lives of animals and plants",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO13",
-          "text": "6-IV-S-6: Use evidence from the fossil record to support claims about evolution",
+          "text": "Know the life stages for a range of organisms: birth, growth, reproduction and death",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO14",
-          "text": "6-IV-V-1: Appreciate that the fossil record is a scientific record of life on Earth",
+          "text": "Recognize that animals such as insects, birds, amphibians, reptiles, fish develop in an egg outside their mother's body before they are hatched",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO15",
-          "text": "6-IV-V-2: Develop curiosity about the diversity and history of life",
+          "text": "Recognize that different stages in an animal's life cycle can exist in different habitats",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO16",
-          "text": "6-IV-V-3: Respect evidence-based explanations for the history of life",
+          "text": "Recognize the vital role that each stage of the life cycle plays in the survival and maintenance of animal life",
           "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO17",
-          "text": "6-IV-K-8: Define trait, inherited trait, variation, dominant, recessive, genotype, phenotype, and probability",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Describe the life cycle of an animal where the young is born resembling the adult and one in which the young do not resemble the adult at birth",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO18",
-          "text": "6-IV-K-9: Explain how traits are inherited from parents",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Make careful observations of life cycles",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO19",
-          "text": "6-IV-K-10: Distinguish between inherited and environmental traits",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Take detailed notes of the stages of life cycles",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO20",
-          "text": "6-IV-K-11: Explain how probability applies to trait inheritance using Punnett squares",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Draw pictures of life cycle stages",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO21",
-          "text": "6-IV-K-12: Describe variation within a population",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Infer how different factors may affect the stages of the life cycle of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO22",
-          "text": "6-IV-K-13: Explain how genetic variation is the basis for natural selection",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Measure the length of time it takes for an organism to change from one stage to the other",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO23",
-          "text": "6-IV-K-14: Use data to describe the distribution of traits in a population",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Compare the life cycles of selected animals and plants",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO24",
-          "text": "6-IV-S-7: Analyse data on trait distribution in a population",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Use different materials to model the life cycle of a selected animal or plant",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO25",
-          "text": "6-IV-S-8: Apply probability concepts to predict trait inheritance",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Classify organisms according to their life cycle",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO26",
-          "text": "6-IV-S-9: Construct and interpret Punnett squares",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Observe selected animals and plants to determine the changes in appearance and activity as it goes through its life cycle",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO27",
-          "text": "6-IV-S-10: Represent distribution of traits using graphs and charts",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Describe changes in the appearance and activity of an animal as it goes through its life cycle",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO28",
-          "text": "6-IV-S-11: Investigate variation in a local plant or animal population",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Create annotated diagrams to explain the life cycle of selected plants and animals",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO29",
-          "text": "6-IV-S-12: Communicate findings about trait variation using scientific vocabulary",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Compare different stages of the life cycle of selected organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO30",
-          "text": "6-IV-V-4: Appreciate the role of variation in the survival of species",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Compare the different stages in the human life cycle",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO31",
-          "text": "6-IV-V-5: Develop respect for biodiversity in the Caribbean region",
-          "eloRef": "SCI-G6-IV-ELO2"
+          "text": "Classify, with examples, insects according to their type of life cycle",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
           "id": "SCI-G6-IV-SCO32",
-          "text": "6-IV-V-6: Value the connection between genetics and evolution",
-          "eloRef": "SCI-G6-IV-ELO2"
-        }
-      ],
-      "summary": "See specific curriculum outcomes",
-      "eloGroups": [
-        {
-          "scoRange": [
-            0,
-            15
-          ],
-          "elo": "ELO 1: Analyse and interpret data for patterns in the fossil record that document the existence, diversity, extinction, and change of life forms throughout the history of life on Earth",
-          "eloId": "SCI-G6-IV-ELO1"
+          "text": "Compare the human life cycle to that of another animal",
+          "eloRef": "SCI-G6-IV-ELO1"
         },
         {
-          "scoRange": [
-            16,
-            31
-          ],
-          "elo": "ELO 2: Apply concepts of statistics and probability to explain the variation and distribution of expressed traits in a population",
-          "eloId": "SCI-G6-IV-ELO2"
+          "id": "SCI-G6-IV-SCO33",
+          "text": "Using live organisms or pictures, observe the changes that occur during a plant's life cycle",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO34",
+          "text": "Collect and graphically display data about how organisms grow during their lifetime",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO35",
+          "text": "Compare the needs of organisms at different stages of their life cycles",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO36",
+          "text": "Predict the stages of growth an organism will go through based on information about other species in their group",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO37",
+          "text": "Interpret data collected on the life cycles of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO38",
+          "text": "Communicate their findings in oral form, as illustrations and in tables",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO39",
+          "text": "Appreciate the importance of knowing about life cycles to solve real world problems",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO40",
+          "text": "Appreciate the significance of pollination and fertilization in plants, as a means of obtaining seeds",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO41",
+          "text": "Work collaboratively as a whole-class, with partners and independently, to explore understanding of life cycles",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO42",
+          "text": "Show persistence when conducting investigations on the life cycle of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO43",
+          "text": "Show interest and curiosity about the life cycle of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO44",
+          "text": "Use the inquiry approach when conducting research on the life cycle of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO45",
+          "text": "Have respect for evidence collected on the life cycle of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO46",
+          "text": "Show respect for the organisms that they would be investigating and their habitats",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO47",
+          "text": "Have an awareness that some organisms can be harmful",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO48",
+          "text": "Take care not to harm the organisms that they are studying",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO49",
+          "text": "Display sensitivity with learners who may be afraid of different organisms during practical and group work",
+          "eloRef": "SCI-G6-IV-ELO1"
+        },
+        {
+          "id": "SCI-G6-IV-SCO50",
+          "text": "Participate actively in the classroom discussions on the life cycle of different organisms",
+          "eloRef": "SCI-G6-IV-ELO1"
+        }
+      ],
+      "summary": "Develop models to describe that organisms have unique and diverse life cycles but all have in common birth, growth, reproduction, and death. Covers life cycles of plants, animals, and insects including metamorphosis, pollination, and fertilization.",
+      "eloGroups": [
+        {
+          "eloId": "SCI-G6-IV-ELO1",
+          "title": "Life cycles of organisms",
+          "scoIds": [
+            "SCI-G6-IV-SCO1",
+            "SCI-G6-IV-SCO2",
+            "SCI-G6-IV-SCO3",
+            "SCI-G6-IV-SCO4",
+            "SCI-G6-IV-SCO5",
+            "SCI-G6-IV-SCO6",
+            "SCI-G6-IV-SCO7",
+            "SCI-G6-IV-SCO8",
+            "SCI-G6-IV-SCO9",
+            "SCI-G6-IV-SCO10",
+            "SCI-G6-IV-SCO11",
+            "SCI-G6-IV-SCO12",
+            "SCI-G6-IV-SCO13",
+            "SCI-G6-IV-SCO14",
+            "SCI-G6-IV-SCO15",
+            "SCI-G6-IV-SCO16",
+            "SCI-G6-IV-SCO17",
+            "SCI-G6-IV-SCO18",
+            "SCI-G6-IV-SCO19",
+            "SCI-G6-IV-SCO20",
+            "SCI-G6-IV-SCO21",
+            "SCI-G6-IV-SCO22",
+            "SCI-G6-IV-SCO23",
+            "SCI-G6-IV-SCO24",
+            "SCI-G6-IV-SCO25",
+            "SCI-G6-IV-SCO26",
+            "SCI-G6-IV-SCO27",
+            "SCI-G6-IV-SCO28",
+            "SCI-G6-IV-SCO29",
+            "SCI-G6-IV-SCO30",
+            "SCI-G6-IV-SCO31",
+            "SCI-G6-IV-SCO32",
+            "SCI-G6-IV-SCO33",
+            "SCI-G6-IV-SCO34",
+            "SCI-G6-IV-SCO35",
+            "SCI-G6-IV-SCO36",
+            "SCI-G6-IV-SCO37",
+            "SCI-G6-IV-SCO38",
+            "SCI-G6-IV-SCO39",
+            "SCI-G6-IV-SCO40",
+            "SCI-G6-IV-SCO41",
+            "SCI-G6-IV-SCO42",
+            "SCI-G6-IV-SCO43",
+            "SCI-G6-IV-SCO44",
+            "SCI-G6-IV-SCO45",
+            "SCI-G6-IV-SCO46",
+            "SCI-G6-IV-SCO47",
+            "SCI-G6-IV-SCO48",
+            "SCI-G6-IV-SCO49",
+            "SCI-G6-IV-SCO50"
+          ]
         }
       ],
       "prerequisiteEntries": [

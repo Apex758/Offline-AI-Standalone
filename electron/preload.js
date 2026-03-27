@@ -43,7 +43,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   onUpdateAvailable: (cb) => ipcRenderer.on('update-available', (_event, info) => cb(info)),
   onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', (_event, info) => cb(info)),
-  installUpdate: () => ipcRenderer.send('install-update')
+  installUpdate: () => ipcRenderer.send('install-update'),
+
+  // File Explorer APIs
+  selectFolder: () => ipcRenderer.invoke('select-folder'),
+  getAllowedFolders: () => ipcRenderer.invoke('get-allowed-folders'),
+  saveAllowedFolders: (folders) => ipcRenderer.invoke('save-allowed-folders', folders),
+  browseFolder: (folderPath) => ipcRenderer.invoke('browse-folder', { folderPath }),
+  readFileContent: (filePath) => ipcRenderer.invoke('read-file-content', { filePath }),
+  openFileExternal: (filePath) => ipcRenderer.invoke('open-file-external', { filePath }),
+  searchFiles: (query, folders, extensions) => ipcRenderer.invoke('search-files', { query, folders, extensions }),
+  createFolder: (folderPath) => ipcRenderer.invoke('create-folder', { folderPath }),
+  moveFile: (sourcePath, destPath) => ipcRenderer.invoke('move-file', { sourcePath, destPath }),
+  moveFilesBatch: (moves) => ipcRenderer.invoke('move-files-batch', { moves })
 });
 
 // Expose IPC communication for splashscreen

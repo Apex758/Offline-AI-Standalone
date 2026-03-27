@@ -19,6 +19,12 @@ import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
 import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
 import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
+import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import ComputerIconData from '@hugeicons/core-free-icons/ComputerIcon';
+import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
+import LinkSquare01IconData from '@hugeicons/core-free-icons/LinkSquare01Icon';
 import axios from 'axios';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -46,6 +52,12 @@ const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => 
 const Image: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Image01IconData} {...p} />;
 const FileSpreadsheet: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FileSpreadsheetIconData} {...p} />;
 const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
+const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FolderOpenIconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
+const ComputerIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ComputerIconData} {...p} />;
+const LayersIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Layers01IconData} {...p} />;
+const ExternalLinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LinkSquare01IconData} {...p} />;
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 
@@ -111,10 +123,129 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedResources, setSelectedResources] = useState<Set<string>>(new Set());
 
+  // Tab state: "In App" vs "On PC"
+  type ResourceTab = 'in-app' | 'on-pc';
+  const [activeTab, setActiveTab] = useState<ResourceTab>(savedData?.activeTab || 'in-app');
+
+  // "On PC" state
+  const [pcFolders, setPcFolders] = useState<string[]>([]);
+  const [pcSelectedFolder, setPcSelectedFolder] = useState<string | null>(null);
+  const [pcFolderContents, setPcFolderContents] = useState<FileEntry[]>([]);
+  const [pcLoadingFolder, setPcLoadingFolder] = useState(false);
+  const [pcSearchQuery, setPcSearchQuery] = useState('');
+  const [pcSearchResults, setPcSearchResults] = useState<FileEntry[] | null>(null);
+  const pcSearchTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pcExpandedSubfolders, setPcExpandedSubfolders] = useState<Set<string>>(new Set());
+  const [pcSubfolderContents, setPcSubfolderContents] = useState<Record<string, FileEntry[]>>({});
+
+  // Load allowed folders when "On PC" tab is selected
+  useEffect(() => {
+    if (activeTab === 'on-pc' && pcFolders.length === 0 && settings.fileAccessEnabled) {
+      const api = (window as any).electronAPI;
+      api?.getAllowedFolders?.().then((folders: string[]) => {
+        setPcFolders(folders);
+        if (folders.length > 0 && !pcSelectedFolder) {
+          selectPcFolder(folders[0]);
+        }
+      });
+    }
+  }, [activeTab]);
+
+  const selectPcFolder = async (folderPath: string) => {
+    setPcSelectedFolder(folderPath);
+    setPcLoadingFolder(true);
+    setPcSearchResults(null);
+    setPcSearchQuery('');
+    const api = (window as any).electronAPI;
+    const result = await api?.browseFolder?.(folderPath);
+    if (result?.items) {
+      setPcFolderContents(result.items);
+    }
+    setPcLoadingFolder(false);
+  };
+
+  const togglePcSubfolder = async (folderPath: string) => {
+    const next = new Set(pcExpandedSubfolders);
+    if (next.has(folderPath)) {
+      next.delete(folderPath);
+    } else {
+      next.add(folderPath);
+      if (!pcSubfolderContents[folderPath]) {
+        const api = (window as any).electronAPI;
+        const result = await api?.browseFolder?.(folderPath);
+        if (result?.items) {
+          setPcSubfolderContents(prev => ({ ...prev, [folderPath]: result.items }));
+        }
+      }
+    }
+    setPcExpandedSubfolders(next);
+  };
+
+  const handlePcSearch = (query: string) => {
+    setPcSearchQuery(query);
+    if (pcSearchTimeout.current) clearTimeout(pcSearchTimeout.current);
+    if (!query.trim()) {
+      setPcSearchResults(null);
+      return;
+    }
+    pcSearchTimeout.current = setTimeout(async () => {
+      const api = (window as any).electronAPI;
+      const result = await api?.searchFiles?.(query);
+      if (result?.items) setPcSearchResults(result.items);
+    }, 300);
+  };
+
+  const openFileExternally = async (filePath: string) => {
+    const api = (window as any).electronAPI;
+    await api?.openFileExternal?.(filePath);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getFileTypeColor = (ext: string): string => {
+    const colors: Record<string, string> = {
+      '.docx': 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+      '.doc': 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+      '.pptx': 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800',
+      '.ppt': 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800',
+      '.xlsx': 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+      '.xls': 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+      '.csv': 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+      '.pdf': 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+    };
+    return colors[ext] || 'bg-theme-surface border-theme';
+  };
+
+  const getFileIconColor = (ext: string): string => {
+    const colors: Record<string, string> = {
+      '.docx': 'text-blue-600', '.doc': 'text-blue-600',
+      '.pptx': 'text-orange-500', '.ppt': 'text-orange-500',
+      '.xlsx': 'text-green-600', '.xls': 'text-green-600', '.csv': 'text-green-600',
+      '.pdf': 'text-red-500',
+      '.txt': 'text-gray-500', '.md': 'text-gray-500',
+      '.png': 'text-purple-500', '.jpg': 'text-purple-500', '.jpeg': 'text-purple-500',
+    };
+    return colors[ext] || 'text-gray-400';
+  };
+
+  const getFileTypeLabel = (ext: string): string => {
+    const labels: Record<string, string> = {
+      '.docx': 'Word', '.doc': 'Word', '.pptx': 'PowerPoint', '.ppt': 'PowerPoint',
+      '.xlsx': 'Excel', '.xls': 'Excel', '.csv': 'CSV',
+      '.pdf': 'PDF', '.txt': 'Text', '.md': 'Markdown',
+      '.png': 'Image', '.jpg': 'Image', '.jpeg': 'Image',
+    };
+    return labels[ext] || ext.replace('.', '').toUpperCase();
+  };
+
   // Persist filter/sort state to tab data
   useEffect(() => {
-    onDataChange({ searchQuery, filterType, sortBy, sortOrder });
-  }, [searchQuery, filterType, sortBy, sortOrder]);
+    onDataChange({ searchQuery, filterType, sortBy, sortOrder, activeTab });
+  }, [searchQuery, filterType, sortBy, sortOrder, activeTab]);
 
   const loadAllResources = async () => {
     setLoading(true);
@@ -426,7 +557,226 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
   }
 
   return (
-    <div className="h-full flex tab-content-bg">
+    <div className="h-full flex flex-col tab-content-bg">
+      {/* ── Top Tab Bar: In App / On PC ── */}
+      {settings.fileAccessEnabled && (
+        <div className="flex border-b border-theme bg-theme-surface flex-shrink-0">
+          <button
+            onClick={() => setActiveTab('in-app')}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'in-app'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-theme-muted hover:text-theme-heading hover:bg-theme-hover'
+            }`}
+          >
+            <LayersIcon className="w-4 h-4" />
+            In App
+          </button>
+          <button
+            onClick={() => setActiveTab('on-pc')}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'on-pc'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-theme-muted hover:text-theme-heading hover:bg-theme-hover'
+            }`}
+          >
+            <ComputerIcon className="w-4 h-4" />
+            On PC
+          </button>
+        </div>
+      )}
+
+      {/* ── "On PC" Tab Content ── */}
+      {activeTab === 'on-pc' && settings.fileAccessEnabled ? (
+        <div className="flex-1 flex min-h-0">
+          {/* Folder sidebar */}
+          <div className="w-56 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
+            <div className="p-4 border-b border-theme">
+              <h2 className="text-sm font-semibold text-theme-heading uppercase tracking-wider">Folders</h2>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+              {pcFolders.map(folder => {
+                const folderName = folder.split(/[/\\]/).filter(Boolean).pop() || folder;
+                const isActive = pcSelectedFolder === folder;
+                return (
+                  <button
+                    key={folder}
+                    onClick={() => selectPcFolder(folder)}
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-theme-label hover:bg-theme-hover'
+                    }`}
+                  >
+                    <FolderOpen className="w-4 h-4 flex-shrink-0" />
+                    <span className="flex-1 text-left truncate">{folderName}</span>
+                  </button>
+                );
+              })}
+              {pcFolders.length === 0 && (
+                <p className="text-xs text-theme-hint p-3 text-center">No folders configured. Go to Settings &gt; File Access.</p>
+              )}
+            </nav>
+          </div>
+
+          {/* File listing area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Search bar */}
+            <div className="bg-theme-surface border-b border-theme p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h1 className="text-xl font-bold text-theme-title">
+                    {pcSelectedFolder ? pcSelectedFolder.split(/[/\\]/).filter(Boolean).pop() : 'Select a folder'}
+                  </h1>
+                  <p className="text-xs text-theme-hint mt-0.5">
+                    {pcSearchResults !== null
+                      ? `${pcSearchResults.length} search result${pcSearchResults.length !== 1 ? 's' : ''}`
+                      : `${pcFolderContents.length} item${pcFolderContents.length !== 1 ? 's' : ''}`
+                    }
+                  </p>
+                </div>
+                <button
+                  onClick={() => pcSelectedFolder && selectPcFolder(pcSelectedFolder)}
+                  className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                  Refresh
+                </button>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-hint" />
+                <input
+                  type="text"
+                  value={pcSearchQuery}
+                  onChange={(e) => handlePcSearch(e.target.value)}
+                  placeholder="Search across all folders..."
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-theme-strong rounded-lg bg-theme-surface text-theme-title placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {pcSearchQuery && (
+                  <button
+                    onClick={() => { setPcSearchQuery(''); setPcSearchResults(null); }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <X className="w-4 h-4 text-theme-hint hover:text-theme-label" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* File grid */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {pcLoadingFolder ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {(pcSearchResults !== null ? pcSearchResults : pcFolderContents).map(item => {
+                    if (item.isDirectory) {
+                      const isExpanded = pcExpandedSubfolders.has(item.path);
+                      const subItems = pcSubfolderContents[item.path] || [];
+                      return (
+                        <div key={item.path} className="col-span-full">
+                          <button
+                            onClick={() => togglePcSubfolder(item.path)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-theme-subtle transition w-full text-left"
+                          >
+                            {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-theme-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-theme-muted" />}
+                            <FolderOpen className="w-4 h-4 text-yellow-500" />
+                            <span className="text-sm font-medium text-theme-heading">{item.name}</span>
+                          </button>
+                          {isExpanded && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 ml-6 mt-2">
+                              {subItems.filter(si => !si.isDirectory).map(subFile => (
+                                <div
+                                  key={subFile.path}
+                                  className={`rounded-xl border p-4 hover:shadow-lg transition group cursor-pointer ${getFileTypeColor(subFile.extension)}`}
+                                  onDoubleClick={() => openFileExternally(subFile.path)}
+                                >
+                                  <div className="flex items-start gap-3 mb-2">
+                                    <div className="p-2 rounded-lg bg-white/60 dark:bg-black/20 border border-white/40">
+                                      <FileText className={`w-4 h-4 ${getFileIconColor(subFile.extension)}`} />
+                                    </div>
+                                  </div>
+                                  <h3 className="font-semibold text-sm text-theme-title mb-1.5 line-clamp-2">{subFile.name}</h3>
+                                  <div className="flex items-center text-xs text-theme-hint mb-3">
+                                    <span>{getFileTypeLabel(subFile.extension)}</span>
+                                    <span className="mx-1.5">-</span>
+                                    <span>{formatFileSize(subFile.size)}</span>
+                                    <span className="mx-1.5">-</span>
+                                    <span>{new Date(subFile.modifiedTime).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); openFileExternally(subFile.path); }}
+                                      className="flex-1 flex items-center justify-center px-2 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition"
+                                    >
+                                      <ExternalLinkIcon className="w-3.5 h-3.5 mr-1" />
+                                      Open
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                              {subItems.filter(si => !si.isDirectory).length === 0 && (
+                                <p className="text-xs text-theme-hint p-2 col-span-full">No supported files in this folder</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    // File card
+                    return (
+                      <div
+                        key={item.path}
+                        className={`rounded-xl border p-4 hover:shadow-lg transition group cursor-pointer ${getFileTypeColor(item.extension)}`}
+                        onDoubleClick={() => openFileExternally(item.path)}
+                      >
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="p-2 rounded-lg bg-white/60 dark:bg-black/20 border border-white/40">
+                            <FileText className={`w-4 h-4 ${getFileIconColor(item.extension)}`} />
+                          </div>
+                        </div>
+                        <h3 className="font-semibold text-sm text-theme-title mb-1.5 line-clamp-2">{item.name}</h3>
+                        <div className="flex items-center text-xs text-theme-hint mb-3">
+                          <span>{getFileTypeLabel(item.extension)}</span>
+                          <span className="mx-1.5">-</span>
+                          <span>{formatFileSize(item.size)}</span>
+                          <span className="mx-1.5">-</span>
+                          <span>{new Date(item.modifiedTime).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openFileExternally(item.path); }}
+                            className="flex-1 flex items-center justify-center px-2 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition"
+                          >
+                            <ExternalLinkIcon className="w-3.5 h-3.5 mr-1" />
+                            Open
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {!pcLoadingFolder && pcFolderContents.length === 0 && pcSearchResults === null && (
+                    <div className="col-span-full text-center py-12">
+                      <FolderOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-theme-muted">No supported files in this folder</p>
+                    </div>
+                  )}
+                  {pcSearchResults !== null && pcSearchResults.length === 0 && (
+                    <div className="col-span-full text-center py-12">
+                      <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-theme-muted">No files found matching "{pcSearchQuery}"</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+      /* ── "In App" Tab Content (original) ── */
+      <div className="flex-1 flex min-h-0">
       {/* ── Left Sidebar: Category Filters ── */}
       <div className="w-60 flex-shrink-0 bg-theme-surface border-r border-theme flex flex-col h-full">
         {/* Sidebar Header */}
@@ -677,6 +1027,8 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
           </div>
         </div>
       </div>
+      </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

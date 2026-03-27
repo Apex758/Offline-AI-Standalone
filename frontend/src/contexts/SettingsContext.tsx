@@ -85,6 +85,8 @@ export interface Settings {
   // System behavior
   minimizeToTray: boolean;
   startOnBoot: boolean;
+  // File access
+  fileAccessEnabled: boolean;
 }
 
 export interface SettingsContextValue {
@@ -154,6 +156,8 @@ export const DEFAULT_SETTINGS: Settings = {
   // System behavior
   minimizeToTray: false,
   startOnBoot: false,
+  // File access
+  fileAccessEnabled: false,
 };
 
 // localStorage key

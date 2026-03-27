@@ -9,6 +9,13 @@ import Mic01IconData from '@hugeicons/core-free-icons/Mic01Icon';
 import MicOff01IconData from '@hugeicons/core-free-icons/MicOff01Icon';
 import VolumeHighIconData from '@hugeicons/core-free-icons/VolumeHighIcon';
 import VolumeOffIconData from '@hugeicons/core-free-icons/VolumeOffIcon';
+import FolderOpenIconData from '@hugeicons/core-free-icons/FolderOpenIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
+import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import Attachment01IconData from '@hugeicons/core-free-icons/Attachment01Icon';
+import LinkSquare01IconData from '@hugeicons/core-free-icons/LinkSquare01Icon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -25,7 +32,14 @@ const Mic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) =
 const MicOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={MicOff01IconData} {...p} />;
 const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={VolumeHighIconData} {...p} />;
 const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={VolumeOffIconData} {...p} />;
-import { Message } from '../types';
+const FolderOpen: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={FolderOpenIconData} {...p} />;
+const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Search01IconData} {...p} />;
+const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowRight01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ArrowDown01IconData} {...p} />;
+const FileIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={File01IconData} {...p} />;
+const AttachIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Attachment01IconData} {...p} />;
+const LinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={LinkSquare01IconData} {...p} />;
+import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { CurriculumReference } from './CurriculumReferences';
@@ -33,6 +47,7 @@ import { CurriculumReferences } from './CurriculumReferences';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface ChatProps {
   tabId: string;
@@ -51,13 +66,23 @@ interface ChatHistory {
   messages: Message[];
 }
 
+interface AttachedFile {
+  name: string;
+  path: string;
+  extension: string;
+  previewText: string;
+  fullContent: string;
+}
+
+type RightPanel = 'none' | 'history' | 'files';
+
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
   // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
   const [messages, setMessages] = useState<Message[]>(savedData?.messages || []);
   const [input, setInput] = useState('');
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [rightPanel, setRightPanel] = useState<RightPanel>('none');
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [titleSet, setTitleSet] = useState(false);
@@ -65,6 +90,24 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [curriculumSuggestions, setCurriculumSuggestions] = useState<CurriculumReference[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+
+  // Files panel state
+  const { settings } = useSettings();
+  const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [folderContents, setFolderContents] = useState<Record<string, FileEntry[]>>({});
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [fileSearchQuery, setFileSearchQuery] = useState('');
+  const [fileSearchResults, setFileSearchResults] = useState<FileEntry[] | null>(null);
+  const [loadingFolder, setLoadingFolder] = useState<string | null>(null);
+  const [attachingFile, setAttachingFile] = useState<string | null>(null);
+  const fileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // File operation two-pass state
+  const [pendingPlan, setPendingPlan] = useState<FileOperationPlan | null>(null);
+  const [executingPlan, setExecutingPlan] = useState(false);
+  const [undoLog, setUndoLog] = useState<Array<{ from: string; to: string; file: string }> | null>(null);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
 
   // TTS & STT
   const tts = useTTS();
@@ -221,8 +264,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const loadChatHistory = (history: ChatHistory) => {
     setMessages(history.messages);
     setCurrentChatId(history.id);
-    setHistoryOpen(false);
-    
+    setRightPanel('none');
+
     if (onTitleChange) {
       const title = history.title.length > 30 ? history.title.substring(0, 30) + '...' : history.title;
       onTitleChange(title);
@@ -292,7 +335,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setMessages([]);
     setCurrentChatId(null);
     // setStreamingMessage('');
-    setHistoryOpen(false);
+    setRightPanel('none');
     setTitleSet(false);
     setInput('');
     // Clear localStorage for this chat tab
@@ -337,26 +380,293 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
   }, [streamingMessage, loading, messages]);
 
-  const handleSend = () => {
-    if (!input.trim() || loading) return;
+  // ── File Operation Two-Pass Helpers ──
 
+  const FILE_OP_PATTERNS = [
+    /\b(organize|clean\s*up|sort|tidy|arrange)\b.*\b(folder|directory|downloads|desktop|files)\b/i,
+    /\b(folder|directory|downloads|desktop)\b.*\b(organize|clean\s*up|sort|tidy|arrange)\b/i,
+    /\b(move|group|categorize|separate)\b.*\b(files|documents|folder)\b/i,
+  ];
+
+  const APPROVAL_PATTERNS = [
+    /^(yes|yeah|yep|sure|ok|okay|go\s*ahead|do\s*it|proceed|approve|confirm|execute|looks?\s*good|perfect|that'?s?\s*(good|fine|great))/i,
+  ];
+
+  const UNDO_PATTERN = /\b(undo|revert|reverse|put\s*(them|it|files)?\s*back)\b/i;
+
+  const detectFileOperationIntent = (text: string): boolean => {
+    return FILE_OP_PATTERNS.some(p => p.test(text));
+  };
+
+  const detectApproval = (text: string): boolean => {
+    return APPROVAL_PATTERNS.some(p => p.test(text.trim()));
+  };
+
+  const detectUndo = (text: string): boolean => {
+    return UNDO_PATTERN.test(text);
+  };
+
+  const handleFileOrganize = async (userText: string) => {
+    setGeneratingPlan(true);
+    try {
+      // Find the first expanded folder or use the first allowed folder
+      const targetFolder = [...expandedFolders][0] || allowedFolders[0];
+      if (!targetFolder) {
+        const errMsg: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: 'I don\'t have access to any folders yet. Please open the Files panel and make sure you have folders configured in Settings > File Access.',
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, errMsg]);
+        return;
+      }
+
+      // Get file listing from the folder
+      const api = (window as any).electronAPI;
+      const result = await api?.browseFolder?.(targetFolder);
+      if (!result?.items || result.items.length === 0) {
+        const errMsg: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `The folder "${targetFolder.split(/[/\\]/).pop()}" appears to be empty. No files to organize.`,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, errMsg]);
+        return;
+      }
+
+      // Filter to only files (not directories)
+      const files = result.items.filter((item: FileEntry) => !item.isDirectory);
+      const folderName = targetFolder.split(/[/\\]/).filter(Boolean).pop() || 'folder';
+
+      // Call the organize endpoint
+      const response = await axios.post('http://localhost:8000/api/file-explorer/organize', {
+        files: files.map((f: FileEntry) => ({
+          name: f.name,
+          extension: f.extension,
+          size: f.size,
+          modifiedTime: f.modifiedTime,
+        })),
+        folder_name: folderName,
+        instruction: userText,
+      });
+
+      const plan: FileOperationPlan = {
+        ...response.data,
+        folderPath: targetFolder,
+        status: 'pending',
+      };
+
+      setPendingPlan(plan);
+
+      // Build a readable plan message
+      const folderSummary = plan.folders_to_create.map(folder => {
+        const filesInFolder = plan.moves.filter(m => m.to === folder);
+        return `**${folder}/** (${filesInFolder.length} file${filesInFolder.length !== 1 ? 's' : ''})\n${filesInFolder.map(f => `  - ${f.file}`).join('\n')}`;
+      }).join('\n\n');
+
+      const planMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Here's my plan to organize your **${folderName}** folder:\n\n${folderSummary}\n\nWould you like me to proceed? You can also ask me to change anything before I execute.`,
+        timestamp: new Date().toISOString(),
+        filePlan: plan,
+      };
+      setMessages(prev => [...prev, planMessage]);
+
+    } catch (error: any) {
+      const errMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Sorry, I couldn't generate an organization plan: ${error.response?.data?.error || error.message}`,
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errMsg]);
+    } finally {
+      setGeneratingPlan(false);
+    }
+  };
+
+  const executePlan = async (plan: FileOperationPlan) => {
+    setExecutingPlan(true);
+    try {
+      const api = (window as any).electronAPI;
+      const basePath = plan.folderPath!;
+
+      // Create folders
+      for (const folder of plan.folders_to_create) {
+        await api?.createFolder?.(basePath, folder);
+      }
+
+      // Move files in batch
+      const moveOps = plan.moves.map(m => ({
+        sourcePath: `${basePath}/${m.file}`.replace(/\\/g, '/'),
+        destPath: `${basePath}/${m.to}/${m.file}`.replace(/\\/g, '/'),
+      }));
+
+      const result = await api?.moveFilesBatch?.(moveOps);
+      const successCount = result?.results?.filter((r: any) => r.success).length || 0;
+      const failedCount = result?.results?.filter((r: any) => !r.success).length || 0;
+
+      // Save undo log
+      if (result?.undoLog) {
+        setUndoLog(result.undoLog);
+      }
+
+      // Update plan status
+      setPendingPlan(null);
+
+      // Build result summary
+      const folderCounts = plan.folders_to_create.map(folder => {
+        const count = plan.moves.filter(m => m.to === folder).length;
+        return `**${folder}/** — ${count} file${count !== 1 ? 's' : ''}`;
+      }).join('\n');
+
+      const resultMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Done! Moved ${successCount} file${successCount !== 1 ? 's' : ''} into ${plan.folders_to_create.length} folder${plan.folders_to_create.length !== 1 ? 's' : ''}.${failedCount > 0 ? ` (${failedCount} failed)` : ''}\n\n${folderCounts}\n\nIf you want to undo this, just say "undo".`,
+        timestamp: new Date().toISOString(),
+        filePlan: { ...plan, status: 'executed', result: { success: successCount, failed: failedCount } },
+      };
+      setMessages(prev => [...prev, resultMessage]);
+
+      // Refresh folder contents if the files panel is open
+      if (expandedFolders.has(basePath)) {
+        const refreshResult = await api?.browseFolder?.(basePath);
+        if (refreshResult?.items) {
+          setFolderContents(prev => ({ ...prev, [basePath]: refreshResult.items }));
+        }
+      }
+
+    } catch (error: any) {
+      const errMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Error executing the organization plan: ${error.message}. Your files have not been moved.`,
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errMsg]);
+    } finally {
+      setExecutingPlan(false);
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!undoLog || undoLog.length === 0) {
+      const msg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'There\'s nothing to undo right now.',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, msg]);
+      return;
+    }
+
+    try {
+      const api = (window as any).electronAPI;
+      // Reverse the moves
+      const reverseOps = undoLog.map(entry => ({
+        sourcePath: entry.to,
+        destPath: entry.from,
+      }));
+
+      const result = await api?.moveFilesBatch?.(reverseOps);
+      const successCount = result?.results?.filter((r: any) => r.success).length || 0;
+
+      setUndoLog(null);
+
+      const msg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Undo complete! Moved ${successCount} file${successCount !== 1 ? 's' : ''} back to their original locations.`,
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, msg]);
+
+    } catch (error: any) {
+      const errMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Error undoing the operation: ${error.message}`,
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errMsg]);
+    }
+  };
+
+  const handleSend = () => {
+    if (!input.trim() || loading || generatingPlan || executingPlan) return;
+
+    const text = input.trim();
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: text,
       timestamp: new Date().toISOString()
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
+    // ── Two-pass file operation interception ──
+
+    // 1. Check for undo request
+    if (detectUndo(text) && undoLog && undoLog.length > 0) {
+      handleUndo();
+      return;
+    }
+
+    // 2. Check for approval of a pending plan
+    if (pendingPlan && pendingPlan.status === 'pending' && detectApproval(text)) {
+      executePlan(pendingPlan);
+      return;
+    }
+
+    // 3. Check for rejection of a pending plan
+    if (pendingPlan && pendingPlan.status === 'pending' && /^(no|nah|cancel|stop|don'?t|nevermind|never\s*mind)/i.test(text)) {
+      setPendingPlan(null);
+      const rejectMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'No problem! The organization plan has been cancelled. Your files remain unchanged.',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, rejectMsg]);
+      return;
+    }
+
+    // 4. Check for new file operation intent (only when files panel is open or file access enabled)
+    if (settings.fileAccessEnabled && detectFileOperationIntent(text)) {
+      handleFileOrganize(text);
+      return;
+    }
+
+    // ── Normal chat flow ──
+
+    // Build payload with optional file references
+    const payload: any = {
+      message: text,
+      chat_id: currentChatId,
+    };
+    if (attachedFiles.length > 0) {
+      payload.reference_files = attachedFiles.map(f => ({
+        name: f.name,
+        content: f.fullContent,
+      }));
+    }
+
     // Send via WebSocket
     const ws = getConnection(tabId, ENDPOINT);
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
-        message: input,
-        chat_id: currentChatId,
-      }));
+      ws.send(JSON.stringify(payload));
+    }
+
+    // Clear attached files after sending
+    if (attachedFiles.length > 0) {
+      setAttachedFiles([]);
     }
   };
 
@@ -365,6 +675,121 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // ── File Explorer helpers ──
+
+  // Load allowed folders when files panel opens
+  useEffect(() => {
+    if (rightPanel === 'files' && allowedFolders.length === 0) {
+      const api = (window as any).electronAPI;
+      if (api?.getAllowedFolders) {
+        api.getAllowedFolders().then((folders: string[]) => setAllowedFolders(folders));
+      }
+    }
+  }, [rightPanel]);
+
+  const toggleFolder = async (folderPath: string) => {
+    const next = new Set(expandedFolders);
+    if (next.has(folderPath)) {
+      next.delete(folderPath);
+    } else {
+      next.add(folderPath);
+      // Lazy-load contents if not cached
+      if (!folderContents[folderPath]) {
+        setLoadingFolder(folderPath);
+        const api = (window as any).electronAPI;
+        const result = await api?.browseFolder?.(folderPath);
+        if (result?.items) {
+          setFolderContents(prev => ({ ...prev, [folderPath]: result.items }));
+        }
+        setLoadingFolder(null);
+      }
+    }
+    setExpandedFolders(next);
+  };
+
+  const handleFileSearch = (query: string) => {
+    setFileSearchQuery(query);
+    if (fileSearchTimeout.current) clearTimeout(fileSearchTimeout.current);
+    if (!query.trim()) {
+      setFileSearchResults(null);
+      return;
+    }
+    fileSearchTimeout.current = setTimeout(async () => {
+      const api = (window as any).electronAPI;
+      const result = await api?.searchFiles?.(query);
+      if (result?.items) setFileSearchResults(result.items);
+    }, 300);
+  };
+
+  const attachFile = async (filePath: string, fileName: string, ext: string) => {
+    // Don't attach the same file twice
+    if (attachedFiles.some(f => f.path === filePath)) return;
+    setAttachingFile(filePath);
+    try {
+      const api = (window as any).electronAPI;
+      const fileData = await api?.readFileContent?.(filePath);
+      if (fileData?.error) {
+        console.error('Error reading file:', fileData.error);
+        setAttachingFile(null);
+        return;
+      }
+      // Send to backend for parsing
+      const formData = new FormData();
+      const bytes = Uint8Array.from(atob(fileData.base64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes]);
+      formData.append('file', blob, fileName);
+      const response = await axios.post('http://localhost:8000/api/file-explorer/parse', formData);
+      const parsed = response.data;
+      setAttachedFiles(prev => [...prev, {
+        name: fileName,
+        path: filePath,
+        extension: ext,
+        previewText: (parsed.text || '').substring(0, 200) + ((parsed.text?.length || 0) > 200 ? '...' : ''),
+        fullContent: parsed.text || '',
+      }]);
+    } catch (err) {
+      console.error('Error attaching file:', err);
+    }
+    setAttachingFile(null);
+  };
+
+  const detachFile = (filePath: string) => {
+    setAttachedFiles(prev => prev.filter(f => f.path !== filePath));
+  };
+
+  const openFileExternally = async (filePath: string) => {
+    const api = (window as any).electronAPI;
+    await api?.openFileExternal?.(filePath);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getFileTypeColor = (ext: string): string => {
+    const colors: Record<string, string> = {
+      '.docx': 'text-blue-600', '.doc': 'text-blue-600',
+      '.pptx': 'text-orange-500', '.ppt': 'text-orange-500',
+      '.xlsx': 'text-green-600', '.xls': 'text-green-600', '.csv': 'text-green-600',
+      '.pdf': 'text-red-500',
+      '.txt': 'text-gray-500', '.md': 'text-gray-500',
+      '.png': 'text-purple-500', '.jpg': 'text-purple-500', '.jpeg': 'text-purple-500',
+    };
+    return colors[ext] || 'text-gray-400';
+  };
+
+  const getFileTypeLabel = (ext: string): string => {
+    const labels: Record<string, string> = {
+      '.docx': 'Word', '.doc': 'Word',
+      '.pptx': 'PPT', '.ppt': 'PPT',
+      '.xlsx': 'Excel', '.xls': 'Excel', '.csv': 'CSV',
+      '.pdf': 'PDF', '.txt': 'Text', '.md': 'Markdown',
+    };
+    return labels[ext] || ext.replace('.', '').toUpperCase();
   };
 
   const formatMessage = (content: string) => {
@@ -463,16 +888,28 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             >
               <Plus className="w-5 h-5 text-theme-muted" />
             </button>
+            {settings.fileAccessEnabled && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRightPanel(rightPanel === 'files' ? 'none' : 'files');
+                }}
+                className={`p-2 rounded-lg hover:bg-theme-hover transition ${rightPanel === 'files' ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                title="Browse Files"
+              >
+                <FolderOpen className={`w-5 h-5 ${rightPanel === 'files' ? 'text-blue-600' : 'text-theme-muted'}`} />
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setHistoryOpen(!historyOpen);
+                setRightPanel(rightPanel === 'history' ? 'none' : 'history');
               }}
-              className="p-2 rounded-lg hover:bg-theme-hover transition"
+              className={`p-2 rounded-lg hover:bg-theme-hover transition ${rightPanel === 'history' ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
               title="Chat History"
               data-tutorial="chat-conversations"
             >
-              <History className="w-5 h-5 text-theme-muted" />
+              <History className={`w-5 h-5 ${rightPanel === 'history' ? 'text-blue-600' : 'text-theme-muted'}`} />
             </button>
           </div>
         </div>
@@ -507,6 +944,47 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                     <div className="text-sm prose prose-sm max-w-none">
                       {formatMessage(msg.content)}
                     </div>
+                    {/* File operation plan action buttons */}
+                    {msg.filePlan && msg.filePlan.status === 'pending' && pendingPlan && (
+                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                        <button
+                          onClick={() => executePlan(pendingPlan)}
+                          disabled={executingPlan}
+                          className="flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition"
+                        >
+                          {executingPlan ? (
+                            <>
+                              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                              Executing...
+                            </>
+                          ) : (
+                            'Approve & Execute'
+                          )}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPendingPlan(null);
+                            const rejectMsg: Message = {
+                              id: Date.now().toString(),
+                              role: 'assistant',
+                              content: 'Plan cancelled. Your files remain unchanged.',
+                              timestamp: new Date().toISOString()
+                            };
+                            setMessages(prev => [...prev, rejectMsg]);
+                          }}
+                          disabled={executingPlan}
+                          className="px-4 py-2 bg-theme-tertiary text-theme-label text-sm font-medium rounded-lg hover:bg-theme-hover disabled:opacity-50 transition"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                    {msg.filePlan && msg.filePlan.status === 'executed' && (
+                      <div className="flex items-center gap-2 mt-2 text-green-600 dark:text-green-400">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                        <span className="text-xs font-medium">Executed successfully</span>
+                      </div>
+                    )}
                     <div className={`flex items-center gap-2 mt-2 ${msg.role === 'user' ? 'text-blue-200' : 'text-theme-hint'}`}>
                       <p className="text-xs">
                         {new Date(msg.timestamp).toLocaleTimeString()}
@@ -545,6 +1023,15 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                   </div>
                 </div>
               )}
+
+              {generatingPlan && (
+                <div className="flex justify-start">
+                  <div className="bg-theme-tertiary px-4 py-3 rounded-2xl flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-theme-muted">Analyzing files and generating organization plan...</span>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </>
           )}
@@ -563,6 +1050,28 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         )}
 
         <div className="border-t border-theme p-4">
+          {/* Attached file chips */}
+          {attachedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {attachedFiles.map(file => (
+                <div
+                  key={file.path}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-sm group"
+                  title={file.previewText}
+                >
+                  <FileIcon className={`w-3.5 h-3.5 ${getFileTypeColor(file.extension)}`} />
+                  <span className="text-blue-800 dark:text-blue-200 max-w-[150px] truncate">{file.name}</span>
+                  <button
+                    onClick={() => detachFile(file.path)}
+                    className="ml-0.5 p-0.5 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                    title="Remove"
+                  >
+                    <X className="w-3 h-3 text-blue-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex space-x-2">
             <button
               onClick={stt.toggleListening}
@@ -608,67 +1117,291 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         </div>
       </div>
 
+      {/* ── Right sidebar: History or Files ── */}
       <div
         className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
-          historyOpen ? 'w-80' : 'w-0'
+          rightPanel !== 'none' ? 'w-80' : 'w-0'
         }`}
         onClick={(e) => e.stopPropagation()}
         data-tutorial="chat-sidebar"
       >
-        <div className="h-full flex flex-col p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-theme-heading">Chat History</h3>
-            <button
-              onClick={() => setHistoryOpen(false)}
-              className="p-1 rounded hover:bg-theme-hover transition"
-            >
-              <X className="w-5 h-5 text-theme-muted" />
-            </button>
-          </div>
+        {/* Chat History Panel */}
+        {rightPanel === 'history' && (
+          <div className="h-full flex flex-col p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-theme-heading">Chat History</h3>
+              <button
+                onClick={() => setRightPanel('none')}
+                className="p-1 rounded hover:bg-theme-hover transition"
+              >
+                <X className="w-5 h-5 text-theme-muted" />
+              </button>
+            </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2">
-            {chatHistories.length === 0 ? (
-              <div className="text-center text-theme-hint mt-8">
-                <History className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">No chat history yet</p>
-              </div>
-            ) : (
-              chatHistories.map((history) => (
-                <div
-                  key={history.id}
-                  onClick={() => loadChatHistory(history)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                    currentChatId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-heading truncate">
-                        {history.title}
-                      </p>
-                      <p className="text-xs text-theme-hint mt-1">
-                        {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {history.messages.length} messages
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => deleteHistory(history.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
-                      title="Delete chat"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {chatHistories.length === 0 ? (
+                <div className="text-center text-theme-hint mt-8">
+                  <History className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No chat history yet</p>
                 </div>
-              ))
+              ) : (
+                chatHistories.map((history) => (
+                  <div
+                    key={history.id}
+                    onClick={() => loadChatHistory(history)}
+                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                      currentChatId === history.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-theme-heading truncate">
+                          {history.title}
+                        </p>
+                        <p className="text-xs text-theme-hint mt-1">
+                          {new Date(history.timestamp).toLocaleDateString()} {new Date(history.timestamp).toLocaleTimeString()}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {history.messages.length} messages
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => deleteHistory(history.id, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                        title="Delete chat"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Files Panel */}
+        {rightPanel === 'files' && (
+          <div className="h-full flex flex-col">
+            {/* Files header */}
+            <div className="flex items-center justify-between p-4 pb-2">
+              <h3 className="text-lg font-semibold text-theme-heading flex items-center gap-2">
+                <FolderOpen className="w-5 h-5 text-blue-500" />
+                My Files
+              </h3>
+              <button
+                onClick={() => setRightPanel('none')}
+                className="p-1 rounded hover:bg-theme-hover transition"
+              >
+                <X className="w-5 h-5 text-theme-muted" />
+              </button>
+            </div>
+
+            {/* Search bar */}
+            <div className="px-4 pb-3">
+              <div className="relative">
+                <SearchIcon className="w-4 h-4 text-theme-hint absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={fileSearchQuery}
+                  onChange={(e) => handleFileSearch(e.target.value)}
+                  placeholder="Search files..."
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-theme-strong bg-theme-surface text-theme-heading placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+                {fileSearchQuery && (
+                  <button
+                    onClick={() => { setFileSearchQuery(''); setFileSearchResults(null); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-theme-hover"
+                  >
+                    <X className="w-3.5 h-3.5 text-theme-hint" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* File listing */}
+            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
+              {/* Search results mode */}
+              {fileSearchResults !== null ? (
+                <>
+                  <p className="text-xs text-theme-hint mb-2">{fileSearchResults.length} result{fileSearchResults.length !== 1 ? 's' : ''}</p>
+                  {fileSearchResults.map(file => (
+                    <div
+                      key={file.path}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle group cursor-pointer"
+                      onDoubleClick={() => openFileExternally(file.path)}
+                      title={file.path}
+                    >
+                      <FileIcon className={`w-4 h-4 flex-shrink-0 ${getFileTypeColor(file.extension)}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-theme-heading truncate">{file.name}</p>
+                        <p className="text-xs text-theme-hint">{formatFileSize(file.size)}</p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); attachFile(file.path, file.name, file.extension); }}
+                        disabled={attachingFile === file.path || attachedFiles.some(f => f.path === file.path)}
+                        className={`opacity-0 group-hover:opacity-100 p-1 rounded transition ${
+                          attachedFiles.some(f => f.path === file.path)
+                            ? 'text-green-500 cursor-default opacity-100'
+                            : 'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500'
+                        }`}
+                        title={attachedFiles.some(f => f.path === file.path) ? 'Attached' : 'Attach as reference'}
+                      >
+                        {attachingFile === file.path ? (
+                          <span className="block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <AttachIcon className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                  {fileSearchResults.length === 0 && (
+                    <p className="text-sm text-theme-hint text-center mt-4">No files found</p>
+                  )}
+                </>
+              ) : (
+                /* Folder tree mode */
+                <>
+                  {allowedFolders.length === 0 ? (
+                    <div className="text-center text-theme-hint mt-8">
+                      <FolderOpen className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No folders configured</p>
+                      <p className="text-xs mt-1">Go to Settings &gt; File Access to add folders</p>
+                    </div>
+                  ) : (
+                    allowedFolders.map(folder => {
+                      const folderName = folder.split(/[/\\]/).filter(Boolean).pop() || folder;
+                      const isExpanded = expandedFolders.has(folder);
+                      const items = folderContents[folder] || [];
+                      const isLoading = loadingFolder === folder;
+                      return (
+                        <div key={folder}>
+                          {/* Folder root */}
+                          <button
+                            onClick={() => toggleFolder(folder)}
+                            className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle transition text-left"
+                          >
+                            {isExpanded
+                              ? <ChevronDown className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                              : <ChevronRight className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                            }
+                            <FolderOpen className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                            <span className="text-sm font-medium text-theme-heading truncate">{folderName}</span>
+                          </button>
+
+                          {/* Expanded folder contents */}
+                          {isExpanded && (
+                            <div className="ml-5 border-l border-theme-strong/20 pl-2 space-y-0.5">
+                              {isLoading ? (
+                                <p className="text-xs text-theme-hint p-2">Loading...</p>
+                              ) : items.length === 0 ? (
+                                <p className="text-xs text-theme-hint p-2">Empty folder</p>
+                              ) : (
+                                items.map(item => {
+                                  if (item.isDirectory) {
+                                    const subExpanded = expandedFolders.has(item.path);
+                                    const subItems = folderContents[item.path] || [];
+                                    const subLoading = loadingFolder === item.path;
+                                    return (
+                                      <div key={item.path}>
+                                        <button
+                                          onClick={() => toggleFolder(item.path)}
+                                          className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle transition text-left"
+                                        >
+                                          {subExpanded
+                                            ? <ChevronDown className="w-3 h-3 text-theme-muted flex-shrink-0" />
+                                            : <ChevronRight className="w-3 h-3 text-theme-muted flex-shrink-0" />
+                                          }
+                                          <FolderOpen className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
+                                          <span className="text-xs text-theme-heading truncate">{item.name}</span>
+                                        </button>
+                                        {subExpanded && (
+                                          <div className="ml-4 border-l border-theme-strong/20 pl-2 space-y-0.5">
+                                            {subLoading ? (
+                                              <p className="text-xs text-theme-hint p-1.5">Loading...</p>
+                                            ) : subItems.length === 0 ? (
+                                              <p className="text-xs text-theme-hint p-1.5">Empty</p>
+                                            ) : (
+                                              subItems.filter(si => !si.isDirectory).map(subFile => (
+                                                <div
+                                                  key={subFile.path}
+                                                  className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle group cursor-pointer"
+                                                  onDoubleClick={() => openFileExternally(subFile.path)}
+                                                  title={`${subFile.name} — ${formatFileSize(subFile.size)}\nDouble-click to open`}
+                                                >
+                                                  <FileIcon className={`w-3.5 h-3.5 flex-shrink-0 ${getFileTypeColor(subFile.extension)}`} />
+                                                  <span className="text-xs text-theme-heading truncate flex-1">{subFile.name}</span>
+                                                  <button
+                                                    onClick={(e) => { e.stopPropagation(); attachFile(subFile.path, subFile.name, subFile.extension); }}
+                                                    disabled={attachingFile === subFile.path || attachedFiles.some(f => f.path === subFile.path)}
+                                                    className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition ${
+                                                      attachedFiles.some(f => f.path === subFile.path) ? 'text-green-500 opacity-100' : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                                                    }`}
+                                                    title="Attach"
+                                                  >
+                                                    <AttachIcon className="w-3.5 h-3.5" />
+                                                  </button>
+                                                </div>
+                                              ))
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                  // File item
+                                  return (
+                                    <div
+                                      key={item.path}
+                                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle group cursor-pointer"
+                                      onDoubleClick={() => openFileExternally(item.path)}
+                                      title={`${item.name} — ${formatFileSize(item.size)}\nDouble-click to open in default app`}
+                                    >
+                                      <FileIcon className={`w-3.5 h-3.5 flex-shrink-0 ${getFileTypeColor(item.extension)}`} />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-theme-heading truncate">{item.name}</p>
+                                      </div>
+                                      <span className="text-[10px] text-theme-hint flex-shrink-0 mr-1">{getFileTypeLabel(item.extension)}</span>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); attachFile(item.path, item.name, item.extension); }}
+                                        disabled={attachingFile === item.path || attachedFiles.some(f => f.path === item.path)}
+                                        className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition ${
+                                          attachedFiles.some(f => f.path === item.path) ? 'text-green-500 opacity-100' : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                                        }`}
+                                        title={attachedFiles.some(f => f.path === item.path) ? 'Attached' : 'Attach as reference'}
+                                      >
+                                        {attachingFile === item.path ? (
+                                          <span className="block w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                          <AttachIcon className="w-3.5 h-3.5" />
+                                        )}
+                                      </button>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Attached files count indicator */}
+            {attachedFiles.length > 0 && (
+              <div className="px-4 py-2 border-t border-theme bg-blue-50/50 dark:bg-blue-950/20">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                  <AttachIcon className="w-3.5 h-3.5" />
+                  {attachedFiles.length} file{attachedFiles.length !== 1 ? 's' : ''} attached — will be sent as context with your next message
+                </p>
+              </div>
             )}
           </div>
-        </div>
+        )}
       </div>
-
- 
     </div>
   );
 };

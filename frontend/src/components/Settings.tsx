@@ -258,6 +258,25 @@ const Settings: React.FC<SettingsProps> = () => {
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
+  // File access state
+  const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
+  const [defaultFolders, setDefaultFolders] = useState<string[]>([]);
+  const [loadingFolders, setLoadingFolders] = useState(false);
+
+  // Load allowed folders from Electron on mount
+  useEffect(() => {
+    const api = (window as any).electronAPI;
+    if (api?.getAllowedFolders) {
+      setLoadingFolders(true);
+      api.getAllowedFolders().then((folders: string[]) => {
+        setAllowedFolders(folders);
+        // First two are always defaults (Downloads + Desktop)
+        setDefaultFolders(folders.slice(0, 2));
+        setLoadingFolders(false);
+      }).catch(() => setLoadingFolders(false));
+    }
+  }, []);
+
   // Tutorial integration
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -266,7 +285,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   // Section navigation
-  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'license' | 'danger';
+  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'files' | 'license' | 'danger';
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
 
   // Load profile name & image from localStorage (synced with Dashboard)
@@ -473,6 +492,7 @@ const Settings: React.FC<SettingsProps> = () => {
     { id: 'models' as const, label: 'Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
     { id: 'features' as const, label: 'Features', icon: Sliders, description: 'Writing assistant & tools' },
+    { id: 'files' as const, label: 'File Access', icon: FolderOpen, description: 'Access PC files & folders' },
     { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
     { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Export, import & reset' },
   ];
@@ -1973,6 +1993,144 @@ const Settings: React.FC<SettingsProps> = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            )}
+
+            {/* ===== FILE ACCESS SECTION ===== */}
+            {activeSection === 'files' && (
+              <div className="space-y-6">
+                <div className="mb-2">
+                  <h2 className="text-2xl font-bold text-theme-title">File Access</h2>
+                  <p className="text-sm text-theme-muted mt-1">Allow the app to browse files on your computer</p>
+                </div>
+
+                {/* Master Toggle */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FolderOpen className="w-4.5 h-4.5 text-theme-secondary" />
+                      Enable File Access
+                    </CardTitle>
+                    <CardDescription>
+                      When enabled, you can browse and reference your PC files from the Chat panel and Resource Manager
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                      <div>
+                        <p className="text-sm font-medium text-theme-label">Allow access to PC files</p>
+                        <p className="text-xs text-theme-hint">Browse files from allowed folders within the app. Files are read-only — the app will never delete your files.</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={settings.fileAccessEnabled}
+                        onChange={(e) => updateSettings({ fileAccessEnabled: e.target.checked })}
+                        className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                    </label>
+                  </CardContent>
+                </Card>
+
+                {/* Allowed Folders */}
+                {settings.fileAccessEnabled && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FolderOpen className="w-4.5 h-4.5 text-theme-secondary" />
+                        Allowed Folders
+                      </CardTitle>
+                      <CardDescription>
+                        Choose which folders on your computer the app can access. Maximum 10 folders.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {loadingFolders ? (
+                          <p className="text-sm text-theme-muted p-3">Loading folders...</p>
+                        ) : (
+                          <>
+                            {allowedFolders.map((folder, index) => {
+                              const folderName = folder.split(/[/\\]/).filter(Boolean).pop() || folder;
+                              const isDefault = index < 2; // Downloads and Desktop are defaults
+                              return (
+                                <div
+                                  key={folder}
+                                  className="flex items-center justify-between gap-3 p-3 rounded-lg bg-theme-subtle"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <FolderOpen className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-medium text-theme-label truncate">{folderName}</p>
+                                      <p className="text-xs text-theme-hint truncate">{folder}</p>
+                                    </div>
+                                  </div>
+                                  {isDefault ? (
+                                    <span className="text-xs text-theme-hint flex-shrink-0 px-2 py-1 rounded bg-theme-subtle border border-theme-strong/20">Default</span>
+                                  ) : (
+                                    <button
+                                      onClick={async () => {
+                                        const updated = allowedFolders.filter((_, i) => i !== index);
+                                        setAllowedFolders(updated);
+                                        const api = (window as any).electronAPI;
+                                        await api?.saveAllowedFolders?.(updated);
+                                      }}
+                                      className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 flex-shrink-0"
+                                      title="Remove folder"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+
+                            {allowedFolders.length < 10 && (
+                              <button
+                                onClick={async () => {
+                                  const api = (window as any).electronAPI;
+                                  if (!api?.selectFolder) return;
+                                  const folder = await api.selectFolder();
+                                  if (folder && !allowedFolders.includes(folder)) {
+                                    const updated = [...allowedFolders, folder];
+                                    setAllowedFolders(updated);
+                                    await api.saveAllowedFolders?.(updated);
+                                  }
+                                }}
+                                className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border-2 border-dashed border-theme-strong/30 text-theme-muted hover:border-blue-500 hover:text-blue-500 transition-colors"
+                              >
+                                <Plus className="w-4 h-4" />
+                                <span className="text-sm font-medium">Add Folder</span>
+                              </button>
+                            )}
+
+                            {allowedFolders.length >= 10 && (
+                              <p className="text-xs text-theme-hint text-center p-2">Maximum of 10 folders reached. Remove a folder to add another.</p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Info Card */}
+                {settings.fileAccessEnabled && (
+                  <Card className="border-blue-200 dark:border-blue-800/40 bg-blue-50/50 dark:bg-blue-950/20">
+                    <CardContent className="pt-6">
+                      <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                        <p className="font-medium">How file access works:</p>
+                        <ul className="list-disc list-inside space-y-1 text-xs text-blue-700 dark:text-blue-300">
+                          <li>A files button will appear in the Chat panel to browse your folders</li>
+                          <li>You can attach files as reference context when chatting with PEARL</li>
+                          <li>Ask PEARL to organize or find files in your allowed folders</li>
+                          <li>The Resource Manager will show an "On PC" tab with your files</li>
+                          <li>Files are <strong>never deleted</strong> — organizing only moves files into subfolders</li>
+                          <li>Only these file types are visible: Word, PowerPoint, PDF, Excel, text, and images</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 

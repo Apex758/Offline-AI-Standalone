@@ -701,7 +701,23 @@ async def websocket_chat(websocket: WebSocket):
             # Inject summary into system prompt if available
             system_prompt = base_system_prompt + summary_block
 
-            prompt = build_multi_turn_prompt(system_prompt, history, user_message)
+            # Inject reference files into the user message if provided
+            reference_files = message_data.get("reference_files", None)
+            effective_user_message = user_message
+            if reference_files and len(reference_files) > 0:
+                file_context_parts = []
+                for ref in reference_files[:5]:  # Cap at 5 files
+                    name = ref.get("name", "unknown")
+                    content = ref.get("content", "")
+                    # Truncate very long files to avoid context overflow
+                    if len(content) > 8000:
+                        content = content[:8000] + "\n... [truncated]"
+                    file_context_parts.append(f"--- File: {name} ---\n{content}\n--- End of {name} ---")
+                file_context = "\n\n".join(file_context_parts)
+                effective_user_message = f"The user has attached the following reference files:\n\n{file_context}\n\nUser's message: {user_message}"
+                logger.info(f"Attached {len(reference_files)} reference file(s) to chat message")
+
+            prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message)
 
             logger.info(f"Context: chat_id={chat_id}, {len(history)} messages in window, summary={'yes' if summary_block else 'no'}, custom_prompt={'yes' if custom_system_prompt else 'no'}")
 
@@ -2580,6 +2596,76 @@ Quiz text:
         raise HTTPException(status_code=422, detail=f"Parsed output was not valid quiz JSON: {e}")
 
 
+async def _grade_single_text_file(
+    content: bytes,
+    filename: str,
+    content_type: str,
+    questions: list,
+    inference,
+    max_tokens: int,
+) -> dict:
+    """Grade a single text-based student file (HTML/PDF/TXT). Shared by quiz and worksheet bulk grading."""
+    import re as _re
+
+    file_result = {
+        'file_name': filename,
+        'student_name': None,
+        'error': None,
+        'score': 0,
+        'total_points': 0,
+        'percentage': 0,
+        'letter_grade': 'F',
+        'details': [],
+    }
+
+    try:
+        text, extract_error = _extract_text_from_file(content, filename, content_type)
+        if extract_error:
+            file_result['error'] = extract_error
+            return file_result
+
+        if not text.strip():
+            file_result['error'] = 'No text could be extracted from this file.'
+            return file_result
+
+        prompt = _build_extraction_prompt(questions, text)
+        llm_result = await inference.generate(
+            tool_name='bulk_grade_extract',
+            input_data=text[:500],
+            prompt_template=prompt,
+            max_tokens=max_tokens,
+            temperature=0.1,
+            stop=['```', '\n\n\n'],
+        )
+
+        raw_output = llm_result.get('result') or ''
+
+        json_match = _re.search(r'\{[\s\S]*\}', raw_output)
+        if not json_match:
+            file_result['error'] = 'LLM could not extract answers from this file.'
+            return file_result
+
+        extracted = json.loads(json_match.group())
+        student_name = extracted.get('student_name')
+        extracted_answers = extracted.get('answers', {})
+
+        grading = _grade_extracted_answers(questions, extracted_answers)
+
+        file_result.update({
+            'student_name': student_name,
+            'score': grading['score'],
+            'total_points': grading['total_points'],
+            'percentage': grading['percentage'],
+            'letter_grade': grading['letter_grade'],
+            'details': grading['results'],
+        })
+
+    except Exception as e:
+        file_result['error'] = f'Processing error: {str(e)}'
+
+    return file_result
+
+
 @app.post("/api/bulk-grade")
 async def bulk_grade(
     quiz_json: str = Form(...),
@@ -2599,78 +2685,19 @@ async def bulk_grade(
         raise HTTPException(status_code=400, detail="Quiz has no questions")
 
     from inference_factory import get_inference_instance
+    inference = get_inference_instance()
+    max_tokens = _compute_dynamic_max_tokens(quiz_questions)
+
+    # Pre-read all files
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown', upload.content_type or ''))
 
     graded_results = []
-
-    for upload in student_files:
-        file_result = {
-            'file_name': upload.filename,
-            'student_name': None,
-            'error': None,
-            'score': 0,
-            'total_points': 0,
-            'percentage': 0,
-            'letter_grade': 'F',
-            'details': [],
-        }
-
-        try:
-            content = await upload.read()
-            content_type = upload.content_type or ''
-
-            text, extract_error = _extract_text_from_file(content, upload.filename or '', content_type)
-            if extract_error:
-                file_result['error'] = extract_error
-                graded_results.append(file_result)
-                continue
-
-            if not text.strip():
-                file_result['error'] = 'No text could be extracted from this file.'
-                graded_results.append(file_result)
-                continue
-
-            # Call LLM to extract student answers
-            prompt = _build_extraction_prompt(quiz_questions, text)
-            inference = get_inference_instance()
-            llm_result = await inference.generate(
-                tool_name='bulk_grade_extract',
-                input_data=text[:500],
-                prompt_template=prompt,
-                max_tokens=600,
-                temperature=0.1,
-                stop=['```', '\n\n\n'],
-            )
-
-            raw_output = llm_result.get('result') or ''
-
-            # Parse JSON from LLM output (it may include markdown fences)
-            json_match = None
-            import re as _re
-            json_match = _re.search(r'\{[\s\S]*\}', raw_output)
-            if not json_match:
-                file_result['error'] = 'LLM could not extract answers from this file.'
-                graded_results.append(file_result)
-                continue
-
-            extracted = json.loads(json_match.group())
-            student_name = extracted.get('student_name')
-            extracted_answers = extracted.get('answers', {})
-
-            grading = _grade_extracted_answers(quiz_questions, extracted_answers)
-
-            file_result.update({
-                'student_name': student_name,
-                'score': grading['score'],
-                'total_points': grading['total_points'],
-                'percentage': grading['percentage'],
-                'letter_grade': grading['letter_grade'],
-                'details': grading['results'],
-            })
-
-        except Exception as e:
-            file_result['error'] = f'Processing error: {str(e)}'
-
-        graded_results.append(file_result)
+    for content, filename, ctype in file_data:
+        result = await _grade_single_text_file(content, filename, ctype, quiz_questions, inference, max_tokens)
+        graded_results.append(result)
 
     return graded_results
 
@@ -2694,77 +2721,82 @@ async def bulk_grade_worksheet(
         raise HTTPException(status_code=400, detail="Worksheet has no questions")
 
     from inference_factory import get_inference_instance
+    inference = get_inference_instance()
+    max_tokens = _compute_dynamic_max_tokens(ws_questions)
+
+    # Pre-read all files
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown', upload.content_type or ''))
 
     graded_results = []
-
-    for upload in student_files:
-        file_result = {
-            'file_name': upload.filename,
-            'student_name': None,
-            'error': None,
-            'score': 0,
-            'total_points': 0,
-            'percentage': 0,
-            'letter_grade': 'F',
-            'details': [],
-        }
-
-        try:
-            content = await upload.read()
-            content_type = upload.content_type or ''
-
-            text, extract_error = _extract_text_from_file(content, upload.filename or '', content_type)
-            if extract_error:
-                file_result['error'] = extract_error
-                graded_results.append(file_result)
-                continue
-
-            if not text.strip():
-                file_result['error'] = 'No text could be extracted from this file.'
-                graded_results.append(file_result)
-                continue
-
-            prompt = _build_extraction_prompt(ws_questions, text)
-            inference = get_inference_instance()
-            llm_result = await inference.generate(
-                tool_name='bulk_grade_extract',
-                input_data=text[:500],
-                prompt_template=prompt,
-                max_tokens=600,
-                temperature=0.1,
-                stop=['```', '\n\n\n'],
-            )
-
-            raw_output = llm_result.get('result') or ''
-
-            import re as _re
-            json_match = _re.search(r'\{[\s\S]*\}', raw_output)
-            if not json_match:
-                file_result['error'] = 'LLM could not extract answers from this file.'
-                graded_results.append(file_result)
-                continue
-
-            extracted = json.loads(json_match.group())
-            student_name = extracted.get('student_name')
-            extracted_answers = extracted.get('answers', {})
-
-            grading = _grade_extracted_answers(ws_questions, extracted_answers)
-
-            file_result.update({
-                'student_name': student_name,
-                'score': grading['score'],
-                'total_points': grading['total_points'],
-                'percentage': grading['percentage'],
-                'letter_grade': grading['letter_grade'],
-                'details': grading['results'],
-            })
-
-        except Exception as e:
-            file_result['error'] = f'Processing error: {str(e)}'
-
-        graded_results.append(file_result)
+    for content, filename, ctype in file_data:
+        result = await _grade_single_text_file(content, filename, ctype, ws_questions, inference, max_tokens)
+        graded_results.append(result)
 
     return graded_results
+
+
+# ── Image Preprocessing for Phone Photos ──────────────────────────────────────
+
+def _preprocess_phone_image(image_bytes: bytes, max_width: int = 1024) -> bytes:
+    """Preprocess a phone photo for optimal vision model grading.
+
+    - Auto-rotates based on EXIF orientation
+    - Resizes to max_width while keeping aspect ratio
+    - Normalizes contrast/brightness for readability
+    - Converts to JPEG for consistent smaller payloads
+    """
+    from PIL import Image, ImageOps, ImageEnhance
+    import io as _io
+
+    img = Image.open(_io.BytesIO(image_bytes))
+
+    # 1. Auto-rotate based on EXIF orientation data (phone camera metadata)
+    img = ImageOps.exif_transpose(img)
+
+    # 2. Convert to RGB (handles RGBA, palette-mode, etc.)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+
+    # 3. Resize if wider than max_width (preserves aspect ratio)
+    if img.width > max_width:
+        ratio = max_width / img.width
+        new_size = (max_width, int(img.height * ratio))
+        img = img.resize(new_size, Image.LANCZOS)
+
+    # 4. Auto-contrast to normalize exposure from phone cameras
+    img = ImageOps.autocontrast(img, cutoff=1)
+
+    # 5. Slight sharpening to help with handwriting legibility
+    enhancer = ImageEnhance.Sharpness(img)
+    img = enhancer.enhance(1.3)
+
+    # 6. Encode as JPEG (much smaller than PNG for photos)
+    buf = _io.BytesIO()
+    img.save(buf, format='JPEG', quality=85, optimize=True)
+    return buf.getvalue()
+
+
+def _compute_dynamic_max_tokens(questions: list) -> int:
+    """Calculate max_tokens based on question count and types.
+
+    MC/TF need ~20 tokens each; fill-blank ~30; short-answer/comprehension ~60.
+    Add a base of 80 for the JSON wrapper + student_name/id + unclear array.
+    """
+    base = 80
+    per_question = 0
+    for q in questions:
+        qtype = q.get('type', '')
+        if qtype in ('multiple-choice', 'true-false'):
+            per_question += 20
+        elif qtype in ('fill-blank', 'word-bank', 'matching'):
+            per_question += 30
+        else:  # short-answer, comprehension, etc.
+            per_question += 60
+    # Clamp between 200 and 2500
+    return max(200, min(base + per_question, 2500))
 
 
 # ── Scan-to-Grade (Vision) ────────────────────────────────────────────────────
@@ -2869,20 +2901,109 @@ Return ONLY valid JSON with no extra text:
 }}"""
 
 
-@app.post("/api/grade-scanned-worksheets")
-async def grade_scanned_worksheets(
-    student_files: List[UploadFile] = File(...),
-    package_id: Optional[str] = Form(None),
-    worksheet_json: Optional[str] = Form(None),
-    worksheet_title: Optional[str] = Form("Worksheet"),
-    worksheet_subject: Optional[str] = Form("General"),
-):
-    """Grade scanned student worksheets using the vision model.
+async def _grade_single_scan(
+    file_content: bytes,
+    filename: str,
+    prompt: str,
+    max_tokens: int,
+    inference,
+    package: dict | None,
+    student_versions: list,
+    worksheet_title: str,
+    worksheet_subject: str,
+) -> dict:
+    """Grade a single scanned student worksheet image. Used by both batch and streaming endpoints."""
+    import re as _re
 
-    Accepts either a package_id (for class-mode worksheets) or
-    worksheet_json (a ParsedWorksheet JSON for standalone worksheets).
-    """
-    # 1. Load answer key from package or direct JSON
+    file_result = {
+        'file_name': filename,
+        'student_name': None,
+        'student_id': None,
+        'error': None,
+        'score': 0,
+        'total_points': 0,
+        'percentage': 0,
+        'letter_grade': 'F',
+        'details': {},
+        'unclear': [],
+        'saved': False,
+    }
+
+    try:
+        # Preprocess phone photo (resize, rotate, enhance)
+        processed = _preprocess_phone_image(file_content)
+        image_b64 = base64.b64encode(processed).decode('utf-8')
+
+        # Send to vision model with dynamic max_tokens
+        response = await inference.analyze_image(
+            image_base64=image_b64,
+            prompt=prompt,
+            max_tokens=max_tokens,
+            temperature=0.1,
+        )
+
+        raw_output = response.get('result') or ''
+
+        json_match = _re.search(r'\{[\s\S]*\}', raw_output)
+        if not json_match:
+            file_result['error'] = 'Vision model could not extract answers from this image.'
+            return file_result
+
+        parsed = json.loads(json_match.group())
+        student_name = parsed.get('student_name')
+        student_id = parsed.get('student_id')
+        results = parsed.get('results', {})
+        unclear = parsed.get('unclear', [])
+
+        total_earned = sum(r.get('earned', 0) for r in results.values())
+        total_max = sum(r.get('max', 1) for r in results.values())
+        percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
+
+        file_result.update({
+            'student_name': student_name,
+            'student_id': student_id,
+            'score': total_earned,
+            'total_points': total_max,
+            'percentage': percentage,
+            'letter_grade': student_service.get_letter_grade(percentage),
+            'details': results,
+            'unclear': unclear,
+        })
+
+        # Auto-save grade if student ID matched
+        if student_id:
+            title = package['worksheet_title'] if package else worksheet_title
+            subject = package['subject'] if package else worksheet_subject
+
+            should_save = True
+            if student_versions:
+                should_save = any(
+                    sv.get('student', {}).get('id') == student_id
+                    for sv in student_versions
+                )
+
+            if should_save:
+                student_service.save_worksheet_grade({
+                    'student_id': student_id,
+                    'worksheet_title': title,
+                    'subject': subject,
+                    'score': total_earned,
+                    'total_points': total_max,
+                    'percentage': percentage,
+                    'letter_grade': student_service.get_letter_grade(percentage),
+                    'answers': results,
+                })
+                file_result['saved'] = True
+
+    except Exception as e:
+        logger.error(f"Scan grading error for {filename}: {e}")
+        file_result['error'] = f'Processing error: {str(e)}'
+
+    return file_result
+
+
+def _load_grading_context(package_id, worksheet_json):
+    """Load answer key and student versions from package or JSON. Returns (package, base_worksheet, student_versions)."""
     package = None
     base_worksheet = None
     student_versions = []
@@ -2901,115 +3022,122 @@ async def grade_scanned_worksheets(
     else:
         raise HTTPException(status_code=400, detail="Provide either package_id or worksheet_json")
 
-    # 2. Build prompt
-    prompt = _build_vision_grading_prompt(base_worksheet, student_versions)
+    return package, base_worksheet, student_versions
 
-    # 3. Get inference instance
+
+@app.post("/api/grade-scanned-worksheets")
+async def grade_scanned_worksheets(
+    student_files: List[UploadFile] = File(...),
+    package_id: Optional[str] = Form(None),
+    worksheet_json: Optional[str] = Form(None),
+    worksheet_title: Optional[str] = Form("Worksheet"),
+    worksheet_subject: Optional[str] = Form("General"),
+):
+    """Grade scanned student worksheets using the vision model.
+
+    Accepts either a package_id (for class-mode worksheets) or
+    worksheet_json (a ParsedWorksheet JSON for standalone worksheets).
+    """
+    package, base_worksheet, student_versions = _load_grading_context(package_id, worksheet_json)
+
+    prompt = _build_vision_grading_prompt(base_worksheet, student_versions)
+    max_tokens = _compute_dynamic_max_tokens(base_worksheet.get('questions', []))
+
     from inference_factory import get_inference_instance
     inference = get_inference_instance()
 
     if not getattr(inference, 'has_vision', False):
         raise HTTPException(status_code=400, detail="Vision model not available. Load a multimodal model to grade scanned worksheets.")
 
-    graded_results = []
-
+    # Pre-read all files so we can process them
+    file_data = []
     for upload in student_files:
-        file_result = {
-            'file_name': upload.filename,
-            'student_name': None,
-            'student_id': None,
-            'error': None,
-            'score': 0,
-            'total_points': 0,
-            'percentage': 0,
-            'letter_grade': 'F',
-            'details': {},
-            'unclear': [],
-            'saved': False,
-        }
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
 
-        try:
-            # 4. Read image → base64
-            content = await upload.read()
-            image_b64 = base64.b64encode(content).decode('utf-8')
+    # Grade all files (sequentially — vision model is single-threaded on local GPU)
+    graded_results = []
+    for content, filename in file_data:
+        result = await _grade_single_scan(
+            content, filename, prompt, max_tokens, inference,
+            package, student_versions, worksheet_title, worksheet_subject,
+        )
+        graded_results.append(result)
 
-            # 5. Send to vision model
-            response = await inference.analyze_image(
-                image_base64=image_b64,
-                prompt=prompt,
-                max_tokens=2000,
-                temperature=0.1,
-            )
-
-            raw_output = response.get('result') or ''
-
-            # 6. Parse JSON from response
-            import re as _re
-            json_match = _re.search(r'\{[\s\S]*\}', raw_output)
-            if not json_match:
-                file_result['error'] = 'Vision model could not extract answers from this image.'
-                graded_results.append(file_result)
-                continue
-
-            parsed = json.loads(json_match.group())
-            student_name = parsed.get('student_name')
-            student_id = parsed.get('student_id')
-            results = parsed.get('results', {})
-            unclear = parsed.get('unclear', [])
-
-            # 7. Calculate totals
-            total_earned = sum(r.get('earned', 0) for r in results.values())
-            total_max = sum(r.get('max', 1) for r in results.values())
-            percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
-
-            file_result.update({
-                'student_name': student_name,
-                'student_id': student_id,
-                'score': total_earned,
-                'total_points': total_max,
-                'percentage': percentage,
-                'letter_grade': student_service.get_letter_grade(percentage),
-                'details': results,
-                'unclear': unclear,
-            })
-
-            # 8. Auto-save grade if student ID matched
-            if student_id:
-                title = package['worksheet_title'] if package else worksheet_title
-                subject = package['subject'] if package else worksheet_subject
-
-                # For package mode, verify student exists in package
-                should_save = True
-                if student_versions:
-                    should_save = any(
-                        sv.get('student', {}).get('id') == student_id
-                        for sv in student_versions
-                    )
-
-                if should_save:
-                    student_service.save_worksheet_grade({
-                        'student_id': student_id,
-                        'worksheet_title': title,
-                        'subject': subject,
-                        'score': total_earned,
-                        'total_points': total_max,
-                        'percentage': percentage,
-                        'letter_grade': student_service.get_letter_grade(percentage),
-                        'answers': results,
-                    })
-                    file_result['saved'] = True
-
-        except Exception as e:
-            logger.error(f"Scan grading error for {upload.filename}: {e}")
-            file_result['error'] = f'Processing error: {str(e)}'
-
-        graded_results.append(file_result)
-
-    # 9. Mark package as graded if all saved
+    # Mark package as graded if all saved
     if package_id and all(r.get('saved') for r in graded_results if not r.get('error')):
         student_service.mark_package_graded(package_id)
 
     return graded_results
+
+
+@app.post("/api/grade-scanned-worksheets-stream")
+async def grade_scanned_worksheets_stream(
+    request: Request,
+    student_files: List[UploadFile] = File(...),
+    package_id: Optional[str] = Form(None),
+    worksheet_json: Optional[str] = Form(None),
+    worksheet_title: Optional[str] = Form("Worksheet"),
+    worksheet_subject: Optional[str] = Form("General"),
+):
+    """SSE streaming version — sends each graded result as it completes.
+
+    Each SSE event is a JSON object with:
+      - index: 0-based position in the file list
+      - total: total number of files
+      - result: the graded result for this file
+      - done: true on the final event
+    """
+    from starlette.responses import StreamingResponse
+
+    package, base_worksheet, student_versions = _load_grading_context(package_id, worksheet_json)
+    prompt = _build_vision_grading_prompt(base_worksheet, student_versions)
+    max_tokens = _compute_dynamic_max_tokens(base_worksheet.get('questions', []))
+
+    from inference_factory import get_inference_instance
+    inference = get_inference_instance()
+
+    if not getattr(inference, 'has_vision', False):
+        raise HTTPException(status_code=400, detail="Vision model not available.")
+
+    # Pre-read all files
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    total = len(file_data)
+
+    async def event_generator():
+        all_results = []
+        for idx, (content, filename) in enumerate(file_data):
+            result = await _grade_single_scan(
+                content, filename, prompt, max_tokens, inference,
+                package, student_versions, worksheet_title, worksheet_subject,
+            )
+            all_results.append(result)
+
+            event = json.dumps({
+                'index': idx,
+                'total': total,
+                'result': result,
+                'done': idx == total - 1,
+            })
+            yield f"data: {event}\n\n"
+
+        # Mark package as graded if all saved
+        if package_id and all(r.get('saved') for r in all_results if not r.get('error')):
+            student_service.mark_package_graded(package_id)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.get("/api/rubric-history")
@@ -3617,6 +3745,126 @@ CONTENT_TYPES = {
     "md": "text/markdown",
     "markdown": "text/markdown",
 }
+
+# ══════════════════════════════════════════════════════════════
+# File Explorer Endpoints
+# ══════════════════════════════════════════════════════════════
+
+@app.post("/api/file-explorer/parse")
+async def file_explorer_parse(file: UploadFile = File(...)):
+    """Parse a file and extract its full text content."""
+    try:
+        from file_parser import parse_file
+        content = await file.read()
+        result = parse_file(content, file.filename or "unknown")
+        return JSONResponse(content=result)
+    except Exception as e:
+        logging.error(f"Error parsing file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/file-explorer/preview")
+async def file_explorer_preview(file: UploadFile = File(...)):
+    """Get a truncated preview of file content (first ~500 words)."""
+    try:
+        from file_parser import get_preview
+        content = await file.read()
+        result = get_preview(content, file.filename or "unknown", max_words=500)
+        return JSONResponse(content=result)
+    except Exception as e:
+        logging.error(f"Error previewing file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/file-explorer/organize")
+async def file_explorer_organize(body: dict = Body(...)):
+    """
+    Generate an AI organization plan for files in a folder.
+    Accepts: { files: [{name, extension, size, modifiedTime}], folder_name: str, instruction?: str }
+    Returns: { action, description, folders_to_create, moves: [{file, from, to}] }
+    """
+    try:
+        files = body.get("files", [])
+        folder_name = body.get("folder_name", "folder")
+        instruction = body.get("instruction", "Organize these files into logical subfolders")
+
+        if not files:
+            return JSONResponse(content={"error": "No files provided"}, status_code=400)
+
+        # Build a file listing for the LLM
+        file_listing = "\n".join(
+            f"- {f['name']} ({f.get('extension', '')}), {f.get('size', 0)} bytes, modified {f.get('modifiedTime', 'unknown')}"
+            for f in files[:200]  # Cap at 200 files
+        )
+
+        prompt = f"""You are a file organization assistant. A teacher wants to organize their "{folder_name}" folder.
+
+Their instruction: {instruction}
+
+Here are the files currently in the folder:
+{file_listing}
+
+Respond with ONLY a valid JSON object (no markdown, no explanation) in this exact format:
+{{
+  "action": "organize",
+  "description": "Brief description of the organization plan",
+  "folders_to_create": ["FolderName1", "FolderName2"],
+  "moves": [
+    {{"file": "exact filename.ext", "from": "{folder_name}", "to": "FolderName1"}},
+    {{"file": "another file.ext", "from": "{folder_name}", "to": "FolderName2"}}
+  ]
+}}
+
+Rules:
+- Group files by type/purpose (e.g., Documents, Spreadsheets, Images, Presentations)
+- Use clear, descriptive folder names
+- Every file must appear in the moves array
+- The "from" field is always "{folder_name}"
+- The "to" field is one of the folders_to_create
+- Do NOT create folders with only 1 file unless the instruction specifically asks for it
+- If files don't fit any category, put them in a "Miscellaneous" folder
+"""
+
+        from inference_factory import get_inference_instance
+        inference = get_inference_instance()
+        llm_result = await inference.generate(
+            tool_name='file_organize',
+            input_data=f"Organize {len(files)} files in {folder_name}",
+            prompt_template=prompt,
+            max_tokens=2000,
+            temperature=0.3,
+        )
+
+        raw = llm_result.get('result') or ''
+
+        import re as _re
+        json_match = _re.search(r'\{[\s\S]*\}', raw)
+        if not json_match:
+            return JSONResponse(
+                content={"error": "AI could not generate a valid organization plan. Please try again."},
+                status_code=422
+            )
+
+        plan = json.loads(json_match.group())
+
+        # Validate plan structure
+        if not isinstance(plan.get("folders_to_create"), list) or not isinstance(plan.get("moves"), list):
+            return JSONResponse(
+                content={"error": "AI returned an invalid plan structure. Please try again."},
+                status_code=422
+            )
+
+        return JSONResponse(content=plan)
+
+    except json.JSONDecodeError:
+        return JSONResponse(
+            content={"error": "AI response was not valid JSON. Please try again."},
+            status_code=422
+        )
+    except Exception as e:
+        logging.error(f"Error generating organization plan: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/export")
 async def export_data(

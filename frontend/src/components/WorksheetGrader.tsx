@@ -223,13 +223,18 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
 
   const removeFile = (idx: number) => setFiles(prev => prev.filter((_, i) => i !== idx));
 
-  // Grade
+  // Streaming progress state
+  const [gradingProgress, setGradingProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
+
+  // Grade — uses SSE streaming so results appear one-by-one
   const handleGrade = async () => {
     if (files.length === 0 || (!selectedPackageId && !selectedWorksheet)) return;
 
     setGrading(true);
     setPhase('grading');
     setError(null);
+    setResults([]);
+    setGradingProgress({ done: 0, total: files.length });
 
     try {
       const formData = new FormData();
@@ -243,16 +248,58 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
         formData.append('worksheet_subject', selectedSubject);
       }
 
-      const res = await axios.post(`${API_BASE}/api/grade-scanned-worksheets`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 600000,
+      // Use SSE streaming endpoint for real-time progress
+      const response = await fetch(`${API_BASE}/api/grade-scanned-worksheets-stream`, {
+        method: 'POST',
+        body: formData,
       });
 
-      setResults(res.data);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({ detail: 'Grading failed' }));
+        throw new Error(errData.detail || `Server error ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Streaming not supported');
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const event = JSON.parse(line.slice(6));
+            setResults(prev => [...prev, event.result]);
+            setGradingProgress({ done: event.index + 1, total: event.total });
+
+            if (event.done) {
+              setPhase('results');
+              setGrading(false);
+            }
+          } catch {
+            // skip malformed events
+          }
+        }
+      }
+
+      // If stream ended without a done event, finalize
       setPhase('results');
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Grading failed');
-      setPhase('upload');
+      setError(err.message || 'Grading failed');
+      // If we got partial results, show them; otherwise go back to upload
+      if (results.length > 0) {
+        setPhase('results');
+      } else {
+        setPhase('upload');
+      }
     } finally {
       setGrading(false);
     }
@@ -284,7 +331,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
           <p className="text-sm text-theme-hint">
             {phase === 'select-source' && 'Select a worksheet or upload a teacher version'}
             {phase === 'upload' && `Upload scanned papers for: ${selectedTitle}`}
-            {phase === 'grading' && 'AI is reading and grading papers...'}
+            {phase === 'grading' && `Grading paper ${gradingProgress.done + 1} of ${gradingProgress.total}...`}
             {phase === 'results' && `${successCount} of ${results.length} graded & saved`}
           </p>
         </div>
@@ -535,10 +582,44 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
               <HeartbeatLoader className="w-12 h-12 mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-theme-heading mb-2">Reading & Grading Papers</h3>
-            <p className="text-sm text-theme-hint">
-              The vision model is scanning {files.length} paper{files.length !== 1 ? 's' : ''}.
-              This takes ~30 seconds per paper.
+            <p className="text-sm text-theme-hint mb-4">
+              Grading paper {gradingProgress.done + 1} of {gradingProgress.total}
             </p>
+            {/* Progress bar */}
+            <div className="w-full bg-theme-secondary rounded-full h-3 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${gradingProgress.total > 0 ? (gradingProgress.done / gradingProgress.total) * 100 : 0}%`,
+                  backgroundColor: accentColor,
+                }}
+              />
+            </div>
+            <p className="text-xs text-theme-hint mt-2">
+              {gradingProgress.done} of {gradingProgress.total} complete
+            </p>
+
+            {/* Live results appearing as they grade */}
+            {results.length > 0 && (
+              <div className="mt-6 text-left space-y-2">
+                {results.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-theme-secondary text-sm">
+                    {r.error ? (
+                      <AlertCircle className="w-4 h-4" style={{ color: '#dc2626' }} />
+                    ) : (
+                      <CheckCircle className="w-4 h-4" style={{ color: '#059669' }} />
+                    )}
+                    <span className="text-theme-body flex-1 truncate">{r.file_name}</span>
+                    {!r.error && (
+                      <span className="font-semibold px-2 py-0.5 rounded text-white text-xs" style={{ backgroundColor: gradeColorBg(r.letter_grade) }}>
+                        {r.letter_grade} · {r.percentage}%
+                      </span>
+                    )}
+                    {r.error && <span className="text-xs text-red-500 truncate max-w-[150px]">{r.error}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
