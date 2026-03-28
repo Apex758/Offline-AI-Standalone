@@ -202,8 +202,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           // Load progress breakdown for grade/subject views
           const progressData = await milestoneApi.getProgress(teacherId);
           setProgressBreakdown(progressData.byGradeSubject || []);
-        } catch (e) {
-          console.error('Error loading milestones:', e);
+        } catch (e: any) {
+          console.error('Error loading milestones:', e?.response?.data || e?.message || e);
           setMilestoneStats(null);
           setProgressBreakdown([]);
         }

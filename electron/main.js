@@ -65,8 +65,28 @@ let backendProcess;
 let tray = null;
 let minimizeToTray = false;
 let isQuitting = false;
+let backendRestartCount = 0;
+const MAX_BACKEND_RESTARTS = 3;
 const BACKEND_PORT = 8000;
 const FRONTEND_PORT = 5173;
+
+// ── Single instance lock ──
+// Prevent multiple instances from launching (e.g., auto-start + user click)
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  log.info('Another instance is already running — quitting this one.');
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // Someone tried to launch a second instance — focus the existing window
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
 
 // Function to find Python executable
 function getPythonPath() {
@@ -345,6 +365,28 @@ async function startBackend() {
         log.error(`Backend process exited with code ${code}`);
         log.error('Output:', output);
         log.error('Error output:', errorOutput);
+      }
+      // Auto-restart backend if it crashes after initial startup
+      if (serverStarted && !isQuitting) {
+        backendRestartCount++;
+        if (backendRestartCount <= MAX_BACKEND_RESTARTS) {
+          log.warn(`Backend crashed (code: ${code}, signal: ${signal}) — restart ${backendRestartCount}/${MAX_BACKEND_RESTARTS}...`);
+          backendProcess = null;
+          setTimeout(() => {
+            if (!isQuitting) {
+              startBackend().then(() => {
+                log.info('Backend restarted successfully after crash');
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                  mainWindow.webContents.send('backend-restarted');
+                }
+              }).catch(err => {
+                log.error('Failed to restart backend:', err);
+              });
+            }
+          }, 2000);
+        } else {
+          log.error(`Backend crashed ${backendRestartCount} times — not restarting again`);
+        }
       }
     });
     
@@ -1014,6 +1056,7 @@ autoUpdater.on('update-downloaded', (info) => {
 
 // App lifecycle
 app.whenReady().then(async () => {
+  if (!gotTheLock) return; // Second instance — bail out
   log.info('App ready, starting initialization...');
 
   try {

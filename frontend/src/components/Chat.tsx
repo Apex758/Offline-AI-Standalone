@@ -967,16 +967,18 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             >
               <Plus className="w-5 h-5 text-theme-muted" />
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setRightPanel(rightPanel === 'files' ? 'none' : 'files');
-              }}
-              className={`p-2 rounded-lg hover:bg-theme-hover transition ${rightPanel === 'files' ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
-              title="Browse Files"
-            >
-              <FolderOpen className={`w-5 h-5 ${rightPanel === 'files' ? 'text-blue-600' : 'text-theme-muted'}`} />
-            </button>
+            {settings.fileAccessEnabled && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRightPanel(rightPanel === 'files' ? 'none' : 'files');
+                }}
+                className={`p-2 rounded-lg hover:bg-theme-hover transition ${rightPanel === 'files' ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                title="Browse Files"
+              >
+                <FolderOpen className={`w-5 h-5 ${rightPanel === 'files' ? 'text-blue-600' : 'text-theme-muted'}`} />
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
