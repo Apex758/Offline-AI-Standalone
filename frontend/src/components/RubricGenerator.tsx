@@ -523,7 +523,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && typeof saved === 'object' && saved.assignmentTitle?.trim()) {
-      return saved;
+      return { ...getDefaultFormData(), ...saved };
     }
     return getDefaultFormData();
   });

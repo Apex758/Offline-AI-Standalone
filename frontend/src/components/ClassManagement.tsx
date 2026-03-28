@@ -1854,6 +1854,7 @@ ${tabScript}
                 <CheckCircle className="w-4 h-4 flex-shrink-0" />
                 Import complete: <strong>{importResult.created}</strong> added, <strong>{importResult.updated}</strong> updated
                 {importResult.skipped > 0 && <>, <strong>{importResult.skipped}</strong> skipped</>}
+                {importResult.errors?.length > 0 && <span className="text-red-600 ml-1">({importResult.errors.length} error{importResult.errors.length > 1 ? 's' : ''}: {importResult.errors[0]})</span>}
                 <button onClick={() => setImportResult(null)} className="ml-auto text-green-500 hover:text-green-700"><X className="w-4 h-4" /></button>
               </div>
             )}

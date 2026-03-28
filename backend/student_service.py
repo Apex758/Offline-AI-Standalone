@@ -355,7 +355,7 @@ def bulk_import_students(rows: list[dict]) -> dict:
                 )
                 updated += 1
             else:
-                student_id = _generate_student_id(data['full_name'], conn)
+                student_id = _generate_student_id(conn, full_name=data['full_name'])
                 conn.execute(
                     '''INSERT INTO students
                        (id, full_name, date_of_birth, class_name, grade_level, gender, contact_info)

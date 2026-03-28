@@ -48,7 +48,10 @@
       "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.vue \\\\\\))",
       "Bash(npx.cmd vite:*)",
       "Bash(node_modules/.bin/tsc --noEmit)",
-      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))"
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -path */node_modules -prune -o -path */site-packages -prune -o -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.py \\\\\\) -print)",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend' -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))"
     ]
   }
 }
