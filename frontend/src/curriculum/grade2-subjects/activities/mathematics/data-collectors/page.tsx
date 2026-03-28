@@ -42,7 +42,7 @@ export default function DataCollectorsActivity() {
           <span className="mr-4">Time: 45 minutes</span>
           <span>Difficulty: Medium</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800"
           alt="Data Collectors Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"

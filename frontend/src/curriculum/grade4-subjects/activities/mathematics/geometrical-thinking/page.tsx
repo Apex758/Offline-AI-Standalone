@@ -34,7 +34,7 @@ export default function GeometricalThinkingActivitiesPage() {
             </p>
           </div>
           <div className="md:w-1/4 flex justify-center mt-4 md:mt-0">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=120&width=120&query=geometric shapes math"
               alt="Geometric shapes illustration"
               className="rounded-full border-4 border-white shadow-md"
@@ -77,7 +77,7 @@ export default function GeometricalThinkingActivitiesPage() {
         <TabsContent value="angles-lines" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Angles & Lines Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=angles and lines geometry math"
               alt="Angles and lines in geometry"
               className="rounded-lg shadow-md"
@@ -178,7 +178,7 @@ export default function GeometricalThinkingActivitiesPage() {
         <TabsContent value="2d-shapes" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">2D Shapes Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=2D shapes polygons geometry"
               alt="2D shapes and polygons"
               className="rounded-lg shadow-md"
@@ -282,7 +282,7 @@ export default function GeometricalThinkingActivitiesPage() {
         <TabsContent value="3d-shapes" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">3D Shapes Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=3D shapes geometry math"
               alt="3D shapes and geometric solids"
               className="rounded-lg shadow-md"
@@ -386,7 +386,7 @@ export default function GeometricalThinkingActivitiesPage() {
         <TabsContent value="symmetry" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Symmetry Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=symmetry reflection geometry"
               alt="Symmetry and reflections in geometry"
               className="rounded-lg shadow-md"
@@ -490,7 +490,7 @@ export default function GeometricalThinkingActivitiesPage() {
         <TabsContent value="online-resources" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Online Resources for Geometrical Thinking</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=digital geometry resources"
               alt="Digital geometry resources and tools"
               className="rounded-lg shadow-md"

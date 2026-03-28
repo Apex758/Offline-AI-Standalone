@@ -42,7 +42,7 @@ export default function PlaceValuePartnersActivity() {
           <span className="mr-4">Time: 30 minutes</span>
           <span>Difficulty: Medium</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800&query=students+working+with+base+10+blocks"
           alt="Place Value Partners Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"

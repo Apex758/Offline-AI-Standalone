@@ -81,7 +81,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="./toy-car-ramp-energy.png" alt="Kinetic and Potential Energy" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="./toy-car-ramp-energy.png" alt="Kinetic and Potential Energy" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -137,7 +137,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="./pendulum-energy-conversion.png" alt="Pendulum Energy Investigation" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="./pendulum-energy-conversion.png" alt="Pendulum Energy Investigation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="./heat-transfer-methods.png" alt="Heat Transfer" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="./heat-transfer-methods.png" alt="Heat Transfer" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="./simple-electrical-circuit.png" alt="Simple Circuit Construction" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="./simple-electrical-circuit.png" alt="Simple Circuit Construction" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="./renewable-non-renewable-energy.png" alt="Renewable vs. Non-Renewable" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="./renewable-non-renewable-energy.png" alt="Renewable vs. Non-Renewable" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -336,7 +336,7 @@ export default function EnergyActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="./solar-oven-pizza-box.png" alt="Solar Oven Construction" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="./solar-oven-pizza-box.png" alt="Solar Oven Construction" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

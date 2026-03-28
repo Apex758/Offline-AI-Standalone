@@ -80,7 +80,7 @@ export default function StructureFunctionActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=flower+dissection+plant+structures" alt="Plant Dissection" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=flower+dissection+plant+structures" alt="Plant Dissection" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export default function StructureFunctionActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=plant+transpiration+colored+water+experiment" alt="Transpiration Demonstration" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=plant+transpiration+colored+water+experiment" alt="Transpiration Demonstration" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function StructureFunctionActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=animal+adaptations+survival" alt="Animal Adaptations" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=animal+adaptations+survival" alt="Animal Adaptations" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export default function StructureFunctionActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=human+body+survival+adaptations+comparison" alt="Human Survival Features" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=human+body+survival+adaptations+comparison" alt="Human Survival Features" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -243,7 +243,7 @@ export default function StructureFunctionActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=animal+camouflage+blending+environment" alt="Camouflage" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=animal+camouflage+blending+environment" alt="Camouflage" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -278,7 +278,7 @@ export default function StructureFunctionActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=animal+special+senses+adaptations" alt="Animal Senses Research" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=animal+special+senses+adaptations" alt="Animal Senses Research" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

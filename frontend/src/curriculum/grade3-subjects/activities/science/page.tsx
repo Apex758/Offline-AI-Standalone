@@ -187,7 +187,7 @@ export default function Grade3ScienceActivitiesPage() {
               className={`h-full transition-all duration-300 hover:shadow-lg ${strand.color} border-2 ${strand.borderColor} overflow-hidden`}
             >
               <div className="relative h-48 w-full">
-                <img src="" alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" src="" alt="" className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex items-center justify-between">

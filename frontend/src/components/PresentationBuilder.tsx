@@ -24,7 +24,7 @@ import { buildPresentationPromptFromForm, buildPresentationPromptFromLesson } fr
 import type { PresentationFormData, ParsedLessonInput } from '../utils/presentationPromptBuilder';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import axios from 'axios';
-import pptxgen from 'pptxgenjs';
+// pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -197,7 +197,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
   if (image) {
     return (
       <div style={{ ...style, overflow: 'hidden', borderRadius: (placement === 'background' || placement === 'half') ? 0 : 10 * sc, zIndex: 0 }}>
-        <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img loading="lazy" src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         {placement === 'background' && <div style={{ position: 'absolute', inset: 0, background: `${theme.bg}88` }} />}
       </div>
     );
@@ -1991,7 +1991,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   };
 
   // PPTX Export
-  const exportPPTX = () => {
+  const exportPPTX = async () => {
+    const pptxgen = (await import('pptxgenjs')).default;
     const pptx = new pptxgen();
     pptx.layout = 'LAYOUT_WIDE';
     slides.forEach(slide => {
@@ -2344,7 +2345,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <div className="grid grid-cols-4 gap-2">
                       {uploadedImages.map(img => (
                         <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-video border border-theme-border">
-                          <img src={img.dataUri} alt={img.filename} className="w-full h-full object-cover" />
+                          <img loading="lazy" src={img.dataUri} alt={img.filename} className="w-full h-full object-cover" />
                           <button
                             onClick={(e) => { e.stopPropagation(); removeUploadedImage(img.id); }}
                             className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
@@ -2828,7 +2829,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <div className="mt-4 pt-3.5 border-t border-theme-border">
                     <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">Slide Image</label>
                     <div className="space-y-2">
-                      <img src={cur.content.image} alt="Slide" className="w-full rounded border border-theme-border" />
+                      <img loading="lazy" src={cur.content.image} alt="Slide" className="w-full rounded border border-theme-border" />
                       <button
                         onClick={() => updateSlide('image', undefined)}
                         className="px-2 py-1.5 rounded text-xs bg-theme-primary border border-theme-border text-red-400"

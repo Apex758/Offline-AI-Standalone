@@ -42,7 +42,9 @@
       "Bash(while read:*)",
       "Bash(do ls:*)",
       "Bash(cp frontend/src/data/curriculumIndex.json resources/frontend/src/data/curriculumIndex.json)",
-      "Bash(cp frontend/src/data/curriculumIndex.json backend-bundle/data/curriculumIndex.json)"
+      "Bash(cp frontend/src/data/curriculumIndex.json backend-bundle/data/curriculumIndex.json)",
+      "Bash(npm install:*)",
+      "Bash(xargs sed:*)"
     ]
   }
 }

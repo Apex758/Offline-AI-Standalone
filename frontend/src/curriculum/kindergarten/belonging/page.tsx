@@ -73,7 +73,7 @@ export default function BelongingUnit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2">
-          <img src="./kindergarten-friendship.png" alt="Kindergarten students learning about belonging" className="w-auto h-auto" />
+          <img loading="lazy" src="./kindergarten-friendship.png" alt="Kindergarten students learning about belonging" className="w-auto h-auto" />
         </div>
         <div>
           <Card className="border-purple-200 h-full shadow-md">

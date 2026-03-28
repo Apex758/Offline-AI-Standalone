@@ -142,7 +142,7 @@ export default function Grade5ScienceActivitiesPage() {
               </CardHeader>
               <CardContent className="p-4">
                 <div className="mb-4">
-                  <img src="" alt="" className="w-auto h-auto" />
+                  <img loading="lazy" src="" alt="" className="w-auto h-auto" />
                 </div>
                 <div className="space-y-2 mb-4">
                   <h4 className="font-semibold text-sm">Featured Activities:</h4>

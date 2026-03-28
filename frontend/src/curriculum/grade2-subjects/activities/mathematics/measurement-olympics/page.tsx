@@ -42,7 +42,7 @@ export default function MeasurementOlympicsActivity() {
           <span className="mr-4">Time: 45 minutes</span>
           <span>Difficulty: Easy</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800&query=children+measuring+activities"
           alt="Measurement Olympics Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"

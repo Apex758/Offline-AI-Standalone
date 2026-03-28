@@ -42,7 +42,7 @@ export default function ProbabilityGamesActivity() {
           <span className="mr-4">Time: 35 minutes</span>
           <span>Difficulty: Medium</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800&query=probability+games+for+children"
           alt="Probability Games Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"

@@ -191,7 +191,7 @@ const ListBasedTemplate: React.FC<ListBasedTemplateProps> = ({
             {loading
               ? <Skeleton style={{ width: 280, height: 160, display: 'inline-block', background: palette.accentLight, borderRadius: 4 }} />
               : generatedImage
-                ? <img src={generatedImage} alt="" style={{ maxWidth: 280, border: `1.5px solid ${palette.accentMuted}`, borderRadius: 4 }} />
+                ? <img loading="lazy" src={generatedImage} alt="" style={{ maxWidth: 280, border: `1.5px solid ${palette.accentMuted}`, borderRadius: 4 }} />
                 : <div style={{ display: 'inline-flex', width: 280, height: 160, background: palette.accentLighter, border: `1.5px dashed ${palette.accentMuted}`, borderRadius: 4, alignItems: 'center', justifyContent: 'center', color: palette.accentMuted, fontSize: 12 }}>image placeholder</div>
             }
           </div>

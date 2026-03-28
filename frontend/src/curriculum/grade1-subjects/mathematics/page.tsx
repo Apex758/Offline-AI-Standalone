@@ -579,7 +579,7 @@ export default function Grade1MathematicsPage() {
           {featuredActivities.map((activity, index) => (
             <div key={index} className="overflow-hidden rounded-lg bg-white shadow-sm">
               <div className="relative h-40">
-                <img src="" alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" src="" alt="" className="w-full h-full object-cover" />
               </div>
               <div className="p-4">
                 <div className="mb-2 flex items-center justify-between">
@@ -608,7 +608,7 @@ export default function Grade1MathematicsPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="relative h-48 bg-gray-200">
-              <img src="./placeholder-4d0eb.png" alt="Students counting blocks" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./placeholder-4d0eb.png" alt="Students counting blocks" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="mb-2 font-semibold">Hands-on Learning</h3>
@@ -622,7 +622,7 @@ export default function Grade1MathematicsPage() {
           </div>
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="relative h-48 bg-gray-200">
-              <img src="./placeholder-34akh.png" alt="Students measuring" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./placeholder-34akh.png" alt="Students measuring" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="mb-2 font-semibold">Measurement Activities</h3>
@@ -636,7 +636,7 @@ export default function Grade1MathematicsPage() {
           </div>
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="relative h-48 bg-gray-200">
-              <img src="./placeholder-dzl0x.png" alt="Students creating patterns" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./placeholder-dzl0x.png" alt="Students creating patterns" className="w-full h-full object-cover" />
             </div>
             <div className="p-4">
               <h3 className="mb-2 font-semibold">Pattern Exploration</h3>

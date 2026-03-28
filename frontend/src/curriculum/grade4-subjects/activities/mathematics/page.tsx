@@ -49,7 +49,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="./placeholder-1sfkd.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./placeholder-1sfkd.png" alt="Children learning number sense concepts" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop understanding of numbers to 10,000, place value, fractions, and decimals through hands-on
@@ -72,7 +72,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="./placeholder-pc7dd.png" alt="Children learning multiplication and division" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./placeholder-pc7dd.png" alt="Children learning multiplication and division" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Build fluency with multi-digit operations, develop efficient calculation strategies, and apply operations
@@ -95,7 +95,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="./placeholder-hiczo.png" alt="Children exploring patterns and relationships" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./placeholder-hiczo.png" alt="Children exploring patterns and relationships" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Identify, describe, and extend patterns, explore number relationships, and develop early algebraic
@@ -118,7 +118,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/placeholder.svg?height=400&width=600&query=children measuring angles with protractors" alt="Children learning about geometric shapes and angles" className="w-full h-full object-cover" />
+              <img loading="lazy" src="/placeholder.svg?height=400&width=600&query=children measuring angles with protractors" alt="Children learning about geometric shapes and angles" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Explore properties of polygons, classify quadrilaterals, measure angles, and investigate symmetry and
@@ -141,7 +141,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/placeholder.svg?height=400&width=600&query=children calculating area and perimeter of shapes" alt="Children measuring and calculating area" className="w-full h-full object-cover" />
+              <img loading="lazy" src="/placeholder.svg?height=400&width=600&query=children calculating area and perimeter of shapes" alt="Children measuring and calculating area" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Develop measurement skills through practical activities involving perimeter, area, volume, and converting
@@ -166,7 +166,7 @@ export default function Grade4MathematicsActivitiesPage() {
           </CardHeader>
           <CardContent>
             <div className="h-48 relative mb-4">
-              <img src="/placeholder.svg?height=400&width=600&query=children analyzing data and creating line plots" alt="Children creating and analyzing graphs" className="w-full h-full object-cover" />
+              <img loading="lazy" src="/placeholder.svg?height=400&width=600&query=children analyzing data and creating line plots" alt="Children creating and analyzing graphs" className="w-full h-full object-cover" />
             </div>
             <p className="text-sm">
               Collect, organize, and analyze data using various representations, interpret data to draw conclusions, and

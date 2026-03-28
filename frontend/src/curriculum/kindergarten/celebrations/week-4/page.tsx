@@ -425,7 +425,7 @@ export default function CelebrationsUnitWeek4() {
 
         <div className="md:col-span-2">
 
-          <img src="./celebrations-world-festival.png" alt="Children’s crayon drawing with the words “FAVORITE CELEBRATIONS,” showing kids, a globe, balloons, presents, a cake, bunting, and confetti, highlighting festivals, diversity, and joyful family traditions." className="w-auto h-auto" />
+          <img loading="lazy" src="./celebrations-world-festival.png" alt="Children’s crayon drawing with the words “FAVORITE CELEBRATIONS,” showing kids, a globe, balloons, presents, a cake, bunting, and confetti, highlighting festivals, diversity, and joyful family traditions." className="w-auto h-auto" />
 
         </div>
 

@@ -59,7 +59,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./storytelling-circle.png" alt="Storytelling Circle" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./storytelling-circle.png" alt="Storytelling Circle" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Storytelling Circle</CardTitle>
@@ -87,7 +87,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./children-following-directions.png" alt="Follow the Leader" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./children-following-directions.png" alt="Follow the Leader" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Follow the Leader</CardTitle>
@@ -115,7 +115,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./children-sound-identification.png" alt="Sound Detectives" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./children-sound-identification.png" alt="Sound Detectives" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Sound Detectives</CardTitle>
@@ -148,7 +148,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./reading-buddies.png" alt="Reading Buddies" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./reading-buddies.png" alt="Reading Buddies" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Reading Buddies</CardTitle>
@@ -176,7 +176,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./picture-books.png" alt="Picture Books" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./picture-books.png" alt="Picture Books" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Picture Books</CardTitle>
@@ -204,7 +204,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./video-clips.png" alt="Video Clips" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./video-clips.png" alt="Video Clips" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Video Clips</CardTitle>
@@ -237,7 +237,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./drawing-stories.png" alt="Drawing Stories" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./drawing-stories.png" alt="Drawing Stories" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Drawing Stories</CardTitle>
@@ -265,7 +265,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./writing-journal.png" alt="Writing Journal" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./writing-journal.png" alt="Writing Journal" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Writing Journal</CardTitle>
@@ -293,7 +293,7 @@ export default function Grade2LanguageArtsActivitiesPage() {
 
           <Card className="hover:shadow-lg transition-all duration-300">
             <div className="relative h-48 w-full">
-              <img src="./acting-out-stories.png" alt="Acting Out Stories" className="w-full h-full object-cover" />
+              <img loading="lazy" src="./acting-out-stories.png" alt="Acting Out Stories" className="w-full h-full object-cover" />
             </div>
             <CardHeader>
               <CardTitle>Acting Out Stories</CardTitle>

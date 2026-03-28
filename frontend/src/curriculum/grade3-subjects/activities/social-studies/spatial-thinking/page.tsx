@@ -26,7 +26,6 @@ const Shield: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { motion } from "framer-motion"
 // // // import Image from "next/image" - replaced with img tag - replaced with img tag - replaced with img tag
 
 const activities = [
@@ -149,20 +148,6 @@ export default function SpatialThinkingPage() {
 
   const allTags = Array.from(new Set(activities.flatMap((activity) => activity.tags)))
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -214,19 +199,14 @@ export default function SpatialThinkingPage() {
         </div>
       </div>
 
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        variants={container}
-        initial="hidden"
-        animate="show"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-[fadeIn_0.3s_ease-out]">
         {filteredActivities.map((activity) => (
-          <motion.div key={activity.id} variants={item}>
+          <div key={activity.id}>
             <Card
               className={`h-full transition-all duration-300 hover:shadow-lg ${activity.color} border-2 ${activity.borderColor} overflow-hidden`}
             >
               <div className="relative h-48 w-full">
-                <img src="" alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" src="" alt="" className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -267,9 +247,9 @@ export default function SpatialThinkingPage() {
                   </Badge>
               </CardFooter>
             </Card>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
       {filteredActivities.length === 0 && (
         <div className="text-center py-12">

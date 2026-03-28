@@ -42,7 +42,7 @@ export default function FractionFunActivity() {
           <span className="mr-4">Time: 35 minutes</span>
           <span>Difficulty: Medium</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800"
           alt="Fraction Fun Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"

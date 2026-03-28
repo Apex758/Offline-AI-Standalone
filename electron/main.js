@@ -10,6 +10,7 @@ const envPath = isDev_
 require('dotenv').config({ path: envPath });
 const log = require('electron-log');
 const fs = require('fs');
+const fsp = fs.promises;
 const { autoUpdater } = require('electron-updater');
 const isDev = !app.isPackaged;
 
@@ -100,24 +101,19 @@ function getPythonPath() {
   return 'python';
 }
 
-// Function to recursively copy directory
-function copyDirectorySync(src, dest) {
-  // Create destination directory
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
-  }
-  
-  // Read source directory
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-  
+// Function to recursively copy directory (async to avoid blocking main thread)
+async function copyDirectoryAsync(src, dest) {
+  await fsp.mkdir(dest, { recursive: true });
+  const entries = await fsp.readdir(src, { withFileTypes: true });
+
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    
+
     if (entry.isDirectory()) {
-      copyDirectorySync(srcPath, destPath);
+      await copyDirectoryAsync(srcPath, destPath);
     } else {
-      fs.copyFileSync(srcPath, destPath);
+      await fsp.copyFile(srcPath, destPath);
     }
   }
 }
@@ -132,18 +128,13 @@ async function setupImageGenerationModels() {
     const targetImageGenDir = path.join(targetModelsDir, 'image_generation');
     
     // Check if models already exist
-    if (fs.existsSync(targetImageGenDir)) {
-      log.info('Image generation models already installed');
-      return;
-    }
-    
+    try { await fsp.access(targetImageGenDir); log.info('Image generation models already installed'); return; } catch {}
+
     log.info('Setting up image generation models for first time...');
-    
+
     // Ensure models directory exists
-    if (!fs.existsSync(targetModelsDir)) {
-      fs.mkdirSync(targetModelsDir, { recursive: true });
-      log.info(`Created models directory: ${targetModelsDir}`);
-    }
+    await fsp.mkdir(targetModelsDir, { recursive: true });
+    log.info(`Created models directory: ${targetModelsDir}`);
     
     // Determine source path
     let sourceImageGenDir;
@@ -160,21 +151,25 @@ async function setupImageGenerationModels() {
     log.info(`Target path: ${targetImageGenDir}`);
     
     // Check if source exists
-    if (!fs.existsSync(sourceImageGenDir)) {
+    try { await fsp.access(sourceImageGenDir); } catch {
       log.warn(`Image generation models not found at: ${sourceImageGenDir}`);
       log.warn('Image generation features will be unavailable');
       return;
     }
-    
+
     // Copy the models
     log.info('Copying image generation models (this may take a moment)...');
-    copyDirectorySync(sourceImageGenDir, targetImageGenDir);
-    
+    await copyDirectoryAsync(sourceImageGenDir, targetImageGenDir);
+
     // Verify the copy
     const sdxlPath = path.join(targetImageGenDir, 'sdxl-turbo-openvino');
     const lamaPath = path.join(targetImageGenDir, 'lama');
-    
-    if (fs.existsSync(sdxlPath) && fs.existsSync(lamaPath)) {
+
+    let sdxlExists = false, lamaExists = false;
+    try { await fsp.access(sdxlPath); sdxlExists = true; } catch {}
+    try { await fsp.access(lamaPath); lamaExists = true; } catch {}
+
+    if (sdxlExists && lamaExists) {
       log.info('✅ Image generation models installed successfully');
       log.info(`  - SDXL-Turbo: ${sdxlPath}`);
       log.info(`  - LaMa: ${lamaPath}`);
@@ -536,15 +531,10 @@ ipcMain.handle('get-tasks-data', async () => {
   try {
     const userDataPath = app.getPath('userData');
     const tasksFilePath = path.join(userDataPath, 'tasks.json');
-
-    if (fs.existsSync(tasksFilePath)) {
-      const data = fs.readFileSync(tasksFilePath, 'utf8');
-      return JSON.parse(data);
-    } else {
-      return [];
-    }
+    const data = await fsp.readFile(tasksFilePath, 'utf8');
+    return JSON.parse(data);
   } catch (error) {
-    log.error('Error reading tasks data:', error);
+    if (error.code !== 'ENOENT') log.error('Error reading tasks data:', error);
     return [];
   }
 });
@@ -553,13 +543,8 @@ ipcMain.handle('save-tasks-data', async (event, tasks) => {
   try {
     const userDataPath = app.getPath('userData');
     const tasksFilePath = path.join(userDataPath, 'tasks.json');
-
-    // Ensure user data directory exists
-    if (!fs.existsSync(userDataPath)) {
-      fs.mkdirSync(userDataPath, { recursive: true });
-    }
-
-    fs.writeFileSync(tasksFilePath, JSON.stringify(tasks, null, 2));
+    await fsp.mkdir(userDataPath, { recursive: true });
+    await fsp.writeFile(tasksFilePath, JSON.stringify(tasks, null, 2));
     return true;
   } catch (error) {
     log.error('Error saving tasks data:', error);
@@ -587,7 +572,7 @@ ipcMain.handle('download-file', async (event, { arrayBuffer, filename }) => {
 
     // Convert ArrayBuffer to Buffer and write to file
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(filePath, buffer);
+    await fsp.writeFile(filePath, buffer);
 
     log.info(`File saved successfully: ${filePath}`);
     return { success: true, path: filePath };
@@ -726,25 +711,22 @@ const ALLOWED_EXTENSIONS = new Set([
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 // Helper: load allowed folders from disk
-function loadAllowedFolders() {
+async function loadAllowedFolders() {
   try {
-    if (fs.existsSync(FILE_EXPLORER_CONFIG_PATH)) {
-      const data = JSON.parse(fs.readFileSync(FILE_EXPLORER_CONFIG_PATH, 'utf8'));
-      return data.allowedFolders || [];
-    }
+    const data = JSON.parse(await fsp.readFile(FILE_EXPLORER_CONFIG_PATH, 'utf8'));
+    return data.allowedFolders || [];
   } catch (err) {
-    log.error('Error loading file explorer config:', err);
+    if (err.code !== 'ENOENT') log.error('Error loading file explorer config:', err);
   }
   // Defaults: Downloads + Desktop
   return [app.getPath('downloads'), app.getPath('desktop')];
 }
 
 // Helper: save allowed folders to disk
-function saveAllowedFoldersToDisk(folders) {
+async function saveAllowedFoldersToDisk(folders) {
   try {
-    const dir = path.dirname(FILE_EXPLORER_CONFIG_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(FILE_EXPLORER_CONFIG_PATH, JSON.stringify({ allowedFolders: folders }, null, 2));
+    await fsp.mkdir(path.dirname(FILE_EXPLORER_CONFIG_PATH), { recursive: true });
+    await fsp.writeFile(FILE_EXPLORER_CONFIG_PATH, JSON.stringify({ allowedFolders: folders }, null, 2));
     return true;
   } catch (err) {
     log.error('Error saving file explorer config:', err);
@@ -773,23 +755,23 @@ ipcMain.handle('select-folder', async () => {
 
 // IPC: Get allowed folders list
 ipcMain.handle('get-allowed-folders', async () => {
-  return loadAllowedFolders();
+  return await loadAllowedFolders();
 });
 
 // IPC: Save allowed folders list
 ipcMain.handle('save-allowed-folders', async (event, folders) => {
-  return saveAllowedFoldersToDisk(folders);
+  return await saveAllowedFoldersToDisk(folders);
 });
 
 // IPC: Browse folder contents (lazy, non-recursive)
 ipcMain.handle('browse-folder', async (event, { folderPath }) => {
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   if (!isPathAllowed(folderPath, allowedFolders)) {
     return { error: 'Access denied: folder is not in your allowed list' };
   }
 
   try {
-    const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+    const entries = await fsp.readdir(folderPath, { withFileTypes: true });
     const items = [];
     for (const entry of entries) {
       // Skip hidden files and system files
@@ -803,7 +785,7 @@ ipcMain.handle('browse-folder', async (event, { folderPath }) => {
       if (!isDirectory && !ALLOWED_EXTENSIONS.has(ext)) continue;
 
       try {
-        const stats = fs.statSync(fullPath);
+        const stats = await fsp.stat(fullPath);
         items.push({
           name: entry.name,
           path: fullPath,
@@ -833,18 +815,18 @@ ipcMain.handle('browse-folder', async (event, { folderPath }) => {
 
 // IPC: Read file content (returns base64 to avoid ArrayBuffer serialization issues)
 ipcMain.handle('read-file-content', async (event, { filePath }) => {
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   if (!isPathAllowed(filePath, allowedFolders)) {
     return { error: 'Access denied: file is not in an allowed folder' };
   }
 
   try {
-    const stats = fs.statSync(filePath);
+    const stats = await fsp.stat(filePath);
     if (stats.size > MAX_FILE_SIZE) {
       return { error: `File too large (${(stats.size / 1024 / 1024).toFixed(1)}MB). Maximum is 50MB.` };
     }
 
-    const buffer = fs.readFileSync(filePath);
+    const buffer = await fsp.readFile(filePath);
     const ext = path.extname(filePath).toLowerCase();
     return {
       base64: buffer.toString('base64'),
@@ -860,7 +842,7 @@ ipcMain.handle('read-file-content', async (event, { filePath }) => {
 
 // IPC: Open file in default external application (Word, PowerPoint, etc.)
 ipcMain.handle('open-file-external', async (event, { filePath }) => {
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   if (!isPathAllowed(filePath, allowedFolders)) {
     return { error: 'Access denied: file is not in an allowed folder' };
   }
@@ -879,16 +861,16 @@ ipcMain.handle('open-file-external', async (event, { filePath }) => {
 
 // IPC: Search files recursively across allowed folders
 ipcMain.handle('search-files', async (event, { query, folders, extensions }) => {
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   const searchFolders = (folders || allowedFolders).filter(f => isPathAllowed(f, allowedFolders));
   const queryLower = query.toLowerCase();
   const results = [];
   const MAX_RESULTS = 200;
 
-  function searchDir(dirPath, depth) {
+  async function searchDir(dirPath, depth) {
     if (results.length >= MAX_RESULTS || depth > 10) return;
     try {
-      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      const entries = await fsp.readdir(dirPath, { withFileTypes: true });
       for (const entry of entries) {
         if (results.length >= MAX_RESULTS) break;
         if (entry.name.startsWith('.')) continue;
@@ -896,7 +878,7 @@ ipcMain.handle('search-files', async (event, { query, folders, extensions }) => 
         const fullPath = path.join(dirPath, entry.name);
 
         if (entry.isDirectory()) {
-          searchDir(fullPath, depth + 1);
+          await searchDir(fullPath, depth + 1);
         } else {
           const ext = path.extname(entry.name).toLowerCase();
           if (!ALLOWED_EXTENSIONS.has(ext)) continue;
@@ -904,7 +886,7 @@ ipcMain.handle('search-files', async (event, { query, folders, extensions }) => 
           if (!entry.name.toLowerCase().includes(queryLower)) continue;
 
           try {
-            const stats = fs.statSync(fullPath);
+            const stats = await fsp.stat(fullPath);
             results.push({
               name: entry.name,
               path: fullPath,
@@ -925,7 +907,7 @@ ipcMain.handle('search-files', async (event, { query, folders, extensions }) => 
 
   for (const folder of searchFolders) {
     if (results.length >= MAX_RESULTS) break;
-    searchDir(folder, 0);
+    await searchDir(folder, 0);
   }
 
   return { items: results };
@@ -933,16 +915,14 @@ ipcMain.handle('search-files', async (event, { query, folders, extensions }) => 
 
 // IPC: Create a new folder inside an allowed folder
 ipcMain.handle('create-folder', async (event, { folderPath }) => {
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   if (!isPathAllowed(folderPath, allowedFolders)) {
     return { error: 'Access denied: path is not in an allowed folder' };
   }
 
   try {
-    if (fs.existsSync(folderPath)) {
-      return { success: true, alreadyExists: true };
-    }
-    fs.mkdirSync(folderPath, { recursive: true });
+    try { await fsp.access(folderPath); return { success: true, alreadyExists: true }; } catch {}
+    await fsp.mkdir(folderPath, { recursive: true });
     log.info(`Created folder: ${folderPath}`);
     return { success: true };
   } catch (err) {
@@ -953,26 +933,20 @@ ipcMain.handle('create-folder', async (event, { folderPath }) => {
 
 // IPC: Move a single file (both source and destination must be in allowed folders)
 ipcMain.handle('move-file', async (event, { sourcePath, destPath }) => {
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   if (!isPathAllowed(sourcePath, allowedFolders) || !isPathAllowed(destPath, allowedFolders)) {
     return { error: 'Access denied: source or destination is not in an allowed folder' };
   }
 
   try {
-    if (fs.existsSync(destPath)) {
-      return { error: 'A file with this name already exists at the destination' };
-    }
-    // Ensure destination directory exists
-    const destDir = path.dirname(destPath);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
+    try { await fsp.access(destPath); return { error: 'A file with this name already exists at the destination' }; } catch {}
+    await fsp.mkdir(path.dirname(destPath), { recursive: true });
     // Try rename first (atomic on same drive), fall back to copy+delete
     try {
-      fs.renameSync(sourcePath, destPath);
+      await fsp.rename(sourcePath, destPath);
     } catch (renameErr) {
-      fs.copyFileSync(sourcePath, destPath);
-      fs.unlinkSync(sourcePath);
+      await fsp.copyFile(sourcePath, destPath);
+      await fsp.unlink(sourcePath);
     }
     log.info(`Moved file: ${sourcePath} -> ${destPath}`);
     return { success: true };
@@ -985,7 +959,7 @@ ipcMain.handle('move-file', async (event, { sourcePath, destPath }) => {
 // IPC: Move multiple files at once (for AI-organized cleanup)
 ipcMain.handle('move-files-batch', async (event, { moves }) => {
   // moves: Array of { sourcePath, destPath }
-  const allowedFolders = loadAllowedFolders();
+  const allowedFolders = await loadAllowedFolders();
   const results = [];
   const undoLog = [];
 
@@ -996,19 +970,18 @@ ipcMain.handle('move-files-batch', async (event, { moves }) => {
     }
 
     try {
-      if (fs.existsSync(move.destPath)) {
+      let destExists = false;
+      try { await fsp.access(move.destPath); destExists = true; } catch {}
+      if (destExists) {
         results.push({ source: move.sourcePath, success: false, error: 'File already exists at destination' });
         continue;
       }
-      const destDir = path.dirname(move.destPath);
-      if (!fs.existsSync(destDir)) {
-        fs.mkdirSync(destDir, { recursive: true });
-      }
+      await fsp.mkdir(path.dirname(move.destPath), { recursive: true });
       try {
-        fs.renameSync(move.sourcePath, move.destPath);
+        await fsp.rename(move.sourcePath, move.destPath);
       } catch (renameErr) {
-        fs.copyFileSync(move.sourcePath, move.destPath);
-        fs.unlinkSync(move.sourcePath);
+        await fsp.copyFile(move.sourcePath, move.destPath);
+        await fsp.unlink(move.sourcePath);
       }
       results.push({ source: move.sourcePath, success: true });
       undoLog.push({ sourcePath: move.destPath, destPath: move.sourcePath });

@@ -200,7 +200,7 @@ export default function WeatherUnitWeek4() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="./caribbean-children-weather-observation.png" alt="Children learning about weather forecasting" className="w-full h-full object-cover" />
+                <img loading="lazy" src="./caribbean-children-weather-observation.png" alt="Children learning about weather forecasting" className="w-full h-full object-cover" />
 
               </div>
 
@@ -718,9 +718,9 @@ export default function WeatherUnitWeek4() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-weather-journals.png" alt="Weather journal creation" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-journals.png" alt="Weather journal creation" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-outdoor-observation.png" alt="Outdoor weather observation" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-outdoor-observation.png" alt="Outdoor weather observation" className="w-auto h-auto" />
 
                     </div>
 
@@ -1016,9 +1016,9 @@ export default function WeatherUnitWeek4() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-paper-windmills.png" alt="Paper windmill creation" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-paper-windmills.png" alt="Paper windmill creation" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-weather-tools.png" alt="Weather tools exploration" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-tools.png" alt="Weather tools exploration" className="w-auto h-auto" />
 
                     </div>
 
@@ -1314,9 +1314,9 @@ export default function WeatherUnitWeek4() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-weather-reports.png" alt="Weather report presentations" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-reports.png" alt="Weather report presentations" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-meteorologist-play.png" alt="Meteorologist role play" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-meteorologist-play.png" alt="Meteorologist role play" className="w-auto h-auto" />
 
                     </div>
 
@@ -1610,9 +1610,9 @@ export default function WeatherUnitWeek4() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-weather-graphs.png" alt="Weather pattern graphs" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-graphs.png" alt="Weather pattern graphs" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-weather-predictions.png" alt="Weather prediction activity" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-predictions.png" alt="Weather prediction activity" className="w-auto h-auto" />
 
                     </div>
 
@@ -1912,9 +1912,9 @@ export default function WeatherUnitWeek4() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-weather-safety.png" alt="Weather safety drawings" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-safety.png" alt="Weather safety drawings" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-weather-preparation.png" alt="Weather preparation activities" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-preparation.png" alt="Weather preparation activities" className="w-auto h-auto" />
 
                     </div>
 

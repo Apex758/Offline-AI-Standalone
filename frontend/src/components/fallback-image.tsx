@@ -47,7 +47,7 @@ export function FallbackImage({
           </div>
         </div>
       )}
-      <img
+      <img loading="lazy"
         src={src}
         alt={alt}
         className={`${className} ${!loaded ? 'hidden' : ''}`}

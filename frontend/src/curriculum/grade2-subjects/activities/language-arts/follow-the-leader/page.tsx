@@ -182,7 +182,7 @@ export default function FollowTheLeaderPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <div className="relative h-48 w-full mb-4">
-                  <img src="./children-following-directions.png" alt="Children following directions" className="w-full h-full object-cover" />
+                  <img loading="lazy" src="./children-following-directions.png" alt="Children following directions" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-purple-700">Curriculum Connections</h3>
                 <ul className="space-y-3">

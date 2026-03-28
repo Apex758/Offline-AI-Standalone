@@ -1090,7 +1090,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
               </button>
             </div>
             <div className="flex justify-center">
-              <img src={selectedImageResource.imageUrl} alt="" className="max-w-full max-h-[80vh] object-contain rounded-lg" />
+              <img loading="lazy" src={selectedImageResource.imageUrl} alt="" className="max-w-full max-h-[80vh] object-contain rounded-lg" />
             </div>
           </div>
         </div>
@@ -1153,7 +1153,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         <div className="flex items-center gap-3">
           {resource.type === 'images' && resource.imageUrl ? (
             <div className="w-10 h-10 rounded-lg border border-theme overflow-hidden">
-              <img
+              <img loading="lazy"
                 src={resource.imageUrl}
                 alt=""
                 className="w-full h-full object-cover"

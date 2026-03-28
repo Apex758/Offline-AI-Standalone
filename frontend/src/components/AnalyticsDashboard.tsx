@@ -502,7 +502,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 }}
               >
                 {userImage ? (
-                  <img src={userImage} alt={userName} className="w-full h-full rounded-full object-cover" />
+                  <img loading="lazy" src={userImage} alt={userName} className="w-full h-full rounded-full object-cover" />
                 ) : (
                   <User className="w-7 h-7" style={{ color: 'var(--dash-primary-fg)' }} />
                 )}
@@ -743,7 +743,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             }}
           >
             {image ? (
-              <img src={image} alt="Profile" className="w-full h-full rounded-full object-cover" />
+              <img loading="lazy" src={image} alt="Profile" className="w-full h-full rounded-full object-cover" />
             ) : (
               <User className="w-12 h-12" style={{ color: 'var(--dash-primary-fg)' }} />
             )}

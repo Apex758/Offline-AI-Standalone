@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
 import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
@@ -129,15 +128,11 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
   };
 
   return createPortal(
-    <AnimatePresence>
+    <>
       {open && (
-        <motion.div
+        <div
           ref={panelRef}
-          initial={{ opacity: 0, y: -6, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -6, scale: 0.97 }}
-          transition={{ duration: 0.15 }}
-          className="fixed top-11 right-2 w-96 rounded-xl shadow-2xl overflow-hidden z-[99999]"
+          className="fixed top-11 right-2 w-96 rounded-xl shadow-2xl overflow-hidden z-[99999] animate-[fadeSlideDown_0.15s_ease-out]"
           style={{
             backgroundColor: 'var(--notif-bg)',
             border: '1px solid var(--notif-border)',
@@ -379,9 +374,9 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ open, onClose }) 
               </div>
             </>
           )}
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>,
+    </>,
     document.body
   );
 };

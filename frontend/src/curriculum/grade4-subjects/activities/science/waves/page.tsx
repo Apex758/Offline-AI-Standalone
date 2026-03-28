@@ -75,7 +75,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=periscope+reflection+light+waves" alt="Reflection Experiment" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=periscope+reflection+light+waves" alt="Reflection Experiment" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -107,7 +107,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=water+waves+ripples+circular+pattern" alt="Water Wave Creation" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=water+waves+ripples+circular+pattern" alt="Water Wave Creation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=sound+frequency+pitch+tuning+forks" alt="Sound Frequency" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=sound+frequency+pitch+tuning+forks" alt="Sound Frequency" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=slinky+wave+transverse+longitudinal+demonstration" alt="Slinky Wave Experiments" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=slinky+wave+transverse+longitudinal+demonstration" alt="Slinky Wave Experiments" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -259,7 +259,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=morse+code+light+sound+communication" alt="Morse Code" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=morse+code+light+sound+communication" alt="Morse Code" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function WavesActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=string+telephone+cups+communication" alt="String Telephone Investigation" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=string+telephone+cups+communication" alt="String Telephone Investigation" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

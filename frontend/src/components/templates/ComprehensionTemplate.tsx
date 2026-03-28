@@ -122,7 +122,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
                   {loading
                     ? <Skeleton style={{ width: 220, height: 120, display: 'inline-block', background: palette.accentBorder, borderRadius: 4 }} />
                     : generatedImage
-                      ? <img src={generatedImage} alt="" style={{ maxWidth: 220, borderRadius: 4, border: `1.5px solid ${ACCENT}` }} />
+                      ? <img loading="lazy" src={generatedImage} alt="" style={{ maxWidth: 220, borderRadius: 4, border: `1.5px solid ${ACCENT}` }} />
                       : <div style={{ display: 'inline-flex', width: 220, height: 120, background: palette.accentLight, border: `1.5px dashed ${ACCENT}`, borderRadius: 4, alignItems: 'center', justifyContent: 'center', color: ACCENT, fontSize: 12 }}>image placeholder</div>
                   }
                 </div>
@@ -133,7 +133,7 @@ const ComprehensionTemplate: React.FC<ComprehensionTemplateProps> = ({
                   {loading
                     ? <Skeleton style={{ width: 110, height: 75, background: palette.accentBorder, borderRadius: 4 }} />
                     : generatedImage
-                      ? <img src={generatedImage} alt="" style={{ width: 110, height: 75, objectFit: 'cover', borderRadius: 4, border: `1.5px solid ${ACCENT}` }} />
+                      ? <img loading="lazy" src={generatedImage} alt="" style={{ width: 110, height: 75, objectFit: 'cover', borderRadius: 4, border: `1.5px solid ${ACCENT}` }} />
                       : <div style={{ width: 110, height: 75, background: palette.accentLight, border: `1.5px dashed ${ACCENT}`, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ACCENT, fontSize: 11 }}>image</div>
                   }
                 </div>

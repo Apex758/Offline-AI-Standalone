@@ -829,7 +829,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                       <label className="text-sm font-medium block mb-2" style={{ color: 'var(--text-primary)' }}>Screenshot (optional)</label>
                       {screenshot ? (
                         <div className="relative rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-primary)' }}>
-                          <img src={screenshot} alt="Attached screenshot" className="w-full max-h-64 object-contain" style={{ background: 'var(--bg-secondary)' }} />
+                          <img loading="lazy" src={screenshot} alt="Attached screenshot" className="w-full max-h-64 object-contain" style={{ background: 'var(--bg-secondary)' }} />
                           <button onClick={() => setScreenshot(null)} className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}>
                             <X className="w-4 h-4 text-white" />
                           </button>
@@ -936,7 +936,7 @@ const SupportReporting: React.FC<SupportReportingProps> = ({ tabId, savedData, o
                                   <p className="text-sm mt-3 leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>{ticket.description}</p>
                                   {ticket.screenshot && (
                                     <div className="mt-3 rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-primary)' }}>
-                                      <img src={ticket.screenshot} alt="Ticket screenshot" className="w-full max-h-80 object-contain" style={{ background: 'var(--bg-primary)' }} />
+                                      <img loading="lazy" src={ticket.screenshot} alt="Ticket screenshot" className="w-full max-h-80 object-contain" style={{ background: 'var(--bg-primary)' }} />
                                     </div>
                                   )}
 

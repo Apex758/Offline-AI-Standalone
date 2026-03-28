@@ -198,7 +198,7 @@ export default function WeatherUnitWeek2() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="./kindergarten-children-observing-different-types-of.png" alt="Children exploring different types of weather" className="w-full h-full object-cover" />
+                <img loading="lazy" src="./kindergarten-children-observing-different-types-of.png" alt="Children exploring different types of weather" className="w-full h-full object-cover" />
 
               </div>
 
@@ -722,7 +722,7 @@ export default function WeatherUnitWeek2() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-weather-types.png" alt="Different weather types illustration" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-weather-types.png" alt="Different weather types illustration" className="w-auto h-auto" />
 
                     </div>
 

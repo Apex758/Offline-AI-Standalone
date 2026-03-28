@@ -915,7 +915,7 @@ const Settings: React.FC<SettingsProps> = () => {
                             onClick={() => profileImageInputRef.current?.click()}
                           >
                             {userProfileImage ? (
-                              <img src={userProfileImage} alt="Profile" className="w-full h-full object-cover" />
+                              <img loading="lazy" src={userProfileImage} alt="Profile" className="w-full h-full object-cover" />
                             ) : settings.profile.displayName ? (
                               settings.profile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                             ) : (

@@ -34,7 +34,7 @@ export default function MeasurementActivitiesPage() {
             </p>
           </div>
           <div className="md:w-1/4 flex justify-center mt-4 md:mt-0">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=120&width=120&query=measurement rulers math"
               alt="Measurement tools illustration"
               className="rounded-full border-4 border-white shadow-md"
@@ -77,7 +77,7 @@ export default function MeasurementActivitiesPage() {
         <TabsContent value="length-perimeter" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Length & Perimeter Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=measuring length perimeter math"
               alt="Measuring length and perimeter"
               className="rounded-lg shadow-md"
@@ -181,7 +181,7 @@ export default function MeasurementActivitiesPage() {
         <TabsContent value="area" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Area Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=area measurement math grid"
               alt="Area measurement with grid"
               className="rounded-lg shadow-md"
@@ -285,7 +285,7 @@ export default function MeasurementActivitiesPage() {
         <TabsContent value="volume-capacity" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Volume & Capacity Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=volume capacity measurement math"
               alt="Volume and capacity measurement"
               className="rounded-lg shadow-md"
@@ -387,7 +387,7 @@ export default function MeasurementActivitiesPage() {
         <TabsContent value="unit-conversions" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Unit Conversions Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=measurement unit conversion math"
               alt="Measurement unit conversions"
               className="rounded-lg shadow-md"
@@ -484,7 +484,7 @@ export default function MeasurementActivitiesPage() {
         <TabsContent value="online-resources" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Online Resources for Measurement</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=digital measurement resources"
               alt="Digital measurement resources and tools"
               className="rounded-lg shadow-md"

@@ -342,7 +342,7 @@ export default function CrossStrandIntegrationPage() {
 
             <CardContent>
               <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
-                <img src="" alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" src="" alt="" className="w-full h-full object-cover" />
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-4 text-sm">

@@ -78,7 +78,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=children+recording+weather+data+in+journal" alt="Weather Journal" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=children+recording+weather+data+in+journal" alt="Weather Journal" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=homemade+weather+instruments+for+kids" alt="Homemade Weather Instruments" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=homemade+weather+instruments+for+kids" alt="Homemade Weather Instruments" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -170,7 +170,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=world+map+climate+zones" alt="Climate Zone Map" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=world+map+climate+zones" alt="Climate Zone Map" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -220,7 +220,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=climate+region+postcards+student+project" alt="Climate Postcards" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=climate+region+postcards+student+project" alt="Climate Postcards" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=flood+protection+model+classroom+activity" alt="Flood Protection Design Challenge" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=flood+protection+model+classroom+activity" alt="Flood Protection Design Challenge" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -307,7 +307,7 @@ export default function WeatherClimateActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=weather+hazard+warning+posters+classroom" alt="Weather Hazard Warning Posters" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=weather+hazard+warning+posters+classroom" alt="Weather Hazard Warning Posters" className="w-full h-full object-cover" />
                     </div>
                   </div>
 

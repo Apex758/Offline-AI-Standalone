@@ -105,7 +105,7 @@ export default function Grade2MathematicsActivitiesPage() {
                 <CardDescription>{activity.description}</CardDescription>
               </CardHeader>
               <div className="px-4">
-                <img
+                <img loading="lazy"
                   src={activity.image || "/placeholder.svg"}
                   alt={activity.title}
                   className="w-full h-40 object-cover rounded-md"

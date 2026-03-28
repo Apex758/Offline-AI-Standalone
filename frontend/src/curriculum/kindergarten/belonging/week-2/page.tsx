@@ -178,7 +178,7 @@ export default function Week2Page() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="./kindergarten-self-portraits.png" alt="Children creating self portraits" className="w-full h-full object-cover" />
+                <img loading="lazy" src="./kindergarten-self-portraits.png" alt="Children creating self portraits" className="w-full h-full object-cover" />
 
               </div>
 
@@ -706,9 +706,9 @@ export default function Week2Page() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-family-drawings.png" alt="Family drawings example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-family-drawings.png" alt="Family drawings example" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-caribbean-family-portrait.png" alt="Caribbean family portrait example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-caribbean-family-portrait.png" alt="Caribbean family portrait example" className="w-auto h-auto" />
 
                     </div>
 
@@ -1002,7 +1002,7 @@ export default function Week2Page() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-caribbean-family-helping.png" alt="Family helping activities" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-caribbean-family-helping.png" alt="Family helping activities" className="w-auto h-auto" />
 
                     </div>
 
@@ -1296,9 +1296,9 @@ export default function Week2Page() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-caribbean-family-traditions.png" alt="Caribbean family traditions" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-caribbean-family-traditions.png" alt="Caribbean family traditions" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-caribbean-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-caribbean-family-celebration.png" alt="Family celebration" className="w-auto h-auto" />
 
                     </div>
 
@@ -1592,7 +1592,7 @@ export default function Week2Page() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-caribbean-family-storytelling.png" alt="Family storytelling scene" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-caribbean-family-storytelling.png" alt="Family storytelling scene" className="w-auto h-auto" />
 
                     </div>
 
@@ -1888,7 +1888,7 @@ export default function Week2Page() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-caribbean-extended-family.png" alt="Extended family representation" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-caribbean-extended-family.png" alt="Extended family representation" className="w-auto h-auto" />
 
                     </div>
 

@@ -39,7 +39,7 @@ export default function GrowingPatternsActivity() {
           <span className="mr-4">Time: 25 minutes</span>
           <span>Difficulty: Medium</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800&query=growing+patterns+math"
           alt="Growing Patterns Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"

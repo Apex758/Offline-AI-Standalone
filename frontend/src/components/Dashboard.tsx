@@ -1620,7 +1620,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   }}
                 >
                   {userProfileImage ? (
-                    <img
+                    <img loading="lazy"
                       src={userProfileImage}
                       alt={user.name}
                       className="w-full h-full object-cover"
@@ -1646,7 +1646,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     }}
                   >
                     {userProfileImage ? (
-                      <img src={userProfileImage} alt={user.name} className="w-full h-full object-cover" />
+                      <img loading="lazy" src={userProfileImage} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       user.name.charAt(0)
                     )}
@@ -2235,7 +2235,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1 }}>
                 <div className="glass-card p-10 max-w-lg w-full mx-6 dashboard-welcome-enter">
                   <div className="text-center">
-                    <img
+                    <img loading="lazy"
                       src={OECS_LOGO_BASE64}
                       alt="OECS"
                       className="mx-auto mb-6 w-28 h-28 object-contain oecs-logo-pulse"

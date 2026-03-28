@@ -170,7 +170,7 @@ export default function BelongingUnitWeek1() {
 
               <div className="absolute inset-0 flex items-center justify-center p-2">
 
-                <img src="./kindergarten-self-portraits.png" alt="Children creating self portraits" className="w-full h-full object-cover" />
+                <img loading="lazy" src="./kindergarten-self-portraits.png" alt="Children creating self portraits" className="w-full h-full object-cover" />
 
               </div>
 
@@ -682,9 +682,9 @@ export default function BelongingUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-name-art-example.png" alt="Name art example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-name-art-example.png" alt="Name art example" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-decorated-name.png" alt="Decorated name example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-decorated-name.png" alt="Decorated name example" className="w-auto h-auto" />
 
                     </div>
 
@@ -936,7 +936,7 @@ export default function BelongingUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-eye-color-graph.png" alt="Eye color graph example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-eye-color-graph.png" alt="Eye color graph example" className="w-auto h-auto" />
 
                     </div>
 
@@ -1270,9 +1270,9 @@ export default function BelongingUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-favorite-things-book.png" alt="Favorite things book example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-favorite-things-book.png" alt="Favorite things book example" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-likes-collage.png" alt="Likes collage example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-likes-collage.png" alt="Likes collage example" className="w-auto h-auto" />
 
                     </div>
 
@@ -1566,9 +1566,9 @@ export default function BelongingUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-i-can-booklet.png" alt="I can booklet example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-i-can-booklet.png" alt="I can booklet example" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-abilities-chart.png" alt="Abilities chart example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-abilities-chart.png" alt="Abilities chart example" className="w-auto h-auto" />
 
                     </div>
 
@@ -1862,9 +1862,9 @@ export default function BelongingUnitWeek1() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
 
-                      <img src="./kindergarten-special-crown-craft.png" alt="Special crown example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-special-crown-craft.png" alt="Special crown example" className="w-auto h-auto" />
 
-                      <img src="./kindergarten-i-am-special-badge.png" alt="Special badge example" className="w-auto h-auto" />
+                      <img loading="lazy" src="./kindergarten-i-am-special-badge.png" alt="Special badge example" className="w-auto h-auto" />
 
                     </div>
 

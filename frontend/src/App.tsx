@@ -14,7 +14,7 @@ import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 function AppContent() {
   // Login bypassed — auto-login as default user
-  const defaultUser: User = { id: 1, username: 'admin', role: 'admin' } as User;
+  const defaultUser: User = { id: 1, username: 'admin', name: 'Admin', role: 'admin' } as User;
   const [user, setUser] = useState<User | null>(defaultUser);
   const [loading, setLoading] = useState(false);
 

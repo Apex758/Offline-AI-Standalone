@@ -141,7 +141,7 @@ export default function SocialStudiesPage() {
               <li>Physical Education: Playing traditional games from different cultures</li>
             </ul>
             <div className="mt-4">
-              <img src="./placeholder-ner2b.png" alt="Social Studies Learning" className="w-auto h-auto" />
+              <img loading="lazy" src="./placeholder-ner2b.png" alt="Social Studies Learning" className="w-auto h-auto" />
             </div>
           </div>
         </div>

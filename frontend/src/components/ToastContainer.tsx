@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
 import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
@@ -26,6 +25,7 @@ function UpdateBanner() {
   const [updateReady, setUpdateReady] = useState(false);
   const [updateVersion, setUpdateVersion] = useState('');
   const [dismissed, setDismissed] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!window.electronAPI) return;
@@ -41,15 +41,17 @@ function UpdateBanner() {
     });
   }, []);
 
+  useEffect(() => {
+    if (updateReady && !dismissed) {
+      requestAnimationFrame(() => setVisible(true));
+    }
+  }, [updateReady, dismissed]);
+
   if (!updateReady || dismissed) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 40, scale: 0.95 }}
-      transition={{ duration: 0.25 }}
-      className="pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-lg shadow-xl min-w-[300px] max-w-[400px] bg-white dark:bg-gray-800 border-l-4 border-blue-500"
+    <div
+      className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-lg shadow-xl min-w-[300px] max-w-[400px] bg-white dark:bg-gray-800 border-l-4 border-blue-500 transition-all duration-250 ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95'}`}
     >
       <Download className="text-blue-500 shrink-0" size={22} />
       <div className="flex-1">
@@ -74,7 +76,7 @@ function UpdateBanner() {
           <X size={14} />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -90,33 +92,38 @@ const borderMap = {
   info: 'border-blue-500',
 };
 
+function ToastItem({ toast, onDismiss }: { toast: any; onDismiss: (id: string) => void }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true));
+  }, []);
+
+  return (
+    <div
+      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[260px] max-w-[360px] border-l-4 bg-white dark:bg-gray-800 ${borderMap[toast.type as keyof typeof borderMap]} transition-all duration-200 ${visible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-[60px] scale-95'}`}
+    >
+      {iconMap[toast.type as keyof typeof iconMap]}
+      <span className="text-sm text-gray-800 dark:text-gray-200 flex-1">{toast.message}</span>
+      <button
+        onClick={() => onDismiss(toast.id)}
+        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0 ml-1"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+}
+
 const ToastContainer: React.FC = () => {
   const { toasts, dismiss } = useNotification();
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none">
-      <AnimatePresence>
-        <UpdateBanner key="update-banner" />
-        {toasts.map(toast => (
-          <motion.div
-            key={toast.id}
-            initial={{ opacity: 0, x: 60, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 60, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[260px] max-w-[360px] border-l-4 bg-white dark:bg-gray-800 ${borderMap[toast.type]}`}
-          >
-            {iconMap[toast.type]}
-            <span className="text-sm text-gray-800 dark:text-gray-200 flex-1">{toast.message}</span>
-            <button
-              onClick={() => dismiss(toast.id)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0 ml-1"
-            >
-              <X size={16} />
-            </button>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      <UpdateBanner key="update-banner" />
+      {toasts.map(toast => (
+        <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
+      ))}
     </div>
   );
 };

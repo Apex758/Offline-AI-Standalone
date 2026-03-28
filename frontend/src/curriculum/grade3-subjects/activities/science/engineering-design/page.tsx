@@ -78,7 +78,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=engineering+design+process+for+kids" alt="Engineering Design Process" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=engineering+design+process+for+kids" alt="Engineering Design Process" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=retaining+wall+design+challenge+classroom+activity" alt="Retaining Wall Design Challenge" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=retaining+wall+design+challenge+classroom+activity" alt="Retaining Wall Design Challenge" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -204,7 +204,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=roof+design+hurricane+resistance+classroom+activity" alt="Roof Design for Hurricane Protection" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=roof+design+hurricane+resistance+classroom+activity" alt="Roof Design for Hurricane Protection" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=flood+protection+system+model+classroom+activity" alt="Flood Protection System" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=flood+protection+system+model+classroom+activity" alt="Flood Protection System" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -289,7 +289,7 @@ export default function EngineeringDesignActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=lightning+rod+design+classroom+activity" alt="Lightning Rod Design" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=lightning+rod+design+classroom+activity" alt="Lightning Rod Design" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

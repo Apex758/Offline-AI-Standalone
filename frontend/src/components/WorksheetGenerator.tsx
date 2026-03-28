@@ -1465,7 +1465,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                           <Check className="w-4 h-4 mr-1" />
                           Scene Image Generated
                         </h4>
-                        <img
+                        <img loading="lazy"
                           src={generatedImages[0]}
                           alt="Generated scene"
                           className="w-full max-h-64 object-contain rounded-lg mt-2 border border-green-300"

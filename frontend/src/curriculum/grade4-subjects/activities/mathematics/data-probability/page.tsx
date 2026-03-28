@@ -34,7 +34,7 @@ export default function DataProbabilityActivitiesPage() {
             </p>
           </div>
           <div className="md:w-1/4 flex justify-center mt-4 md:mt-0">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=120&width=120&query=data charts graphs probability"
               alt="Data and probability illustration"
               className="rounded-full border-4 border-white shadow-md"
@@ -80,7 +80,7 @@ export default function DataProbabilityActivitiesPage() {
         <TabsContent value="data-collection" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Data Collection Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=data collection survey math"
               alt="Data collection and surveys"
               className="rounded-lg shadow-md"
@@ -185,7 +185,7 @@ export default function DataProbabilityActivitiesPage() {
         <TabsContent value="data-representation" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Data Representation Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=data graphs charts representation"
               alt="Data representation with graphs and charts"
               className="rounded-lg shadow-md"
@@ -289,7 +289,7 @@ export default function DataProbabilityActivitiesPage() {
         <TabsContent value="data-analysis" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Data Analysis Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=data analysis statistics math"
               alt="Data analysis and statistics"
               className="rounded-lg shadow-md"
@@ -391,7 +391,7 @@ export default function DataProbabilityActivitiesPage() {
         <TabsContent value="probability" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Probability Activities</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=probability dice spinner math"
               alt="Probability with dice and spinners"
               className="rounded-lg shadow-md"
@@ -494,7 +494,7 @@ export default function DataProbabilityActivitiesPage() {
         <TabsContent value="online-resources" className="space-y-4 mt-6">
           <h2 className="text-2xl font-semibold mb-4">Online Resources for Data & Probability</h2>
           <div className="flex justify-center mb-6">
-            <img
+            <img loading="lazy"
               src="/placeholder.svg?height=200&width=400&query=digital data probability resources"
               alt="Digital data and probability resources"
               className="rounded-lg shadow-md"

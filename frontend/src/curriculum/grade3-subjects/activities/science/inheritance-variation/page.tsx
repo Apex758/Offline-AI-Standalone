@@ -78,7 +78,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=bean+plant+life+cycle+in+plastic+bag" alt="Bean Plant Life Cycle" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=bean+plant+life+cycle+in+plastic+bag" alt="Bean Plant Life Cycle" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=butterfly+life+cycle+puppets" alt="Butterfly Life Cycle Puppets" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=butterfly+life+cycle+puppets" alt="Butterfly Life Cycle Puppets" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -163,7 +163,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=different+bird+beak+shapes+and+functions" alt="Bird Bill Adaptations" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=different+bird+beak+shapes+and+functions" alt="Bird Bill Adaptations" className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -208,7 +208,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=animal+parents+and+their+offspring" alt="Animal Parents and Offspring" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=animal+parents+and+their+offspring" alt="Animal Parents and Offspring" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=plant+growth+experiment+different+conditions" alt="Plant Growth Experiment" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=plant+growth+experiment+different+conditions" alt="Plant Growth Experiment" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ export default function InheritanceVariationActivitiesPage() {
 
                   <div className="flex justify-center my-4">
                     <div className="relative h-64 w-full max-w-md">
-                      <img src="/placeholder.svg?height=250&width=400&query=children+designing+animals+for+different+environments" alt="Design an Animal Activity" className="w-full h-full object-cover" />
+                      <img loading="lazy" src="/placeholder.svg?height=250&width=400&query=children+designing+animals+for+different+environments" alt="Design an Animal Activity" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

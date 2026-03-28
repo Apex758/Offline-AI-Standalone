@@ -1616,7 +1616,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       <div className={`border-2 border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900 ${isHero ? 'h-[350px]' : 'h-[280px]'} relative`}>
         {panel.status === 'completed' && panel.imageData ? (
           <>
-            <img
+            <img loading="lazy"
               src={panel.imageData}
               alt={`Panel ${index + 1}`}
               className="w-full h-full object-cover"
@@ -1840,7 +1840,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </label>
                     {referenceImage ? (
                       <div className="relative">
-                        <img
+                        <img loading="lazy"
                           src={referenceImage}
                           alt="Reference"
                           className="w-full max-h-48 object-contain rounded-lg border border-theme"
@@ -1954,7 +1954,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <div className="relative">
                         {slot.status === 'completed' && slot.imageData ? (
                           <>
-                            <img
+                            <img loading="lazy"
                               src={slot.imageData}
                               alt={`Generated ${i + 1}`}
                               className="w-full max-h-[400px] object-contain rounded-lg mb-4 cursor-pointer"
@@ -2064,7 +2064,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <div className="mt-3 grid grid-cols-4 gap-2">
                         {generationQueue.filter(q => q.status === 'completed').flatMap(q =>
                           q.results.filter(r => r.imageData).map((r, i) => (
-                            <img key={`${q.id}-${i}`} src={r.imageData!} alt="Queued result"
+                            <img loading="lazy" key={`${q.id}-${i}`} src={r.imageData!} alt="Queued result"
                               className="w-full aspect-square object-cover rounded-md border border-theme cursor-pointer hover:ring-2 hover:ring-indigo-500"
                               onClick={() => { setSelectedImage(r.imageData); setShowImageModal(true); }}
                             />
@@ -2081,7 +2081,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       <div className="relative">
                         {slot.status === 'completed' && slot.imageData ? (
                           <>
-                            <img
+                            <img loading="lazy"
                               src={slot.imageData}
                               alt={`Generated ${i + 1}`}
                               className="w-full max-h-[400px] object-contain rounded-lg mb-4 cursor-pointer"
@@ -2236,7 +2236,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     {/* Regular Canvas (hidden when comic panel grid is visible) */}
                     <div className={`relative flex items-center justify-center border border-theme-strong rounded-lg overflow-hidden bg-theme-tertiary ${editorTool === 'comic-maker' && comicPanels.length > 0 ? 'hidden' : ''}`} data-tutorial="image-studio-canvas">
                       {showBeforeAfter && (
-                        <img src={history.original} alt="Original"
+                        <img loading="lazy" src={history.original} alt="Original"
                           className="absolute top-0 left-0 w-full h-full object-contain"
                           style={{ pointerEvents: 'none', zIndex: 1 }} />
                       )}
@@ -2817,7 +2817,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
               </div>
               <div className="flex-1 flex items-center justify-center overflow-auto p-6 bg-gray-100 dark:bg-gray-800">
                 {worksheetPreview ? (
-                  <img src={worksheetPreview} alt="Worksheet preview"
+                  <img loading="lazy" src={worksheetPreview} alt="Worksheet preview"
                     className="max-w-full max-h-full shadow-xl rounded border border-gray-200" />
                 ) : (
                   <div className="text-center text-gray-400">
@@ -2861,7 +2861,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {resourceImages.map((img) => (
                     <button key={img.id} onClick={() => loadResourceImage(img)}
                       className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-purple-500 transition-all bg-gray-100 dark:bg-gray-800">
-                      <img src={img.imageUrl} alt={img.title || 'Saved image'}
+                      <img loading="lazy" src={img.imageUrl} alt={img.title || 'Saved image'}
                         className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-end">
                         <div className="w-full p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2936,7 +2936,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                 </label>
                 {queueReferenceImage ? (
                   <div className="relative">
-                    <img src={queueReferenceImage} alt="Reference" className="w-full max-h-32 object-contain rounded-lg border border-theme" />
+                    <img loading="lazy" src={queueReferenceImage} alt="Reference" className="w-full max-h-32 object-contain rounded-lg border border-theme" />
                     <button onClick={() => setQueueReferenceImage(null)}
                       className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
                       <X className="w-3 h-3" />
@@ -3006,7 +3006,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       {showImageModal && selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={() => setShowImageModal(false)}>
           <div className="max-w-4xl max-h-[90vh] p-4">
-            <img
+            <img loading="lazy"
               src={selectedImage}
               alt="Selected image"
               className="max-w-full max-h-full object-contain"

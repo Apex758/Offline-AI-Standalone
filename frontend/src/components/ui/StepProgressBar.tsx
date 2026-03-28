@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import './StepProgressBar.css';
 
 interface StepProgressBarProps {
@@ -8,61 +7,66 @@ interface StepProgressBarProps {
   onClick?: (step: number) => void;
 }
 
+const circleColors = {
+  inactive: { backgroundColor: '#E8EAE3', color: '#9ca3af' },
+  active:   { backgroundColor: '#1D362D', color: '#F8E59D' },
+  complete: { backgroundColor: '#552A01', color: '#ffffff' },
+};
+
+const labelColors = {
+  inactive: '#9ca3af',
+  active:   '#1D362D',
+  complete: '#552A01',
+};
+
 export default function StepProgressBar({ steps, currentStep, onClick }: StepProgressBarProps) {
   return (
     <div className="spb-wrapper border-b border-theme px-6 py-4 overflow-x-auto">
       <div className="spb-row">
         {steps.map((label, idx) => {
           const stepNumber = idx + 1;
-          const status =
+          const status: 'complete' | 'active' | 'inactive' =
             currentStep > stepNumber ? 'complete' : currentStep === stepNumber ? 'active' : 'inactive';
 
           return (
             <React.Fragment key={stepNumber}>
               <div className="spb-item" style={{ cursor: onClick ? 'pointer' : undefined }} onClick={() => onClick?.(stepNumber)}>
                 {/* Circle */}
-                <motion.div
+                <div
                   className="spb-circle"
-                  animate={status}
-                  initial={false}
-                  variants={{
-                    inactive: { backgroundColor: '#E8EAE3', color: '#9ca3af' },
-                    active:   { backgroundColor: '#1D362D', color: '#F8E59D' },
-                    complete: { backgroundColor: '#552A01', color: '#ffffff' },
+                  style={{
+                    ...circleColors[status],
+                    transition: 'background-color 0.3s, color 0.3s',
                   }}
-                  transition={{ duration: 0.3 }}
                 >
                   {status === 'complete' ? (
                     <CheckIcon />
                   ) : (
                     <span className="spb-number">{stepNumber}</span>
                   )}
-                </motion.div>
+                </div>
 
                 {/* Label */}
-                <motion.span
+                <span
                   className="spb-label"
-                  animate={status}
-                  initial={false}
-                  variants={{
-                    inactive: { color: '#9ca3af' },
-                    active:   { color: '#1D362D' },
-                    complete: { color: '#552A01' },
+                  style={{
+                    color: labelColors[status],
+                    transition: 'color 0.25s',
                   }}
-                  transition={{ duration: 0.25 }}
                 >
                   {label}
-                </motion.span>
+                </span>
               </div>
 
               {/* Connector */}
               {idx < steps.length - 1 && (
                 <div className="spb-connector">
-                  <motion.div
+                  <div
                     className="spb-connector-fill"
-                    initial={false}
-                    animate={{ width: currentStep > stepNumber ? '100%' : '0%' }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    style={{
+                      width: currentStep > stepNumber ? '100%' : '0%',
+                      transition: 'width 0.4s ease-in-out',
+                    }}
                   />
                 </div>
               )}
@@ -77,10 +81,8 @@ export default function StepProgressBar({ steps, currentStep, onClick }: StepPro
 function CheckIcon() {
   return (
     <svg className="spb-check" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-      <motion.path
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ delay: 0.05, duration: 0.25, ease: 'easeOut' }}
+      <path
+        className="spb-check-path"
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M5 13l4 4L19 7"

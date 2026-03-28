@@ -42,7 +42,7 @@ export default function ShapeDetectivesActivity() {
           <span className="mr-4">Time: 40 minutes</span>
           <span>Difficulty: Easy</span>
         </div>
-        <img
+        <img loading="lazy"
           src="/placeholder.svg?height=300&width=800"
           alt="Shape Detectives Activity"
           className="w-full h-64 object-cover rounded-lg mb-6"
