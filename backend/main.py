@@ -3747,6 +3747,129 @@ CONTENT_TYPES = {
 }
 
 # ══════════════════════════════════════════════════════════════
+# File Explorer - Browse Endpoints (dev mode fallback for Electron APIs)
+# ══════════════════════════════════════════════════════════════
+
+ALLOWED_EXTENSIONS = {'.docx', '.pptx', '.pdf', '.txt', '.md', '.xlsx', '.csv',
+                      '.png', '.jpg', '.jpeg', '.gif', '.webp', '.doc', '.ppt', '.xls'}
+
+# Persist allowed folders in a JSON file next to main.py
+_FOLDER_CONFIG_PATH = os.path.join(BASE_DIR, 'file-explorer-config.json')
+
+def _load_allowed_folders() -> list:
+    import json
+    if os.path.exists(_FOLDER_CONFIG_PATH):
+        try:
+            with open(_FOLDER_CONFIG_PATH, 'r', encoding='utf-8') as f:
+                return json.load(f).get('allowedFolders', [])
+        except Exception:
+            pass
+    # Defaults: user's Desktop and Downloads
+    home = os.path.expanduser('~')
+    return [os.path.join(home, 'Downloads'), os.path.join(home, 'Desktop')]
+
+def _save_allowed_folders(folders: list):
+    import json
+    with open(_FOLDER_CONFIG_PATH, 'w', encoding='utf-8') as f:
+        json.dump({'allowedFolders': folders}, f)
+
+@app.get("/api/file-explorer/allowed-folders")
+async def get_allowed_folders():
+    return JSONResponse(content={"folders": _load_allowed_folders()})
+
+@app.post("/api/file-explorer/allowed-folders")
+async def save_allowed_folders(body: dict = Body(...)):
+    folders = body.get('folders', [])
+    _save_allowed_folders(folders)
+    return JSONResponse(content={"ok": True})
+
+@app.get("/api/file-explorer/browse")
+async def browse_folder(folderPath: str):
+    """List contents of a folder — returns files (filtered by allowed extensions) and subdirectories."""
+    if not os.path.isdir(folderPath):
+        return JSONResponse(content={"items": [], "error": "Not a directory"})
+    items = []
+    try:
+        for entry in os.scandir(folderPath):
+            try:
+                stat = entry.stat()
+                ext = os.path.splitext(entry.name)[1].lower()
+                if entry.is_dir(follow_symlinks=False):
+                    items.append({
+                        "name": entry.name,
+                        "path": entry.path.replace('\\', '/'),
+                        "isDirectory": True,
+                        "size": 0,
+                        "modifiedTime": str(stat.st_mtime),
+                        "extension": ""
+                    })
+                elif ext in ALLOWED_EXTENSIONS:
+                    items.append({
+                        "name": entry.name,
+                        "path": entry.path.replace('\\', '/'),
+                        "isDirectory": False,
+                        "size": stat.st_size,
+                        "modifiedTime": str(stat.st_mtime),
+                        "extension": ext
+                    })
+            except (PermissionError, OSError):
+                continue
+    except (PermissionError, OSError) as e:
+        return JSONResponse(content={"items": [], "error": str(e)})
+    # Sort: folders first, then files, alphabetically
+    items.sort(key=lambda x: (not x['isDirectory'], x['name'].lower()))
+    return JSONResponse(content={"items": items})
+
+@app.get("/api/file-explorer/search")
+async def search_files(query: str):
+    """Search for files across allowed folders."""
+    folders = _load_allowed_folders()
+    results = []
+    query_lower = query.lower()
+    for folder in folders:
+        if not os.path.isdir(folder):
+            continue
+        for root, dirs, files in os.walk(folder):
+            for fname in files:
+                ext = os.path.splitext(fname)[1].lower()
+                if ext not in ALLOWED_EXTENSIONS:
+                    continue
+                if query_lower in fname.lower():
+                    fpath = os.path.join(root, fname)
+                    try:
+                        stat = os.stat(fpath)
+                        results.append({
+                            "name": fname,
+                            "path": fpath.replace('\\', '/'),
+                            "isDirectory": False,
+                            "size": stat.st_size,
+                            "modifiedTime": str(stat.st_mtime),
+                            "extension": ext
+                        })
+                    except (PermissionError, OSError):
+                        continue
+            if len(results) >= 200:
+                break
+        if len(results) >= 200:
+            break
+    return JSONResponse(content={"items": results})
+
+@app.get("/api/file-explorer/read-file")
+async def read_file_content(filePath: str):
+    """Read a file's raw bytes, return as base64."""
+    if not os.path.isfile(filePath):
+        return JSONResponse(content={"error": "File not found"})
+    max_size = 50 * 1024 * 1024
+    if os.path.getsize(filePath) > max_size:
+        return JSONResponse(content={"error": "File too large (max 50MB)"})
+    try:
+        with open(filePath, 'rb') as f:
+            data = f.read()
+        return JSONResponse(content={"base64": base64.b64encode(data).decode('ascii')})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)})
+
+# ══════════════════════════════════════════════════════════════
 # File Explorer Endpoints
 # ══════════════════════════════════════════════════════════════
 

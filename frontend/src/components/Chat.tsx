@@ -16,6 +16,8 @@ import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Attachment01IconData from '@hugeicons/core-free-icons/Attachment01Icon';
 import LinkSquare01IconData from '@hugeicons/core-free-icons/LinkSquare01Icon';
+import ViewSidebarRightIconData from '@hugeicons/core-free-icons/ViewSidebarRightIcon';
+import Tick02IconData from '@hugeicons/core-free-icons/Tick02Icon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -39,6 +41,8 @@ const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }>
 const FileIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={File01IconData} {...p} />;
 const AttachIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Attachment01IconData} {...p} />;
 const LinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={LinkSquare01IconData} {...p} />;
+const SidebarIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ViewSidebarRightIconData} {...p} />;
+const CheckIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Tick02IconData} {...p} />;
 import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -48,6 +52,35 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
+
+// ── File API abstraction (works in Electron & dev/browser) ──
+const fileAPI = {
+  isElectron: !!(window as any).electronAPI,
+  async getAllowedFolders(): Promise<string[]> {
+    const api = (window as any).electronAPI;
+    if (api?.getAllowedFolders) return api.getAllowedFolders();
+    const res = await axios.get('http://localhost:8000/api/file-explorer/allowed-folders');
+    return res.data.folders || [];
+  },
+  async browseFolder(folderPath: string): Promise<{ items: FileEntry[] }> {
+    const api = (window as any).electronAPI;
+    if (api?.browseFolder) return api.browseFolder(folderPath);
+    const res = await axios.get('http://localhost:8000/api/file-explorer/browse', { params: { folderPath } });
+    return res.data;
+  },
+  async searchFiles(query: string): Promise<{ items: FileEntry[] }> {
+    const api = (window as any).electronAPI;
+    if (api?.searchFiles) return api.searchFiles(query);
+    const res = await axios.get('http://localhost:8000/api/file-explorer/search', { params: { query } });
+    return res.data;
+  },
+  async readFileContent(filePath: string): Promise<{ base64: string; error?: string }> {
+    const api = (window as any).electronAPI;
+    if (api?.readFileContent) return api.readFileContent(filePath);
+    const res = await axios.get('http://localhost:8000/api/file-explorer/read-file', { params: { filePath } });
+    return res.data;
+  },
+};
 
 interface ChatProps {
   tabId: string;
@@ -423,8 +456,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }
 
       // Get file listing from the folder
-      const api = (window as any).electronAPI;
-      const result = await api?.browseFolder?.(targetFolder);
+      const result = await fileAPI.browseFolder(targetFolder);
       if (!result?.items || result.items.length === 0) {
         const errMsg: Message = {
           id: Date.now().toString(),
@@ -658,10 +690,27 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }));
     }
 
-    // Send via WebSocket
+    // Send via WebSocket (wait for connection if needed)
     const ws = getConnection(tabId, ENDPOINT);
+    const message = JSON.stringify(payload);
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(payload));
+      ws.send(message);
+    } else if (ws.readyState === WebSocket.CONNECTING) {
+      // Queue the message to send once connected
+      const onOpen = () => {
+        ws.send(message);
+        ws.removeEventListener('open', onOpen);
+        ws.removeEventListener('error', onError);
+      };
+      const onError = () => {
+        console.error('[Chat] WebSocket failed to connect, message not sent');
+        ws.removeEventListener('open', onOpen);
+        ws.removeEventListener('error', onError);
+      };
+      ws.addEventListener('open', onOpen);
+      ws.addEventListener('error', onError);
+    } else {
+      console.error('[Chat] WebSocket is closed, message not sent');
     }
 
     // Clear attached files after sending
@@ -682,10 +731,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   // Load allowed folders when files panel opens
   useEffect(() => {
     if (rightPanel === 'files' && allowedFolders.length === 0) {
-      const api = (window as any).electronAPI;
-      if (api?.getAllowedFolders) {
-        api.getAllowedFolders().then((folders: string[]) => setAllowedFolders(folders));
-      }
+      fileAPI.getAllowedFolders().then((folders: string[]) => setAllowedFolders(folders)).catch(() => {});
     }
   }, [rightPanel]);
 
@@ -698,10 +744,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       // Lazy-load contents if not cached
       if (!folderContents[folderPath]) {
         setLoadingFolder(folderPath);
-        const api = (window as any).electronAPI;
-        const result = await api?.browseFolder?.(folderPath);
-        if (result?.items) {
-          setFolderContents(prev => ({ ...prev, [folderPath]: result.items }));
+        try {
+          const result = await fileAPI.browseFolder(folderPath);
+          if (result?.items) {
+            setFolderContents(prev => ({ ...prev, [folderPath]: result.items }));
+          }
+        } catch (err) {
+          console.error('Error browsing folder:', err);
         }
         setLoadingFolder(null);
       }
@@ -717,19 +766,25 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       return;
     }
     fileSearchTimeout.current = setTimeout(async () => {
-      const api = (window as any).electronAPI;
-      const result = await api?.searchFiles?.(query);
-      if (result?.items) setFileSearchResults(result.items);
+      try {
+        const result = await fileAPI.searchFiles(query);
+        if (result?.items) setFileSearchResults(result.items);
+      } catch (err) {
+        console.error('Error searching files:', err);
+      }
     }, 300);
   };
 
-  const attachFile = async (filePath: string, fileName: string, ext: string) => {
-    // Don't attach the same file twice
-    if (attachedFiles.some(f => f.path === filePath)) return;
+  const toggleFileAttach = async (filePath: string, fileName: string, ext: string) => {
+    // If already attached, detach it (toggle off)
+    if (attachedFiles.some(f => f.path === filePath)) {
+      setAttachedFiles(prev => prev.filter(f => f.path !== filePath));
+      return;
+    }
+    // Otherwise attach (toggle on)
     setAttachingFile(filePath);
     try {
-      const api = (window as any).electronAPI;
-      const fileData = await api?.readFileContent?.(filePath);
+      const fileData = await fileAPI.readFileContent(filePath);
       if (fileData?.error) {
         console.error('Error reading file:', fileData.error);
         setAttachingFile(null);
@@ -759,9 +814,33 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setAttachedFiles(prev => prev.filter(f => f.path !== filePath));
   };
 
+  // Toggle all files in a folder on/off
+  const toggleFolderAttach = async (folderPath: string) => {
+    const items = folderContents[folderPath] || [];
+    const files = items.filter(i => !i.isDirectory);
+    if (files.length === 0) return;
+
+    const allAttached = files.every(f => attachedFiles.some(a => a.path === f.path));
+    if (allAttached) {
+      // Detach all files in this folder
+      const filePaths = new Set(files.map(f => f.path));
+      setAttachedFiles(prev => prev.filter(f => !filePaths.has(f.path)));
+    } else {
+      // Attach all files not yet attached
+      for (const file of files) {
+        if (!attachedFiles.some(a => a.path === file.path)) {
+          await toggleFileAttach(file.path, file.name, file.extension);
+        }
+      }
+    }
+  };
+
   const openFileExternally = async (filePath: string) => {
     const api = (window as any).electronAPI;
-    await api?.openFileExternal?.(filePath);
+    if (api?.openFileExternal) {
+      await api.openFileExternal(filePath);
+    }
+    // In dev mode, double-click to open is not supported
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -888,18 +967,16 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             >
               <Plus className="w-5 h-5 text-theme-muted" />
             </button>
-            {settings.fileAccessEnabled && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setRightPanel(rightPanel === 'files' ? 'none' : 'files');
-                }}
-                className={`p-2 rounded-lg hover:bg-theme-hover transition ${rightPanel === 'files' ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
-                title="Browse Files"
-              >
-                <FolderOpen className={`w-5 h-5 ${rightPanel === 'files' ? 'text-blue-600' : 'text-theme-muted'}`} />
-              </button>
-            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setRightPanel(rightPanel === 'files' ? 'none' : 'files');
+              }}
+              className={`p-2 rounded-lg hover:bg-theme-hover transition ${rightPanel === 'files' ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+              title="Browse Files"
+            >
+              <FolderOpen className={`w-5 h-5 ${rightPanel === 'files' ? 'text-blue-600' : 'text-theme-muted'}`} />
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -1191,10 +1268,16 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               </h3>
               <button
                 onClick={() => setRightPanel('none')}
-                className="p-1 rounded hover:bg-theme-hover transition"
+                className="p-1.5 rounded-lg hover:bg-theme-hover transition"
+                title="Collapse panel"
               >
-                <X className="w-5 h-5 text-theme-muted" />
+                <SidebarIcon className="w-5 h-5 text-theme-muted" />
               </button>
+            </div>
+
+            {/* Hint */}
+            <div className="px-4 pb-2">
+              <p className="text-[11px] text-theme-hint">Toggle files to include them as context in your next message.</p>
             </div>
 
             {/* Search bar */}
@@ -1225,36 +1308,35 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               {fileSearchResults !== null ? (
                 <>
                   <p className="text-xs text-theme-hint mb-2">{fileSearchResults.length} result{fileSearchResults.length !== 1 ? 's' : ''}</p>
-                  {fileSearchResults.map(file => (
-                    <div
-                      key={file.path}
-                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle group cursor-pointer"
-                      onDoubleClick={() => openFileExternally(file.path)}
-                      title={file.path}
-                    >
-                      <FileIcon className={`w-4 h-4 flex-shrink-0 ${getFileTypeColor(file.extension)}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-theme-heading truncate">{file.name}</p>
-                        <p className="text-xs text-theme-hint">{formatFileSize(file.size)}</p>
-                      </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); attachFile(file.path, file.name, file.extension); }}
-                        disabled={attachingFile === file.path || attachedFiles.some(f => f.path === file.path)}
-                        className={`opacity-0 group-hover:opacity-100 p-1 rounded transition ${
-                          attachedFiles.some(f => f.path === file.path)
-                            ? 'text-green-500 cursor-default opacity-100'
-                            : 'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500'
+                  {fileSearchResults.map(file => {
+                    const isAttached = attachedFiles.some(f => f.path === file.path);
+                    const isLoading_ = attachingFile === file.path;
+                    return (
+                      <div
+                        key={file.path}
+                        onClick={() => !isLoading_ && toggleFileAttach(file.path, file.name, file.extension)}
+                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition ${
+                          isAttached ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'hover:bg-theme-subtle'
                         }`}
-                        title={attachedFiles.some(f => f.path === file.path) ? 'Attached' : 'Attach as reference'}
+                        title={file.path}
                       >
-                        {attachingFile === file.path ? (
-                          <span className="block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <AttachIcon className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  ))}
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition ${
+                          isAttached ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'
+                        }`}>
+                          {isLoading_ ? (
+                            <span className="block w-2.5 h-2.5 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
+                          ) : isAttached ? (
+                            <CheckIcon className="w-3 h-3 text-white" />
+                          ) : null}
+                        </div>
+                        <FileIcon className={`w-4 h-4 flex-shrink-0 ${getFileTypeColor(file.extension)}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-theme-heading truncate">{file.name}</p>
+                          <p className="text-xs text-theme-hint">{formatFileSize(file.size)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                   {fileSearchResults.length === 0 && (
                     <p className="text-sm text-theme-hint text-center mt-4">No files found</p>
                   )}
@@ -1274,20 +1356,39 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                       const isExpanded = expandedFolders.has(folder);
                       const items = folderContents[folder] || [];
                       const isLoading = loadingFolder === folder;
+                      const folderFiles = items.filter(i => !i.isDirectory);
+                      const allFolderAttached = folderFiles.length > 0 && folderFiles.every(f => attachedFiles.some(a => a.path === f.path));
+                      const someFolderAttached = folderFiles.some(f => attachedFiles.some(a => a.path === f.path));
                       return (
                         <div key={folder}>
                           {/* Folder root */}
-                          <button
-                            onClick={() => toggleFolder(folder)}
-                            className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle transition text-left"
-                          >
-                            {isExpanded
-                              ? <ChevronDown className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
-                              : <ChevronRight className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
-                            }
-                            <FolderOpen className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                            <span className="text-sm font-medium text-theme-heading truncate">{folderName}</span>
-                          </button>
+                          <div className="flex items-center gap-1">
+                            {isExpanded && folderFiles.length > 0 && (
+                              <div
+                                onClick={(e) => { e.stopPropagation(); toggleFolderAttach(folder); }}
+                                className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 cursor-pointer transition ${
+                                  allFolderAttached ? 'bg-blue-600 border-blue-600' : someFolderAttached ? 'bg-blue-300 border-blue-400' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                                }`}
+                                title={allFolderAttached ? 'Deselect all files in folder' : 'Select all files in folder'}
+                              >
+                                {allFolderAttached ? <CheckIcon className="w-2.5 h-2.5 text-white" /> : someFolderAttached ? <span className="block w-1.5 h-1.5 bg-white rounded-sm" /> : null}
+                              </div>
+                            )}
+                            <button
+                              onClick={() => toggleFolder(folder)}
+                              className="flex-1 flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle transition text-left"
+                            >
+                              {isExpanded
+                                ? <ChevronDown className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                                : <ChevronRight className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                              }
+                              <FolderOpen className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                              <span className="text-sm font-medium text-theme-heading truncate">{folderName}</span>
+                              {folderFiles.length > 0 && isExpanded && (
+                                <span className="text-[10px] text-theme-hint ml-auto flex-shrink-0">{folderFiles.length}</span>
+                              )}
+                            </button>
+                          </div>
 
                           {/* Expanded folder contents */}
                           {isExpanded && (
@@ -1302,19 +1403,35 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                     const subExpanded = expandedFolders.has(item.path);
                                     const subItems = folderContents[item.path] || [];
                                     const subLoading = loadingFolder === item.path;
+                                    const subFiles = subItems.filter(si => !si.isDirectory);
+                                    const allSubAttached = subFiles.length > 0 && subFiles.every(f => attachedFiles.some(a => a.path === f.path));
+                                    const someSubAttached = subFiles.some(f => attachedFiles.some(a => a.path === f.path));
                                     return (
                                       <div key={item.path}>
-                                        <button
-                                          onClick={() => toggleFolder(item.path)}
-                                          className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle transition text-left"
-                                        >
-                                          {subExpanded
-                                            ? <ChevronDown className="w-3 h-3 text-theme-muted flex-shrink-0" />
-                                            : <ChevronRight className="w-3 h-3 text-theme-muted flex-shrink-0" />
-                                          }
-                                          <FolderOpen className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
-                                          <span className="text-xs text-theme-heading truncate">{item.name}</span>
-                                        </button>
+                                        <div className="flex items-center gap-1">
+                                          {subExpanded && subFiles.length > 0 && (
+                                            <div
+                                              onClick={(e) => { e.stopPropagation(); toggleFolderAttach(item.path); }}
+                                              className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 cursor-pointer transition ${
+                                                allSubAttached ? 'bg-blue-600 border-blue-600' : someSubAttached ? 'bg-blue-300 border-blue-400' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                                              }`}
+                                              title={allSubAttached ? 'Deselect all' : 'Select all'}
+                                            >
+                                              {allSubAttached ? <CheckIcon className="w-2 h-2 text-white" /> : someSubAttached ? <span className="block w-1 h-1 bg-white rounded-sm" /> : null}
+                                            </div>
+                                          )}
+                                          <button
+                                            onClick={() => toggleFolder(item.path)}
+                                            className="flex-1 flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle transition text-left"
+                                          >
+                                            {subExpanded
+                                              ? <ChevronDown className="w-3 h-3 text-theme-muted flex-shrink-0" />
+                                              : <ChevronRight className="w-3 h-3 text-theme-muted flex-shrink-0" />
+                                            }
+                                            <FolderOpen className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
+                                            <span className="text-xs text-theme-heading truncate">{item.name}</span>
+                                          </button>
+                                        </div>
                                         {subExpanded && (
                                           <div className="ml-4 border-l border-theme-strong/20 pl-2 space-y-0.5">
                                             {subLoading ? (
@@ -1322,27 +1439,32 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                             ) : subItems.length === 0 ? (
                                               <p className="text-xs text-theme-hint p-1.5">Empty</p>
                                             ) : (
-                                              subItems.filter(si => !si.isDirectory).map(subFile => (
-                                                <div
-                                                  key={subFile.path}
-                                                  className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle group cursor-pointer"
-                                                  onDoubleClick={() => openFileExternally(subFile.path)}
-                                                  title={`${subFile.name} — ${formatFileSize(subFile.size)}\nDouble-click to open`}
-                                                >
-                                                  <FileIcon className={`w-3.5 h-3.5 flex-shrink-0 ${getFileTypeColor(subFile.extension)}`} />
-                                                  <span className="text-xs text-theme-heading truncate flex-1">{subFile.name}</span>
-                                                  <button
-                                                    onClick={(e) => { e.stopPropagation(); attachFile(subFile.path, subFile.name, subFile.extension); }}
-                                                    disabled={attachingFile === subFile.path || attachedFiles.some(f => f.path === subFile.path)}
-                                                    className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition ${
-                                                      attachedFiles.some(f => f.path === subFile.path) ? 'text-green-500 opacity-100' : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                                              subItems.filter(si => !si.isDirectory).map(subFile => {
+                                                const isAttached = attachedFiles.some(f => f.path === subFile.path);
+                                                const isLoading_ = attachingFile === subFile.path;
+                                                return (
+                                                  <div
+                                                    key={subFile.path}
+                                                    onClick={() => !isLoading_ && toggleFileAttach(subFile.path, subFile.name, subFile.extension)}
+                                                    className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
+                                                      isAttached ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-theme-subtle'
                                                     }`}
-                                                    title="Attach"
+                                                    title={`${subFile.name} — ${formatFileSize(subFile.size)}`}
                                                   >
-                                                    <AttachIcon className="w-3.5 h-3.5" />
-                                                  </button>
-                                                </div>
-                                              ))
+                                                    <div className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition ${
+                                                      isAttached ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'
+                                                    }`}>
+                                                      {isLoading_ ? (
+                                                        <span className="block w-2 h-2 border border-white border-t-transparent rounded-full animate-spin" />
+                                                      ) : isAttached ? (
+                                                        <CheckIcon className="w-2.5 h-2.5 text-white" />
+                                                      ) : null}
+                                                    </div>
+                                                    <FileIcon className={`w-3.5 h-3.5 flex-shrink-0 ${getFileTypeColor(subFile.extension)}`} />
+                                                    <span className="text-xs text-theme-heading truncate flex-1">{subFile.name}</span>
+                                                  </div>
+                                                );
+                                              })
                                             )}
                                           </div>
                                         )}
@@ -1350,32 +1472,31 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                                     );
                                   }
                                   // File item
+                                  const isAttached = attachedFiles.some(f => f.path === item.path);
+                                  const isLoading_ = attachingFile === item.path;
                                   return (
                                     <div
                                       key={item.path}
-                                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle group cursor-pointer"
-                                      onDoubleClick={() => openFileExternally(item.path)}
-                                      title={`${item.name} — ${formatFileSize(item.size)}\nDouble-click to open in default app`}
+                                      onClick={() => !isLoading_ && toggleFileAttach(item.path, item.name, item.extension)}
+                                      className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
+                                        isAttached ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-theme-subtle'
+                                      }`}
+                                      title={`${item.name} — ${formatFileSize(item.size)}`}
                                     >
+                                      <div className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition ${
+                                        isAttached ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'
+                                      }`}>
+                                        {isLoading_ ? (
+                                          <span className="block w-2 h-2 border border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : isAttached ? (
+                                          <CheckIcon className="w-2.5 h-2.5 text-white" />
+                                        ) : null}
+                                      </div>
                                       <FileIcon className={`w-3.5 h-3.5 flex-shrink-0 ${getFileTypeColor(item.extension)}`} />
                                       <div className="flex-1 min-w-0">
                                         <p className="text-xs text-theme-heading truncate">{item.name}</p>
                                       </div>
-                                      <span className="text-[10px] text-theme-hint flex-shrink-0 mr-1">{getFileTypeLabel(item.extension)}</span>
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); attachFile(item.path, item.name, item.extension); }}
-                                        disabled={attachingFile === item.path || attachedFiles.some(f => f.path === item.path)}
-                                        className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition ${
-                                          attachedFiles.some(f => f.path === item.path) ? 'text-green-500 opacity-100' : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                                        }`}
-                                        title={attachedFiles.some(f => f.path === item.path) ? 'Attached' : 'Attach as reference'}
-                                      >
-                                        {attachingFile === item.path ? (
-                                          <span className="block w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                                        ) : (
-                                          <AttachIcon className="w-3.5 h-3.5" />
-                                        )}
-                                      </button>
+                                      <span className="text-[10px] text-theme-hint flex-shrink-0">{getFileTypeLabel(item.extension)}</span>
                                     </div>
                                   );
                                 })
@@ -1392,11 +1513,19 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
             {/* Attached files count indicator */}
             {attachedFiles.length > 0 && (
-              <div className="px-4 py-2 border-t border-theme bg-blue-50/50 dark:bg-blue-950/20">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                  <AttachIcon className="w-3.5 h-3.5" />
-                  {attachedFiles.length} file{attachedFiles.length !== 1 ? 's' : ''} attached — will be sent as context with your next message
-                </p>
+              <div className="px-4 py-2.5 border-t border-theme bg-blue-50/50 dark:bg-blue-950/20">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                    <AttachIcon className="w-3.5 h-3.5" />
+                    {attachedFiles.length} file{attachedFiles.length !== 1 ? 's' : ''} selected
+                  </p>
+                  <button
+                    onClick={() => setAttachedFiles([])}
+                    className="text-[11px] text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                  >
+                    Clear all
+                  </button>
+                </div>
               </div>
             )}
           </div>

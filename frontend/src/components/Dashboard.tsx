@@ -1399,7 +1399,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       case 'presentation-builder':
         return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'settings':
-        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
       case 'class-management':
         return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
       case 'support':

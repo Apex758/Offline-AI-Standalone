@@ -248,7 +248,7 @@ LLAMA_PARAMS = {
     # Sampling temperature for generation
     "temperature": 0.7,
     "top_p": 0.9,
-    "context_size": 4096,
+    "context_size": 16384,
     "timeout": 400,
     # Number of user+assistant message pairs to keep in context window (sliding window)
     "conversation_history_length": 4,
@@ -280,7 +280,7 @@ CORS_ORIGINS = [
 
 # AI Model Configuration
 MODEL_VERBOSE = False
-MODEL_N_CTX = 4096
+MODEL_N_CTX = 16384
 MODEL_MAX_TOKENS = 2000
 MODEL_TEMPERATURE = 0.7
 

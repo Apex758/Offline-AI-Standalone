@@ -195,11 +195,21 @@ import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
 import { useLicense } from '../contexts/LicenseContext';
+import { FEATURE_CATALOG, CATEGORY_LABELS, type FeatureCategory } from '../data/featureDiscoveryData';
+import { useFeatureDetection } from '../hooks/useFeatureDetection';
+import Compass01IconData from '@hugeicons/core-free-icons/Compass01Icon';
+import ArrowRight02IconData from '@hugeicons/core-free-icons/ArrowRight02Icon';
+import CircleArrowRight01IconData from '@hugeicons/core-free-icons/CircleArrowRight01Icon';
+
+const Compass: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Compass01IconData} {...p} />;
+const ArrowRightCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CircleArrowRight01IconData} {...p} />;
+const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
 
 interface SettingsProps {
   tabId?: string;
   savedData?: Record<string, unknown>;
   onDataChange?: (data: Record<string, unknown>) => void;
+  onNavigateToTool?: (toolType: string) => void;
 }
 
 interface ModelInfo {
@@ -210,8 +220,8 @@ interface ModelInfo {
   is_active: boolean;
 }
 
-const Settings: React.FC<SettingsProps> = () => {
-  const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials } = useSettings();
+const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
+  const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered } = useSettings();
   // dnd-kit sensors for sidebar reordering (must be at top level)
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -219,6 +229,12 @@ const Settings: React.FC<SettingsProps> = () => {
   );
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+
+  // Feature Discovery state
+  const [discoveryCategory, setDiscoveryCategory] = useState<'all' | FeatureCategory>('all');
+  const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
+  const [discoverySearch, setDiscoverySearch] = useState('');
+  const { detectionMap, discoveredCount, totalCount, percentage } = useFeatureDetection(FEATURE_CATALOG);
   const [showWipeDialog, setShowWipeDialog] = useState(false);
   const [isWiping, setIsWiping] = useState(false);
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
@@ -285,7 +301,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   // Section navigation
-  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'files' | 'license' | 'danger';
+  type SettingsSection = 'profile' | 'appearance' | 'models' | 'general' | 'features' | 'discovery' | 'files' | 'license' | 'danger';
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
 
   // Load profile name & image from localStorage (synced with Dashboard)
@@ -492,6 +508,7 @@ const Settings: React.FC<SettingsProps> = () => {
     { id: 'models' as const, label: 'Models', icon: Cpu, description: 'Language & diffusion models' },
     { id: 'general' as const, label: 'General', icon: Layers, description: 'Behavior & generation' },
     { id: 'features' as const, label: 'Features', icon: Sliders, description: 'Writing assistant & tools' },
+    { id: 'discovery' as const, label: 'Feature Discovery', icon: Compass, description: 'Explore all app features' },
     { id: 'files' as const, label: 'File Access', icon: FolderOpen, description: 'Access PC files & folders' },
     { id: 'license' as const, label: 'License & Updates', icon: RefreshCw, description: 'Activate for updates' },
     { id: 'danger' as const, label: 'Danger Zone', icon: AlertTriangle, description: 'Export, import & reset' },
@@ -2133,6 +2150,187 @@ const Settings: React.FC<SettingsProps> = () => {
                 )}
               </div>
             )}
+
+            {/* ===== FEATURE DISCOVERY SECTION ===== */}
+            {activeSection === 'discovery' && (() => {
+              const categories: ('all' | FeatureCategory)[] = ['all', 'core', 'planning', 'creation', 'visual', 'writing', 'navigation', 'system'];
+              const filteredFeatures = FEATURE_CATALOG.filter(f => {
+                const matchesCategory = discoveryCategory === 'all' || f.category === discoveryCategory;
+                const matchesSearch = !discoverySearch || f.name.toLowerCase().includes(discoverySearch.toLowerCase()) || f.description.toLowerCase().includes(discoverySearch.toLowerCase());
+                return matchesCategory && matchesSearch;
+              });
+              const circumference = 2 * Math.PI * 40;
+              const strokeOffset = circumference - (percentage / 100) * circumference;
+
+              return (
+                <div className="space-y-6">
+                  {/* Header with progress ring */}
+                  <div className="flex items-center gap-5">
+                    <div className="relative flex-shrink-0">
+                      <svg width="96" height="96" viewBox="0 0 96 96">
+                        <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6" className="text-theme-strong/10" />
+                        <circle cx="48" cy="48" r="40" fill="none" stroke="url(#discoveryGradient)" strokeWidth="6" strokeLinecap="round"
+                          strokeDasharray={circumference} strokeDashoffset={strokeOffset}
+                          transform="rotate(-90 48 48)" className="transition-all duration-700 ease-out" />
+                        <defs>
+                          <linearGradient id="discoveryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#3b82f6" />
+                            <stop offset="100%" stopColor="#8b5cf6" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-xl font-bold text-theme-title">{percentage}%</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold text-theme-title">Feature Discovery</h2>
+                      <p className="text-sm text-theme-muted mt-1">Explore everything the Learning Hub can do</p>
+                      <p className="text-sm text-theme-secondary mt-2 font-medium">{discoveredCount} of {totalCount} features explored</p>
+                    </div>
+                  </div>
+
+                  {/* Search */}
+                  <div className="relative">
+                    <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted" />
+                    <Input
+                      placeholder="Search features..."
+                      value={discoverySearch}
+                      onChange={e => setDiscoverySearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {/* Category filter pills */}
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(cat => {
+                      const isActive = discoveryCategory === cat;
+                      const label = cat === 'all' ? 'All' : CATEGORY_LABELS[cat];
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setDiscoveryCategory(cat)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 ${
+                            isActive
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-theme-surface border border-theme-strong/10 text-theme-label hover:bg-theme-subtle'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Feature cards */}
+                  <div className="space-y-2">
+                    {filteredFeatures.length === 0 && (
+                      <div className="text-center py-8 text-theme-muted">
+                        <p className="text-sm">No features match your search</p>
+                      </div>
+                    )}
+                    {filteredFeatures.map(feature => {
+                      const isDiscovered = detectionMap.get(feature.id) || false;
+                      const isExpanded = expandedFeature === feature.id;
+                      const isManual = feature.detectionStrategy.type === 'manual';
+                      return (
+                        <div
+                          key={feature.id}
+                          className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                            isExpanded
+                              ? 'border-blue-200 dark:border-blue-800/40 bg-blue-50/30 dark:bg-blue-950/10 shadow-sm'
+                              : 'border-theme-strong/10 bg-theme-surface hover:bg-theme-subtle'
+                          }`}
+                        >
+                          {/* Collapsed row */}
+                          <button
+                            onClick={() => setExpandedFeature(isExpanded ? null : feature.id)}
+                            className="w-full flex items-center gap-3 p-3.5 text-left"
+                          >
+                            {/* Status indicator */}
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              isDiscovered
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30'
+                                : 'bg-theme-strong/5'
+                            }`}>
+                              {isDiscovered ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                              ) : (
+                                <div className="w-2 h-2 rounded-full bg-theme-strong/20" />
+                              )}
+                            </div>
+
+                            {/* Name & category */}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-medium truncate ${isDiscovered ? 'text-theme-label' : 'text-theme-title'}`}>
+                                {feature.name}
+                              </p>
+                              <p className="text-[11px] text-theme-hint truncate">{CATEGORY_LABELS[feature.category]}</p>
+                            </div>
+
+                            {/* Expand chevron */}
+                            <ChevronDown className={`w-4 h-4 text-theme-muted flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {/* Expanded content */}
+                          {isExpanded && (
+                            <div className="px-3.5 pb-4 pt-0 space-y-3 border-t border-theme-strong/5">
+                              <p className="text-sm text-theme-body mt-3 leading-relaxed">{feature.description}</p>
+
+                              <div className="space-y-1.5">
+                                <p className="text-xs font-semibold text-theme-label uppercase tracking-wider">How to use</p>
+                                <ol className="space-y-1 ml-0.5">
+                                  {feature.howToUse.map((step, i) => (
+                                    <li key={i} className="flex gap-2.5 text-sm text-theme-body">
+                                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold flex items-center justify-center mt-0.5">
+                                        {i + 1}
+                                      </span>
+                                      <span className="leading-relaxed">{step}</span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              </div>
+
+                              <div className="flex items-center gap-2 pt-1">
+                                {feature.toolType && onNavigateToTool && (
+                                  <Button
+                                    onClick={() => onNavigateToTool(feature.toolType!)}
+                                    className="text-xs px-3 py-1.5 h-auto bg-blue-600 hover:bg-blue-700 text-white"
+                                  >
+                                    <ArrowRightCircle className="w-3.5 h-3.5 mr-1.5" />
+                                    Go to {feature.name}
+                                  </Button>
+                                )}
+                                {feature.settingsSection && (
+                                  <Button
+                                    onClick={() => setActiveSection(feature.settingsSection as SettingsSection)}
+                                    variant="outline"
+                                    className="text-xs px-3 py-1.5 h-auto"
+                                  >
+                                    <ArrowRightCircle className="w-3.5 h-3.5 mr-1.5" />
+                                    Open in Settings
+                                  </Button>
+                                )}
+                                {isManual && !isDiscovered && (
+                                  <Button
+                                    onClick={() => markFeatureDiscovered(feature.id)}
+                                    variant="outline"
+                                    className="text-xs px-3 py-1.5 h-auto border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                  >
+                                    <Check className="w-3.5 h-3.5 mr-1.5" />
+                                    Mark as Explored
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ===== LICENSE & UPDATES SECTION ===== */}
             {activeSection === 'license' && (

@@ -745,9 +745,12 @@ function isPathAllowed(targetPath, allowedFolders) {
 
 // IPC: Open native folder picker dialog
 ipcMain.handle('select-folder', async () => {
+  if (!mainWindow) return null;
+  mainWindow.focus();
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],
-    title: 'Select a folder to allow access'
+    title: 'Select a folder to allow access',
+    defaultPath: require('os').homedir()
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];

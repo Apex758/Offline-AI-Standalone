@@ -44,7 +44,9 @@
       "Bash(cp frontend/src/data/curriculumIndex.json resources/frontend/src/data/curriculumIndex.json)",
       "Bash(cp frontend/src/data/curriculumIndex.json backend-bundle/data/curriculumIndex.json)",
       "Bash(npm install:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.vue \\\\\\))",
+      "Bash(npx.cmd vite:*)"
     ]
   }
 }

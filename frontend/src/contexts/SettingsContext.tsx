@@ -87,6 +87,8 @@ export interface Settings {
   startOnBoot: boolean;
   // File access
   fileAccessEnabled: boolean;
+  // Feature discovery
+  discoveredFeatures: string[];
 }
 
 export interface SettingsContextValue {
@@ -98,6 +100,8 @@ export interface SettingsContextValue {
   resetTutorials: () => void;
   setWelcomeSeen: (seen: boolean) => void;
   isSidebarItemEnabled: (id: string) => boolean;
+  markFeatureDiscovered: (featureId: string) => void;
+  isFeatureDiscovered: (featureId: string) => boolean;
 }
 
 // Default Settings (hex colors matching Settings.tsx defaults)
@@ -158,6 +162,8 @@ export const DEFAULT_SETTINGS: Settings = {
   startOnBoot: false,
   // File access
   fileAccessEnabled: false,
+  // Feature discovery
+  discoveredFeatures: [],
 };
 
 // localStorage key
@@ -364,6 +370,22 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     return item?.enabled ?? false;
   };
 
+  const markFeatureDiscovered = (featureId: string) => {
+    setSettings(prevSettings => {
+      if ((prevSettings.discoveredFeatures || []).includes(featureId)) {
+        return prevSettings;
+      }
+      return {
+        ...prevSettings,
+        discoveredFeatures: [...(prevSettings.discoveredFeatures || []), featureId],
+      };
+    });
+  };
+
+  const isFeatureDiscovered = (featureId: string): boolean => {
+    return (settings.discoveredFeatures || []).includes(featureId);
+  };
+
   const resetTutorials = () => {
     setSettings(prevSettings => ({
       ...prevSettings,
@@ -389,7 +411,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     isTutorialCompleted,
     resetTutorials,
     setWelcomeSeen,
-    isSidebarItemEnabled
+    isSidebarItemEnabled,
+    markFeatureDiscovered,
+    isFeatureDiscovered
   };
 
   return (
