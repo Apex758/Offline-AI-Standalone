@@ -1,0 +1,31 @@
+[
+  {
+    "id": "draft_lesson-planner-1774666590651_1774666607146",
+    "title": "Language Arts - 4",
+    "timestamp": "2026-03-28T02:56:47.146Z",
+    "plannerType": "lesson",
+    "formData": {
+      "subject": "Language Arts",
+      "gradeLevel": "4",
+      "topic": "",
+      "strand": "reading-viewing",
+      "essentialOutcomes": "",
+      "specificOutcomes": "",
+      "studentCount": "",
+      "duration": "57",
+      "pedagogicalStrategies": [],
+      "learningStyles": [],
+      "learningPreferences": [],
+      "multipleIntelligences": [],
+      "customLearningStyles": "",
+      "materials": "",
+      "prerequisiteSkills": "",
+      "specialNeeds": false,
+      "specialNeedsDetails": "",
+      "additionalInstructions": "",
+      "referenceUrl": ""
+    },
+    "step": 1,
+    "curriculumMatches": []
+  }
+]

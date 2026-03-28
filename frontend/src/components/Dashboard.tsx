@@ -1580,8 +1580,52 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             onCreateTab={(toolType, prefillData) => {
               const tool = tools.find(t => t.type === toolType);
               if (tool) {
+                // Normalize brain dump details into formData fields that target components expect
+                const formData = prefillData ? (() => {
+                  const fd: Record<string, any> = { ...prefillData };
+                  // AI returns "grade" but components expect "gradeLevel"
+                  if (fd.grade && !fd.gradeLevel) {
+                    fd.gradeLevel = fd.grade;
+                    delete fd.grade;
+                  }
+                  // AI returns "grades" for multigrade — map to gradeRange
+                  if (fd.grades && !fd.gradeRange) {
+                    fd.gradeRange = Array.isArray(fd.grades) ? fd.grades.join(', ') : fd.grades;
+                    delete fd.grades;
+                  }
+                  // AI returns "subjects" for cross-curricular — map to supportingSubjects
+                  if (fd.subjects && !fd.supportingSubjects) {
+                    fd.supportingSubjects = Array.isArray(fd.subjects) ? fd.subjects.join(', ') : fd.subjects;
+                    delete fd.subjects;
+                  }
+                  // AI returns "questionCount" — map to numberOfQuestions for quiz
+                  if (fd.questionCount && !fd.numberOfQuestions) {
+                    fd.numberOfQuestions = String(fd.questionCount);
+                  }
+                  // AI returns "description" for image-studio — keep as-is
+                  // Map "topic" to "lessonTopic" for kindergarten planner
+                  if (toolType === 'kindergarten-planner' && fd.topic && !fd.lessonTopic) {
+                    fd.lessonTopic = fd.topic;
+                  }
+                  // Map "topic" to "assignmentTitle" for rubric if no title
+                  if (toolType === 'rubric-generator' && fd.topic && !fd.assignmentTitle) {
+                    fd.assignmentTitle = fd.topic;
+                  }
+                  return fd;
+                })() : undefined;
+
+                const tabData = formData ? { formData } : undefined;
                 const existingTab = tabs.find(t => t.type === toolType);
-                if (existingTab) {
+                if (existingTab && tabData) {
+                  // Replace existing tab with new id so component remounts with fresh prefill data
+                  const newId = `tab-${Date.now()}`;
+                  setTabs(prev => prev.map(t => t.id === existingTab.id
+                    ? { ...t, id: newId, active: true, data: tabData }
+                    : { ...t, active: false }
+                  ));
+                  setActiveTabId(newId);
+                } else if (existingTab) {
+                  // No prefill data, just switch to existing tab
                   setTabs(prev => prev.map(t => ({ ...t, active: t.id === existingTab.id })));
                   setActiveTabId(existingTab.id);
                 } else {
@@ -1590,7 +1634,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     title: tool.name,
                     type: tool.type as Tool['type'],
                     active: true,
-                    data: prefillData ? { prefillData } : undefined
+                    data: tabData
                   };
                   setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
                   setActiveTabId(newTab.id);

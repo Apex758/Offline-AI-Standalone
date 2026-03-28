@@ -47,7 +47,8 @@
       "Bash(xargs sed:*)",
       "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.vue \\\\\\))",
       "Bash(npx.cmd vite:*)",
-      "Bash(node_modules/.bin/tsc --noEmit)"
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))"
     ]
   }
 }

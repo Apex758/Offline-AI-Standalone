@@ -105,6 +105,18 @@ const MinusIcon: React.FC<{ className?: string; style?: React.CSSProperties }> =
 const Equal: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={EqualSignIconData} {...p} />;
 const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
 const Type: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextFontIconData} {...p} />;
+const Bold: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextBoldIconData} {...p} />;
+const Italic: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextItalicIconData} {...p} />;
+const Underline: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextUnderlineIconData} {...p} />;
+const Strikethrough: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextStrikethroughIconData} {...p} />;
+const Heading1: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Heading01IconData} {...p} />;
+const Heading2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Heading02IconData} {...p} />;
+const List: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LeftToRightListBulletIconData} {...p} />;
+const ListOrdered: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={LeftToRightListNumberIconData} {...p} />;
+const Quote: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={QuoteDownIconData} {...p} />;
+const Link: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Link01IconData} {...p} />;
+const HrIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MinusSignIconData} {...p} />;
+const StopWatch: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StopWatchIconData} {...p} />;
 
 interface BrainDumpProps {
   tabId: string;
@@ -1293,20 +1305,20 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                               {/* Edit toolbar */}
                               <div className="flex flex-wrap items-center gap-1 p-1.5 rounded-xl" style={{ background: `${accentColor}0a` }}>
                                 {([
-                                  { icon: Bold,          tip: 'Bold',          cmd: 'bold' },
-                                  { icon: Italic,        tip: 'Italic',        cmd: 'italic' },
-                                  { icon: Underline,     tip: 'Underline',     cmd: 'underline' },
-                                  { icon: Strikethrough, tip: 'Strikethrough', cmd: 'strikeThrough' },
+                                  { iconData: TextBoldIconData,          tip: 'Bold',          cmd: 'bold' },
+                                  { iconData: TextItalicIconData,        tip: 'Italic',        cmd: 'italic' },
+                                  { iconData: TextUnderlineIconData,     tip: 'Underline',     cmd: 'underline' },
+                                  { iconData: TextStrikethroughIconData, tip: 'Strikethrough', cmd: 'strikeThrough' },
                                   { divider: true },
-                                  { icon: Heading1,      tip: 'Heading 1',     cmd: 'formatBlock', value: '<h1>' },
-                                  { icon: Heading2,      tip: 'Heading 2',     cmd: 'formatBlock', value: '<h2>' },
+                                  { iconData: Heading01IconData,      tip: 'Heading 1',     cmd: 'formatBlock', value: '<h1>' },
+                                  { iconData: Heading02IconData,      tip: 'Heading 2',     cmd: 'formatBlock', value: '<h2>' },
                                   { divider: true },
-                                  { icon: List,          tip: 'Bullet list',   cmd: 'insertUnorderedList' },
-                                  { icon: ListOrdered,   tip: 'Numbered list', cmd: 'insertOrderedList' },
-                                  { icon: Quote,         tip: 'Quote',         cmd: 'formatBlock', value: '<blockquote>' },
+                                  { iconData: LeftToRightListBulletIconData, tip: 'Bullet list',   cmd: 'insertUnorderedList' },
+                                  { iconData: LeftToRightListNumberIconData, tip: 'Numbered list', cmd: 'insertOrderedList' },
+                                  { iconData: QuoteDownIconData,         tip: 'Quote',         cmd: 'formatBlock', value: '<blockquote>' },
                                   { divider: true },
-                                  { icon: Link,          tip: 'Link',          cmd: 'createLink', prompt: true },
-                                  { icon: HrIcon,        tip: 'Divider',       cmd: 'insertHorizontalRule' },
+                                  { iconData: Link01IconData,          tip: 'Link',          cmd: 'createLink', prompt: true },
+                                  { iconData: MinusSignIconData,       tip: 'Divider',       cmd: 'insertHorizontalRule' },
                                 ] as Array<{ iconData?: any; tip?: string; cmd?: string; value?: string; prompt?: boolean; divider?: boolean }>).map((item, i) => {
                                   if (item.divider) {
                                     return <div key={`ed-${i}`} className="w-px h-5 mx-0.5" style={{ background: `${accentColor}20` }} />;
@@ -1386,6 +1398,18 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                                     }`}>
                                       {action.status}
                                     </span>
+                                    {action.status !== 'denied' && action.type !== 'calendar-task' && (
+                                      <button
+                                        onClick={() => {
+                                          const tabType = ACTION_TO_TAB[action.type];
+                                          if (tabType && onCreateTab) onCreateTab(tabType, action.details);
+                                        }}
+                                        className="p-1.5 rounded-lg bg-blue-500/12 text-blue-500 hover:bg-blue-500/25 transition-all active:scale-90 shrink-0"
+                                        title="Open tool"
+                                      >
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               })}
