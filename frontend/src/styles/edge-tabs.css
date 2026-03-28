@@ -197,7 +197,7 @@
 }
 
 .dark .edge-tab-label {
-  color: #a8a6a2;
+  color: var(--tab-content-bg, #252422);
 }
 
 .dark .edge-tab[data-active="true"] .edge-tab-label {
@@ -257,6 +257,11 @@
 
 .edge-tab-group[data-collapsed="false"] .chevron-icon {
   transform: rotate(90deg);
+}
+
+/* Light mode: make split/notification icons match tab text color */
+:root:not(.dark) .light-tab-icon {
+  color: #333 !important;
 }
 
 /* Dark mode overrides - media query fallback */

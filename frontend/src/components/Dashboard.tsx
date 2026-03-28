@@ -442,6 +442,7 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
 const MAX_TABS_PER_TYPE = 3;
 const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder']);
+const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder']);
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled } = useSettings();
@@ -1699,7 +1700,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   data-tutorial={dataTutorial}
                   onClick={() => openTool(tool)}
                   className={`w-full flex items-center ${sidebarOpen ? 'space-x-3 p-3' : 'justify-center p-3'} glass-nav-item transition group`}
-                  title={!sidebarOpen ? `${tool.name}${!isSingle && tool.type !== 'analytics' ? ` (${count}/${maxForTool} open)` : ''}` : ''}
+                  title={!sidebarOpen ? `${tool.name}${!isSingle && tool.type !== 'analytics' && !HIDE_TAB_COUNTER.has(tool.type) ? ` (${count}/${maxForTool} open)` : ''}` : ''}
                   style={{ backgroundColor: isActiveToolType ? 'var(--sidebar-active)' : 'transparent', transition: 'background-color 0.25s, box-shadow 0.25s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveToolType && toolColor) { icon.style.color = toolColor; icon.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActiveToolType ? 'var(--sidebar-active)' : 'transparent'; const icon = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (icon && !isActiveToolType) { icon.style.color = 'var(--sidebar-text-muted)'; icon.style.filter = ''; } }}
@@ -1707,7 +1708,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   <Icon className={`w-5 h-5 flex-shrink-0 sidebar-icon ${isActiveToolType ? 'icon-glow' : ''}`} style={{ color: isActiveToolType && toolColor ? toolColor : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
                   <div className="flex-1 text-left overflow-hidden" style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: sidebarOpen ? 'auto' : 'none' }}>
                     <p className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
-                    {!isSingle && count > 0 && tool.type !== 'analytics' && (<p className="text-xs whitespace-nowrap" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{maxForTool} open</p>)}
+                    {!isSingle && count > 0 && tool.type !== 'analytics' && !HIDE_TAB_COUNTER.has(tool.type) && (<p className="text-xs whitespace-nowrap" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{maxForTool} open</p>)}
                   </div>
                 </button>
               );
@@ -1753,7 +1754,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           <Icon className={`w-4 h-4 flex-shrink-0 sidebar-icon ${isActive ? 'icon-glow' : ''}`} style={{ color: isActive && tc ? tc : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
                           <div className="flex-1 text-left overflow-hidden">
                             <p className="text-xs font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
-                            {count > 0 && (<p className="text-xs" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}</p>)}
+                            {count > 0 && !HIDE_TAB_COUNTER.has(tool.type) && (<p className="text-xs" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}</p>)}
                           </div>
                         </button>
                       );
@@ -2112,7 +2113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 className={`p-2 rounded-lg transition group flex-shrink-0 ${
                   splitView.isActive
                     ? 'bg-white/20 text-white hover:bg-white/30'
-                    : 'hover:bg-white/10 text-gray-300'
+                    : 'hover:bg-white/10 text-gray-300 light-tab-icon'
                 }`}
                 title={splitView.isActive ? 'Exit Split View' : 'Enter Split View'}
               >
@@ -2155,7 +2156,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setNotifPanelOpen(prev => !prev); }}
-                className="relative p-2 rounded-lg hover:bg-white/10 transition text-gray-300 flex-shrink-0"
+                className="relative p-2 rounded-lg hover:bg-white/10 transition text-gray-300 light-tab-icon flex-shrink-0"
                 title="Notifications"
               >
                 <Bell className="w-5 h-5" />

@@ -5,6 +5,8 @@ import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Camera01IconData from '@hugeicons/core-free-icons/Camera01Icon';
+import Moon02IconData from '@hugeicons/core-free-icons/Moon02Icon';
+import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
 import { useSettings } from '../contexts/SettingsContext';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -18,6 +20,8 @@ const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p
 const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={GraduationScrollIconData} {...p} />;
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Camera: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Camera01IconData} {...p} />;
+const Moon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Moon02IconData} {...p} />;
+const Sun: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun01IconData} {...p} />;
 
 interface TutorialButtonProps {
   tutorialId: string;
@@ -36,9 +40,18 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   position = 'bottom-right',
   ghost = false
 }) => {
-  const { settings, isTutorialCompleted } = useSettings();
+  const { settings, isTutorialCompleted, updateSettings } = useSettings();
   const [expanded, setExpanded] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Don't render if user disabled floating buttons
   if (!settings.tutorials.tutorialPreferences.showFloatingButtons) {
@@ -97,6 +110,10 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
   const handleScreenshotClick = async () => {
     setExpanded(false);
     onScreenshotTicket?.();
+  };
+
+  const handleToggleTheme = () => {
+    updateSettings({ theme: isDarkMode ? 'light' : 'dark' });
   };
 
   const mainButtonStyle: React.CSSProperties = {
@@ -163,6 +180,51 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
               }}
             >
               Search
+              <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
+            </span>
+          </button>
+
+          {/* Theme toggle button */}
+          <button
+            onClick={handleToggleTheme}
+            className="rounded-2xl flex items-center justify-center text-white group/sub relative"
+            style={{
+              ...subButtonBase,
+              background: isDarkMode
+                ? 'linear-gradient(135deg, rgba(251,191,36,0.92), rgba(245,158,11,0.92))'
+                : 'linear-gradient(135deg, rgba(99,102,241,0.92), rgba(79,70,229,0.92))',
+              boxShadow: expanded
+                ? isDarkMode
+                  ? '0 6px 24px rgba(251,191,36,0.45), 0 2px 8px rgba(0,0,0,0.15)'
+                  : '0 6px 24px rgba(99,102,241,0.45), 0 2px 8px rgba(0,0,0,0.15)'
+                : '0 0 0 rgba(0,0,0,0)',
+              opacity: expanded ? 1 : 0,
+              transform: expanded ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.5)',
+              pointerEvents: expanded ? 'auto' : 'none',
+              transitionDelay: expanded ? '0.09s' : '0.01s',
+            }}
+            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {isDarkMode ? (
+              <Sun className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+            ) : (
+              <Moon className="w-[18px] h-[18px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+            )}
+            {/* Tooltip */}
+            <span
+              className="absolute right-full mr-3 px-3 py-1.5 text-white text-xs rounded-xl opacity-0 group-hover/sub:opacity-100 whitespace-nowrap pointer-events-none"
+              style={{
+                background: 'rgba(15,15,25,0.9)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                transition: 'opacity 0.15s ease',
+                fontWeight: 500,
+                letterSpacing: '0.01em',
+              }}
+            >
+              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
               <span className="absolute left-full top-1/2 -translate-y-1/2 -ml-px border-4 border-transparent" style={{ borderLeftColor: 'rgba(15,15,25,0.9)' }}></span>
             </span>
           </button>
