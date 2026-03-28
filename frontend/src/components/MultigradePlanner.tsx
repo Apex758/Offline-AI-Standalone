@@ -62,7 +62,17 @@ interface MultigradeHistory {
   timestamp: string;
   formData: FormData;
   generatedPlan: string;
-  parsedPlan?: ParsedMultigrade;  
+  parsedPlan?: ParsedMultigrade;
+}
+
+interface Draft {
+  id: string;
+  title: string;
+  timestamp: string;
+  plannerType: string;
+  formData: any;
+  step?: number;
+  curriculumMatches?: any[];
 }
 
 interface FormData {
@@ -288,6 +298,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [multigradeHistories, setMultigradeHistories] = useState<MultigradeHistory[]>([]);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftsExpanded, setDraftsExpanded] = useState(true);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [step, setStep] = useState<number>(1);
@@ -656,8 +668,44 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
   // Removed old exportPlan logic; now handled by ExportButton
 
+  const loadDrafts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-drafts?plannerType=multigrade');
+      setDrafts(response.data);
+    } catch (error) {
+      console.error('Failed to load drafts:', error);
+    }
+  };
+
+  const loadDraft = async (draft: Draft) => {
+    setFormData(draft.formData);
+    setGeneratedPlan('');
+    setParsedPlan(null);
+    setCurrentPlanId(null);
+    if (draft.step) setStep(draft.step);
+    setHistoryOpen(false);
+
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draft.id}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft after loading:', error);
+    }
+  };
+
+  const deleteDraft = async (draftId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draftId}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft:', error);
+    }
+  };
+
   useEffect(() => {
     loadMultigradeHistories();
+    loadDrafts();
   }, []);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -1388,7 +1436,49 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
-            {multigradeHistories.length === 0 ? (
+            {drafts.length > 0 && (
+              <>
+                <div
+                  className="flex items-center gap-1 cursor-pointer select-none mb-1"
+                  onClick={() => setDraftsExpanded(!draftsExpanded)}
+                >
+                  <span className="text-xs text-amber-500 transition-transform inline-block" style={{ transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
+                  <span className="text-sm font-semibold text-amber-500">Drafts ({drafts.length})</span>
+                </div>
+                {draftsExpanded && (
+                  <div className="space-y-2">
+                    {drafts.map((draft) => (
+                      <div
+                        key={draft.id}
+                        onClick={() => loadDraft(draft)}
+                        className="p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle bg-theme-tertiary border border-dashed border-amber-400/50"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">Draft</span>
+                              <p className="text-sm font-medium text-theme-heading line-clamp-2">{draft.title}</p>
+                            </div>
+                            <p className="text-xs text-theme-hint mt-1">
+                              {new Date(draft.timestamp).toLocaleDateString()} {new Date(draft.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => deleteDraft(draft.id, e)}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                            title="Delete draft"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="border-b border-theme my-2"></div>
+              </>
+            )}
+            {drafts.length === 0 && multigradeHistories.length === 0 ? (
               <div className="text-center text-theme-hint mt-8">
                 <Users className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved multigrade plans yet</p>

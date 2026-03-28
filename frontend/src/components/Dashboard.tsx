@@ -122,6 +122,7 @@ import '../styles/edge-tabs.css';
 import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layout/trapezoid-tabs';
 import Grainient from './Grainient';
 import LightRays from './LightRays';
+import DraftSaveDialog from './DraftSaveDialog';
 
 
 interface DashboardProps {
@@ -444,6 +445,17 @@ const MAX_TABS_PER_TYPE = 3;
 const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder']);
 const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder']);
 
+const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
+  'lesson-planner': { storagePrefix: 'lesson_state_', plannerType: 'lesson', generatedKey: 'generatedPlan' },
+  'kindergarten-planner': { storagePrefix: 'kindergarten_state_', plannerType: 'kindergarten', generatedKey: 'generatedPlan' },
+  'multigrade-planner': { storagePrefix: 'multigrade_state_', plannerType: 'multigrade', generatedKey: 'generatedPlan' },
+  'cross-curricular-planner': { storagePrefix: 'cross_curricular_state_', plannerType: 'cross-curricular', generatedKey: 'generatedPlan' },
+  'quiz-generator': { storagePrefix: 'quiz_state_', plannerType: 'quiz', generatedKey: 'generatedQuiz' },
+  'rubric-generator': { storagePrefix: 'rubric_state_', plannerType: 'rubric', generatedKey: 'generatedRubric' },
+  'worksheet-generator': { storagePrefix: 'worksheet_state_', plannerType: 'worksheet', generatedKey: 'generatedWorksheet' },
+  'presentation-builder': { storagePrefix: '', plannerType: 'presentation', generatedKey: 'slides' },
+};
+
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled } = useSettings();
   // Import the real tutorial context at the top level
@@ -567,6 +579,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [showFirstTimeTutorial, setShowFirstTimeTutorial] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showResourceManagerTutorial, setShowResourceManagerTutorial] = useState(false);
+
+  // Draft system state
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(null);
+  const [pendingCloseAllDirtyTabs, setPendingCloseAllDirtyTabs] = useState<string[]>([]);
+  const [pendingDraftData, setPendingDraftData] = useState<any>(null);
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [bouncingTabId, setBouncingTabId] = useState<string | null>(null);
   const [hoveringTabId, setHoveringTabId] = useState<string | null>(null);
@@ -869,7 +887,69 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
-  const closeTab = useCallback((tabId: string) => {
+  // Check if a generator tab has unsaved form data but no generated content
+  const getDirtyPlannerData = useCallback((tabId: string, tabType: string) => {
+    const config = DRAFT_CONFIG[tabType];
+    if (!config) return null;
+    try {
+      let parsed: any;
+      if (tabType === 'presentation-builder') {
+        // PresentationBuilder stores state in tab.data, not localStorage
+        const tab = tabs.find(t => t.id === tabId);
+        if (!tab?.data) return null;
+        parsed = tab.data;
+      } else {
+        const savedState = localStorage.getItem(`${config.storagePrefix}${tabId}`);
+        if (!savedState) return null;
+        parsed = JSON.parse(savedState);
+      }
+      const fd = parsed.formData;
+      if (!fd) return null;
+      // Has generated content already = not a draft
+      if (parsed[config.generatedKey]) return null;
+      // Check if any meaningful fields are filled
+      const hasContent = fd.subject || fd.topic || fd.gradeLevel || fd.strand ||
+        fd.essentialOutcomes || fd.specificOutcomes || fd.theme || fd.title ||
+        fd.learningOutcomes || fd.worksheetType || fd.activityType;
+      if (!hasContent) return null;
+      // Build a title from available fields
+      const titleParts = [fd.subject, fd.topic, fd.gradeLevel, fd.theme, fd.title].filter(Boolean);
+      const title = titleParts.length > 0 ? titleParts.join(' - ') : 'Untitled Draft';
+      return {
+        formData: fd,
+        step: parsed.step || 1,
+        curriculumMatches: parsed.curriculumReferences || parsed.curriculumMatches || [],
+        plannerType: config.plannerType,
+        title,
+      };
+    } catch {
+      return null;
+    }
+  }, [tabs]);
+
+  // Save a draft to the backend
+  const saveDraftForTab = useCallback(async (tabId: string, tabType: string, draftData: any) => {
+    try {
+      await fetch('http://localhost:8000/api/lesson-drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: `draft_${tabId}_${Date.now()}`,
+          title: draftData.title,
+          timestamp: new Date().toISOString(),
+          plannerType: draftData.plannerType,
+          formData: draftData.formData,
+          step: draftData.step,
+          curriculumMatches: draftData.curriculumMatches,
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to save draft:', e);
+    }
+  }, []);
+
+  // Execute the actual tab close logic
+  const executeTabClose = useCallback((tabId: string) => {
     setTabs(prevTabs => {
       const tab = prevTabs.find(t => t.id === tabId);
       if (!tab) return prevTabs;
@@ -930,6 +1010,69 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     });
   }, [closeConnection]);
 
+  // Close tab with draft check
+  const closeTab = useCallback((tabId: string) => {
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab) { executeTabClose(tabId); return; }
+
+    const config = DRAFT_CONFIG[tab.type];
+    if (config) {
+      const dirtyData = getDirtyPlannerData(tabId, tab.type);
+      if (dirtyData) {
+        setPendingCloseTabId(tabId);
+        setPendingDraftData({ tabId, tabType: tab.type, ...dirtyData });
+        setShowDraftDialog(true);
+        return;
+      }
+    }
+    executeTabClose(tabId);
+  }, [tabs, executeTabClose, getDirtyPlannerData]);
+
+  // Draft dialog handlers
+  const handleSaveDraft = useCallback(async () => {
+    if (pendingDraftData && pendingCloseTabId) {
+      await saveDraftForTab(pendingCloseTabId, pendingDraftData.tabType, pendingDraftData);
+      executeTabClose(pendingCloseTabId);
+    }
+    setShowDraftDialog(false);
+    setPendingCloseTabId(null);
+    setPendingDraftData(null);
+    // If closing all tabs, continue with next dirty tab
+    setPendingCloseAllDirtyTabs(prev => {
+      if (prev.length > 0) {
+        const [next, ...rest] = prev;
+        setTimeout(() => closeTab(next), 0);
+        return rest;
+      }
+      return prev;
+    });
+  }, [pendingDraftData, pendingCloseTabId, saveDraftForTab, executeTabClose, closeTab]);
+
+  const handleDiscardDraft = useCallback(() => {
+    if (pendingCloseTabId) {
+      executeTabClose(pendingCloseTabId);
+    }
+    setShowDraftDialog(false);
+    setPendingCloseTabId(null);
+    setPendingDraftData(null);
+    // If closing all tabs, continue with next dirty tab
+    setPendingCloseAllDirtyTabs(prev => {
+      if (prev.length > 0) {
+        const [next, ...rest] = prev;
+        setTimeout(() => closeTab(next), 0);
+        return rest;
+      }
+      return prev;
+    });
+  }, [pendingCloseTabId, executeTabClose, closeTab]);
+
+  const handleCancelDraft = useCallback(() => {
+    setShowDraftDialog(false);
+    setPendingCloseTabId(null);
+    setPendingDraftData(null);
+    setPendingCloseAllDirtyTabs([]);
+  }, []);
+
   useEffect(() => {
     const savedTabs = localStorage.getItem('dashboard-tabs');
     const savedActiveTabId = localStorage.getItem('dashboard-active-tab');
@@ -980,14 +1123,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   }, [tabs, activeTabId]);
 
-  // Handle Auto-Close Tabs on App Exit
+  // Handle Auto-Close Tabs on App Exit + auto-save dirty drafts
   useEffect(() => {
     const handleBeforeUnload = () => {
+      // Auto-save any dirty planner/generator tabs as drafts
+      tabs.forEach(tab => {
+        const config = DRAFT_CONFIG[tab.type];
+        if (!config) return;
+        const dirtyData = getDirtyPlannerData(tab.id, tab.type);
+        if (dirtyData) {
+          // Use sendBeacon for reliable saving during unload
+          const draft = {
+            id: `draft_${tab.id}_${Date.now()}`,
+            title: dirtyData.title,
+            timestamp: new Date().toISOString(),
+            plannerType: dirtyData.plannerType,
+            formData: dirtyData.formData,
+            step: dirtyData.step,
+            curriculumMatches: dirtyData.curriculumMatches,
+          };
+          navigator.sendBeacon(
+            'http://localhost:8000/api/lesson-drafts',
+            new Blob([JSON.stringify(draft)], { type: 'application/json' })
+          );
+        }
+      });
+
       if (settings.autoCloseTabsOnExit) {
         localStorage.removeItem('dashboard-tabs');
         localStorage.removeItem('dashboard-active-tab');
       }
-      // If setting is false, do nothing - let existing save logic work
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -995,7 +1160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [settings.autoCloseTabsOnExit]);
+  }, [settings.autoCloseTabsOnExit, tabs, getDirtyPlannerData]);
 
   // Load user profile image from localStorage
   useEffect(() => {
@@ -2126,20 +2291,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('Dashboard: close all tabs clicked, current tabs:', tabs);
-                  // Force immediate state reset - close everything at once
-                  setSplitView({
-                    isActive: false,
-                    leftTabId: null,
-                    rightTabId: null,
-                    activePaneId: 'left'
-                  });
-                  setTabs([]);
-                  setActiveTabId(null);
-                  localStorage.removeItem('dashboard-tabs');
-                  localStorage.removeItem('dashboard-active-tab');
-                  localStorage.removeItem('dashboard-split-view');
-                  console.log('Dashboard: close all tabs completed');
+                  // Check for dirty planner/generator tabs before closing all
+                  const dirtyTabIds = tabs
+                    .filter(t => DRAFT_CONFIG[t.type] && getDirtyPlannerData(t.id, t.type))
+                    .map(t => t.id);
+
+                  if (dirtyTabIds.length > 0) {
+                    // Close non-dirty tabs immediately
+                    const nonDirtyTabs = tabs.filter(t => !dirtyTabIds.includes(t.id));
+                    nonDirtyTabs.forEach(t => executeTabClose(t.id));
+                    // Queue dirty tabs for one-at-a-time dialog
+                    const [first, ...rest] = dirtyTabIds;
+                    setPendingCloseAllDirtyTabs(rest);
+                    closeTab(first);
+                  } else {
+                    setSplitView({
+                      isActive: false,
+                      leftTabId: null,
+                      rightTabId: null,
+                      activePaneId: 'left'
+                    });
+                    setTabs([]);
+                    setActiveTabId(null);
+                    localStorage.removeItem('dashboard-tabs');
+                    localStorage.removeItem('dashboard-active-tab');
+                    localStorage.removeItem('dashboard-split-view');
+                  }
                 }}
                 data-tutorial="close-all-tabs"
                 className="p-2 rounded-lg hover:bg-red-500/20 transition group flex-shrink-0 border border-red-400/30"
@@ -2377,6 +2554,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       />
     );
   })()}
+
+      {showDraftDialog && (
+        <DraftSaveDialog
+          onSaveDraft={handleSaveDraft}
+          onDiscard={handleDiscardDraft}
+          onCancel={handleCancelDraft}
+        />
+      )}
     </div>
   );
 };

@@ -74,6 +74,16 @@ interface LessonPlanHistory {
   curriculumMatches?: CurriculumReference[]; // ✅ Related curriculum section
 }
 
+interface Draft {
+  id: string;
+  title: string;
+  timestamp: string;
+  plannerType: string;
+  formData: FormData;
+  step?: number;
+  curriculumMatches?: CurriculumReference[];
+}
+
 interface CurriculumReference {
   id: string;
   displayName: string;
@@ -258,6 +268,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [lessonPlanHistories, setLessonPlanHistories] = useState<LessonPlanHistory[]>([]);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftsExpanded, setDraftsExpanded] = useState(true);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isEditing, setIsEditing] = useState(false);
@@ -754,8 +766,40 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   };
 
+  const loadDrafts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-drafts?plannerType=lesson');
+      setDrafts(response.data);
+    } catch (error) {
+      console.error('Failed to load drafts:', error);
+    }
+  };
+
+  const loadDraft = (draft: Draft) => {
+    setFormData(draft.formData);
+    setGeneratedPlan('');
+    setParsedLesson(null);
+    setCurrentPlanId(null);
+    setCurriculumMatches(draft.curriculumMatches || []);
+    setStep(draft.step || 1);
+    setHistoryOpen(false);
+    // Delete the draft since it's now loaded into the form
+    axios.delete(`http://localhost:8000/api/lesson-drafts/${draft.id}`).then(() => loadDrafts());
+  };
+
+  const deleteDraft = async (draftId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draftId}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft:', error);
+    }
+  };
+
   useEffect(() => {
     loadLessonPlanHistories();
+    loadDrafts();
   }, []);
 
   const clearForm = () => {
@@ -1469,7 +1513,54 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
-            {lessonPlanHistories.length === 0 ? (
+            {/* Drafts Section */}
+            {drafts.length > 0 && (
+              <div className="mb-3">
+                <button
+                  onClick={() => setDraftsExpanded(!draftsExpanded)}
+                  className="flex items-center gap-2 w-full text-left text-sm font-medium text-amber-400 mb-2 hover:text-amber-300 transition"
+                >
+                  <span className="text-xs">{draftsExpanded ? '\u25BC' : '\u25B6'}</span>
+                  Drafts ({drafts.length})
+                </button>
+                {draftsExpanded && (
+                  <div className="space-y-2">
+                    {drafts.map((draft) => (
+                      <div
+                        key={draft.id}
+                        onClick={() => loadDraft(draft)}
+                        className="p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle bg-theme-tertiary border border-amber-500/30 border-dashed"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 uppercase">Draft</span>
+                              <p className="text-sm font-medium text-theme-heading line-clamp-1">
+                                {draft.title}
+                              </p>
+                            </div>
+                            <p className="text-xs text-theme-hint mt-1">
+                              {new Date(draft.timestamp).toLocaleDateString()} {new Date(draft.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => deleteDraft(draft.id, e)}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                            title="Delete draft"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="border-b border-theme my-3" />
+              </div>
+            )}
+
+            {/* Saved Plans */}
+            {lessonPlanHistories.length === 0 && drafts.length === 0 ? (
               <div className="text-center text-theme-hint mt-8">
                 <FileText className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved plans yet</p>

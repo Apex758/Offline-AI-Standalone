@@ -45,6 +45,7 @@ const TOOL_NAMES: Record<string, string> = {
   '/ws/multigrade': 'Multigrade Plan',
   '/ws/cross-curricular': 'Cross-Curricular Plan',
   '/ws/worksheet': 'Worksheet',
+  '/ws/brain-dump': 'Brain Dump',
 };
 
 export const QueueProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

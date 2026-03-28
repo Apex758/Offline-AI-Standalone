@@ -814,6 +814,7 @@ class LessonPlanRequest(BaseModel):
 
 
 LESSON_PLAN_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "lesson_plan_history.json")
+LESSON_DRAFTS_FILE = os.path.join(os.path.dirname(__file__), "lesson_drafts.json")
 
 class LessonPlanHistory(BaseModel):
     model_config = {"extra": "allow"}
@@ -901,8 +902,100 @@ async def delete_lesson_plan_history(plan_id: str):
     except Exception as e:
         logger.error(f"Error deleting lesson plan history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    
-    
+
+
+# ── Lesson Plan Drafts ──────────────────────────────────────────────────
+
+class LessonDraft(BaseModel):
+    model_config = {"extra": "allow"}
+
+    id: str
+    title: str
+    timestamp: str
+    plannerType: str  # lesson, kindergarten, multigrade, cross-curricular
+    formData: dict
+    step: Optional[int] = 1
+    curriculumMatches: Optional[list] = None
+
+@app.get("/api/lesson-drafts")
+async def get_lesson_drafts(plannerType: Optional[str] = None):
+    """Get all lesson plan drafts, optionally filtered by planner type"""
+    try:
+        if os.path.exists(LESSON_DRAFTS_FILE):
+            with open(LESSON_DRAFTS_FILE, 'r', encoding='utf-8') as f:
+                drafts = json.load(f)
+            if plannerType:
+                drafts = [d for d in drafts if d.get('plannerType') == plannerType]
+            drafts.sort(key=lambda x: x['timestamp'], reverse=True)
+            return drafts
+        return []
+    except (json.JSONDecodeError, ValueError):
+        return []
+    except Exception as e:
+        logger.error(f"Error loading lesson drafts: {e}")
+        return []
+
+@app.post("/api/lesson-drafts")
+async def save_lesson_draft(draft: LessonDraft):
+    """Save or update a lesson plan draft"""
+    try:
+        drafts = []
+        if os.path.exists(LESSON_DRAFTS_FILE):
+            try:
+                with open(LESSON_DRAFTS_FILE, 'r', encoding='utf-8') as f:
+                    drafts = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                drafts = []
+
+        existing_index = None
+        for i, d in enumerate(drafts):
+            if d['id'] == draft.id:
+                existing_index = i
+                break
+
+        draft_dict = draft.model_dump()
+
+        if existing_index is not None:
+            drafts[existing_index] = draft_dict
+        else:
+            drafts.append(draft_dict)
+
+        tmp_file = LESSON_DRAFTS_FILE + ".tmp"
+        with open(tmp_file, 'w', encoding='utf-8') as f:
+            json.dump(drafts, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_file, LESSON_DRAFTS_FILE)
+
+        return {"success": True, "id": draft.id}
+    except Exception as e:
+        logger.error(f"Error saving lesson draft: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/lesson-drafts/{draft_id}")
+async def delete_lesson_draft(draft_id: str):
+    """Delete a lesson plan draft"""
+    try:
+        if os.path.exists(LESSON_DRAFTS_FILE):
+            try:
+                with open(LESSON_DRAFTS_FILE, 'r', encoding='utf-8') as f:
+                    drafts = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                drafts = []
+
+            drafts = [d for d in drafts if d['id'] != draft_id]
+
+            tmp_file = LESSON_DRAFTS_FILE + ".tmp"
+            with open(tmp_file, 'w', encoding='utf-8') as f:
+                json.dump(drafts, f, indent=2, ensure_ascii=False)
+            os.replace(tmp_file, LESSON_DRAFTS_FILE)
+
+            return {"success": True}
+
+        raise HTTPException(status_code=404, detail="Draft not found")
+    except Exception as e:
+        logger.error(f"Error deleting lesson draft: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/generate-lesson-plan")
 async def generate_lesson_plan(request: LessonPlanRequest):
     """Generate a lesson plan using the LLM (via process pool)"""
@@ -2096,7 +2189,7 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
                     tool_name="brain-dump",
                     input_data=text,
                     prompt_template=full_prompt,
-                    max_tokens=2000,
+                    max_tokens=4000,
                     temperature=0.3
                 ):
                     if chunk.get("error"):
@@ -5131,6 +5224,14 @@ async def factory_reset():
             deleted.append(LESSON_PLAN_HISTORY_FILE)
         except Exception as e:
             errors.append(f"Failed to delete lesson_plan_history.json: {e}")
+
+    # 2b. Delete lesson_drafts.json (stored in backend dir)
+    if os.path.exists(LESSON_DRAFTS_FILE):
+        try:
+            os.remove(LESSON_DRAFTS_FILE)
+            deleted.append(LESSON_DRAFTS_FILE)
+        except Exception as e:
+            errors.append(f"Failed to delete lesson_drafts.json: {e}")
 
     # 3. Delete chat_history.json (legacy, stored in backend dir)
     if os.path.exists(CHAT_HISTORY_FILE):

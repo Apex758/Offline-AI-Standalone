@@ -65,6 +65,16 @@ interface CrossCurricularHistory {
   parsedPlan?: ParsedCrossCurricularPlan;
 }
 
+interface Draft {
+  id: string;
+  title: string;
+  timestamp: string;
+  plannerType: string;
+  formData: any;
+  step?: number;
+  curriculumMatches?: any[];
+}
+
 interface FormData {
   lessonTitle: string;
   gradeLevel: string;
@@ -515,6 +525,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const loading = !!localLoadingMap[tabId] || getIsStreaming(tabId, ENDPOINT);
 
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftsExpanded, setDraftsExpanded] = useState(true);
   const [crossCurricularHistories, setCrossCurricularHistories] = useState<CrossCurricularHistory[]>([]);
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -854,8 +866,44 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   // Removed old exportPlan logic; now handled by ExportButton
 
+  const loadDrafts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-drafts?plannerType=cross-curricular');
+      setDrafts(response.data);
+    } catch (error) {
+      console.error('Failed to load drafts:', error);
+    }
+  };
+
+  const loadDraft = async (draft: Draft) => {
+    setFormData(draft.formData);
+    setGeneratedPlan('');
+    setParsedPlan(null);
+    setCurrentPlanId(null);
+    if (draft.step) setStep(draft.step);
+    setHistoryOpen(false);
+
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draft.id}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft after loading:', error);
+    }
+  };
+
+  const deleteDraft = async (draftId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draftId}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft:', error);
+    }
+  };
+
   useEffect(() => {
     loadCrossCurricularHistories();
+    loadDrafts();
   }, []);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -1473,7 +1521,59 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
-            {crossCurricularHistories.length === 0 ? (
+            {drafts.length > 0 && (
+              <>
+                <div
+                  onClick={() => setDraftsExpanded(!draftsExpanded)}
+                  className="flex items-center gap-2 cursor-pointer select-none py-1"
+                >
+                  <span
+                    className="text-xs text-theme-muted transition-transform duration-200"
+                    style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    &#9654;
+                  </span>
+                  <span className="text-sm font-semibold text-amber-600">Drafts ({drafts.length})</span>
+                </div>
+                {draftsExpanded && (
+                  <div className="space-y-2">
+                    {drafts.map((draft) => (
+                      <div
+                        key={draft.id}
+                        onClick={() => loadDraft(draft)}
+                        className="p-3 rounded-lg cursor-pointer transition group hover:bg-amber-50 dark:hover:bg-amber-900/20 bg-theme-tertiary"
+                        style={{ border: '1.5px dashed #d97706' }}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="inline-block px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                                Draft
+                              </span>
+                            </div>
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                              {draft.title}
+                            </p>
+                            <p className="text-xs text-theme-hint mt-1">
+                              {new Date(draft.timestamp).toLocaleDateString()} {new Date(draft.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => deleteDraft(draft.id, e)}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                            title="Delete draft"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="border-b border-theme my-2"></div>
+              </>
+            )}
+            {drafts.length === 0 && crossCurricularHistories.length === 0 ? (
               <div className="text-center text-theme-hint mt-8">
                 <School className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved cross-curricular plans yet</p>

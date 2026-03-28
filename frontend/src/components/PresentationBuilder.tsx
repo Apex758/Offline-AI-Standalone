@@ -69,6 +69,16 @@ interface LessonPlanRecord {
   parsedLesson?: ParsedLessonInput;
 }
 
+interface Draft {
+  id: string;
+  title: string;
+  timestamp: string;
+  plannerType: string;
+  formData: any;
+  step?: number;
+  curriculumMatches?: any[];
+}
+
 type InputMode = 'scratch' | 'lesson';
 type RightTab = 'color' | 'edit' | 'layouts';
 type ImageMode = 'none' | 'ai' | 'my-images';
@@ -1530,6 +1540,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [showHistory, setShowHistory] = useState(false);
   const [presentationHistory, setPresentationHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftsExpanded, setDraftsExpanded] = useState(true);
 
   // Streaming state for progressive rendering
   const [streamingSlides, setStreamingSlides] = useState<Slide[]>([]);
@@ -1724,6 +1736,40 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       if (currentPresentationId === id) setCurrentPresentationId(null);
     } catch (e) {
       console.error('Failed to delete presentation:', e);
+    }
+  };
+
+  const loadDrafts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-drafts?plannerType=presentation');
+      setDrafts(response.data || []);
+    } catch (e) {
+      console.error('Failed to load drafts:', e);
+    }
+  };
+
+  const loadDraft = async (draft: Draft) => {
+    if (draft.formData) {
+      setFormData(draft.formData);
+    }
+    setSlides([]);
+    setCurrentPresentationId(null);
+    setShowHistory(false);
+    setView('input');
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draft.id}`);
+      loadDrafts();
+    } catch (e) {
+      console.error('Failed to delete draft after loading:', e);
+    }
+  };
+
+  const deleteDraft = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${id}`);
+      setDrafts(prev => prev.filter(d => d.id !== id));
+    } catch (e) {
+      console.error('Failed to delete draft:', e);
     }
   };
 
@@ -2073,7 +2119,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadPresentationHistory(); }}
+              onClick={() => { setShowHistory(!showHistory); if (!showHistory) { loadPresentationHistory(); loadDrafts(); } }}
               className="p-2 rounded-lg hover:bg-theme-hover transition"
               title="Presentation History"
             >
@@ -2490,39 +2536,83 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 <div className="text-center py-8 text-theme-muted text-sm">
                   <Icon icon={Loading02Icon} className="w-5 inline animate-spin" /> Loading...
                 </div>
-              ) : presentationHistory.length === 0 ? (
+              ) : drafts.length === 0 && presentationHistory.length === 0 ? (
                 <div className="text-center text-theme-muted mt-8">
                   <Icon icon={Presentation01Icon} className="w-12 mx-auto mb-2" style={{ color: 'var(--sidebar-text-muted)' }} />
                   <p className="text-sm">No saved presentations yet</p>
                 </div>
               ) : (
-                [...presentationHistory].reverse().map(pres => (
-                  <div
-                    key={pres.id}
-                    onClick={() => loadPresentation(pres)}
-                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                      currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                          {pres.title}
-                        </p>
-                        <p className="text-xs text-theme-muted mt-1">
-                          {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
-                        </p>
-                      </div>
+                <>
+                  {drafts.length > 0 && (
+                    <>
                       <button
-                        onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                        title="Delete"
+                        onClick={() => setDraftsExpanded(!draftsExpanded)}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-theme-muted uppercase tracking-wider w-full text-left py-1 hover:text-theme-heading transition"
                       >
-                        <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                        <span className="transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
+                        Drafts ({drafts.length})
                       </button>
+                      {draftsExpanded && drafts.map(draft => (
+                        <div
+                          key={draft.id}
+                          onClick={() => loadDraft(draft)}
+                          className="p-3 rounded-lg cursor-pointer transition group hover:bg-amber-500/10 bg-theme-tertiary border border-dashed border-amber-500/40"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">Draft</span>
+                              </div>
+                              <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                                {draft.title}
+                              </p>
+                              <p className="text-xs text-theme-muted mt-1">
+                                {new Date(draft.timestamp).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <button
+                              onClick={e => { e.stopPropagation(); deleteDraft(draft.id); }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                              title="Delete draft"
+                            >
+                              <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {presentationHistory.length > 0 && (
+                        <div className="border-t border-theme my-2" />
+                      )}
+                    </>
+                  )}
+                  {[...presentationHistory].reverse().map(pres => (
+                    <div
+                      key={pres.id}
+                      onClick={() => loadPresentation(pres)}
+                      className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                        currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                            {pres.title}
+                          </p>
+                          <p className="text-xs text-theme-muted mt-1">
+                            {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                          title="Delete"
+                        >
+                          <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </>
               )}
             </div>
           </div>
@@ -2559,7 +2649,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadPresentationHistory(); }}
+              onClick={() => { setShowHistory(!showHistory); if (!showHistory) { loadPresentationHistory(); loadDrafts(); } }}
               className="p-2 rounded-lg hover:bg-theme-hover transition"
               title="Presentation History"
             >
@@ -2872,39 +2962,83 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <div className="text-center py-8 text-theme-muted text-sm">
                 <Icon icon={Loading02Icon} className="w-5 inline animate-spin" /> Loading...
               </div>
-            ) : presentationHistory.length === 0 ? (
+            ) : drafts.length === 0 && presentationHistory.length === 0 ? (
               <div className="text-center text-theme-muted mt-8">
                 <Icon icon={Presentation01Icon} className="w-12 mx-auto mb-2" style={{ color: 'var(--sidebar-text-muted)' }} />
                 <p className="text-sm">No saved presentations yet</p>
               </div>
             ) : (
-              [...presentationHistory].reverse().map(pres => (
-                <div
-                  key={pres.id}
-                  onClick={() => loadPresentation(pres)}
-                  className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
-                    currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-theme-heading line-clamp-2">
-                        {pres.title}
-                      </p>
-                      <p className="text-xs text-theme-muted mt-1">
-                        {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
-                      </p>
-                    </div>
+              <>
+                {drafts.length > 0 && (
+                  <>
                     <button
-                      onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
-                      title="Delete"
+                      onClick={() => setDraftsExpanded(!draftsExpanded)}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-theme-muted uppercase tracking-wider w-full text-left py-1 hover:text-theme-heading transition"
                     >
-                      <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                      <span className="transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
+                      Drafts ({drafts.length})
                     </button>
+                    {draftsExpanded && drafts.map(draft => (
+                      <div
+                        key={draft.id}
+                        onClick={() => loadDraft(draft)}
+                        className="p-3 rounded-lg cursor-pointer transition group hover:bg-amber-500/10 bg-theme-tertiary border border-dashed border-amber-500/40"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">Draft</span>
+                            </div>
+                            <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                              {draft.title}
+                            </p>
+                            <p className="text-xs text-theme-muted mt-1">
+                              {new Date(draft.timestamp).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); deleteDraft(draft.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                            title="Delete draft"
+                          >
+                            <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {presentationHistory.length > 0 && (
+                      <div className="border-t border-theme my-2" />
+                    )}
+                  </>
+                )}
+                {[...presentationHistory].reverse().map(pres => (
+                  <div
+                    key={pres.id}
+                    onClick={() => loadPresentation(pres)}
+                    className={`p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle ${
+                      currentPresentationId === pres.id ? 'bg-theme-surface shadow-sm' : 'bg-theme-tertiary'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-theme-heading line-clamp-2">
+                          {pres.title}
+                        </p>
+                        <p className="text-xs text-theme-muted mt-1">
+                          {pres.slideCount || pres.slides?.length || '?'} slides · {new Date(pres.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={e => { e.stopPropagation(); deletePresentation(pres.id); }}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 transition"
+                        title="Delete"
+                      >
+                        <Icon icon={Delete02Icon} className="w-4" style={{ color: '#ef4444' }} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </>
             )}
           </div>
         </div>

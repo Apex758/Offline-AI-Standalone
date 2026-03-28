@@ -53,6 +53,8 @@ import StopWatchIconData from '@hugeicons/core-free-icons/StopWatchIcon';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useQueue } from '../contexts/QueueContext';
+import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType } from '../types/brainDump';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
@@ -525,8 +527,11 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const { settings } = useSettings();
   const accentColor = settings.tabColors['brain-dump'] ?? '#a855f7';
 
-  const { getConnection } = useWebSocket();
+  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
+  const { enqueue, queueEnabled } = useQueue();
+  const [localLoadingMap, setLocalLoadingMap] = useState<{ [tabId: string]: boolean }>({});
   const WS_ENDPOINT = '/ws/brain-dump';
+  useQueueCancellation(tabId, WS_ENDPOINT, setLocalLoadingMap);
 
   // STT integration
   const { isListening, toggleListening } = useSTT(
@@ -647,15 +652,50 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     }
   }, []);
 
+  // Handle queue-based streaming completion
+  const streamingContent = getStreamingContent(tabId, WS_ENDPOINT);
+  const isStreaming = getIsStreaming(tabId, WS_ENDPOINT);
+  const loading = !!localLoadingMap[tabId] || isStreaming || isAnalyzing;
+
+  useEffect(() => {
+    if (localLoadingMap[tabId] && streamingContent && !isStreaming) {
+      // Queue-based generation finished — parse the result
+      const parsed = parseActions(streamingContent);
+      if (parsed.length === 0) {
+        setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
+      }
+      setActions(parsed);
+      clearStreaming(tabId, WS_ENDPOINT);
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+    }
+  }, [streamingContent, isStreaming, localLoadingMap, tabId, parseActions, clearStreaming]);
+
   // Analyze brain dump via WebSocket
   const handleAnalyze = useCallback(() => {
     const text = getPlainText();
-    if (!text || isAnalyzing) return;
+    if (!text || loading) return;
 
-    setIsAnalyzing(true);
     setActions([]);
     setAnalysisError(null);
     accumulatedRef.current = '';
+
+    // Queue path: enqueue and let QueueContext handle sending
+    if (queueEnabled) {
+      enqueue({
+        label: `Brain Dump Analysis`,
+        toolType: 'Brain Dump',
+        tabId,
+        endpoint: WS_ENDPOINT,
+        prompt: '',
+        generationMode: settings.generationMode,
+        extraMessageData: { text, jobId: `brain-dump-${Date.now()}` },
+      });
+      setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
+      return;
+    }
+
+    // Direct path: send via WebSocket manually
+    setIsAnalyzing(true);
 
     const ws = getConnection(tabId, WS_ENDPOINT);
 
@@ -687,7 +727,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
       ws.send(JSON.stringify({
         text,
         jobId: `brain-dump-${Date.now()}`,
-        generationMode: 'queued',
+        generationMode: settings.generationMode,
       }));
     };
 
@@ -696,7 +736,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     } else {
       ws.addEventListener('open', sendPayload, { once: true });
     }
-  }, [getPlainText, isAnalyzing, tabId, getConnection, parseActions]);
+  }, [getPlainText, loading, tabId, getConnection, parseActions, queueEnabled, enqueue, settings.generationMode]);
 
   // Accept an action
   const handleAccept = useCallback((actionId: string) => {
@@ -869,7 +909,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                     <div className="flex-1 relative">
                       <div
                         ref={editorRef}
-                        contentEditable={!isAnalyzing}
+                        contentEditable={!loading}
                         suppressContentEditableWarning
                         onInput={() => { if (editorRef.current) setDumpText(editorRef.current.innerHTML); }}
                         onPaste={(e) => {
@@ -984,13 +1024,13 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                   <div className="flex gap-2">
                     <button
                       onClick={handleAnalyze}
-                      disabled={!hasContent || isAnalyzing}
+                      disabled={!hasContent || loading}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
                     >
-                      {isAnalyzing ? (
+                      {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Analyzing...
+                          {localLoadingMap[tabId] && !isStreaming ? 'Queued...' : 'Analyzing...'}
                         </>
                       ) : (
                         <>
@@ -1001,7 +1041,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                     </button>
                     <button
                       onClick={handleSaveTextAsNote}
-                      disabled={!hasContent || isAnalyzing}
+                      disabled={!hasContent || loading}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/12 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/20 hover:ring-amber-500/35"
                       title="Save as note without analyzing"
                     >

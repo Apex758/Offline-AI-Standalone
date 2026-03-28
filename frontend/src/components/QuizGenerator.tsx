@@ -100,6 +100,16 @@ interface LessonPlanHistoryItem {
   generatedPlan?: string;
 }
 
+interface Draft {
+  id: string;
+  title: string;
+  timestamp: string;
+  plannerType: string;
+  formData: any;
+  step?: number;
+  curriculumMatches?: any[];
+}
+
 interface FormData {
   subject: string;
   gradeLevel: string;
@@ -231,6 +241,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const tabColor = settings.tabColors['quiz-generator'];
   const [showTutorial, setShowTutorial] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftsExpanded, setDraftsExpanded] = useState(true);
   const [quizHistories, setQuizHistories] = useState<QuizHistory[]>([]);
   const [lessonPickerOpen, setLessonPickerOpen] = useState(false);
   const [lessonPlanOptions, setLessonPlanOptions] = useState<LessonPlanHistoryItem[]>([]);
@@ -529,6 +541,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
 
   useEffect(() => {
     loadQuizHistories();
+    loadDrafts();
   }, []);
 
   const loadQuizHistory = (history: QuizHistory) => {
@@ -564,6 +577,40 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       }
     } catch (error) {
       console.error('Failed to delete quiz:', error);
+    }
+  };
+
+  const loadDrafts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/lesson-drafts?plannerType=quiz');
+      setDrafts(response.data);
+    } catch (error) {
+      console.error('Failed to load drafts:', error);
+    }
+  };
+
+  const loadDraft = async (draft: Draft) => {
+    setFormData(draft.formData);
+    setGeneratedQuiz('');
+    setParsedQuiz(null);
+    setCurrentQuizId(null);
+    setHistoryOpen(false);
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draft.id}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft:', error);
+    }
+  };
+
+  const deleteDraft = async (draftId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this draft?')) return;
+    try {
+      await axios.delete(`http://localhost:8000/api/lesson-drafts/${draftId}`);
+      await loadDrafts();
+    } catch (error) {
+      console.error('Failed to delete draft:', error);
     }
   };
 
@@ -1547,7 +1594,50 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
-            {quizHistories.length === 0 ? (
+            {drafts.length > 0 && (
+              <>
+                <div
+                  className="flex items-center gap-1 cursor-pointer select-none py-1"
+                  onClick={() => setDraftsExpanded(!draftsExpanded)}
+                >
+                  <span className="text-xs text-theme-muted transition-transform" style={{ display: 'inline-block', transform: draftsExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
+                  <span className="text-sm font-medium text-amber-500">Drafts ({drafts.length})</span>
+                </div>
+                {draftsExpanded && (
+                  <div className="space-y-2">
+                    {drafts.map((draft) => (
+                      <div
+                        key={draft.id}
+                        onClick={() => loadDraft(draft)}
+                        className="p-3 rounded-lg cursor-pointer transition group hover:bg-theme-subtle bg-theme-tertiary"
+                        style={{ border: '1px dashed rgb(217 119 6 / 0.5)' }}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 uppercase tracking-wide">Draft</span>
+                              <p className="text-sm font-medium text-theme-heading line-clamp-2">{draft.title}</p>
+                            </div>
+                            <p className="text-xs text-theme-hint mt-1">
+                              {new Date(draft.timestamp).toLocaleDateString()} {new Date(draft.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => deleteDraft(draft.id, e)}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 transition"
+                            title="Delete draft"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="border-b border-theme my-2"></div>
+              </>
+            )}
+            {drafts.length === 0 && quizHistories.length === 0 ? (
               <div className="text-center text-theme-hint mt-8">
                 <ListChecks className="w-12 h-12 mx-auto mb-2 text-theme-hint" />
                 <p className="text-sm">No saved quizzes yet</p>
