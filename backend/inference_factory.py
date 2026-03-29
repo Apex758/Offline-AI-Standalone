@@ -112,6 +112,10 @@ def reload_local_model():
             _local_instance = None
         logger.info("Reloading local model...")
         from llama_inference import LlamaInference
+        from config import get_model_path, resolve_vision_projector_path, get_selected_model, MODEL_N_CTX
+        # Re-resolve model path to pick up the newly selected model
+        new_model_path = get_model_path()
         clip_path = resolve_vision_projector_path(get_selected_model())
-        _local_instance = LlamaInference(model_path=MODEL_PATH, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
+        logger.info(f"Loading model: {new_model_path}, clip: {clip_path}")
+        _local_instance = LlamaInference(model_path=new_model_path, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
         return _local_instance

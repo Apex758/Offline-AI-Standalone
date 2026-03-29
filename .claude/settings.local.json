@@ -51,7 +51,19 @@
       "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
       "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
       "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -path */node_modules -prune -o -path */site-packages -prune -o -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.py \\\\\\) -print)",
-      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend' -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))"
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend' -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
+      "Bash(echo \"EXIT: $?\")",
+      "Read(//c/Users/LG/AppData/Local/Programs/OECS Learning Hub/resources/models/**)",
+      "Bash(cp \"C:/Users/LG/AppData/Local/Programs/OECS Learning Hub/resources/models/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\")",
+      "Bash(cp \"C:/Users/LG/AppData/Local/Programs/OECS Learning Hub/resources/models/mmproj-Qwen2.5-VL-7B-F16.gguf\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\")",
+      "Bash(cp \"C:/Users/LG/AppData/Local/Programs/OECS Learning Hub/resources/models/LFM2.5-VL-1.6B-Q8_0.gguf\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\")",
+      "Bash(cp \"C:/Users/LG/AppData/Local/Programs/OECS Learning Hub/resources/models/mmproj-LFM2.5-VL-1.6B-F16.gguf\" \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/models/\")",
+      "Bash(find '/c/Users/LG/Desktop/Projects/Offline AI Standalone' -type f \\\\\\(-name Chat.tsx -o -name *chat*.tsx \\\\\\))",
+      "Bash(pip install:*)",
+      "Bash(for repo:*)",
+      "Bash(python -c \":*)",
+      "Bash(1 done:*)"
     ]
   }
 }

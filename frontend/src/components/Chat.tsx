@@ -18,6 +18,7 @@ import Attachment01IconData from '@hugeicons/core-free-icons/Attachment01Icon';
 import LinkSquare01IconData from '@hugeicons/core-free-icons/LinkSquare01Icon';
 import ViewSidebarRightIconData from '@hugeicons/core-free-icons/ViewSidebarRightIcon';
 import Tick02IconData from '@hugeicons/core-free-icons/Tick02Icon';
+import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -43,6 +44,7 @@ const AttachIcon: React.FC<{ className?: string; style?: React.CSSProperties }> 
 const LinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={LinkSquare01IconData} {...p} />;
 const SidebarIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ViewSidebarRightIconData} {...p} />;
 const CheckIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Tick02IconData} {...p} />;
+const ImageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Image01IconData} {...p} />;
 import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -105,6 +107,8 @@ interface AttachedFile {
   extension: string;
   previewText: string;
   fullContent: string;
+  isImage?: boolean;
+  base64Data?: string;
 }
 
 type RightPanel = 'none' | 'history' | 'files';
@@ -135,6 +139,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [loadingFolder, setLoadingFolder] = useState<string | null>(null);
   const [attachingFile, setAttachingFile] = useState<string | null>(null);
   const fileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Thinking indicator (shown between send and first token)
+  const [waitingForResponse, setWaitingForResponse] = useState(false);
 
   // File operation two-pass state
   const [pendingPlan, setPendingPlan] = useState<FileOperationPlan | null>(null);
@@ -184,9 +191,13 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   // DEBUG: Log streaming and loading state
   useEffect(() => {
     console.log('[Chat] streamingMessage updated:', streamingMessage);
+    // Clear thinking indicator when first token arrives
+    if (streamingMessage) setWaitingForResponse(false);
   }, [streamingMessage]);
   useEffect(() => {
     console.log('[Chat] loading state updated:', loading);
+    // Also clear if loading changes to false (error/done without tokens)
+    if (!loading) setWaitingForResponse(false);
   }, [loading]);
 
 
@@ -637,7 +648,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       id: Date.now().toString(),
       role: 'user',
       content: text,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      ...(attachedFiles.length > 0 ? {
+        attachments: attachedFiles.map(f => ({
+          name: f.name,
+          extension: f.extension,
+          isImage: f.isImage,
+        })),
+      } : {}),
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -687,31 +705,49 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       payload.reference_files = attachedFiles.map(f => ({
         name: f.name,
         content: f.fullContent,
+        ...(f.isImage ? { is_image: true, base64: f.base64Data } : {}),
       }));
     }
 
-    // Send via WebSocket (wait for connection if needed)
-    const ws = getConnection(tabId, ENDPOINT);
-    const message = JSON.stringify(payload);
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(message);
-    } else if (ws.readyState === WebSocket.CONNECTING) {
-      // Queue the message to send once connected
-      const onOpen = () => {
+    // Show thinking indicator
+    setWaitingForResponse(true);
+
+    // Send via WebSocket (with auto-retry on closed connection)
+    const sendMessage = (retriesLeft: number = 1) => {
+      const ws = getConnection(tabId, ENDPOINT);
+      const message = JSON.stringify(payload);
+      if (ws.readyState === WebSocket.OPEN) {
         ws.send(message);
-        ws.removeEventListener('open', onOpen);
-        ws.removeEventListener('error', onError);
-      };
-      const onError = () => {
-        console.error('[Chat] WebSocket failed to connect, message not sent');
-        ws.removeEventListener('open', onOpen);
-        ws.removeEventListener('error', onError);
-      };
-      ws.addEventListener('open', onOpen);
-      ws.addEventListener('error', onError);
-    } else {
-      console.error('[Chat] WebSocket is closed, message not sent');
-    }
+      } else if (ws.readyState === WebSocket.CONNECTING) {
+        const onOpen = () => {
+          ws.send(message);
+          ws.removeEventListener('open', onOpen);
+          ws.removeEventListener('error', onError);
+        };
+        const onError = () => {
+          ws.removeEventListener('open', onOpen);
+          ws.removeEventListener('error', onError);
+          if (retriesLeft > 0) {
+            console.log('[Chat] WebSocket failed, retrying...');
+            setTimeout(() => sendMessage(retriesLeft - 1), 500);
+          } else {
+            console.error('[Chat] WebSocket failed to connect, message not sent');
+            setWaitingForResponse(false);
+          }
+        };
+        ws.addEventListener('open', onOpen);
+        ws.addEventListener('error', onError);
+      } else {
+        if (retriesLeft > 0) {
+          console.log('[Chat] WebSocket closed, reconnecting...');
+          setTimeout(() => sendMessage(retriesLeft - 1), 500);
+        } else {
+          console.error('[Chat] WebSocket is closed, message not sent');
+          setWaitingForResponse(false);
+        }
+      }
+    };
+    sendMessage();
 
     // Clear attached files after sending
     if (attachedFiles.length > 0) {
@@ -719,7 +755,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -775,6 +811,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }, 300);
   };
 
+  const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
+
   const toggleFileAttach = async (filePath: string, fileName: string, ext: string) => {
     // If already attached, detach it (toggle off)
     if (attachedFiles.some(f => f.path === filePath)) {
@@ -790,20 +828,36 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         setAttachingFile(null);
         return;
       }
-      // Send to backend for parsing
-      const formData = new FormData();
-      const bytes = Uint8Array.from(atob(fileData.base64), c => c.charCodeAt(0));
-      const blob = new Blob([bytes]);
-      formData.append('file', blob, fileName);
-      const response = await axios.post('http://localhost:8000/api/file-explorer/parse', formData);
-      const parsed = response.data;
-      setAttachedFiles(prev => [...prev, {
-        name: fileName,
-        path: filePath,
-        extension: ext,
-        previewText: (parsed.text || '').substring(0, 200) + ((parsed.text?.length || 0) > 200 ? '...' : ''),
-        fullContent: parsed.text || '',
-      }]);
+
+      const isImage = IMAGE_EXTENSIONS.includes(ext.toLowerCase());
+
+      if (isImage) {
+        // For images: keep raw base64 for vision model
+        setAttachedFiles(prev => [...prev, {
+          name: fileName,
+          path: filePath,
+          extension: ext,
+          previewText: `[Image: ${fileName}]`,
+          fullContent: '',
+          isImage: true,
+          base64Data: fileData.base64,
+        }]);
+      } else {
+        // For documents: parse to text
+        const formData = new FormData();
+        const bytes = Uint8Array.from(atob(fileData.base64), c => c.charCodeAt(0));
+        const blob = new Blob([bytes]);
+        formData.append('file', blob, fileName);
+        const response = await axios.post('http://localhost:8000/api/file-explorer/parse', formData);
+        const parsed = response.data;
+        setAttachedFiles(prev => [...prev, {
+          name: fileName,
+          path: filePath,
+          extension: ext,
+          previewText: (parsed.text || '').substring(0, 200) + ((parsed.text?.length || 0) > 200 ? '...' : ''),
+          fullContent: parsed.text || '',
+        }]);
+      }
     } catch (err) {
       console.error('Error attaching file:', err);
     }
@@ -871,17 +925,21 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     return labels[ext] || ext.replace('.', '').toUpperCase();
   };
 
-  const formatMessage = (content: string) => {
-    let cleaned = content
-      .replace(/Hi there<\|eot_id\|><\|start_header_id\|>user<\|end_header_id\|>[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
-      .replace(/\bl[\s\n]+l?[\s\n]*e[\s\n]+r[\s\S]*?tokens per second\)/gi, '')
-      .replace(/system_info:[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
-      .replace(/^\s*[a-z]{1,2}\s*$/gmi, '')
-      .replace(/[\s\S]*?assistantassistant/gi, '')
-      .replace(/l>a m.*/gi, '')
-      .replace(/llama_perf.*/gi, '')
-      .replace(/sampler_.*/gi, '')
-      .trim();
+  const formatMessage = (content: string, role?: string) => {
+    let cleaned = content;
+    // Only apply artifact cleanup to assistant messages (not user messages)
+    if (role !== 'user') {
+      cleaned = cleaned
+        .replace(/Hi there<\|eot_id\|><\|start_header_id\|>user<\|end_header_id\|>[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
+        .replace(/\bl[\s\n]+l?[\s\n]*e[\s\n]+r[\s\S]*?tokens per second\)/gi, '')
+        .replace(/system_info:[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
+        .replace(/^\s*[a-z]{1,2}\s*$/gmi, '')
+        .replace(/[\s\S]*?assistantassistant/gi, '')
+        .replace(/l>a m.*/gi, '')
+        .replace(/llama_perf.*/gi, '')
+        .replace(/sampler_.*/gi, '');
+    }
+    cleaned = cleaned.trim();
 
     const renderInlineFormatting = (text: string) => {
       const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -1020,8 +1078,30 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                         : 'bg-theme-tertiary text-theme-heading'
                     }`}
                   >
+                    {/* Attached file chips on user messages */}
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {msg.attachments.map((att, i) => (
+                          <div
+                            key={i}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
+                              msg.role === 'user'
+                                ? 'bg-blue-500/30 text-blue-100 border border-blue-400/30'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
+                            }`}
+                          >
+                            {att.isImage ? (
+                              <ImageIcon className="w-3.5 h-3.5" />
+                            ) : (
+                              <FileIcon className="w-3.5 h-3.5" />
+                            )}
+                            <span className="max-w-[120px] truncate">{att.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="text-sm prose prose-sm max-w-none">
-                      {formatMessage(msg.content)}
+                      {formatMessage(msg.content, msg.role)}
                     </div>
                     {/* File operation plan action buttons */}
                     {msg.filePlan && msg.filePlan.status === 'pending' && pendingPlan && (
@@ -1095,10 +1175,15 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </div>
               )}
 
-              {loading && !streamingMessage && (
+              {(waitingForResponse || (loading && !streamingMessage)) && (
                 <div className="flex justify-start">
-                  <div className="bg-theme-tertiary px-4 py-3 rounded-2xl">
-                    <HeartbeatLoader className="w-5 h-5 text-theme-muted" />
+                  <div className="bg-theme-tertiary px-4 py-3 rounded-2xl flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-sm text-theme-muted">Thinking...</span>
                   </div>
                 </div>
               )}
@@ -1167,7 +1252,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             <SmartTextArea
               value={input}
               onChange={setInput}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               placeholder={stt.isListening ? 'Listening...' : 'Ask me anything...'}
               className={`flex-1 px-4 py-3 border rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-800 dark:text-gray-100 ${
                 stt.isListening ? 'border-red-400 bg-red-50 dark:bg-red-900/10' : 'border-theme-strong'

@@ -78,7 +78,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const key = getConnectionKey(tabId, endpoint);
     let conn = connectionsRef.current.get(key);
 
-    if (!conn || conn.ws.readyState === WebSocket.CLOSED) {
+    if (!conn || conn.ws.readyState === WebSocket.CLOSED || conn.ws.readyState === WebSocket.CLOSING) {
       const isElectron = typeof window !== 'undefined' && 'electronAPI' in window;
       const wsUrl = isElectron
         ? `ws://127.0.0.1:8000${endpoint}`

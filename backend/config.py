@@ -174,27 +174,68 @@ def get_image_model_path(model_key: str = None) -> Path:
 def resolve_vision_projector_path(model_filename: str) -> Optional[str]:
     """Find a vision projector GGUF that pairs with the given model.
 
-    Convention: looks for files containing 'vision' in the same directory.
-    e.g. phi4-mm-Q4_K_M.gguf  →  phi4-mm-vision-q8.gguf
+    Conventions:
+    - phi4-mm-Q4_K_M.gguf  →  phi4-mm-vision-q8.gguf  (prefix + 'vision')
+    - Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf  →  mmproj-Qwen2.5-VL-7B-F16.gguf  (mmproj + model family)
     """
-    # Derive the model prefix (everything before the quant tag)
-    # e.g. "phi4-mm-Q4_K_M.gguf" → "phi4-mm"
     base = model_filename.replace(".gguf", "").replace(".bin", "")
+    name_lower = model_filename.lower()
 
-    # Try exact prefix match first
+    # Derive the model prefix (everything before the quant tag)
     prefix = base.split("-Q")[0].split("-q")[0]  # strip quant suffix
 
-    for search_dir in [MODELS_DIR, Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"]:
+    search_dirs = [MODELS_DIR, Path(os.path.expandvars("%APPDATA%")) / "Offline AI Standalone" / "models"]
+
+    # Collect all matching projectors, then pick the best one
+    candidates = []
+
+    for search_dir in search_dirs:
         if not search_dir.exists():
             continue
         for f in search_dir.iterdir():
-            if f.is_file() and "vision" in f.name.lower() and f.suffix.lower() == ".gguf":
-                # Check if same model family
-                if prefix and f.name.lower().startswith(prefix.lower()):
-                    print(f"✓ [CONFIG] Found vision projector: {f.name}", flush=True)
-                    return str(f)
+            if not f.is_file() or f.suffix.lower() != ".gguf":
+                continue
+            fname = f.name.lower()
 
-    return None
+            # Match 1: prefix + 'vision' (e.g. phi4-mm-vision-q8.gguf)
+            if "vision" in fname and prefix and fname.startswith(prefix.lower()):
+                candidates.append(f)
+                continue
+
+            # Match 2: mmproj file matching model family (e.g. mmproj-Qwen2.5-VL-7B-F16.gguf)
+            if "mmproj" in fname:
+                matched = False
+                # Check if model family matches (e.g. both contain "qwen2.5-vl")
+                for family in ["qwen2.5-vl", "qwen2-vl", "llava", "phi4", "minicpm", "lfm2"]:
+                    if family in name_lower and family in fname:
+                        candidates.append(f)
+                        matched = True
+                        break
+                if not matched:
+                    # Also match generic mmproj if model family is in the mmproj name
+                    if prefix.lower().replace("-instruct", "").replace("-chat", "") in fname:
+                        candidates.append(f)
+
+    if not candidates:
+        return None
+
+    # Prefer quantized projectors (Q4/Q5/Q8) over F16/F32 for faster CPU inference
+    def projector_priority(path):
+        name = path.name.lower()
+        if any(q in name for q in ["q4_", "q4-", "q4.", "q5_", "q5-", "q5."]):
+            return 0  # Best: smaller quantized
+        if any(q in name for q in ["q8_", "q8-", "q8.", "q8"]):
+            return 1  # Good: Q8 quantized
+        if "f16" in name:
+            return 2  # Fallback: F16
+        if "f32" in name:
+            return 3  # Last resort: F32
+        return 1  # Unknown quant, treat as Q8-tier
+
+    candidates.sort(key=projector_priority)
+    chosen = candidates[0]
+    print(f"✓ [CONFIG] Found vision projector: {chosen.name} (selected from {len(candidates)} candidate(s))", flush=True)
+    return str(chosen)
 
 _config_printed = False
 

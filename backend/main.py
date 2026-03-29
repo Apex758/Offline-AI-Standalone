@@ -448,6 +448,37 @@ async def delete_chat_history(chat_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================================
+# Shared Prompt Builder — model-aware formatting
+# ============================================================================
+
+def get_prompt_format() -> str:
+    """Get the prompt format for the currently loaded model."""
+    try:
+        from inference_factory import get_inference_instance
+        inference = get_inference_instance()
+        return getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
+    except Exception:
+        return 'llama'
+
+def build_prompt(system_prompt: str, user_prompt: str, prompt_format: str = None) -> str:
+    """Build a single-turn prompt in the correct format for the loaded model."""
+    if prompt_format is None:
+        prompt_format = get_prompt_format()
+    if prompt_format == "chatml":
+        return (
+            f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
+            f"<|im_start|>user\n{user_prompt}<|im_end|>\n"
+            f"<|im_start|>assistant\n"
+        )
+    else:
+        return (
+            f"<|begin_of_text|>"
+            f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+            f"<|start_header_id|>user<|end_header_id|>\n\n{user_prompt}<|eot_id|>"
+            f"<|start_header_id|>assistant<|end_header_id|>\n\n"
+        )
+
+# ============================================================================
 # Title Generation Helper Functions
 # ============================================================================
 
@@ -462,20 +493,15 @@ Rules:
 - No special characters except hyphens and ampersands
 - No quotes or punctuation at the end
 - Focus on the key concept or action"""
-    
+
     user_prompt = f"""Based on this conversation, create a concise title (max 60 characters):
 
 User: {user_msg[:200]}
 Assistant: {assistant_msg[:200]}
 
 Generate only the title, nothing else."""
-    
-    prompt = "<|begin_of_text|>"
-    prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-    prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_prompt}<|eot_id|>"
-    prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
-    
-    return prompt
+
+    return build_prompt(system_prompt, user_prompt)
 
 
 def clean_title_text(raw_title: str) -> str:
@@ -558,7 +584,7 @@ async def generate_title(request: TitleGenerateRequest):
         
         from inference_factory import get_inference_instance
         inference = get_inference_instance()
-        result = inference.generate(
+        result = await inference.generate(
             tool_name="title_generation",
             input_data=request.user_message,
             prompt_template=prompt,
@@ -608,7 +634,7 @@ async def autocomplete(request: AutocompleteRequest):
 
         from inference_factory import get_inference_instance
         inference = get_inference_instance()
-        result = inference.generate(
+        result = await inference.generate(
             tool_name="autocomplete",
             input_data=text,
             prompt_template=prompt,
@@ -650,18 +676,32 @@ async def websocket_chat(websocket: WebSocket):
     from config import LLAMA_PARAMS
     import os
 
-    def build_multi_turn_prompt(system_prompt, history, user_message):
-        prompt = "<|begin_of_text|>"
-        prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
-        # Add previous turns
-        for msg in history:
-            if msg["role"] == "user":
-                prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
-            elif msg["role"] == "assistant":
-                prompt += f"<|start_header_id|>assistant<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
-        # Add current user message
-        prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
-        prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+    def build_multi_turn_prompt(system_prompt, history, user_message, prompt_format="llama"):
+        if prompt_format == "chatml":
+            # ChatML format (Qwen, etc.)
+            prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
+            for msg in history:
+                prompt += f"<|im_start|>{msg['role']}\n{msg['content']}<|im_end|>\n"
+            prompt += f"<|im_start|>user\n{user_message}<|im_end|>\n"
+            prompt += "<|im_start|>assistant\n"
+        elif prompt_format == "phi":
+            # Phi-4 format
+            prompt = f"<|system|>{system_prompt}<|end|>\n"
+            for msg in history:
+                prompt += f"<|{msg['role']}|>{msg['content']}<|end|>\n"
+            prompt += f"<|user|>{user_message}<|end|>\n"
+            prompt += "<|assistant|>"
+        else:
+            # Llama format
+            prompt = "<|begin_of_text|>"
+            prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
+            for msg in history:
+                if msg["role"] == "user":
+                    prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
+                elif msg["role"] == "assistant":
+                    prompt += f"<|start_header_id|>assistant<|end_header_id|>\n\n{msg['content']}<|eot_id|>"
+            prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{user_message}<|eot_id|>"
+            prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
         return prompt
 
     try:
@@ -701,41 +741,143 @@ async def websocket_chat(websocket: WebSocket):
             # Inject summary into system prompt if available
             system_prompt = base_system_prompt + summary_block
 
-            # Inject reference files into the user message if provided
+            # Separate image files from text files
             reference_files = message_data.get("reference_files", None)
-            effective_user_message = user_message
+            image_files = []
+            text_files = []
             if reference_files and len(reference_files) > 0:
+                for ref in reference_files[:5]:
+                    if ref.get("is_image") and ref.get("base64"):
+                        image_files.append(ref)
+                    else:
+                        text_files.append(ref)
+
+            # Inject text reference files into the user message
+            effective_user_message = user_message
+            if text_files:
                 file_context_parts = []
-                for ref in reference_files[:5]:  # Cap at 5 files
+                for ref in text_files:
                     name = ref.get("name", "unknown")
                     content = ref.get("content", "")
-                    # Truncate very long files to avoid context overflow
                     if len(content) > 8000:
                         content = content[:8000] + "\n... [truncated]"
                     file_context_parts.append(f"--- File: {name} ---\n{content}\n--- End of {name} ---")
                 file_context = "\n\n".join(file_context_parts)
                 effective_user_message = f"The user has attached the following reference files:\n\n{file_context}\n\nUser's message: {user_message}"
-                logger.info(f"Attached {len(reference_files)} reference file(s) to chat message")
+                logger.info(f"Attached {len(text_files)} text file(s) to chat message")
 
-            prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message)
+            if image_files:
+                logger.info(f"Attached {len(image_files)} image(s) to chat message — using vision model")
 
-            logger.info(f"Context: chat_id={chat_id}, {len(history)} messages in window, summary={'yes' if summary_block else 'no'}, custom_prompt={'yes' if custom_system_prompt else 'no'}")
+            from inference_factory import get_inference_instance
+            inference = get_inference_instance()
+
+            # Detect prompt format from the loaded model
+            prompt_fmt = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
+            prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message, prompt_format=prompt_fmt)
+
+            # Safety: truncate prompt if it's too long to prevent llama.cpp crash
+            # Rough estimate: 1 token ≈ 4 chars. Leave room for max_tokens response.
+            max_prompt_chars = (LLAMA_PARAMS.get("context_size", 16384) - LLAMA_PARAMS["max_tokens"]) * 4
+            if len(prompt) > max_prompt_chars:
+                logger.warning(f"Prompt too long ({len(prompt)} chars, max {max_prompt_chars}). Truncating file content.")
+                if text_files:
+                    file_context_parts = []
+                    per_file_limit = min(2000, max_prompt_chars // (len(text_files) + 4))
+                    for ref in text_files:
+                        name = ref.get("name", "unknown")
+                        content = ref.get("content", "")
+                        if len(content) > per_file_limit:
+                            content = content[:per_file_limit] + "\n... [truncated to fit context]"
+                        file_context_parts.append(f"--- File: {name} ---\n{content}\n--- End of {name} ---")
+                    file_context = "\n\n".join(file_context_parts)
+                    effective_user_message = f"The user has attached the following reference files:\n\n{file_context}\n\nUser's message: {user_message}"
+                    prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message, prompt_format=prompt_fmt)
+
+            logger.info(f"Context: chat_id={chat_id}, {len(history)} messages in window, summary={'yes' if summary_block else 'no'}, custom_prompt={'yes' if custom_system_prompt else 'no'}, prompt_len={len(prompt)}, images={len(image_files)}, format={prompt_fmt}")
 
             try:
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance()
 
-                # Use streaming method for real-time generation
+                # Choose streaming method based on whether images are attached
                 token_buffer = []
                 full_response_tokens = []  # Accumulate full response for memory
                 last_send = time.time()
-                async for chunk in inference.generate_stream(
-                    tool_name="chat",
-                    input_data=user_message,
-                    prompt_template=prompt,
-                    max_tokens=LLAMA_PARAMS["max_tokens"],
-                    temperature=LLAMA_PARAMS["temperature"]
-                ):
+
+                if image_files and hasattr(inference, 'generate_stream_vision') and getattr(inference, 'has_vision', False):
+                    # Vision path: use create_chat_completion with images
+                    vision_system = (
+                        "You are a helpful AI assistant with vision capabilities. "
+                        "When the user shares an image, describe what you actually see in concrete detail: "
+                        "objects, text, colors, layout, people, and context. Be specific and literal — "
+                        "say exactly what is in the image rather than guessing abstractly. "
+                        "If there is text or numbers visible in the image, read them out. "
+                        "Answer the user's question about the image directly."
+                    )
+                    vision_messages = []
+                    vision_messages.append({"role": "system", "content": vision_system})
+                    for msg in history:
+                        vision_messages.append({"role": msg["role"], "content": msg["content"]})
+                    vision_messages.append({"role": "user", "content": effective_user_message, "_is_current": True})
+
+                    images_b64 = [img["base64"] for img in image_files[:2]]
+
+                    # Try vision — if the projector fails at runtime, fall back to text-only
+                    try:
+                        # Test vision by creating the generator (errors surface on first use)
+                        stream_gen = inference.generate_stream_vision(
+                            messages=vision_messages,
+                            images_base64=images_b64,
+                            max_tokens=LLAMA_PARAMS["max_tokens"],
+                            temperature=0.4,
+                        )
+                        # Peek at first chunk to detect errors early
+                        first_chunk = None
+                        async for first_chunk in stream_gen:
+                            break
+                        if first_chunk and first_chunk.get("error"):
+                            raise RuntimeError(first_chunk["error"])
+
+                        # Vision works — wrap the rest of the stream with the first chunk
+                        async def _prepend_stream(first, rest):
+                            if first and first.get("token"):
+                                yield first
+                            async for chunk in rest:
+                                yield chunk
+                        stream_gen = _prepend_stream(first_chunk, stream_gen)
+                    except Exception as vision_err:
+                        logger.warning(f"Vision failed, falling back to text-only: {vision_err}")
+                        image_names = ", ".join(img.get("name", "image") for img in image_files)
+                        effective_user_message = f"[The user attached image(s): {image_names}, but vision is not supported by this model. Respond to their text message only.]\n\nUser's message: {user_message}"
+                        prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message, prompt_format=prompt_fmt)
+                        stream_gen = inference.generate_stream(
+                            tool_name="chat",
+                            input_data=user_message,
+                            prompt_template=prompt,
+                            max_tokens=LLAMA_PARAMS["max_tokens"],
+                            temperature=LLAMA_PARAMS["temperature"],
+                        )
+                elif image_files:
+                    # Vision not available — tell the user
+                    try:
+                        await websocket.send_json({
+                            "type": "token",
+                            "content": "I can see you've attached an image, but vision support is not available with the current model configuration. I can only process text-based files (PDF, Word, Excel, etc.)."
+                        })
+                        await websocket.send_json({"type": "done"})
+                    except:
+                        pass
+                    continue
+                else:
+                    # Text-only path: use raw prompt completion
+                    stream_gen = inference.generate_stream(
+                        tool_name="chat",
+                        input_data=user_message,
+                        prompt_template=prompt,
+                        max_tokens=LLAMA_PARAMS["max_tokens"],
+                        temperature=LLAMA_PARAMS["temperature"],
+                    )
+
+                async for chunk in stream_gen:
                     if chunk.get("error"):
                         try:
                             await websocket.send_json({

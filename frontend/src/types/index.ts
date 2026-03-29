@@ -16,12 +16,19 @@ export interface FileOperationPlan {
   result?: { success: number; failed: number; errors?: string[] };
 }
 
+export interface MessageAttachment {
+  name: string;
+  extension: string;
+  isImage?: boolean;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
   filePlan?: FileOperationPlan;
+  attachments?: MessageAttachment[];
 }
 
 export interface SplitViewState {

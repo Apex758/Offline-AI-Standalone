@@ -152,6 +152,17 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
 
   // Handle Tab to accept ghost text
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Call parent's onKeyDown first (e.g. Enter-to-send)
+    if (rest.onKeyDown) {
+      (rest.onKeyDown as any)(e);
+    }
+    if (rest.onKeyPress && !e.defaultPrevented) {
+      (rest.onKeyPress as any)(e);
+    }
+
+    // If parent handled it (e.g. Enter to send), stop here
+    if (e.defaultPrevented) return;
+
     if (e.key === 'Tab' && ghostText) {
       e.preventDefault();
       onChange(value + ghostText);
@@ -170,14 +181,6 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
     // Close popup on Escape
     if (e.key === 'Escape' && popup) {
       setPopup(null);
-    }
-
-    // Call original onKeyDown/onKeyPress if provided
-    if (rest.onKeyDown) {
-      (rest.onKeyDown as any)(e);
-    }
-    if (rest.onKeyPress && !e.defaultPrevented) {
-      (rest.onKeyPress as any)(e);
     }
   }, [ghostText, popup, onChange, value, rest.onKeyDown, rest.onKeyPress]);
 
@@ -364,6 +367,7 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
       <textarea
         ref={textareaRef}
         value={value}
+        {...{ ...rest, onKeyPress: undefined, onKeyDown: undefined, onClick: undefined }}
         onChange={handleChange}
         onScroll={handleScroll}
         onClick={handleTextareaClick}
@@ -371,8 +375,6 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
         className={className}
         style={textareaStyles}
         disabled={disabled}
-        // Remove onKeyPress from rest to avoid double-firing
-        {...{ ...rest, onKeyPress: undefined, onKeyDown: undefined, onClick: undefined }}
       />
 
       {/* Ghost text for auto-complete */}
