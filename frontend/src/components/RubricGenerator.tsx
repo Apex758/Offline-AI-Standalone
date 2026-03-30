@@ -668,6 +668,11 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
+  // Preload LLM model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
+
   // Subscribe to streaming updates
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {

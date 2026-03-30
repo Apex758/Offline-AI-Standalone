@@ -402,6 +402,11 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     getConnection(tabId, ENDPOINT);
   }, [tabId]);
 
+  // Preload LLM model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
+
   useEffect(() => {
     const LOCAL_STORAGE_KEY = `quiz_state_${tabId}`;
     const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);

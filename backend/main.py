@@ -219,17 +219,8 @@ async def lifespan(app):
     memory.import_from_json(CHAT_HISTORY_FILE)
     logger.info(f"Chat memory initialized (SQLite): {memory.db_path}")
     
-    # Initialize Llama model singleton
-    try:
-        from inference_factory import get_inference_instance
-        logger.info("Initializing inference backend...")
-        inference = get_inference_instance()
-        if inference.is_loaded:
-            logger.info(f"Inference backend loaded successfully")
-        else:
-            logger.error("Failed to load inference backend")
-    except Exception as e:
-        logger.error(f"Inference backend initialization failed: {e}")
+    # NOTE: Llama model is now loaded LAZILY via /api/model/preload endpoint
+    # to speed up startup time. Model loads on first tab that needs AI.
 
     # Initialize CurriculumMatcher singleton
     global curriculum_matcher
@@ -4879,6 +4870,29 @@ async def get_active_model():
             status_code=500,
             content={"error": str(e)}
         )
+
+
+@app.post("/api/model/preload")
+async def preload_model():
+    """Preload the LLM model in the background.
+    
+    This triggers lazy loading of the model when a user opens
+    an AI-powered tab, so the model is ready by the time they
+    click Generate.
+    """
+    try:
+        from inference_factory import get_inference_instance
+        logger.info("Preloading LLM model...")
+        inference = get_inference_instance()
+        if inference.is_loaded:
+            logger.info("LLM model preloaded successfully")
+            return {"status": "loaded", "has_vision": getattr(inference, 'has_vision', False)}
+        else:
+            logger.error("Failed to preload LLM model")
+            return JSONResponse(status_code=500, content={"status": "failed"})
+    except Exception as e:
+        logger.error(f"Error preloading model: {e}")
+        return JSONResponse(status_code=500, content={"status": "error", "error": str(e)})
 
 
 @app.get("/api/vision/status")

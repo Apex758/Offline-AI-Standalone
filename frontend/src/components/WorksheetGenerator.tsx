@@ -509,6 +509,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     getConnection(tabId || '', ENDPOINT);
   }, [tabId]);
 
+  // Preload LLM model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/model/preload').catch(() => {});
+  }, []);
+
   useEffect(() => {
     loadWorksheetHistory();
     loadDrafts();
