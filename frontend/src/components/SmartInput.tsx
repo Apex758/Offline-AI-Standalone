@@ -235,7 +235,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
         <div
           ref={backdropRef}
           aria-hidden="true"
-          className={className}
+          className={className.replace(/\bvalidation-error\b/g, '').trim()}
           style={{
             ...style,
             position: 'absolute',

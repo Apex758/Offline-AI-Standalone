@@ -340,7 +340,7 @@ const SmartTextArea: React.FC<SmartTextAreaProps> = ({
       {spellCheckEnabled && (
         <div
           ref={backdropRef}
-          className={className}
+          className={className.replace(/\bvalidation-error\b/g, '').trim()}
           aria-hidden="true"
           style={{
             ...style,

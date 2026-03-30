@@ -820,8 +820,13 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     loadDrafts();
   }, []);
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
@@ -832,8 +837,14 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       handleInputChange(field, [...currentArray, value]);
     }
   };
-  
+
   const generateRubric = () => {
+    if (!validateForm()) {
+      const firstError = document.querySelector('[data-validation-error="true"]');
+      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     const prompt = buildRubricPrompt(formData);
 
     if (queueEnabled) {
@@ -878,16 +889,19 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
-  const validateForm = () => {
-    return formData.assignmentTitle &&
-           formData.assignmentType &&
-           formData.subject &&
-           formData.gradeLevel &&
-           formData.strand &&
-           formData.essentialOutcomes &&
-           formData.specificOutcomes &&
-           formData.learningObjectives &&
-           formData.focusAreas.length > 0;
+  const validateForm = (): boolean => {
+    const errors: Record<string, boolean> = {};
+    if (!formData.assignmentTitle) errors.assignmentTitle = true;
+    if (!formData.assignmentType) errors.assignmentType = true;
+    if (!formData.subject) errors.subject = true;
+    if (!formData.gradeLevel) errors.gradeLevel = true;
+    if (!formData.strand) errors.strand = true;
+    if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
+    if (!formData.specificOutcomes) errors.specificOutcomes = true;
+    if (!formData.learningObjectives) errors.learningObjectives = true;
+    if (formData.focusAreas.length === 0) errors.focusAreas = true;
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   return (
@@ -1101,7 +1115,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <SmartInput
                     value={formData.assignmentTitle}
                     onChange={(val) => handleInputChange('assignmentTitle', val)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.assignmentTitle ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.assignmentTitle ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Persuasive Essay on Climate Change"
                   />
@@ -1114,7 +1129,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   <select
                     value={formData.assignmentType}
                     onChange={(e) => handleInputChange('assignmentType', e.target.value)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.assignmentType ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.assignmentType ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select type</option>
@@ -1134,7 +1150,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       handleInputChange('essentialOutcomes', '');
                       handleInputChange('specificOutcomes', '');
                     }}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.subject ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.subject ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select subject</option>
@@ -1154,7 +1171,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                       handleInputChange('essentialOutcomes', '');
                       handleInputChange('specificOutcomes', '');
                     }}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select grade</option>
@@ -1175,6 +1193,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                     onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                     accentColor={tabColor}
+                    validationErrors={validationErrors}
                   />
                   <RelatedCurriculumBox
                     subject={formData.subject}
@@ -1194,7 +1213,8 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     value={formData.learningObjectives}
                     onChange={(val) => handleInputChange('learningObjectives', val)}
                     rows={4}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.learningObjectives ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.learningObjectives ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="What should students demonstrate or achieve?"
                   />
@@ -1255,7 +1275,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                     Focus Areas <span className="text-red-500">*</span>
                   </label>
                   <p className="text-xs text-theme-hint mb-2">Select at least one focus area for your rubric criteria</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div data-validation-error={validationErrors.focusAreas ? 'true' : undefined} className={`grid grid-cols-2 gap-2 p-2 rounded-lg ${validationErrors.focusAreas ? 'validation-error' : ''}`}>
                     {focusAreasOptions.map(area => (
                       <label key={area} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
@@ -1284,12 +1304,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                 </button>
                 <button
                   onClick={generateRubric}
-                  disabled={!validateForm() || loading}
+                  disabled={loading}
                   className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
                   data-tutorial="rubric-generator-generate"
-                  style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
-                  onMouseEnter={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '0.9')}
-                  onMouseLeave={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '1')}
+                  style={loading ? {} : { backgroundColor: tabColor }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
                 >
                   {loading ? (
                     <>

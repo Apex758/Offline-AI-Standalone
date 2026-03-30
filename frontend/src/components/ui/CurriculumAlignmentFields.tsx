@@ -24,6 +24,7 @@ interface CurriculumAlignmentFieldsProps {
   onSCOsChange: (scos: string) => void;
   onToggleCurriculum: () => void;
   accentColor?: string;
+  validationErrors?: Record<string, boolean>;
 }
 
 export default function CurriculumAlignmentFields({
@@ -38,6 +39,7 @@ export default function CurriculumAlignmentFields({
   onSCOsChange,
   onToggleCurriculum,
   accentColor,
+  validationErrors = {},
 }: CurriculumAlignmentFieldsProps) {
   const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
   const scoDropdownRef = useRef<HTMLDivElement>(null);
@@ -105,7 +107,8 @@ export default function CurriculumAlignmentFields({
             onELOChange('');
             onSCOsChange('');
           }}
-          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+          data-validation-error={validationErrors.strand ? 'true' : undefined}
+          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.strand ? 'validation-error' : ''}`}
           style={ringStyle}
         >
           <option value="">Select a strand</option>
@@ -130,7 +133,8 @@ export default function CurriculumAlignmentFields({
                   onELOChange(e.target.value);
                   onSCOsChange('');
                 }}
-                className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                data-validation-error={validationErrors.essentialOutcomes ? 'true' : undefined}
+                className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.essentialOutcomes ? 'validation-error' : ''}`}
                 style={ringStyle}
               >
                 <option value="">Select an Essential Learning Outcome</option>
@@ -162,7 +166,8 @@ export default function CurriculumAlignmentFields({
                 <button
                   type="button"
                   onClick={() => setScoDropdownOpen(!scoDropdownOpen)}
-                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800"
+                  data-validation-error={validationErrors.specificOutcomes ? 'true' : undefined}
+                  className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800 ${validationErrors.specificOutcomes ? 'validation-error' : ''}`}
                   style={ringStyle}
                 >
                   <span className={selectedSCOs.length === 0 ? 'text-gray-400' : 'text-theme-heading'}>
@@ -257,7 +262,8 @@ export default function CurriculumAlignmentFields({
               value={essentialOutcomes}
               onChange={(val) => onELOChange(val)}
               rows={4}
-              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+              data-validation-error={validationErrors.essentialOutcomes ? 'true' : undefined}
+              className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.essentialOutcomes ? 'validation-error' : ''}`}
               style={ringStyle}
               placeholder="Enter the broad, overarching learning outcome"
             />
@@ -270,7 +276,8 @@ export default function CurriculumAlignmentFields({
               value={specificOutcomes}
               onChange={(val) => onSCOsChange(val)}
               rows={5}
-              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+              data-validation-error={validationErrors.specificOutcomes ? 'true' : undefined}
+              className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.specificOutcomes ? 'validation-error' : ''}`}
               style={ringStyle}
               placeholder="Enter specific outcomes (one per line)"
             />

@@ -614,8 +614,13 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     }
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
@@ -628,6 +633,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   };
 
   const generateQuiz = () => {
+    if (!validateForm()) {
+      const firstError = document.querySelector('[data-validation-error="true"]');
+      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     const { systemPrompt, userPrompt } = buildQuizPrompt(formData, lockedLessonPlan?.generatedPlan);
 
     if (queueEnabled) {
@@ -677,13 +688,19 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     localStorage.removeItem(`quiz_state_${tabId}`);
   };
 
-  const validateForm = () => {
-    const hasQuizOptions = formData.questionTypes.length > 0 && formData.cognitiveLevels.length > 0;
-    if (lockedLessonPlan) {
-      return hasQuizOptions;
+  const validateForm = (): boolean => {
+    const errors: Record<string, boolean> = {};
+    if (formData.questionTypes.length === 0) errors.questionTypes = true;
+    if (formData.cognitiveLevels.length === 0) errors.cognitiveLevels = true;
+    if (!lockedLessonPlan) {
+      if (!formData.subject) errors.subject = true;
+      if (!formData.gradeLevel) errors.gradeLevel = true;
+      if (!formData.strand) errors.strand = true;
+      if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
+      if (!formData.specificOutcomes) errors.specificOutcomes = true;
     }
-    return formData.subject && formData.gradeLevel && hasQuizOptions &&
-           formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // Auto-show tutorial on first use
@@ -1331,7 +1348,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           handleInputChange('essentialOutcomes', '');
                           handleInputChange('specificOutcomes', '');
                         }}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.subject ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.subject ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       >
                         <option value="">Select a subject</option>
@@ -1351,7 +1369,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                           handleInputChange('essentialOutcomes', '');
                           handleInputChange('specificOutcomes', '');
                         }}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       >
                         <option value="">Select a grade</option>
@@ -1372,6 +1391,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                         onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                         onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                         accentColor={tabColor}
+                        validationErrors={validationErrors}
                       />
                       <RelatedCurriculumBox
                         subject={formData.subject}
@@ -1463,7 +1483,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   <label className="block text-sm font-medium text-theme-label mb-3">
                     Question Types <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div data-validation-error={validationErrors.questionTypes ? 'true' : undefined} className={`grid grid-cols-2 gap-2 p-2 rounded-lg ${validationErrors.questionTypes ? 'validation-error' : ''}`}>
                     {questionTypesOptions.map(type => (
                       <label key={type} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
@@ -1483,7 +1503,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                   <label className="block text-sm font-medium text-theme-label mb-3">
                     Cognitive Levels <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div data-validation-error={validationErrors.cognitiveLevels ? 'true' : undefined} className={`grid grid-cols-2 gap-2 p-2 rounded-lg ${validationErrors.cognitiveLevels ? 'validation-error' : ''}`}>
                     {cognitiveLevelsOptions.map(level => (
                       <label key={level} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
@@ -1527,12 +1547,12 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 </button>
                 <button
                   onClick={generateQuiz}
-                  disabled={!validateForm() || loading}
+                  disabled={loading}
                   className="flex items-center px-6 py-2 text-white rounded-lg disabled:opacity-50 transition"
                   data-tutorial="quiz-generator-generate"
-                  style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
-                  onMouseEnter={(e) => !loading && !(!validateForm()) && (e.currentTarget.style.opacity = '0.9')}
-                  onMouseLeave={(e) => !loading && !(!validateForm()) && (e.currentTarget.style.opacity = '1')}
+                  style={loading ? {} : { backgroundColor: tabColor }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
                 >
                   {loading ? (
                     <>

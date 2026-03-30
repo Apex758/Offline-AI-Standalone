@@ -574,8 +574,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     setIsEditing(false);
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
@@ -596,17 +601,32 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
     }
   };
 
-  const validateStep = () => {
+  const validateStep = (): boolean => {
+    const errors: Record<string, boolean> = {};
     if (step === 1) {
-      return formData.subject && formData.gradeLevel && formData.topic && formData.strand &&
-             formData.essentialOutcomes && formData.specificOutcomes &&
-             formData.studentCount && formData.duration;
+      if (!formData.subject) errors.subject = true;
+      if (!formData.gradeLevel) errors.gradeLevel = true;
+      if (!formData.topic) errors.topic = true;
+      if (!formData.strand) errors.strand = true;
+      if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
+      if (!formData.specificOutcomes) errors.specificOutcomes = true;
+      if (!formData.studentCount) errors.studentCount = true;
+      if (!formData.duration) errors.duration = true;
     }
     if (step === 2) {
-      return formData.pedagogicalStrategies.length > 0 && formData.learningStyles.length > 0 &&
-             formData.materials && formData.prerequisiteSkills;
+      if (formData.pedagogicalStrategies.length === 0) errors.pedagogicalStrategies = true;
+      if (formData.learningStyles.length === 0) errors.learningStyles = true;
+      if (!formData.materials) errors.materials = true;
+      if (!formData.prerequisiteSkills) errors.prerequisiteSkills = true;
     }
-    return true;
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+    return Object.keys(errors).length === 0;
   };
 
   // Persist to localStorage on every change
@@ -1120,7 +1140,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               handleInputChange('essentialOutcomes', '');
                               handleInputChange('specificOutcomes', '');
                             }}
-                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                            data-validation-error={validationErrors.subject ? 'true' : undefined}
+                            className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.subject ? 'validation-error' : ''}`}
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           >
                             <option value="">Select a subject</option>
@@ -1141,7 +1162,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                               handleInputChange('essentialOutcomes', '');
                               handleInputChange('specificOutcomes', '');
                             }}
-                            className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                            data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                            className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                             style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           >
                             <option value="">Select a grade</option>
@@ -1163,6 +1185,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                           onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                           accentColor={tabColor}
+                          validationErrors={validationErrors}
                         />
                       </div>
 
@@ -1186,7 +1209,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <SmartInput
                         value={formData.topic}
                         onChange={(val) => handleInputChange('topic', val)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                        data-validation-error={validationErrors.topic ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.topic ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="e.g., Water Cycle"
                       />
@@ -1202,7 +1226,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           type="number"
                           value={formData.studentCount}
                           onChange={(e) => handleInputChange('studentCount', e.target.value)}
-                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                          data-validation-error={validationErrors.studentCount ? 'true' : undefined}
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.studentCount ? 'validation-error' : ''}`}
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="e.g., 20"
                         />
@@ -1216,7 +1241,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                           type="number"
                           value={formData.duration}
                           onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                          data-validation-error={validationErrors.duration ? 'true' : undefined}
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.duration ? 'validation-error' : ''}`}
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                           placeholder="e.g., 50"
                         />
@@ -1237,7 +1263,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <p className="text-xs text-theme-hint mb-3">
                         Select all teaching strategies that will guide the structure and activities of your lesson plan
                       </p>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div data-validation-error={validationErrors.pedagogicalStrategies ? 'true' : undefined} className={`grid grid-cols-2 gap-2 p-2 rounded-lg ${validationErrors.pedagogicalStrategies ? 'validation-error' : ''}`}>
                         {pedagogicalStrategiesOptions.map(strategy => (
                           <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
@@ -1260,7 +1286,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <p className="text-xs text-theme-hint mb-3">
                         Select learning styles that best describe how your students prefer to learn
                       </p>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div data-validation-error={validationErrors.learningStyles ? 'true' : undefined} className={`grid grid-cols-3 gap-2 p-2 rounded-lg ${validationErrors.learningStyles ? 'validation-error' : ''}`}>
                         {learningStylesOptions.map(style => (
                           <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
@@ -1344,7 +1370,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         value={formData.materials}
                         onChange={(val) => handleInputChange('materials', val)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                        data-validation-error={validationErrors.materials ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.materials ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Resources needed for the lesson (e.g., chart paper, colored markers, projector)"
                       />
@@ -1358,7 +1385,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                         value={formData.prerequisiteSkills}
                         onChange={(val) => handleInputChange('prerequisiteSkills', val)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+                        data-validation-error={validationErrors.prerequisiteSkills ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.prerequisiteSkills ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                         placeholder="Skills students should already have before this lesson"
                       />
@@ -1457,12 +1485,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
                   {step < 3 ? (
                     <button
-                      onClick={() => handleStepChange(step + 1)}
-                      disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 text-white rounded-lg transition disabled:bg-theme-tertiary disabled:cursor-not-allowed"
-                      style={!validateStep() ? {} : { backgroundColor: tabColor }}
-                      onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
-                      onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}
+                      onClick={() => { if (validateStep()) handleStepChange(step + 1); }}
+                      className="flex items-center px-6 py-2 text-white rounded-lg transition"
+                      style={{ backgroundColor: tabColor }}
+                      onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                      onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                     >
                       Next
                       <ChevronRight className="w-5 h-5 ml-1" />

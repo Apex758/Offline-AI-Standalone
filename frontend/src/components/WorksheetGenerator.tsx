@@ -600,12 +600,17 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     );
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof WorksheetFormData, value: WorksheetFormData[keyof WorksheetFormData]) => {
     // Reset topic when strand changes since topics are dependent on strand
     if (field === 'strand') {
       setFormData(prev => ({ ...prev, [field]: value, topic: '' }) as WorksheetFormData);
     } else {
       setFormData(prev => ({ ...prev, [field]: value }) as WorksheetFormData);
+    }
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
     }
   };
 
@@ -623,9 +628,29 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   };
 
 
+  const validateForm = (): boolean => {
+    const errors: Record<string, boolean> = {};
+    if (!formData.subject) errors.subject = true;
+    if (!formData.gradeLevel) errors.gradeLevel = true;
+    if (!formData.strand) errors.strand = true;
+    if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
+    if (!formData.specificOutcomes) errors.specificOutcomes = true;
+    if (!formData.questionCount) errors.questionCount = true;
+    if (!formData.questionType) errors.questionType = true;
+    if (!formData.selectedTemplate) errors.selectedTemplate = true;
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleGenerate = async () => {
     console.log('handleGenerate called');
-    
+
+    if (!validateForm()) {
+      const firstError = document.querySelector('[data-validation-error="true"]');
+      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     // ✅ VALIDATION: Image Intent is required when images are included
     if (formData.includeImages && !selectedPreset) {
       setGenerationError('Please select an Image Intent before generating the worksheet.');
@@ -1249,7 +1274,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         handleInputChange('subject', e.target.value);
                         handleInputChange('strand', '');
                       }}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      data-validation-error={validationErrors.subject ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.subject ? 'validation-error' : ''}`}
                     >
                       <option value="">Select a subject</option>
                       {subjects.map(subject => (
@@ -1268,7 +1294,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                         handleInputChange('gradeLevel', e.target.value);
                         handleInputChange('strand', '');
                       }}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                     >
                       <option value="">Select a grade</option>
                       {grades.map(grade => (
@@ -1290,6 +1317,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                       onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                       accentColor="#3b82f6"
+                      validationErrors={validationErrors}
                     />
                   </div>
 
@@ -1367,7 +1395,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     max="50"
                     value={formData.questionCount}
                     onChange={(e) => handleInputChange('questionCount', e.target.value)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    data-validation-error={validationErrors.questionCount ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.questionCount ? 'validation-error' : ''}`}
                     placeholder="e.g., 10"
                     required
                   />
@@ -1387,7 +1416,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     handleInputChange('questionType', e.target.value);
                     handleInputChange('selectedTemplate', getCompatibleTemplates().find(t => t.id === formData.selectedTemplate) ? formData.selectedTemplate : '');
                   }}
-                  className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  data-validation-error={validationErrors.questionType ? 'true' : undefined}
+                  className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.questionType ? 'validation-error' : ''}`}
                 >
                   <option value="">Select a question type</option>
                   {getAvailableQuestionTypes().map(type => (
@@ -1553,7 +1583,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               <h3 className="text-lg font-semibold text-theme-heading">Worksheet Template</h3>
               <p className="text-sm text-theme-hint">Choose a layout that works with your selected question types</p>
 
-              <div className="grid grid-cols-1 gap-3">
+              <div data-validation-error={validationErrors.selectedTemplate ? 'true' : undefined} className={`grid grid-cols-1 gap-3 p-2 rounded-lg ${validationErrors.selectedTemplate ? 'validation-error' : ''}`}>
                 {compatibleTemplates.map(template => (
                   <label key={template.id} className="flex items-center space-x-3 p-3 border border-theme rounded-lg hover:bg-theme-subtle cursor-pointer">
                     <input
@@ -1776,7 +1806,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
             <div className="flex justify-end">
               <button
                 onClick={handleGenerate}
-                disabled={loading || !formData.subject || !formData.gradeLevel || !formData.strand || !formData.questionCount || !formData.questionType || !formData.selectedTemplate || !formData.essentialOutcomes || !formData.specificOutcomes}
+                disabled={loading}
                 className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
