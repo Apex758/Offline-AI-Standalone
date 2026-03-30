@@ -92,6 +92,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [allResourcesData, setAllResourcesData] = useState<any[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [testReminders, setTestReminders] = useState<import('../hooks/useTaskNotifications').TestReminder[]>([]);
   const [milestoneStats, setMilestoneStats] = useState<MilestoneStats | null>(null);
   const [upcomingMilestones, setUpcomingMilestones] = useState<Milestone[]>([]);
   const [progressBreakdown, setProgressBreakdown] = useState<Array<{
@@ -154,6 +155,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     };
 
     loadTasks();
+  }, []);
+
+  // Load test reminders from backend
+  useEffect(() => {
+    const loadReminders = async () => {
+      try {
+        const res = await axios.get('http://localhost:8000/api/reminders');
+        setTestReminders(res.data);
+      } catch (err) {
+        console.error('Error loading test reminders:', err);
+      }
+    };
+    loadReminders();
   }, []);
 
   // Save tasks to file storage
@@ -320,7 +334,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   }, []);
 
   // Alert for overdue / due-today / due-tomorrow tasks
-  useTaskNotifications(tasks);
+  useTaskNotifications(tasks, testReminders);
 
   // Task handlers
   const handleAddTask = () => {
@@ -351,6 +365,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ? { ...t, completed: !t.completed, updatedAt: new Date().toISOString() }
         : t
     ));
+  };
+
+  const handleExportCalendar = () => {
+    const tasksJson = encodeURIComponent(JSON.stringify(tasks));
+    const url = `http://localhost:8000/api/calendar/export.ics?tasks=${tasksJson}`;
+    window.open(url, '_blank');
   };
 
   const handleToolClick = (toolType: string) => {
@@ -642,6 +662,41 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               resourcesByDate={resourcesByDate}
               onExpandClick={() => setShowCalendarModal(true)}
             />
+
+            {/* Export Calendar + Upcoming Tests */}
+            {(testReminders.length > 0 || tasks.length > 0) && (
+              <div className="bg-theme-surface rounded-xl border border-theme p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-theme-heading">Upcoming Tests</h3>
+                  <button
+                    onClick={handleExportCalendar}
+                    className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 font-medium transition"
+                  >
+                    Export .ics
+                  </button>
+                </div>
+                {testReminders.filter(r => r.test_date >= format(new Date(), 'yyyy-MM-dd')).length === 0 ? (
+                  <p className="text-xs text-theme-hint">No upcoming tests scheduled.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {testReminders
+                      .filter(r => r.test_date >= format(new Date(), 'yyyy-MM-dd'))
+                      .slice(0, 5)
+                      .map(r => (
+                        <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-theme-secondary text-xs">
+                          <div>
+                            <p className="font-medium text-theme-label">{r.title}</p>
+                            <p className="text-theme-hint">{r.subject} - Grade {r.grade_level}</p>
+                          </div>
+                          <span className="text-theme-muted font-mono">
+                            {new Date(r.test_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Task List */}
             <TaskListWidget

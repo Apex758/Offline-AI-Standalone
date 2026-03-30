@@ -4,6 +4,7 @@ import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquar
 import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
 import type { MilestoneTreeNode } from '../types/milestone';
 import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader';
+import { useNotification } from '../contexts/NotificationContext';
 
 // Lazy-init lookups — built on first access after curriculum data loads
 let _skillTreeLookupsBuilt = false;
@@ -204,7 +205,8 @@ const TreeConnectors: React.FC<{
   accentColor: string;
   animKey: number;
   nodeCount: number;
-}> = ({ parentRef, childRefs, containerRef, accentColor, animKey, nodeCount }) => {
+  completedIndices: boolean[];
+}> = ({ parentRef, childRefs, containerRef, accentColor, animKey, nodeCount, completedIndices }) => {
   const [paths, setPaths] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
 
@@ -263,20 +265,21 @@ const TreeConnectors: React.FC<{
       }}
     >
       {paths.map((d, i) => {
-        // Stagger each line slightly for a spreading effect
         const delay = i * 0.06;
+        const done = completedIndices[i] ?? false;
         return (
           <path
             key={i}
             d={d}
             fill="none"
             stroke={accentColor}
-            strokeWidth="2"
-            strokeOpacity={0.3}
-            strokeDasharray="1000"
+            strokeWidth={done ? 3 : 2}
+            strokeOpacity={done ? 0.7 : 0.3}
+            strokeDasharray={done ? '1000' : '6 4'}
             strokeDashoffset={visible ? '0' : '1000'}
+            strokeLinecap="round"
             style={{
-              transition: `stroke-dashoffset 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, opacity 0.3s ease ${delay}s`,
+              transition: `stroke-dashoffset 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, opacity 0.3s ease ${delay}s, stroke-width 0.4s ease, stroke-opacity 0.4s ease`,
               opacity: visible ? 1 : 0,
             }}
           />
@@ -306,6 +309,7 @@ interface Props {
 const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigate, onToggleSco }) => {
   const { loading: curriculumLoading } = useCurriculumIndex();
   if (!curriculumLoading) ensureSkillTreeLookups();
+  const { toastOnly } = useNotification();
   const [currentPath, setCurrentPath] = useState<number[]>([]);
   const [animKey, setAnimKey] = useState(0);
   const [zoomDir, setZoomDir] = useState<'in' | 'out'>('in');
@@ -315,6 +319,19 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
   const treeContainerRef = useRef<HTMLDivElement | null>(null);
 
   const skillTree = useMemo(() => buildSkillTree(treeData), [treeData]);
+
+  // Strand progress lookup for prerequisite checks
+  const strandProgressMap = useMemo(() => {
+    const map = new Map<string, { progress: number; name: string }>();
+    skillTree.forEach(grade =>
+      grade.children.forEach(subject =>
+        subject.children.forEach(strand => {
+          if (strand.topicId) map.set(strand.topicId, { progress: strand.progress, name: strand.label });
+        })
+      )
+    );
+    return map;
+  }, [skillTree]);
 
   const currentView = useMemo(() => {
     let nodes = skillTree;
@@ -343,6 +360,25 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
     onNavigate(node.expandIds, highlightId);
     // Only zoom deeper if node has children
     if (node.children.length === 0) return;
+
+    // Prerequisite toast for strands
+    if (node.type === 'strand' && node.topicId) {
+      const prereqs = prereqMap.get(node.topicId) || [];
+      const incompletePrereqs = prereqs
+        .map(pid => strandProgressMap.get(pid))
+        .filter(info => info && info.progress < 100);
+      if (incompletePrereqs.length > 0) {
+        const names = incompletePrereqs.map(p => `"${p!.name}"`).join(', ');
+        toastOnly(`Prerequisite strand(s) ${names} not yet completed`, 'info', 5000);
+      }
+    }
+
+    // ELO toast: notify if not all SCOs are confirmed
+    if (node.type === 'elo' && node.completed < node.total) {
+      const remaining = node.total - node.completed;
+      toastOnly(`${remaining} of ${node.total} SCOs under this ELO not yet confirmed`, 'info', 5000);
+    }
+
     setZoomDir('in');
     setCurrentPath(prev => [...prev, index]);
     setAnimKey(k => k + 1);
@@ -398,6 +434,14 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
         }
         .progress-tree-node.is-clickable:active {
           transform: scale(0.95);
+        }
+        @keyframes beaconPulse {
+          0%, 100% { box-shadow: 0 0 4px ${accentColor}30; }
+          50% { box-shadow: 0 0 14px ${accentColor}60, 0 0 6px ${accentColor}40; }
+        }
+        .beacon-pulse {
+          animation: beaconPulse 2s ease-in-out infinite;
+          border-radius: 9999px;
         }
       `}</style>
 
@@ -490,6 +534,7 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
               childRefs={childNodeRefs}
               containerRef={treeContainerRef}
               accentColor={accentColor}
+              completedIndices={currentView.nodes.map(n => n.type === 'sco' ? !!n.checked : n.progress === 100)}
             />
           )}
 
@@ -538,11 +583,10 @@ const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigat
                           style={{ boxShadow: `0 0 16px ${accentColor}40, 0 0 6px ${accentColor}25` }}
                         />
                       )}
-                      {/* Completed glow */}
-                      {node.progress === 100 && node.type !== 'sco' && (
+                      {/* Beacon pulse on completed nodes */}
+                      {((node.type === 'sco' && node.checked) || (node.type !== 'sco' && node.progress === 100)) && (
                         <div
-                          className="absolute inset-0 rounded-full pointer-events-none"
-                          style={{ boxShadow: `0 0 10px ${accentColor}30` }}
+                          className="absolute inset-0 beacon-pulse pointer-events-none"
                         />
                       )}
                     </div>

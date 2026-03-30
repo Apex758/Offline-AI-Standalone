@@ -6665,6 +6665,152 @@ async def logs_recent(limit: int = 100):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ── Test Reminders ─────────────────────────────────────────────────────────────
+
+@app.get("/api/reminders")
+async def list_reminders():
+    return student_service.list_test_reminders()
+
+
+@app.post("/api/reminders")
+async def create_reminder(request: Request):
+    data = await request.json()
+    if not data.get("test_date"):
+        raise HTTPException(status_code=400, detail="test_date is required")
+    return student_service.save_test_reminder(data)
+
+
+@app.get("/api/reminders/{reminder_id}")
+async def get_reminder(reminder_id: str):
+    r = student_service.get_test_reminder(reminder_id)
+    if not r:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+    return r
+
+
+@app.delete("/api/reminders/{reminder_id}")
+async def delete_reminder(reminder_id: str):
+    if not student_service.delete_test_reminder(reminder_id):
+        raise HTTPException(status_code=404, detail="Reminder not found")
+    return {"success": True}
+
+
+@app.get("/api/calendar/export.ics")
+async def export_calendar_ics(request: Request):
+    """Export all tasks and test reminders as a single .ics calendar file."""
+    from datetime import datetime as dt
+
+    reminders = student_service.list_test_reminders()
+
+    # Also load tasks from the request if provided, or from Electron storage
+    # Tasks are stored client-side, so we accept them as a query param
+    tasks_json = request.query_params.get("tasks", "[]")
+    try:
+        tasks = json.loads(tasks_json)
+    except Exception:
+        tasks = []
+
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//OECS Learning Hub//Test Reminders//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "X-WR-CALNAME:OECS Learning Hub",
+    ]
+
+    def _ics_date(date_str: str, time_str: str | None = None) -> str:
+        """Convert date + optional time to ICS format."""
+        if time_str:
+            try:
+                d = dt.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                return d.strftime("%Y%m%dT%H%M%S")
+            except Exception:
+                pass
+        try:
+            d = dt.strptime(date_str, "%Y-%m-%d")
+            return d.strftime("%Y%m%d")
+        except Exception:
+            return date_str.replace("-", "")
+
+    def _escape(text: str) -> str:
+        return text.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+
+    # Add test reminders
+    for r in reminders:
+        uid = r.get("id", str(uuid.uuid4()))
+        dtstart = _ics_date(r["test_date"], r.get("test_time"))
+        summary = _escape(r.get("title", "Test"))
+        desc = _escape(r.get("description", ""))
+        subject = r.get("subject", "")
+        grade = r.get("grade_level", "")
+        if subject or grade:
+            desc = f"{subject} - Grade {grade}\\n{desc}".strip("\\n")
+
+        lines.append("BEGIN:VEVENT")
+        lines.append(f"UID:{uid}@oecs-learning-hub")
+        if "T" in dtstart:
+            lines.append(f"DTSTART:{dtstart}")
+            # 1 hour duration for timed events
+            try:
+                start = dt.strptime(dtstart, "%Y%m%dT%H%M%S")
+                end = start.replace(hour=start.hour + 1) if start.hour < 23 else start.replace(hour=23, minute=59)
+                lines.append(f"DTEND:{end.strftime('%Y%m%dT%H%M%S')}")
+            except Exception:
+                pass
+        else:
+            lines.append(f"DTSTART;VALUE=DATE:{dtstart}")
+            lines.append(f"DTEND;VALUE=DATE:{dtstart}")
+        lines.append(f"SUMMARY:{summary}")
+        if desc:
+            lines.append(f"DESCRIPTION:{desc}")
+        rtype = r.get("type", "test")
+        lines.append(f"CATEGORIES:{rtype.upper()}")
+        # Add alarm 1 day before
+        lines.append("BEGIN:VALARM")
+        lines.append("TRIGGER:-P1D")
+        lines.append("ACTION:DISPLAY")
+        lines.append(f"DESCRIPTION:Reminder: {summary}")
+        lines.append("END:VALARM")
+        lines.append("END:VEVENT")
+
+    # Add tasks
+    for t in tasks:
+        if not t.get("date"):
+            continue
+        uid = t.get("id", str(uuid.uuid4()))
+        dtstart = _ics_date(t["date"])
+        summary = _escape(t.get("title", "Task"))
+        desc = _escape(t.get("description", ""))
+        completed = t.get("completed", False)
+
+        lines.append("BEGIN:VTODO")
+        lines.append(f"UID:task-{uid}@oecs-learning-hub")
+        lines.append(f"DTSTART;VALUE=DATE:{dtstart}")
+        lines.append(f"DUE;VALUE=DATE:{dtstart}")
+        lines.append(f"SUMMARY:{summary}")
+        if desc:
+            lines.append(f"DESCRIPTION:{desc}")
+        priority_map = {"urgent": 1, "high": 3, "medium": 5, "low": 9}
+        p = priority_map.get(t.get("priority", "medium"), 5)
+        lines.append(f"PRIORITY:{p}")
+        if completed:
+            lines.append("STATUS:COMPLETED")
+            lines.append("PERCENT-COMPLETE:100")
+        else:
+            lines.append("STATUS:NEEDS-ACTION")
+        lines.append("END:VTODO")
+
+    lines.append("END:VCALENDAR")
+
+    ics_content = "\r\n".join(lines)
+    return Response(
+        content=ics_content,
+        media_type="text/calendar",
+        headers={"Content-Disposition": "attachment; filename=oecs-calendar.ics"}
+    )
+
+
 
 
 

@@ -50,6 +50,7 @@ import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
 import QuizEditor from './QuizEditor';
 import QuizGrader from './QuizGrader';
+import ScheduleTestModal from './ScheduleTestModal';
 import axios from 'axios';
 import { ParsedQuiz, parseQuizFromAI, quizToDisplayText, displayTextToQuiz } from '../types/quiz';
 import { buildQuizPrompt } from '../utils/quizPromptBuilder';
@@ -253,6 +254,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [lockedLessonPlan, setLockedLessonPlan] = useState<LessonPlanHistoryItem | null>(null);
   const [currentQuizId, setCurrentQuizId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // State for structured editing
   const [isEditing, setIsEditing] = useState(false);
@@ -532,8 +534,10 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       };
 
       await axios.post('http://localhost:8000/api/quiz-history', quizData);
+      setCurrentQuizId(quizData.id);
       await loadQuizHistories();
       setSaveStatus('saved');
+      setShowScheduleModal(true);
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save quiz:', error);
@@ -1876,6 +1880,21 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
         onComplete={handleTutorialComplete}
         autoStart={showTutorial}
         showFloatingButton={false}
+      />
+
+      <ScheduleTestModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        testInfo={{
+          title: formData.subject
+            ? `${formData.subject}${formData.strand ? ` — ${formData.strand}` : ''} Quiz - Grade ${formData.gradeLevel || 'Unknown'}`
+            : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`,
+          type: 'quiz',
+          referenceId: currentQuizId || '',
+          subject: formData.subject || '',
+          gradeLevel: formData.gradeLevel || '',
+        }}
+        accentColor={settings.tabColors['quiz-generator'] ?? '#8b5cf6'}
       />
     </div>
   );

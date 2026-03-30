@@ -14,7 +14,7 @@ import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
-import SpellCheckIconData from '@hugeicons/core-free-icons/SpellCheckIcon';
+import TextCheckIconData from '@hugeicons/core-free-icons/TextCheckIcon';
 import { ParsedWorksheet } from '../types/worksheet';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -43,7 +43,7 @@ const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
 const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
 const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
-const SpellCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SpellCheckIconData} {...p} />;
+const SpellCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={TextCheckIconData} {...p} />;
 
 type GraderMode = 'vision' | 'scan';
 

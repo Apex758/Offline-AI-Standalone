@@ -72,6 +72,7 @@ import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import axios from 'axios';
 import WorksheetGrader from './WorksheetGrader';
+import ScheduleTestModal from './ScheduleTestModal';
 import SmartTextArea from './SmartTextArea';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import SmartInput from './SmartInput';
@@ -386,6 +387,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [currentWorksheetId, setCurrentWorksheetId] = useState<string | null>(null);
   const [worksheetHistories, setWorksheetHistories] = useState<WorksheetHistory[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -1064,6 +1066,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       await axios.post('http://localhost:8000/api/worksheet-history', worksheetData);
       setCurrentWorksheetId(worksheetData.id);
       setSaveStatus('saved');
+      setShowScheduleModal(true);
       loadWorksheetHistory();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
@@ -2662,6 +2665,19 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
           </div>
         </div>
       </div>
+
+      <ScheduleTestModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        testInfo={{
+          title: formData.worksheetTitle || `${formData.subject} - Grade ${formData.gradeLevel} Worksheet`,
+          type: 'worksheet',
+          referenceId: currentWorksheetId || '',
+          subject: formData.subject || '',
+          gradeLevel: formData.gradeLevel || '',
+        }}
+        accentColor={settings.tabColors['worksheet-generator'] ?? '#3b82f6'}
+      />
     </div>
   );
 };

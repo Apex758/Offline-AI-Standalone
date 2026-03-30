@@ -70,7 +70,11 @@
       "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
       "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
       "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/backend -maxdepth 2 -type f \\\\\\(-name *.py \\\\\\))",
-      "Read(//c/Users/LG/AppData/Local/Temp/2eaa3c9b-c3f1-4e1e-846a-c94882460c91_HunyuanOCR-main.zip.HunyuanOCR-main.zip/HunyuanOCR-main/**)"
+      "Read(//c/Users/LG/AppData/Local/Temp/2eaa3c9b-c3f1-4e1e-846a-c94882460c91_HunyuanOCR-main.zip.HunyuanOCR-main.zip/HunyuanOCR-main/**)",
+      "Bash(find 'c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src' -type f \\\\\\(-name *analytic* -o -name *dashboard* \\\\\\))",
+      "Bash(find 'c:\\\\Users\\\\LG\\\\Desktop\\\\Projects\\\\Offline AI Standalone' -path */node_modules -prune -o -path */python-embed -prune -o -path */venv -prune -o -path */dist-electron -prune -o -type f \\\\\\(-name *.ts -o -name *.js \\\\\\) -print)",
+      "Read(//c/Users/LG/.claude/plans/**)",
+      "Bash(find 'c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/utils' -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))"
     ]
   }
 }

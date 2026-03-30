@@ -133,6 +133,20 @@ def init_db():
             )
         ''')
         conn.execute('''
+            CREATE TABLE IF NOT EXISTS test_reminders (
+                id            TEXT PRIMARY KEY,
+                title         TEXT NOT NULL,
+                description   TEXT,
+                test_date     TEXT NOT NULL,
+                test_time     TEXT,
+                type          TEXT NOT NULL DEFAULT 'quiz',
+                reference_id  TEXT,
+                subject       TEXT,
+                grade_level   TEXT,
+                created_at    TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('''
             CREATE TABLE IF NOT EXISTS worksheet_packages (
                 id               TEXT PRIMARY KEY,
                 worksheet_title  TEXT,
@@ -396,6 +410,65 @@ def list_worksheet_answer_keys() -> list[dict]:
             'FROM worksheet_answer_keys ORDER BY created_at DESC'
         ).fetchall()
         return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# ── Test Reminders ─────────────────────────────────────────────────────────────
+
+def save_test_reminder(data: dict) -> dict:
+    conn = _get_conn()
+    try:
+        reminder_id = data.get('id') or str(uuid.uuid4())
+        conn.execute(
+            '''INSERT OR REPLACE INTO test_reminders
+               (id, title, description, test_date, test_time, type, reference_id, subject, grade_level)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            (
+                reminder_id,
+                data.get('title', ''),
+                data.get('description', ''),
+                data.get('test_date'),
+                data.get('test_time'),
+                data.get('type', 'quiz'),
+                data.get('reference_id'),
+                data.get('subject'),
+                data.get('grade_level'),
+            )
+        )
+        conn.commit()
+        row = conn.execute('SELECT * FROM test_reminders WHERE id = ?', (reminder_id,)).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def list_test_reminders() -> list[dict]:
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT * FROM test_reminders ORDER BY test_date ASC, test_time ASC'
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_test_reminder(reminder_id: str) -> dict | None:
+    conn = _get_conn()
+    try:
+        row = conn.execute('SELECT * FROM test_reminders WHERE id = ?', (reminder_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def delete_test_reminder(reminder_id: str) -> bool:
+    conn = _get_conn()
+    try:
+        cur = conn.execute('DELETE FROM test_reminders WHERE id = ?', (reminder_id,))
+        conn.commit()
+        return cur.rowcount > 0
     finally:
         conn.close()
 

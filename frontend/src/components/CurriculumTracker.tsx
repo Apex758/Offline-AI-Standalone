@@ -120,6 +120,13 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
   const highlightTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Completion warning modal state
+  const [completionWarning, setCompletionWarning] = useState<{
+    milestoneId: string;
+    update: Partial<Milestone>;
+    incompleteElos: { eloId: string; elo: string; checked: number; total: number }[];
+  } | null>(null);
+
   // Draggable divider: right panel as fraction of total width (0.4 = 40%)
   const [rightPanelRatio, setRightPanelRatio] = useState(() => {
     const saved = localStorage.getItem('curriculum-tracker-divider');
@@ -399,6 +406,39 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   };
 
   const handleUpdateMilestone = async (
+    milestoneId: string,
+    update: Partial<Milestone>
+  ) => {
+    // When marking as completed, check for incomplete ELOs first
+    if (update.status === 'completed') {
+      const milestone = milestones.find(m => m.id === milestoneId);
+      if (milestone && milestone.checklist && milestone.checklist.length > 0) {
+        const eloGroups = eloGroupsLookup.get(milestone.topic_id) || [];
+        const incompleteElos: { eloId: string; elo: string; checked: number; total: number }[] = [];
+        eloGroups.forEach(g => {
+          if (!g.scoRange) return;
+          const scos = milestone.checklist.slice(g.scoRange[0], g.scoRange[1] + 1);
+          const checked = scos.filter(s => s.checked).length;
+          if (checked < scos.length) {
+            incompleteElos.push({
+              eloId: (g as any).eloId || '',
+              elo: g.elo,
+              checked,
+              total: scos.length,
+            });
+          }
+        });
+        if (incompleteElos.length > 0) {
+          // Show the warning modal — don't proceed yet
+          setCompletionWarning({ milestoneId, update, incompleteElos });
+          return;
+        }
+      }
+    }
+    await executeUpdateMilestone(milestoneId, update);
+  };
+
+  const executeUpdateMilestone = async (
     milestoneId: string,
     update: Partial<Milestone>
   ) => {
@@ -1237,6 +1277,69 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Completion warning modal */}
+      {completionWarning && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backdropFilter: 'blur(6px)', backgroundColor: 'rgba(0,0,0,0.4)' }}
+          onClick={() => setCompletionWarning(null)}
+        >
+          <div
+            className="bg-theme-surface border border-theme rounded-xl shadow-2xl p-6 max-w-md w-full mx-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <IconW icon={AlertCircleIconData} className="w-5 h-5" style={{ color: '#f59e0b' }} />
+              <h3 className="text-lg font-bold text-theme-title">Incomplete ELOs</h3>
+            </div>
+            <p className="text-sm text-theme-label mb-3">
+              The following ELOs have SCOs that haven't been confirmed yet:
+            </p>
+            <div className="space-y-2 mb-5 max-h-60 overflow-y-auto">
+              {completionWarning.incompleteElos.map((elo, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 p-2.5 rounded-lg border border-theme text-sm"
+                  style={{ backgroundColor: `${accentColor}08` }}
+                >
+                  {elo.eloId && (
+                    <span
+                      className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
+                      style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+                    >
+                      {elo.eloId}
+                    </span>
+                  )}
+                  <span className="text-theme-label flex-1 text-xs line-clamp-2">{elo.elo}</span>
+                  <span className="text-xs font-semibold shrink-0" style={{ color: '#f59e0b' }}>
+                    {elo.checked}/{elo.total}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button
+                className="flex-1 px-4 py-2 rounded-lg border border-theme text-sm font-medium text-theme-label hover:bg-theme-hover transition-colors"
+                onClick={() => setCompletionWarning(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-bold text-white transition-colors"
+                style={{ backgroundColor: accentColor }}
+                onClick={() => {
+                  const { milestoneId, update } = completionWarning;
+                  setCompletionWarning(null);
+                  executeUpdateMilestone(milestoneId, update);
+                }}
+              >
+                Complete Anyway
+              </button>
             </div>
           </div>
         </div>

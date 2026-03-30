@@ -21,6 +21,7 @@ interface NotificationContextValue {
   history: HistoryItem[];
   unreadCount: number;
   notify: (message: string, type?: NotificationType) => void;
+  toastOnly: (message: string, type?: NotificationType, duration?: number) => void;
   dismiss: (id: string) => void;
   markAllRead: () => void;
   clearHistory: () => void;
@@ -43,6 +44,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setHistory(prev => [{ id, message, type, timestamp: new Date(), read: false }, ...prev]);
   }, []);
 
+  const toastOnly = useCallback((message: string, type: NotificationType = 'info', duration = 4000) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, duration);
+  }, []);
+
   const dismiss = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
@@ -58,7 +67,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const unreadCount = history.filter(item => !item.read).length;
 
   return (
-    <NotificationContext.Provider value={{ toasts, history, unreadCount, notify, dismiss, markAllRead, clearHistory }}>
+    <NotificationContext.Provider value={{ toasts, history, unreadCount, notify, toastOnly, dismiss, markAllRead, clearHistory }}>
       {children}
     </NotificationContext.Provider>
   );
