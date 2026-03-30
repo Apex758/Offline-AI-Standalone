@@ -51,7 +51,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
     try {
       await axios.post(`${API_BASE}/api/reminders`, {
         title: testInfo.title,
-        description: `Scheduled ${testInfo.type} for Grade ${testInfo.gradeLevel}`,
+        description: `Scheduled ${testInfo.type === 'quiz' ? 'quiz' : 'worksheet'} for Grade ${testInfo.gradeLevel}`,
         test_date: testDate,
         test_time: testTime || null,
         type: testInfo.type,
@@ -83,7 +83,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
               <CalendarIcon className="w-5 h-5" style={{ color: accentColor }} />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-theme-heading">Schedule Test Date</h3>
+              <h3 className="text-base font-semibold text-theme-heading">Schedule {testInfo.type === 'quiz' ? 'Quiz' : 'Worksheet'} Date</h3>
               <p className="text-xs text-theme-hint">When will students take this {testInfo.type}?</p>
             </div>
           </div>
@@ -116,7 +116,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({
               <div>
                 <label className="block text-sm font-medium text-theme-label mb-1.5">
                   <CalendarIcon className="w-4 h-4 inline mr-1.5" style={{ color: accentColor }} />
-                  Test Date
+                  {testInfo.type === 'quiz' ? 'Quiz' : 'Worksheet'} Date
                 </label>
                 <input
                   type="date"

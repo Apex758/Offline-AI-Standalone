@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
@@ -239,6 +240,7 @@ const formatQuizText = (text: string, accentColor: string) => {
 const ENDPOINT = '/ws/quiz';
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   useCurriculumIndex();
+  const triggerCheck = useAchievementTrigger();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
@@ -537,6 +539,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
       setCurrentQuizId(quizData.id);
       await loadQuizHistories();
       setSaveStatus('saved');
+      triggerCheck();
       setShowScheduleModal(true);
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {

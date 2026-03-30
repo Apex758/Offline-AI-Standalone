@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
@@ -248,6 +249,7 @@ const formatLessonText = (text: string, accentColor: string) => {
 const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
+  const triggerCheck = useAchievementTrigger();
 
   const { pages: curriculumPages } = useCurriculumIndex();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
@@ -755,6 +757,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       await axios.post('http://localhost:8000/api/lesson-plan-history', planData);
       await loadLessonPlanHistories();
       setSaveStatus('saved');
+      triggerCheck();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save lesson plan:', error);

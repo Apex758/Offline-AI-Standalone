@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import SaveIconData from '@hugeicons/core-free-icons/SaveIcon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
@@ -473,6 +474,7 @@ const rubricToDisplayText = (rubric: ParsedRubric): string => {
 
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
   useCurriculumIndex();
+  const triggerCheck = useAchievementTrigger();
   const LOCAL_STORAGE_KEY = `rubric_state_${tabId}`;
   
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
@@ -746,6 +748,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
       await axios.post('http://localhost:8000/api/rubric-history', rubricData);
       await loadRubricHistories();
       setSaveStatus('saved');
+      triggerCheck();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save rubric:', error);

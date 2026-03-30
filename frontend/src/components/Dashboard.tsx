@@ -36,6 +36,7 @@ import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
 import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
 import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
+import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -82,8 +83,11 @@ const AlertTriangle: React.FC<{ className?: string; style?: React.CSSProperties 
 const Brain: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={BrainIconData} {...p} />;
 const Speedometer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Activity01IconData} {...p} />;
 const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
+const Trophy: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Trophy01IconData} {...p} />;
 
 import { User, Tab, Tool, SplitViewState, Resource } from '../types';
+import { AchievementProvider, useAchievementContext } from '../contexts/AchievementContext';
+import AchievementUnlockModal from './modals/AchievementUnlockModal';
 
 // Lazy-load all tab components (only downloaded when user opens that tab)
 const Chat = React.lazy(() => import('./Chat'));
@@ -105,6 +109,7 @@ const SupportReporting = React.lazy(() => import('./SupportReporting'));
 const BrainDump = React.lazy(() => import('./BrainDump'));
 const PerformanceMetrics = React.lazy(() => import('./PerformanceMetrics'));
 const PresentationBuilder = React.lazy(() => import('./PresentationBuilder'));
+const Achievements = React.lazy(() => import('./Achievements'));
 import TutorialOverlay, { dashboardWalkthroughSteps } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import WelcomeModal from './WelcomeModal';
@@ -231,6 +236,13 @@ const tools: Tool[] = [
     group: 'lesson-planners'
   },
   {
+    id: 'achievements',
+    name: 'Achievements',
+    icon: 'Trophy',
+    type: 'achievements',
+    description: 'Track your teaching milestones and earn rewards'
+  },
+  {
     id: 'performance-metrics',
     name: 'Performance',
     icon: 'Speedometer',
@@ -308,7 +320,8 @@ const iconMap: { [key: string]: React.ElementType } = {
   AlertTriangle,
   Brain,
   Speedometer,
-  Presentation
+  Presentation,
+  Trophy
 };
 
 const WELCOME_TIPS = [
@@ -442,8 +455,8 @@ const RotatingTip = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const MAX_TABS_PER_TYPE = 3;
-const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder']);
-const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder']);
+const SINGLE_INSTANCE_TABS = new Set(['worksheet-generator', 'image-studio', 'class-management', 'support', 'brain-dump', 'performance-metrics', 'presentation-builder', 'achievements']);
+const HIDE_TAB_COUNTER = new Set(['curriculum-tracker', 'resource-manager', 'curriculum', 'worksheet-generator', 'image-studio', 'presentation-builder', 'achievements']);
 
 const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string; generatedKey: string }> = {
   'lesson-planner': { storagePrefix: 'lesson_state_', plannerType: 'lesson', generatedKey: 'generatedPlan' },
@@ -786,7 +799,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const openTool = (tool: Tool) => {
     // Single-instance tool types: navigate to existing tab if open
-    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder'];
+    const singleInstanceTypes = ['analytics', 'curriculum', 'settings', 'curriculum-tracker', 'worksheet-generator', 'image-studio', 'resource-manager', 'support', 'performance-metrics', 'presentation-builder', 'achievements'];
     if (singleInstanceTypes.includes(tool.type)) {
       const existing = tabs.find(tab => tab.type === tool.type);
       if (existing) {
@@ -1588,6 +1601,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'support':
         return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} initialScreenshot={tab.data?.initialScreenshot || null} />;
+      case 'achievements':
+        return <Achievements tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'performance-metrics':
         return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'brain-dump':
@@ -1778,6 +1793,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
 
   return (
+    <AchievementProvider teacherId={user.id}>
+    <AchievementUnlockModalBridge />
     <div
       className="flex h-screen bg-[#f5f5f0] dark:bg-[#2b2b2b]"
       onClick={() => setContextMenu(null)}
@@ -2627,7 +2644,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         />
       )}
     </div>
+    </AchievementProvider>
   );
 };
+
+function AchievementUnlockModalBridge() {
+  const { pendingUnlocks, dismissUnlock } = useAchievementContext();
+  return (
+    <AchievementUnlockModal
+      achievement={pendingUnlocks.length > 0 ? pendingUnlocks[0] : null}
+      onDismiss={dismissUnlock}
+    />
+  );
+}
 
 export default Dashboard;

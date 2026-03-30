@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useQueue } from '../contexts/QueueContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
@@ -1480,6 +1481,7 @@ function tryParsePartialSlides(raw: string): Slide[] {
 
 export default function PresentationBuilder({ tabId, savedData, onDataChange }: PresentationBuilderProps) {
   useCurriculumIndex();
+  const triggerCheck = useAchievementTrigger();
   // Input mode
   const [inputMode, setInputMode] = useState<InputMode>(savedData?.inputMode || 'scratch');
 
@@ -1709,6 +1711,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       await axios.post('http://localhost:8000/api/presentation-history', data);
       setCurrentPresentationId(id);
       setSaveStatus('saved');
+      triggerCheck();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (e) {
       console.error('Failed to save presentation:', e);

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import CancelCircleIconData from '@hugeicons/core-free-icons/CancelCircleIcon';
 import Award01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
@@ -106,6 +107,7 @@ function letterGradeColor(grade: string): string {
 
 const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
   const { settings } = useSettings();
+  const triggerCheck = useAchievementTrigger();
   const accentColor = settings.tabColors['quiz-generator'] ?? '#3b82f6';
 
   // The working quiz — starts from prop, can be set via teacher file upload
@@ -211,6 +213,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
         answers: answerMap,
       });
       setSaveStatus('saved');
+      triggerCheck();
     } catch {
       setSaveStatus('error');
     }

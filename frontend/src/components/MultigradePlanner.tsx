@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
 import UserGroupIcon from '@hugeicons/core-free-icons/UserGroupIcon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
@@ -280,6 +281,7 @@ function parseGradeLevels(gradeRange: string): string[] {
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
   useCurriculumIndex();
+  const triggerCheck = useAchievementTrigger();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `multigrade_state_${tabId}`;
   const ENDPOINT = '/ws/multigrade';
@@ -625,6 +627,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
       await axios.post('http://localhost:8000/api/multigrade-history', planData);
       await loadMultigradeHistories();
       setSaveStatus('saved');
+      triggerCheck();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save multigrade plan:', error);

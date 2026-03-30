@@ -41,7 +41,7 @@ from config import (
 )
 from pathlib import Path
 from datetime import datetime
-from routes import milestones
+from routes import milestones, achievements
 import student_service
 from llama_inference import LlamaInference
 from process_pool import submit_task, shutdown_executor
@@ -255,6 +255,14 @@ async def lifespan(app):
     except Exception as e:
         logger.error(f"Failed to initialize student database: {e}")
 
+    # Initialize Achievement DB
+    try:
+        import achievement_service
+        achievement_service.init_db()
+        logger.info("Achievement database initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize achievement database: {e}")
+
     # Initialize Image Service
     try:
         from image_service import get_image_service
@@ -293,6 +301,9 @@ app = FastAPI(lifespan=lifespan)
 
 # Include milestone routes
 app.include_router(milestones.router)
+
+# Include achievement routes
+app.include_router(achievements.router)
 
 # Include scene-based image generation routes
 from scene_api_endpoints import router as scene_router

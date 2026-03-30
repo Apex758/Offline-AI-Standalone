@@ -75,19 +75,19 @@ export function useTaskNotifications(tasks: Task[], reminders: TestReminder[] = 
     if (overdueBatch.length === 1) {
       notify(`Overdue: "${overdueBatch[0]}"`, 'error');
     } else if (overdueBatch.length > 1) {
-      notify(`${overdueBatch.length} items are overdue and need attention`, 'error');
+      notify(`${overdueBatch.length} tasks and reminders are overdue`, 'error');
     }
 
     if (todayBatch.length === 1) {
       notify(`Due today: "${todayBatch[0]}"`, 'success');
     } else if (todayBatch.length > 1) {
-      notify(`${todayBatch.length} items are due today`, 'success');
+      notify(`${todayBatch.length} tasks and reminders are due today`, 'success');
     }
 
     if (tomorrowBatch.length === 1) {
       notify(`Upcoming tomorrow: "${tomorrowBatch[0]}"`, 'success');
     } else if (tomorrowBatch.length > 1) {
-      notify(`${tomorrowBatch.length} items are due tomorrow`, 'success');
+      notify(`${tomorrowBatch.length} tasks and reminders are due tomorrow`, 'success');
     }
   };
 

@@ -41,7 +41,7 @@ export interface SplitViewState {
 export interface Tab {
   id: string;
   title: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements';
   active: boolean;
   data?: any;
   lastActiveTime?: number;
@@ -51,7 +51,7 @@ export interface Tool {
   id: string;
   name: string;
   icon: string;
-  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder';
+  type: 'chat' | 'lesson-planner' | 'rubric-generator' | 'curriculum' | 'quiz-generator' | 'multigrade-planner' | 'kindergarten-planner' | 'cross-curricular-planner' | 'analytics' | 'resource-manager' | 'settings' | 'curriculum-tracker' | 'worksheet-generator' | 'image-studio' | 'class-management' | 'support' | 'brain-dump' | 'performance-metrics' | 'presentation-builder' | 'achievements';
   description: string;
   group?: string;
 }

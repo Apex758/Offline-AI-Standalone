@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import MagicWand01IconData from '@hugeicons/core-free-icons/MagicWand01Icon';
@@ -205,6 +206,7 @@ const allGradesWS = ['K', '1', '2', '3', '4', '5', '6'];
 const ENDPOINT = '/ws/worksheet';
 
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
+  const triggerCheck = useAchievementTrigger();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const { curriculumIndex } = useCurriculumIndex();
@@ -1066,6 +1068,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       await axios.post('http://localhost:8000/api/worksheet-history', worksheetData);
       setCurrentWorksheetId(worksheetData.id);
       setSaveStatus('saved');
+      triggerCheck();
       setShowScheduleModal(true);
       loadWorksheetHistory();
       setTimeout(() => setSaveStatus('idle'), 2000);

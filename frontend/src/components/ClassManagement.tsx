@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react';
 import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import PlusSignIconData from '@hugeicons/core-free-icons/PlusSignIcon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import PencilEdit01IconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
@@ -176,6 +177,7 @@ interface ClassManagementProps {
 
 const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onDataChange }) => {
   const { settings } = useSettings();
+  const triggerCheck = useAchievementTrigger();
   const accentColor = settings.tabColors['class-management'] ?? '#f97316';
 
   const [rightView, setRightView] = useState<RightView>({ type: 'empty' });
@@ -272,6 +274,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       });
       setAttendanceDirty(false);
       setAttendanceSaved(true);
+      triggerCheck();
       setTimeout(() => setAttendanceSaved(false), 2000);
     } catch {
       setError('Failed to save attendance.');
@@ -438,6 +441,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
       } else {
         await axios.post(`${API_BASE}/api/students`, form);
         setRightView({ type: 'empty' });
+        triggerCheck();
       }
       await fetchStudents();
     } catch {

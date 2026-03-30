@@ -59,6 +59,7 @@ export const DEFAULT_SIDEBAR_ORDER: SidebarItemConfig[] = [
   { id: 'class-management', enabled: true },
   { id: 'lesson-planners', enabled: true },
   { id: 'visual-studio', enabled: false },
+  { id: 'achievements', enabled: true },
   { id: 'performance-metrics', enabled: false },
 ];
 
@@ -130,7 +131,8 @@ export const DEFAULT_SETTINGS: Settings = {
     'settings': '#6b7280',
     'brain-dump': '#a855f7',
     'performance-metrics': '#10b981',
-    'presentation-builder': '#f97316'
+    'presentation-builder': '#f97316',
+    'achievements': '#f59e0b'
   },
   aiModel: 'anthropic/claude-sonnet-4.5',
   oakKey: '',

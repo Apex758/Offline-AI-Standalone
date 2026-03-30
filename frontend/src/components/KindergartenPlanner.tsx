@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
 import GraduationScrollIcon from '@hugeicons/core-free-icons/GraduationScrollIcon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
 import SaveIcon from '@hugeicons/core-free-icons/SaveIcon';
 import Download01Icon from '@hugeicons/core-free-icons/Download01Icon';
@@ -401,6 +402,7 @@ const kindergartenPlanToDisplayText = (plan: ParsedKindergartenPlan): string => 
 
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   useCurriculumIndex();
+  const triggerCheck = useAchievementTrigger();
   // ✅ Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;
   
@@ -716,6 +718,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       await axios.post('http://localhost:8000/api/kindergarten-history', planData);
       await loadKindergartenHistories();
       setSaveStatus('saved');
+      triggerCheck();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save kindergarten plan:', error);

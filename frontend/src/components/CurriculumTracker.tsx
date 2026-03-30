@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import CircleIconData from '@hugeicons/core-free-icons/CircleIcon';
 import CheckmarkCircle01IconData from '@hugeicons/core-free-icons/CheckmarkCircle01Icon';
 import PlayCircleIconData from '@hugeicons/core-free-icons/PlayCircleIcon';
@@ -104,6 +105,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
 }) => {
   const { loading: curriculumLoading } = useCurriculumIndex();
   if (!curriculumLoading) ensureLookups();
+  const triggerCheck = useAchievementTrigger();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const accentColor = settings.tabColors['curriculum-tracker'] ?? '#22c55e';
   const [showTutorial, setShowTutorial] = useState(false);
@@ -462,6 +464,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       // Optimistic local update
       updateMilestoneLocally(milestoneId, update as Partial<Milestone>);
       await milestoneApi.updateMilestone(milestoneId, update);
+      triggerCheck();
       if (selectedMilestone?.id === milestoneId) {
         setSelectedMilestone(null);
       }

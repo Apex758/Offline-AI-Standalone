@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
 import Download01IconData from '@hugeicons/core-free-icons/Download01Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
 import ViewOffIconData from '@hugeicons/core-free-icons/ViewOffIcon';
 import UndoIconData from '@hugeicons/core-free-icons/UndoIcon';
@@ -104,6 +105,7 @@ interface StyleProfile {
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
   const hasRestoredRef = useRef(false);
+  const triggerCheck = useAchievementTrigger();
   const { notify } = useNotification();
 
   const IMAGE_STORAGE_KEY = `image-studio-${tabId}`;
@@ -940,6 +942,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(imageRecord),
       });
+      triggerCheck();
       alert('Comic page saved to Resource Manager!');
     } catch (error) {
       console.error('Error saving comic:', error);
@@ -1003,6 +1006,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       });
 
       if (response.ok) {
+        triggerCheck();
         alert('Image saved to Resource Manager!');
       } else {
         throw new Error('Failed to save image');
@@ -1283,6 +1287,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       });
 
       if (response.ok) {
+        triggerCheck();
         alert('Image saved to Resource Manager!');
       } else {
         throw new Error('Failed to save image');

@@ -6,6 +6,7 @@ import BookOpen01IconData from '@hugeicons/core-free-icons/BookOpen01Icon';
 import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
+import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -67,6 +68,7 @@ import ChartCarousel from './charts/ChartCarousel';
 import CurriculumProgressWidget from './widgets/CurriculumProgressWidget';
 import MostUsedTools from './widgets/MostUsedTools';
 import RecentActivityTimeline from './widgets/RecentActivityTimeline';
+import { useAchievementContext } from '../contexts/AchievementContext';
 
 interface AnalyticsDashboardProps {
   tabId: string;
@@ -85,6 +87,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   onCreateTab,
   tabColors = {}
 }) => {
+  // Achievement data
+  const { earned, totalAvailable } = useAchievementContext();
   // State management
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
@@ -597,12 +601,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               className="w-px h-10"
               style={{ backgroundColor: 'var(--dash-border)' }}
             />
-            <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: 'var(--dash-primary)' }}>
-                {quickStats.activeDays}
+            <div
+              className="text-center cursor-pointer group"
+              onClick={() => onCreateTab?.('achievements')}
+              title="View Achievements"
+            >
+              <div className="text-2xl font-bold flex items-center justify-center gap-1.5 group-hover:opacity-80 transition-opacity" style={{ color: '#f59e0b' }}>
+                <HugeiconsIcon icon={Trophy01IconData} size={18} style={{ color: '#f59e0b' }} />
+                {earned.length}/{totalAvailable}
               </div>
-              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
-                Active Days
+              <div className="text-xs group-hover:underline" style={{ color: 'var(--dash-text-sub)' }}>
+                Achievements
               </div>
             </div>
             <div
@@ -663,40 +672,68 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               onExpandClick={() => setShowCalendarModal(true)}
             />
 
-            {/* Export Calendar + Upcoming Tests */}
-            {(testReminders.length > 0 || tasks.length > 0) && (
-              <div className="bg-theme-surface rounded-xl border border-theme p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-theme-heading">Upcoming Tests</h3>
-                  <button
-                    onClick={handleExportCalendar}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 font-medium transition"
-                  >
-                    Export .ics
-                  </button>
-                </div>
-                {testReminders.filter(r => r.test_date >= format(new Date(), 'yyyy-MM-dd')).length === 0 ? (
-                  <p className="text-xs text-theme-hint">No upcoming tests scheduled.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {testReminders
-                      .filter(r => r.test_date >= format(new Date(), 'yyyy-MM-dd'))
-                      .slice(0, 5)
-                      .map(r => (
-                        <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-theme-secondary text-xs">
-                          <div>
-                            <p className="font-medium text-theme-label">{r.title}</p>
-                            <p className="text-theme-hint">{r.subject} - Grade {r.grade_level}</p>
+            {/* Upcoming Quizzes */}
+            {(() => {
+              const today = format(new Date(), 'yyyy-MM-dd');
+              const upcomingQuizzes = testReminders.filter(r => r.type === 'quiz' && r.test_date >= today);
+              const upcomingWorksheets = testReminders.filter(r => r.type === 'worksheet' && r.test_date >= today);
+              const hasAny = testReminders.length > 0 || tasks.length > 0;
+
+              return hasAny ? (
+                <>
+                  {upcomingQuizzes.length > 0 && (
+                    <div className="bg-theme-surface rounded-xl border border-theme p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold text-theme-heading">Upcoming Quizzes</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {upcomingQuizzes.slice(0, 5).map(r => (
+                          <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-theme-secondary text-xs">
+                            <div>
+                              <p className="font-medium text-theme-label">{r.title}</p>
+                              <p className="text-theme-hint">{r.subject} - Grade {r.grade_level}</p>
+                            </div>
+                            <span className="text-theme-muted font-mono">
+                              {new Date(r.test_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </span>
                           </div>
-                          <span className="text-theme-muted font-mono">
-                            {new Date(r.test_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                          </span>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {upcomingWorksheets.length > 0 && (
+                    <div className="bg-theme-surface rounded-xl border border-theme p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold text-theme-heading">Upcoming Worksheets</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {upcomingWorksheets.slice(0, 5).map(r => (
+                          <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-theme-secondary text-xs">
+                            <div>
+                              <p className="font-medium text-theme-label">{r.title}</p>
+                              <p className="text-theme-hint">{r.subject} - Grade {r.grade_level}</p>
+                            </div>
+                            <span className="text-theme-muted font-mono">
+                              {new Date(r.test_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleExportCalendar}
+                      className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 font-medium transition"
+                    >
+                      Export Calendar (.ics)
+                    </button>
                   </div>
-                )}
-              </div>
-            )}
+                </>
+              ) : null;
+            })()}
 
             {/* Task List */}
             <TaskListWidget

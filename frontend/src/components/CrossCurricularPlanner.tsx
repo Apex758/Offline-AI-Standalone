@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import ArrowRight01Icon from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+import { useAchievementTrigger } from '../contexts/AchievementContext';
 import Loading02Icon from '@hugeicons/core-free-icons/Loading02Icon';
 import SchoolIcon from '@hugeicons/core-free-icons/SchoolIcon';
 import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
@@ -508,6 +509,7 @@ const crossCurricularPlanToDisplayText = (plan: ParsedCrossCurricularPlan): stri
 
 const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, savedData, onDataChange }) => {
   useCurriculumIndex();
+  const triggerCheck = useAchievementTrigger();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `cross_curricular_state_${tabId}`;
   const ENDPOINT = '/ws/cross-curricular';
@@ -829,6 +831,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       await axios.post('http://localhost:8000/api/cross-curricular-history', planData);
       await loadCrossCurricularHistories();
       setSaveStatus('saved');
+      triggerCheck();
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Failed to save cross-curricular plan:', error);
