@@ -574,7 +574,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
       if (response.ok) {
         setSelectedDiffusionModel(modelName);
         resetStepsCache();
-        setDiffusionModelChangeMessage(`Model changed to ${modelName}. Please restart the app for changes to take effect.`);
+        setDiffusionModelChangeMessage(modelName ? `Model changed to ${modelName}. Please restart the app for changes to take effect.` : 'Diffusion model disabled. Image generation features will be locked.');
         await refreshCapabilities();
       } else {
         const error = await response.json();
@@ -1868,11 +1868,14 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                           ) : availableDiffusionModels.length === 0 ? (
                             <option>No diffusion models found</option>
                           ) : (
-                            availableDiffusionModels.map((model) => (
-                              <option key={model.name} value={model.name}>
-                                {model.name} ({model.size_mb.toFixed(0)} MB)
-                              </option>
-                            ))
+                            <>
+                              <option value="">None (disabled)</option>
+                              {availableDiffusionModels.map((model) => (
+                                <option key={model.name} value={model.name}>
+                                  {model.name} ({model.size_mb.toFixed(0)} MB)
+                                </option>
+                              ))}
+                            </>
                           )}
                         </select>
                         <Button

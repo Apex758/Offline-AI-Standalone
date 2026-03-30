@@ -64,7 +64,7 @@ def set_selected_model(model_name):
 # ============================================================================
 
 IMAGE_MODELS_DIR = MODELS_DIR / "image_generation"
-DEFAULT_DIFFUSION_MODEL = "sdxl-turbo-openvino"
+DEFAULT_DIFFUSION_MODEL = ""  # Empty = disabled by default (Tier 1 start)
 DIFFUSION_CONFIG_FILE = MODELS_DIR / ".diffusion-model-config.json"
 
 def get_selected_diffusion_model():
@@ -163,7 +163,8 @@ def get_image_model_info(model_key: str = None) -> dict:
     """Get registry info for a model key, falling back to selected model."""
     if model_key is None:
         model_key = get_selected_diffusion_model()
-    return IMAGE_MODEL_REGISTRY.get(model_key, IMAGE_MODEL_REGISTRY[DEFAULT_DIFFUSION_MODEL])
+    fallback = IMAGE_MODEL_REGISTRY.get("sdxl-turbo-openvino", {})
+    return IMAGE_MODEL_REGISTRY.get(model_key, fallback)
 
 def get_image_model_path(model_key: str = None) -> Path:
     """Resolve the local folder path for the given model key."""

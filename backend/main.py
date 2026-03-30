@@ -5081,13 +5081,12 @@ async def select_diffusion_model(request: Request):
     """Set the active diffusion model for image generation"""
     try:
         data = await request.json()
-        model_name = data.get('modelName')
+        model_name = data.get('modelName', '')
 
+        # Allow empty string to disable diffusion
         if not model_name:
-            return JSONResponse(
-                status_code=400,
-                content={"error": "Model name is required"}
-            )
+            set_selected_diffusion_model('')
+            return JSONResponse(content={"status": "ok", "message": "Diffusion model disabled"})
 
         model_path = IMAGE_MODELS_DIR / model_name
         if not model_path.exists():
