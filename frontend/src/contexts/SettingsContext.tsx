@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { GradeSubjectMapping } from '../data/teacherConstants';
+import { GradeSubjectMapping, SUBJECTS } from '../data/teacherConstants';
 import { FeatureModuleId, NudgeState } from '../types/feature-disclosure';
 import { getEnabledSidebarItems } from '../lib/featureModules';
 import { NUDGE_COOLDOWN_MS } from '../lib/nudgeRules';
@@ -251,9 +251,16 @@ const migrateSidebarOrder = (parsed: any): SidebarItemConfig[] => {
 // Migrate old flat gradeLevels+subjects and teacherSubjects/teacherGradeLevels into gradeSubjects mapping
 const migrateGradeSubjects = (parsed: any): GradeSubjectMapping => {
   const profile = parsed.profile || {};
-  // If gradeSubjects already exists and has data, use it
+  // If gradeSubjects already exists and has data, sanitize against current SUBJECTS list
   if (profile.gradeSubjects && Object.keys(profile.gradeSubjects).length > 0) {
-    return profile.gradeSubjects;
+    const validSubjects = new Set(SUBJECTS as readonly string[]);
+    const sanitized: GradeSubjectMapping = {};
+    for (const [grade, subjects] of Object.entries(profile.gradeSubjects)) {
+      if (Array.isArray(subjects)) {
+        sanitized[grade] = subjects.filter(s => validSubjects.has(s));
+      }
+    }
+    return sanitized;
   }
 
   const mapping: GradeSubjectMapping = {};

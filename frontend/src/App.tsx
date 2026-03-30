@@ -7,6 +7,7 @@ import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { QueueProvider } from './contexts/QueueContext';
+import { CapabilitiesProvider } from './contexts/CapabilitiesContext';
 import { LicenseProvider } from './contexts/LicenseContext';
 import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
@@ -71,14 +72,16 @@ function App() {
     <LicenseProvider>
       <LicenseGate>
         <SettingsProvider>
-          <NotificationProvider>
-            <WebSocketProvider>
-              <QueueProvider>
-                <AppContent />
-                <ToastContainer />
-              </QueueProvider>
-            </WebSocketProvider>
-          </NotificationProvider>
+          <CapabilitiesProvider>
+            <NotificationProvider>
+              <WebSocketProvider>
+                <QueueProvider>
+                  <AppContent />
+                  <ToastContainer />
+                </QueueProvider>
+              </WebSocketProvider>
+            </NotificationProvider>
+          </CapabilitiesProvider>
         </SettingsProvider>
       </LicenseGate>
     </LicenseProvider>

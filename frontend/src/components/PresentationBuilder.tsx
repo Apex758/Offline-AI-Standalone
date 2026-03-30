@@ -26,6 +26,7 @@ import type { PresentationFormData, ParsedLessonInput } from '../utils/presentat
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import axios from 'axios';
 import { useCurriculumIndex } from '../data/curriculumLoader';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 // pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -1482,6 +1483,7 @@ function tryParsePartialSlides(raw: string): Slide[] {
 export default function PresentationBuilder({ tabId, savedData, onDataChange }: PresentationBuilderProps) {
   useCurriculumIndex();
   const triggerCheck = useAchievementTrigger();
+  const { hasDiffusion } = useCapabilities();
   // Input mode
   const [inputMode, setInputMode] = useState<InputMode>(savedData?.inputMode || 'scratch');
 
@@ -1529,7 +1531,11 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
 
   // Image generation state
   const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({});
-  const [imageMode, setImageMode] = useState<ImageMode>(savedData?.imageMode || 'none');
+  const [imageMode, setImageMode] = useState<ImageMode>(() => {
+    const saved = savedData?.imageMode || 'none';
+    // Don't restore 'ai' mode if diffusion is unavailable
+    return saved === 'ai' && !hasDiffusion ? 'none' : saved;
+  });
   const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
   const [maxImages, setMaxImages] = useState<number>(savedData?.maxImages ?? 0); // 0 = auto (AI decides)
@@ -2365,15 +2371,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 <div className="grid grid-cols-3 gap-2">
                   {([
                     { id: 'none' as ImageMode, label: 'No Images', desc: 'Text only' },
-                    { id: 'ai' as ImageMode, label: 'AI Generated', desc: 'Auto-create images' },
+                    { id: 'ai' as ImageMode, label: 'AI Generated', desc: hasDiffusion ? 'Auto-create images' : 'Tier 3 required' },
                     { id: 'my-images' as ImageMode, label: 'My Images', desc: 'Upload your own' },
                   ] as const).map(opt => {
+                    const disabled = opt.id === 'ai' && !hasDiffusion;
                     const active = imageMode === opt.id;
                     return (
                       <button
                         key={opt.id}
-                        onClick={() => setImageMode(opt.id)}
-                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center"
+                        onClick={() => !disabled && setImageMode(opt.id)}
+                        disabled={disabled}
+                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center disabled:opacity-40 disabled:cursor-not-allowed"
                         style={{
                           borderColor: active ? tabColor : 'var(--border-color, #333)',
                           background: active ? `${tabColor}14` : 'transparent',
@@ -2710,7 +2718,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                 >
                   <Icon icon={Download01Icon} className="w-3.5 inline mr-1.5" /> PPTX
                 </button>
-                {imageMode === 'ai' && (
+                {imageMode === 'ai' && hasDiffusion && (
                   <button
                     onClick={generateAllImages}
                     disabled={batchImageProgress.generating}

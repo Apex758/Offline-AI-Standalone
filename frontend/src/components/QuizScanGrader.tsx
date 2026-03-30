@@ -12,7 +12,9 @@ import ArrowUp01IconData from '@hugeicons/core-free-icons/ArrowUp01Icon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import Loading03IconData from '@hugeicons/core-free-icons/Loading03Icon';
+import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 import axios from 'axios';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -69,6 +71,7 @@ function letterColor(g: string) {
 type Phase = 'quiz-id' | 'upload-scans' | 'grading' | 'results';
 
 const QuizScanGrader: React.FC<QuizScanGraderProps> = ({ quizId: initialQuizId, onClose }) => {
+  const { hasOcr } = useCapabilities();
   const [phase, setPhase] = useState<Phase>(initialQuizId ? 'upload-scans' : 'quiz-id');
   const [quizId, setQuizId] = useState(initialQuizId || '');
   const [quizInfo, setQuizInfo] = useState<{ quiz_title: string; subject: string } | null>(null);
@@ -203,6 +206,20 @@ const QuizScanGrader: React.FC<QuizScanGraderProps> = ({ quizId: initialQuizId, 
   const classAverage = results.length > 0
     ? Math.round(results.reduce((sum, r) => sum + (r.percentage || 0), 0) / results.length)
     : 0;
+
+  if (!hasOcr) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <Icon icon={SquareLock01IconData} className="w-7 h-7" style={{ color: '#3b82f6' }} />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-800">OCR Scan Grading Unavailable</h3>
+        <p className="text-sm text-gray-500 max-w-sm">
+          Scan grading requires OCR (Tier 2). Enable OCR in Settings to grade student papers by scanning.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-theme-bg">

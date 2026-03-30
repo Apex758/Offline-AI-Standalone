@@ -37,7 +37,8 @@ from config import (
     LLAMA_CLI_PATH, LLAMA_PARAMS, CORS_ORIGINS, MODELS_DIR,
     MODEL_PATH, MODEL_VERBOSE, MODEL_N_CTX, MODEL_MAX_TOKENS, MODEL_TEMPERATURE,
     IMAGE_MODELS_DIR, get_selected_diffusion_model, set_selected_diffusion_model,
-    get_diffusion_model_path, scan_diffusion_models, get_image_model_info
+    get_diffusion_model_path, scan_diffusion_models, get_image_model_info,
+    get_tier_config, set_tier_config, get_model_tier, compute_effective_tier,
 )
 from pathlib import Path
 from datetime import datetime
@@ -584,8 +585,8 @@ async def generate_title(request: TitleGenerateRequest):
     try:
         prompt = build_title_prompt(request.user_message, request.assistant_message)
         
-        from inference_factory import get_inference_instance
-        inference = get_inference_instance()
+        from inference_factory import get_inference_instance, resolve_inference_for_task
+        inference = resolve_inference_for_task("title-generation")
         result = await inference.generate(
             tool_name="title_generation",
             input_data=request.user_message,
@@ -634,8 +635,8 @@ async def autocomplete(request: AutocompleteRequest):
 
         prompt = f"Continue this text naturally with a few more words. Only output the continuation, nothing else:\n\n{text}"
 
-        from inference_factory import get_inference_instance
-        inference = get_inference_instance()
+        from inference_factory import get_inference_instance, resolve_inference_for_task
+        inference = resolve_inference_for_task("autocomplete")
         result = await inference.generate(
             tool_name="autocomplete",
             input_data=text,
@@ -771,8 +772,8 @@ async def websocket_chat(websocket: WebSocket):
             if image_files:
                 logger.info(f"Attached {len(image_files)} image(s) to chat message — using vision model")
 
-            from inference_factory import get_inference_instance
-            inference = get_inference_instance()
+            from inference_factory import get_inference_instance, resolve_inference_for_task
+            inference = resolve_inference_for_task("chat")
 
             # Detect prompt format from the loaded model
             prompt_fmt = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
@@ -1278,8 +1279,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 
                 # ✅ FIX: Use inference factory instead of process pool
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("lesson-plan") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Stream tokens in real-time (works with both Gemma API and local models)
                 token_buffer = []
@@ -1422,8 +1423,8 @@ async def quiz_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("quiz") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Stream tokens as they are generated
                 token_buffer = []
@@ -1564,8 +1565,8 @@ async def rubric_websocket(websocket: WebSocket):
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 logger.info("Getting LlamaInference instance...")
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("rubric") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                 logger.info("Starting rubric generation...")
 
                 # Use streaming method for real-time generation
@@ -1686,8 +1687,8 @@ async def kindergarten_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("kindergarten") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Use streaming method for real-time generation
                 token_buffer = []
@@ -1804,8 +1805,8 @@ async def multigrade_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("multigrade") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Use streaming method for real-time generation
                 token_buffer = []
@@ -1926,8 +1927,8 @@ async def cross_curricular_websocket(websocket: WebSocket):
             try:
                 # Acquire generation slot (queue or parallel)
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("cross-curricular") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 # Use streaming method for real-time generation
                 token_buffer = []
@@ -2074,8 +2075,8 @@ async def worksheet_websocket(websocket: WebSocket):
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 logger.info(f"Generation slot acquired: {slot_mode}")
 
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("worksheet") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                 logger.info("Got inference instance, starting generation...")
 
                 # Use streaming method for real-time generation
@@ -2207,8 +2208,8 @@ async def presentation_websocket(websocket: WebSocket):
             try:
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
 
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("presentation") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 token_buffer = []
                 last_send = time.time()
@@ -2331,8 +2332,8 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
             slot_mode = None
             try:
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
-                from inference_factory import get_inference_instance
-                inference = get_inference_instance(use_singleton=(generation_mode == "queued"))
+                from inference_factory import get_inference_instance, resolve_inference_for_task
+                inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
 
                 token_buffer = []
                 last_send = time.time()
@@ -4870,6 +4871,84 @@ async def get_active_model():
             status_code=500,
             content={"error": str(e)}
         )
+
+
+# ============================================================================
+# TIER & CAPABILITIES ENDPOINTS
+# ============================================================================
+
+@app.get("/api/capabilities")
+async def get_capabilities():
+    """Get computed tier and capability flags based on current model selection."""
+    try:
+        return JSONResponse(content=compute_effective_tier())
+    except Exception as e:
+        logger.error(f"Error computing capabilities: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/api/tier-config")
+async def get_tier_config_endpoint():
+    """Get the raw tier configuration."""
+    try:
+        return JSONResponse(content=get_tier_config())
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.put("/api/tier-config")
+async def update_tier_config(request: Request):
+    """Update the full tier configuration."""
+    try:
+        body = await request.json()
+        if set_tier_config(body):
+            return JSONResponse(content={"status": "ok", "config": body})
+        return JSONResponse(status_code=500, content={"error": "Failed to save tier config"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/tier-config/assign")
+async def assign_model_tier(request: Request):
+    """Quick assign a model to a tier. Body: { model: str, tier: 1|2 }"""
+    try:
+        body = await request.json()
+        model = body.get("model")
+        tier = body.get("tier", 1)
+        if not model:
+            return JSONResponse(status_code=400, content={"error": "model is required"})
+
+        config = get_tier_config()
+        # Remove from both lists first
+        for key in ("tier1_models", "tier2_models"):
+            config[key] = [m for m in config.get(key, []) if m.lower() != model.lower()]
+        # Add to target list
+        target_key = "tier2_models" if tier == 2 else "tier1_models"
+        config[target_key].append(model)
+
+        if set_tier_config(config):
+            return JSONResponse(content={"status": "ok", "model": model, "tier": tier})
+        return JSONResponse(status_code=500, content={"error": "Failed to save"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.put("/api/tier-config/dual-model")
+async def update_dual_model_config(request: Request):
+    """Update dual-model routing settings."""
+    try:
+        body = await request.json()
+        config = get_tier_config()
+        # Merge incoming dual_model settings
+        existing_dual = config.get("dual_model", {})
+        existing_dual.update(body)
+        config["dual_model"] = existing_dual
+
+        if set_tier_config(config):
+            return JSONResponse(content={"status": "ok", "dual_model": existing_dual})
+        return JSONResponse(status_code=500, content={"error": "Failed to save"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/model/preload")

@@ -386,6 +386,143 @@ def set_ocr_enabled(enabled: bool):
 
 print(f"✓ [CONFIG] OCR grading: {'enabled' if get_ocr_enabled() else 'disabled'}", flush=True)
 
+# ============================================================================
+# TIER CONFIGURATION (auto-detected model capability tiers)
+# ============================================================================
+
+TIER_CONFIG_FILE = MODELS_DIR / ".tier-config.json"
+
+DEFAULT_TIER_CONFIG = {
+    "tier1_models": ["PEARL_AI.gguf"],
+    "tier2_models": [],
+    "ocr_models": ["tencent/HunyuanOCR"],
+    "tier3_diffusion_models": ["sdxl-turbo-openvino", "flux-schnell"],
+    "dual_model": {
+        "enabled": False,
+        "fast_model": None,
+        "task_routing": {
+            "chat": "primary",
+            "lesson-plan": "primary",
+            "quiz": "fast",
+            "rubric": "fast",
+            "kindergarten": "primary",
+            "multigrade": "primary",
+            "cross-curricular": "primary",
+            "worksheet": "fast",
+            "presentation": "primary",
+            "brain-dump": "fast",
+            "title-generation": "fast",
+            "autocomplete": "fast"
+        }
+    }
+}
+
+
+def get_tier_config() -> dict:
+    """Read tier config, creating with defaults if missing."""
+    if TIER_CONFIG_FILE.exists():
+        try:
+            with open(TIER_CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                # Merge with defaults for any missing keys
+                for key, value in DEFAULT_TIER_CONFIG.items():
+                    if key not in config:
+                        config[key] = value
+                # Merge dual_model sub-keys
+                if "dual_model" in config and isinstance(config["dual_model"], dict):
+                    for dk, dv in DEFAULT_TIER_CONFIG["dual_model"].items():
+                        if dk not in config["dual_model"]:
+                            config["dual_model"][dk] = dv
+                    # Merge task_routing defaults
+                    if "task_routing" in config["dual_model"]:
+                        for tk, tv in DEFAULT_TIER_CONFIG["dual_model"]["task_routing"].items():
+                            if tk not in config["dual_model"]["task_routing"]:
+                                config["dual_model"]["task_routing"][tk] = tv
+                return config
+        except Exception:
+            pass
+    # Create default config
+    TIER_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    TIER_CONFIG_FILE.write_text(json.dumps(DEFAULT_TIER_CONFIG, indent=2))
+    return dict(DEFAULT_TIER_CONFIG)
+
+
+def set_tier_config(config: dict):
+    """Save updated tier config."""
+    try:
+        TIER_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        TIER_CONFIG_FILE.write_text(json.dumps(config, indent=2))
+        return True
+    except Exception as e:
+        print(f"Error saving tier config: {e}", flush=True)
+        return False
+
+
+def get_model_tier(model_name: str, tier_config: dict = None) -> int:
+    """Determine which tier a model belongs to. Defaults to 1."""
+    if tier_config is None:
+        tier_config = get_tier_config()
+    if not model_name:
+        return 1
+    name_lower = model_name.lower()
+    for m in tier_config.get("tier2_models", []):
+        if m.lower() in name_lower or name_lower in m.lower():
+            return 2
+    return 1
+
+
+def compute_effective_tier(tier_config: dict = None) -> dict:
+    """Compute the effective tier and capability flags based on current state."""
+    if tier_config is None:
+        tier_config = get_tier_config()
+
+    selected_llm = get_selected_model()
+    llm_tier = get_model_tier(selected_llm, tier_config)
+
+    # Vision check (from model's vision projector availability)
+    has_vision = resolve_vision_projector_path(selected_llm) is not None
+
+    # OCR check — only meaningful if vision is available or LLM is tier 2
+    has_ocr = get_ocr_enabled() and (has_vision or llm_tier >= 2)
+
+    # Diffusion check
+    diffusion_model = get_selected_diffusion_model()
+    diffusion_models_list = tier_config.get("tier3_diffusion_models", [])
+    available_diffusion = scan_diffusion_models()
+    has_diffusion = (
+        diffusion_model in diffusion_models_list
+        and any(m["name"] == diffusion_model for m in available_diffusion)
+    )
+
+    # Compute effective tier
+    # The LLM tier is the base. Vision/OCR can bump 1→2, but only if the
+    # LLM is actually multimodal (has a vision projector) OR OCR is enabled
+    # alongside a vision-capable model.  Diffusion can bump 2→3, but NOT
+    # 1→3 — a text-only LLM cannot leverage image generation features.
+    tier = llm_tier
+    if has_vision:
+        tier = max(tier, 2)
+    if has_diffusion and tier >= 2:
+        tier = 3
+
+    # Dual model info
+    dual_model = tier_config.get("dual_model", DEFAULT_TIER_CONFIG["dual_model"])
+    # Auto-disable dual model if tier < 2
+    if tier < 2:
+        dual_model = {**dual_model, "enabled": False}
+
+    return {
+        "tier": tier,
+        "has_llm": bool(selected_llm),
+        "has_vision": has_vision,
+        "has_ocr": has_ocr,
+        "has_diffusion": has_diffusion,
+        "selected_llm": selected_llm,
+        "selected_diffusion": diffusion_model,
+        "dual_model": dual_model,
+    }
+
+
 print(f"✓ [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
 if INFERENCE_BACKEND == "gemma_api":
     if GEMMA_API_KEY:

@@ -47,6 +47,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarItemConfig, DEFAULT_SIDEBAR_ORDER } from '../contexts/SettingsContext';
+import { useCapabilities, DualModelConfig } from '../contexts/CapabilitiesContext';
 import { FEATURE_MODULES } from '../lib/featureModules';
 import { FeatureModuleId } from '../types/feature-disclosure';
 
@@ -225,6 +226,7 @@ interface ModelInfo {
 
 const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
+  const { tier, hasVision, hasOcr, hasDiffusion, dualModel, refreshCapabilities } = useCapabilities();
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
   const handleToggleFeatureModule = (moduleId: FeatureModuleId) => toggleModule(moduleId);
   // dnd-kit sensors for sidebar reordering (must be at top level)
@@ -257,6 +259,12 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
   const [selectedDiffusionModel, setSelectedDiffusionModel] = useState('');
   const [isSelectingDiffusionModel, setIsSelectingDiffusionModel] = useState(false);
   const [diffusionModelChangeMessage, setDiffusionModelChangeMessage] = useState('');
+
+  // Tier config state
+  const [tierConfig, setTierConfig] = useState<any>(null);
+  const [dualModelEnabled, setDualModelEnabled] = useState(false);
+  const [fastModel, setFastModel] = useState<string | null>(null);
+  const [taskRouting, setTaskRouting] = useState<Record<string, 'fast' | 'primary'>>({});
 
   // OCR (HunyuanOCR) state
   const [ocrEnabled, setOcrEnabled] = useState(false);
@@ -387,6 +395,19 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     fetchOcrStatus();
   }, []);
 
+  useEffect(() => {
+    fetch('http://localhost:8000/api/tier-config')
+      .then(r => r.json())
+      .then(config => {
+        setTierConfig(config);
+        const dm = config.dual_model || {};
+        setDualModelEnabled(dm.enabled || false);
+        setFastModel(dm.fast_model || null);
+        setTaskRouting(dm.task_routing || {});
+      })
+      .catch(() => {});
+  }, []);
+
   // Auto-show tutorial on first use
   useEffect(() => {
     if (
@@ -445,6 +466,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
         const data = await response.json();
         setSelectedModel(modelName);
         setModelChangeMessage(`✅ Model changed to ${modelName}. Please restart the app for changes to take effect.`);
+        await refreshCapabilities();
       } else {
         const error = await response.json();
         setModelChangeMessage(`❌ Error: ${error.error || 'Failed to change model'}`);
@@ -455,6 +477,55 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     } finally {
       setIsSelectingModel(false);
     }
+  };
+
+  const handleTierAssign = async (model: string, newTier: number) => {
+    try {
+      await fetch('http://localhost:8000/api/tier-config/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, tier: newTier }),
+      });
+      // Refresh tier config and capabilities
+      const res = await fetch('http://localhost:8000/api/tier-config');
+      const config = await res.json();
+      setTierConfig(config);
+      await refreshCapabilities();
+    } catch (e) {
+      console.error('Failed to assign tier:', e);
+    }
+  };
+
+  const handleDualModelUpdate = async (updates: Partial<DualModelConfig>) => {
+    try {
+      const body: any = {};
+      if ('enabled' in updates) {
+        body.enabled = updates.enabled;
+        setDualModelEnabled(updates.enabled!);
+      }
+      if ('fast_model' in updates) {
+        body.fast_model = updates.fast_model;
+        setFastModel(updates.fast_model!);
+      }
+      if ('task_routing' in updates) {
+        body.task_routing = updates.task_routing;
+        setTaskRouting(updates.task_routing!);
+      }
+      await fetch('http://localhost:8000/api/tier-config/dual-model', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      await refreshCapabilities();
+    } catch (e) {
+      console.error('Failed to update dual model config:', e);
+    }
+  };
+
+  const handleTaskRoutingChange = (task: string, target: 'fast' | 'primary') => {
+    const updated = { ...taskRouting, [task]: target };
+    setTaskRouting(updated);
+    handleDualModelUpdate({ task_routing: updated });
   };
 
   // Diffusion model functions
@@ -504,6 +575,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
         setSelectedDiffusionModel(modelName);
         resetStepsCache();
         setDiffusionModelChangeMessage(`Model changed to ${modelName}. Please restart the app for changes to take effect.`);
+        await refreshCapabilities();
       } else {
         const error = await response.json();
         setDiffusionModelChangeMessage(`Error: ${error.error || 'Failed to change diffusion model'}`);
@@ -540,6 +612,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
       });
       setOcrMessage(enabled ? 'OCR grading enabled. Model will load on first scan.' : 'OCR grading disabled. Will use vision model instead.');
       setTimeout(() => setOcrMessage(''), 4000);
+      await refreshCapabilities();
     } catch {
       setOcrMessage('Failed to update OCR setting');
     }
@@ -1916,6 +1989,181 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Current Tier Display */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Layers className="w-4.5 h-4.5 text-theme-secondary" />
+                      Capability Tier
+                    </CardTitle>
+                    <CardDescription>Auto-detected based on your active models</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="px-3 py-1.5 rounded-lg text-sm font-bold" style={{
+                          background: tier === 3 ? 'rgba(168,85,247,0.15)' : tier === 2 ? 'rgba(59,130,246,0.15)' : 'rgba(100,116,139,0.15)',
+                          color: tier === 3 ? '#c084fc' : tier === 2 ? '#60a5fa' : 'var(--text-secondary)',
+                          border: `1px solid ${tier === 3 ? 'rgba(168,85,247,0.3)' : tier === 2 ? 'rgba(59,130,246,0.3)' : 'rgba(100,116,139,0.3)'}`,
+                        }}>
+                          Tier {tier}
+                        </div>
+                        <span className="text-sm text-theme-label">
+                          {tier === 3 ? 'Creative — Text + Vision + Image Generation' : tier === 2 ? 'Multimodal — Text + Vision/OCR' : 'Text — Text generation only'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className={`p-2 rounded-lg text-center ${hasVision ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                          Vision {hasVision ? 'Active' : 'Off'}
+                        </div>
+                        <div className={`p-2 rounded-lg text-center ${hasOcr ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                          OCR {hasOcr ? 'Active' : 'Off'}
+                        </div>
+                        <div className={`p-2 rounded-lg text-center ${hasDiffusion ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'}`}>
+                          Diffusion {hasDiffusion ? 'Active' : 'Off'}
+                        </div>
+                      </div>
+                      {tierConfig && availableModels.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs font-medium text-theme-label mb-2">Model Tier Assignments</p>
+                          <div className="space-y-1.5">
+                            {availableModels.map(m => {
+                              const currentTier = (tierConfig.tier2_models || []).some((t: string) => t.toLowerCase() === m.name.toLowerCase()) ? 2 : 1;
+                              return (
+                                <div key={m.name} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-subtle">
+                                  <span className="text-xs text-theme-label truncate flex-1">{m.name}</span>
+                                  <select
+                                    className="text-xs px-2 py-1 border border-theme-strong rounded bg-theme-surface text-theme-label"
+                                    value={currentTier}
+                                    onChange={(e) => handleTierAssign(m.name, parseInt(e.target.value))}
+                                  >
+                                    <option value={1}>Tier 1 — Text</option>
+                                    <option value={2}>Tier 2 — Multimodal</option>
+                                  </select>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {availableDiffusionModels.length > 0 && (
+                            <div className="mt-2 space-y-1.5">
+                              {availableDiffusionModels.map(m => (
+                                <div key={m.name} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-subtle">
+                                  <span className="text-xs text-theme-label truncate flex-1">{m.name}</span>
+                                  <span className="text-xs px-2 py-1 rounded bg-purple-50 text-purple-600 border border-purple-200">Tier 3 — Creative</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Dual-Model Routing (Tier 2+ only) */}
+                {tier >= 2 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Shuffle className="w-4.5 h-4.5 text-theme-secondary" />
+                        Dual-Model Routing
+                      </CardTitle>
+                      <CardDescription>
+                        Use a fast Tier 1 model for simple tasks and your primary model for advanced tasks
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                          <div>
+                            <p className="text-sm font-medium text-theme-label">Enable dual-model routing</p>
+                            <p className="text-xs text-theme-hint">
+                              Route quick tasks (quiz, rubric, autocomplete) to a smaller, faster model
+                            </p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={dualModelEnabled}
+                            onChange={(e) => handleDualModelUpdate({ enabled: e.target.checked })}
+                            className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
+                          />
+                        </label>
+
+                        {dualModelEnabled && (
+                          <>
+                            <div>
+                              <p className="text-xs font-medium text-theme-label mb-1.5">Fast Model (Tier 1)</p>
+                              <select
+                                className="w-full px-3 py-2 border border-theme-strong rounded-md bg-theme-surface text-theme-label text-sm"
+                                value={fastModel || ''}
+                                onChange={(e) => handleDualModelUpdate({ fast_model: e.target.value || null })}
+                              >
+                                <option value="">Select a fast model...</option>
+                                {availableModels
+                                  .filter(m => m.name.toLowerCase() !== selectedModel.toLowerCase())
+                                  .map(m => (
+                                    <option key={m.name} value={m.name}>
+                                      {m.name} ({m.size_mb.toFixed(0)} MB)
+                                    </option>
+                                  ))
+                                }
+                              </select>
+                            </div>
+
+                            {fastModel && (
+                              <div>
+                                <p className="text-xs font-medium text-theme-label mb-2">Task Routing</p>
+                                <div className="space-y-1.5">
+                                  {[
+                                    { key: 'chat', label: 'Chat' },
+                                    { key: 'lesson-plan', label: 'Lesson Plans' },
+                                    { key: 'quiz', label: 'Quiz Generation' },
+                                    { key: 'rubric', label: 'Rubric Generation' },
+                                    { key: 'kindergarten', label: 'Kindergarten Plans' },
+                                    { key: 'multigrade', label: 'Multigrade Plans' },
+                                    { key: 'cross-curricular', label: 'Cross-Curricular Plans' },
+                                    { key: 'worksheet', label: 'Worksheet Generation' },
+                                    { key: 'presentation', label: 'Slide Deck' },
+                                    { key: 'brain-dump', label: 'Brain Dump' },
+                                    { key: 'title-generation', label: 'Title Generation' },
+                                    { key: 'autocomplete', label: 'Autocomplete' },
+                                  ].map(task => (
+                                    <div key={task.key} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-subtle">
+                                      <span className="text-xs text-theme-label">{task.label}</span>
+                                      <div className="flex gap-1">
+                                        <button
+                                          className={`text-xs px-2 py-1 rounded transition-colors ${
+                                            (taskRouting[task.key] || 'primary') === 'fast'
+                                              ? 'bg-blue-500 text-white'
+                                              : 'bg-theme-surface text-theme-hint border border-theme-strong hover:bg-theme-subtle'
+                                          }`}
+                                          onClick={() => handleTaskRoutingChange(task.key, 'fast')}
+                                        >
+                                          Fast
+                                        </button>
+                                        <button
+                                          className={`text-xs px-2 py-1 rounded transition-colors ${
+                                            (taskRouting[task.key] || 'primary') === 'primary'
+                                              ? 'bg-purple-500 text-white'
+                                              : 'bg-theme-surface text-theme-hint border border-theme-strong hover:bg-theme-subtle'
+                                          }`}
+                                          onClick={() => handleTaskRoutingChange(task.key, 'primary')}
+                                        >
+                                          Primary
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 

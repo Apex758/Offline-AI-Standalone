@@ -56,6 +56,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
 const fileAPI = {
@@ -132,6 +133,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Files panel state
   const { settings } = useSettings();
+  const { hasVision } = useCapabilities();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [folderContents, setFolderContents] = useState<Record<string, FileEntry[]>>({});
@@ -839,6 +841,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
       const isImage = IMAGE_EXTENSIONS.includes(ext.toLowerCase());
 
+      if (isImage && !hasVision) {
+        // Vision not available — block image attachment
+        setAttachingFile(null);
+        return;
+      }
+
       if (isImage) {
         // For images: keep raw base64 for vision model
         setAttachedFiles(prev => [...prev, {
@@ -898,6 +906,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       try {
         const isImage = IMAGE_EXTENSIONS.includes(ext);
 
+        if (isImage && !hasVision) {
+          // Vision not available — skip image attachment
+          setPendingDropFiles(prev => prev.filter(n => n !== file.name));
+          continue;
+        }
+
         if (isImage) {
           const base64 = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -940,7 +954,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       }
       setPendingDropFiles(prev => prev.filter(n => n !== file.name));
     }
-  }, [attachedFiles]);
+  }, [attachedFiles, hasVision]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -1739,7 +1753,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         <div className="absolute inset-0 z-50 border-4 border-dashed border-blue-400 rounded-xl flex flex-col items-center justify-center pointer-events-none bg-blue-500/10 backdrop-blur-sm">
           <UploadIcon className="w-16 h-16 mb-4 text-blue-500" />
           <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">Drop files here to attach</p>
-          <p className="text-sm text-theme-muted mt-2">Images, documents, spreadsheets, and more</p>
+          <p className="text-sm text-theme-muted mt-2">{hasVision ? 'Images, documents, spreadsheets, and more' : 'Documents, spreadsheets, and more'}</p>
         </div>
       )}
     </div>

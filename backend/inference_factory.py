@@ -18,6 +18,9 @@ from config import (
     MODEL_N_CTX,
     get_selected_model,
     resolve_vision_projector_path,
+    resolve_model_path,
+    get_tier_config,
+    compute_effective_tier,
 )
 
 logger = logging.getLogger(__name__)
@@ -119,3 +122,105 @@ def reload_local_model():
         logger.info(f"Loading model: {new_model_path}, clip: {clip_path}")
         _local_instance = LlamaInference(model_path=new_model_path, n_ctx=MODEL_N_CTX, clip_model_path=clip_path)
         return _local_instance
+
+
+# ============================================================================
+# DUAL-MODEL SUPPORT (fast model for simple tasks)
+# ============================================================================
+
+_fast_model_instance = None
+_fast_model_name = None
+_fast_model_lock = threading.Lock()
+
+
+def _get_fast_model_singleton(model_name: str):
+    """Get or create a singleton for the fast (Tier 1) model."""
+    global _fast_model_instance, _fast_model_name
+
+    if (
+        _fast_model_instance is not None
+        and _fast_model_name == model_name
+        and _fast_model_instance.is_loaded
+    ):
+        return _fast_model_instance
+
+    with _fast_model_lock:
+        # Double-check after acquiring lock
+        if (
+            _fast_model_instance is not None
+            and _fast_model_name == model_name
+            and _fast_model_instance.is_loaded
+        ):
+            return _fast_model_instance
+
+        # Release old fast model if different
+        if _fast_model_instance is not None:
+            logger.info(f"Releasing old fast model ({_fast_model_name})...")
+            try:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(_fast_model_instance.cleanup())
+            except Exception:
+                pass
+
+        logger.info(f"Loading fast model: {model_name}")
+        from llama_inference import LlamaInference
+        model_path = resolve_model_path(model_name)
+        clip_path = resolve_vision_projector_path(model_name)
+        _fast_model_instance = LlamaInference(
+            model_path=model_path, n_ctx=MODEL_N_CTX, clip_model_path=clip_path
+        )
+        _fast_model_name = model_name
+        return _fast_model_instance
+
+
+def reload_fast_model():
+    """Force release the fast model singleton (e.g. after config change)."""
+    global _fast_model_instance, _fast_model_name
+    with _fast_model_lock:
+        if _fast_model_instance is not None:
+            logger.info("Releasing fast model...")
+            try:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(_fast_model_instance.cleanup())
+            except Exception:
+                pass
+            _fast_model_instance = None
+            _fast_model_name = None
+
+
+def resolve_inference_for_task(task_type: str):
+    """Return the inference instance for the given task type.
+
+    Uses dual-model routing if enabled and tier >= 2.
+    Falls back to the primary model if the fast model is not configured
+    or dual-model is disabled.
+    """
+    # Only attempt dual-model for local backend
+    if INFERENCE_BACKEND != "local":
+        return get_inference_instance(use_singleton=True)
+
+    try:
+        caps = compute_effective_tier()
+        if caps["tier"] < 2:
+            return get_inference_instance(use_singleton=True)
+
+        tier_config = get_tier_config()
+        dual = tier_config.get("dual_model", {})
+
+        if not dual.get("enabled") or not dual.get("fast_model"):
+            return get_inference_instance(use_singleton=True)
+
+        routing = dual.get("task_routing", {})
+        target = routing.get(task_type, "primary")
+
+        if target == "fast":
+            fast_model = dual["fast_model"]
+            # Don't use fast model if it's the same as the primary
+            if fast_model.lower() == get_selected_model().lower():
+                return get_inference_instance(use_singleton=True)
+            return _get_fast_model_singleton(fast_model)
+
+        return get_inference_instance(use_singleton=True)
+    except Exception as e:
+        logger.warning(f"Dual-model routing failed for task '{task_type}', falling back to primary: {e}")
+        return get_inference_instance(use_singleton=True)

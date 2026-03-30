@@ -37,6 +37,8 @@ import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
 import Activity01IconData from '@hugeicons/core-free-icons/Activity01Icon';
 import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import SquareLock01IconData from '@hugeicons/core-free-icons/SquareLock01Icon';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -472,6 +474,8 @@ const DRAFT_CONFIG: Record<string, { storagePrefix: string; plannerType: string;
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const { settings, markTutorialComplete, setWelcomeSeen, isTutorialCompleted, isSidebarItemEnabled } = useSettings();
+  const { hasDiffusion } = useCapabilities();
+
   // Import the real tutorial context at the top level
   const { startTutorial } = useTutorials();
   const { closeConnection, getIsTabBusy, getActiveStreams } = useWebSocket();
@@ -1600,6 +1604,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }}
         />;
       case 'image-studio':
+        if (!hasDiffusion) {
+          return (
+            <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)' }}>
+                <Icon icon={SquareLock01IconData} className="w-8 h-8" style={{ color: '#a855f7' }} />
+              </div>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Image Studio Locked</h2>
+              <p className="text-sm max-w-md" style={{ color: 'var(--text-secondary)' }}>
+                Image Studio requires a diffusion model (Tier 3). Select and enable a diffusion model in Settings to unlock image generation capabilities.
+              </p>
+              <button
+                onClick={() => { const settingsTool = tools.find(t => t.type === 'settings'); if (settingsTool) openTool(settingsTool); }}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                style={{ background: 'linear-gradient(135deg, #8b5cf6, #a855f7)' }}
+              >
+                Open Settings
+              </button>
+            </div>
+          );
+        }
         return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'presentation-builder':
         return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
@@ -2012,12 +2036,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       const at = tabs.find(t => t.id === activeTabId);
                       const isActive = at?.type === tool.type;
                       const tc = settings.tabColors[tool.type as keyof typeof settings.tabColors];
+                      const isLocked = tool.type === 'image-studio' && !hasDiffusion;
                       return (
-                        <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', transition: 'background-color 0.2s' }}
+                        <button key={tool.id} data-tool-type={tool.type} onClick={() => openTool(tool)} className="w-full flex items-center space-x-2 p-2 rounded-lg transition text-sm" style={{ backgroundColor: isActive ? 'var(--sidebar-active)' : 'transparent', opacity: isLocked ? 0.5 : 1, transition: 'background-color 0.2s' }}
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--sidebar-hover)'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive && tc) { ic.style.color = tc; ic.style.filter = 'drop-shadow(0 0 8px currentColor)'; } }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isActive ? 'var(--sidebar-active)' : 'transparent'; const ic = e.currentTarget.querySelector('.sidebar-icon') as HTMLElement; if (ic && !isActive) { ic.style.color = 'var(--sidebar-text-muted)'; ic.style.filter = ''; } }}
+                          title={isLocked ? 'Tier 3 required — enable a diffusion model' : tool.name}
                         >
-                          <Icon className={`w-4 h-4 flex-shrink-0 sidebar-icon ${isActive ? 'icon-glow' : ''}`} style={{ color: isActive && tc ? tc : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
+                          <div className="relative flex-shrink-0">
+                            <Icon className={`w-4 h-4 sidebar-icon ${isActive ? 'icon-glow' : ''}`} style={{ color: isActive && tc ? tc : 'var(--sidebar-text-muted)', transition: 'color 0.25s, filter 0.25s' }} />
+                            {isLocked && <HugeiconsIcon icon={SquareLock01IconData} size={10} style={{ position: 'absolute', bottom: -2, right: -3, color: '#a855f7' }} />}
+                          </div>
                           <div className="flex-1 text-left overflow-hidden">
                             <p className="text-xs font-medium whitespace-nowrap overflow-hidden" style={{ maskImage: 'linear-gradient(to right, black 70%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)' }}>{tool.name}</p>
                             {count > 0 && !HIDE_TAB_COUNTER.has(tool.type) && (<p className="text-xs" style={{ color: 'var(--sidebar-text-muted)' }}>{count}/{SINGLE_INSTANCE_TABS.has(tool.type) ? 1 : MAX_TABS_PER_TYPE}</p>)}

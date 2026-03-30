@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Loading02IconData from '@hugeicons/core-free-icons/Loading02Icon';
 import { useAchievementTrigger } from '../contexts/AchievementContext';
+import { useCapabilities } from '../contexts/CapabilitiesContext';
 import ViewIconData from '@hugeicons/core-free-icons/ViewIcon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import MagicWand01IconData from '@hugeicons/core-free-icons/MagicWand01Icon';
@@ -207,6 +208,7 @@ const ENDPOINT = '/ws/worksheet';
 
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   const triggerCheck = useAchievementTrigger();
+  const { hasDiffusion } = useCapabilities();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
   const { curriculumIndex } = useCurriculumIndex();
@@ -336,7 +338,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [imageError, setImageError] = useState<string | null>(null);
 
   // Image source: 'generate' (scene preset) or 'upload' (user image)
-  const [imageSource, setImageSource] = useState<'generate' | 'upload'>('generate');
+  const [imageSource, setImageSource] = useState<'generate' | 'upload'>(hasDiffusion ? 'generate' : 'upload');
   const [userUploadedImage, setUserUploadedImage] = useState<string | null>(null);
   const [userImageDescription, setUserImageDescription] = useState('');
   
@@ -1504,18 +1506,26 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 {/* Image Source Toggle */}
                 <div>
                   <label className="block text-sm font-medium text-theme-label mb-2">Image Source</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setImageSource('generate')}
-                      className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
-                        ${imageSource === 'generate'
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-600'
-                          : 'border-theme hover:border-blue-300 text-theme-label'
-                        }`}
-                    >
-                      <Wand2 className="w-4 h-4" />
-                      Generate from Preset
-                    </button>
+                  <div className={`grid ${hasDiffusion ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+                    {hasDiffusion ? (
+                      <button
+                        onClick={() => setImageSource('generate')}
+                        className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
+                          ${imageSource === 'generate'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-600'
+                            : 'border-theme hover:border-blue-300 text-theme-label'
+                          }`}
+                      >
+                        <Wand2 className="w-4 h-4" />
+                        Generate from Preset
+                      </button>
+                    ) : (
+                      <div className="py-2.5 px-3 rounded-lg border border-theme bg-gray-50 dark:bg-gray-800 text-sm font-medium flex items-center justify-center gap-2 text-theme-muted opacity-60 cursor-not-allowed">
+                        <Wand2 className="w-4 h-4" />
+                        Generate from Preset
+                        <span className="ml-1 text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded-full">Tier 3 required</span>
+                      </div>
+                    )}
                     <button
                       onClick={() => setImageSource('upload')}
                       className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
@@ -1531,7 +1541,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                 </div>
 
                 {/* Generate from Preset */}
-                {imageSource === 'generate' && (
+                {hasDiffusion && imageSource === 'generate' && (
                 <>
                 <h3 className="text-lg font-semibold text-theme-heading">Scene-Based Image Generation</h3>
 
