@@ -42,6 +42,9 @@ interface ExportButtonProps {
       showExplanations?: boolean;
       boldCorrectAnswers?: boolean;
     };
+    studentInfo?: { name: string; id: string };
+    quizId?: string;
+    worksheetId?: string;
   };
   filename?: string;
   className?: string;
@@ -71,7 +74,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           data.parsedWorksheet,
           data.formData,
           data.accentColor,
-          data.generatedImages || []
+          data.generatedImages || [],
+          data.worksheetId
         );
         title = data.formData.subject
           ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`
@@ -128,7 +132,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
             showExplanations: true,
             boldCorrectAnswers: false
           },
-          data.studentInfo
+          data.studentInfo,
+          data.quizId
         );
         title = data.formData.subject
           ? `${data.formData.subject} - Grade ${data.formData.gradeLevel}`

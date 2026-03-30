@@ -2404,6 +2404,23 @@ async def save_quiz_history(data: dict):
         histories = [h for h in histories if h.get("id") != data.get("id")]
     histories.append(data)
     save_json_data("quiz_history.json", histories[-20:])
+
+    # Also save the answer key to DB for scan grading
+    parsed_quiz = data.get('parsedQuiz')
+    if parsed_quiz and data.get('id'):
+        try:
+            form_data = data.get('formData', {})
+            student_service.save_quiz_answer_key(
+                quiz_id=data['id'],
+                quiz_title=parsed_quiz.get('metadata', {}).get('title', data.get('title', '')),
+                subject=form_data.get('subject', ''),
+                grade_level=form_data.get('gradeLevel', ''),
+                questions=parsed_quiz.get('questions', []),
+            )
+            logger.info(f"Answer key saved for quiz {data['id']}")
+        except Exception as e:
+            logger.error(f"Failed to save answer key: {e}")
+
     return {"success": True}
 
 @app.delete("/api/quiz-history/{quiz_id}")
@@ -2412,6 +2429,911 @@ async def delete_quiz_history(quiz_id: str):
     histories = [h for h in histories if h.get("id") != quiz_id]
     save_json_data("quiz_history.json", histories)
     return {"success": True}
+
+
+# ── Quiz Scan Grading (HunyuanOCR) ──────────────────────────────────────────
+
+@app.get("/api/quiz/answer-keys")
+async def list_answer_keys():
+    """List all saved quiz answer keys."""
+    return student_service.list_quiz_answer_keys()
+
+
+@app.get("/api/quiz/answer-key/{quiz_id}")
+async def get_answer_key(quiz_id: str):
+    """Fetch answer key by quiz_id."""
+    key = student_service.get_quiz_answer_key(quiz_id)
+    if not key:
+        raise HTTPException(status_code=404, detail="Quiz answer key not found")
+    return key
+
+
+@app.post("/api/quiz/extract-quiz-id")
+async def extract_quiz_id_from_teacher(file: UploadFile = File(...)):
+    """Extract quiz_id from a teacher version file (PDF, HTML, or image).
+
+    For digital files (PDF/HTML): text extraction (fast, no OCR needed).
+    For images (JPG/PNG): HunyuanOCR reads the quiz_id.
+    """
+    import re
+
+    content = await file.read()
+    fname = (file.filename or '').lower()
+    quiz_id = None
+
+    # Digital PDF — extract text directly
+    if fname.endswith('.pdf'):
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(io.BytesIO(content))
+            text = ' '.join(page.extract_text() or '' for page in reader.pages[:2])
+            match = re.search(r'quiz_\d+', text)
+            if match:
+                quiz_id = match.group()
+        except Exception:
+            pass
+
+    # HTML file
+    elif fname.endswith(('.html', '.htm')):
+        text = content.decode('utf-8', errors='ignore')
+        match = re.search(r'quiz_\d+', text)
+        if match:
+            quiz_id = match.group()
+
+    # Image — use HunyuanOCR
+    elif fname.endswith(('.jpg', '.jpeg', '.png', '.webp')):
+        import ocr_service
+        if not ocr_service.is_ocr_available():
+            raise HTTPException(status_code=400, detail="OCR not available for image files")
+        prompt = (
+            "Find the Quiz ID on this page. It will be labeled 'Quiz ID:' followed by "
+            "a code like 'quiz_1234567890'. Return ONLY the quiz ID value, nothing else."
+        )
+        loop = asyncio.get_event_loop()
+        raw = await loop.run_in_executor(
+            ocr_service._ocr_executor, ocr_service._run_ocr, content, prompt, 100
+        )
+        match = re.search(r'quiz_\d+', raw)
+        quiz_id = match.group() if match else None
+
+    if not quiz_id:
+        raise HTTPException(status_code=400, detail="Could not find a quiz ID in this file")
+
+    # Check if this quiz_id has an answer key
+    key = student_service.get_quiz_answer_key(quiz_id)
+    return {
+        "quiz_id": quiz_id,
+        "found": key is not None,
+        "quiz_title": key.get('quiz_title') if key else None,
+        "subject": key.get('subject') if key else None,
+    }
+
+
+def _grade_objective_question(question: dict, student_answer: str) -> dict:
+    """Grade an objective question by direct comparison. No LLM needed."""
+    qtype = question.get('type', '')
+    correct = str(question.get('correctAnswer', '')).strip()
+    answer = student_answer.strip()
+    pts = question.get('points', 1) or 1
+
+    if qtype == 'multiple-choice':
+        # Compare letters (A, B, C, D) case-insensitive
+        correct_letter = correct.upper()
+        if isinstance(question.get('correctAnswer'), (int, float)):
+            correct_letter = chr(65 + int(question['correctAnswer']))
+        student_letter = answer.upper()[:1] if answer else ''
+        is_correct = student_letter == correct_letter
+        return {
+            'answer': student_letter,
+            'earned': pts if is_correct else 0,
+            'max': pts,
+        }
+
+    elif qtype == 'true-false':
+        # Normalize various forms: T/True/true, F/False/false
+        student_norm = answer.lower().strip().rstrip('.')
+        if student_norm in ('t', 'true', 'yes'):
+            student_norm = 'true'
+        elif student_norm in ('f', 'false', 'no'):
+            student_norm = 'false'
+        correct_norm = correct.lower().strip()
+        is_correct = student_norm == correct_norm
+        return {
+            'answer': answer,
+            'earned': pts if is_correct else 0,
+            'max': pts,
+        }
+
+    elif qtype in ('fill-blank', 'word-bank'):
+        # Case-insensitive, strip punctuation, allow minor spelling variance
+        student_clean = answer.lower().strip().rstrip('.').strip()
+        correct_clean = correct.lower().strip().rstrip('.').strip()
+        # Accept if contained or exact match
+        is_correct = (student_clean == correct_clean or
+                      correct_clean in student_clean or
+                      student_clean in correct_clean)
+        return {
+            'answer': answer,
+            'earned': pts if is_correct else 0,
+            'max': pts,
+        }
+
+    elif qtype == 'matching':
+        # Matching: compare answer pairs
+        return {
+            'answer': answer,
+            'earned': pts if answer.lower() == correct.lower() else 0,
+            'max': pts,
+        }
+
+    # Unknown type — mark for LLM
+    return None
+
+
+@app.post("/api/quiz/grade-scans")
+async def grade_quiz_scans(
+    student_files: List[UploadFile] = File(...),
+    quiz_id: str = Form(...),
+):
+    """Grade scanned student quizzes using HunyuanOCR + direct comparison + LLM.
+
+    1. Fetch answer key from DB using quiz_id
+    2. HunyuanOCR extracts student_id + answers from each scan
+    3. Objective questions: direct comparison (fast)
+    4. Subjective questions: extracted text → LLM for grading
+    5. Auto-save grades to student DB
+    """
+    import ocr_service
+    if not ocr_service.is_ocr_available():
+        raise HTTPException(status_code=400, detail="OCR not available")
+
+    # 1. Fetch answer key
+    answer_key = student_service.get_quiz_answer_key(quiz_id)
+    if not answer_key:
+        raise HTTPException(status_code=404, detail=f"No answer key found for quiz ID: {quiz_id}")
+
+    questions = answer_key['questions']
+    quiz_title = answer_key['quiz_title']
+    subject = answer_key['subject']
+
+    # Build a description of the quiz for OCR extraction
+    question_descriptions = []
+    for i, q in enumerate(questions, 1):
+        qtype = q.get('type', '')
+        q_text = q.get('question', '')[:80]
+        question_descriptions.append(f"Q{i} [{qtype}]: {q_text}")
+    quiz_description = '\n'.join(question_descriptions)
+
+    # Pre-read all files
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    graded_results = []
+
+    for file_content, filename in file_data:
+        result = {
+            'file_name': filename,
+            'student_name': None,
+            'student_id': None,
+            'error': None,
+            'score': 0,
+            'total_points': 0,
+            'percentage': 0,
+            'letter_grade': 'F',
+            'details': {},
+            'unclear': [],
+            'saved': False,
+        }
+
+        try:
+            # 2. Preprocess and OCR extract
+            processed = _preprocess_phone_image(file_content)
+
+            ocr_prompt = f"""This is a student's completed quiz. Extract the following:
+1. Student name (usually at the top)
+2. Student ID (usually at the top)
+3. The student's answer for each question
+
+The quiz has these questions:
+{quiz_description}
+
+Return ONLY valid JSON:
+{{
+  "student_name": "name or null",
+  "student_id": "ID or null",
+  "answers": {{
+    "1": "student's answer for Q1",
+    "2": "student's answer for Q2"
+  }}
+}}"""
+            extracted = await ocr_service.extract_text(processed)
+            # Try structured extraction
+            import re as _re
+            # Run OCR with structured prompt
+            loop = asyncio.get_event_loop()
+            raw_json = await loop.run_in_executor(
+                ocr_service._ocr_executor, ocr_service._run_ocr, processed, ocr_prompt, 2048
+            )
+
+            json_match = _re.search(r'\{[\s\S]*\}', raw_json)
+            if not json_match:
+                result['error'] = 'OCR could not extract answers from this scan.'
+                graded_results.append(result)
+                continue
+
+            parsed = json.loads(json_match.group())
+            student_name = parsed.get('student_name')
+            student_id = parsed.get('student_id')
+            student_answers = parsed.get('answers', {})
+
+            result['student_name'] = student_name
+            result['student_id'] = student_id
+
+            # 3. Grade each question
+            subjective_questions = []  # Collect for LLM batch
+            details = {}
+
+            for i, q in enumerate(questions, 1):
+                q_key = str(i)
+                student_answer = student_answers.get(q_key, '')
+
+                if not student_answer or student_answer.lower() in ('[unclear]', 'unclear', ''):
+                    details[q_key] = {
+                        'answer': student_answer,
+                        'earned': 0,
+                        'max': q.get('points', 1) or 1,
+                    }
+                    result['unclear'].append(i)
+                    continue
+
+                qtype = q.get('type', '')
+                if qtype in ('multiple-choice', 'true-false', 'fill-blank', 'word-bank', 'matching'):
+                    # Direct comparison
+                    grade_result = _grade_objective_question(q, student_answer)
+                    if grade_result:
+                        details[q_key] = grade_result
+                    else:
+                        subjective_questions.append((q_key, q, student_answer))
+                else:
+                    # Short-answer, comprehension, open-ended → LLM
+                    subjective_questions.append((q_key, q, student_answer))
+
+            # 4. LLM grades subjective questions (batched)
+            if subjective_questions:
+                from inference_factory import get_inference_instance
+                inference = get_inference_instance()
+
+                subj_lines = []
+                for q_key, q, ans in subjective_questions:
+                    pts = q.get('points', 1) or 1
+                    ref = q.get('correctAnswer', '')
+                    subj_lines.append(
+                        f"Q{q_key} [{q.get('type')}, {pts}pt]: \"{q.get('question')}\"\n"
+                        f"  Reference answer: {ref}\n"
+                        f"  Student wrote: {ans}"
+                    )
+
+                llm_prompt = f"""Grade these subjective questions. Award partial credit (0 to max) based on accuracy and completeness.
+
+{chr(10).join(subj_lines)}
+
+Return ONLY valid JSON:
+{{
+  {', '.join(f'"{qk}": {{"earned": <points>, "max": {q.get("points",1) or 1}, "feedback": "brief reason"}}' for qk, q, _ in subjective_questions)}
+}}"""
+                response = await inference.generate(
+                    tool_name="quiz_subjective_grading",
+                    input_data="subjective grading",
+                    prompt_template=llm_prompt,
+                    max_tokens=500,
+                    temperature=0.1,
+                )
+                raw_llm = response.get('result') or ''
+                llm_match = _re.search(r'\{[\s\S]*\}', raw_llm)
+                if llm_match:
+                    llm_grades = json.loads(llm_match.group())
+                    for q_key, q, ans in subjective_questions:
+                        g = llm_grades.get(q_key, {})
+                        details[q_key] = {
+                            'answer': ans,
+                            'earned': g.get('earned', 0),
+                            'max': q.get('points', 1) or 1,
+                            'feedback': g.get('feedback', ''),
+                        }
+                else:
+                    # LLM failed — mark as 0
+                    for q_key, q, ans in subjective_questions:
+                        details[q_key] = {
+                            'answer': ans,
+                            'earned': 0,
+                            'max': q.get('points', 1) or 1,
+                            'feedback': 'Could not grade automatically',
+                        }
+
+            # 5. Calculate totals
+            total_earned = sum(d.get('earned', 0) for d in details.values())
+            total_max = sum(d.get('max', 1) for d in details.values())
+            percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
+
+            result.update({
+                'score': total_earned,
+                'total_points': total_max,
+                'percentage': percentage,
+                'letter_grade': student_service.get_letter_grade(percentage),
+                'details': details,
+            })
+
+            # 6. Auto-save to student DB
+            if student_id:
+                try:
+                    student_service.save_quiz_grade({
+                        'student_id': student_id,
+                        'quiz_title': quiz_title,
+                        'subject': subject,
+                        'score': total_earned,
+                        'total_points': total_max,
+                        'percentage': percentage,
+                        'letter_grade': student_service.get_letter_grade(percentage),
+                        'answers': details,
+                    })
+                    result['saved'] = True
+                except Exception as e:
+                    logger.error(f"Failed to save grade for {student_id}: {e}")
+
+        except Exception as e:
+            logger.error(f"Scan grading error for {filename}: {e}")
+            result['error'] = f'Processing error: {str(e)}'
+
+        graded_results.append(result)
+
+    return graded_results
+
+
+@app.post("/api/quiz/grade-scans-stream")
+async def grade_quiz_scans_stream(
+    request: Request,
+    student_files: List[UploadFile] = File(...),
+    quiz_id: str = Form(...),
+):
+    """SSE streaming version of quiz scan grading."""
+    from starlette.responses import StreamingResponse
+
+    # Validate up front
+    import ocr_service
+    if not ocr_service.is_ocr_available():
+        raise HTTPException(status_code=400, detail="OCR not available")
+
+    answer_key = student_service.get_quiz_answer_key(quiz_id)
+    if not answer_key:
+        raise HTTPException(status_code=404, detail=f"No answer key found for quiz ID: {quiz_id}")
+
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    total = len(file_data)
+
+    async def event_generator():
+        # Re-use the batch endpoint logic per file
+        for idx, (content, filename) in enumerate(file_data):
+            # Grade this single file using the same logic
+            # (Simplified: call the batch endpoint's inner logic)
+            try:
+                # Create a temporary UploadFile-like for the batch grader
+                # Instead, just call grade_quiz_scans inline per-file
+                result = await _grade_single_quiz_scan(
+                    content, filename, answer_key
+                )
+            except Exception as e:
+                result = {
+                    'file_name': filename,
+                    'error': str(e),
+                    'score': 0, 'total_points': 0, 'percentage': 0,
+                    'letter_grade': 'F', 'details': {}, 'unclear': [],
+                    'saved': False,
+                }
+
+            event = json.dumps({
+                'index': idx,
+                'total': total,
+                'result': result,
+                'done': idx == total - 1,
+            })
+            yield f"data: {event}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+async def _grade_single_quiz_scan(file_content: bytes, filename: str, answer_key: dict) -> dict:
+    """Grade a single student quiz scan. Extracted for streaming reuse."""
+    import re as _re
+    import ocr_service
+
+    questions = answer_key['questions']
+    quiz_title = answer_key['quiz_title']
+    subject = answer_key['subject']
+
+    question_descriptions = []
+    for i, q in enumerate(questions, 1):
+        q_text = q.get('question', '')[:80]
+        question_descriptions.append(f"Q{i} [{q.get('type','')}]: {q_text}")
+    quiz_description = '\n'.join(question_descriptions)
+
+    result = {
+        'file_name': filename,
+        'student_name': None,
+        'student_id': None,
+        'error': None,
+        'score': 0,
+        'total_points': 0,
+        'percentage': 0,
+        'letter_grade': 'F',
+        'details': {},
+        'unclear': [],
+        'saved': False,
+    }
+
+    try:
+        processed = _preprocess_phone_image(file_content)
+
+        ocr_prompt = f"""This is a student's completed quiz. Extract the following:
+1. Student name (usually at the top)
+2. Student ID (usually at the top)
+3. The student's answer for each question
+
+The quiz has these questions:
+{quiz_description}
+
+Return ONLY valid JSON:
+{{
+  "student_name": "name or null",
+  "student_id": "ID or null",
+  "answers": {{
+    "1": "student's answer for Q1",
+    "2": "student's answer for Q2"
+  }}
+}}"""
+        loop = asyncio.get_event_loop()
+        raw_json = await loop.run_in_executor(
+            ocr_service._ocr_executor, ocr_service._run_ocr, processed, ocr_prompt, 2048
+        )
+
+        json_match = _re.search(r'\{[\s\S]*\}', raw_json)
+        if not json_match:
+            result['error'] = 'OCR could not extract answers from this scan.'
+            return result
+
+        parsed = json.loads(json_match.group())
+        student_name = parsed.get('student_name')
+        student_id = parsed.get('student_id')
+        student_answers = parsed.get('answers', {})
+
+        result['student_name'] = student_name
+        result['student_id'] = student_id
+
+        subjective_questions = []
+        details = {}
+
+        for i, q in enumerate(questions, 1):
+            q_key = str(i)
+            student_answer = student_answers.get(q_key, '')
+
+            if not student_answer or student_answer.lower() in ('[unclear]', 'unclear', ''):
+                details[q_key] = {
+                    'answer': student_answer,
+                    'earned': 0,
+                    'max': q.get('points', 1) or 1,
+                }
+                result['unclear'].append(i)
+                continue
+
+            qtype = q.get('type', '')
+            if qtype in ('multiple-choice', 'true-false', 'fill-blank', 'word-bank', 'matching'):
+                grade_result = _grade_objective_question(q, student_answer)
+                if grade_result:
+                    details[q_key] = grade_result
+                else:
+                    subjective_questions.append((q_key, q, student_answer))
+            else:
+                subjective_questions.append((q_key, q, student_answer))
+
+        if subjective_questions:
+            from inference_factory import get_inference_instance
+            inference = get_inference_instance()
+
+            subj_lines = []
+            for q_key, q, ans in subjective_questions:
+                pts = q.get('points', 1) or 1
+                ref = q.get('correctAnswer', '')
+                subj_lines.append(
+                    f"Q{q_key} [{q.get('type')}, {pts}pt]: \"{q.get('question')}\"\n"
+                    f"  Reference answer: {ref}\n"
+                    f"  Student wrote: {ans}"
+                )
+
+            llm_prompt = f"""Grade these subjective questions. Award partial credit (0 to max) based on accuracy and completeness.
+
+{chr(10).join(subj_lines)}
+
+Return ONLY valid JSON:
+{{
+  {', '.join(f'"{qk}": {{"earned": <points>, "max": {q.get("points",1) or 1}, "feedback": "brief reason"}}' for qk, q, _ in subjective_questions)}
+}}"""
+            response = await inference.generate(
+                tool_name="quiz_subjective_grading",
+                input_data="subjective grading",
+                prompt_template=llm_prompt,
+                max_tokens=500,
+                temperature=0.1,
+            )
+            raw_llm = response.get('result') or ''
+            llm_match = _re.search(r'\{[\s\S]*\}', raw_llm)
+            if llm_match:
+                llm_grades = json.loads(llm_match.group())
+                for q_key, q, ans in subjective_questions:
+                    g = llm_grades.get(q_key, {})
+                    details[q_key] = {
+                        'answer': ans,
+                        'earned': g.get('earned', 0),
+                        'max': q.get('points', 1) or 1,
+                        'feedback': g.get('feedback', ''),
+                    }
+            else:
+                for q_key, q, ans in subjective_questions:
+                    details[q_key] = {
+                        'answer': ans,
+                        'earned': 0,
+                        'max': q.get('points', 1) or 1,
+                        'feedback': 'Could not grade automatically',
+                    }
+
+        total_earned = sum(d.get('earned', 0) for d in details.values())
+        total_max = sum(d.get('max', 1) for d in details.values())
+        percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
+
+        result.update({
+            'score': total_earned,
+            'total_points': total_max,
+            'percentage': percentage,
+            'letter_grade': student_service.get_letter_grade(percentage),
+            'details': details,
+        })
+
+        if student_id:
+            try:
+                student_service.save_quiz_grade({
+                    'student_id': student_id,
+                    'quiz_title': quiz_title,
+                    'subject': subject,
+                    'score': total_earned,
+                    'total_points': total_max,
+                    'percentage': percentage,
+                    'letter_grade': student_service.get_letter_grade(percentage),
+                    'answers': details,
+                })
+                result['saved'] = True
+            except Exception as e:
+                logger.error(f"Failed to save grade for {student_id}: {e}")
+
+    except Exception as e:
+        logger.error(f"Scan grading error for {filename}: {e}")
+        result['error'] = f'Processing error: {str(e)}'
+
+    return result
+
+
+# ── Worksheet Scan Grading (HunyuanOCR) ─────────────────────────────────────
+
+@app.get("/api/worksheet/answer-keys")
+async def list_worksheet_answer_keys():
+    """List all saved worksheet answer keys."""
+    return student_service.list_worksheet_answer_keys()
+
+
+@app.get("/api/worksheet/answer-key/{worksheet_id}")
+async def get_worksheet_answer_key(worksheet_id: str):
+    """Fetch worksheet answer key by worksheet_id."""
+    key = student_service.get_worksheet_answer_key(worksheet_id)
+    if not key:
+        raise HTTPException(status_code=404, detail="Worksheet answer key not found")
+    return key
+
+
+@app.post("/api/worksheet/extract-worksheet-id")
+async def extract_worksheet_id_from_teacher(file: UploadFile = File(...)):
+    """Extract worksheet_id from a teacher version file."""
+    import re
+
+    content = await file.read()
+    fname = (file.filename or '').lower()
+    ws_id = None
+
+    if fname.endswith('.pdf'):
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(io.BytesIO(content))
+            text = ' '.join(page.extract_text() or '' for page in reader.pages[:2])
+            match = re.search(r'worksheet_\d+', text)
+            if match:
+                ws_id = match.group()
+        except Exception:
+            pass
+    elif fname.endswith(('.html', '.htm')):
+        text = content.decode('utf-8', errors='ignore')
+        match = re.search(r'worksheet_\d+', text)
+        if match:
+            ws_id = match.group()
+    elif fname.endswith(('.jpg', '.jpeg', '.png', '.webp')):
+        import ocr_service
+        if not ocr_service.is_ocr_available():
+            raise HTTPException(status_code=400, detail="OCR not available for image files")
+        prompt = (
+            "Find the Worksheet ID on this page. It will be labeled 'Worksheet ID:' followed by "
+            "a code like 'worksheet_1234567890'. Return ONLY the worksheet ID value, nothing else."
+        )
+        loop = asyncio.get_event_loop()
+        raw = await loop.run_in_executor(
+            ocr_service._ocr_executor, ocr_service._run_ocr, content, prompt, 100
+        )
+        match = re.search(r'worksheet_\d+', raw)
+        ws_id = match.group() if match else None
+
+    if not ws_id:
+        raise HTTPException(status_code=400, detail="Could not find a worksheet ID in this file")
+
+    key = student_service.get_worksheet_answer_key(ws_id)
+    return {
+        "worksheet_id": ws_id,
+        "found": key is not None,
+        "worksheet_title": key.get('worksheet_title') if key else None,
+        "subject": key.get('subject') if key else None,
+    }
+
+
+@app.post("/api/worksheet/grade-scans")
+async def grade_worksheet_scans(
+    student_files: List[UploadFile] = File(...),
+    worksheet_id: str = Form(...),
+):
+    """Grade scanned student worksheets using HunyuanOCR + direct comparison + LLM."""
+    import ocr_service
+    if not ocr_service.is_ocr_available():
+        raise HTTPException(status_code=400, detail="OCR not available")
+
+    answer_key = student_service.get_worksheet_answer_key(worksheet_id)
+    if not answer_key:
+        raise HTTPException(status_code=404, detail=f"No answer key found for worksheet ID: {worksheet_id}")
+
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    graded_results = []
+    for file_content, filename in file_data:
+        result = await _grade_single_worksheet_scan(file_content, filename, answer_key)
+        graded_results.append(result)
+
+    return graded_results
+
+
+@app.post("/api/worksheet/grade-scans-stream")
+async def grade_worksheet_scans_stream(
+    request: Request,
+    student_files: List[UploadFile] = File(...),
+    worksheet_id: str = Form(...),
+):
+    """SSE streaming version of worksheet scan grading."""
+    from starlette.responses import StreamingResponse
+
+    import ocr_service
+    if not ocr_service.is_ocr_available():
+        raise HTTPException(status_code=400, detail="OCR not available")
+
+    answer_key = student_service.get_worksheet_answer_key(worksheet_id)
+    if not answer_key:
+        raise HTTPException(status_code=404, detail=f"No answer key found for worksheet ID: {worksheet_id}")
+
+    file_data = []
+    for upload in student_files:
+        content = await upload.read()
+        file_data.append((content, upload.filename or 'unknown'))
+
+    total = len(file_data)
+
+    async def event_generator():
+        for idx, (content, filename) in enumerate(file_data):
+            try:
+                result = await _grade_single_worksheet_scan(content, filename, answer_key)
+            except Exception as e:
+                result = {
+                    'file_name': filename, 'error': str(e),
+                    'score': 0, 'total_points': 0, 'percentage': 0,
+                    'letter_grade': 'F', 'details': {}, 'unclear': [], 'saved': False,
+                }
+            event = json.dumps({'index': idx, 'total': total, 'result': result, 'done': idx == total - 1})
+            yield f"data: {event}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+    )
+
+
+async def _grade_single_worksheet_scan(file_content: bytes, filename: str, answer_key: dict) -> dict:
+    """Grade a single student worksheet scan using OCR + direct comparison + LLM."""
+    import re as _re
+    import ocr_service
+
+    questions = answer_key['questions']
+    ws_title = answer_key['worksheet_title']
+    subject = answer_key['subject']
+    passage = answer_key.get('passage', '')
+    matching_items = answer_key.get('matching_items', {})
+    word_bank = answer_key.get('word_bank', [])
+
+    question_descriptions = []
+    for i, q in enumerate(questions, 1):
+        q_text = q.get('question', '')[:80]
+        question_descriptions.append(f"Q{i} [{q.get('type', '')}]: {q_text}")
+    ws_description = '\n'.join(question_descriptions)
+
+    result = {
+        'file_name': filename, 'student_name': None, 'student_id': None,
+        'error': None, 'score': 0, 'total_points': 0, 'percentage': 0,
+        'letter_grade': 'F', 'details': {}, 'unclear': [], 'saved': False,
+    }
+
+    try:
+        processed = _preprocess_phone_image(file_content)
+
+        ocr_prompt = f"""This is a student's completed worksheet. Extract the following:
+1. Student name (usually at the top)
+2. Student ID (usually at the top)
+3. The student's answer for each question
+
+The worksheet has these questions:
+{ws_description}
+
+Return ONLY valid JSON:
+{{
+  "student_name": "name or null",
+  "student_id": "ID or null",
+  "answers": {{
+    "1": "student's answer for Q1",
+    "2": "student's answer for Q2"
+  }}
+}}"""
+        loop = asyncio.get_event_loop()
+        raw_json = await loop.run_in_executor(
+            ocr_service._ocr_executor, ocr_service._run_ocr, processed, ocr_prompt, 2048
+        )
+
+        json_match = _re.search(r'\{[\s\S]*\}', raw_json)
+        if not json_match:
+            result['error'] = 'OCR could not extract answers from this scan.'
+            return result
+
+        parsed = json.loads(json_match.group())
+        student_name = parsed.get('student_name')
+        student_id = parsed.get('student_id')
+        student_answers = parsed.get('answers', {})
+
+        result['student_name'] = student_name
+        result['student_id'] = student_id
+
+        subjective_questions = []
+        details = {}
+
+        for i, q in enumerate(questions, 1):
+            q_key = str(i)
+            student_answer = student_answers.get(q_key, '')
+
+            if not student_answer or student_answer.lower() in ('[unclear]', 'unclear', ''):
+                details[q_key] = {'answer': student_answer, 'earned': 0, 'max': q.get('points', 1) or 1}
+                result['unclear'].append(i)
+                continue
+
+            qtype = q.get('type', '')
+            if qtype in ('multiple-choice', 'true-false', 'fill-blank', 'word-bank', 'matching'):
+                grade_result = _grade_objective_question(q, student_answer)
+                if grade_result:
+                    details[q_key] = grade_result
+                else:
+                    subjective_questions.append((q_key, q, student_answer))
+            else:
+                subjective_questions.append((q_key, q, student_answer))
+
+        # LLM grades subjective questions
+        if subjective_questions:
+            from inference_factory import get_inference_instance
+            inference = get_inference_instance()
+
+            subj_lines = []
+            for q_key, q, ans in subjective_questions:
+                pts = q.get('points', 1) or 1
+                ref = q.get('correctAnswer', '')
+                subj_lines.append(
+                    f"Q{q_key} [{q.get('type')}, {pts}pt]: \"{q.get('question')}\"\n"
+                    f"  Reference answer: {ref}\n"
+                    f"  Student wrote: {ans}"
+                )
+
+            passage_ctx = f'\n\nPassage context:\n"""{passage[:1500]}"""' if passage else ''
+
+            llm_prompt = f"""Grade these subjective questions. Award partial credit (0 to max) based on accuracy and completeness.{passage_ctx}
+
+{chr(10).join(subj_lines)}
+
+Return ONLY valid JSON:
+{{
+  {', '.join(f'"{qk}": {{"earned": <points>, "max": {q.get("points",1) or 1}, "feedback": "brief reason"}}' for qk, q, _ in subjective_questions)}
+}}"""
+            response = await inference.generate(
+                tool_name="worksheet_subjective_grading",
+                input_data="subjective grading",
+                prompt_template=llm_prompt,
+                max_tokens=500,
+                temperature=0.1,
+            )
+            raw_llm = response.get('result') or ''
+            llm_match = _re.search(r'\{[\s\S]*\}', raw_llm)
+            if llm_match:
+                llm_grades = json.loads(llm_match.group())
+                for q_key, q, ans in subjective_questions:
+                    g = llm_grades.get(q_key, {})
+                    details[q_key] = {
+                        'answer': ans, 'earned': g.get('earned', 0),
+                        'max': q.get('points', 1) or 1, 'feedback': g.get('feedback', ''),
+                    }
+            else:
+                for q_key, q, ans in subjective_questions:
+                    details[q_key] = {
+                        'answer': ans, 'earned': 0,
+                        'max': q.get('points', 1) or 1, 'feedback': 'Could not grade automatically',
+                    }
+
+        total_earned = sum(d.get('earned', 0) for d in details.values())
+        total_max = sum(d.get('max', 1) for d in details.values())
+        percentage = round((total_earned / total_max * 100), 1) if total_max > 0 else 0
+
+        result.update({
+            'score': total_earned, 'total_points': total_max,
+            'percentage': percentage,
+            'letter_grade': student_service.get_letter_grade(percentage),
+            'details': details,
+        })
+
+        if student_id:
+            try:
+                student_service.save_worksheet_grade({
+                    'student_id': student_id, 'worksheet_title': ws_title,
+                    'subject': subject, 'score': total_earned,
+                    'total_points': total_max, 'percentage': percentage,
+                    'letter_grade': student_service.get_letter_grade(percentage),
+                    'answers': details,
+                })
+                result['saved'] = True
+            except Exception as e:
+                logger.error(f"Failed to save worksheet grade for {student_id}: {e}")
+
+    except Exception as e:
+        logger.error(f"Worksheet scan grading error for {filename}: {e}")
+        result['error'] = f'Processing error: {str(e)}'
+
+    return result
 
 
 # ── Student Management ────────────────────────────────────────────────────────
@@ -3683,6 +4605,27 @@ async def save_worksheet_history(data: dict):
         histories = [h for h in histories if h.get("id") != data.get("id")]
     histories.append(data)
     save_json_data("worksheet_history.json", histories[-20:])
+
+    # Also save the answer key to DB for scan grading
+    parsed_ws = data.get('parsedWorksheet')
+    if parsed_ws and data.get('id'):
+        try:
+            meta = parsed_ws.get('metadata', {})
+            form_data = data.get('formData', {})
+            student_service.save_worksheet_answer_key(
+                worksheet_id=data['id'],
+                worksheet_title=meta.get('title', data.get('title', '')),
+                subject=form_data.get('subject', meta.get('subject', '')),
+                grade_level=form_data.get('gradeLevel', meta.get('gradeLevel', '')),
+                questions=parsed_ws.get('questions', []),
+                passage=parsed_ws.get('passage', ''),
+                matching_items=parsed_ws.get('matchingItems', {}),
+                word_bank=parsed_ws.get('wordBank', []),
+            )
+            logger.info(f"Worksheet answer key saved for {data['id']}")
+        except Exception as e:
+            logger.error(f"Failed to save worksheet answer key: {e}")
+
     return {"success": True}
 
 @app.delete("/api/worksheet-history/{worksheet_id}")

@@ -942,7 +942,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                             showExplanations: true,
                             boldCorrectAnswers: true
                           },
-                          studentInfo: viewingStudent ? { name: viewingStudent.name, id: viewingStudent.id } : undefined
+                          studentInfo: viewingStudent ? { name: viewingStudent.name, id: viewingStudent.id } : undefined,
+                          quizId: effectiveVersion === 'teacher' ? (currentQuizId || `quiz_${Date.now()}`) : undefined
                         }}
                         filename={`quiz-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}-${viewingStudent ? viewingStudent.name.replace(/\s+/g, '-') : effectiveVersion}`}
                         className="ml-2 !px-3.5 !py-1.5 !text-[13.5px]"

@@ -110,6 +110,29 @@ def init_db():
             )
         ''')
         conn.execute('''
+            CREATE TABLE IF NOT EXISTS quiz_answer_keys (
+                quiz_id      TEXT PRIMARY KEY,
+                quiz_title   TEXT,
+                subject      TEXT,
+                grade_level  TEXT,
+                questions    TEXT,
+                created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS worksheet_answer_keys (
+                worksheet_id TEXT PRIMARY KEY,
+                worksheet_title TEXT,
+                subject      TEXT,
+                grade_level  TEXT,
+                questions    TEXT,
+                passage      TEXT,
+                matching_items TEXT,
+                word_bank    TEXT,
+                created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('''
             CREATE TABLE IF NOT EXISTS worksheet_packages (
                 id               TEXT PRIMARY KEY,
                 worksheet_title  TEXT,
@@ -265,6 +288,114 @@ def list_classes(grade_level: str | None = None) -> list[dict]:
                 'SELECT DISTINCT class_name, grade_level FROM students WHERE class_name IS NOT NULL ORDER BY grade_level, class_name'
             ).fetchall()
         return [{'class_name': r['class_name'], 'grade_level': r['grade_level']} for r in rows]
+    finally:
+        conn.close()
+
+
+# ── Quiz Answer Keys ─────────────────────────────────────────────────────────
+
+def save_quiz_answer_key(quiz_id: str, quiz_title: str, subject: str,
+                         grade_level: str, questions: list) -> dict:
+    """Save the answer key for a generated quiz."""
+    conn = _get_conn()
+    try:
+        conn.execute(
+            '''INSERT OR REPLACE INTO quiz_answer_keys
+               (quiz_id, quiz_title, subject, grade_level, questions)
+               VALUES (?, ?, ?, ?, ?)''',
+            (quiz_id, quiz_title, subject, grade_level, json.dumps(questions))
+        )
+        conn.commit()
+        row = conn.execute(
+            'SELECT * FROM quiz_answer_keys WHERE quiz_id = ?', (quiz_id,)
+        ).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def get_quiz_answer_key(quiz_id: str) -> dict | None:
+    """Fetch answer key by quiz_id."""
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT * FROM quiz_answer_keys WHERE quiz_id = ?', (quiz_id,)
+        ).fetchone()
+        if row:
+            result = dict(row)
+            result['questions'] = json.loads(result['questions'])
+            return result
+        return None
+    finally:
+        conn.close()
+
+
+def list_quiz_answer_keys() -> list[dict]:
+    """List all saved quiz answer keys (without full question data)."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT quiz_id, quiz_title, subject, grade_level, created_at '
+            'FROM quiz_answer_keys ORDER BY created_at DESC'
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# ── Worksheet Answer Keys ────────────────────────────────────────────────────
+
+def save_worksheet_answer_key(worksheet_id: str, worksheet_title: str, subject: str,
+                               grade_level: str, questions: list,
+                               passage: str = '', matching_items: dict = None,
+                               word_bank: list = None) -> dict:
+    """Save the answer key for a generated worksheet."""
+    conn = _get_conn()
+    try:
+        conn.execute(
+            '''INSERT OR REPLACE INTO worksheet_answer_keys
+               (worksheet_id, worksheet_title, subject, grade_level, questions, passage, matching_items, word_bank)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+            (worksheet_id, worksheet_title, subject, grade_level,
+             json.dumps(questions), passage or '',
+             json.dumps(matching_items or {}), json.dumps(word_bank or []))
+        )
+        conn.commit()
+        row = conn.execute(
+            'SELECT * FROM worksheet_answer_keys WHERE worksheet_id = ?', (worksheet_id,)
+        ).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
+
+
+def get_worksheet_answer_key(worksheet_id: str) -> dict | None:
+    """Fetch worksheet answer key by worksheet_id."""
+    conn = _get_conn()
+    try:
+        row = conn.execute(
+            'SELECT * FROM worksheet_answer_keys WHERE worksheet_id = ?', (worksheet_id,)
+        ).fetchone()
+        if row:
+            result = dict(row)
+            result['questions'] = json.loads(result['questions'])
+            result['matching_items'] = json.loads(result['matching_items']) if result['matching_items'] else {}
+            result['word_bank'] = json.loads(result['word_bank']) if result['word_bank'] else []
+            return result
+        return None
+    finally:
+        conn.close()
+
+
+def list_worksheet_answer_keys() -> list[dict]:
+    """List all saved worksheet answer keys (without full question data)."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT worksheet_id, worksheet_title, subject, grade_level, created_at '
+            'FROM worksheet_answer_keys ORDER BY created_at DESC'
+        ).fetchall()
+        return [dict(r) for r in rows]
     finally:
         conn.close()
 

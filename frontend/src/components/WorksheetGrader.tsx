@@ -14,9 +14,11 @@ import File01IconData from '@hugeicons/core-free-icons/File01Icon';
 import Delete02IconData from '@hugeicons/core-free-icons/Delete02Icon';
 import AlertCircleIconData from '@hugeicons/core-free-icons/AlertCircleIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
+import SpellCheckIconData from '@hugeicons/core-free-icons/SpellCheckIcon';
 import { ParsedWorksheet } from '../types/worksheet';
 import { useSettings } from '../contexts/SettingsContext';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
+import WorksheetScanGrader from './WorksheetScanGrader';
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:8000';
@@ -41,6 +43,9 @@ const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const Trash2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Delete02IconData} {...p} />;
 const AlertCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={AlertCircleIconData} {...p} />;
 const History: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Clock01IconData} {...p} />;
+const SpellCheck: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={SpellCheckIconData} {...p} />;
+
+type GraderMode = 'vision' | 'scan';
 
 interface PackageSummary {
   id: string;
@@ -92,6 +97,7 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
   const { settings } = useSettings();
   const accentColor = settings.tabColors['worksheet-generator'] ?? '#3b82f6';
 
+  const [graderMode, setGraderMode] = useState<GraderMode>('vision');
   const [phase, setPhase] = useState<Phase>('select-source');
   const [packages, setPackages] = useState<PackageSummary[]>([]);
   const [histories, setHistories] = useState<WorksheetHistoryItem[]>([]);
@@ -321,24 +327,70 @@ const WorksheetGrader: React.FC<WorksheetGraderProps> = ({ worksheet, onClose })
     setParseError(null);
   };
 
+  if (graderMode === 'scan') {
+    return (
+      <div className="flex flex-col h-full bg-theme-surface">
+        {/* Mode tabs */}
+        <div className="flex border-b border-theme px-6 pt-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
+          {([['vision', ClipboardCheck, 'Vision Grade'] as const, ['scan', SpellCheck, 'Scan Grade (OCR)'] as const]).map(([mode, ModeIcon, label]) => (
+            <button
+              key={mode}
+              onClick={() => setGraderMode(mode)}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition ${
+                graderMode === mode ? 'border-current' : 'border-transparent text-theme-muted hover:text-theme-label'
+              }`}
+              style={graderMode === mode ? { borderBottomColor: accentColor, color: accentColor } : {}}
+            >
+              <ModeIcon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+          <div className="flex-1" />
+          <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme self-center mb-2">
+            <RotateCcw className="w-4 h-4" />
+            Back to Worksheet
+          </button>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <WorksheetScanGrader onClose={onClose} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-theme-surface">
 
-      {/* Header */}
-      <div className="border-b border-theme px-6 py-4 flex items-center justify-between flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
-        <div>
-          <h2 className="text-xl font-semibold text-theme-heading">Grade Worksheets</h2>
-          <p className="text-sm text-theme-hint">
-            {phase === 'select-source' && 'Select a worksheet or upload a teacher version'}
-            {phase === 'upload' && `Upload scanned papers for: ${selectedTitle}`}
-            {phase === 'grading' && `Grading paper ${gradingProgress.done + 1} of ${gradingProgress.total}...`}
-            {phase === 'results' && `${successCount} of ${results.length} graded & saved`}
-          </p>
-        </div>
-        <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme">
+      {/* Mode tabs + Header */}
+      <div className="flex border-b border-theme px-6 pt-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}33` }}>
+        {([['vision', ClipboardCheck, 'Vision Grade'] as const, ['scan', SpellCheck, 'Scan Grade (OCR)'] as const]).map(([mode, ModeIcon, label]) => (
+          <button
+            key={mode}
+            onClick={() => setGraderMode(mode)}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition ${
+              graderMode === mode ? 'border-current' : 'border-transparent text-theme-muted hover:text-theme-label'
+            }`}
+            style={graderMode === mode ? { borderBottomColor: accentColor, color: accentColor } : {}}
+          >
+            <ModeIcon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
+        <div className="flex-1" />
+        <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-theme-hover transition text-theme-muted text-sm font-medium border border-theme self-center mb-2">
           <RotateCcw className="w-4 h-4" />
           Back to Worksheet
         </button>
+      </div>
+
+      <div className="border-b border-theme px-6 py-3 flex-shrink-0" style={{ borderBottomColor: `${accentColor}11` }}>
+        <h2 className="text-lg font-semibold text-theme-heading">Grade Worksheets</h2>
+        <p className="text-sm text-theme-hint">
+          {phase === 'select-source' && 'Select a worksheet or upload a teacher version'}
+          {phase === 'upload' && `Upload scanned papers for: ${selectedTitle}`}
+          {phase === 'grading' && `Grading paper ${gradingProgress.done + 1} of ${gradingProgress.total}...`}
+          {phase === 'results' && `${successCount} of ${results.length} graded & saved`}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">

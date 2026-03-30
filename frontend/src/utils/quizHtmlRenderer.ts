@@ -13,11 +13,13 @@ interface RenderOptions {
     gradeLevel: string;
     numberOfQuestions: string;
     questionTypes: string[];
+    strand?: string;
   };
   showAnswerKey?: boolean;
   showExplanations?: boolean;
   boldCorrectAnswers?: boolean;
   studentInfo?: { name: string; id: string };
+  quizId?: string;
 }
 
 interface ParsedQuiz {
@@ -202,7 +204,8 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
     showAnswerKey = true,
     showExplanations = true,
     boldCorrectAnswers = false,
-    studentInfo
+    studentInfo,
+    quizId
   } = options;
 
   // Parse the quiz
@@ -470,8 +473,19 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       border-top: 1px solid rgba(255, 255, 255, 0.2);
       color: rgba(207, 250, 254, 1);
       font-size: 0.875rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     ">
-      <span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}
+      <span><span style="opacity: 0.75;">Generated on</span> ${new Date().toLocaleDateString()}</span>
+      ${showAnswerKey && quizId ? `<span style="
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
+        font-size: 0.8rem;
+        letter-spacing: 0.025em;
+      ">Quiz ID: ${quizId}</span>` : ''}
     </div>
   </div>
 
@@ -531,13 +545,15 @@ export function prepareQuizForExport(
     showExplanations?: boolean;
     boldCorrectAnswers?: boolean;
   } = {},
-  studentInfo?: { name: string; id: string }
+  studentInfo?: { name: string; id: string },
+  quizId?: string
 ) {
   const html = generateQuizHTML(text, {
     accentColor,
     formData,
     ...exportOptions,
-    studentInfo
+    studentInfo,
+    quizId
   });
 
   return {

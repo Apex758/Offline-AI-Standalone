@@ -37,6 +37,7 @@ const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 import { useSettings } from '../contexts/SettingsContext';
 import axios from 'axios';
 import BulkGrader from './BulkGrader';
+import QuizScanGrader from './QuizScanGrader';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartInput from './SmartInput';
 
@@ -54,7 +55,7 @@ interface QuizGraderProps {
   onClose: () => void;
 }
 
-type GraderTab = 'single' | 'bulk';
+type GraderTab = 'single' | 'bulk' | 'scan';
 type SinglePhase = 'select-student' | 'answer' | 'results';
 
 interface StudentAnswer {
@@ -302,7 +303,7 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
         <>
           {/* ── Tabs ── */}
           <div className="flex border-b border-theme flex-shrink-0">
-            {([['single', ClipboardCheck, 'Single Student'], ['bulk', Users, 'Bulk Grade']] as const).map(([tab, Icon, label]) => (
+            {([['single', ClipboardCheck, 'Single Student'], ['bulk', Users, 'Bulk Grade'], ['scan', FileText, 'Scan Grade']] as const).map(([tab, Icon, label]) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -551,6 +552,11 @@ const QuizGrader: React.FC<QuizGraderProps> = ({ quiz: quizProp, onClose }) => {
             {/* ── Bulk Grade Tab ── */}
             {activeTab === 'bulk' && (
               <BulkGrader quiz={activeQuiz} onClose={onClose} embedded />
+            )}
+
+            {/* ── Scan Grade Tab (HunyuanOCR) ── */}
+            {activeTab === 'scan' && (
+              <QuizScanGrader onClose={onClose} />
             )}
           </div>
         </>

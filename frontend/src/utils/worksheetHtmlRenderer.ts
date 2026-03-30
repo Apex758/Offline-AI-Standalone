@@ -16,31 +16,33 @@ interface RenderOptions {
   };
   generatedImages?: string[];
   viewMode?: 'student' | 'teacher';
+  worksheetId?: string;
 }
 
 export function generateWorksheetHTML(worksheet: ParsedWorksheet, options: RenderOptions): string {
   if (!worksheet) return '';
 
-  const { formData, generatedImages = [], viewMode = 'student' } = options;
+  const { formData, generatedImages = [], viewMode = 'student', worksheetId } = options;
   const selectedTemplate = formData.selectedTemplate || 'list-based';
   const worksheetTitle = formData.worksheetTitle || worksheet.metadata.title;
   const generatedImage = generatedImages.length > 0 ? generatedImages[0] : null;
   const showAnswers = viewMode === 'teacher';
+  const displayWorksheetId = showAnswers && worksheetId ? worksheetId : undefined;
 
   // Build HTML content based on selected template
   let contentHTML = '';
 
   // Template-specific rendering to match preview exactly
   if (selectedTemplate === 'multiple-choice') {
-    contentHTML = generateMultipleChoiceHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
+    contentHTML = generateMultipleChoiceHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId);
   } else if (selectedTemplate === 'comprehension') {
-    contentHTML = generateComprehensionHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
+    contentHTML = generateComprehensionHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId);
   } else if (selectedTemplate === 'matching') {
-    contentHTML = generateMatchingHTML(worksheet, formData, worksheetTitle, showAnswers);
+    contentHTML = generateMatchingHTML(worksheet, formData, worksheetTitle, showAnswers, displayWorksheetId);
   } else if (selectedTemplate === 'list-based') {
-    contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers);
+    contentHTML = generateListBasedHTML(worksheet, formData, worksheetTitle, generatedImage, showAnswers, displayWorksheetId);
   } else if (selectedTemplate === 'math') {
-    contentHTML = generateMathHTML(worksheet, formData, worksheetTitle, showAnswers);
+    contentHTML = generateMathHTML(worksheet, formData, worksheetTitle, showAnswers, displayWorksheetId);
   }
   // Build complete HTML document
   const fullHTML = `
@@ -76,7 +78,8 @@ function generateMathHTML(
   worksheet: ParsedWorksheet,
   formData: RenderOptions['formData'],
   worksheetTitle: string,
-  showAnswers: boolean
+  showAnswers: boolean,
+  worksheetId?: string
 ): string {
   const questions = worksheet.questions || [];
   
@@ -123,6 +126,7 @@ function generateMathHTML(
               <span>|</span>
               <span style="color: #1d4ed8;">${formData.topic || 'Arithmetic'}</span>
             </div>
+            ${worksheetId ? `<p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; font-family: monospace;">ID: ${worksheetId}</p>` : ''}
           </div>
           <div style="text-align: right; min-width: 200px;">
             <p style="font-weight: 700; color: #111827; margin: 0 0 0.25rem 0;">Name:</p>
@@ -173,6 +177,7 @@ function generateMathHTML(
             <p style="color: #4b5563; margin: 0.25rem 0;">
               <strong>Topic:</strong> ${formData.topic || 'N/A'}
             </p>
+            ${worksheetId ? `<p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; font-family: monospace;">ID: ${worksheetId}</p>` : ''}
           </div>
           <div style="text-align: right;">
             <p style="color: #4b5563; margin: 0.25rem 0;">Name: ____________________</p>
@@ -223,7 +228,8 @@ function generateMultipleChoiceHTML(
   formData: RenderOptions['formData'],
   worksheetTitle: string,
   generatedImage: string | null,
-  showAnswers: boolean
+  showAnswers: boolean,
+  worksheetId?: string
 ): string {
   const includeImages = formData.includeImages || false;
 
@@ -240,6 +246,7 @@ function generateMultipleChoiceHTML(
             <p style="color: #4b5563; margin: 0.25rem 0;">
               <strong>Topic:</strong> ${formData.topic || 'N/A'}
             </p>
+            ${worksheetId ? `<p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; font-family: monospace;">ID: ${worksheetId}</p>` : ''}
           </div>
           <div style="text-align: right;">
             <p style="color: #4b5563; margin: 0.25rem 0;">Name: ____________________</p>
@@ -307,7 +314,8 @@ function generateComprehensionHTML(
   formData: RenderOptions['formData'],
   worksheetTitle: string,
   generatedImage: string | null,
-  showAnswers: boolean
+  showAnswers: boolean,
+  worksheetId?: string
 ): string {
   const includeImages = formData.includeImages || false;
   const imagePlacement = formData.imagePlacement || 'large-centered';
@@ -325,6 +333,7 @@ function generateComprehensionHTML(
             <p style="color: #4b5563; margin: 0.25rem 0;">
               <strong>Topic:</strong> ${formData.topic || 'N/A'}
             </p>
+            ${worksheetId ? `<p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; font-family: monospace;">ID: ${worksheetId}</p>` : ''}
           </div>
           <div style="text-align: right;">
             <p style="color: #4b5563; margin: 0.25rem 0;">Name: ____________________</p>
@@ -406,7 +415,8 @@ function generateMatchingHTML(
   worksheet: ParsedWorksheet,
   formData: RenderOptions['formData'],
   worksheetTitle: string,
-  showAnswers: boolean
+  showAnswers: boolean,
+  worksheetId?: string
 ): string {
   return `
     <div style="background-color: white; padding: 1.5rem; max-width: 56rem; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 0.875rem;">
@@ -421,6 +431,7 @@ function generateMatchingHTML(
             <p style="color: #4b5563; margin: 0.25rem 0;">
               <strong>Topic:</strong> ${formData.topic || 'N/A'}
             </p>
+            ${worksheetId ? `<p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; font-family: monospace;">ID: ${worksheetId}</p>` : ''}
           </div>
           <div style="text-align: right;">
             <p style="color: #4b5563; margin: 0.25rem 0;">Name: ____________________</p>
@@ -487,7 +498,7 @@ function generateMatchingHTML(
   `;
 }
 
-function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null, showAnswers: boolean): string {
+function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksheetTitle: string, generatedImage: string | null, showAnswers: boolean, worksheetId?: string): string {
   const includeImages = formData.includeImages || false;
   const questionType = formData.questionType || '';
   
@@ -501,6 +512,7 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
           <span>Grade: ${formData.gradeLevel}</span>
           <span>Name: _________________</span>
         </div>
+        ${worksheetId ? `<p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; font-family: monospace;">ID: ${worksheetId}</p>` : ''}
       </div>
 
       <!-- Word Bank -->
@@ -559,18 +571,18 @@ function generateListBasedHTML(worksheet: ParsedWorksheet, formData: any, worksh
 }
 
 // Export function to use with backend
-export function prepareWorksheetForExport(content: string, parsedWorksheet: ParsedWorksheet | null, formData: any, accentColor: string, generatedImages?: string[]) {
+export function prepareWorksheetForExport(content: string, parsedWorksheet: ParsedWorksheet | null, formData: any, accentColor: string, generatedImages?: string[], worksheetId?: string) {
   // Use parsedWorksheet if available, otherwise we can't export (need structured data)
   if (!parsedWorksheet) {
     throw new Error('Parsed worksheet required for export');
   }
 
-  // ✅ FIX: Pass viewMode from formData to generateWorksheetHTML
   const html = generateWorksheetHTML(parsedWorksheet, {
     accentColor,
     formData,
     generatedImages,
-    viewMode: formData.viewMode || 'student' // Extract viewMode from formData
+    viewMode: formData.viewMode || 'student',
+    worksheetId
   });
 
   return {

@@ -2148,7 +2148,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       viewMode
                     },
                     accentColor: '#3b82f6',
-                    generatedImages: generatedImages
+                    generatedImages: generatedImages,
+                    worksheetId: viewMode === 'teacher' ? (currentWorksheetId || `worksheet_${Date.now()}`) : undefined
                   }}
                   filename={`worksheet-${formData.subject.toLowerCase()}-grade${formData.gradeLevel}`}
                   className="!px-3.5 !py-1.5 !text-[13.5px]"
@@ -2400,7 +2401,8 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     parsedWorksheet: parsedWorksheet,
                     formData: { ...formData, viewMode },
                     accentColor: accentColor || '#3b82f6',
-                    generatedImages: generatedImages
+                    generatedImages: generatedImages,
+                    worksheetId: viewMode === 'teacher' ? (currentWorksheetId || `worksheet_${Date.now()}`) : undefined
                   }}
                   filename={`worksheet-${selectedStudentIndex === -1 ? 'answer-key' : worksheetPackage.studentVersions[selectedStudentIndex]?.student.id}`}
                   className="!px-3 !py-1.5 !text-xs"
