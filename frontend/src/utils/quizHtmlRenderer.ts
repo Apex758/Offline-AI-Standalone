@@ -432,7 +432,7 @@ export function generateQuizHTML(text: string, options: RenderOptions): string {
       color: white;
       margin: 0.5rem 0;
       line-height: 1.2;
-    ">${formData.numberOfQuestions}-Question Assessment</h1>
+    ">${formData.subject}${formData.strand ? ` — ${formData.strand}` : ''} Quiz</h1>
 
     <div style="
       display: flex;

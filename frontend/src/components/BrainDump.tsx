@@ -50,6 +50,11 @@ import Link01IconData from '@hugeicons/core-free-icons/Link01Icon';
 import ArrowRight01IconData from '@hugeicons/core-free-icons/ArrowRight01Icon';
 import TextFontIconData from '@hugeicons/core-free-icons/TextFontIcon';
 import StopWatchIconData from '@hugeicons/core-free-icons/StopWatchIcon';
+import Presentation01IconData from '@hugeicons/core-free-icons/Presentation01Icon';
+import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
+import Task01IconData from '@hugeicons/core-free-icons/Task01Icon';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -118,6 +123,11 @@ const Quote: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const Link: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Link01IconData} {...p} />;
 const HrIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MinusSignIconData} {...p} />;
 const StopWatch: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StopWatchIconData} {...p} />;
+const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
+const UserGroup: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
+const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Target: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Target01IconData} {...p} />;
+const TaskIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Task01IconData} {...p} />;
 
 interface BrainDumpProps {
   tabId: string;
@@ -136,6 +146,13 @@ const ACTION_META: Record<BrainDumpActionType, { icon: React.ElementType; label:
   'multigrade-plan':      { icon: Layers,           label: 'Multi-Level Plan',     color: 'indigo' },
   'cross-curricular-plan':{ icon: Merge,            label: 'Integrated Lesson',    color: 'cyan' },
   'image-studio':         { icon: Palette,          label: 'Image Studio',         color: 'rose' },
+  'presentation':         { icon: Presentation,     label: 'Slide Deck',           color: 'violet' },
+  'grade-quiz':           { icon: PenTool,          label: 'Grade Quiz',           color: 'amber' },
+  'grade-worksheet':      { icon: FileSpreadsheet,  label: 'Grade Worksheet',      color: 'lime' },
+  'curriculum-tracker':   { icon: Target,           label: 'Track Progress',       color: 'emerald' },
+  'curriculum-browse':    { icon: SearchIcon,       label: 'Browse Curriculum',    color: 'sky' },
+  'class-management':     { icon: UserGroup,        label: 'Class Management',     color: 'slate' },
+  'attendance':           { icon: TaskIcon,         label: 'Attendance',           color: 'yellow' },
 };
 
 const ACTION_TO_TAB: Record<BrainDumpActionType, string> = {
@@ -148,6 +165,13 @@ const ACTION_TO_TAB: Record<BrainDumpActionType, string> = {
   'multigrade-plan': 'multigrade-planner',
   'cross-curricular-plan': 'cross-curricular-planner',
   'image-studio': 'image-studio',
+  'presentation': 'presentation-builder',
+  'grade-quiz': 'quiz-generator',
+  'grade-worksheet': 'worksheet-generator',
+  'curriculum-tracker': 'curriculum-tracker',
+  'curriculum-browse': 'curriculum',
+  'class-management': 'class-management',
+  'attendance': 'class-management',
 };
 
 const STORAGE_KEY = 'brain-dump-entries';

@@ -514,8 +514,8 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
     try {
       // Build a proper title with fallbacks
       const title = formData.subject?.trim()
-        ? `${formData.subject} Quiz - Grade ${formData.gradeLevel || 'Unknown'} (${formData.numberOfQuestions || '10'} questions)`
-        : `Quiz - Grade ${formData.gradeLevel || 'Unknown'} (${formData.numberOfQuestions || '10'} questions)`;
+        ? `${formData.subject}${formData.strand?.trim() ? ` — ${formData.strand}` : ''} Quiz - Grade ${formData.gradeLevel || 'Unknown'}`
+        : `Quiz - Grade ${formData.gradeLevel || 'Unknown'}`;
       
       const quizData = {
         id: currentQuizId || `quiz_${Date.now()}`,
@@ -993,7 +993,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                               </div>
 
                               <h1 className="text-3xl font-bold text-white mb-2 leading-tight">
-                                {formData.numberOfQuestions}-Question Assessment
+                                {formData.subject}{formData.strand ? ` — ${formData.strand}` : ''} Quiz
                               </h1>
 
                               <div className="flex flex-wrap items-center gap-4 text-cyan-100">

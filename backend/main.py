@@ -2293,6 +2293,13 @@ Available action types:
 - "multigrade-plan": Create a multi-level lesson plan (details: subject, grades, topic)
 - "cross-curricular-plan": Create an integrated cross-subject lesson (details: subjects, grade, topic)
 - "image-studio": Create a visual aid or image (details: description, style)
+- "presentation": Create a slide deck or presentation (details: subject, grade, topic, slideCount)
+- "grade-quiz": Grade or mark a quiz/test (details: subject, grade, topic)
+- "grade-worksheet": Grade or mark a worksheet (details: subject, grade, topic)
+- "curriculum-tracker": Track or update curriculum progress/milestones (details: subject, grade, topic, status)
+- "curriculum-browse": Look up or browse curriculum standards (details: subject, grade)
+- "class-management": Manage students, add students, or manage a class (details: className, grade)
+- "attendance": Take or record attendance (details: className, grade, date)
 
 Return ONLY a valid JSON array. Each item must have:
 - "type": one of the action types above

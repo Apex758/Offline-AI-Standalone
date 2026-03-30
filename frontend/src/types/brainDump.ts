@@ -7,7 +7,14 @@ export type BrainDumpActionType =
   | 'kindergarten-plan'
   | 'multigrade-plan'
   | 'cross-curricular-plan'
-  | 'image-studio';
+  | 'image-studio'
+  | 'presentation'
+  | 'grade-quiz'
+  | 'grade-worksheet'
+  | 'curriculum-tracker'
+  | 'curriculum-browse'
+  | 'class-management'
+  | 'attendance';
 
 export interface BrainDumpAction {
   id: string;

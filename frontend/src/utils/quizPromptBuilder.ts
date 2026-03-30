@@ -214,7 +214,7 @@ Explanation: [explanation]
 
   if (hasTrueFalse) {
     formatInstructions += `TRUE/FALSE FORMAT:
-Question X: [True or False statement]
+Question X: [Statement only — do NOT prefix with "True or False:"]
 A) True
 B) False
 Correct Answer: True
@@ -245,6 +245,20 @@ Explanation: [Additional context or rubric guidance]
   return formatInstructions;
 }
 
+function buildDistributionInstruction(numberOfQuestions: string, questionTypes: string[]): string {
+  const total = parseInt(numberOfQuestions) || 10;
+  if (questionTypes.length <= 1) return '';
+
+  const base = Math.floor(total / questionTypes.length);
+  const remainder = total % questionTypes.length;
+  const parts = questionTypes.map((type, i) => {
+    const count = base + (i < remainder ? 1 : 0);
+    return `${count} ${type}`;
+  });
+
+  return `- Distribute the ${total} questions across types: ${parts.join(', ')}. The total must be exactly ${total}.`;
+}
+
 export function buildQuizPrompt(formData: QuizFormData, lessonPlanText?: string): QuizPromptParts {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
   const formatInstructions = buildFormatInstructions(formData.questionTypes);
@@ -263,8 +277,10 @@ ${formatInstructions}
 RULES:
 - Generate EXACTLY ${formData.numberOfQuestions} questions numbered 1 to ${formData.numberOfQuestions}.
 - Stop after Question ${formData.numberOfQuestions}. Do not add extra questions.
+${buildDistributionInstruction(formData.numberOfQuestions, formData.questionTypes)}
 - Include correct answer and explanation for each question.
 - Align questions to these cognitive levels: ${formData.cognitiveLevels.join(', ')}.
+- For True/False questions, write the statement directly. Do NOT prefix with "True or False:".
 - Do NOT repeat or echo these instructions in your output. Output ONLY the quiz questions.`;
 
     const userPrompt = `Generate a ${formData.numberOfQuestions}-question quiz based on the following lesson plan. Questions must assess what was taught in the lesson.
@@ -309,8 +325,10 @@ ${formatInstructions}
 RULES:
 - Generate EXACTLY ${formData.numberOfQuestions} questions numbered 1 to ${formData.numberOfQuestions}.
 - Stop after Question ${formData.numberOfQuestions}. Do not add extra questions.
+${buildDistributionInstruction(formData.numberOfQuestions, formData.questionTypes)}
 - Include correct answer and explanation for each question.
 - Align questions to these cognitive levels: ${formData.cognitiveLevels.join(', ')}.
+- For True/False questions, write the statement directly. Do NOT prefix with "True or False:".
 - Do NOT repeat or echo these instructions in your output. Output ONLY the quiz questions.`;
 
   const userPrompt = `Create a ${formData.numberOfQuestions}-question ${formData.questionTypes.join(' and ')} quiz for Grade ${formData.gradeLevel} ${formData.subject} students on ${formData.strand}, focusing on: ${formData.learningOutcomes || formData.specificOutcomes || formData.essentialOutcomes}.

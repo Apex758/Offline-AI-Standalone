@@ -76,6 +76,9 @@ function parseMultipleChoiceQuestion(questionText: string, questionBody: string,
 
 // Helper function to parse true/false questions
 function parseTrueFalseQuestion(questionText: string, questionBody: string, index: number): QuizQuestion | null {
+  // Strip "True or False:" prefix from question text
+  questionText = questionText.replace(/^True\s+or\s+False:\s*/i, '').trim();
+
   // Extract correct answer - look for "Correct Answer: True" or "Correct Answer: False"
   const answerMatch = questionBody.match(/Correct\s+Answer:\s*(True|False)/i);
   const correctAnswer = answerMatch ? answerMatch[1].toLowerCase() : 'true';
