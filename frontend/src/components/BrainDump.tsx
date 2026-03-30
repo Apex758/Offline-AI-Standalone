@@ -55,6 +55,7 @@ import UserGroupIconData from '@hugeicons/core-free-icons/UserGroupIcon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
 import Target01IconData from '@hugeicons/core-free-icons/Target01Icon';
 import Task01IconData from '@hugeicons/core-free-icons/Task01Icon';
+import HelpCircleIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 import { useSTT } from '../hooks/useVoice';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -123,6 +124,7 @@ const Quote: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const Link: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Link01IconData} {...p} />;
 const HrIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={MinusSignIconData} {...p} />;
 const StopWatch: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={StopWatchIconData} {...p} />;
+const HelpCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={HelpCircleIconData} {...p} />;
 const Presentation: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Presentation01IconData} {...p} />;
 const UserGroup: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={UserGroupIconData} {...p} />;
 const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
@@ -557,6 +559,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const [activeTool, setActiveTool] = useState<'calculator' | 'stopwatch' | 'timer' | null>(null);
   const [showToolbar, setShowToolbar] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [skeletonExpanded, setSkeletonExpanded] = useState(false);
   const [revealActions, setRevealActions] = useState(false);
@@ -956,7 +959,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         <div className={`image-studio-flip-inner h-full ${flipped ? 'flipped' : ''}`}>
 
           {/* ═══════ FRONT: Brain Dump Input ═══════ */}
-          <div className="image-studio-flip-front p-4 md:p-6 space-y-5">
+          <div className="image-studio-flip-front p-4 md:p-6 space-y-5 relative">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -968,19 +971,113 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                   <p className="text-xs text-theme-muted">Type or speak your thoughts, turn them into actions</p>
                 </div>
               </div>
-              <button
-                onClick={() => setFlipped(true)}
-                className="group flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold transition-all active:scale-95 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 hover:ring-amber-500/30"
-              >
-                <StickyNote className="w-3.5 h-3.5" />
-                Saved Notes
-                {entries.length > 0 && (
-                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20">
-                    {entries.length}
-                  </span>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowHelp(!showHelp)}
+                  className={`p-2 rounded-2xl text-xs transition-all active:scale-90 ring-1 ${
+                    showHelp
+                      ? 'text-purple-500 bg-purple-500/15 ring-purple-500/25'
+                      : 'text-theme-muted bg-theme-surface ring-theme hover:text-purple-500 hover:bg-purple-500/10 hover:ring-purple-500/20'
+                  }`}
+                  title="What can Brain Dump do?"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setFlipped(true)}
+                  className="group flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold transition-all active:scale-95 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 ring-1 ring-amber-500/15 hover:ring-amber-500/30"
+                >
+                  <StickyNote className="w-3.5 h-3.5" />
+                  Saved Notes
+                  {entries.length > 0 && (
+                    <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20">
+                      {entries.length}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
+
+            {/* ─── Help Panel (floating overlay) ─── */}
+            {showHelp && (
+              <>
+                {/* Backdrop */}
+                <div className="fixed inset-0 z-40" onClick={() => setShowHelp(false)} />
+                <div
+                  className="absolute left-4 right-4 md:left-6 md:right-6 z-50 rounded-2xl bg-theme-surface ring-1 ring-purple-500/20 overflow-y-auto max-h-[70vh]"
+                  style={{
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+                    animation: 'helpPanelIn 250ms ease both',
+                  }}
+                >
+                  <style>{`@keyframes helpPanelIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+                  {/* Sticky header */}
+                  <div className="sticky top-0 z-10 bg-theme-surface border-b border-theme rounded-t-2xl">
+                    <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                      <h3 className="text-sm font-bold text-theme-heading flex items-center gap-2">
+                        <Zap className="w-3.5 h-3.5 text-purple-500" />
+                        What can Brain Dump do?
+                      </h3>
+                      <button
+                        onClick={() => setShowHelp(false)}
+                        className="p-1.5 rounded-xl text-theme-muted hover:text-theme-label hover:bg-theme-tertiary transition-all active:scale-90"
+                      >
+                        <XIcon className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="px-5 pb-3 text-xs text-theme-muted leading-relaxed">
+                      Type or speak anything — Brain Dump will extract actions and open the right tool with your details pre-filled.
+                    </p>
+                  </div>
+                  {/* Action list */}
+                  <div className="px-4 py-3 grid grid-cols-1 gap-1.5">
+                    {([
+                      { type: 'lesson-plan' as BrainDumpActionType, example: '"Plan a lesson on fractions for grade 4"' },
+                      { type: 'quiz' as BrainDumpActionType, example: '"Make a 10-question quiz on volcanoes for grade 6"' },
+                      { type: 'rubric' as BrainDumpActionType, example: '"Create a rubric for the science fair project"' },
+                      { type: 'worksheet' as BrainDumpActionType, example: '"Make a multiplication worksheet for grade 3"' },
+                      { type: 'kindergarten-plan' as BrainDumpActionType, example: '"Plan a shapes lesson for kindergarten"' },
+                      { type: 'multigrade-plan' as BrainDumpActionType, example: '"I teach grades 3 & 4 together, need a math lesson"' },
+                      { type: 'cross-curricular-plan' as BrainDumpActionType, example: '"Combine science and art for a water cycle lesson"' },
+                      { type: 'presentation' as BrainDumpActionType, example: '"Make a slideshow about the solar system"' },
+                      { type: 'image-studio' as BrainDumpActionType, example: '"Generate a picture of a volcano for my lesson"' },
+                      { type: 'calendar-task' as BrainDumpActionType, example: '"Remind me to submit report cards by Friday"' },
+                      { type: 'grade-quiz' as BrainDumpActionType, example: '"I need to grade the grade 4 math quiz"' },
+                      { type: 'grade-worksheet' as BrainDumpActionType, example: '"Grade the spelling worksheets from today"' },
+                      { type: 'curriculum-browse' as BrainDumpActionType, example: '"Show me the grade 3 science standards"' },
+                      { type: 'curriculum-tracker' as BrainDumpActionType, example: '"Mark fractions as completed for grade 5"' },
+                      { type: 'class-management' as BrainDumpActionType, example: '"Add a new student named John to grade 4"' },
+                      { type: 'attendance' as BrainDumpActionType, example: '"Take attendance for grade 2 today"' },
+                    ] as { type: BrainDumpActionType; example: string }[]).map((item, i) => {
+                      const meta = ACTION_META[item.type] || ACTION_META['calendar-task'];
+                      const MetaIcon = meta.icon;
+                      return (
+                        <div
+                          key={item.type}
+                          className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-theme-tertiary/60 transition-all"
+                          style={{
+                            animation: `helpItemIn 300ms ease ${i * 30}ms both`,
+                          }}
+                        >
+                          <div className={`p-1.5 rounded-lg shrink-0 bg-${meta.color}-500/12`}>
+                            <MetaIcon className={`w-3.5 h-3.5 text-${meta.color}-500`} />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs font-semibold text-theme-heading">{meta.label}</span>
+                            <p className="text-[11px] text-theme-muted leading-relaxed mt-0.5 italic">{item.example}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Tip */}
+                  <div className="sticky bottom-0 px-5 py-3 border-t border-theme text-[11px] text-theme-muted bg-purple-500/[0.03] rounded-b-2xl">
+                    <strong className="text-purple-500">Tip:</strong> You can mention multiple things at once and Brain Dump will split them into separate action cards.
+                  </div>
+                  <style>{`@keyframes helpItemIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+                </div>
+              </>
+            )}
 
             {/* Main content area */}
             <div className="space-y-4 pb-4">
