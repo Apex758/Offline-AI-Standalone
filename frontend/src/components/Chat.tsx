@@ -1,4 +1,4 @@
-                    import React, { useState, useEffect, useRef } from 'react';
+                    import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import SentIconData from '@hugeicons/core-free-icons/SentIcon';
 import Clock01IconData from '@hugeicons/core-free-icons/Clock01Icon';
@@ -19,6 +19,7 @@ import LinkSquare01IconData from '@hugeicons/core-free-icons/LinkSquare01Icon';
 import ViewSidebarRightIconData from '@hugeicons/core-free-icons/ViewSidebarRightIcon';
 import Tick02IconData from '@hugeicons/core-free-icons/Tick02Icon';
 import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
+import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -45,6 +46,7 @@ const LinkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const SidebarIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ViewSidebarRightIconData} {...p} />;
 const CheckIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Tick02IconData} {...p} />;
 const ImageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Image01IconData} {...p} />;
+const UploadIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Upload01IconData} {...p} />;
 import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -139,6 +141,12 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [loadingFolder, setLoadingFolder] = useState<string | null>(null);
   const [attachingFile, setAttachingFile] = useState<string | null>(null);
   const fileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Drag-and-drop state
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [pendingDropFiles, setPendingDropFiles] = useState<string[]>([]);
+  const cancelledDropFiles = useRef<Set<string>>(new Set());
+  const dragCounter = useRef(0);
 
   // Thinking indicator (shown between send and first token)
   const [waitingForResponse, setWaitingForResponse] = useState(false);
@@ -868,6 +876,88 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     setAttachedFiles(prev => prev.filter(f => f.path !== filePath));
   };
 
+  // Drag-and-drop file handling
+  const handleDroppedFiles = useCallback(async (files: FileList) => {
+    const fileArr = Array.from(files);
+    const names = fileArr.map(f => f.name).filter(
+      name => !attachedFiles.some(a => a.path === `drop://${name}`)
+    );
+    if (names.length === 0) return;
+    setPendingDropFiles(prev => [...prev, ...names]);
+
+    for (const file of fileArr) {
+      const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
+      const syntheticPath = `drop://${file.name}`;
+
+      if (attachedFiles.some(f => f.path === syntheticPath)) continue;
+      if (cancelledDropFiles.current.has(file.name)) {
+        cancelledDropFiles.current.delete(file.name);
+        continue;
+      }
+
+      try {
+        const isImage = IMAGE_EXTENSIONS.includes(ext);
+
+        if (isImage) {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          if (cancelledDropFiles.current.has(file.name)) {
+            cancelledDropFiles.current.delete(file.name);
+            continue;
+          }
+          setAttachedFiles(prev => [...prev, {
+            name: file.name,
+            path: syntheticPath,
+            extension: ext,
+            previewText: `[Image: ${file.name}]`,
+            fullContent: '',
+            isImage: true,
+            base64Data: base64,
+          }]);
+        } else {
+          const formData = new FormData();
+          formData.append('file', file, file.name);
+          const response = await axios.post('http://localhost:8000/api/file-explorer/parse', formData);
+          if (cancelledDropFiles.current.has(file.name)) {
+            cancelledDropFiles.current.delete(file.name);
+            continue;
+          }
+          const parsed = response.data;
+          setAttachedFiles(prev => [...prev, {
+            name: file.name,
+            path: syntheticPath,
+            extension: ext,
+            previewText: (parsed.text || '').substring(0, 200) + ((parsed.text?.length || 0) > 200 ? '...' : ''),
+            fullContent: parsed.text || '',
+          }]);
+        }
+      } catch (err) {
+        console.error('Error attaching dropped file:', err);
+      }
+      setPendingDropFiles(prev => prev.filter(n => n !== file.name));
+    }
+  }, [attachedFiles]);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounter.current++; setIsDragOver(true);
+  }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragOver(false);
+  }, []);
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); }, []);
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    setIsDragOver(false); dragCounter.current = 0;
+    if (e.dataTransfer.files.length > 0) handleDroppedFiles(e.dataTransfer.files);
+  }, [handleDroppedFiles]);
+
   // Toggle all files in a folder on/off
   const toggleFolderAttach = async (folderPath: string) => {
     const items = folderContents[folderPath] || [];
@@ -1001,7 +1091,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   };
 
   return (
-    <div className="flex h-full tab-content-bg relative" data-tutorial="chat-welcome">
+    <div className="flex h-full tab-content-bg relative" data-tutorial="chat-welcome"
+      onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
       <div className="flex-1 flex flex-col" onClick={(e) => {
         e.stopPropagation();
         onPanelClick?.();
@@ -1215,7 +1306,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
         <div className="border-t border-theme p-4">
           {/* Attached file chips */}
-          {attachedFiles.length > 0 && (
+          {(attachedFiles.length > 0 || pendingDropFiles.length > 0 || attachingFile) && (
             <div className="flex flex-wrap gap-2 mb-3">
               {attachedFiles.map(file => (
                 <div
@@ -1234,6 +1325,30 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                   </button>
                 </div>
               ))}
+              {pendingDropFiles.map(name => (
+                <div key={`pending-${name}`} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 border-dashed text-sm animate-pulse">
+                  <span className="block w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                  <span className="text-blue-800 dark:text-blue-200 max-w-[150px] truncate">{name}</span>
+                  <button
+                    onClick={() => {
+                      cancelledDropFiles.current.add(name);
+                      setPendingDropFiles(prev => prev.filter(n => n !== name));
+                    }}
+                    className="ml-0.5 p-0.5 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3 text-blue-500" />
+                  </button>
+                </div>
+              ))}
+              {attachingFile && !attachingFile.startsWith('drop://') && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 border-dashed text-sm animate-pulse">
+                  <span className="block w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-blue-800 dark:text-blue-200 max-w-[150px] truncate">
+                    {attachingFile.split('/').pop() || attachingFile}
+                  </span>
+                </div>
+              )}
             </div>
           )}
           <div className="flex space-x-2">
@@ -1618,6 +1733,15 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           </div>
         )}
       </div>
+
+      {/* Drag-and-drop overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-50 border-4 border-dashed border-blue-400 rounded-xl flex flex-col items-center justify-center pointer-events-none bg-blue-500/10 backdrop-blur-sm">
+          <UploadIcon className="w-16 h-16 mb-4 text-blue-500" />
+          <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">Drop files here to attach</p>
+          <p className="text-sm text-theme-muted mt-2">Images, documents, spreadsheets, and more</p>
+        </div>
+      )}
     </div>
   );
 };
