@@ -1885,7 +1885,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             style={{
               color: 'var(--sidebar-text-faint)',
               textAlign: sidebarOpen ? 'left' : 'center',
-              padding: sidebarOpen ? '36px 12px 6px' : '36px 0 6px'
+              padding: sidebarOpen ? `${lessonPlannerExpanded || visualStudioExpanded ? '10px' : '36px'} 12px 6px` : '36px 0 6px',
+              transition: 'padding 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             Tools
