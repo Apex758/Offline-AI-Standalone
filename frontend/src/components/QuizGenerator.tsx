@@ -300,7 +300,7 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const [formData, setFormData] = useState<FormData>(() => {
     const saved = savedData?.formData;
     if (saved && typeof saved === 'object' && saved.subject?.trim()) {
-      return saved;
+      return { ...getDefaultFormData(), ...saved };
     }
     return getDefaultFormData();
   });

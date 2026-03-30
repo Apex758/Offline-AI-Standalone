@@ -12,6 +12,7 @@ export interface Capabilities {
   hasVision: boolean;
   hasOcr: boolean;
   hasDiffusion: boolean;
+  supportsThinking: boolean;
   selectedLlm: string;
   selectedDiffusion: string;
   dualModel: DualModelConfig;
@@ -28,6 +29,7 @@ const defaultCapabilities: Capabilities = {
   hasVision: false,
   hasOcr: false,
   hasDiffusion: false,
+  supportsThinking: false,
   selectedLlm: '',
   selectedDiffusion: '',
   dualModel: {
@@ -59,6 +61,7 @@ export function CapabilitiesProvider({ children }: { children: React.ReactNode }
         hasVision: data.has_vision ?? false,
         hasOcr: data.has_ocr ?? false,
         hasDiffusion: data.has_diffusion ?? false,
+        supportsThinking: data.supports_thinking ?? false,
         selectedLlm: data.selected_llm ?? '',
         selectedDiffusion: data.selected_diffusion ?? '',
         dualModel: data.dual_model ?? defaultCapabilities.dualModel,

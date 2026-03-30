@@ -25,9 +25,20 @@ export interface BrainDumpAction {
   status: 'pending' | 'accepted' | 'denied';
 }
 
+export interface BrainDumpSuggestion {
+  id: string;
+  text: string;
+  suggestedTypes: BrainDumpActionType[];
+  confidence: 'low' | 'medium';
+  selectedType?: BrainDumpActionType;
+  status: 'pending' | 'selected' | 'dismissed' | 'generating' | 'generated';
+  generatedAction?: BrainDumpAction;
+}
+
 export interface BrainDumpEntry {
   id: string;
   text: string;
   timestamp: string;
   actions: BrainDumpAction[];
+  suggestions?: BrainDumpSuggestion[];
 }

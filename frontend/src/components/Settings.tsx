@@ -222,11 +222,12 @@ interface ModelInfo {
   size_mb: number;
   extension: string;
   is_active: boolean;
+  supports_thinking?: boolean;
 }
 
 const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
   const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
-  const { tier, hasVision, hasOcr, hasDiffusion, dualModel, refreshCapabilities } = useCapabilities();
+  const { tier, hasVision, hasOcr, hasDiffusion, supportsThinking, dualModel, refreshCapabilities } = useCapabilities();
   const FEATURE_MODULE_LIST = FEATURE_MODULES;
   const handleToggleFeatureModule = (moduleId: FeatureModuleId) => toggleModule(moduleId);
   // dnd-kit sensors for sidebar reordering (must be at top level)
@@ -1842,6 +1843,44 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Thinking Mode */}
+                {(supportsThinking || availableModels.some(m => m.supports_thinking)) && (
+                  <Card data-search-section="thinking-mode">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <span className="w-4.5 h-4.5 text-purple-500">💭</span>
+                        Thinking Mode
+                      </CardTitle>
+                      <CardDescription>Enable deep reasoning for complex tasks (supported by Qwen models)</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-theme-heading">Enable Thinking</p>
+                          <p className="text-xs text-theme-hint mt-0.5">
+                            {supportsThinking
+                              ? 'Current model supports thinking mode. When enabled, the model will reason through complex problems step-by-step before answering.'
+                              : 'Current model does not support thinking mode. Switch to a Qwen model to use this feature.'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => updateSettings({ thinkingEnabled: !settings.thinkingEnabled })}
+                          disabled={!supportsThinking}
+                          className={`relative w-11 h-6 rounded-full transition-colors ${
+                            settings.thinkingEnabled && supportsThinking
+                              ? 'bg-purple-600'
+                              : 'bg-gray-300 dark:bg-gray-600'
+                          } ${!supportsThinking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                            settings.thinkingEnabled && supportsThinking ? 'translate-x-5' : ''
+                          }`} />
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Diffusion Model */}
                 <Card data-search-section="diffusion-model">

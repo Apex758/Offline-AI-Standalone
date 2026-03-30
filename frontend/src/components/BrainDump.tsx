@@ -61,7 +61,7 @@ import { useWebSocket } from '../contexts/WebSocketContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useQueue } from '../contexts/QueueContext';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
-import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType } from '../types/brainDump';
+import type { BrainDumpAction, BrainDumpEntry, BrainDumpActionType, BrainDumpSuggestion } from '../types/brainDump';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 
 // Wrapper to make HugeiconsIcon work like lucide-react components
@@ -564,9 +564,14 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   const [skeletonExpanded, setSkeletonExpanded] = useState(false);
   const [revealActions, setRevealActions] = useState(false);
   const [visibleActionCount, setVisibleActionCount] = useState(0);
+  const [suggestions, setSuggestions] = useState<BrainDumpSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const editEditorRef = useRef<HTMLDivElement>(null);
   const accumulatedRef = useRef('');
+  const suggestAccumulatedRef = useRef('');
+  const actionAccumulatedRef = useRef('');
 
   const { settings } = useSettings();
   const accentColor = settings.tabColors['brain-dump'] ?? '#a855f7';
@@ -662,12 +667,10 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     if (editEditorRef.current) setEditText(editEditorRef.current.innerHTML);
   }, [isInsideBlockEdit]);
 
-  // Parse the AI response into actions
-  const parseActions = useCallback((raw: string): BrainDumpAction[] => {
-    try {
-      let parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) parsed = parsed.actions || parsed.items || [parsed];
-      return parsed.map((a: any, i: number) => ({
+  // Parse the AI response into actions + unmatched text
+  const parseActions = useCallback((raw: string): { actions: BrainDumpAction[]; unmatched: string[] } => {
+    const mapActions = (arr: any[]): BrainDumpAction[] =>
+      arr.map((a: any, i: number) => ({
         id: `action-${Date.now()}-${i}`,
         type: a.type || 'calendar-task',
         title: a.title || 'Untitled Task',
@@ -675,24 +678,36 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
         details: a.details || a.suggestedData || {},
         status: 'pending' as const,
       }));
+
+    try {
+      let parsed = JSON.parse(raw);
+      // New format: { actions: [...], unmatched: [...] }
+      if (parsed && !Array.isArray(parsed) && parsed.actions) {
+        return {
+          actions: mapActions(Array.isArray(parsed.actions) ? parsed.actions : []),
+          unmatched: Array.isArray(parsed.unmatched) ? parsed.unmatched : [],
+        };
+      }
+      // Legacy bare array format
+      if (!Array.isArray(parsed)) parsed = parsed.items || [parsed];
+      return { actions: mapActions(parsed), unmatched: [] };
     } catch {
-      const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || raw.match(/\[[\s\S]*\]/);
+      const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || raw.match(/[\[{][\s\S]*[\]}]/);
       if (jsonMatch) {
         try {
           const extracted = jsonMatch[1] || jsonMatch[0];
           let parsed = JSON.parse(extracted);
+          if (parsed && !Array.isArray(parsed) && parsed.actions) {
+            return {
+              actions: mapActions(Array.isArray(parsed.actions) ? parsed.actions : []),
+              unmatched: Array.isArray(parsed.unmatched) ? parsed.unmatched : [],
+            };
+          }
           if (!Array.isArray(parsed)) parsed = [parsed];
-          return parsed.map((a: any, i: number) => ({
-            id: `action-${Date.now()}-${i}`,
-            type: a.type || 'calendar-task',
-            title: a.title || 'Untitled Task',
-            description: a.description || '',
-            details: a.details || a.suggestedData || {},
-            status: 'pending' as const,
-          }));
+          return { actions: mapActions(parsed), unmatched: [] };
         } catch { /* fall through */ }
       }
-      return [];
+      return { actions: [], unmatched: [] };
     }
   }, []);
 
@@ -704,15 +719,32 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   useEffect(() => {
     if (localLoadingMap[tabId] && streamingContent && !isStreaming) {
       // Queue-based generation finished — parse the result
-      const parsed = parseActions(streamingContent);
-      if (parsed.length === 0) {
+      const { actions: parsed, unmatched } = parseActions(streamingContent);
+      if (parsed.length === 0 && unmatched.length === 0) {
         setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
       }
       setActions(parsed);
       clearStreaming(tabId, WS_ENDPOINT);
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: false }));
+      // Trigger suggestion flow for unmatched text
+      if (unmatched.length > 0) {
+        const ws = getConnection(tabId, WS_ENDPOINT);
+        const delay = Math.max(parsed.length * 120 + 500, 800);
+        setTimeout(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            suggestAccumulatedRef.current = '';
+            setIsSuggestLoading(true);
+            ws.send(JSON.stringify({
+              type: 'suggest',
+              unmatchedText: unmatched.join('. '),
+              jobId: `brain-dump-suggest-${Date.now()}`,
+              generationMode: settings.generationMode,
+            }));
+          }
+        }, delay);
+      }
     }
-  }, [streamingContent, isStreaming, localLoadingMap, tabId, parseActions, clearStreaming]);
+  }, [streamingContent, isStreaming, localLoadingMap, tabId, parseActions, clearStreaming, getConnection, settings.generationMode]);
 
   // Skeleton loading lifecycle
   const prevLoadingRef = useRef(false);
@@ -763,10 +795,13 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
     if (!text || loading) return;
 
     setActions([]);
+    setSuggestions([]);
+    setShowSuggestions(false);
     setRevealActions(false);
     setVisibleActionCount(0);
     setAnalysisError(null);
     accumulatedRef.current = '';
+    suggestAccumulatedRef.current = '';
 
     // Queue path: enqueue and let QueueContext handle sending
     if (queueEnabled) {
@@ -792,19 +827,95 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
       try {
         const data = JSON.parse(event.data);
 
+        // ── Primary analysis tokens ──
         if (data.type === 'token') {
           accumulatedRef.current += data.content;
         } else if (data.type === 'done') {
-          const parsed = parseActions(accumulatedRef.current);
-          if (parsed.length === 0) {
+          const { actions: parsed, unmatched } = parseActions(accumulatedRef.current);
+          if (parsed.length === 0 && unmatched.length === 0) {
             setAnalysisError('Could not extract actions. Try being more specific about what you need (e.g., "make a quiz on fractions for grade 3").');
           }
           setActions(parsed);
           setIsAnalyzing(false);
-          ws.removeEventListener('message', handleMessage);
+          // Trigger suggestion flow for unmatched text (after action reveal animation)
+          if (unmatched.length > 0) {
+            const delay = Math.max(parsed.length * 120 + 500, 800);
+            setTimeout(() => {
+              if (ws.readyState === WebSocket.OPEN) {
+                suggestAccumulatedRef.current = '';
+                setIsSuggestLoading(true);
+                ws.send(JSON.stringify({
+                  type: 'suggest',
+                  unmatchedText: unmatched.join('. '),
+                  jobId: `brain-dump-suggest-${Date.now()}`,
+                  generationMode: settings.generationMode,
+                }));
+              }
+            }, delay);
+          } else {
+            ws.removeEventListener('message', handleMessage);
+          }
+
+        // ── Suggestion tokens ──
+        } else if (data.type === 'suggestion_token') {
+          suggestAccumulatedRef.current += data.content;
+        } else if (data.type === 'suggestions_done') {
+          setIsSuggestLoading(false);
+          try {
+            let raw = suggestAccumulatedRef.current.trim();
+            // Try to extract JSON array
+            let parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) {
+              const match = raw.match(/\[[\s\S]*\]/);
+              parsed = match ? JSON.parse(match[0]) : [];
+            }
+            const mapped: BrainDumpSuggestion[] = parsed
+              .filter((s: any) => s.suggestedTypes?.length > 0)
+              .map((s: any, i: number) => ({
+                id: `suggest-${Date.now()}-${i}`,
+                text: s.text || '',
+                suggestedTypes: s.suggestedTypes || [],
+                confidence: s.confidence || 'low',
+                status: 'pending' as const,
+              }));
+            if (mapped.length > 0) {
+              setSuggestions(mapped);
+              setShowSuggestions(true);
+            }
+          } catch { /* ignore parse errors */ }
+          // Don't remove listener yet — we still need it for generate-action
+
+        // ── Single action generation tokens ──
+        } else if (data.type === 'action_token') {
+          actionAccumulatedRef.current += data.content;
+        } else if (data.type === 'action_done') {
+          try {
+            let raw = actionAccumulatedRef.current.trim();
+            let parsed = JSON.parse(raw);
+            if (!parsed.type) {
+              const match = raw.match(/\{[\s\S]*\}/);
+              if (match) parsed = JSON.parse(match[0]);
+            }
+            const newAction: BrainDumpAction = {
+              id: `action-${Date.now()}`,
+              type: parsed.type || 'calendar-task',
+              title: parsed.title || 'Untitled Task',
+              description: parsed.description || '',
+              details: parsed.details || {},
+              status: 'pending' as const,
+            };
+            setActions(prev => [...prev, newAction]);
+            // Update the suggestion that triggered this
+            setSuggestions(prev => prev.map(s =>
+              s.status === 'generating' ? { ...s, status: 'generated', generatedAction: newAction } : s
+            ));
+          } catch { /* ignore */ }
+          actionAccumulatedRef.current = '';
+
         } else if (data.type === 'error') {
           setAnalysisError(data.message || 'Analysis failed. Please try again.');
           setIsAnalyzing(false);
+          setIsSuggestLoading(false);
           ws.removeEventListener('message', handleMessage);
         }
       } catch { /* ignore parse errors on individual messages */ }
@@ -857,6 +968,31 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   // Deny an action
   const handleDeny = useCallback((actionId: string) => {
     setActions(prev => prev.map(a => a.id === actionId ? { ...a, status: 'denied' } : a));
+  }, []);
+
+  // Handle selecting a suggested action type
+  const handleSuggestionSelect = useCallback((suggestionId: string, actionType: BrainDumpActionType) => {
+    setSuggestions(prev => prev.map(s =>
+      s.id === suggestionId ? { ...s, status: 'generating', selectedType: actionType } : s
+    ));
+    actionAccumulatedRef.current = '';
+    const ws = getConnection(tabId, WS_ENDPOINT);
+    const suggestion = suggestions.find(s => s.id === suggestionId);
+    if (!suggestion || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({
+      type: 'generate-action',
+      actionType,
+      text: suggestion.text,
+      jobId: `brain-dump-action-${Date.now()}`,
+      generationMode: settings.generationMode,
+    }));
+  }, [getConnection, tabId, suggestions, settings.generationMode]);
+
+  // Dismiss a suggestion
+  const handleSuggestionDismiss = useCallback((suggestionId: string) => {
+    setSuggestions(prev => prev.map(s =>
+      s.id === suggestionId ? { ...s, status: 'dismissed' } : s
+    ));
   }, []);
 
   // Save current brain dump to notes
@@ -1362,7 +1498,7 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                         </button>
                       )}
                       <button
-                        onClick={() => { setActions([]); setRevealActions(false); setVisibleActionCount(0); }}
+                        onClick={() => { setActions([]); setSuggestions([]); setShowSuggestions(false); setRevealActions(false); setVisibleActionCount(0); }}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 ring-1 ring-purple-500/15 transition-all active:scale-95"
                       >
                         <Brain className="w-3 h-3" />
@@ -1457,6 +1593,84 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
                       );
                     })}
                   </div>
+
+                  {/* ─── Suggestion Cards: unmatched text ─── */}
+                  {showSuggestions && suggestions.filter(s => s.status !== 'dismissed').length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                          We couldn't match some of your notes — did you mean one of these?
+                        </span>
+                      </div>
+                      {suggestions.filter(s => s.status !== 'dismissed').map((suggestion) => (
+                        <div
+                          key={suggestion.id}
+                          className={`p-3.5 rounded-2xl ring-1 transition-all ${
+                            suggestion.status === 'generated'
+                              ? 'bg-green-500/8 ring-green-500/20'
+                              : suggestion.status === 'generating'
+                              ? 'bg-amber-500/8 ring-amber-500/20'
+                              : 'bg-theme-surface ring-amber-400/25 hover:ring-amber-400/40'
+                          }`}
+                          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}
+                        >
+                          <p className="text-xs text-theme-muted mb-2 italic">"{suggestion.text}"</p>
+                          {suggestion.status === 'generating' && (
+                            <div className="flex items-center gap-2 text-xs text-amber-500">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Generating action...
+                            </div>
+                          )}
+                          {suggestion.status === 'generated' && (
+                            <div className="flex items-center gap-2 text-xs text-green-500">
+                              <Check className="w-3 h-3" />
+                              Action added above
+                            </div>
+                          )}
+                          {suggestion.status === 'pending' && (
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {suggestion.suggestedTypes.map((actionType) => {
+                                  const meta = ACTION_META[actionType] || ACTION_META['calendar-task'];
+                                  const TypeIcon = meta.icon;
+                                  return (
+                                    <button
+                                      key={actionType}
+                                      onClick={() => handleSuggestionSelect(suggestion.id, actionType)}
+                                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all active:scale-95 bg-${meta.color}-500/10 text-${meta.color}-600 dark:text-${meta.color}-400 hover:bg-${meta.color}-500/20 ring-1 ring-${meta.color}-500/20 hover:ring-${meta.color}-500/35`}
+                                    >
+                                      <TypeIcon className="w-3 h-3" />
+                                      {meta.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <button
+                                onClick={() => handleSuggestionDismiss(suggestion.id)}
+                                className="text-[10px] text-theme-hint hover:text-theme-muted transition-colors"
+                              >
+                                Dismiss
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {isSuggestLoading && (
+                        <div className="flex items-center gap-2 p-3 text-xs text-theme-muted">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Finding suggestions...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {isSuggestLoading && !showSuggestions && (
+                    <div className="mt-4 flex items-center gap-2 p-3 rounded-2xl bg-theme-surface ring-1 ring-amber-400/20 text-xs text-theme-muted">
+                      <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
+                      Checking for unmatched notes...
+                    </div>
+                  )}
                 </div>
               )}
             </div>

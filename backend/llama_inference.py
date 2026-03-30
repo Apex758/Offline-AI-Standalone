@@ -75,20 +75,35 @@ class LlamaInference:
     
     # Model family detection and config
     MODEL_FAMILIES = {
+        "qwen3": {
+            "handler_class": "Llava15ChatHandler",
+            "stop_tokens": ["<|im_end|>", "<|endoftext|>", "<|im_start|>"],
+            "prompt_format": "chatml",
+            "supports_thinking": True,
+        },
         "qwen2.5-vl": {
             "handler_class": "Qwen25VLChatHandler",
             "stop_tokens": ["<|im_end|>", "<|endoftext|>", "<|im_start|>"],
             "prompt_format": "chatml",
+            "supports_thinking": True,
         },
         "qwen2-vl": {
             "handler_class": "Qwen25VLChatHandler",
             "stop_tokens": ["<|im_end|>", "<|endoftext|>", "<|im_start|>"],
             "prompt_format": "chatml",
+            "supports_thinking": True,
+        },
+        "qwen2": {
+            "handler_class": "Llava15ChatHandler",
+            "stop_tokens": ["<|im_end|>", "<|endoftext|>", "<|im_start|>"],
+            "prompt_format": "chatml",
+            "supports_thinking": True,
         },
         "phi4-mm": {
             "handler_class": "Llava15ChatHandler",
             "stop_tokens": ["<|end|>", "<|endoftext|>"],
             "prompt_format": "phi",
+            "supports_thinking": False,
             "vision_chat_format": (
                 "{% for message in messages %}"
                 "{% if message.role == 'system' %}<|system|>{{ message.content }}<|end|>\n{% endif %}"
@@ -113,16 +128,19 @@ class LlamaInference:
             "handler_class": "Llava15ChatHandler",
             "stop_tokens": ["<|end|>", "<|endoftext|>"],
             "prompt_format": "phi",
+            "supports_thinking": False,
         },
         "lfm2": {
             "handler_class": "Llava15ChatHandler",
             "stop_tokens": ["<|im_end|>", "<|endoftext|>", "<|im_start|>"],
             "prompt_format": "chatml",
+            "supports_thinking": False,
         },
         "llava": {
             "handler_class": "Llava15ChatHandler",
             "stop_tokens": ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"],
             "prompt_format": "llama",
+            "supports_thinking": False,
         },
     }
 
@@ -139,6 +157,7 @@ class LlamaInference:
             "handler_class": "Llava15ChatHandler",
             "stop_tokens": ["<|eot_id|>", "<|end_of_text|>", "<|begin_of_text|>"],
             "prompt_format": "llama",
+            "supports_thinking": False,
         }
 
     def __init__(self, model_path: str, n_ctx: int = 4096, verbose: bool = False,

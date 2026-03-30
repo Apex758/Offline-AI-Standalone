@@ -717,6 +717,8 @@ async def websocket_chat(websocket: WebSocket):
             custom_system_prompt = message_data.get("system_prompt", None)
             # Support conversation history sent from frontend (for panels without chat_id)
             client_history = message_data.get("history", None)
+            # Thinking mode toggle (for Qwen2.5/Qwen3 models)
+            thinking_enabled = message_data.get("thinking_enabled", False)
 
             if not user_message:
                 continue
@@ -775,8 +777,15 @@ async def websocket_chat(websocket: WebSocket):
             from inference_factory import get_inference_instance, resolve_inference_for_task
             inference = resolve_inference_for_task("chat")
 
-            # Detect prompt format from the loaded model
+            # Detect prompt format and thinking support from the loaded model
             prompt_fmt = getattr(inference, 'model_config', {}).get('prompt_format', 'llama')
+            model_supports_thinking = getattr(inference, 'model_config', {}).get('supports_thinking', False)
+
+            # Inject /think or /no_think directive for thinking-capable models
+            if model_supports_thinking:
+                thinking_directive = "/think" if thinking_enabled else "/no_think"
+                system_prompt = system_prompt + f"\n{thinking_directive}"
+
             prompt = build_multi_turn_prompt(system_prompt, history, effective_user_message, prompt_format=prompt_fmt)
 
             # Safety: truncate prompt if it's too long to prevent llama.cpp crash
@@ -872,11 +881,13 @@ async def websocket_chat(websocket: WebSocket):
                     continue
                 else:
                     # Text-only path: use raw prompt completion
+                    # Double max_tokens when thinking is enabled (think block uses extra tokens)
+                    effective_max_tokens = LLAMA_PARAMS["max_tokens"] * 2 if (thinking_enabled and model_supports_thinking) else LLAMA_PARAMS["max_tokens"]
                     stream_gen = inference.generate_stream(
                         tool_name="chat",
                         input_data=user_message,
                         prompt_template=prompt,
-                        max_tokens=LLAMA_PARAMS["max_tokens"],
+                        max_tokens=effective_max_tokens,
                         temperature=LLAMA_PARAMS["temperature"],
                     )
 
@@ -2278,45 +2289,314 @@ async def presentation_websocket(websocket: WebSocket):
         logger.error(f"Presentation WebSocket error: {str(e)}")
 
 
+# ─── Brain Dump: category keyword map & helpers ──────────────────────────────
+BRAIN_DUMP_ACTION_DESCRIPTIONS = {
+    "lesson-plan":           '- "lesson-plan": Create a lesson plan (details: subject, grade, topic, duration)',
+    "quiz":                  '- "quiz": Create a quiz/assessment (details: subject, grade, topic, questionCount, difficulty)',
+    "rubric":                '- "rubric": Create a grading rubric (details: subject, grade, topic, criteria)',
+    "worksheet":             '- "worksheet": Create a worksheet (details: subject, grade, topic, questionType)',
+    "calendar-task":         '- "calendar-task": Add a task/reminder to calendar (details: date, priority)',
+    "kindergarten-plan":     '- "kindergarten-plan": Create an early childhood lesson plan (details: topic, theme, duration)',
+    "multigrade-plan":       '- "multigrade-plan": Create a multi-level lesson plan (details: subject, grades, topic)',
+    "cross-curricular-plan": '- "cross-curricular-plan": Create an integrated cross-subject lesson (details: subjects, grade, topic)',
+    "image-studio":          '- "image-studio": Create a visual aid or image (details: description, style)',
+    "presentation":          '- "presentation": Create a slide deck or presentation (details: subject, grade, topic, slideCount)',
+    "grade-quiz":            '- "grade-quiz": Grade or mark a quiz/test (details: subject, grade, topic)',
+    "grade-worksheet":       '- "grade-worksheet": Grade or mark a worksheet (details: subject, grade, topic)',
+    "curriculum-tracker":    '- "curriculum-tracker": Track or update curriculum progress/milestones (details: subject, grade, topic, status)',
+    "curriculum-browse":     '- "curriculum-browse": Look up or browse curriculum standards (details: subject, grade)',
+    "class-management":      '- "class-management": Manage students, add students, or manage a class (details: className, grade)',
+    "attendance":            '- "attendance": Take or record attendance (details: className, grade, date)',
+}
+
+BRAIN_DUMP_CATEGORIES = {
+    "assessment": {
+        "types": ["quiz", "rubric", "grade-quiz", "grade-worksheet", "worksheet"],
+        "keywords": ["test", "assess", "quiz", "grade", "mark", "evaluate", "rubric",
+                     "worksheet", "score", "check", "exam", "question", "answer",
+                     "multiple choice", "true or false", "fill in"],
+    },
+    "planning": {
+        "types": ["lesson-plan", "kindergarten-plan", "multigrade-plan", "cross-curricular-plan"],
+        "keywords": ["plan", "lesson", "teach", "unit", "week", "prepare", "objective",
+                     "kindergarten", "early childhood", "preschool", "multigrade",
+                     "multi-grade", "cross-curricular", "integrated", "activity",
+                     "learning outcome", "scheme of work"],
+    },
+    "content": {
+        "types": ["presentation", "image-studio"],
+        "keywords": ["slide", "presentation", "visual", "image", "poster", "picture",
+                     "powerpoint", "deck", "diagram", "chart", "illustration",
+                     "graphic", "photo", "display"],
+    },
+    "organization": {
+        "types": ["calendar-task", "curriculum-tracker", "curriculum-browse"],
+        "keywords": ["schedule", "deadline", "date", "remind", "reminder", "track",
+                     "progress", "curriculum", "standard", "calendar", "task",
+                     "todo", "to-do", "due", "milestone", "syllabus", "pacing",
+                     "timeline", "browse", "look up", "find standard"],
+    },
+    "management": {
+        "types": ["class-management", "attendance"],
+        "keywords": ["student", "attend", "attendance", "roster", "enroll", "absent",
+                     "register", "class list", "pupil", "manage class", "add student",
+                     "roll call", "present"],
+    },
+}
+
+ALL_ACTION_TYPE_NAMES = list(BRAIN_DUMP_ACTION_DESCRIPTIONS.keys())
+
+# Map each action type back to its category for auto-learning
+_ACTION_TO_CATEGORY = {}
+for _cat, _info in BRAIN_DUMP_CATEGORIES.items():
+    for _at in _info["types"]:
+        _ACTION_TO_CATEGORY[_at] = _cat
+
+LEARNED_KEYWORDS_FILE = MODELS_DIR / ".brain-dump-learned-keywords.json"
+
+
+def _load_learned_keywords() -> dict:
+    """Load user-confirmed keyword→category mappings from disk."""
+    try:
+        if LEARNED_KEYWORDS_FILE.exists():
+            with open(LEARNED_KEYWORDS_FILE, 'r') as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+
+def _save_learned_keyword(word: str, category: str):
+    """Persist a new keyword→category mapping learned from user confirmation."""
+    try:
+        data = _load_learned_keywords()
+        if category not in data:
+            data[category] = []
+        if word not in data[category]:
+            data[category].append(word)
+            LEARNED_KEYWORDS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(LEARNED_KEYWORDS_FILE, 'w') as f:
+                json.dump(data, f, indent=2)
+    except Exception as e:
+        logger.warning(f"Failed to save learned keyword: {e}")
+
+
+def _get_matching_categories(text: str) -> list[str]:
+    """Return category names whose keywords appear in the text.
+    Checks both hardcoded and user-learned keywords.
+    If fewer than 2 categories match, return ALL categories (ambiguous input)."""
+    text_lower = text.lower()
+    matched = set()
+
+    # Check hardcoded keywords
+    for cat_name, cat_info in BRAIN_DUMP_CATEGORIES.items():
+        if any(kw in text_lower for kw in cat_info["keywords"]):
+            matched.add(cat_name)
+
+    # Check learned keywords
+    learned = _load_learned_keywords()
+    for cat_name, words in learned.items():
+        if cat_name in BRAIN_DUMP_CATEGORIES and any(w in text_lower for w in words):
+            matched.add(cat_name)
+
+    if len(matched) < 2:
+        return list(BRAIN_DUMP_CATEGORIES.keys())
+    return list(matched)
+
+
+def _build_brain_dump_prompt(matched_categories: list[str]) -> str:
+    """Assemble the brain dump system prompt with only the relevant action types."""
+    action_lines = []
+    for cat_name in matched_categories:
+        for action_type in BRAIN_DUMP_CATEGORIES[cat_name]["types"]:
+            if action_type in BRAIN_DUMP_ACTION_DESCRIPTIONS:
+                action_lines.append(BRAIN_DUMP_ACTION_DESCRIPTIONS[action_type])
+
+    return f"""You are an AI assistant for the OECS Learning Hub, a teacher productivity app. Your job is to analyze a teacher's free-form thoughts ("brain dump") and extract actionable items that map to features in the app.
+
+Available action types:
+{chr(10).join(action_lines)}
+
+Return ONLY a valid JSON object with two keys:
+- "actions": a JSON array where each item has:
+  - "type": one of the action types above
+  - "title": short descriptive title (max 60 chars)
+  - "description": brief explanation of what to create (1-2 sentences)
+  - "details": object with relevant fields for that action type
+- "unmatched": an array of text snippets from the user's input that you could NOT confidently map to any of the available action types. If everything was matched, use an empty array.
+
+If the text mentions dates, include them in details.date. If it mentions a subject/grade, include those.
+If you cannot identify any actions, return: {{"actions": [], "unmatched": []}}
+Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
+
+
+async def _stream_to_ws(websocket, inference, prompt, text, max_tokens, temperature,
+                        token_type="token", done_type="done"):
+    """Shared streaming helper for brain dump websocket responses."""
+    token_buffer = []
+    last_send = time.time()
+    async for chunk in inference.generate_stream(
+        tool_name="brain-dump",
+        input_data=text,
+        prompt_template=prompt,
+        max_tokens=max_tokens,
+        temperature=temperature,
+    ):
+        if chunk.get("error"):
+            try:
+                await websocket.send_json({"type": "error", "message": chunk["error"]})
+                await asyncio.sleep(0)
+            except:
+                pass
+            break
+
+        if chunk.get("finished"):
+            if token_buffer:
+                try:
+                    await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
+                    await asyncio.sleep(0)
+                except:
+                    pass
+            try:
+                await websocket.send_json({"type": done_type})
+                await asyncio.sleep(0)
+            except:
+                pass
+            break
+
+        if chunk.get("token"):
+            token_buffer.append(chunk["token"])
+            if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
+                try:
+                    await websocket.send_json({"type": token_type, "content": "".join(token_buffer)})
+                    token_buffer = []
+                    last_send = time.time()
+                    await asyncio.sleep(0)
+                except:
+                    break
+
+
 @app.websocket("/ws/brain-dump")
 async def brain_dump_websocket(websocket: WebSocket):
     """Analyze free-form teacher brain dump and map to app actions."""
     await websocket.accept()
     from generation_gate import acquire_generation_slot, release_generation_slot
 
-    BRAIN_DUMP_SYSTEM_PROMPT = """You are an AI assistant for the OECS Learning Hub, a teacher productivity app. Your job is to analyze a teacher's free-form thoughts ("brain dump") and extract actionable items that map to features in the app.
-
-Available action types:
-- "lesson-plan": Create a lesson plan (details: subject, grade, topic, duration)
-- "quiz": Create a quiz/assessment (details: subject, grade, topic, questionCount, difficulty)
-- "rubric": Create a grading rubric (details: subject, grade, topic, criteria)
-- "worksheet": Create a worksheet (details: subject, grade, topic, questionType)
-- "calendar-task": Add a task/reminder to calendar (details: date, priority)
-- "kindergarten-plan": Create an early childhood lesson plan (details: topic, theme, duration)
-- "multigrade-plan": Create a multi-level lesson plan (details: subject, grades, topic)
-- "cross-curricular-plan": Create an integrated cross-subject lesson (details: subjects, grade, topic)
-- "image-studio": Create a visual aid or image (details: description, style)
-- "presentation": Create a slide deck or presentation (details: subject, grade, topic, slideCount)
-- "grade-quiz": Grade or mark a quiz/test (details: subject, grade, topic)
-- "grade-worksheet": Grade or mark a worksheet (details: subject, grade, topic)
-- "curriculum-tracker": Track or update curriculum progress/milestones (details: subject, grade, topic, status)
-- "curriculum-browse": Look up or browse curriculum standards (details: subject, grade)
-- "class-management": Manage students, add students, or manage a class (details: className, grade)
-- "attendance": Take or record attendance (details: className, grade, date)
-
-Return ONLY a valid JSON array. Each item must have:
-- "type": one of the action types above
-- "title": short descriptive title (max 60 chars)
-- "description": brief explanation of what to create (1-2 sentences)
-- "details": object with relevant fields for that action type
-
-If the text mentions dates, include them in details.date. If it mentions a subject/grade, include those.
-If you cannot identify any actions, return an empty array: []
-Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
-
     try:
         while True:
             data = await websocket.receive_json()
+            msg_type = data.get("type", "analyze")
+
+            # ── Suggestion request: lightweight second pass ──────────────
+            if msg_type == "suggest":
+                unmatched_text = data.get("unmatchedText", "").strip()
+                job_id = data.get("jobId") or "brain-dump-suggest"
+                generation_mode = data.get("generationMode", "queued")
+                if not unmatched_text:
+                    await websocket.send_json({"type": "suggestions_done"})
+                    continue
+
+                type_names = ", ".join(ALL_ACTION_TYPE_NAMES)
+                suggest_prompt_text = f"""The user wrote: "{unmatched_text}"
+
+Available tools in the app: {type_names}
+
+Return a JSON array of objects. Each object should have:
+- "text": the relevant snippet from the user's input
+- "suggestedTypes": array of 1-3 tool names from the list above that MIGHT apply
+- "confidence": "low" or "medium"
+If nothing applies, return an empty array: []
+Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
+
+                suggest_full = "<|begin_of_text|>"
+                suggest_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou help match teacher notes to app features. Be generous — suggest plausible matches even if uncertain.<|eot_id|>"
+                suggest_full += f"<|start_header_id|>user<|end_header_id|>\n\n{suggest_prompt_text}<|eot_id|>"
+                suggest_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+                slot_mode = None
+                try:
+                    slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+                    from inference_factory import get_inference_instance, resolve_inference_for_task
+                    inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+                    await _stream_to_ws(websocket, inference, suggest_full, unmatched_text,
+                                        max_tokens=500, temperature=0.3,
+                                        token_type="suggestion_token", done_type="suggestions_done")
+                except Exception as e:
+                    logger.error(f"Brain dump suggestion error: {e}")
+                    try:
+                        await websocket.send_json({"type": "error", "message": str(e)})
+                    except:
+                        pass
+                finally:
+                    try:
+                        release_generation_slot(slot_mode or generation_mode)
+                    except:
+                        pass
+                continue
+
+            # ── Generate single action from user-confirmed suggestion ────
+            if msg_type == "generate-action":
+                action_type = data.get("actionType", "").strip()
+                action_text = data.get("text", "").strip()
+                job_id = data.get("jobId") or "brain-dump-action"
+                generation_mode = data.get("generationMode", "queued")
+                if not action_type or not action_text:
+                    await websocket.send_json({"type": "action_done"})
+                    continue
+
+                # Auto-learn: save keywords from this text → action's category
+                category = _ACTION_TO_CATEGORY.get(action_type)
+                if category:
+                    words = [w.lower().strip() for w in action_text.split() if len(w.strip()) > 3]
+                    # Filter out very common words
+                    stopwords = {"the", "and", "for", "that", "this", "with", "from", "have", "will",
+                                 "need", "want", "some", "about", "been", "also", "they", "their",
+                                 "what", "when", "where", "which", "there", "would", "could", "should",
+                                 "make", "like", "just", "them", "than", "into", "over", "very", "much"}
+                    for word in words:
+                        if word not in stopwords:
+                            _save_learned_keyword(word, category)
+
+                type_desc = BRAIN_DUMP_ACTION_DESCRIPTIONS.get(action_type, f'- "{action_type}": (unknown type)')
+                gen_prompt_text = f"""Based on the teacher's note: "{action_text}"
+
+Create a single action of this type:
+{type_desc}
+
+Return ONLY a valid JSON object with:
+- "type": "{action_type}"
+- "title": short descriptive title (max 60 chars)
+- "description": brief explanation of what to create (1-2 sentences)
+- "details": object with relevant fields for that action type
+Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
+
+                gen_full = "<|begin_of_text|>"
+                gen_full += f"<|start_header_id|>system<|end_header_id|>\n\nYou create structured actions for the OECS Learning Hub teacher app.<|eot_id|>"
+                gen_full += f"<|start_header_id|>user<|end_header_id|>\n\n{gen_prompt_text}<|eot_id|>"
+                gen_full += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
+                slot_mode = None
+                try:
+                    slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
+                    from inference_factory import get_inference_instance, resolve_inference_for_task
+                    inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
+                    await _stream_to_ws(websocket, inference, gen_full, action_text,
+                                        max_tokens=500, temperature=0.3,
+                                        token_type="action_token", done_type="action_done")
+                except Exception as e:
+                    logger.error(f"Brain dump generate-action error: {e}")
+                    try:
+                        await websocket.send_json({"type": "error", "message": str(e)})
+                    except:
+                        pass
+                finally:
+                    try:
+                        release_generation_slot(slot_mode or generation_mode)
+                    except:
+                        pass
+                continue
+
+            # ── Primary analysis (default) ───────────────────────────────
             text = data.get("text", "").strip()
             job_id = data.get("jobId") or "brain-dump"
             generation_mode = data.get("generationMode", "queued")
@@ -2324,8 +2604,11 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
             if not text:
                 continue
 
+            matched_categories = _get_matching_categories(text)
+            system_prompt = _build_brain_dump_prompt(matched_categories)
+
             full_prompt = "<|begin_of_text|>"
-            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{BRAIN_DUMP_SYSTEM_PROMPT}<|eot_id|>"
+            full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{text}<|eot_id|>"
             full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
@@ -2334,49 +2617,8 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON array."""
                 slot_mode = await acquire_generation_slot(websocket, generation_mode, job_id)
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
-
-                token_buffer = []
-                last_send = time.time()
-                async for chunk in inference.generate_stream(
-                    tool_name="brain-dump",
-                    input_data=text,
-                    prompt_template=full_prompt,
-                    max_tokens=4000,
-                    temperature=0.3
-                ):
-                    if chunk.get("error"):
-                        try:
-                            await websocket.send_json({"type": "error", "message": chunk["error"]})
-                            await asyncio.sleep(0)
-                        except:
-                            pass
-                        break
-
-                    if chunk.get("finished"):
-                        if token_buffer:
-                            try:
-                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                                await asyncio.sleep(0)
-                            except:
-                                pass
-                        try:
-                            await websocket.send_json({"type": "done"})
-                            await asyncio.sleep(0)
-                        except:
-                            pass
-                        break
-
-                    if chunk.get("token"):
-                        token_buffer.append(chunk["token"])
-                        if len(token_buffer) >= 10 or (time.time() - last_send) > 0.1:
-                            try:
-                                await websocket.send_json({"type": "token", "content": "".join(token_buffer)})
-                                token_buffer = []
-                                last_send = time.time()
-                                await asyncio.sleep(0)
-                            except:
-                                break
-
+                await _stream_to_ws(websocket, inference, full_prompt, text,
+                                    max_tokens=1500, temperature=0.3)
             except Exception as e:
                 logger.error(f"Brain dump analysis error: {e}")
                 try:
@@ -4764,12 +5006,14 @@ def scan_models_directory():
 
                 file_size_mb = file_path.stat().st_size / (1024 * 1024)
 
+                family_config = LlamaInference.detect_model_family(str(file_path))
                 model_info = {
                     "name": file_path.name,
                     "path": str(file_path),
                     "size_mb": round(file_size_mb, 2),
                     "extension": file_path.suffix,
-                    "is_active": file_path.name == get_selected_model()
+                    "is_active": file_path.name == get_selected_model(),
+                    "supports_thinking": family_config.get("supports_thinking", False),
                 }
                 models.append(model_info)
 
@@ -5479,6 +5723,102 @@ Rules:
     except Exception as e:
         logging.error(f"Error generating organization plan: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/file-explorer/execute-organize")
+async def execute_organize(request: Request):
+    """Execute a file organization plan — create folders and move files."""
+    import shutil
+    try:
+        body = await request.json()
+        folder_path = body.get("folderPath", "")
+        folders_to_create = body.get("folders_to_create", [])
+        moves = body.get("moves", [])
+
+        if not folder_path or not Path(folder_path).is_dir():
+            return JSONResponse(status_code=400, content={"error": "Invalid folder path"})
+
+        base = Path(folder_path).resolve()
+        results = []
+        undo_log = []
+
+        # Create folders
+        for folder_name in folders_to_create:
+            target = base / folder_name
+            # Safety: ensure target stays within base
+            if not str(target.resolve()).startswith(str(base)):
+                continue
+            target.mkdir(parents=True, exist_ok=True)
+
+        # Move files
+        for move in moves:
+            file_name = move.get("file", "")
+            dest_folder = move.get("to", "")
+            if not file_name or not dest_folder:
+                results.append({"file": file_name, "success": False, "error": "Missing file or destination"})
+                continue
+
+            source = base / file_name
+            dest_dir = base / dest_folder
+            dest = dest_dir / file_name
+
+            # Safety checks
+            if not str(source.resolve()).startswith(str(base)):
+                results.append({"file": file_name, "success": False, "error": "Path escape blocked"})
+                continue
+            if not str(dest.resolve()).startswith(str(base)):
+                results.append({"file": file_name, "success": False, "error": "Path escape blocked"})
+                continue
+            if not source.exists():
+                results.append({"file": file_name, "success": False, "error": "File not found"})
+                continue
+
+            try:
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(source), str(dest))
+                results.append({"file": file_name, "success": True})
+                undo_log.append({"source": str(dest), "original": str(source)})
+            except Exception as e:
+                results.append({"file": file_name, "success": False, "error": str(e)})
+
+        success_count = sum(1 for r in results if r["success"])
+        fail_count = sum(1 for r in results if not r["success"])
+
+        return JSONResponse(content={
+            "results": results,
+            "undoLog": undo_log,
+            "summary": {"success": success_count, "failed": fail_count},
+        })
+
+    except Exception as e:
+        logger.error(f"Error executing organize plan: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/file-explorer/undo-organize")
+async def undo_organize(request: Request):
+    """Undo a file organization — move files back to original locations."""
+    import shutil
+    try:
+        body = await request.json()
+        undo_log = body.get("undoLog", [])
+        results = []
+
+        for entry in undo_log:
+            source = entry.get("source", "")
+            original = entry.get("original", "")
+            if not source or not original:
+                continue
+            try:
+                Path(original).parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(source, original)
+                results.append({"file": Path(original).name, "success": True})
+            except Exception as e:
+                results.append({"file": Path(original).name, "success": False, "error": str(e)})
+
+        return JSONResponse(content={"results": results})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/export")

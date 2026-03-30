@@ -97,6 +97,8 @@ export interface Settings {
   startOnBoot: boolean;
   // File access
   fileAccessEnabled: boolean;
+  // Thinking mode (for Qwen2.5/Qwen3 models)
+  thinkingEnabled: boolean;
   // Feature discovery
   discoveredFeatures: string[];
   // Nudge system
@@ -183,6 +185,8 @@ export const DEFAULT_SETTINGS: Settings = {
   startOnBoot: false,
   // File access
   fileAccessEnabled: false,
+  // Thinking mode
+  thinkingEnabled: false,
   // Feature discovery
   discoveredFeatures: [],
   // Nudge system

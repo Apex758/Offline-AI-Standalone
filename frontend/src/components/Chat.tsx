@@ -20,6 +20,8 @@ import ViewSidebarRightIconData from '@hugeicons/core-free-icons/ViewSidebarRigh
 import Tick02IconData from '@hugeicons/core-free-icons/Tick02Icon';
 import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
 import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
+import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
+import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -47,6 +49,8 @@ const SidebarIcon: React.FC<{ className?: string; style?: React.CSSProperties }>
 const CheckIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Tick02IconData} {...p} />;
 const ImageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Image01IconData} {...p} />;
 const UploadIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Upload01IconData} {...p} />;
+const RefreshIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ReloadIconData} {...p} />;
+const BrainIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BrainIconData} {...p} />;
 import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
@@ -112,9 +116,55 @@ interface AttachedFile {
   fullContent: string;
   isImage?: boolean;
   base64Data?: string;
+  isDirectory?: boolean;
+  fileCount?: number;
+  fileSummary?: string;
 }
 
 type RightPanel = 'none' | 'history' | 'files';
+
+// ── Thinking Block Component (collapsible reasoning display) ──
+const ThinkingBlock: React.FC<{ content: string; isStreaming?: boolean }> = ({ content, isStreaming }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="mb-3 border border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition"
+      >
+        {isStreaming ? (
+          <span className="w-3.5 h-3.5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+        ) : expanded ? (
+          <ChevronDown className="w-3.5 h-3.5" />
+        ) : (
+          <ChevronRight className="w-3.5 h-3.5" />
+        )}
+        <BrainIcon className="w-3.5 h-3.5" />
+        {isStreaming ? 'Reasoning...' : expanded ? 'Hide reasoning' : 'View reasoning'}
+      </button>
+      {(expanded || isStreaming) && (
+        <div className="px-3 py-2 text-xs text-theme-muted bg-purple-50/50 dark:bg-purple-900/20 border-t border-purple-200 dark:border-purple-800 whitespace-pre-wrap max-h-64 overflow-y-auto">
+          {content}
+          {isStreaming && <span className="inline-block w-1.5 h-3 bg-purple-500 ml-0.5 animate-pulse" />}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Smart thinking suggestion patterns ──
+const THINKING_PATTERNS = [
+  /\b(explain|analyze|compare|contrast|evaluate|prove|derive)\b/i,
+  /\b(calculate|solve|compute|simplify)\b/i,
+  /\b(debug|fix|refactor|optimize|review)\b.*\b(code|bug|error|issue)\b/i,
+  /\b(why|how does|what if|step[- ]by[- ]step)\b/i,
+  /\b(write|create|build|implement)\b.*\b(code|function|class|program|algorithm)\b/i,
+  /\b(math|equation|algorithm|logic|theorem|proof)\b/i,
+];
+
+const shouldSuggestThinking = (message: string): boolean => {
+  return THINKING_PATTERNS.some(pattern => pattern.test(message));
+};
 
 const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
   // DEBUG logging removed to prevent render storm spam
@@ -132,8 +182,8 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
 
   // Files panel state
-  const { settings } = useSettings();
-  const { hasVision } = useCapabilities();
+  const { settings, updateSettings } = useSettings();
+  const { hasVision, supportsThinking } = useCapabilities();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [folderContents, setFolderContents] = useState<Record<string, FileEntry[]>>({});
@@ -152,6 +202,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Thinking indicator (shown between send and first token)
   const [waitingForResponse, setWaitingForResponse] = useState(false);
+
+  // Smart thinking suggestion
+  const [showThinkingSuggestion, setShowThinkingSuggestion] = useState(false);
 
   // File operation two-pass state
   const [pendingPlan, setPendingPlan] = useState<FileOperationPlan | null>(null);
@@ -189,6 +242,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       setSpeakingMessageId(null);
     }
   }, [tts.isSpeaking]);
+
+  // Auto-dismiss thinking suggestion after 10 seconds
+  useEffect(() => {
+    if (showThinkingSuggestion) {
+      const timer = setTimeout(() => setShowThinkingSuggestion(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showThinkingSuggestion]);
 
   // WebSocketContext API
   const ENDPOINT = '/ws/chat';
@@ -463,8 +524,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const handleFileOrganize = async (userText: string) => {
     setGeneratingPlan(true);
     try {
-      // Find the first expanded folder or use the first allowed folder
-      const targetFolder = [...expandedFolders][0] || allowedFolders[0];
+      // Use attached folder first, then fall back to expanded folder
+      const attachedFolder = attachedFiles.find(f => f.isDirectory);
+      const targetFolder = attachedFolder?.path || [...expandedFolders][0] || allowedFolders[0];
       if (!targetFolder) {
         const errMsg: Message = {
           id: Date.now().toString(),
@@ -544,26 +606,20 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const executePlan = async (plan: FileOperationPlan) => {
     setExecutingPlan(true);
     try {
-      const api = (window as any).electronAPI;
       const basePath = plan.folderPath!;
 
-      // Create folders
-      for (const folder of plan.folders_to_create) {
-        await api?.createFolder?.(basePath, folder);
-      }
+      const response = await axios.post('http://localhost:8000/api/file-explorer/execute-organize', {
+        folderPath: basePath,
+        folders_to_create: plan.folders_to_create,
+        moves: plan.moves,
+      });
 
-      // Move files in batch
-      const moveOps = plan.moves.map(m => ({
-        sourcePath: `${basePath}/${m.file}`.replace(/\\/g, '/'),
-        destPath: `${basePath}/${m.to}/${m.file}`.replace(/\\/g, '/'),
-      }));
-
-      const result = await api?.moveFilesBatch?.(moveOps);
-      const successCount = result?.results?.filter((r: any) => r.success).length || 0;
-      const failedCount = result?.results?.filter((r: any) => !r.success).length || 0;
+      const result = response.data;
+      const successCount = result.summary?.success || 0;
+      const failedCount = result.summary?.failed || 0;
 
       // Save undo log
-      if (result?.undoLog) {
+      if (result.undoLog?.length > 0) {
         setUndoLog(result.undoLog);
       }
 
@@ -587,17 +643,19 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
       // Refresh folder contents if the files panel is open
       if (expandedFolders.has(basePath)) {
-        const refreshResult = await api?.browseFolder?.(basePath);
-        if (refreshResult?.items) {
-          setFolderContents(prev => ({ ...prev, [basePath]: refreshResult.items }));
-        }
+        try {
+          const refreshResult = await fileAPI.browseFolder(basePath);
+          if (refreshResult?.items) {
+            setFolderContents(prev => ({ ...prev, [basePath]: refreshResult.items }));
+          }
+        } catch {}
       }
 
     } catch (error: any) {
       const errMsg: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `Error executing the organization plan: ${error.message}. Your files have not been moved.`,
+        content: `Error executing the organization plan: ${error.response?.data?.error || error.message}. Your files have not been moved.`,
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, errMsg]);
@@ -619,15 +677,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
 
     try {
-      const api = (window as any).electronAPI;
-      // Reverse the moves
-      const reverseOps = undoLog.map(entry => ({
-        sourcePath: entry.to,
-        destPath: entry.from,
-      }));
+      const response = await axios.post('http://localhost:8000/api/file-explorer/undo-organize', {
+        undoLog,
+      });
 
-      const result = await api?.moveFilesBatch?.(reverseOps);
-      const successCount = result?.results?.filter((r: any) => r.success).length || 0;
+      const successCount = response.data.results?.filter((r: any) => r.success).length || 0;
 
       setUndoLog(null);
 
@@ -643,7 +697,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       const errMsg: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `Error undoing the operation: ${error.message}`,
+        content: `Error undoing the operation: ${error.response?.data?.error || error.message}`,
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, errMsg]);
@@ -670,6 +724,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+
+    // Smart thinking suggestion
+    if (supportsThinking && !settings.thinkingEnabled && shouldSuggestThinking(text)) {
+      setShowThinkingSuggestion(true);
+    }
 
     // ── Two-pass file operation interception ──
 
@@ -698,9 +757,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       return;
     }
 
-    // 4. Check for new file operation intent (only when files panel is open or file access enabled)
-    if (settings.fileAccessEnabled && detectFileOperationIntent(text)) {
+    // 4. Check for new file operation intent (when files panel is open, file access enabled, or folder attached)
+    const hasFolderAttached = attachedFiles.some(f => f.isDirectory);
+    if ((settings.fileAccessEnabled || hasFolderAttached) && detectFileOperationIntent(text)) {
       handleFileOrganize(text);
+      // Clear folder attachment after triggering organize
+      if (hasFolderAttached) {
+        setAttachedFiles(prev => prev.filter(f => !f.isDirectory));
+      }
       return;
     }
 
@@ -710,9 +774,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     const payload: any = {
       message: text,
       chat_id: currentChatId,
+      thinking_enabled: settings.thinkingEnabled && supportsThinking,
     };
-    if (attachedFiles.length > 0) {
-      payload.reference_files = attachedFiles.map(f => ({
+    const fileAttachments = attachedFiles.filter(f => !f.isDirectory);
+    if (fileAttachments.length > 0) {
+      payload.reference_files = fileAttachments.map(f => ({
         name: f.name,
         content: f.fullContent,
         ...(f.isImage ? { is_image: true, base64: f.base64Data } : {}),
@@ -974,23 +1040,55 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Toggle all files in a folder on/off
   const toggleFolderAttach = async (folderPath: string) => {
-    const items = folderContents[folderPath] || [];
+    // If already attached as folder, detach
+    if (attachedFiles.some(f => f.path === folderPath && f.isDirectory)) {
+      setAttachedFiles(prev => prev.filter(f => f.path !== folderPath));
+      return;
+    }
+
+    // Ensure folder contents are loaded
+    let items = folderContents[folderPath];
+    if (!items) {
+      try {
+        const result = await fileAPI.browseFolder(folderPath);
+        if (result?.items) {
+          items = result.items;
+          setFolderContents(prev => ({ ...prev, [folderPath]: items! }));
+        }
+      } catch (err) {
+        console.error('Error browsing folder:', err);
+        return;
+      }
+    }
+    if (!items) return;
+
     const files = items.filter(i => !i.isDirectory);
     if (files.length === 0) return;
 
-    const allAttached = files.every(f => attachedFiles.some(a => a.path === f.path));
-    if (allAttached) {
-      // Detach all files in this folder
-      const filePaths = new Set(files.map(f => f.path));
-      setAttachedFiles(prev => prev.filter(f => !filePaths.has(f.path)));
-    } else {
-      // Attach all files not yet attached
-      for (const file of files) {
-        if (!attachedFiles.some(a => a.path === file.path)) {
-          await toggleFileAttach(file.path, file.name, file.extension);
-        }
-      }
+    // Build summary by extension
+    const extCounts: Record<string, number> = {};
+    for (const f of files) {
+      const ext = (f.extension || 'other').replace('.', '').toLowerCase();
+      extCounts[ext] = (extCounts[ext] || 0) + 1;
     }
+    const summary = Object.entries(extCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([ext, count]) => `${count} .${ext}`)
+      .join(', ');
+
+    const folderName = folderPath.split(/[/\\]/).filter(Boolean).pop() || 'folder';
+
+    // Attach as single folder item — no file reading or parsing
+    setAttachedFiles(prev => [...prev, {
+      name: folderName,
+      path: folderPath,
+      extension: '',
+      previewText: `Folder: ${files.length} files (${summary})`,
+      fullContent: '',
+      isDirectory: true,
+      fileCount: files.length,
+      fileSummary: summary,
+    }]);
   };
 
   const openFileExternally = async (filePath: string) => {
@@ -1029,10 +1127,24 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     return labels[ext] || ext.replace('.', '').toUpperCase();
   };
 
-  const formatMessage = (content: string, role?: string) => {
+  const formatMessage = (content: string, role?: string, isStreaming?: boolean) => {
     let cleaned = content;
-    // Only apply artifact cleanup to assistant messages (not user messages)
+    let thinkingContent = '';
+
+    // Extract <think>...</think> blocks from assistant messages
     if (role !== 'user') {
+      const thinkMatch = cleaned.match(/<think>([\s\S]*?)<\/think>/);
+      if (thinkMatch) {
+        thinkingContent = thinkMatch[1].trim();
+        cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/, '').trim();
+      } else if (isStreaming && cleaned.includes('<think>') && !cleaned.includes('</think>')) {
+        // Still streaming the thinking block — extract partial content
+        const thinkStart = cleaned.indexOf('<think>');
+        thinkingContent = cleaned.substring(thinkStart + 7).trim();
+        cleaned = cleaned.substring(0, thinkStart).trim();
+      }
+
+      // Only apply artifact cleanup to assistant messages (not user messages)
       cleaned = cleaned
         .replace(/Hi there<\|eot_id\|><\|start_header_id\|>user<\|end_header_id\|>[\s\S]*?Not using system message\. To change it, set a different value via -sys PROMPT/g, '')
         .replace(/\bl[\s\n]+l?[\s\n]*e[\s\n]+r[\s\S]*?tokens per second\)/gi, '')
@@ -1055,9 +1167,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       });
     };
 
-    return cleaned.split('\n\n').map((paragraph, idx) => {
+    const paragraphs = cleaned.split('\n\n').map((paragraph, idx) => {
       const lines = paragraph.split('\n');
-      
+
       return (
         <div key={idx} className="mb-3 last:mb-0">
           {lines.map((line, lineIdx) => {
@@ -1068,7 +1180,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </h4>
               );
             }
-            
+
             const numberedMatch = line.match(/^(\d+)\.\s+(.+)/);
             if (numberedMatch) {
               return (
@@ -1078,7 +1190,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </div>
               );
             }
-            
+
             const bulletMatch = line.match(/^[•\*\-]\s+(.+)/);
             if (bulletMatch) {
               return (
@@ -1088,7 +1200,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </div>
               );
             }
-            
+
             if (line.trim()) {
               return (
                 <p key={lineIdx} className="mb-1">
@@ -1096,12 +1208,25 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </p>
               );
             }
-            
+
             return null;
           })}
         </div>
       );
     });
+
+    if (thinkingContent) {
+      return (
+        <>
+          <ThinkingBlock
+            content={thinkingContent}
+            isStreaming={isStreaming && !content.includes('</think>')}
+          />
+          {paragraphs}
+        </>
+      );
+    }
+    return paragraphs;
   };
 
   return (
@@ -1273,7 +1398,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 <div className="flex justify-start">
                   <div className="max-w-3xl px-4 py-3 rounded-2xl bg-theme-tertiary text-theme-heading">
                     <div className="text-sm prose prose-sm max-w-none">
-                      {formatMessage(streamingMessage)}
+                      {formatMessage(streamingMessage, 'assistant', true)}
                       <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>
                     </div>
                   </div>
@@ -1325,17 +1450,27 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               {attachedFiles.map(file => (
                 <div
                   key={file.path}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-sm group"
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm group ${
+                    file.isDirectory
+                      ? 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700'
+                      : 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                  }`}
                   title={file.previewText}
                 >
-                  <FileIcon className={`w-3.5 h-3.5 ${getFileTypeColor(file.extension)}`} />
-                  <span className="text-blue-800 dark:text-blue-200 max-w-[150px] truncate">{file.name}</span>
+                  {file.isDirectory ? (
+                    <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
+                  ) : (
+                    <FileIcon className={`w-3.5 h-3.5 ${getFileTypeColor(file.extension)}`} />
+                  )}
+                  <span className={`max-w-[200px] truncate ${file.isDirectory ? 'text-amber-800 dark:text-amber-200' : 'text-blue-800 dark:text-blue-200'}`}>
+                    {file.name}{file.isDirectory ? ` (${file.fileCount} files)` : ''}
+                  </span>
                   <button
                     onClick={() => detachFile(file.path)}
-                    className="ml-0.5 p-0.5 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                    className={`ml-0.5 p-0.5 rounded transition ${file.isDirectory ? 'hover:bg-amber-200 dark:hover:bg-amber-800' : 'hover:bg-blue-200 dark:hover:bg-blue-800'}`}
                     title="Remove"
                   >
-                    <X className="w-3 h-3 text-blue-500" />
+                    <X className={`w-3 h-3 ${file.isDirectory ? 'text-amber-500' : 'text-blue-500'}`} />
                   </button>
                 </div>
               ))}
@@ -1366,6 +1501,19 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
             </div>
           )}
           <div className="flex space-x-2">
+            {supportsThinking && (
+              <button
+                onClick={() => updateSettings({ thinkingEnabled: !settings.thinkingEnabled })}
+                className={`px-3 py-3 rounded-xl transition flex items-center justify-center gap-1.5 border text-sm font-medium ${
+                  settings.thinkingEnabled
+                    ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300'
+                    : 'bg-theme-tertiary border-theme-strong text-theme-muted hover:bg-theme-hover'
+                }`}
+                title={settings.thinkingEnabled ? 'Thinking mode ON — click to disable' : 'Enable thinking mode for deeper reasoning'}
+              >
+                <BrainIcon className="w-4.5 h-4.5" />
+              </button>
+            )}
             <button
               onClick={stt.toggleListening}
               disabled={loading}
@@ -1482,13 +1630,35 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 <FolderOpen className="w-5 h-5 text-blue-500" />
                 My Files
               </h3>
-              <button
-                onClick={() => setRightPanel('none')}
-                className="p-1.5 rounded-lg hover:bg-theme-hover transition"
-                title="Collapse panel"
-              >
-                <SidebarIcon className="w-5 h-5 text-theme-muted" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={async () => {
+                    // Re-fetch all expanded folders (parents + subfolders)
+                    const foldersToRefresh = new Set(expandedFolders);
+                    // Also include all allowed (root) folders that are expanded
+                    allowedFolders.forEach(f => foldersToRefresh.add(f));
+                    for (const folder of foldersToRefresh) {
+                      try {
+                        const result = await fileAPI.browseFolder(folder);
+                        if (result?.items) {
+                          setFolderContents(prev => ({ ...prev, [folder]: result.items }));
+                        }
+                      } catch {}
+                    }
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-theme-hover transition"
+                  title="Refresh files"
+                >
+                  <RefreshIcon className="w-4 h-4 text-theme-muted" />
+                </button>
+                <button
+                  onClick={() => setRightPanel('none')}
+                  className="p-1.5 rounded-lg hover:bg-theme-hover transition"
+                  title="Collapse panel"
+                >
+                  <SidebarIcon className="w-5 h-5 text-theme-muted" />
+                </button>
+              </div>
             </div>
 
             {/* Hint */}
@@ -1726,6 +1896,31 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </>
               )}
             </div>
+
+            {/* Smart thinking suggestion */}
+            {showThinkingSuggestion && supportsThinking && !settings.thinkingEnabled && (
+              <div className="mx-4 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 text-sm">
+                <BrainIcon className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                <span className="text-purple-700 dark:text-purple-300 text-xs">
+                  This looks like a reasoning task. Thinking mode may produce better results.
+                </span>
+                <button
+                  onClick={() => {
+                    updateSettings({ thinkingEnabled: true });
+                    setShowThinkingSuggestion(false);
+                  }}
+                  className="ml-auto px-2 py-1 text-xs font-medium bg-purple-600 text-white rounded hover:bg-purple-700 transition flex-shrink-0"
+                >
+                  Enable
+                </button>
+                <button
+                  onClick={() => setShowThinkingSuggestion(false)}
+                  className="p-1 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition flex-shrink-0"
+                >
+                  <X className="w-3 h-3 text-purple-400" />
+                </button>
+              </div>
+            )}
 
             {/* Attached files count indicator */}
             {attachedFiles.length > 0 && (

@@ -100,7 +100,9 @@ export default function Achievements({ tabId }: AchievementsProps) {
       const aEarned = earnedIds.has(a.id) ? 0 : 1;
       const bEarned = earnedIds.has(b.id) ? 0 : 1;
       if (aEarned !== bEarned) return aEarned - bEarned;
-      return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+      // Earned: legendary first (high to low); Locked: common first (low to high)
+      if (aEarned === 0) return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+      return rarityOrder[b.rarity] - rarityOrder[a.rarity];
     });
   }, [filteredDefinitions, earnedIds]);
 
@@ -476,8 +478,8 @@ function AchievementCard({
           <span
             className="text-[10px] font-bold px-2 py-0.5 rounded-full"
             style={{
-              backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : 'rgba(128,128,128,0.15)',
-              color: isEarned ? '#fff' : 'rgba(128,128,128,0.8)',
+              backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : `${color}25`,
+              color: isEarned ? '#fff' : color,
               backdropFilter: 'blur(4px)',
             }}
           >

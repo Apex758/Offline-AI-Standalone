@@ -512,6 +512,13 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
     if tier < 2:
         dual_model = {**dual_model, "enabled": False}
 
+    # Thinking support check (Qwen2.5/Qwen3 models)
+    supports_thinking = False
+    if selected_llm:
+        from llama_inference import LlamaInference
+        model_family = LlamaInference.detect_model_family(selected_llm)
+        supports_thinking = model_family.get("supports_thinking", False)
+
     return {
         "tier": tier,
         "has_llm": bool(selected_llm),
@@ -521,6 +528,7 @@ def compute_effective_tier(tier_config: dict = None) -> dict:
         "selected_llm": selected_llm,
         "selected_diffusion": diffusion_model,
         "dual_model": dual_model,
+        "supports_thinking": supports_thinking,
     }
 
 
