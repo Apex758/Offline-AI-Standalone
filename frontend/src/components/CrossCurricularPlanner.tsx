@@ -36,6 +36,7 @@ import type { ParsedCrossCurricularPlan } from './CrossCurricularEditor';
 import axios from 'axios';
 import { buildCrossCurricularPrompt } from '../utils/crossCurricularPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
+import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
@@ -49,6 +50,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 
 interface CrossCurricularPlannerProps {
   tabId: string;
@@ -505,6 +507,7 @@ const crossCurricularPlanToDisplayText = (plan: ParsedCrossCurricularPlan): stri
 };
 
 const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  useCurriculumIndex();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `cross_curricular_state_${tabId}`;
   const ENDPOINT = '/ws/cross-curricular';
@@ -659,20 +662,13 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
   const allSubjects = ['Mathematics', 'Language Arts', 'Science', 'Social Studies', 'Arts',
                     'Physical Education', 'Technology'];
 
-  const gradeProfileMap: Record<string, string> = {
-    'k': 'Kindergarten', '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3',
-    '4': 'Grade 4', '5': 'Grade 5', '6': 'Grade 6', '7': 'Grade 7',
-    '8': 'Grade 8', '9': 'Grade 9', '10': 'Grade 10', '11': 'Grade 11', '12': 'Grade 12'
-  };
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
 
-  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
-    ? allGrades.filter(g => settings.profile.gradeLevels.some(pl => gradeProfileMap[pl] === g))
-    : allGrades;
+  const grades = filterGrades(allGrades, gradeMapping, filterOn);
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase().replace('grade ', '').replace('kindergarten', 'k') || '';
+  const subjects = filterSubjects(allSubjects, gradeMapping, filterOn, selectedGradeKey || undefined);
 
-  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
-    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
-    : allSubjects;
-  
   const integrationModels = ['Multidisciplinary', 'Interdisciplinary', 'Transdisciplinary'];
 
   const teachingStrategiesOptions = [
@@ -684,12 +680,12 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
 
   // Auto-select when only one option from profile filtering
   useEffect(() => {
-    if (!settings.profile.filterContentByProfile) return;
+    if (!filterOn) return;
     const updates: Partial<FormData> = {};
-    if (subjects.length === 1 && !formData.primarySubject) updates.primarySubject = subjects[0];
     if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (subjects.length === 1 && !formData.primarySubject) updates.primarySubject = subjects[0];
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
-  }, [subjects, grades, settings.profile.filterContentByProfile]);
+  }, [subjects, grades, filterOn]);
 
   const learningStylesOptions = ['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic', 'Social', 'Solitary'];
   const learningPreferencesOptions = ['Individual Work', 'Group Work', 'Pair Work', 'Whole Class', 'Independent Study'];

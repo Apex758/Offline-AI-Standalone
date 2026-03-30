@@ -47,43 +47,49 @@ import { milestoneApi } from '../lib/milestoneApi';
 import type { Milestone, MilestoneTreeNode, ChecklistItem } from '../types/milestone';
 import { format, parseISO } from 'date-fns';
 import { useSettings } from '../contexts/SettingsContext';
+import { getTeacherGrades, getTeacherSubjects } from '../data/teacherConstants';
 import SmartTextArea from './SmartTextArea';
 
 import { TutorialOverlay } from './TutorialOverlay';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
-import curriculumIndex from '../data/curriculumIndex.json';
+import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader';
 import CurriculumSkillTree from './CurriculumSkillTree';
-
-const curriculumPages = (curriculumIndex as any).indexedPages || [];
 
 interface EloGroup {
   elo: string;
   scoRange: [number, number]; // [startIndex, endIndex] inclusive
 }
 
-// Build lookups: topic_id -> eloGroups (structured) or essentialOutcomes (fallback)
+// Lazy-init lookups — built on first access after curriculum data loads
+let _lookupsBuilt = false;
 const eloGroupsLookup = new Map<string, EloGroup[]>();
 const eloLookup = new Map<string, string[]>();
 const prereqLookup = new Map<string, string[]>();
 const relatedLookup = new Map<string, string[]>();
 const pageInfoLookup = new Map<string, { id: string; displayName: string; grade: string; subject: string; strand: string }>();
-curriculumPages.forEach((page: any) => {
-  if (page.id) {
-    pageInfoLookup.set(page.id, { id: page.id, displayName: page.displayName, grade: page.grade, subject: page.subject, strand: page.strand });
-    if (page.eloGroups) {
-      eloGroupsLookup.set(page.id, page.eloGroups);
+
+function ensureLookups() {
+  const pages = getCurriculumPages();
+  if (_lookupsBuilt || pages.length === 0) return;
+  pages.forEach((page: any) => {
+    if (page.id) {
+      pageInfoLookup.set(page.id, { id: page.id, displayName: page.displayName, grade: page.grade, subject: page.subject, strand: page.strand });
+      if (page.eloGroups) {
+        eloGroupsLookup.set(page.id, page.eloGroups);
+      }
+      if (page.essentialOutcomes) {
+        eloLookup.set(page.id, page.essentialOutcomes.map((e: any) => typeof e === 'string' ? e : e.text));
+      }
+      if (page.prerequisiteEntries?.length > 0) {
+        prereqLookup.set(page.id, page.prerequisiteEntries);
+      }
+      if (page.relatedEntries?.length > 0) {
+        relatedLookup.set(page.id, page.relatedEntries);
+      }
     }
-    if (page.essentialOutcomes) {
-      eloLookup.set(page.id, page.essentialOutcomes.map((e: any) => typeof e === 'string' ? e : e.text));
-    }
-    if (page.prerequisiteEntries?.length > 0) {
-      prereqLookup.set(page.id, page.prerequisiteEntries);
-    }
-    if (page.relatedEntries?.length > 0) {
-      relatedLookup.set(page.id, page.relatedEntries);
-    }
-  }
-});
+  });
+  _lookupsBuilt = true;
+}
 
 interface CurriculumTrackerProps {
   tabId: string;
@@ -96,6 +102,8 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   savedData,
   onDataChange
 }) => {
+  const { loading: curriculumLoading } = useCurriculumIndex();
+  if (!curriculumLoading) ensureLookups();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const accentColor = settings.tabColors['curriculum-tracker'] ?? '#22c55e';
   const [showTutorial, setShowTutorial] = useState(false);
@@ -202,14 +210,22 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
   };
 
   // Filter milestones by profile
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
   const filteredMilestones = useMemo(() => {
-    if (!settings.profile.filterContentByProfile) return milestones;
+    if (!filterOn) return milestones;
+    const tGrades = getTeacherGrades(gradeMapping);
+    const tSubjects = getTeacherSubjects(gradeMapping);
+    if (tGrades.length === 0 && tSubjects.length === 0) return milestones;
     return milestones.filter(m => {
-      const gradeOk = settings.profile.gradeLevels.length === 0 || settings.profile.gradeLevels.includes(m.grade.toLowerCase());
-      const subjectOk = settings.profile.subjects.length === 0 || settings.profile.subjects.includes(m.subject);
+      const gradeOk = tGrades.length === 0 || tGrades.includes(m.grade.toLowerCase());
+      // For per-grade filtering: check if this subject is taught for this grade
+      const gradeKey = m.grade.toLowerCase();
+      const gradeSubjectList = gradeMapping[gradeKey] || [];
+      const subjectOk = gradeSubjectList.length === 0 || gradeSubjectList.includes(m.subject);
       return gradeOk && subjectOk;
     });
-  }, [milestones, settings.profile.filterContentByProfile, settings.profile.gradeLevels, settings.profile.subjects]);
+  }, [milestones, filterOn, gradeMapping]);
 
   // Build tree structure
   const treeData = useMemo(() => {
@@ -315,19 +331,21 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
       if (b === 'K') return 1;
       return Number(a) - Number(b);
     });
-    if (settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0) {
-      return all.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()));
+    const tGrades = getTeacherGrades(gradeMapping);
+    if (filterOn && tGrades.length > 0) {
+      return all.filter(g => tGrades.includes(g.toLowerCase()));
     }
     return all;
-  }, [milestones, settings.profile.filterContentByProfile, settings.profile.gradeLevels]);
+  }, [milestones, filterOn, gradeMapping]);
 
   const uniqueSubjects = useMemo(() => {
     const all = [...new Set(milestones.map(m => m.subject))].sort();
-    if (settings.profile.filterContentByProfile && settings.profile.subjects.length > 0) {
-      return all.filter(s => settings.profile.subjects.includes(s));
+    const tSubjects = getTeacherSubjects(gradeMapping);
+    if (filterOn && tSubjects.length > 0) {
+      return all.filter(s => tSubjects.includes(s));
     }
     return all;
-  }, [milestones, settings.profile.filterContentByProfile, settings.profile.subjects]);
+  }, [milestones, filterOn, gradeMapping]);
 
   const toggleNode = (nodeId: string) => {
     setExpandedNodes(prev => {

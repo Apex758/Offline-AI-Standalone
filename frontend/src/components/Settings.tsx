@@ -188,6 +188,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { useSettings } from '../contexts/SettingsContext';
+import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, getTeacherGrades, getTeacherSubjects } from '../data/teacherConstants';
 import { downloadJSON } from '../lib/utils';
 import axios from 'axios';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
@@ -229,6 +230,9 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
   );
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+
+  // Profile: active grade tab for per-grade subject editing
+  const [activeGradeTab, setActiveGradeTab] = useState<string | null>(null);
 
   // Feature Discovery state
   const [discoveryCategory, setDiscoveryCategory] = useState<'all' | FeatureCategory>('all');
@@ -984,33 +988,36 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                       {/* Grade Levels */}
                       <div>
                         <label className="block text-sm font-medium text-theme-label mb-2">Grade Levels</label>
+                        <p className="text-xs text-theme-hint mb-3">Select the grades you teach, then choose subjects for each grade below.</p>
                         <div className="flex flex-wrap gap-2">
-                          {[
-                            { value: 'k', label: 'Kindergarten' },
-                            { value: '1', label: 'Grade 1' },
-                            { value: '2', label: 'Grade 2' },
-                            { value: '3', label: 'Grade 3' },
-                            { value: '4', label: 'Grade 4' },
-                            { value: '5', label: 'Grade 5' },
-                            { value: '6', label: 'Grade 6' },
-                          ].map((grade) => {
-                            const isSelected = settings.profile.gradeLevels.includes(grade.value);
+                          {GRADE_LEVELS.map((grade) => {
+                            const gradeSubjects = settings.profile.gradeSubjects[grade.value] || [];
+                            const isSelected = gradeSubjects.length > 0;
+                            const isActiveTab = activeGradeTab === grade.value;
                             return (
                               <button
                                 key={grade.value}
                                 onClick={() => {
-                                  const newGrades = isSelected
-                                    ? settings.profile.gradeLevels.filter(g => g !== grade.value)
-                                    : [...settings.profile.gradeLevels, grade.value];
-                                  updateSettings({ profile: { ...settings.profile, gradeLevels: newGrades } });
+                                  if (isActiveTab) {
+                                    setActiveGradeTab(null);
+                                  } else {
+                                    setActiveGradeTab(grade.value);
+                                  }
                                 }}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 border ${
-                                  isSelected
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 border relative ${
+                                  isActiveTab
+                                    ? 'border-blue-500 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 ring-2 ring-blue-300 dark:ring-blue-700'
+                                    : isSelected
                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
                                     : 'border-theme-strong/30 text-theme-secondary dark:text-white hover:border-theme-strong/60 hover:bg-theme-subtle'
                                 }`}
                               >
                                 {grade.label}
+                                {isSelected && (
+                                  <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] font-bold">
+                                    {gradeSubjects.length}
+                                  </span>
+                                )}
                               </button>
                             );
                           })}
@@ -1020,70 +1027,152 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                   </CardContent>
                 </Card>
 
-                {/* Subjects */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Subjects</CardTitle>
-                    <CardDescription>Select the subjects you teach</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {[
-                        'Mathematics', 'Language Arts', 'Science', 'Social Studies',
-                        'Physical Education', 'Health & Family Life', 'Music', 'Art',
-                        'Spanish', 'French', 'ICT', 'Agriculture',
-                        'Religious Education', 'TVET', 'Library Skills'
-                      ].map((subject) => {
-                        const isSelected = settings.profile.subjects.includes(subject);
-                        return (
-                          <button
-                            key={subject}
-                            onClick={() => {
-                              const newSubjects = isSelected
-                                ? settings.profile.subjects.filter(s => s !== subject)
-                                : [...settings.profile.subjects, subject];
-                              updateSettings({ profile: { ...settings.profile, subjects: newSubjects } });
-                            }}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 border ${
-                              isSelected
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
-                                : 'border-theme-strong/30 text-theme-secondary dark:text-white hover:border-theme-strong/60 hover:bg-theme-subtle'
-                            }`}
-                          >
-                            {subject}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {settings.profile.subjects.length > 0 && (
-                      <div className="mt-4 pt-3 border-t border-theme-strong/20">
-                        <div className="flex flex-wrap gap-2">
-                          {settings.profile.subjects.map((subject) => (
-                            <span
-                              key={subject}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                            >
-                              {subject}
-                              <button
-                                onClick={() => {
-                                  updateSettings({
-                                    profile: {
-                                      ...settings.profile,
-                                      subjects: settings.profile.subjects.filter(s => s !== subject)
-                                    }
-                                  });
-                                }}
-                                className="ml-0.5 hover:text-blue-900 dark:hover:text-blue-100"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </span>
-                          ))}
+                {/* Per-Grade Subjects */}
+                {activeGradeTab && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Subjects for {GRADE_LABEL_MAP[activeGradeTab] || activeGradeTab}</CardTitle>
+                          <CardDescription>Select the subjects you teach for this grade</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                          {(() => {
+                            const currentSubjects = settings.profile.gradeSubjects[activeGradeTab] || [];
+                            const otherGrades = getTeacherGrades(settings.profile.gradeSubjects).filter(g => g !== activeGradeTab);
+                            const allSelected = currentSubjects.length === SUBJECTS.length;
+                            return (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    const updated = { ...settings.profile.gradeSubjects };
+                                    updated[activeGradeTab] = allSelected ? [] : [...SUBJECTS];
+                                    updateSettings({ profile: { ...settings.profile, gradeSubjects: updated } });
+                                  }}
+                                  className="text-xs px-2.5 py-1 rounded-md border border-theme-strong/20 text-theme-secondary hover:bg-theme-subtle"
+                                >
+                                  {allSelected ? 'Clear All' : 'Select All'}
+                                </button>
+                                {otherGrades.length > 0 && (
+                                  <select
+                                    value=""
+                                    onChange={(e) => {
+                                      if (!e.target.value) return;
+                                      const sourceSubjects = settings.profile.gradeSubjects[e.target.value] || [];
+                                      if (sourceSubjects.length > 0) {
+                                        const updated = { ...settings.profile.gradeSubjects };
+                                        updated[activeGradeTab] = [...sourceSubjects];
+                                        updateSettings({ profile: { ...settings.profile, gradeSubjects: updated } });
+                                      }
+                                    }}
+                                    className="text-xs px-2 py-1 rounded-md border border-theme-strong/20 text-theme-secondary bg-theme-surface cursor-pointer"
+                                  >
+                                    <option value="">Copy from...</option>
+                                    {otherGrades.map(g => (
+                                      <option key={g} value={g}>{GRADE_LABEL_MAP[g]}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {SUBJECTS.map((subject) => {
+                          const currentSubjects = settings.profile.gradeSubjects[activeGradeTab] || [];
+                          const isSelected = currentSubjects.includes(subject);
+                          return (
+                            <button
+                              key={subject}
+                              onClick={() => {
+                                const updated = { ...settings.profile.gradeSubjects };
+                                const current = updated[activeGradeTab] || [];
+                                updated[activeGradeTab] = isSelected
+                                  ? current.filter(s => s !== subject)
+                                  : [...current, subject];
+                                updateSettings({ profile: { ...settings.profile, gradeSubjects: updated } });
+                              }}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                                isSelected
+                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
+                                  : 'border-theme-strong/30 text-theme-secondary dark:text-white hover:border-theme-strong/60 hover:bg-theme-subtle'
+                              }`}
+                            >
+                              {subject}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {/* Apply to all grades shortcut */}
+                      {(settings.profile.gradeSubjects[activeGradeTab] || []).length > 0 && getTeacherGrades(settings.profile.gradeSubjects).length > 0 && (
+                        <div className="mt-4 pt-3 border-t border-theme-strong/20">
+                          <button
+                            onClick={() => {
+                              const sourceSubjects = settings.profile.gradeSubjects[activeGradeTab] || [];
+                              const updated = { ...settings.profile.gradeSubjects };
+                              // Apply to all grades that already have subjects configured
+                              for (const g of getTeacherGrades(settings.profile.gradeSubjects)) {
+                                updated[g] = [...sourceSubjects];
+                              }
+                              updateSettings({ profile: { ...settings.profile, gradeSubjects: updated } });
+                            }}
+                            className="text-xs px-3 py-1.5 rounded-md border border-blue-200 dark:border-blue-800/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                          >
+                            Apply these subjects to all my grades
+                          </button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Teaching Summary */}
+                {getTeacherGrades(settings.profile.gradeSubjects).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>My Teaching Profile</CardTitle>
+                      <CardDescription>Summary of your grade and subject assignments</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {getTeacherGrades(settings.profile.gradeSubjects).sort((a, b) => {
+                          const order = ['k', '1', '2', '3', '4', '5', '6'];
+                          return order.indexOf(a) - order.indexOf(b);
+                        }).map(grade => {
+                          const subjects = settings.profile.gradeSubjects[grade] || [];
+                          return (
+                            <div key={grade} className="flex items-start gap-3 p-2.5 rounded-lg bg-theme-subtle/50">
+                              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md whitespace-nowrap min-w-[90px] text-center">
+                                {GRADE_LABEL_MAP[grade]}
+                              </span>
+                              <div className="flex flex-wrap gap-1.5 flex-1">
+                                {subjects.map(s => (
+                                  <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                                    {s}
+                                    <button
+                                      onClick={() => {
+                                        const updated = { ...settings.profile.gradeSubjects };
+                                        updated[grade] = (updated[grade] || []).filter(sub => sub !== s);
+                                        if (updated[grade].length === 0) delete updated[grade];
+                                        updateSettings({ profile: { ...settings.profile, gradeSubjects: updated } });
+                                      }}
+                                      className="ml-0.5 hover:text-blue-900 dark:hover:text-blue-100"
+                                    >
+                                      <X className="w-2.5 h-2.5" />
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Content Filtering Toggle */}
                 <Card>
@@ -1104,27 +1193,27 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                         checked={settings.profile.filterContentByProfile}
                         onChange={(e) => updateSettings({ profile: { ...settings.profile, filterContentByProfile: e.target.checked } })}
                         className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer flex-shrink-0"
-
                       />
                     </label>
-                    {settings.profile.filterContentByProfile && settings.profile.gradeLevels.length === 0 && settings.profile.subjects.length === 0 && (
+                    {settings.profile.filterContentByProfile && getTeacherGrades(settings.profile.gradeSubjects).length === 0 && (
                       <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 px-3">
-                        Select at least one grade level or subject above for filtering to take effect.
+                        Select at least one grade and its subjects above for filtering to take effect.
                       </p>
                     )}
-                    {settings.profile.filterContentByProfile && (settings.profile.gradeLevels.length > 0 || settings.profile.subjects.length > 0) && (
+                    {settings.profile.filterContentByProfile && getTeacherGrades(settings.profile.gradeSubjects).length > 0 && (
                       <div className="mt-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
                         <p className="text-xs text-blue-700 dark:text-blue-400">
                           Showing content for{' '}
-                          {settings.profile.gradeLevels.length > 0 && (
-                            <span className="font-medium">
-                              {settings.profile.gradeLevels.map(g => g === 'k' ? 'Kindergarten' : `Grade ${g}`).join(', ')}
-                            </span>
-                          )}
-                          {settings.profile.gradeLevels.length > 0 && settings.profile.subjects.length > 0 && ' in '}
-                          {settings.profile.subjects.length > 0 && (
-                            <span className="font-medium">{settings.profile.subjects.join(', ')}</span>
-                          )}
+                          <span className="font-medium">
+                            {getTeacherGrades(settings.profile.gradeSubjects).sort((a, b) => {
+                              const order = ['k', '1', '2', '3', '4', '5', '6'];
+                              return order.indexOf(a) - order.indexOf(b);
+                            }).map(g => GRADE_LABEL_MAP[g]).join(', ')}
+                          </span>
+                          {' '}with{' '}
+                          <span className="font-medium">
+                            {getTeacherSubjects(settings.profile.gradeSubjects).length} subject{getTeacherSubjects(settings.profile.gradeSubjects).length !== 1 ? 's' : ''}
+                          </span>
                         </p>
                       </div>
                     )}

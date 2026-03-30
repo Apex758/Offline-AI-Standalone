@@ -57,6 +57,7 @@ const FileText: React.FC<{ className?: string; style?: React.CSSProperties }> = 
 const Loader2: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Loading03IconData} {...p} />;
 const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
+import { getTeacherSubjects } from '../data/teacherConstants';
 import SmartInput from './SmartInput';
 
 const API_BASE = 'http://localhost:8000';
@@ -516,7 +517,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({ tabId, savedData, onD
 
   const buildReportCardHTML = (student: Student, accent: string) => {
     const grades = student.quiz_grades ?? [];
-    const teacherSubjects = settings.teacherSubjects;
+    const teacherSubjects = getTeacherSubjects(settings.profile.gradeSubjects || {});
 
     // Group grades by subject
     const subjectGrades: Record<string, { scores: number[]; letters: string[]; quizzes: QuizGrade[] }> = {};
@@ -1448,7 +1449,7 @@ ${tabScript}
       subjectGrades[subj].letters.push(g.letter_grade);
     }
 
-    const teacherSubjects = settings.teacherSubjects || [];
+    const teacherSubjects = getTeacherSubjects(settings.profile.gradeSubjects || {});
     const allSubjects = new Set([...Object.keys(subjectGrades), ...teacherSubjects]);
     const subjectRows = [...allSubjects].map(subj => {
       const data = subjectGrades[subj];

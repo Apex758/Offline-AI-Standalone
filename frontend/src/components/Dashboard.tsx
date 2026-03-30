@@ -1205,6 +1205,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     ));
   }, []);
 
+  // Stable per-tab callback refs — avoids creating new closures on every render
+  const tabCallbacksRef = useRef<Map<string, {
+    onDataChange: (data: any) => void;
+    onTitleChange: (title: string) => void;
+  }>>(new Map());
+
+  const getTabCallbacks = useCallback((tabId: string) => {
+    let cbs = tabCallbacksRef.current.get(tabId);
+    if (!cbs) {
+      cbs = {
+        onDataChange: (data: any) => updateTabData(tabId, data),
+        onTitleChange: (title: string) => updateTabTitle(tabId, title),
+      };
+      tabCallbacksRef.current.set(tabId, cbs);
+    }
+    return cbs;
+  }, [updateTabData, updateTabTitle]);
+
   const triggerTabBounce = useCallback((tabId: string) => {
     setBouncingTabId(tabId);
     setTimeout(() => setBouncingTabId(null), 300);
@@ -1328,6 +1346,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, [typeToToolType]);
 
   const renderSingleTabContent = (tab: Tab) => {
+    const { onDataChange, onTitleChange } = getTabCallbacks(tab.id);
     switch (tab.type) {
       case 'analytics':
         return (
@@ -1335,7 +1354,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <AnalyticsDashboard
               tabId={tab.id}
               savedData={tab.data}
-              onDataChange={(data) => updateTabData(tab.id, data)}
+              onDataChange={onDataChange}
               onNavigate={(route) => {
                 // Handle navigation to curriculum
                 if (route.startsWith('/curriculum')) {
@@ -1416,14 +1435,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </>
         );
       case 'curriculum-tracker':
-        return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'chat':
         return (
           <Chat 
             tabId={tab.id} 
             savedData={tab.data} 
-            onDataChange={(data) => updateTabData(tab.id, data)} 
-            onTitleChange={(title) => updateTabTitle(tab.id, title)}
+            onDataChange={onDataChange} 
+            onTitleChange={onTitleChange}
             onPanelClick={() => setSidebarOpen(false)}
           />
         );
@@ -1432,7 +1451,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <CurriculumViewer
             tabId={tab.id}
             savedData={tab.data}
-            onDataChange={(data) => updateTabData(tab.id, data)}
+            onDataChange={onDataChange}
             onPanelClick={() => setSidebarOpen(false)}
           />
         );
@@ -1442,7 +1461,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <ResourceManager
               tabId={tab.id}
               savedData={tab.data}
-              onDataChange={(data) => updateTabData(tab.id, data)}
+              onDataChange={onDataChange}
               onViewResource={handleViewResource}
               onEditResource={handleEditResource}
             />
@@ -1474,7 +1493,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <LessonPlanner
             tabId={tab.id}
             savedData={tab.data}
-            onDataChange={(data) => updateTabData(tab.id, data)}
+            onDataChange={onDataChange}
             onOpenCurriculumTab={(route: string) => {
               // Smart curriculum tab management (same logic as analytics onNavigate)
               const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
@@ -1511,20 +1530,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           />
         );
       case 'kindergarten-planner':
-        return <KindergartenPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <KindergartenPlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'multigrade-planner':
-        return <MultigradePlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <MultigradePlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'cross-curricular-planner':
-        return <CrossCurricularPlanner tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <CrossCurricularPlanner tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'quiz-generator':
-        return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <QuizGenerator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'rubric-generator':
-        return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <RubricGenerator tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'worksheet-generator':
         return <WorksheetGenerator
           tabId={tab.id}
           savedData={tab.data}
-          onDataChange={(data) => updateTabData(tab.id, data)}
+          onDataChange={onDataChange}
           onOpenCurriculumTab={(route: string) => {
             // Smart curriculum tab management (same logic as analytics onNavigate)
             const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
@@ -1560,23 +1579,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }}
         />;
       case 'image-studio':
-        return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <ImageStudio tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'presentation-builder':
-        return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <PresentationBuilder tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'settings':
-        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
+        return <Settings tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} onNavigateToTool={(toolType) => { const tool = tools.find(t => t.type === toolType); if (tool) openTool(tool); }} />;
       case 'class-management':
-        return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <ClassManagement tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'support':
-        return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} initialScreenshot={tab.data?.initialScreenshot || null} />;
+        return <SupportReporting tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} initialScreenshot={tab.data?.initialScreenshot || null} />;
       case 'performance-metrics':
-        return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={(data) => updateTabData(tab.id, data)} />;
+        return <PerformanceMetrics tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'brain-dump':
         return (
           <BrainDump
             tabId={tab.id}
             savedData={tab.data}
-            onDataChange={(data) => updateTabData(tab.id, data)}
+            onDataChange={onDataChange}
             onCreateTab={(toolType, prefillData) => {
               const tool = tools.find(t => t.type === toolType);
               if (tool) {

@@ -34,6 +34,7 @@ import { buildKindergartenPrompt } from '../utils/kindergartenPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
+import { filterLearningDomains } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -44,6 +45,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 
 interface KindergartenPlannerProps {
   tabId: string;
@@ -398,6 +400,7 @@ const kindergartenPlanToDisplayText = (plan: ParsedKindergartenPlan): string => 
 };
 
 const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  useCurriculumIndex();
   // ✅ Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `kindergarten_state_${tabId}`;
   
@@ -538,11 +541,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     'Health & Family Life': ['Social-Emotional Development'],
   };
 
-  const learningDomainsOptions = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
-    ? allLearningDomainsOptions.filter(domain =>
-        settings.profile.subjects.some(s => (subjectToDomain[s] || []).includes(domain))
-      )
-    : allLearningDomainsOptions;
+  const learningDomainsOptions = filterLearningDomains(
+    allLearningDomainsOptions,
+    settings.profile.gradeSubjects || {},
+    settings.profile.filterContentByProfile,
+  );
 
   // Try to parse plan when generated (for restored/loaded plans)
   useEffect(() => {

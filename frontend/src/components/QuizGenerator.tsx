@@ -56,6 +56,7 @@ import { buildQuizPrompt } from '../utils/quizPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
+import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -65,6 +66,7 @@ import { useQueue } from '../contexts/QueueContext';
 import { GeneratorSkeleton } from './ui/GeneratorSkeleton';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 
 interface QuizGeneratorProps {
   tabId: string;
@@ -235,6 +237,7 @@ const formatQuizText = (text: string, accentColor: string) => {
 
 const ENDPOINT = '/ws/quiz';
 const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  useCurriculumIndex();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
@@ -319,21 +322,21 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
   const allSubjects = ['Mathematics', 'Science', 'Language Arts', 'Social Studies', 'Music', 'Physical Education'];
   const allGrades = ['K', '1', '2', '3', '4', '5', '6'];
 
-  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
-    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
-    : allSubjects;
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
 
-  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
-    ? allGrades.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()))
-    : allGrades;
+  const grades = filterGrades(allGrades, gradeMapping, filterOn);
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase() || '';
+  const subjects = filterSubjects(allSubjects, gradeMapping, filterOn, selectedGradeKey || undefined);
+
   // Auto-select when only one option from profile filtering
   useEffect(() => {
-    if (!settings.profile.filterContentByProfile) return;
+    if (!filterOn) return;
     const updates: Partial<FormData> = {};
-    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
-  }, [subjects, grades, settings.profile.filterContentByProfile]);
+  }, [subjects, grades, filterOn]);
 
   // Fetch available classes when class quiz mode is enabled, filtered by grade level
   useEffect(() => {

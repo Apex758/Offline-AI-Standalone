@@ -36,6 +36,7 @@ import axios from 'axios';
 import { buildMultigradePrompt } from '../utils/multigradePromptBuilder';
 import {parseMultigradeFromAI, multigradeToDisplayText, type ParsedMultigrade} from '../types/multigrade'; 
 import { useSettings } from '../contexts/SettingsContext';
+import { filterSubjects, filterGradeRanges } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import StepProgressBar from './ui/StepProgressBar';
 import MultigradeAlignmentFields from './ui/MultigradeAlignmentFields';
@@ -49,6 +50,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 
 interface MultigradePlannerProps {
   tabId: string;
@@ -277,6 +279,7 @@ function parseGradeLevels(gradeRange: string): string[] {
 }
 
 const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData, onDataChange }) => {
+  useCurriculumIndex();
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `multigrade_state_${tabId}`;
   const ENDPOINT = '/ws/multigrade';
@@ -451,33 +454,20 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     'Grade 4 - Grade 6', 'Grade 1 - Grade 6'
   ];
 
-  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
-    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
-    : allSubjects;
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
 
-  const gradeNameToProfile: Record<string, string> = {
-    'Kindergarten': 'k', 'Grade 1': '1', 'Grade 2': '2', 'Grade 3': '3',
-    'Grade 4': '4', 'Grade 5': '5', 'Grade 6': '6'
-  };
-
-  const gradeRanges = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
-    ? allGradeRanges.filter(range => {
-        const parts = range.split(' - ');
-        return parts.some(part => {
-          const profileKey = gradeNameToProfile[part];
-          return profileKey && settings.profile.gradeLevels.includes(profileKey);
-        });
-      })
-    : allGradeRanges;
+  const subjects = filterSubjects(allSubjects, gradeMapping, filterOn);
+  const gradeRanges = filterGradeRanges(allGradeRanges, gradeMapping, filterOn);
 
   // Auto-select when only one option from profile filtering
   useEffect(() => {
-    if (!settings.profile.filterContentByProfile) return;
+    if (!filterOn) return;
     const updates: Partial<FormData> = {};
-    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (gradeRanges.length === 1 && !formData.gradeRange) updates.gradeRange = gradeRanges[0];
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
-  }, [subjects, gradeRanges, settings.profile.filterContentByProfile]);
+  }, [subjects, gradeRanges, filterOn]);
 
   const learningStylesOptions = ['Visual', 'Auditory', 'Reading/Writing', 'Kinesthetic', 'Mixed'];
   const learningPreferencesOptions = ['Individual Work', 'Group Work', 'Pair Work', 'Whole Class', 'Independent Study'];

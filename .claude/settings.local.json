@@ -64,7 +64,8 @@
       "Bash(for repo:*)",
       "Bash(python -c \":*)",
       "Bash(1 done:*)",
-      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/6c18a6a9-4628-4f16-9049-13beeaab983a/tasks/**)"
+      "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/6c18a6a9-4628-4f16-9049-13beeaab983a/tasks/**)",
+      "Bash(wc -l \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/contexts/\"*.tsx)"
     ]
   }
 }

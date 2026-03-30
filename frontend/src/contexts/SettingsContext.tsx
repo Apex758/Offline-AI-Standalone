@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { GradeSubjectMapping } from '../data/teacherConstants';
 
 // TypeScript Interfaces
 export interface TabColors {
@@ -34,9 +35,11 @@ export interface TutorialState {
 export interface UserProfile {
   displayName: string;
   school: string;
-  gradeLevels: string[];
-  subjects: string[];
+  gradeSubjects: GradeSubjectMapping;
   filterContentByProfile: boolean;
+  // Legacy fields — kept for migration only
+  gradeLevels?: string[];
+  subjects?: string[];
 }
 
 export interface SidebarItemConfig {
@@ -72,8 +75,9 @@ export interface Settings {
   sidebarColor: string;
   tutorials: TutorialState;
   generationMode: 'queued' | 'simultaneous';
-  teacherSubjects: string[];
-  teacherGradeLevels: string[];
+  // Legacy fields — kept for migration only
+  teacherSubjects?: string[];
+  teacherGradeLevels?: string[];
   profile: UserProfile;
   // Sidebar ordering & visibility
   sidebarOrder: SidebarItemConfig[];
@@ -142,13 +146,10 @@ export const DEFAULT_SETTINGS: Settings = {
     }
   },
   generationMode: 'queued',
-  teacherSubjects: [],
-  teacherGradeLevels: [],
   profile: {
     displayName: '',
     school: '',
-    gradeLevels: [],
-    subjects: [],
+    gradeSubjects: {},
     filterContentByProfile: false,
   },
   sidebarOrder: DEFAULT_SIDEBAR_ORDER,
@@ -222,6 +223,41 @@ const migrateSidebarOrder = (parsed: any): SidebarItemConfig[] => {
   return order;
 };
 
+// Migrate old flat gradeLevels+subjects and teacherSubjects/teacherGradeLevels into gradeSubjects mapping
+const migrateGradeSubjects = (parsed: any): GradeSubjectMapping => {
+  const profile = parsed.profile || {};
+  // If gradeSubjects already exists and has data, use it
+  if (profile.gradeSubjects && Object.keys(profile.gradeSubjects).length > 0) {
+    return profile.gradeSubjects;
+  }
+
+  const mapping: GradeSubjectMapping = {};
+
+  // Migrate from profile.gradeLevels + profile.subjects (cartesian product)
+  const oldGrades: string[] = profile.gradeLevels || [];
+  const oldSubjects: string[] = profile.subjects || [];
+  if (oldGrades.length > 0 && oldSubjects.length > 0) {
+    for (const grade of oldGrades) {
+      mapping[grade] = [...oldSubjects];
+    }
+  }
+
+  // Also merge in teacherSubjects/teacherGradeLevels if they add anything new
+  const tGrades: string[] = parsed.teacherGradeLevels || [];
+  const tSubjects: string[] = parsed.teacherSubjects || [];
+  if (tGrades.length > 0 && tSubjects.length > 0) {
+    for (const grade of tGrades) {
+      const key = grade.toLowerCase();
+      if (!mapping[key]) mapping[key] = [];
+      for (const subj of tSubjects) {
+        if (!mapping[key].includes(subj)) mapping[key].push(subj);
+      }
+    }
+  }
+
+  return mapping;
+};
+
 // Helper function to safely load from localStorage
 const loadSettingsFromStorage = (): Settings => {
   try {
@@ -231,6 +267,7 @@ const loadSettingsFromStorage = (): Settings => {
     if (stored) {
       const parsed = JSON.parse(stored);
       const sidebarOrder = migrateSidebarOrder(parsed);
+      const gradeSubjects = migrateGradeSubjects(parsed);
 
       // Merge with defaults to ensure all fields exist
       return {
@@ -239,6 +276,8 @@ const loadSettingsFromStorage = (): Settings => {
         // Remove legacy fields
         visualStudioEnabled: undefined,
         performanceMetricsEnabled: undefined,
+        teacherSubjects: undefined,
+        teacherGradeLevels: undefined,
         sidebarOrder,
         tabColors: {
           ...DEFAULT_SETTINGS.tabColors,
@@ -246,7 +285,11 @@ const loadSettingsFromStorage = (): Settings => {
         },
         profile: {
           ...DEFAULT_SETTINGS.profile,
-          ...(parsed.profile || {})
+          ...(parsed.profile || {}),
+          gradeSubjects,
+          // Clear legacy fields
+          gradeLevels: undefined,
+          subjects: undefined,
         },
         tutorials: {
           ...DEFAULT_SETTINGS.tutorials,

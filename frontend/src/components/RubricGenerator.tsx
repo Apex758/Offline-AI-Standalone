@@ -34,6 +34,7 @@ import { buildRubricPrompt } from '../utils/rubricPromptBuilder';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
 import { useSettings } from '../contexts/SettingsContext';
+import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -45,6 +46,7 @@ import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import SmartTextArea from './SmartTextArea';
 import SmartInput from './SmartInput';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 
 const ENDPOINT = '/ws/rubric';
 
@@ -470,6 +472,7 @@ const rubricToDisplayText = (rubric: ParsedRubric): string => {
 };
 
 const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onDataChange }) => {
+  useCurriculumIndex();
   const LOCAL_STORAGE_KEY = `rubric_state_${tabId}`;
   
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
@@ -560,18 +563,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     'Grade 6'
   ];
 
-  const gradeProfileMap: Record<string, string> = {
-    'k': 'Kindergarten', '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3',
-    '4': 'Grade 4', '5': 'Grade 5', '6': 'Grade 6'
-  };
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
 
-  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
-    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
-    : allSubjects;
-
-  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
-    ? allGrades.filter(g => settings.profile.gradeLevels.some(pl => gradeProfileMap[pl] === g))
-    : allGrades;
+  const grades = filterGrades(allGrades, gradeMapping, filterOn);
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase().replace('grade ', '').replace('kindergarten', 'k') || '';
+  const subjects = filterSubjects(allSubjects, gradeMapping, filterOn, selectedGradeKey || undefined);
 
   const focusAreasOptions = [
     'Content Knowledge', 'Critical Thinking', 'Communication', 'Collaboration',
@@ -581,12 +578,12 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
 
   // Auto-select when only one option from profile filtering
   useEffect(() => {
-    if (!settings.profile.filterContentByProfile) return;
+    if (!filterOn) return;
     const updates: Partial<FormData> = {};
-    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
-  }, [subjects, grades, settings.profile.filterContentByProfile]);
+  }, [subjects, grades, filterOn]);
 
   // Try to parse rubric when generated (for restored/loaded rubrics)
   useEffect(() => {

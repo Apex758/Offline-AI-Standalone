@@ -21,7 +21,7 @@ const Globe: React.FC<{ className?: string; style?: React.CSSProperties }> = (p)
 const XCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={CancelCircleIconData} {...p} />;
 const ChevronDown: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowDown01IconData} {...p} />;
 const ChevronRight: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ArrowRight01IconData} {...p} />;
-import curriculumIndex from '../data/curriculumIndex.json'
+import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader'
 
 interface CurriculumStandard {
   subject: string
@@ -32,7 +32,7 @@ interface CurriculumStandard {
 }
 
 function getAllCurriculumStandards(): CurriculumStandard[] {
-  const pages = (curriculumIndex as any).indexedPages || []
+  const pages = getCurriculumPages()
   const standards: CurriculumStandard[] = []
   for (const page of pages) {
     if (page.specificOutcomes) {
@@ -106,20 +106,22 @@ function AccordionItem({ children, isOpen, onToggle, title, level = 1 }: {
 }
 
 export default function AllCurriculumStandardsPage() {
+  const { loading: curriculumLoading } = useCurriculumIndex();
   const [search, setSearch] = useState("")
   const [subject, setSubject] = useState("")
   const [grade, setGrade] = useState("")
   const [strand, setStrand] = useState("")
   const [standards, setStandards] = useState<CurriculumStandard[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   // State for accordion management
   const [openSubjects, setOpenSubjects] = useState<Set<string>>(new Set())
   const [openGrades, setOpenGrades] = useState<Set<string>>(new Set())
   const [openStrands, setOpenStrands] = useState<Set<string>>(new Set())
 
-  // Load standards from local curriculum index
+  // Load standards from local curriculum index (re-run when curriculum finishes loading)
   useEffect(() => {
+    if (curriculumLoading) return;
     try {
       const allStandards = getAllCurriculumStandards()
       setStandards(allStandards)
@@ -128,7 +130,7 @@ export default function AllCurriculumStandardsPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [curriculumLoading])
 
   const subjects = useMemo(() => getUnique(standards.map(s => s.subject)), [standards])
   const grades = useMemo(() => getUnique(standards.map(s => s.grade_level)), [standards])

@@ -37,7 +37,7 @@ const Volume2: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const VolumeX: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={VolumeOffIcon} {...p} />;
 import ExportButton from './ExportButton';
 import AIAssistantPanel from './AIAssistantPanel';
-import curriculumIndex from '../data/curriculumIndex.json';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 import CurriculumReferences from './CurriculumReferences';
 import CurriculumAlignmentFields from './ui/CurriculumAlignmentFields';
 import RelatedCurriculumBox from './ui/RelatedCurriculumBox';
@@ -50,6 +50,7 @@ import { useTTS } from '../hooks/useVoice';
 import axios from 'axios';
 import { buildLessonPrompt } from '../utils/lessonPromptBuilder';
 import { useSettings } from '../contexts/SettingsContext';
+import { filterSubjects, filterGrades } from '../data/teacherConstants';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TutorialButton } from './TutorialButton';
 import { tutorials, TUTORIAL_IDS } from '../data/tutorialSteps';
@@ -248,6 +249,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // Per-tab localStorage key
   const LOCAL_STORAGE_KEY = `lesson_state_${tabId}`;
 
+  const { pages: curriculumPages } = useCurriculumIndex();
   const { settings, markTutorialComplete, isTutorialCompleted } = useSettings();
   const tabColor = settings.tabColors['lesson-planner'];
   const [showTutorial, setShowTutorial] = useState(false);
@@ -463,8 +465,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
       setLoadingCurriculum(true);
       try {
         // Use the curriculum index to find matches
-        const pages = (curriculumIndex as any).indexedPages || [];
-        const matches = pages.filter((page: any) => {
+        const matches = curriculumPages.filter((page: any) => {
           return (
             page.subject?.toLowerCase() === formData.subject.toLowerCase() &&
             page.grade === formData.gradeLevel &&
@@ -519,22 +520,23 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
 
   const allGrades = ['K', '1', '2', '3', '4', '5', '6'];
 
-  const subjects = settings.profile.filterContentByProfile && settings.profile.subjects.length > 0
-    ? allSubjects.filter(s => settings.profile.subjects.includes(s))
-    : allSubjects;
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
 
-  const grades = settings.profile.filterContentByProfile && settings.profile.gradeLevels.length > 0
-    ? allGrades.filter(g => settings.profile.gradeLevels.includes(g.toLowerCase()))
-    : allGrades;
+  const grades = filterGrades(allGrades, gradeMapping, filterOn);
+
+  // When a grade is selected, narrow subjects to what the teacher teaches for that grade
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase() || '';
+  const subjects = filterSubjects(allSubjects, gradeMapping, filterOn, selectedGradeKey || undefined);
 
   // Auto-select when only one option from profile filtering
   useEffect(() => {
-    if (!settings.profile.filterContentByProfile) return;
+    if (!filterOn) return;
     const updates: Partial<FormData> = {};
-    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
     if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
-  }, [subjects, grades, settings.profile.filterContentByProfile]);
+  }, [subjects, grades, filterOn]);
 
   const pedagogicalStrategiesOptions = [
     'Inquiry-Based Learning', 'Project-Based Learning', 'Direct Instruction',

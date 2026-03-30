@@ -3,21 +3,28 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import HierarchySquare02IconData from '@hugeicons/core-free-icons/HierarchySquare02Icon';
 import FlowConnectionIconData from '@hugeicons/core-free-icons/FlowConnectionIcon';
 import type { MilestoneTreeNode } from '../types/milestone';
-import curriculumIndex from '../data/curriculumIndex.json';
+import { getCurriculumPages, useCurriculumIndex } from '../data/curriculumLoader';
 
-const currPages = (curriculumIndex as any).indexedPages || [];
+// Lazy-init lookups — built on first access after curriculum data loads
+let _skillTreeLookupsBuilt = false;
 const eloGroupsMap = new Map<string, { elo: string; scoRange: [number, number]; eloId?: string }[]>();
 const prereqMap = new Map<string, string[]>();
 const relatedMap = new Map<string, string[]>();
 const pageInfoMap = new Map<string, { displayName: string; grade: string; subject: string; strand: string }>();
-currPages.forEach((p: any) => {
-  if (p.id) {
-    if (p.eloGroups) eloGroupsMap.set(p.id, p.eloGroups);
-    pageInfoMap.set(p.id, { displayName: p.displayName, grade: p.grade, subject: p.subject, strand: p.strand });
-    if (p.prerequisiteEntries?.length > 0) prereqMap.set(p.id, p.prerequisiteEntries);
-    if (p.relatedEntries?.length > 0) relatedMap.set(p.id, p.relatedEntries);
-  }
-});
+
+function ensureSkillTreeLookups() {
+  const currPages = getCurriculumPages();
+  if (_skillTreeLookupsBuilt || currPages.length === 0) return;
+  currPages.forEach((p: any) => {
+    if (p.id) {
+      if (p.eloGroups) eloGroupsMap.set(p.id, p.eloGroups);
+      pageInfoMap.set(p.id, { displayName: p.displayName, grade: p.grade, subject: p.subject, strand: p.strand });
+      if (p.prerequisiteEntries?.length > 0) prereqMap.set(p.id, p.prerequisiteEntries);
+      if (p.relatedEntries?.length > 0) relatedMap.set(p.id, p.relatedEntries);
+    }
+  });
+  _skillTreeLookupsBuilt = true;
+}
 
 /* ── Progress tree node types ── */
 interface SkillNode {
@@ -297,6 +304,8 @@ interface Props {
 }
 
 const CurriculumSkillTree: React.FC<Props> = ({ treeData, accentColor, onNavigate, onToggleSco }) => {
+  const { loading: curriculumLoading } = useCurriculumIndex();
+  if (!curriculumLoading) ensureSkillTreeLookups();
   const [currentPath, setCurrentPath] = useState<number[]>([]);
   const [animKey, setAnimKey] = useState(0);
   const [zoomDir, setZoomDir] = useState<'in' | 'out'>('in');

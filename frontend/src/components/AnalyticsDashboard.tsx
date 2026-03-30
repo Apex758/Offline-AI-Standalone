@@ -20,6 +20,7 @@ const GraduationCap: React.FC<{ className?: string; style?: React.CSSProperties 
 const X: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Cancel01IconData} {...p} />;
 const Check: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Tick01IconData} {...p} />;
 import { useSettings } from '../contexts/SettingsContext';
+import { GRADE_LEVELS, SUBJECTS, GRADE_LABEL_MAP, getTeacherGrades, getTeacherSubjects, GradeSubjectMapping } from '../data/teacherConstants';
 import { useTaskNotifications } from '../hooks/useTaskNotifications';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -30,6 +31,23 @@ import type { Task } from '../types/task';
 import type { Timeframe, CurriculumView } from '../types/analytics';
 import type { Tab } from '../types';
 
+
+// ── Module-level API response cache (survives unmount/remount) ──
+const API_CACHE_TTL = 60_000; // 60 seconds
+let _cachedResources: any[] | null = null;
+let _cacheTimestamp = 0;
+let _cacheMilestoneStats: MilestoneStats | null = null;
+let _cacheUpcomingMilestones: Milestone[] = [];
+let _cacheProgressBreakdown: Array<{ grade: string; subject: string; total: number; completed: number; in_progress: number }> = [];
+let _cacheTeacherId: string | null = null;
+
+function isCacheValid(teacherId: string | null): boolean {
+  return (
+    _cachedResources !== null &&
+    Date.now() - _cacheTimestamp < API_CACHE_TTL &&
+    _cacheTeacherId === teacherId
+  );
+}
 
 // Import helper functions
 import {
@@ -160,6 +178,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   }, [tasks]);
 
   const loadAllData = async (teacherId: string | null) => {
+    // Use cached data if still fresh (avoids 9 API calls on every tab switch)
+    if (isCacheValid(teacherId)) {
+      setAllResourcesData(_cachedResources!);
+      setMilestoneStats(_cacheMilestoneStats);
+      setUpcomingMilestones(_cacheUpcomingMilestones);
+      setProgressBreakdown(_cacheProgressBreakdown);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       // Load resources
@@ -190,22 +218,32 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
       setAllResourcesData(allResources);
 
+      // Update cache
+      _cachedResources = allResources;
+      _cacheTimestamp = Date.now();
+      _cacheTeacherId = teacherId;
+
       // Load milestone stats if teacherId is available
       if (teacherId) {
         try {
           const stats = await milestoneApi.getStats(teacherId);
           setMilestoneStats(stats);
+          _cacheMilestoneStats = stats;
 
           const milestones = await milestoneApi.getUpcoming(teacherId, 30);
           setUpcomingMilestones(milestones);
+          _cacheUpcomingMilestones = milestones;
 
           // Load progress breakdown for grade/subject views
           const progressData = await milestoneApi.getProgress(teacherId);
           setProgressBreakdown(progressData.byGradeSubject || []);
+          _cacheProgressBreakdown = progressData.byGradeSubject || [];
         } catch (e: any) {
           console.error('Error loading milestones:', e?.response?.data || e?.message || e);
           setMilestoneStats(null);
           setProgressBreakdown([]);
+          _cacheMilestoneStats = null;
+          _cacheProgressBreakdown = [];
         }
       }
     } catch (error) {
@@ -667,8 +705,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 };
 
 // Profile Edit Modal Component
-const ALL_SUBJECTS = ['Math', 'Science', 'English', 'Social Studies', 'Reading', 'Writing', 'Art', 'Music', 'Physical Education'];
-const ALL_GRADE_LEVELS = ['K', '1', '2', '3', '4', '5', '6'];
+const PROFILE_SUBJECTS = [...SUBJECTS];
+const PROFILE_GRADE_LEVELS = GRADE_LEVELS.map(g => g.value);
 
 interface ProfileEditModalProps {
   currentName: string;
@@ -686,19 +724,30 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const { settings, updateSettings } = useSettings();
   const [name, setName] = useState(currentName);
   const [image, setImage] = useState<string | null>(currentImage);
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(settings.teacherSubjects);
-  const [selectedGrades, setSelectedGrades] = useState<string[]>(settings.teacherGradeLevels);
+  const [localGradeSubjects, setLocalGradeSubjects] = useState<GradeSubjectMapping>({ ...settings.profile.gradeSubjects });
+  const [activeGrade, setActiveGrade] = useState<string | null>(null);
 
-  const toggleSubject = (subj: string) => {
-    setSelectedSubjects(prev =>
-      prev.includes(subj) ? prev.filter(s => s !== subj) : [...prev, subj]
-    );
-  };
+  const selectedGrades = getTeacherGrades(localGradeSubjects);
 
   const toggleGrade = (grade: string) => {
-    setSelectedGrades(prev =>
-      prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]
-    );
+    const updated = { ...localGradeSubjects };
+    if (updated[grade] && updated[grade].length > 0) {
+      delete updated[grade];
+      if (activeGrade === grade) setActiveGrade(null);
+    } else {
+      updated[grade] = [];
+      setActiveGrade(grade);
+    }
+    setLocalGradeSubjects(updated);
+  };
+
+  const toggleSubjectForGrade = (grade: string, subject: string) => {
+    const updated = { ...localGradeSubjects };
+    const current = updated[grade] || [];
+    updated[grade] = current.includes(subject)
+      ? current.filter(s => s !== subject)
+      : [...current, subject];
+    setLocalGradeSubjects(updated);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -714,7 +763,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   const handleSave = () => {
     if (name.trim()) {
-      updateSettings({ teacherSubjects: selectedSubjects, teacherGradeLevels: selectedGrades });
+      updateSettings({ profile: { ...settings.profile, gradeSubjects: localGradeSubjects } });
       onSave(name.trim(), image);
     }
   };
@@ -788,73 +837,85 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           />
         </div>
 
-        {/* Subjects I Teach */}
-        <div className="mb-6">
-          <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
-            <BookOpen className="w-4 h-4" />
-            Subjects I Teach
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {ALL_SUBJECTS.map(subj => {
-              const active = selectedSubjects.includes(subj);
-              return (
-                <button
-                  key={subj}
-                  onClick={() => toggleSubject(subj)}
-                  className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
-                  style={{
-                    backgroundColor: active ? 'var(--dash-primary)' : 'var(--dash-card-bg)',
-                    color: active ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
-                    border: `1px solid ${active ? 'var(--dash-primary)' : 'var(--dash-border)'}`,
-                    boxShadow: active ? '0 2px 8px var(--dash-primary-a25)' : '0 1px 4px var(--dash-card-shadow)'
-                  }}
-                >
-                  {active && <Check className="w-3 h-3 inline mr-1" />}
-                  {subj}
-                </button>
-              );
-            })}
-          </div>
-          {selectedSubjects.length === 0 && (
-            <p className="text-xs mt-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
-              Select subjects to customize student report cards
-            </p>
-          )}
-        </div>
-
         {/* Grade Levels I Teach */}
         <div className="mb-6">
           <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
             <GraduationCap className="w-4 h-4" />
-            Grade Levels I Teach
+            My Grades
           </label>
+          <p className="text-xs mb-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
+            Select grades, then pick subjects for each
+          </p>
           <div className="flex flex-wrap gap-2">
-            {ALL_GRADE_LEVELS.map(grade => {
-              const active = selectedGrades.includes(grade);
+            {PROFILE_GRADE_LEVELS.map(grade => {
+              const hasSubjects = (localGradeSubjects[grade] || []).length > 0;
+              const isActive = activeGrade === grade;
               return (
                 <button
                   key={grade}
-                  onClick={() => toggleGrade(grade)}
+                  onClick={() => {
+                    if (isActive) {
+                      setActiveGrade(null);
+                    } else {
+                      if (!localGradeSubjects[grade]) {
+                        setLocalGradeSubjects(prev => ({ ...prev, [grade]: [] }));
+                      }
+                      setActiveGrade(grade);
+                    }
+                  }}
                   className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 min-w-[60px]"
                   style={{
-                    backgroundColor: active ? 'var(--dash-primary)' : 'var(--dash-card-bg)',
-                    color: active ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
-                    border: `1px solid ${active ? 'var(--dash-primary)' : 'var(--dash-border)'}`,
-                    boxShadow: active ? '0 2px 8px var(--dash-primary-a25)' : '0 1px 4px var(--dash-card-shadow)'
+                    backgroundColor: isActive ? 'var(--dash-primary)' : hasSubjects ? 'var(--dash-primary)' : 'var(--dash-card-bg)',
+                    color: isActive || hasSubjects ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
+                    border: `1px solid ${isActive || hasSubjects ? 'var(--dash-primary)' : 'var(--dash-border)'}`,
+                    boxShadow: isActive ? '0 2px 8px var(--dash-primary-a25)' : '0 1px 4px var(--dash-card-shadow)',
+                    opacity: isActive ? 1 : hasSubjects ? 0.85 : 1,
                   }}
                 >
-                  {active && <Check className="w-3 h-3 inline mr-1" />}
-                  {grade === 'K' ? 'K' : `Grade ${grade}`}
+                  {hasSubjects && <Check className="w-3 h-3 inline mr-1" />}
+                  {GRADE_LABEL_MAP[grade] || grade}
+                  {hasSubjects && <span className="ml-1 text-xs opacity-75">({(localGradeSubjects[grade] || []).length})</span>}
                 </button>
               );
             })}
           </div>
-          {selectedGrades.length === 0 && (
-            <p className="text-xs mt-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
-              Select the grade levels you teach
-            </p>
-          )}
         </div>
+
+        {/* Subjects for selected grade */}
+        {activeGrade && (
+          <div className="mb-6">
+            <label className="flex items-center gap-2 text-sm font-semibold mb-3" style={{ color: 'var(--dash-text-sub)' }}>
+              <BookOpen className="w-4 h-4" />
+              Subjects for {GRADE_LABEL_MAP[activeGrade]}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {PROFILE_SUBJECTS.map(subj => {
+                const active = (localGradeSubjects[activeGrade] || []).includes(subj);
+                return (
+                  <button
+                    key={subj}
+                    onClick={() => toggleSubjectForGrade(activeGrade, subj)}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
+                    style={{
+                      backgroundColor: active ? 'var(--dash-primary)' : 'var(--dash-card-bg)',
+                      color: active ? 'var(--dash-primary-fg)' : 'var(--dash-text-sub)',
+                      border: `1px solid ${active ? 'var(--dash-primary)' : 'var(--dash-border)'}`,
+                      boxShadow: active ? '0 2px 8px var(--dash-primary-a25)' : '0 1px 4px var(--dash-card-shadow)'
+                    }}
+                  >
+                    {active && <Check className="w-3 h-3 inline mr-1" />}
+                    {subj}
+                  </button>
+                );
+              })}
+            </div>
+            {(localGradeSubjects[activeGrade] || []).length === 0 && (
+              <p className="text-xs mt-2" style={{ color: 'var(--dash-text-sub)', opacity: 0.6 }}>
+                Select the subjects you teach for this grade
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex space-x-3">

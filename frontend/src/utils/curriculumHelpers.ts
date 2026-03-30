@@ -1,6 +1,4 @@
-import curriculumIndex from '../data/curriculumIndex.json';
-
-const pages = (curriculumIndex as any).indexedPages || [];
+import { getCurriculumPages } from '../data/curriculumLoader';
 
 /**
  * Get unique strands matching a subject and grade from the curriculum index.
@@ -8,7 +6,7 @@ const pages = (curriculumIndex as any).indexedPages || [];
 export function getStrands(subject: string, grade: string): string[] {
   if (!subject || !grade) return [];
   const strandsSet = new Set<string>();
-  pages.forEach((page: any) => {
+  getCurriculumPages().forEach((page: any) => {
     if (
       page.subject &&
       page.grade &&
@@ -28,7 +26,7 @@ export function getStrands(subject: string, grade: string): string[] {
 export function getELOs(subject: string, grade: string, strand: string): string[] {
   if (!subject || !grade || !strand) return [];
   const elosSet = new Set<string>();
-  pages.forEach((page: any) => {
+  getCurriculumPages().forEach((page: any) => {
     if (
       page.subject?.toLowerCase() === subject.toLowerCase() &&
       page.grade?.toString() === grade.toString() &&
@@ -47,7 +45,7 @@ export function getELOs(subject: string, grade: string, strand: string): string[
 export function getSCOs(subject: string, grade: string, strand: string, elo: string): string[] {
   if (!subject || !grade || !strand || !elo) return [];
   const scosSet = new Set<string>();
-  pages.forEach((page: any) => {
+  getCurriculumPages().forEach((page: any) => {
     if (
       page.subject?.toLowerCase() === subject.toLowerCase() &&
       page.grade?.toString() === grade.toString() &&
@@ -74,7 +72,7 @@ export function getELOsStructured(subject: string, grade: string, strand: string
   if (!subject || !grade || !strand) return [];
   const seen = new Set<string>();
   const results: OutcomeEntry[] = [];
-  pages.forEach((page: any) => {
+  getCurriculumPages().forEach((page: any) => {
     if (
       page.subject?.toLowerCase() === subject.toLowerCase() &&
       page.grade?.toString() === grade.toString() &&
@@ -102,7 +100,7 @@ export function getSCOsStructured(subject: string, grade: string, strand: string
   if (!subject || !grade || !strand || !elo) return [];
   const seen = new Set<string>();
   const results: OutcomeEntry[] = [];
-  pages.forEach((page: any) => {
+  getCurriculumPages().forEach((page: any) => {
     if (
       page.subject?.toLowerCase() === subject.toLowerCase() &&
       page.grade?.toString() === grade.toString() &&
@@ -130,7 +128,7 @@ export function getSCOsStructured(subject: string, grade: string, strand: string
 export function getOutcomeIdLookup(subject: string, grade: string, strand: string): Map<string, string> {
   const lookup = new Map<string, string>();
   if (!subject || !grade || !strand) return lookup;
-  pages.forEach((page: any) => {
+  getCurriculumPages().forEach((page: any) => {
     if (
       page.subject?.toLowerCase() === subject.toLowerCase() &&
       page.grade?.toString() === grade.toString() &&
@@ -152,7 +150,7 @@ export function getOutcomeIdLookup(subject: string, grade: string, strand: strin
  */
 export function getCurriculumMatches(subject: string, grade: string, strand: string) {
   if (!subject || !grade || !strand) return [];
-  return pages.filter((page: any) =>
+  return getCurriculumPages().filter((page: any) =>
     page.subject?.toLowerCase() === subject.toLowerCase() &&
     page.grade === grade &&
     page.strand?.toLowerCase().includes(strand.toLowerCase())

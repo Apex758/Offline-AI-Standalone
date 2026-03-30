@@ -43,7 +43,7 @@ const Shuffle: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
 const PaintBrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
 const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
-import curriculumIndex from '../data/curriculumIndex.json';
+import { useCurriculumIndex } from '../data/curriculumLoader';
 import {
   MultipleChoiceTemplate,
   ComprehensionTemplate,
@@ -71,6 +71,8 @@ import WorksheetGrader from './WorksheetGrader';
 import SmartTextArea from './SmartTextArea';
 import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import SmartInput from './SmartInput';
+import { useSettings } from '../contexts/SettingsContext';
+import { filterSubjects, filterGrades } from '../data/teacherConstants';
 
 
 interface CurriculumPage {
@@ -186,21 +188,29 @@ const worksheetTemplates: WorksheetTemplate[] = [
   }
 ];
 
-const subjects = [
+const allSubjectsWS = [
   'Mathematics',
   'Language Arts',
   'Science',
   'Social Studies'
 ];
 
-const grades = ['K', '1', '2', '3', '4', '5', '6'];
+const allGradesWS = ['K', '1', '2', '3', '4', '5', '6'];
 
 const ENDPOINT = '/ws/worksheet';
 
 const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedData, onDataChange, onOpenCurriculumTab }) => {
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming } = useWebSocket();
   const { enqueue, queueEnabled } = useQueue();
+  const { curriculumIndex } = useCurriculumIndex();
+  const { settings } = useSettings();
   const LOCAL_STORAGE_KEY = `worksheet_state_${tabId}`;
+
+  // Profile-based filtering for subject/grade dropdowns
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
+  const subjects = filterSubjects(allSubjectsWS, gradeMapping, filterOn);
+  const grades = filterGrades(allGradesWS, gradeMapping, filterOn);
 
   const getDefaultFormData = (): WorksheetFormData => ({
     subject: '',
