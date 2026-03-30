@@ -325,14 +325,15 @@ export default function Achievements({ tabId }: AchievementsProps) {
         </div>
 
         {/* Achievement grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sortedDefinitions.map(defn => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 relative" style={{ isolation: 'isolate' }}>
+          {sortedDefinitions.map((defn, i) => (
             <AchievementCard
               key={defn.id}
               definition={defn}
               isEarned={earnedIds.has(defn.id)}
               earnedAt={earnedMap[defn.id]}
               progress={progress[defn.id]}
+              index={i}
             />
           ))}
         </div>
@@ -353,23 +354,36 @@ function AchievementCard({
   isEarned,
   earnedAt,
   progress,
+  index,
 }: {
   definition: AchievementDefinition;
   isEarned: boolean;
   earnedAt?: string;
   progress?: { current: number; target: number };
+  index: number;
 }) {
   const color = RARITY_COLORS[definition.rarity];
   const progressPercent = progress ? Math.min(100, Math.round((progress.current / progress.target) * 100)) : 0;
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div
-      className="widget-glass rounded-xl p-4 relative overflow-hidden transition-all duration-300"
+      className="widget-glass achievement-glare achievement-card-enter rounded-xl p-4 relative"
+      onMouseEnter={() => isEarned && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
+        animationDelay: `${Math.min(index * 40, 600)}ms`,
         opacity: isEarned ? 1 : 0.55,
         filter: isEarned ? 'none' : 'grayscale(0.7)',
         border: isEarned ? `1px solid ${color}50` : '1px solid var(--dash-border, #333)',
-        boxShadow: isEarned ? `0 0 20px ${color}15` : 'none',
+        boxShadow: hovered
+          ? `0 20px 40px rgba(0,0,0,0.35), 0 0 24px ${isEarned ? color + '30' : 'rgba(0,0,0,0)'}`
+          : isEarned
+            ? `0 8px 32px rgba(0,0,0,0.25), 0 0 20px ${color}15`
+            : '0 8px 32px rgba(0,0,0,0.25)',
+        transform: hovered ? 'scale(1.045) translateY(-4px)' : 'scale(1) translateY(0)',
+        transition: 'transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, opacity 0.2s ease',
+        zIndex: hovered ? 2 : undefined,
       }}
     >
       {/* Rarity badge */}
