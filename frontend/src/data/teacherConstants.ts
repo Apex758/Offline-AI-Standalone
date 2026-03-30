@@ -20,9 +20,6 @@ export const GRADE_LEVELS: GradeLevel[] = [
 
 export const SUBJECTS = [
   'Mathematics', 'Language Arts', 'Science', 'Social Studies',
-  'Physical Education', 'Health & Family Life', 'Music', 'Art',
-  'Spanish', 'French', 'ICT', 'Agriculture',
-  'Religious Education', 'TVET', 'Library Skills',
 ] as const;
 
 export type Subject = typeof SUBJECTS[number];
