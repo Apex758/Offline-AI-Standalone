@@ -5,6 +5,14 @@ import Lock01IconData from '@hugeicons/core-free-icons/LockIcon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import ArrowDownIconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+// Category background icons
+import ContentIconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
+import StudentIconData from '@hugeicons/core-free-icons/UserGroupIcon';
+import AssessmentIconData from '@hugeicons/core-free-icons/TaskDone01Icon';
+import AttendanceIconData from '@hugeicons/core-free-icons/Calendar01Icon';
+import CurriculumIconData from '@hugeicons/core-free-icons/LibraryIcon';
+import ExplorationIconData from '@hugeicons/core-free-icons/Compass01Icon';
+import PowerIconData from '@hugeicons/core-free-icons/FlashIcon';
 import { useAchievementContext } from '../contexts/AchievementContext';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity } from '../types/achievement';
 
@@ -349,6 +357,25 @@ export default function Achievements({ tabId }: AchievementsProps) {
 }
 
 
+// Gradient stops per rarity — [light-from, light-to, dark-from, dark-to]
+const RARITY_GRADIENTS: Record<AchievementRarity, [string, string, string, string]> = {
+  common:    ['#6b7280', '#d1d5db', '#1f2937', '#4b5563'],
+  uncommon:  ['#15803d', '#4ade80', '#14532d', '#16a34a'],
+  rare:      ['#1d4ed8', '#60a5fa', '#1e3a8a', '#2563eb'],
+  epic:      ['#6d28d9', '#c084fc', '#3b0764', '#7c3aed'],
+  legendary: ['#b45309', '#fbbf24', '#78350f', '#d97706'],
+};
+
+const CATEGORY_ICONS: Record<AchievementCategory, object> = {
+  'content-creation':   ContentIconData,
+  'student-management': StudentIconData,
+  'assessment':         AssessmentIconData,
+  'attendance':         AttendanceIconData,
+  'curriculum':         CurriculumIconData,
+  'exploration':        ExplorationIconData,
+  'power-user':         PowerIconData,
+};
+
 function AchievementCard({
   definition,
   isEarned,
@@ -362,103 +389,173 @@ function AchievementCard({
   progress?: { current: number; target: number };
   index: number;
 }) {
-  const color = RARITY_COLORS[definition.rarity];
-  const progressPercent = progress ? Math.min(100, Math.round((progress.current / progress.target) * 100)) : 0;
   const [hovered, setHovered] = useState(false);
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  // Keep in sync if theme changes
+  React.useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setDark(document.documentElement.classList.contains('dark'))
+    );
+    obs.observe(document.documentElement, { attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+
+  const [gFrom, gTo, gDarkFrom, gDarkTo] = RARITY_GRADIENTS[definition.rarity];
+  const gradientFrom = dark ? gDarkFrom : gFrom;
+  const gradientTo   = dark ? gDarkTo   : gTo;
+  const color        = RARITY_COLORS[definition.rarity];
+  const bgIcon       = CATEGORY_ICONS[definition.category];
+  const progressPercent = progress
+    ? Math.min(100, Math.round((progress.current / progress.target) * 100))
+    : 0;
 
   return (
     <div
-      className="widget-glass achievement-glare achievement-card-enter rounded-xl p-4 relative"
+      className="achievement-glare achievement-card-enter rounded-2xl overflow-hidden relative flex flex-col"
       onMouseEnter={() => isEarned && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         animationDelay: `${Math.min(index * 40, 600)}ms`,
-        opacity: isEarned ? 1 : 0.55,
-        filter: isEarned ? 'none' : 'grayscale(0.7)',
-        border: isEarned ? `1px solid ${color}50` : '1px solid var(--dash-border, #333)',
+        minHeight: 180,
+        background: isEarned
+          ? `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`
+          : dark
+            ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
+            : 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
+        border: isEarned
+          ? `1px solid ${color}40`
+          : '1px solid rgba(255,255,255,0.08)',
         boxShadow: hovered
-          ? `0 20px 40px rgba(0,0,0,0.35), 0 0 24px ${isEarned ? color + '30' : 'rgba(0,0,0,0)'}`
+          ? `0 24px 48px rgba(0,0,0,0.4), 0 0 32px ${color}40`
           : isEarned
-            ? `0 8px 32px rgba(0,0,0,0.25), 0 0 20px ${color}15`
-            : '0 8px 32px rgba(0,0,0,0.25)',
-        transform: hovered ? 'scale(1.045) translateY(-4px)' : 'scale(1) translateY(0)',
-        transition: 'transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, opacity 0.2s ease',
+            ? `0 8px 32px rgba(0,0,0,0.3), 0 0 20px ${color}20`
+            : '0 4px 16px rgba(0,0,0,0.2)',
+        transform: hovered ? 'scale(1.045) translateY(-5px)' : 'scale(1) translateY(0)',
+        transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease',
+        filter: isEarned ? 'none' : 'grayscale(0.65) brightness(0.8)',
         zIndex: hovered ? 2 : undefined,
+        cursor: isEarned ? 'default' : 'default',
       }}
     >
-      {/* Rarity badge */}
+      {/* Large watermark background icon */}
       <div
-        className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+        className="absolute"
         style={{
-          backgroundColor: `${color}20`,
-          color,
+          right: -10,
+          bottom: -10,
+          opacity: isEarned ? 0.12 : 0.07,
+          pointerEvents: 'none',
         }}
       >
-        {RARITY_LABELS[definition.rarity]}
+        <HugeiconsIcon icon={bgIcon as any} size={110} style={{ color: '#ffffff' }} />
       </div>
 
-      {/* Icon */}
-      <div className="mb-3 flex items-center gap-3">
+      {/* Inner glass overlay — dark mode only, earned only */}
+      {isEarned && dark && (
         <div
-          className="flex items-center justify-center rounded-lg"
+          className="absolute inset-0 rounded-2xl"
           style={{
-            width: 40,
-            height: 40,
-            background: isEarned ? `${color}15` : 'var(--dash-bg)',
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 60%, transparent 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Card content */}
+      <div className="relative flex flex-col h-full p-4 z-10">
+
+        {/* Top row: index + rarity */}
+        <div className="flex items-center justify-between mb-3">
+          <span
+            className="text-[11px] font-bold tracking-widest"
+            style={{ color: isEarned ? 'rgba(255,255,255,0.55)' : 'rgba(128,128,128,0.6)' }}
+          >
+            {String(index + 1).padStart(2, '0')} /
+          </span>
+          <span
+            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{
+              backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : 'rgba(128,128,128,0.15)',
+              color: isEarned ? '#fff' : 'rgba(128,128,128,0.8)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            {RARITY_LABELS[definition.rarity]}
+          </span>
+        </div>
+
+        {/* Small icon badge */}
+        <div
+          className="flex items-center justify-center rounded-xl mb-3"
+          style={{
+            width: 36,
+            height: 36,
+            backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : 'rgba(128,128,128,0.12)',
+            backdropFilter: 'blur(8px)',
           }}
         >
-          {isEarned ? (
-            <HugeiconsIcon icon={Medal01IconData} size={22} style={{ color }} />
-          ) : (
-            <HugeiconsIcon icon={Lock01IconData} size={22} style={{ color: 'var(--dash-text-sub)' }} />
+          {isEarned
+            ? <HugeiconsIcon icon={Medal01IconData} size={18} style={{ color: '#fff' }} />
+            : <HugeiconsIcon icon={Lock01IconData} size={18} style={{ color: 'rgba(128,128,128,0.7)' }} />
+          }
+        </div>
+
+        {/* Name */}
+        <h4
+          className="text-sm font-bold leading-tight mb-1"
+          style={{ color: isEarned ? '#fff' : (dark ? 'rgba(200,200,200,0.6)' : 'rgba(60,60,60,0.7)') }}
+        >
+          {definition.name}
+        </h4>
+
+        {/* Description */}
+        <p
+          className="text-[11px] leading-snug flex-1"
+          style={{ color: isEarned ? 'rgba(255,255,255,0.65)' : 'rgba(128,128,128,0.6)' }}
+        >
+          {definition.description}
+        </p>
+
+        {/* Bottom row */}
+        <div className="mt-3">
+          {/* Points */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <HugeiconsIcon
+              icon={StarIconData}
+              size={11}
+              style={{ color: isEarned ? 'rgba(255,255,255,0.7)' : 'rgba(128,128,128,0.5)' }}
+            />
+            <span
+              className="text-[11px] font-semibold"
+              style={{ color: isEarned ? 'rgba(255,255,255,0.7)' : 'rgba(128,128,128,0.5)' }}
+            >
+              {definition.points} pts
+            </span>
+            {isEarned && earnedAt && (
+              <span className="ml-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                {new Date(earnedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+
+          {/* Progress bar (locked only) */}
+          {!isEarned && progress && (
+            <>
+              <div className="flex justify-between text-[10px] mb-1" style={{ color: 'rgba(128,128,128,0.6)' }}>
+                <span>{progress.current}/{progress.target}</span>
+                <span>{progressPercent}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(128,128,128,0.2)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%`, backgroundColor: color }}
+                />
+              </div>
+            </>
           )}
         </div>
       </div>
-
-      {/* Name + description */}
-      <h4 className="text-sm font-bold mb-1" style={{ color: 'var(--dash-text)' }}>
-        {definition.name}
-      </h4>
-      <p className="text-xs mb-2" style={{ color: 'var(--dash-text-sub)' }}>
-        {definition.description}
-      </p>
-
-      {/* Points */}
-      <div className="flex items-center gap-2 mb-2">
-        <HugeiconsIcon icon={StarIconData} size={12} style={{ color: '#f59e0b' }} />
-        <span className="text-xs font-semibold" style={{ color: 'var(--dash-text-sub)' }}>
-          {definition.points} pts
-        </span>
-      </div>
-
-      {/* Progress bar (only for unearned) */}
-      {!isEarned && progress && (
-        <div className="mt-2">
-          <div className="flex justify-between text-[10px] mb-1" style={{ color: 'var(--dash-text-sub)' }}>
-            <span>{progress.current}/{progress.target}</span>
-            <span>{progressPercent}%</span>
-          </div>
-          <div
-            className="h-1.5 rounded-full overflow-hidden"
-            style={{ backgroundColor: 'var(--dash-border, #333)' }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${progressPercent}%`,
-                backgroundColor: color,
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Earned date */}
-      {isEarned && earnedAt && (
-        <div className="text-[10px] mt-2" style={{ color: 'var(--dash-text-sub)' }}>
-          Earned {new Date(earnedAt).toLocaleDateString()}
-        </div>
-      )}
     </div>
   );
 }
