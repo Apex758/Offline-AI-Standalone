@@ -122,6 +122,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // Generator States
   // ========================================
   const [prompt, setPrompt] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
   const [negativePrompt, setNegativePrompt] = useState('deformed, distorted, blurry, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, bad anatomy, bad proportions, extra limbs, disfigured, fused fingers, too many fingers, six fingers, long neck, ugly, low quality, worst quality');
   const [width, setWidth] = useState(512);
   const [height, setHeight] = useState(512);
@@ -479,7 +480,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   // ========================================
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      setError('Please enter a prompt');
+      setValidationErrors({ prompt: true });
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
       return;
     }
 
@@ -1826,8 +1831,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     </p>
                     <SmartTextArea
                       value={prompt}
-                      onChange={(val) => setPrompt(val)}
-                      className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(val) => {
+                        setPrompt(val);
+                        if (validationErrors.prompt) setValidationErrors({});
+                      }}
+                      data-validation-error={validationErrors.prompt ? 'true' : undefined}
+                      className={`w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.prompt ? 'validation-error' : ''}`}
                       rows={4}
                       placeholder="E.g., A flowering plant showing roots, stem, leaves, and flower petals"
                     />
@@ -1916,7 +1925,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   {/* Generate Button + Time Estimate */}
                   <button
                     onClick={handleGenerate}
-                    disabled={!prompt.trim() || loadingStyles}
+                    disabled={loadingStyles}
                     className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center transition"
                     data-tutorial="image-studio-generate"
                   >

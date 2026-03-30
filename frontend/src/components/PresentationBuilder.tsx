@@ -1773,8 +1773,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     }
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const updateField = (field: keyof PresentationFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   const handleGenerate = async () => {
@@ -1819,9 +1824,17 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
         if (!plan) { setError('Please select a lesson plan first.'); setLoading(false); return; }
         prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode) + imageContext;
       } else {
-        if (!formData.subject || !formData.gradeLevel || !formData.topic) {
-          setError('Please fill in Subject, Grade Level, and Topic.');
+        const errors: Record<string, boolean> = {};
+        if (!formData.subject) errors.subject = true;
+        if (!formData.gradeLevel) errors.gradeLevel = true;
+        if (!formData.topic) errors.topic = true;
+        if (Object.keys(errors).length > 0) {
+          setValidationErrors(errors);
           setLoading(false);
+          setTimeout(() => {
+            const firstError = document.querySelector('[data-validation-error="true"]');
+            firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 50);
           return;
         }
         prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount, presentationMode) + imageContext;
@@ -2156,7 +2169,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <select
                       value={formData.subject}
                       onChange={e => updateField('subject', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none"
+                      data-validation-error={validationErrors.subject ? 'true' : undefined}
+                      className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.subject ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
                       <option value="">Select subject...</option>
@@ -2168,7 +2182,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     <select
                       value={formData.gradeLevel}
                       onChange={e => updateField('gradeLevel', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none"
+                      data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                      className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
                       <option value="">Select grade...</option>
@@ -2183,7 +2198,8 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     value={formData.topic}
                     onChange={v => updateField('topic', v)}
                     placeholder="e.g. Light Interactions, Fractions, Community Helpers..."
-                    className="w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none"
+                    data-validation-error={validationErrors.topic ? 'true' : undefined}
+                    className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.topic ? 'validation-error' : ''}`}
                   />
                 </div>
 

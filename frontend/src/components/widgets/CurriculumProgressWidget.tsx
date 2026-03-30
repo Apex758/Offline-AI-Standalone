@@ -118,16 +118,29 @@ const CurriculumProgressWidget: React.FC<CurriculumProgressWidgetProps> = ({
             <div className="text-2xl font-bold" style={{ color: 'var(--dash-text-sub)' }}>{stats.notStarted}</div>
             <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Not Started</div>
           </div>
-          <div
-            className="rounded-lg p-3"
-            style={{
-              backgroundColor: 'var(--dash-brown-a12)',
-              border: `1px solid var(--dash-brown-a25)`
-            }}
-          >
-            <div className="text-2xl font-bold" style={{ color: 'var(--dash-text-sub)' }}>{stats.totalMilestones}</div>
-            <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Total</div>
-          </div>
+          {stats.skipped > 0 ? (
+            <div
+              className="rounded-lg p-3"
+              style={{
+                backgroundColor: 'var(--dash-brown-a12)',
+                border: `1px solid var(--dash-brown-a25)`
+              }}
+            >
+              <div className="text-2xl font-bold" style={{ color: 'var(--dash-text-sub)' }}>{stats.skipped}</div>
+              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Skipped</div>
+            </div>
+          ) : (
+            <div
+              className="rounded-lg p-3"
+              style={{
+                backgroundColor: 'var(--dash-brown-a12)',
+                border: `1px solid var(--dash-brown-a25)`
+              }}
+            >
+              <div className="text-2xl font-bold" style={{ color: 'var(--dash-text-sub)' }}>{stats.totalMilestones}</div>
+              <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Total</div>
+            </div>
+          )}
         </div>
       </div>
     );

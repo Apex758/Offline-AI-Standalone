@@ -121,7 +121,7 @@ const ResourceTrendChart: React.FC<ResourceTrendChartProps> = ({
               : timeframe === '3months' ? 1
               : timeframe === '4weeks' ? 3
               : timeframe === '2weeks' ? 1
-              : 0
+              : 2
             }
           />
           <YAxis

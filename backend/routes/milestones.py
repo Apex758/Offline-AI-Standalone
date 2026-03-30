@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from milestones.milestone_db import get_milestone_db
 from curriculum_matcher import CurriculumMatcher
+import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -102,11 +103,40 @@ async def get_milestones(
 
 @router.get("/{teacher_id}/progress")
 async def get_progress(teacher_id: str):
-    """Get overall progress statistics"""
+    """Get overall progress statistics with SCO-level breakdown"""
     db = get_milestone_db()
     summary = db.get_progress_summary(teacher_id)
-    breakdown = db.get_progress_by_grade_subject(teacher_id)
-    
+
+    # Build SCO-level breakdown by grade/subject
+    all_milestones = db.get_milestones(teacher_id)
+    gs_map: Dict[str, Dict[str, Any]] = {}
+    for m in all_milestones:
+        if m.get('status') == 'skipped':
+            continue
+        key = f"{m['grade']}|{m['subject']}"
+        if key not in gs_map:
+            gs_map[key] = {'grade': m['grade'], 'subject': m['subject'], 'total': 0, 'completed': 0, 'in_progress': 0}
+        checklist = []
+        if m.get('checklist_json'):
+            try:
+                checklist = json.loads(m['checklist_json'])
+            except Exception:
+                checklist = []
+        if checklist:
+            gs_map[key]['total'] += len(checklist)
+            checked = sum(1 for c in checklist if c.get('checked'))
+            gs_map[key]['completed'] += checked
+            if checked > 0 and checked < len(checklist):
+                gs_map[key]['in_progress'] += len(checklist) - checked
+        else:
+            gs_map[key]['total'] += 1
+            if m.get('status') == 'completed':
+                gs_map[key]['completed'] += 1
+            elif m.get('status') == 'in_progress':
+                gs_map[key]['in_progress'] += 1
+
+    breakdown = sorted(gs_map.values(), key=lambda x: (x['grade'], x['subject']))
+
     return {
         "summary": summary,
         "byGradeSubject": breakdown
@@ -157,17 +187,38 @@ async def get_stats(teacher_id: str):
     
     summary = db.get_progress_summary(teacher_id)
     upcoming = db.get_upcoming_milestones(teacher_id, days_ahead=7)
-    
-    # Calculate percentage
+
+    # SCO-level percentage: each checklist item contributes individually
+    all_milestones = db.get_milestones(teacher_id)
+    sco_total = 0
+    sco_done = 0
+    for m in all_milestones:
+        if m.get('status') == 'skipped':
+            continue
+        checklist = []
+        if m.get('checklist_json'):
+            try:
+                checklist = json.loads(m['checklist_json'])
+            except Exception:
+                checklist = []
+        if checklist:
+            sco_total += len(checklist)
+            sco_done += sum(1 for c in checklist if c.get('checked'))
+        else:
+            sco_total += 1
+            sco_done += 1 if m.get('status') == 'completed' else 0
+
+    percentage = round((sco_done / sco_total * 100) if sco_total > 0 else 0, 2)
+
     total = summary.get('total', 0)
-    completed = summary.get('completed', 0)
-    percentage = round((completed / total * 100) if total > 0 else 0, 1)
-    
+    skipped = summary.get('skipped', 0)
+
     return {
         "totalMilestones": total,
-        "completed": completed,
+        "completed": summary.get('completed', 0),
         "inProgress": summary.get('in_progress', 0),
         "notStarted": summary.get('not_started', 0),
+        "skipped": skipped,
         "completionPercentage": percentage,
         "upcomingThisWeek": len(upcoming)
     }

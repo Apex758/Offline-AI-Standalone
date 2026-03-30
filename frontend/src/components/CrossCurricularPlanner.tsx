@@ -906,6 +906,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     loadDrafts();
   }, []);
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
@@ -916,6 +918,9 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
       }
       return updated;
     });
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string) => {
@@ -927,17 +932,48 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
     }
   };
 
-  const validateStep = () => {
-    if (step === 1) return formData.lessonTitle && formData.gradeLevel && formData.duration && formData.bigIdea && formData.integrationModel;
-    if (step === 2) return formData.primarySubject && formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
-    if (step === 3) return formData.primaryObjective;
-    if (step === 4) return formData.introduction && formData.coreActivities;
-    if (step === 5) return formData.assessmentMethods && formData.mostChildren;
-    if (step === 6) return formData.teachingStrategies.length > 0 && formData.learningStyles.length > 0;
-    return true;
+  const validateStep = (): boolean => {
+    const errors: Record<string, boolean> = {};
+    if (step === 1) {
+      if (!formData.lessonTitle) errors.lessonTitle = true;
+      if (!formData.gradeLevel) errors.gradeLevel = true;
+      if (!formData.duration) errors.duration = true;
+      if (!formData.bigIdea) errors.bigIdea = true;
+      if (!formData.integrationModel) errors.integrationModel = true;
+    }
+    if (step === 2) {
+      if (!formData.primarySubject) errors.primarySubject = true;
+      if (!formData.strand) errors.strand = true;
+      if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
+      if (!formData.specificOutcomes) errors.specificOutcomes = true;
+    }
+    if (step === 3) {
+      if (!formData.primaryObjective) errors.primaryObjective = true;
+    }
+    if (step === 4) {
+      if (!formData.introduction) errors.introduction = true;
+      if (!formData.coreActivities) errors.coreActivities = true;
+    }
+    if (step === 5) {
+      if (!formData.assessmentMethods) errors.assessmentMethods = true;
+      if (!formData.mostChildren) errors.mostChildren = true;
+    }
+    if (step === 6) {
+      if (formData.teachingStrategies.length === 0) errors.teachingStrategies = true;
+      if (formData.learningStyles.length === 0) errors.learningStyles = true;
+    }
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+    return Object.keys(errors).length === 0;
   };
 
   const generatePlan = () => {
+    if (!validateStep()) return;
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -1221,12 +1257,14 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Lesson Title *</label>
                       <SmartInput value={formData.lessonTitle} onChange={(val) => handleInputChange('lessonTitle', val)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="Enter lesson title" />
+                        data-validation-error={validationErrors.lessonTitle ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-teal-500 ${validationErrors.lessonTitle ? 'validation-error' : ''}`} placeholder="Enter lesson title" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-grade">
                       <label className="block text-sm font-medium text-theme-label mb-2">Grade Level *</label>
-                      <select value={formData.gradeLevel} onChange={(e) => handleInputChange('gradeLevel', e.target.value)} 
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                      <select value={formData.gradeLevel} onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+                        data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select grade level</option>
                         {grades.map(g => <option key={g} value={g}>{g}</option>)}
@@ -1235,19 +1273,22 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Duration *</label>
                       <SmartInput value={formData.duration} onChange={(val) => handleInputChange('duration', val)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.duration ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.duration ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="e.g., 60 minutes, 2 class periods" />
                     </div>
                     <div data-tutorial="cross-curricular-planner-theme">
                       <label className="block text-sm font-medium text-theme-label mb-2">Big Idea / Driving Concept *</label>
                       <SmartTextArea value={formData.bigIdea} onChange={(val) => handleInputChange('bigIdea', val)} rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.bigIdea ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.bigIdea ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The central concept that connects all subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Integration Model *</label>
                       <select value={formData.integrationModel} onChange={(e) => handleInputChange('integrationModel', e.target.value)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.integrationModel ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.integrationModel ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select integration model</option>
                         {integrationModels.map(m => <option key={m} value={m}>{m}</option>)}
@@ -1262,7 +1303,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div data-tutorial="cross-curricular-planner-subjects">
                       <label className="block text-sm font-medium text-theme-label mb-2">Primary Subject *</label>
                       <select value={formData.primarySubject} onChange={(e) => handleInputChange('primarySubject', e.target.value)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.primarySubject ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.primarySubject ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>
                         <option value="">Select primary subject</option>
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -1281,6 +1323,7 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                         onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                         onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                         accentColor={tabColor}
+                        validationErrors={validationErrors}
                       />
                       <RelatedCurriculumBox
                         subject={formData.primarySubject}
@@ -1306,7 +1349,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div data-tutorial="cross-curricular-planner-objectives">
                       <label className="block text-sm font-medium text-theme-label mb-2">Primary Learning Objective *</label>
                       <SmartTextArea value={formData.primaryObjective} onChange={(val) => handleInputChange('primaryObjective', val)} rows={2}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.primaryObjective ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.primaryObjective ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="The main learning goal for this lesson" />
                     </div>
                     <div>
@@ -1342,13 +1386,15 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div data-tutorial="cross-curricular-planner-activities">
                       <label className="block text-sm font-medium text-theme-label mb-2">Introduction/Hook *</label>
                       <SmartTextArea value={formData.introduction} onChange={(val) => handleInputChange('introduction', val)} rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.introduction ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.introduction ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Engaging opening activity that introduces the big idea" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Core Learning Activities *</label>
                       <SmartTextArea value={formData.coreActivities} onChange={(val) => handleInputChange('coreActivities', val)} rows={4}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.coreActivities ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.coreActivities ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Main activities that integrate multiple subjects" />
                     </div>
                     <div>
@@ -1372,13 +1418,15 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <div data-tutorial="cross-curricular-planner-assessment">
                       <label className="block text-sm font-medium text-theme-label mb-2">Assessment Methods *</label>
                       <SmartTextArea value={formData.assessmentMethods} onChange={(val) => handleInputChange('assessmentMethods', val)} rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.assessmentMethods ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.assessmentMethods ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="How you'll assess learning across subjects" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-2">Most children will *</label>
                       <SmartTextArea value={formData.mostChildren} onChange={(val) => handleInputChange('mostChildren', val)} rows={2}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        data-validation-error={validationErrors.mostChildren ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.mostChildren ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties} placeholder="Expected learning outcomes for most students" />
                     </div>
                     <div>
@@ -1407,7 +1455,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-3">Teaching Strategies *</label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div data-validation-error={validationErrors.teachingStrategies ? 'true' : undefined}
+                        className={`grid grid-cols-2 gap-2 ${validationErrors.teachingStrategies ? 'validation-error rounded-lg p-2' : ''}`}>
                         {teachingStrategiesOptions.map(s => (
                           <label key={s} className="flex items-center space-x-2 p-2 hover:bg-theme-subtle rounded cursor-pointer">
                             <input type="checkbox" checked={formData.teachingStrategies.includes(s)}
@@ -1420,7 +1469,8 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-theme-label mb-3">Learning Styles *</label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div data-validation-error={validationErrors.learningStyles ? 'true' : undefined}
+                        className={`grid grid-cols-3 gap-2 ${validationErrors.learningStyles ? 'validation-error rounded-lg p-2' : ''}`}>
                         {learningStylesOptions.map(s => (
                           <label key={s} className="flex items-center space-x-2 p-2 hover:bg-theme-subtle rounded cursor-pointer">
                             <input type="checkbox" checked={formData.learningStyles.includes(s)}
@@ -1470,17 +1520,17 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     <Trash2 className="w-5 h-5 mr-2" />Clear Form
                   </button>
                   {step < 7 ? (
-                    <button onClick={() => handleStepChange(step + 1)} disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
-                      style={!validateStep() ? {} : { backgroundColor: tabColor }}
-                      onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
-                      onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}>
+                    <button onClick={() => { if (validateStep()) handleStepChange(step + 1); }}
+                      className="flex items-center px-6 py-2 text-white rounded-lg transition"
+                      style={{ backgroundColor: tabColor }}
+                      onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                      onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}>
                       Next<ChevronRight className="w-5 h-5 ml-1" />
                     </button>
                   ) : (
-                    <button onClick={generatePlan} disabled={loading || !validateStep()}
+                    <button onClick={generatePlan} disabled={loading}
                       className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-theme-tertiary transition"
-                      style={loading || !validateStep() ? {} : { backgroundColor: 'rgb(22 163 74)' }}
+                      style={loading ? {} : { backgroundColor: 'rgb(22 163 74)' }}
                       data-tutorial="cross-curricular-planner-generate">
                       {loading ? (
                         <>

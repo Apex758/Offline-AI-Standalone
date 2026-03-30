@@ -821,6 +821,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     return targetDate.toISOString().split('T')[0];
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
@@ -835,6 +837,9 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
       }
       return newData;
     });
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   // Handler for date change with automatic week/day calculation
@@ -862,6 +867,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
   };
 
   const generatePlan = () => {
+    if (!validateForm()) {
+      return;
+    }
+
     // Map formData to match the prompt builder's expected interface
     const mappedData = {
       ...formData,
@@ -913,10 +922,23 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
     localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
-  const validateForm = () => {
-    return formData.lessonTopic && formData.curriculumUnit && formData.week && 
-           formData.dayOfWeek && formData.ageGroup && formData.students && 
-           formData.learningDomains.length > 0;
+  const validateForm = (): boolean => {
+    const errors: Record<string, boolean> = {};
+    if (!formData.lessonTopic) errors.lessonTopic = true;
+    if (!formData.curriculumUnit) errors.curriculumUnit = true;
+    if (!formData.week) errors.week = true;
+    if (!formData.dayOfWeek) errors.dayOfWeek = true;
+    if (!formData.ageGroup) errors.ageGroup = true;
+    if (!formData.students) errors.students = true;
+    if (formData.learningDomains.length === 0) errors.learningDomains = true;
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+    return Object.keys(errors).length === 0;
   };
 
   return (
@@ -1137,7 +1159,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   <SmartInput
                     value={formData.lessonTopic}
                     onChange={(val) => handleInputChange('lessonTopic', val)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.lessonTopic ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.lessonTopic ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     placeholder="e.g., Exploring Colors"
                   />
@@ -1150,7 +1173,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   <select
                     value={formData.curriculumUnit}
                     onChange={(e) => handleInputChange('curriculumUnit', e.target.value)}
-                    className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                    data-validation-error={validationErrors.curriculumUnit ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.curriculumUnit ? 'validation-error' : ''}`}
                     style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                   >
                     <option value="">Select unit</option>
@@ -1167,7 +1191,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       type="number"
                       value={formData.week}
                       onChange={(e) => handleInputChange('week', e.target.value)}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                      data-validation-error={validationErrors.week ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.week ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                       min="1"
                     />
@@ -1180,7 +1205,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                     <select
                       value={formData.dayOfWeek}
                       onChange={(e) => handleInputChange('dayOfWeek', e.target.value)}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                      data-validation-error={validationErrors.dayOfWeek ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.dayOfWeek ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     >
                       <option value="">Select day</option>
@@ -1210,7 +1236,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                     <select
                       value={formData.ageGroup}
                       onChange={(e) => handleInputChange('ageGroup', e.target.value)}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-pink-500"
+                      data-validation-error={validationErrors.ageGroup ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-pink-500 ${validationErrors.ageGroup ? 'validation-error' : ''}`}
                     >
                       <option value="">Select age group</option>
                       {ageGroups.map(a => <option key={a} value={a}>{a}</option>)}
@@ -1225,7 +1252,8 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                       type="number"
                       value={formData.students}
                       onChange={(e) => handleInputChange('students', e.target.value)}
-                      className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                      data-validation-error={validationErrors.students ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.students ? 'validation-error' : ''}`}
                       style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
                     />
                   </div>
@@ -1256,7 +1284,10 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                   <label className="block text-sm font-medium text-theme-label mb-3">
                     Learning Domains <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div
+                    data-validation-error={validationErrors.learningDomains ? 'true' : undefined}
+                    className={`grid grid-cols-2 gap-2 ${validationErrors.learningDomains ? 'validation-error rounded-lg' : ''}`}
+                  >
                     {learningDomainsOptions.map(domain => (
                       <label key={domain} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                         <input
@@ -1308,6 +1339,7 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                     onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                     onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                     accentColor={tabColor}
+                    validationErrors={validationErrors}
                   />
                   <RelatedCurriculumBox
                     subject={formData.curriculumSubject}
@@ -1389,11 +1421,11 @@ const KindergartenPlanner: React.FC<KindergartenPlannerProps> = ({ tabId, savedD
                 </button>
                 <button
                   onClick={generatePlan}
-                  disabled={!validateForm() || loading}
+                  disabled={loading}
                   className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
-                  style={!validateForm() || loading ? {} : { backgroundColor: tabColor }}
-                  onMouseEnter={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '0.9')}
-                  onMouseLeave={(e) => !loading && validateForm() && (e.currentTarget.style.opacity = '1')}
+                  style={loading ? {} : { backgroundColor: tabColor }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
                   data-tutorial="kinder-planner-generate"
                 >
                   {loading ? (

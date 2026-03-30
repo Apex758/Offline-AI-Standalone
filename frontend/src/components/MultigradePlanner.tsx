@@ -708,8 +708,13 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     loadDrafts();
   }, []);
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (validationErrors[field]) {
+      setValidationErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
   };
 
   // Clear curriculum fields when subject or gradeRange changes
@@ -732,20 +737,36 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
     }
   };
 
-  const validateStep = () => {
+  const validateStep = (): boolean => {
+    const errors: Record<string, boolean> = {};
     if (step === 1) {
-      return formData.subject && formData.gradeRange && formData.topic &&
-             formData.totalStudents && formData.duration && formData.materials &&
-             formData.strand && formData.essentialOutcomes && formData.specificOutcomes;
+      if (!formData.subject) errors.subject = true;
+      if (!formData.gradeRange) errors.gradeRange = true;
+      if (!formData.topic) errors.topic = true;
+      if (!formData.totalStudents) errors.totalStudents = true;
+      if (!formData.duration) errors.duration = true;
+      if (!formData.materials) errors.materials = true;
+      if (!formData.strand) errors.strand = true;
+      if (!formData.essentialOutcomes) errors.essentialOutcomes = true;
+      if (!formData.specificOutcomes) errors.specificOutcomes = true;
     }
     if (step === 2) {
-      return formData.learningStyles.length > 0 && formData.pedagogicalStrategies.length > 0 &&
-             formData.multigradeStrategies.length > 0;
+      if (formData.learningStyles.length === 0) errors.learningStyles = true;
+      if (formData.pedagogicalStrategies.length === 0) errors.pedagogicalStrategies = true;
+      if (formData.multigradeStrategies.length === 0) errors.multigradeStrategies = true;
     }
-    return true;
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-validation-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+    return Object.keys(errors).length === 0;
   };
 
   const generatePlan = () => {
+    if (!validateStep()) return;
     // Transform FormData to MultigradeFormData format
     const multigradeFormData = {
       topic: formData.topic,
@@ -1064,8 +1085,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         <select
                           value={formData.subject}
                           onChange={(e) => handleInputChange('subject', e.target.value)}
-                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.subject ? 'validation-error' : ''}`}
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          data-validation-error={validationErrors.subject ? 'true' : undefined}
                         >
                           <option value="">Select a subject</option>
                           {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -1079,8 +1101,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         <select
                           value={formData.gradeRange}
                           onChange={(e) => handleInputChange('gradeRange', e.target.value)}
-                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeRange ? 'validation-error' : ''}`}
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          data-validation-error={validationErrors.gradeRange ? 'true' : undefined}
                         >
                           <option value="">Select grade range</option>
                           {gradeRanges.map(r => <option key={r} value={r}>{r}</option>)}
@@ -1101,6 +1124,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         onSCOsChange={(v) => handleInputChange('specificOutcomes', v)}
                         onToggleCurriculum={() => setUseCurriculum(!useCurriculum)}
                         accentColor={tabColor}
+                        validationErrors={validationErrors}
                       />
                       <RelatedCurriculumBox
                         subject={formData.subject}
@@ -1119,8 +1143,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <SmartInput
                         value={formData.topic}
                         onChange={(val) => handleInputChange('topic', val)}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.topic ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        data-validation-error={validationErrors.topic ? 'true' : undefined}
                       />
                     </div>
 
@@ -1133,7 +1158,8 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                           type="number"
                           value={formData.totalStudents}
                           onChange={(e) => handleInputChange('totalStudents', e.target.value)}
-                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-indigo-500 ${validationErrors.totalStudents ? 'validation-error' : ''}`}
+                          data-validation-error={validationErrors.totalStudents ? 'true' : undefined}
                         />
                       </div>
 
@@ -1145,8 +1171,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                           type="number"
                           value={formData.duration}
                           onChange={(e) => handleInputChange('duration', e.target.value)}
-                          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.duration ? 'validation-error' : ''}`}
                           style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          data-validation-error={validationErrors.duration ? 'true' : undefined}
                         />
                       </div>
                     </div>
@@ -1172,8 +1199,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         value={formData.materials}
                         onChange={(val) => handleInputChange('materials', val)}
                         rows={3}
-                        className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2"
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.materials ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                        data-validation-error={validationErrors.materials ? 'true' : undefined}
                       />
                     </div>
                   </div>
@@ -1188,7 +1216,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-3">
                         Learning Styles <span className="text-red-500">*</span>
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className={`grid grid-cols-3 gap-2 ${validationErrors.learningStyles ? 'validation-error' : ''}`} data-validation-error={validationErrors.learningStyles ? 'true' : undefined}>
                         {learningStylesOptions.map(style => (
                           <label key={style} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
@@ -1263,7 +1291,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-3">
                         Pedagogical Strategies <span className="text-red-500">*</span>
                       </label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className={`grid grid-cols-2 gap-2 ${validationErrors.pedagogicalStrategies ? 'validation-error' : ''}`} data-validation-error={validationErrors.pedagogicalStrategies ? 'true' : undefined}>
                         {pedagogicalStrategiesOptions.map(strategy => (
                           <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
@@ -1283,7 +1311,7 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                       <label className="block text-sm font-medium text-theme-label mb-3">
                         Multigrade Teaching Strategies <span className="text-red-500">*</span>
                       </label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className={`grid grid-cols-2 gap-2 ${validationErrors.multigradeStrategies ? 'validation-error' : ''}`} data-validation-error={validationErrors.multigradeStrategies ? 'true' : undefined}>
                         {multigradeStrategiesOptions.map(strategy => (
                           <label key={strategy} className="flex items-center space-x-2 p-2 rounded hover:bg-theme-subtle cursor-pointer">
                             <input
@@ -1379,12 +1407,11 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
 
                   {step < 3 ? (
                     <button
-                      onClick={() => handleStepChange(step + 1)}
-                      disabled={!validateStep()}
-                      className="flex items-center px-6 py-2 text-white rounded-lg disabled:bg-theme-tertiary transition"
-                      style={!validateStep() ? {} : { backgroundColor: tabColor }}
-                      onMouseEnter={(e) => validateStep() && (e.currentTarget.style.opacity = '0.9')}
-                      onMouseLeave={(e) => validateStep() && (e.currentTarget.style.opacity = '1')}
+                      onClick={() => { if (validateStep()) handleStepChange(step + 1); }}
+                      className="flex items-center px-6 py-2 text-white rounded-lg transition"
+                      style={{ backgroundColor: tabColor }}
+                      onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                      onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                     >
                       Next
                       <ChevronRight className="w-5 h-5 ml-1" />
@@ -1392,9 +1419,9 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                   ) : (
                     <button
                       onClick={generatePlan}
-                      disabled={loading || !validateStep()}
+                      disabled={loading}
                       className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-theme-tertiary transition"
-                      style={loading || !validateStep() ? {} : { backgroundColor: 'rgb(22 163 74)' }}
+                      style={loading ? {} : { backgroundColor: 'rgb(22 163 74)' }}
                       data-tutorial="multigrade-planner-generate"
                     >
                       {loading ? (

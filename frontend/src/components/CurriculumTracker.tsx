@@ -266,12 +266,23 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
     // Calculate progress for each node
     const calculateProgress = (node: MilestoneTreeNode): void => {
       if (node.milestones) {
-        const total = node.milestones.length;
-        const completed = node.milestones.filter(m => m.status === 'completed').length;
+        const activeMilestones = node.milestones.filter(m => m.status !== 'skipped');
+        let total = 0;
+        let completed = 0;
+        for (const m of activeMilestones) {
+          if (m.checklist && m.checklist.length > 0) {
+            total += m.checklist.length;
+            completed += m.checklist.filter(c => c.checked).length;
+          } else {
+            // Milestones without a checklist count as 1 SCO
+            total += 1;
+            completed += m.status === 'completed' ? 1 : 0;
+          }
+        }
         node.progress = {
           total,
           completed,
-          percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+          percentage: total > 0 ? Math.round((completed / total) * 10000) / 100 : 0
         };
       } else if (node.children) {
         node.children.forEach(calculateProgress);
@@ -280,7 +291,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         node.progress = {
           total,
           completed,
-          percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+          percentage: total > 0 ? Math.round((completed / total) * 10000) / 100 : 0
         };
       }
     };
@@ -380,6 +391,14 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
         if (milestone && milestone.checklist && milestone.checklist.length > 0) {
           const allChecked = milestone.checklist.map(item => ({ ...item, checked: true }));
           update = { ...update, checklist: allChecked, checklist_json: JSON.stringify(allChecked) };
+        }
+      }
+      // When marking as not_started, clear all checklist items
+      if (update.status === 'not_started') {
+        const milestone = milestones.find(m => m.id === milestoneId);
+        if (milestone && milestone.checklist && milestone.checklist.length > 0) {
+          const allUnchecked = milestone.checklist.map(item => ({ ...item, checked: false }));
+          update = { ...update, checklist: allUnchecked, checklist_json: JSON.stringify(allUnchecked) };
         }
       }
       // Optimistic local update
@@ -892,7 +911,7 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <div className="flex items-center space-x-3">
             <Target className="w-8 h-8" />
             <div>
-              <h1 className="text-2xl font-bold">Curriculum Tracker</h1>
+              <h1 className="text-2xl font-bold">Progress Tracker</h1>
               <p className="text-white/80 text-sm">Track your progress through the curriculum</p>
             </div>
           </div>
@@ -901,9 +920,20 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2" data-tutorial="overall-progress">
               <div className="text-sm text-white/80">Overall Progress</div>
               <div className="text-2xl font-bold">
-                {milestones.length > 0
-                  ? Math.round((milestones.filter(m => m.status === 'completed').length / milestones.length) * 100)
-                  : 0}%
+                {(() => {
+                  const active = milestones.filter(m => m.status !== 'skipped');
+                  let total = 0, done = 0;
+                  for (const m of active) {
+                    if (m.checklist && m.checklist.length > 0) {
+                      total += m.checklist.length;
+                      done += m.checklist.filter(c => c.checked).length;
+                    } else {
+                      total += 1;
+                      done += m.status === 'completed' ? 1 : 0;
+                    }
+                  }
+                  return total > 0 ? Math.round((done / total) * 10000) / 100 : 0;
+                })()}%
               </div>
             </div>
           </div>

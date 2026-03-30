@@ -314,10 +314,10 @@ class MilestoneDB:
         
         try:
             rows = conn.execute("""
-                SELECT 
+                SELECT
                     grade,
                     subject,
-                    COUNT(*) as total,
+                    SUM(CASE WHEN status != 'skipped' THEN 1 ELSE 0 END) as total,
                     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
                     SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress
                 FROM milestones

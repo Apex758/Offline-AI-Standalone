@@ -52,6 +52,7 @@ export interface MilestoneStats {
   completed: number;
   inProgress: number;
   notStarted: number;
+  skipped: number;
   completionPercentage: number;
   upcomingThisWeek: number;
 }

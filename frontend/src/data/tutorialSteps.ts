@@ -131,7 +131,7 @@ export const tutorials: Record<TutorialId, TutorialDefinition> = {
     steps: [
       {
         target: '[data-tutorial="curriculum-tracker-header"]',
-        title: 'Welcome to Curriculum Tracker',
+        title: 'Welcome to Progress Tracker',
         description: 'Track your progress through the OECS curriculum with this comprehensive milestone tracking tool. Monitor completion status, set due dates, and stay organized.',
         position: 'bottom'
       },

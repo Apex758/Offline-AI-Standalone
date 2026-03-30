@@ -24,6 +24,7 @@ interface MultigradeAlignmentFieldsProps {
   onSCOsChange: (scos: string) => void;
   onToggleCurriculum: () => void;
   accentColor?: string;
+  validationErrors?: Record<string, boolean>;
 }
 
 export default function MultigradeAlignmentFields({
@@ -38,6 +39,7 @@ export default function MultigradeAlignmentFields({
   onSCOsChange,
   onToggleCurriculum,
   accentColor,
+  validationErrors,
 }: MultigradeAlignmentFieldsProps) {
   const [eloDropdownOpen, setEloDropdownOpen] = useState(false);
   const [scoDropdownOpen, setScoDropdownOpen] = useState(false);
@@ -158,8 +160,9 @@ export default function MultigradeAlignmentFields({
             onELOChange('');
             onSCOsChange('');
           }}
-          className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors?.strand ? 'validation-error' : ''}`}
           style={ringStyle}
+          data-validation-error={validationErrors?.strand ? 'true' : undefined}
         >
           <option value="">Select a strand</option>
           {allStrands.map(s => (
@@ -182,8 +185,9 @@ export default function MultigradeAlignmentFields({
               <button
                 type="button"
                 onClick={() => setEloDropdownOpen(!eloDropdownOpen)}
-                className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800"
+                className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800 ${validationErrors?.essentialOutcomes ? 'validation-error' : ''}`}
                 style={ringStyle}
+                data-validation-error={validationErrors?.essentialOutcomes ? 'true' : undefined}
               >
                 <span className={selectedELOs.length === 0 ? 'text-gray-400' : 'text-theme-heading'}>
                   {selectedELOs.length === 0
@@ -283,8 +287,9 @@ export default function MultigradeAlignmentFields({
               <button
                 type="button"
                 onClick={() => setScoDropdownOpen(!scoDropdownOpen)}
-                className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800"
+                className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent text-left flex items-center justify-between bg-white dark:bg-gray-800 ${validationErrors?.specificOutcomes ? 'validation-error' : ''}`}
                 style={ringStyle}
+                data-validation-error={validationErrors?.specificOutcomes ? 'true' : undefined}
               >
                 <span className={selectedSCOs.length === 0 ? 'text-gray-400' : 'text-theme-heading'}>
                   {selectedSCOs.length === 0
@@ -377,9 +382,10 @@ export default function MultigradeAlignmentFields({
               value={essentialOutcomes}
               onChange={(val) => onELOChange(val)}
               rows={4}
-              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+              className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors?.essentialOutcomes ? 'validation-error' : ''}`}
               style={ringStyle}
               placeholder="Enter outcomes for each grade level (one per line)"
+              data-validation-error={validationErrors?.essentialOutcomes ? 'true' : undefined}
             />
           </div>
           <div>
@@ -390,9 +396,10 @@ export default function MultigradeAlignmentFields({
               value={specificOutcomes}
               onChange={(val) => onSCOsChange(val)}
               rows={5}
-              className="w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent"
+              className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors?.specificOutcomes ? 'validation-error' : ''}`}
               style={ringStyle}
               placeholder="Enter specific outcomes (one per line)"
+              data-validation-error={validationErrors?.specificOutcomes ? 'true' : undefined}
             />
           </div>
         </>

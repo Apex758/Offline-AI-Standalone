@@ -268,7 +268,7 @@ export function calculateToolUsage(tabs: Tab[]): ToolUsage[] {
     'curriculum': 'Curriculum Browser',
     'analytics': 'Analytics Dashboard',
     'resource-manager': 'Resource Manager',
-    'curriculum-tracker': 'Curriculum Tracker'
+    'curriculum-tracker': 'Progress Tracker'
   };
 
   const toolIcons: { [key: string]: string } = {
