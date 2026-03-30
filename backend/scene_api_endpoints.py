@@ -16,7 +16,6 @@ from typing import Dict, List, Optional
 
 # Import scene system components
 from scene_schema import SceneSchemaBuilder, SceneSpec, save_scene_spec_to_json
-from ip_adapter_manager import get_ip_adapter_manager
 from image_asset_store import get_image_asset_store
 from config import get_image_model_info
 from image_service import get_image_service
@@ -202,12 +201,6 @@ async def generate_scene_image(request: Request):
                 status_code=404,
                 detail=f"Style profile {style_profile_id} not found"
             )
-        
-        # Get reference images for IP-Adapter (if available)
-        ip_manager = get_ip_adapter_manager()
-        ref_count = ip_manager.get_reference_count(style_profile_id)
-        
-        logger.info(f"Reference images available for {style_profile_id}: {ref_count}")
         
         # Build image prompt from scene spec using base_prompt from preset
         style_suffix = style_profile.get("base_prompt_suffix", "")
@@ -414,22 +407,19 @@ async def get_scene_stats():
         "success": true,
         "stats": {
             "total_assets": 10,
-            "total_topics": 5,
-            "reference_images": {...}
+            "total_topics": 5
         }
     }
     """
     try:
         asset_store = get_image_asset_store()
-        ip_manager = get_ip_adapter_manager()
         builder = SceneSchemaBuilder()
-        
+
         return JSONResponse(content={
             "success": True,
             "stats": {
                 "total_assets": asset_store.get_asset_count(),
                 "total_topics": len(builder.presets),
-                "reference_images": ip_manager.list_all_references()
             }
         })
         

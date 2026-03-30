@@ -473,7 +473,9 @@ class ImageService:
                     )
 
             elif backend == "openvino_flux":
-                # FLUX INT4 OpenVINO — no negative_prompt support
+                # FLUX INT4 OpenVINO — no negative_prompt or img2img support
+                if init_image is not None:
+                    logger.warning("FLUX Schnell does not support img2img — init_image ignored")
                 result = self.pipeline(
                     prompt=prompt,
                     num_inference_steps=num_inference_steps,

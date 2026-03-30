@@ -512,9 +512,41 @@ Generate questions appropriate for the grade level and topic.
 }
 
 
+/**
+ * Build context prompt for user-uploaded images
+ * Provides the LLM with a description of the image content
+ * so it can generate relevant questions
+ */
+function buildUserImageContextPrompt(description: string): string {
+  return `
+
+USER-PROVIDED IMAGE CONTEXT (CRITICAL - use this information):
+
+The worksheet includes an image provided by the teacher showing:
+${description}
+
+RULES FOR QUESTION GENERATION:
+1. Base questions on the described image content
+2. Reference visible elements from the description
+3. Questions must be answerable by looking at the image
+4. Do not assume details not described above
+5. Use age-appropriate language when referring to image elements
+
+Example Good Questions (based on image):
+- "What can you see in the image that shows [element from description]?"
+- "How many [specific item from description] are visible?"
+- "What is happening in the image? Describe what you observe."
+
+Example BAD Questions (avoid these):
+- Questions about things not described in the image
+- Questions requiring knowledge not visible in the image
+`;
+}
+
 export function buildWorksheetPrompt(
   formData: WorksheetFormData,
-  sceneSpec?: SceneSpec | null
+  sceneSpec?: SceneSpec | null,
+  userImageDescription?: string
 ): string {
   const gradeSpec = GRADE_SPECS[formData.gradeLevel as keyof typeof GRADE_SPECS];
 
@@ -955,7 +987,7 @@ WORKSHEET DETAILS:
 - Number of Questions: ${questionCount}
 - Template: ${formData.selectedTemplate}
 
-${sceneSpec ? buildSceneContextPrompt(sceneSpec) : ''}
+${userImageDescription ? buildUserImageContextPrompt(userImageDescription) : sceneSpec ? buildSceneContextPrompt(sceneSpec) : ''}
 
 ${templateInstructions}${imageInstructions}
 

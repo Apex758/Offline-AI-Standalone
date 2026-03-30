@@ -3889,6 +3889,8 @@ async def get_active_diffusion_model():
             "exists": Path(model_path).exists(),
             "steps": model_info.get("steps", 4),
             "guidance": model_info.get("guidance", 0.0),
+            "supports_negative_prompt": model_info.get("supports_negative_prompt", True),
+            "supports_img2img": model_info.get("supports_img2img", True),
         })
     except Exception as e:
         logger.error(f"Error getting active diffusion model: {e}")

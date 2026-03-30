@@ -100,11 +100,6 @@ interface StyleProfile {
     guidance_scale: number;
     cfg_scale: number;
   };
-  ip_adapter: {
-    enabled: boolean;
-    strength: number;
-    reference_set: string;
-  };
 }
 
 const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChange }) => {
@@ -144,6 +139,12 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
   const [loadingStyles, setLoadingStyles] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [useManualNegative, setUseManualNegative] = useState(false);
+
+  // Model capability flags (fetched from backend)
+  const [modelCapabilities, setModelCapabilities] = useState<{
+    supports_negative_prompt: boolean;
+    supports_img2img: boolean;
+  }>({ supports_negative_prompt: true, supports_img2img: true });
 
   // ========================================
   // Editor States
@@ -308,6 +309,31 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
     };
     
     loadStyleProfiles();
+  }, []);
+
+  // ========================================
+  // Fetch model capabilities from backend
+  // ========================================
+  useEffect(() => {
+    const loadModelCapabilities = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/diffusion-models/active');
+        const data = await response.json();
+        const caps = {
+          supports_negative_prompt: data.supports_negative_prompt ?? true,
+          supports_img2img: data.supports_img2img ?? true,
+        };
+        setModelCapabilities(caps);
+        // Clear reference images if model doesn't support img2img
+        if (!caps.supports_img2img) {
+          setReferenceImage(null);
+          setQueueReferenceImage(null);
+        }
+      } catch (error) {
+        console.error('Failed to load model capabilities:', error);
+      }
+    };
+    loadModelCapabilities();
   }, []);
 
   // ========================================
@@ -515,11 +541,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         try {
           const response = await imageApi.generateImageBase64({
             prompt: finalPrompt,  // ← Use styled prompt
-            negativePrompt,
+            ...(modelCapabilities.supports_negative_prompt && { negativePrompt }),
             width,
             height,
             numInferenceSteps,
-            ...(referenceImage && { initImage: referenceImage, strength: img2imgStrength })
+            ...(modelCapabilities.supports_img2img && referenceImage && { initImage: referenceImage, strength: img2imgStrength })
           });
 
           if (response.success && response.imageData) {
@@ -636,11 +662,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       try {
         const response = await imageApi.generateImageBase64({
           prompt: styledPrompt,
-          negativePrompt: negPrompt,
+          ...(modelCapabilities.supports_negative_prompt && { negativePrompt: negPrompt }),
           width: w,
           height: h,
           numInferenceSteps: steps,
-          ...(waitingItem.referenceImage && {
+          ...(modelCapabilities.supports_img2img && waitingItem.referenceImage && {
             initImage: waitingItem.referenceImage,
             strength: waitingItem.img2imgStrength,
           }),
@@ -736,11 +762,11 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
         try {
           const response = await imageApi.generateImageBase64({
             prompt: panelsWithPrompts[i].prompt,
-            negativePrompt,
+            ...(modelCapabilities.supports_negative_prompt && { negativePrompt }),
             width: 512,
             height: 512,
             numInferenceSteps,
-            ...(history.current && { initImage: history.current, strength: 0.35 }),
+            ...(modelCapabilities.supports_img2img && history.current && { initImage: history.current, strength: 0.35 }),
           });
 
           if (response.success && response.imageData) {
@@ -1842,7 +1868,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                     />
                   </div>
 
-                  {/* Image-to-Image Reference */}
+                  {/* Image-to-Image Reference (only for models that support img2img) */}
+                  {modelCapabilities.supports_img2img && (
                   <div className="border border-theme rounded-lg p-4">
                     <label className="block text-sm font-medium text-theme-label mb-2">
                       Reference Image <span className="text-xs text-theme-hint">(optional - for image-to-image editing)</span>
@@ -1904,7 +1931,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                       </label>
                     )}
                   </div>
-
+                  )}
 
                   {/* Batch Size */}
                   <div data-tutorial="image-studio-batch">
@@ -2938,7 +2965,8 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                 />
               </div>
 
-              {/* Reference Image */}
+              {/* Reference Image (only for models that support img2img) */}
+              {modelCapabilities.supports_img2img && (
               <div>
                 <label className="block text-sm font-medium text-theme-label mb-2">
                   Reference Image <span className="text-xs text-theme-hint">(optional)</span>
@@ -2976,6 +3004,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
                   </label>
                 )}
               </div>
+              )}
 
               {/* Batch Size */}
               <div>

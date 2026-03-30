@@ -65,7 +65,12 @@
       "Bash(python -c \":*)",
       "Bash(1 done:*)",
       "Read(//c/Users/LG/AppData/Local/Temp/claude/c--Users-LG-Desktop-Projects-Offline-AI-Standalone/6c18a6a9-4628-4f16-9049-13beeaab983a/tasks/**)",
-      "Bash(wc -l \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/contexts/\"*.tsx)"
+      "Bash(wc -l \"c:/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src/contexts/\"*.tsx)",
+      "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/backend -type f \\\\\\(-name *.py -o -name *.ts -o -name *.js \\\\\\))",
+      "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
+      "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/frontend/src -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
+      "Bash(find /c/Users/LG/Desktop/Projects/Offline AI Standalone/backend -maxdepth 2 -type f \\\\\\(-name *.py \\\\\\))",
+      "Read(//c/Users/LG/AppData/Local/Temp/2eaa3c9b-c3f1-4e1e-846a-c94882460c91_HunyuanOCR-main.zip.HunyuanOCR-main.zip/HunyuanOCR-main/**)"
     ]
   }
 }

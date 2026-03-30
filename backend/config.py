@@ -145,6 +145,8 @@ IMAGE_MODEL_REGISTRY = {
         "description": "SDXL-Turbo (OpenVINO) — 4 steps, ~4 GB",
         "steps":       2,
         "guidance":    0.0,
+        "supports_negative_prompt": True,
+        "supports_img2img":        True,
     },
     "flux-schnell": {
         "folder":      "flux-schnell",
@@ -152,6 +154,8 @@ IMAGE_MODEL_REGISTRY = {
         "description": "FLUX.1 Schnell INT4 (OpenVINO) — high quality, CPU-optimised",
         "steps":       3,
         "guidance":    0.0,
+        "supports_negative_prompt": False,
+        "supports_img2img":        False,
     },
 }
 

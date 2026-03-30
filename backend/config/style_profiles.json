@@ -12,11 +12,6 @@
       "num_inference_steps": 4,
       "guidance_scale": 0.0,
       "cfg_scale": 7.0
-    },
-    "ip_adapter": {
-      "enabled": true,
-      "strength": 0.6,
-      "reference_set": "line_art_references"
     }
   },
   "cartoon_3d": {
@@ -32,11 +27,6 @@
       "num_inference_steps": 4,
       "guidance_scale": 0.0,
       "cfg_scale": 7.0
-    },
-    "ip_adapter": {
-      "enabled": true,
-      "strength": 0.7,
-      "reference_set": "cartoon_3d_references"
     }
   },
   "illustrated_painting": {
@@ -52,11 +42,6 @@
       "num_inference_steps": 4,
       "guidance_scale": 0.0,
       "cfg_scale": 7.0
-    },
-    "ip_adapter": {
-      "enabled": true,
-      "strength": 0.5,
-      "reference_set": "illustrated_references"
     }
   },
   "realistic": {
@@ -72,11 +57,6 @@
       "num_inference_steps": 4,
       "guidance_scale": 0.0,
       "cfg_scale": 7.5
-    },
-    "ip_adapter": {
-      "enabled": true,
-      "strength": 0.4,
-      "reference_set": "realistic_references"
     }
   }
 }

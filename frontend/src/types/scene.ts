@@ -94,11 +94,6 @@ export interface StyleProfile {
     guidance_scale: number;
     cfg_scale: number;
   };
-  ip_adapter: {
-    enabled: boolean;
-    strength: number;
-    reference_set: string;
-  };
 }
 
 /**

@@ -18,6 +18,8 @@ import ShuffleIconData from '@hugeicons/core-free-icons/ShuffleIcon';
 import PrinterIconData from '@hugeicons/core-free-icons/PrinterIcon';
 import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import Search01IconData from '@hugeicons/core-free-icons/Search01Icon';
+import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
+import ImageNotFound01IconData from '@hugeicons/core-free-icons/ImageNotFound01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -43,6 +45,8 @@ const Shuffle: React.FC<{ className?: string; style?: React.CSSProperties }> = (
 const Printer: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PrinterIconData} {...p} />;
 const PaintBrush: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={PaintBrush01IconData} {...p} />;
 const Search: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
+const Upload: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Upload01IconData} {...p} />;
+const ImageOff: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={ImageNotFound01IconData} {...p} />;
 import { useCurriculumIndex } from '../data/curriculumLoader';
 import {
   MultipleChoiceTemplate,
@@ -327,6 +331,11 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   const [generatingImages, setGeneratingImages] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
+
+  // Image source: 'generate' (scene preset) or 'upload' (user image)
+  const [imageSource, setImageSource] = useState<'generate' | 'upload'>('generate');
+  const [userUploadedImage, setUserUploadedImage] = useState<string | null>(null);
+  const [userImageDescription, setUserImageDescription] = useState('');
   
   // Scene-based image generation state
   const [topicPresets, setTopicPresets] = useState<ImagePreset[]>([]);
@@ -661,41 +670,59 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
       return;
     }
 
-    // ✅ VALIDATION: Image Intent is required when images are included
-    if (formData.includeImages && !selectedPreset) {
-      setGenerationError('Please select an Image Intent before generating the worksheet.');
-      return;
+    // ✅ VALIDATION: Image settings required when images are included
+    if (formData.includeImages) {
+      if (imageSource === 'generate' && !selectedPreset) {
+        setGenerationError('Please select an Image Intent before generating the worksheet.');
+        return;
+      }
+      if (imageSource === 'upload' && !userUploadedImage) {
+        setGenerationError('Please upload an image before generating the worksheet.');
+        return;
+      }
+      if (imageSource === 'upload' && !userImageDescription.trim()) {
+        setGenerationError('Please describe what is in the uploaded image so the AI can generate relevant questions.');
+        return;
+      }
     }
 
     // Variables to track scene data (either from state or newly generated)
     let currentSceneSpec = sceneSpec;
     let currentAssetId = assetId;
     let imageWasGenerated = false;
-    
-    // ✅ AUTO-GENERATE IMAGE FIRST IF NEEDED
-    if (formData.includeImages && selectedPreset) {
-      console.log('🎨 Auto-generating image before worksheet...');
-      setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
-      
-      try {
-        const generatedScene = await handleGenerateSceneImage();
-        if (generatedScene) {
-          console.log('✅ Image generated, proceeding with worksheet generation');
-          console.log('   Image data length:', generatedScene.imageData.length);
-          // Use the returned scene data immediately (don't wait for state update)
-          currentSceneSpec = generatedScene.sceneSpec;
-          currentAssetId = generatedScene.assetId;
-          imageWasGenerated = true;
+    let currentUserImageDescription: string | undefined;
+
+    // ✅ HANDLE IMAGE BASED ON SOURCE
+    if (formData.includeImages) {
+      if (imageSource === 'upload' && userUploadedImage) {
+        // User-uploaded image: use directly, pass description as context
+        setGeneratedImages([userUploadedImage]);
+        currentUserImageDescription = userImageDescription;
+        imageWasGenerated = true;
+        console.log('📷 Using user-uploaded image with description:', userImageDescription.slice(0, 80));
+      } else if (imageSource === 'generate' && selectedPreset) {
+        // Auto-generate scene image from preset
+        console.log('🎨 Auto-generating image before worksheet...');
+        setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
+
+        try {
+          const generatedScene = await handleGenerateSceneImage();
+          if (generatedScene) {
+            console.log('✅ Image generated, proceeding with worksheet generation');
+            currentSceneSpec = generatedScene.sceneSpec;
+            currentAssetId = generatedScene.assetId;
+            imageWasGenerated = true;
+          }
+        } catch (error) {
+          console.error('Failed to auto-generate image:', error);
+          setGenerationError('Failed to generate image. Please try again.');
+          setLocalLoadingMap(prev => {
+            const newMap = { ...prev };
+            delete newMap[tabId || ''];
+            return newMap;
+          });
+          return;
         }
-      } catch (error) {
-        console.error('Failed to auto-generate image:', error);
-        setGenerationError('Failed to generate image. Please try again.');
-        setLocalLoadingMap(prev => {
-          const newMap = { ...prev };
-          delete newMap[tabId || ''];
-          return newMap;
-        });
-        return;
       }
     }
     
@@ -730,7 +757,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
     setLocalLoadingMap(prev => ({ ...prev, [tabId || '']: true }));
 
     // Build prompt for worksheet generation (will include sceneSpec if available)
-    const prompt = buildWorksheetPrompt(formData, currentSceneSpec);
+    const prompt = buildWorksheetPrompt(formData, currentSceneSpec, currentUserImageDescription);
 
     const jobId = `worksheet-${Date.now()}`;
     console.log('Built prompt, jobId:', jobId);
@@ -1460,9 +1487,41 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               </div>
             </div>
 
-            {/* AI Image Generation */}
+            {/* Image Source Selection */}
             {formData.includeImages && formData.subject !== 'Mathematics' && (
               <div className="space-y-4" data-tutorial="worksheet-generator-image-prompt">
+                {/* Image Source Toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-theme-label mb-2">Image Source</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setImageSource('generate')}
+                      className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
+                        ${imageSource === 'generate'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-600'
+                          : 'border-theme hover:border-blue-300 text-theme-label'
+                        }`}
+                    >
+                      <Wand2 className="w-4 h-4" />
+                      Generate from Preset
+                    </button>
+                    <button
+                      onClick={() => setImageSource('upload')}
+                      className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2
+                        ${imageSource === 'upload'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-600'
+                          : 'border-theme hover:border-blue-300 text-theme-label'
+                        }`}
+                    >
+                      <Upload className="w-4 h-4" />
+                      Upload My Own
+                    </button>
+                  </div>
+                </div>
+
+                {/* Generate from Preset */}
+                {imageSource === 'generate' && (
+                <>
                 <h3 className="text-lg font-semibold text-theme-heading">Scene-Based Image Generation</h3>
 
                 {loadingPresets ? (
@@ -1490,7 +1549,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       </select>
                       {selectedPreset && topicPresets.find(p => p.id === selectedPreset) && (
                         <p className="text-xs text-theme-hint mt-1">
-                          📦 Objects: {topicPresets.find(p => p.id === selectedPreset)?.objects.join(', ')}
+                          Objects: {topicPresets.find(p => p.id === selectedPreset)?.objects.join(', ')}
                         </p>
                       )}
                     </div>
@@ -1583,6 +1642,86 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                     <p className="text-sm text-theme-muted">
                       Select subject, grade, and strand above to see available image presets
                     </p>
+                  </div>
+                )}
+                </>
+                )}
+
+                {/* Upload My Own Image */}
+                {imageSource === 'upload' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-theme-heading">Upload Your Own Image</h3>
+                    <p className="text-sm text-theme-hint">
+                      Upload an image and describe it so the AI can generate questions based on its content.
+                    </p>
+
+                    {/* File Upload */}
+                    {userUploadedImage ? (
+                      <div className="relative">
+                        <img
+                          loading="lazy"
+                          src={userUploadedImage}
+                          alt="Uploaded"
+                          className="w-full max-h-64 object-contain rounded-lg border border-theme"
+                        />
+                        <button
+                          onClick={() => {
+                            setUserUploadedImage(null);
+                            setGeneratedImages([]);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                          title="Remove image"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-theme rounded-lg cursor-pointer hover:bg-theme-subtle transition">
+                        <Upload className="w-8 h-8 text-theme-hint mb-2" />
+                        <span className="text-sm text-theme-hint">Click to upload an image</span>
+                        <span className="text-xs text-theme-hint mt-1">PNG, JPG, or GIF</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const result = ev.target?.result as string;
+                              setUserUploadedImage(result);
+                              setGeneratedImages([result]);
+                            };
+                            reader.readAsDataURL(file);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                    )}
+
+                    {/* Image Description */}
+                    <div>
+                      <label className="block text-sm font-medium text-theme-label mb-2">
+                        Describe what is in this image <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={userImageDescription}
+                        onChange={(e) => setUserImageDescription(e.target.value)}
+                        className="w-full p-3 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        rows={3}
+                        placeholder="E.g., A diagram of the water cycle showing evaporation from the ocean, condensation forming clouds, and precipitation as rain falling on mountains"
+                      />
+                      <p className="text-xs text-theme-hint mt-1">
+                        Be specific about objects, labels, and relationships visible in the image. The AI uses this description to create relevant questions.
+                      </p>
+                    </div>
+
+                    {imageError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        {imageError}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -2157,6 +2296,7 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       questionType={formData.questionType}
                       worksheetTitle={formData.worksheetTitle || parsedWorksheet.metadata.title}
                       includeImages={formData.includeImages}
+                      generatedImage={generatedImages.length > 0 ? generatedImages[0] : null}
                       columnA={parsedWorksheet.matchingItems?.columnA}
                       columnB={parsedWorksheet.matchingItems?.columnB}
                       showAnswers={viewMode === 'teacher'}
