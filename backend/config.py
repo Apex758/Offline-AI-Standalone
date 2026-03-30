@@ -355,6 +355,37 @@ GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-30b-a3b:free")
 
+# ============================================================================
+# OCR CONFIGURATION (HunyuanOCR)
+# ============================================================================
+
+OCR_ENABLED = os.environ.get("OCR_ENABLED", "true").lower() == "true"
+OCR_CONFIG_FILE = MODELS_DIR / ".ocr-config.json"
+
+def get_ocr_enabled() -> bool:
+    """Check if OCR grading is enabled (persisted preference)."""
+    if OCR_CONFIG_FILE.exists():
+        try:
+            with open(OCR_CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                return config.get('enabled', True)
+        except Exception:
+            pass
+    return OCR_ENABLED
+
+def set_ocr_enabled(enabled: bool):
+    """Save OCR enabled/disabled preference."""
+    try:
+        OCR_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(OCR_CONFIG_FILE, 'w') as f:
+            json.dump({'enabled': enabled}, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving OCR config: {e}", flush=True)
+        return False
+
+print(f"✓ [CONFIG] OCR grading: {'enabled' if get_ocr_enabled() else 'disabled'}", flush=True)
+
 print(f"✓ [CONFIG] Inference backend: {INFERENCE_BACKEND}", flush=True)
 if INFERENCE_BACKEND == "gemma_api":
     if GEMMA_API_KEY:

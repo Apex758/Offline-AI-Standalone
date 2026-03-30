@@ -3143,6 +3143,99 @@ Return ONLY valid JSON with no extra text:
 }}"""
 
 
+def _build_text_grading_prompt(base_worksheet: dict, student_versions: list, extracted_text: str) -> str:
+    """Build a prompt for the text LLM to grade OCR-extracted student answers."""
+    questions = base_worksheet.get('questions', [])
+    passage = base_worksheet.get('passage', '')
+    matching = base_worksheet.get('matchingItems', {})
+    word_bank = base_worksheet.get('wordBank', [])
+
+    lines = []
+    for i, q in enumerate(questions, 1):
+        qtype = q.get('type', '')
+        pts = q.get('points', 1) or 1
+        q_text = q.get('question', '')
+        correct = q.get('correctAnswer', '')
+
+        if qtype == 'multiple-choice':
+            options = q.get('options', [])
+            opts_str = ', '.join(f"{chr(65+j)}) {o}" for j, o in enumerate(options))
+            correct_letter = chr(65 + int(correct)) if isinstance(correct, (int, float)) else correct
+            lines.append(f"Q{i} [Multiple Choice, {pts}pt]: \"{q_text}\" Options: {opts_str} → Correct: {correct_letter}")
+        elif qtype == 'true-false':
+            lines.append(f"Q{i} [True/False, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+        elif qtype == 'fill-blank':
+            lines.append(f"Q{i} [Fill-in-the-blank, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+        elif qtype == 'word-bank':
+            lines.append(f"Q{i} [Word Bank, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+        elif qtype == 'matching':
+            lines.append(f"Q{i} [Matching, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+        elif qtype == 'short-answer':
+            lines.append(f"Q{i} [Short Answer, {pts}pt]: \"{q_text}\" → Reference: {correct}")
+        elif qtype == 'comprehension':
+            lines.append(f"Q{i} [Comprehension, {pts}pt]: \"{q_text}\" → Reference: {correct}")
+        else:
+            lines.append(f"Q{i} [{qtype}, {pts}pt]: \"{q_text}\" → Correct: {correct}")
+
+    answer_key_block = '\n'.join(lines)
+
+    matching_block = ''
+    if matching:
+        col_a = matching.get('columnA', [])
+        col_b = matching.get('columnB', [])
+        if col_a and col_b:
+            matching_block = f"\n\nMatching Columns:\nColumn A: {', '.join(f'{j+1}. {a}' for j, a in enumerate(col_a))}\nColumn B: {', '.join(f'{chr(65+j)}. {b}' for j, b in enumerate(col_b))}"
+
+    word_bank_block = ''
+    if word_bank:
+        word_bank_block = f"\n\nWord Bank: {', '.join(word_bank)}"
+
+    passage_block = ''
+    if passage:
+        passage_block = f'\n\nPassage used:\n"""{passage[:1500]}"""'
+
+    student_ids = [sv.get('student', {}).get('id', '') for sv in student_versions]
+    id_block = f"\n\nKnown student IDs in this class: {', '.join(student_ids)}" if student_ids else ''
+
+    return f"""You are grading a student's worksheet. An OCR system has already extracted the text from the scanned image. Grade every question based on the extracted text below.
+
+ANSWER KEY:
+{answer_key_block}{matching_block}{word_bank_block}{passage_block}{id_block}
+
+EXTRACTED STUDENT WORK (from OCR):
+\"\"\"
+{extracted_text}
+\"\"\"
+
+INSTRUCTIONS:
+1. Find the student's name and student ID from the extracted text.
+2. Questions may appear in a DIFFERENT ORDER. Match each question by its content, not its number. Use the Q numbers from the answer key above.
+3. Compare the student's answers against the answer key.
+
+GRADING RULES:
+- Multiple Choice: correct only if the exact letter matches. Return the letter.
+- True/False: correct only if it matches exactly. Return "True" or "False".
+- Fill-in-the-blank: correct if the word/phrase matches (minor spelling errors OK for young students). Return the word(s).
+- Word Bank: correct if it matches the expected word. Return the word.
+- Matching: correct for each pair that matches. Return an object mapping item numbers to letters.
+- Math: correct if the numerical answer matches. Return the number.
+- Comprehension / Short Answer: award partial credit (0 to max points) based on accuracy and completeness. Return the student's full written response.
+
+If the OCR marked something as [unclear], set earned to 0 and add the question number to "unclear".
+
+Return ONLY valid JSON with no extra text:
+{{
+  "student_name": "name or null",
+  "student_id": "ID or null",
+  "results": {{
+    "1": {{"answer": "B", "earned": 1, "max": 1}},
+    "2": {{"answer": "True", "earned": 1, "max": 1}},
+    "3": {{"answer": "the student wrote this...", "earned": 2, "max": 2, "feedback": "brief reason"}}
+  }},
+  "unclear": []
+}}"""
+
+
 async def _grade_single_scan(
     file_content: bytes,
     filename: str,
@@ -3153,8 +3246,15 @@ async def _grade_single_scan(
     student_versions: list,
     worksheet_title: str,
     worksheet_subject: str,
+    use_ocr: bool = False,
+    base_worksheet: dict | None = None,
 ) -> dict:
-    """Grade a single scanned student worksheet image. Used by both batch and streaming endpoints."""
+    """Grade a single scanned student worksheet image.
+
+    Two modes:
+    - use_ocr=True: HunyuanOCR extracts text → text LLM grades (two-stage, more accurate)
+    - use_ocr=False: Vision LLM reads + grades in one shot (original behavior)
+    """
     import re as _re
 
     file_result = {
@@ -3169,26 +3269,48 @@ async def _grade_single_scan(
         'details': {},
         'unclear': [],
         'saved': False,
+        'ocr_used': use_ocr,
     }
 
     try:
         # Preprocess phone photo (resize, rotate, enhance)
         processed = _preprocess_phone_image(file_content)
-        image_b64 = base64.b64encode(processed).decode('utf-8')
 
-        # Send to vision model with dynamic max_tokens
-        response = await inference.analyze_image(
-            image_base64=image_b64,
-            prompt=prompt,
-            max_tokens=max_tokens,
-            temperature=0.1,
-        )
+        if use_ocr:
+            # ── Two-stage: HunyuanOCR reads → LLM grades ──
+            import ocr_service
+            extracted_text = await ocr_service.extract_text_for_grading(processed)
+            file_result['extracted_text'] = extracted_text
 
-        raw_output = response.get('result') or ''
+            # Build a text-only grading prompt with the OCR output
+            text_prompt = _build_text_grading_prompt(
+                base_worksheet, student_versions, extracted_text
+            )
+
+            # Use the text LLM (no vision needed) to grade
+            response = await inference.generate(
+                tool_name="ocr_grading",
+                input_data=extracted_text[:100],
+                prompt_template=text_prompt,
+                max_tokens=max_tokens,
+                temperature=0.1,
+            )
+            raw_output = response.get('result') or ''
+
+        else:
+            # ── Single-stage: Vision LLM reads + grades ──
+            image_b64 = base64.b64encode(processed).decode('utf-8')
+            response = await inference.analyze_image(
+                image_base64=image_b64,
+                prompt=prompt,
+                max_tokens=max_tokens,
+                temperature=0.1,
+            )
+            raw_output = response.get('result') or ''
 
         json_match = _re.search(r'\{[\s\S]*\}', raw_output)
         if not json_match:
-            file_result['error'] = 'Vision model could not extract answers from this image.'
+            file_result['error'] = 'Could not extract grading results from model output.'
             return file_result
 
         parsed = json.loads(json_match.group())
@@ -3275,7 +3397,7 @@ async def grade_scanned_worksheets(
     worksheet_title: Optional[str] = Form("Worksheet"),
     worksheet_subject: Optional[str] = Form("General"),
 ):
-    """Grade scanned student worksheets using the vision model.
+    """Grade scanned student worksheets using OCR + LLM or vision model.
 
     Accepts either a package_id (for class-mode worksheets) or
     worksheet_json (a ParsedWorksheet JSON for standalone worksheets).
@@ -3286,10 +3408,21 @@ async def grade_scanned_worksheets(
     max_tokens = _compute_dynamic_max_tokens(base_worksheet.get('questions', []))
 
     from inference_factory import get_inference_instance
+    from config import get_ocr_enabled
     inference = get_inference_instance()
 
-    if not getattr(inference, 'has_vision', False):
-        raise HTTPException(status_code=400, detail="Vision model not available. Load a multimodal model to grade scanned worksheets.")
+    # Determine if we should use OCR pipeline
+    use_ocr = False
+    if get_ocr_enabled():
+        try:
+            import ocr_service
+            if ocr_service.is_ocr_available():
+                use_ocr = True
+        except ImportError:
+            pass
+
+    if not use_ocr and not getattr(inference, 'has_vision', False):
+        raise HTTPException(status_code=400, detail="No grading backend available. Enable HunyuanOCR or load a multimodal vision model.")
 
     # Pre-read all files so we can process them
     file_data = []
@@ -3297,12 +3430,13 @@ async def grade_scanned_worksheets(
         content = await upload.read()
         file_data.append((content, upload.filename or 'unknown'))
 
-    # Grade all files (sequentially — vision model is single-threaded on local GPU)
+    # Grade all files sequentially
     graded_results = []
     for content, filename in file_data:
         result = await _grade_single_scan(
             content, filename, prompt, max_tokens, inference,
             package, student_versions, worksheet_title, worksheet_subject,
+            use_ocr=use_ocr, base_worksheet=base_worksheet,
         )
         graded_results.append(result)
 
@@ -3337,10 +3471,21 @@ async def grade_scanned_worksheets_stream(
     max_tokens = _compute_dynamic_max_tokens(base_worksheet.get('questions', []))
 
     from inference_factory import get_inference_instance
+    from config import get_ocr_enabled
     inference = get_inference_instance()
 
-    if not getattr(inference, 'has_vision', False):
-        raise HTTPException(status_code=400, detail="Vision model not available.")
+    # Determine if we should use OCR pipeline
+    use_ocr = False
+    if get_ocr_enabled():
+        try:
+            import ocr_service
+            if ocr_service.is_ocr_available():
+                use_ocr = True
+        except ImportError:
+            pass
+
+    if not use_ocr and not getattr(inference, 'has_vision', False):
+        raise HTTPException(status_code=400, detail="No grading backend available. Enable HunyuanOCR or load a multimodal vision model.")
 
     # Pre-read all files
     file_data = []
@@ -3356,6 +3501,7 @@ async def grade_scanned_worksheets_stream(
             result = await _grade_single_scan(
                 content, filename, prompt, max_tokens, inference,
                 package, student_versions, worksheet_title, worksheet_subject,
+                use_ocr=use_ocr, base_worksheet=base_worksheet,
             )
             all_results.append(result)
 
@@ -3380,6 +3526,62 @@ async def grade_scanned_worksheets_stream(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ── OCR Service Endpoints ────────────────────────────────────────────────────
+
+@app.get("/api/ocr/status")
+async def ocr_status():
+    """Get HunyuanOCR service status."""
+    import ocr_service
+    status = ocr_service.get_ocr_status()
+    from config import get_ocr_enabled
+    status["enabled"] = get_ocr_enabled()
+    return status
+
+
+@app.post("/api/ocr/toggle")
+async def ocr_toggle(data: dict):
+    """Enable/disable OCR for scan grading."""
+    from config import set_ocr_enabled
+    enabled = data.get("enabled", True)
+    set_ocr_enabled(enabled)
+    return {"enabled": enabled}
+
+
+@app.post("/api/ocr/load")
+async def ocr_load():
+    """Pre-load the OCR model into VRAM."""
+    import ocr_service
+    if not ocr_service.is_ocr_available():
+        raise HTTPException(status_code=400, detail="OCR dependencies not installed (bitsandbytes, torch, transformers)")
+    try:
+        ocr_service.load_ocr_model()
+        return {"status": "loaded"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/ocr/unload")
+async def ocr_unload():
+    """Unload OCR model to free VRAM."""
+    import ocr_service
+    ocr_service.unload_ocr_model()
+    return {"status": "unloaded"}
+
+
+@app.post("/api/ocr/extract")
+async def ocr_extract(file: UploadFile = File(...)):
+    """Extract text from an uploaded image using HunyuanOCR."""
+    import ocr_service
+    if not ocr_service.is_ocr_available():
+        raise HTTPException(status_code=400, detail="OCR dependencies not installed")
+    content = await file.read()
+    try:
+        text = await ocr_service.extract_text(content)
+        return {"text": text, "filename": file.filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OCR extraction failed: {str(e)}")
 
 
 @app.get("/api/rubric-history")

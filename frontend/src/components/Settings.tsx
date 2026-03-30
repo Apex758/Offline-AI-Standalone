@@ -254,6 +254,11 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
   const [isSelectingDiffusionModel, setIsSelectingDiffusionModel] = useState(false);
   const [diffusionModelChangeMessage, setDiffusionModelChangeMessage] = useState('');
 
+  // OCR (HunyuanOCR) state
+  const [ocrEnabled, setOcrEnabled] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState<{available: boolean; loaded: boolean; loading: boolean; saved_locally?: boolean; local_size_mb?: number} | null>(null);
+  const [ocrMessage, setOcrMessage] = useState('');
+
   // Export / Import state
   const DATA_CATEGORIES = [
     { key: 'chats', label: 'Chat Conversations' },
@@ -370,6 +375,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
   useEffect(() => {
     fetchAvailableModels();
     fetchAvailableDiffusionModels();
+    fetchOcrStatus();
   }, []);
 
   // Auto-show tutorial on first use
@@ -499,6 +505,63 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     } finally {
       setIsSelectingDiffusionModel(false);
     }
+  };
+
+  // OCR functions
+  const fetchOcrStatus = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/ocr/status');
+      if (response.ok) {
+        const data = await response.json();
+        setOcrStatus({ available: data.available, loaded: data.loaded, loading: data.loading, saved_locally: data.saved_locally, local_size_mb: data.local_size_mb });
+        setOcrEnabled(data.enabled);
+      }
+    } catch {
+      setOcrStatus(null);
+    }
+  };
+
+  const handleOcrToggle = async (enabled: boolean) => {
+    setOcrEnabled(enabled);
+    try {
+      await fetch('http://localhost:8000/api/ocr/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      setOcrMessage(enabled ? 'OCR grading enabled. Model will load on first scan.' : 'OCR grading disabled. Will use vision model instead.');
+      setTimeout(() => setOcrMessage(''), 4000);
+    } catch {
+      setOcrMessage('Failed to update OCR setting');
+    }
+  };
+
+  const handleOcrPreload = async () => {
+    setOcrMessage('Loading HunyuanOCR model...');
+    try {
+      const response = await fetch('http://localhost:8000/api/ocr/load', { method: 'POST' });
+      if (response.ok) {
+        setOcrMessage('HunyuanOCR loaded successfully');
+        setOcrStatus(prev => prev ? { ...prev, loaded: true, loading: false } : prev);
+      } else {
+        const err = await response.json();
+        setOcrMessage(`Failed to load: ${err.detail || 'Unknown error'}`);
+      }
+    } catch {
+      setOcrMessage('Failed to communicate with backend');
+    }
+    setTimeout(() => setOcrMessage(''), 5000);
+  };
+
+  const handleOcrUnload = async () => {
+    try {
+      await fetch('http://localhost:8000/api/ocr/unload', { method: 'POST' });
+      setOcrMessage('OCR model unloaded, VRAM freed');
+      setOcrStatus(prev => prev ? { ...prev, loaded: false } : prev);
+    } catch {
+      setOcrMessage('Failed to unload OCR model');
+    }
+    setTimeout(() => setOcrMessage(''), 4000);
   };
 
   const handleTutorialComplete = () => {
@@ -1690,6 +1753,82 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                         <p className="text-sm text-theme-hint">
                           {availableDiffusionModels.length} model{availableDiffusionModels.length !== 1 ? 's' : ''} found in image generation directory
                         </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* OCR Model (HunyuanOCR) */}
+                <Card data-search-section="ocr-model">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <SpellCheck className="w-4.5 h-4.5 text-theme-secondary" />
+                      OCR Grading (HunyuanOCR)
+                    </CardTitle>
+                    <CardDescription>
+                      Dedicated OCR model for reading scanned worksheets and quizzes. More accurate than vision LLM for handwriting recognition.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <label className="flex items-center justify-between gap-3 cursor-pointer p-3 rounded-lg hover:bg-theme-subtle">
+                        <div>
+                          <p className="text-sm font-medium text-theme-label">Use HunyuanOCR for scan grading</p>
+                          <p className="text-xs text-theme-hint">
+                            When enabled, scanned worksheets are read by HunyuanOCR (1B, 4-bit, ~500MB) then graded by your text LLM. When disabled, the vision LLM handles both.
+                          </p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={ocrEnabled}
+                          onChange={(e) => handleOcrToggle(e.target.checked)}
+                          className="w-5 h-5 text-blue-600 border-theme-strong rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                      </label>
+
+                      {ocrEnabled && (
+                        <div className="flex gap-2">
+                          {ocrStatus?.loaded ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleOcrUnload}
+                              className="flex-1"
+                            >
+                              Unload Model (Free VRAM)
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleOcrPreload}
+                              disabled={ocrStatus?.loading}
+                              className="flex-1"
+                            >
+                              {ocrStatus?.loading ? 'Loading...' : 'Pre-load Model'}
+                            </Button>
+                          )}
+                        </div>
+                      )}
+
+                      {ocrStatus && (
+                        <div className="text-xs text-theme-hint space-y-1">
+                          <p>Status: {ocrStatus.loaded ? 'Loaded in VRAM' : ocrStatus.loading ? 'Loading...' : 'Not loaded (loads on first scan)'}</p>
+                          <p>Model: {ocrStatus.saved_locally ? `Saved locally (${ocrStatus.local_size_mb} MB)` : 'Not downloaded yet (will download on first use)'}</p>
+                          {!ocrStatus.available && (
+                            <p className="text-amber-600">Dependencies not installed. Run: pip install torch bitsandbytes accelerate</p>
+                          )}
+                        </div>
+                      )}
+
+                      {ocrMessage && (
+                        <div className={`p-3 rounded-lg text-sm ${
+                          ocrMessage.includes('Failed') || ocrMessage.includes('error')
+                            ? 'bg-red-100 text-red-800 border border-red-300'
+                            : 'bg-green-100 text-green-800 border border-green-300'
+                        }`}>
+                          {ocrMessage}
+                        </div>
                       )}
                     </div>
                   </CardContent>
