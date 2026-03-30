@@ -6405,6 +6405,31 @@ async def export_data(categories: str = ""):
     if "images" in cats:
         result["images"] = load_json_data("images_history.json")
 
+    if "presentations" in cats:
+        result["presentations"] = load_json_data("presentation_history.json")
+
+    if "achievements" in cats:
+        try:
+            from routes.achievements import achievement_service
+            teacher_id = "default"  # Will be expanded with teacher-specific export
+            earned = achievement_service.get_earned_achievements(teacher_id)
+            # Extract just the all_earned list for portability
+            result["achievements"] = earned.get("all_earned", []) if isinstance(earned, dict) else []
+        except Exception as e:
+            logging.warning(f"Failed to export achievements: {e}")
+            result["achievements"] = []
+
+    if "milestones" in cats:
+        try:
+            from routes.milestones import get_milestone_db
+            teacher_id = "default"  # Will be expanded with teacher-specific export
+            db = get_milestone_db()
+            milestones = db.get_milestones(teacher_id) if hasattr(db, 'get_milestones') else []
+            result["milestones"] = milestones
+        except Exception as e:
+            logging.warning(f"Failed to export milestones: {e}")
+            result["milestones"] = []
+
     if "students" in cats:
         try:
             result["students"] = student_service.list_students()
@@ -6474,6 +6499,7 @@ async def import_data(payload: dict):
         "cross_curricular": "cross_curricular_history.json",
         "worksheets": "worksheet_history.json",
         "images": "images_history.json",
+        "presentations": "presentation_history.json",
     }
     for cat_key, filename in json_map.items():
         if cat_key in cats and cat_key in data:
@@ -6489,6 +6515,54 @@ async def import_data(payload: dict):
                 imported[cat_key] = added
             except Exception as e:
                 errors.append(f"{cat_key}: {e}")
+
+    # Import achievements
+    if "achievements" in cats and "achievements" in data:
+        try:
+            from achievement_service import _get_conn
+            teacher_id = "default"  # Will be expanded with teacher-specific import
+            count = 0
+            for achievement in data["achievements"]:
+                try:
+                    conn = _get_conn()
+                    conn.execute(
+                        "INSERT OR IGNORE INTO earned_achievements (teacher_id, achievement_id, earned_at) VALUES (?, ?, ?)",
+                        (teacher_id, achievement.get("achievement_id"), achievement.get("earned_at"))
+                    )
+                    conn.commit()
+                    conn.close()
+                    count += 1
+                except Exception:
+                    pass  # skip duplicates
+            imported["achievements"] = count
+        except Exception as e:
+            errors.append(f"achievements: {e}")
+
+    # Import milestones
+    if "milestones" in cats and "milestones" in data:
+        try:
+            from routes.milestones import get_milestone_db
+            teacher_id = "default"  # Will be expanded with teacher-specific import
+            db = get_milestone_db()
+            count = 0
+            for milestone in data["milestones"]:
+                try:
+                    db.create_milestone(
+                        teacher_id=teacher_id,
+                        topic_id=milestone.get("topic_id"),
+                        topic_title=milestone.get("topic_title", ""),
+                        grade=milestone.get("grade", ""),
+                        subject=milestone.get("subject", ""),
+                        strand=milestone.get("strand", ""),
+                        route=milestone.get("route", ""),
+                        status=milestone.get("status", "not_started")
+                    )
+                    count += 1
+                except Exception:
+                    pass  # skip duplicates
+            imported["milestones"] = count
+        except Exception as e:
+            errors.append(f"milestones: {e}")
 
     if "students" in cats and "students" in data:
         try:

@@ -270,6 +270,11 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     { key: 'rubrics', label: 'Rubrics' },
     { key: 'worksheets', label: 'Worksheets' },
     { key: 'images', label: 'Generated Images' },
+    { key: 'presentations', label: 'Presentations' },
+    { key: 'brain_dumps', label: 'Brain Dumps' },
+    { key: 'tasks', label: 'Tasks & Reminders' },
+    { key: 'milestones', label: 'Progress Tracker' },
+    { key: 'achievements', label: 'Achievements' },
     { key: 'students', label: 'Student Records' },
     { key: 'settings', label: 'App Settings' },
   ] as const;
@@ -778,9 +783,13 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     setIsExporting(true);
     setExportMessage('');
     try {
+      // Define frontend-only categories (stored in localStorage)
+      const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks'];
       // Separate backend categories from frontend-only ones
-      const backendCats = [...exportSelected].filter(c => c !== 'settings');
+      const backendCats = [...exportSelected].filter(c => !frontendOnlyCats.includes(c));
       const includeSettings = exportSelected.has('settings');
+      const includeBrainDumps = exportSelected.has('brain_dumps');
+      const includeTasks = exportSelected.has('tasks');
 
       let backendData: Record<string, unknown> = {};
       if (backendCats.length > 0) {
@@ -800,6 +809,28 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
           dashboardActiveTab: localStorage.getItem('dashboard-active-tab'),
           dashboardSplitView: JSON.parse(localStorage.getItem('dashboard-split-view') || 'null'),
         };
+      }
+
+      // Add brain dumps from localStorage if selected
+      if (includeBrainDumps) {
+        try {
+          const brainDumps = localStorage.getItem('brain-dump-entries');
+          backendData['brain_dumps'] = brainDumps ? JSON.parse(brainDumps) : [];
+        } catch (e) {
+          console.error('Error exporting brain dumps:', e);
+          backendData['brain_dumps'] = [];
+        }
+      }
+
+      // Add tasks from localStorage if selected
+      if (includeTasks) {
+        try {
+          const tasks = localStorage.getItem('dashboard-tasks');
+          backendData['tasks'] = tasks ? JSON.parse(tasks) : [];
+        } catch (e) {
+          console.error('Error exporting tasks:', e);
+          backendData['tasks'] = [];
+        }
       }
 
       const exportPayload = {
@@ -835,6 +866,8 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
         return;
       }
 
+      // Define frontend-only categories (stored in localStorage)
+      const frontendOnlyCats = ['settings', 'brain_dumps', 'tasks'];
       // Filter to only import the categories the user has selected
       const catsToImport = parsed.categories.filter((c: string) => importSelected.has(c));
       const filteredData: Record<string, unknown> = {};
@@ -853,8 +886,26 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
         if (s.dashboardSplitView) localStorage.setItem('dashboard-split-view', JSON.stringify(s.dashboardSplitView));
       }
 
+      // Import brain dumps to localStorage
+      if (catsToImport.includes('brain_dumps') && filteredData['brain_dumps']) {
+        try {
+          localStorage.setItem('brain-dump-entries', JSON.stringify(filteredData['brain_dumps']));
+        } catch (e) {
+          console.error('Error importing brain dumps:', e);
+        }
+      }
+
+      // Import tasks to localStorage
+      if (catsToImport.includes('tasks') && filteredData['tasks']) {
+        try {
+          localStorage.setItem('dashboard-tasks', JSON.stringify(filteredData['tasks']));
+        } catch (e) {
+          console.error('Error importing tasks:', e);
+        }
+      }
+
       // Send backend categories to import endpoint
-      const backendCats = catsToImport.filter((c: string) => c !== 'settings');
+      const backendCats = catsToImport.filter((c: string) => !frontendOnlyCats.includes(c));
       const backendData: Record<string, unknown> = {};
       for (const cat of backendCats) {
         if (filteredData[cat]) backendData[cat] = filteredData[cat];
@@ -873,6 +924,12 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
 
       if (catsToImport.includes('settings')) {
         importedSummary = importedSummary ? importedSummary + ', settings restored' : 'Settings restored';
+      }
+      if (catsToImport.includes('brain_dumps')) {
+        importedSummary = importedSummary ? importedSummary + ', brain dumps restored' : 'Brain dumps restored';
+      }
+      if (catsToImport.includes('tasks')) {
+        importedSummary = importedSummary ? importedSummary + ', tasks restored' : 'Tasks restored';
       }
 
       setImportMessage(importedSummary ? `Imported: ${importedSummary}` : 'Import complete (no new records)');
