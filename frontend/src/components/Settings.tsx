@@ -47,6 +47,8 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarItemConfig, DEFAULT_SIDEBAR_ORDER } from '../contexts/SettingsContext';
+import { FEATURE_MODULES } from '../lib/featureModules';
+import { FeatureModuleId } from '../types/feature-disclosure';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -222,7 +224,9 @@ interface ModelInfo {
 }
 
 const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
-  const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered } = useSettings();
+  const { settings, updateSettings, resetSettings, markTutorialComplete, isTutorialCompleted, resetTutorials, markFeatureDiscovered, resetSetup, hasCompletedSetup, toggleModule } = useSettings();
+  const FEATURE_MODULE_LIST = FEATURE_MODULES;
+  const handleToggleFeatureModule = (moduleId: FeatureModuleId) => toggleModule(moduleId);
   // dnd-kit sensors for sidebar reordering (must be at top level)
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -1339,6 +1343,28 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Redo Setup Wizard */}
+                {hasCompletedSetup && (
+                  <Card className="border-theme-strong/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <RotateCcw className="w-4.5 h-4.5 text-amber-500" />
+                        Setup Wizard
+                      </CardTitle>
+                      <CardDescription>Re-run the first-time setup to change which features are shown in your sidebar.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <button
+                        onClick={resetSetup}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 active:scale-95"
+                        style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}
+                      >
+                        Redo Setup Wizard
+                      </button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
@@ -2046,6 +2072,50 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                   <h2 className="text-2xl font-bold text-theme-title">Features</h2>
                   <p className="text-sm text-theme-muted mt-1">Enable, disable, and reorder your sidebar tools</p>
                 </div>
+
+                {/* Feature Modules — High-level toggle */}
+                {hasCompletedSetup && (
+                  <Card data-search-section="feature-modules">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Rocket className="w-4.5 h-4.5 text-amber-500" />
+                        Feature Modules
+                      </CardTitle>
+                      <CardDescription>Toggle feature groups on or off. This updates which tools appear in your sidebar.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {FEATURE_MODULE_LIST.map((mod) => {
+                          const enabled = (settings.tutorials.enabledModules || []).includes(mod.id as any);
+                          return (
+                            <button
+                              key={mod.id}
+                              onClick={() => handleToggleFeatureModule(mod.id as any)}
+                              className="text-left p-3 rounded-xl transition-all"
+                              style={{
+                                backgroundColor: enabled ? 'rgba(245,158,11,0.06)' : 'transparent',
+                                border: `1.5px solid ${enabled ? 'rgba(245,158,11,0.3)' : 'rgba(0,0,0,0.08)'}`,
+                              }}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm font-semibold text-theme-title">{mod.name}</span>
+                                <div className={`w-8 h-5 rounded-full transition-colors ${enabled ? 'bg-amber-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                  <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform mt-0.5 ${enabled ? 'translate-x-3.5 ml-0' : 'translate-x-0.5'}`} />
+                                </div>
+                              </div>
+                              <p className="text-xs text-theme-muted">{mod.description}</p>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {mod.tools.map((tool: string) => (
+                                  <span key={tool} className="text-[10px] px-1.5 py-0.5 rounded bg-theme-hover text-theme-muted">{tool}</span>
+                                ))}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Sidebar Tools — Reorderable */}
                 <Card data-search-section="sidebar-tools">

@@ -1,0 +1,129 @@
+import { FeatureModule, FeatureModuleId, PersonaPreset } from '../types/feature-disclosure';
+
+export const FEATURE_MODULES: FeatureModule[] = [
+  {
+    id: 'lesson-planning',
+    name: 'Lesson Planning',
+    description: 'Create lesson plans for any grade level — standard, early childhood, multi-level, and integrated.',
+    icon: 'BookMarked',
+    sidebarItems: ['lesson-planners'],
+    tools: ['Lesson Plan', 'Early Childhood', 'Multi-Level', 'Integrated Lesson'],
+  },
+  {
+    id: 'curriculum-resources',
+    name: 'Curriculum & Resources',
+    description: 'Browse the OECS curriculum, track progress, and manage your saved resources.',
+    icon: 'Search',
+    sidebarItems: ['curriculum', 'curriculum-tracker', 'resource-manager'],
+    tools: ['Curriculum Browser', 'Progress Tracker', 'My Resources'],
+  },
+  {
+    id: 'assessment-tools',
+    name: 'Assessment & Grading',
+    description: 'Build quizzes and rubrics aligned to curriculum standards.',
+    icon: 'PenTool',
+    sidebarItems: ['quiz-generator', 'rubric-generator'],
+    tools: ['Quiz Builder', 'Rubric Builder'],
+  },
+  {
+    id: 'student-management',
+    name: 'Student Management',
+    description: 'Manage classes, student profiles, and track quiz grades.',
+    icon: 'UsersRound',
+    sidebarItems: ['class-management'],
+    tools: ['My Classes'],
+  },
+  {
+    id: 'ai-assistant',
+    name: 'AI Assistant & Tools',
+    description: 'Chat with PEARL for ideas, and use Brain Dump to turn thoughts into actions.',
+    icon: 'Brain',
+    sidebarItems: ['chat', 'brain-dump'],
+    tools: ['Ask PEARL', 'Brain Dump'],
+  },
+  {
+    id: 'creative-studio',
+    name: 'Creative Studio',
+    description: 'Build worksheets, generate images, and create slide decks for your classroom.',
+    icon: 'Palette',
+    sidebarItems: ['visual-studio'],
+    tools: ['Worksheet Builder', 'Image Studio', 'Slide Deck'],
+  },
+];
+
+export const PERSONA_PRESETS: PersonaPreset[] = [
+  {
+    id: 'lesson-focus',
+    label: 'I just want to plan lessons',
+    description: 'Lesson planners + AI assistant',
+    modules: ['lesson-planning', 'ai-assistant'],
+  },
+  {
+    id: 'full-classroom',
+    label: 'Full classroom management',
+    description: 'Lessons, students, assessments & AI',
+    modules: ['lesson-planning', 'student-management', 'assessment-tools', 'ai-assistant'],
+  },
+  {
+    id: 'curriculum-specialist',
+    label: 'Curriculum specialist',
+    description: 'Lessons, curriculum & resources',
+    modules: ['lesson-planning', 'curriculum-resources', 'ai-assistant'],
+  },
+  {
+    id: 'everything',
+    label: 'Give me everything',
+    description: 'All features enabled',
+    modules: ['lesson-planning', 'curriculum-resources', 'assessment-tools', 'student-management', 'ai-assistant', 'creative-studio'],
+  },
+];
+
+/** Get all sidebar item IDs that should be enabled for the given modules */
+export function getEnabledSidebarItems(enabledModules: FeatureModuleId[]): Set<string> {
+  const items = new Set<string>();
+  for (const mod of FEATURE_MODULES) {
+    if (enabledModules.includes(mod.id)) {
+      for (const item of mod.sidebarItems) {
+        items.add(item);
+      }
+    }
+  }
+  // Always keep achievements enabled (not gated)
+  items.add('achievements');
+  return items;
+}
+
+/** Get which module a sidebar item belongs to */
+export function getModuleForSidebarItem(sidebarItemId: string): FeatureModuleId | null {
+  for (const mod of FEATURE_MODULES) {
+    if (mod.sidebarItems.includes(sidebarItemId)) {
+      return mod.id;
+    }
+  }
+  return null;
+}
+
+/** Get which module a tab type belongs to (checking group membership too) */
+export function getModuleForTabType(tabType: string): FeatureModuleId | null {
+  // Tab types that map directly to sidebar items
+  const TAB_TO_SIDEBAR: Record<string, string> = {
+    'lesson-planner': 'lesson-planners',
+    'kindergarten-planner': 'lesson-planners',
+    'multigrade-planner': 'lesson-planners',
+    'cross-curricular-planner': 'lesson-planners',
+    'worksheet-generator': 'visual-studio',
+    'image-studio': 'visual-studio',
+    'presentation-builder': 'visual-studio',
+    'quiz-generator': 'quiz-generator',
+    'rubric-generator': 'rubric-generator',
+    'class-management': 'class-management',
+    'curriculum': 'curriculum',
+    'curriculum-tracker': 'curriculum-tracker',
+    'resource-manager': 'resource-manager',
+    'chat': 'chat',
+    'brain-dump': 'brain-dump',
+  };
+  const sidebarId = TAB_TO_SIDEBAR[tabType];
+  if (!sidebarId) return null;
+  return getModuleForSidebarItem(sidebarId);
+}

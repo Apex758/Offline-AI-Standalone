@@ -1,0 +1,137 @@
+import React from 'react';
+import { GRADE_LEVELS, SUBJECTS } from '../../data/teacherConstants';
+
+interface ProfileStepProps {
+  name: string;
+  school: string;
+  selectedGrades: string[];
+  selectedSubjects: string[];
+  onNameChange: (name: string) => void;
+  onSchoolChange: (school: string) => void;
+  onGradeToggle: (grade: string) => void;
+  onSubjectToggle: (subject: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+const ProfileStep: React.FC<ProfileStepProps> = ({
+  name, school, selectedGrades, selectedSubjects,
+  onNameChange, onSchoolChange, onGradeToggle, onSubjectToggle,
+  onNext, onBack,
+}) => {
+  return (
+    <div className="px-8 py-6">
+      <h2 className="text-2xl font-bold mb-1" style={{ color: '#F8E59D' }}>Tell us about yourself</h2>
+      <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.55)' }}>This helps us tailor content to your needs.</p>
+
+      <div className="space-y-5 max-w-lg mx-auto">
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Your Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            placeholder="e.g. Ms. Johnson"
+            className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#fff',
+              ringColor: '#F2A631',
+            }}
+          />
+        </div>
+
+        {/* School */}
+        <div>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.7)' }}>School (optional)</label>
+          <input
+            type="text"
+            value={school}
+            onChange={(e) => onSchoolChange(e.target.value)}
+            placeholder="e.g. Castries Primary"
+            className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#fff',
+            }}
+          />
+        </div>
+
+        {/* Grade Levels */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>Grade Levels You Teach</label>
+          <div className="flex flex-wrap gap-2">
+            {GRADE_LEVELS.map((g) => {
+              const selected = selectedGrades.includes(g.value);
+              return (
+                <button
+                  key={g.value}
+                  onClick={() => onGradeToggle(g.value)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  style={{
+                    backgroundColor: selected ? 'rgba(242,166,49,0.2)' : 'rgba(255,255,255,0.06)',
+                    border: `1.5px solid ${selected ? '#F2A631' : 'rgba(255,255,255,0.12)'}`,
+                    color: selected ? '#F2A631' : 'rgba(255,255,255,0.5)',
+                  }}
+                >
+                  {g.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Subjects */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>Subjects</label>
+          <div className="flex flex-wrap gap-2">
+            {SUBJECTS.map((s) => {
+              const selected = selectedSubjects.includes(s);
+              return (
+                <button
+                  key={s}
+                  onClick={() => onSubjectToggle(s)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  style={{
+                    backgroundColor: selected ? 'rgba(242,166,49,0.2)' : 'rgba(255,255,255,0.06)',
+                    border: `1.5px solid ${selected ? '#F2A631' : 'rgba(255,255,255,0.12)'}`,
+                    color: selected ? '#F2A631' : 'rgba(255,255,255,0.5)',
+                  }}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex justify-between mt-8">
+        <button
+          onClick={onBack}
+          className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
+          style={{ color: 'rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.06)' }}
+        >
+          Back
+        </button>
+        <button
+          onClick={onNext}
+          className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+          style={{
+            backgroundColor: '#F2A631',
+            color: '#1D362D',
+            boxShadow: '0 4px 16px rgba(242,166,49,0.3)',
+          }}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProfileStep;

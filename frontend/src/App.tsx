@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { HashRouter } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -12,6 +12,8 @@ import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
+
+const SetupWizard = lazy(() => import('./components/SetupWizard/SetupWizard'));
 function AppContent() {
   // Login bypassed — auto-login as default user
   const defaultUser: User = { id: 1, username: 'admin', name: 'Admin', role: 'admin' } as User;
@@ -22,7 +24,7 @@ function AppContent() {
   useTheme();
 
   // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
-  const { settings } = useSettings();
+  const { settings, hasCompletedSetup } = useSettings();
   useEffect(() => {
     document.documentElement.style.fontSize = `${settings.fontSize}%`;
     return () => { document.documentElement.style.fontSize = ''; };
@@ -50,6 +52,11 @@ function AppContent() {
 
   return (
     <HashRouter>
+      {!hasCompletedSetup && (
+        <Suspense fallback={null}>
+          <SetupWizard />
+        </Suspense>
+      )}
       {!user ? (
         <Login onLoginSuccess={handleLoginSuccess} />
       ) : (

@@ -128,6 +128,7 @@ import { TrapezoidTabShape, TAB_W, TAB_H, TAB_OVERLAP, TAB_EXTEND } from './layo
 import Grainient from './Grainient';
 import LightRays from './LightRays';
 import DraftSaveDialog from './DraftSaveDialog';
+import { NudgeProvider, useNudge } from './Nudge/NudgeProvider';
 
 
 interface DashboardProps {
@@ -830,6 +831,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     };
     setTabs([...tabs, newTab]);
     setActiveTabId(newTab.id);
+  };
+
+  // Nudge: open a tool by tab type (used when teacher enables a module from a nudge toast)
+  const openToolByTypeRef = useRef<(tabType: string) => void>(() => {});
+  openToolByTypeRef.current = (tabType: string) => {
+    const tool = tools.find(t => t.type === tabType);
+    if (tool) openTool(tool);
   };
 
   // Screenshot & create ticket handler for floating button
@@ -1792,9 +1800,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const lessonPlannerTools = useMemo(() => tools.filter(t => t.group === 'lesson-planners'), []);
   const visualStudioTools = useMemo(() => tools.filter(t => t.group === 'visual-studio'), []);
 
+  // Small component to evaluate nudges when active tab changes
+  const NudgeEvaluator: React.FC = () => {
+    const { evaluateNudges } = useNudge();
+    useEffect(() => {
+      const activeTab = tabs.find(t => t.id === activeTabId);
+      if (activeTab) evaluateNudges(activeTab.type);
+    }, [activeTabId, evaluateNudges]);
+    return null;
+  };
+
   return (
+    <NudgeProvider onEnableModule={(tabType) => openToolByTypeRef.current(tabType)}>
     <AchievementProvider teacherId={user.id}>
     <AchievementUnlockModalBridge />
+    <NudgeEvaluator />
     <div
       className="flex h-screen bg-[#f5f5f0] dark:bg-[#2b2b2b]"
       onClick={() => setContextMenu(null)}
@@ -2645,6 +2665,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       )}
     </div>
     </AchievementProvider>
+    </NudgeProvider>
   );
 };
 

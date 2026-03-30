@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { GradeSubjectMapping } from '../data/teacherConstants';
+import { FeatureModuleId, NudgeState } from '../types/feature-disclosure';
+import { getEnabledSidebarItems } from '../lib/featureModules';
+import { NUDGE_COOLDOWN_MS } from '../lib/nudgeRules';
 
 // TypeScript Interfaces
 export interface TabColors {
@@ -26,6 +29,8 @@ export interface TabColors {
 export interface TutorialState {
   completedTutorials: string[];
   hasSeenWelcome: boolean;
+  hasCompletedSetup: boolean;
+  enabledModules: FeatureModuleId[];
   tutorialPreferences: {
     autoShowOnFirstUse: boolean;
     showFloatingButtons: boolean;
@@ -94,6 +99,8 @@ export interface Settings {
   fileAccessEnabled: boolean;
   // Feature discovery
   discoveredFeatures: string[];
+  // Nudge system
+  nudgeState: NudgeState;
 }
 
 export interface SettingsContextValue {
@@ -107,6 +114,15 @@ export interface SettingsContextValue {
   isSidebarItemEnabled: (id: string) => boolean;
   markFeatureDiscovered: (featureId: string) => void;
   isFeatureDiscovered: (featureId: string) => boolean;
+  // Setup wizard
+  hasCompletedSetup: boolean;
+  completeSetup: (modules: FeatureModuleId[], profile?: Partial<UserProfile>) => void;
+  resetSetup: () => void;
+  // Nudge system
+  dismissNudge: (nudgeId: string) => void;
+  shouldShowNudge: (nudgeId: string) => boolean;
+  isModuleEnabled: (moduleId: FeatureModuleId) => boolean;
+  toggleModule: (moduleId: FeatureModuleId) => void;
 }
 
 // Default Settings (hex colors matching Settings.tsx defaults)
@@ -142,6 +158,8 @@ export const DEFAULT_SETTINGS: Settings = {
   tutorials: {
     completedTutorials: [],
     hasSeenWelcome: false,
+    hasCompletedSetup: false,
+    enabledModules: [],
     tutorialPreferences: {
       autoShowOnFirstUse: true,
       showFloatingButtons: true
@@ -167,6 +185,11 @@ export const DEFAULT_SETTINGS: Settings = {
   fileAccessEnabled: false,
   // Feature discovery
   discoveredFeatures: [],
+  // Nudge system
+  nudgeState: {
+    dismissedNudges: [],
+    nudgeCooldowns: {},
+  },
 };
 
 // localStorage key
@@ -448,6 +471,88 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     }));
   };
 
+  // --- Setup wizard ---
+  const hasCompletedSetup = settings.tutorials.hasCompletedSetup ?? false;
+
+  const completeSetup = (modules: FeatureModuleId[], profile?: Partial<UserProfile>) => {
+    const enabledItems = getEnabledSidebarItems(modules);
+    setSettings(prev => {
+      const newSidebarOrder = prev.sidebarOrder.map(item => ({
+        ...item,
+        enabled: enabledItems.has(item.id),
+      }));
+      return {
+        ...prev,
+        tutorials: {
+          ...prev.tutorials,
+          hasCompletedSetup: true,
+          hasSeenWelcome: true,
+          enabledModules: modules,
+        },
+        profile: profile ? { ...prev.profile, ...profile } : prev.profile,
+        sidebarOrder: newSidebarOrder,
+      };
+    });
+  };
+
+  const resetSetup = () => {
+    setSettings(prev => ({
+      ...prev,
+      tutorials: {
+        ...prev.tutorials,
+        hasCompletedSetup: false,
+        enabledModules: [],
+      },
+    }));
+  };
+
+  // --- Module toggling ---
+  const isModuleEnabled = (moduleId: FeatureModuleId): boolean => {
+    return (settings.tutorials.enabledModules || []).includes(moduleId);
+  };
+
+  const toggleModule = (moduleId: FeatureModuleId) => {
+    setSettings(prev => {
+      const current = prev.tutorials.enabledModules || [];
+      const newModules = current.includes(moduleId)
+        ? current.filter(m => m !== moduleId)
+        : [...current, moduleId];
+      const enabledItems = getEnabledSidebarItems(newModules);
+      const newSidebarOrder = prev.sidebarOrder.map(item => ({
+        ...item,
+        enabled: enabledItems.has(item.id),
+      }));
+      return {
+        ...prev,
+        tutorials: { ...prev.tutorials, enabledModules: newModules },
+        sidebarOrder: newSidebarOrder,
+      };
+    });
+  };
+
+  // --- Nudge system ---
+  const dismissNudge = (nudgeId: string) => {
+    setSettings(prev => ({
+      ...prev,
+      nudgeState: {
+        ...prev.nudgeState,
+        dismissedNudges: [...(prev.nudgeState?.dismissedNudges || []), nudgeId],
+        nudgeCooldowns: {
+          ...(prev.nudgeState?.nudgeCooldowns || {}),
+          [nudgeId]: Date.now(),
+        },
+      },
+    }));
+  };
+
+  const shouldShowNudge = (nudgeId: string): boolean => {
+    const state = settings.nudgeState || { dismissedNudges: [], nudgeCooldowns: {} };
+    if (state.dismissedNudges.includes(nudgeId)) return false;
+    const lastDismissed = state.nudgeCooldowns[nudgeId];
+    if (lastDismissed && Date.now() - lastDismissed < NUDGE_COOLDOWN_MS) return false;
+    return true;
+  };
+
   const value: SettingsContextValue = {
     settings,
     updateSettings,
@@ -458,7 +563,14 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     setWelcomeSeen,
     isSidebarItemEnabled,
     markFeatureDiscovered,
-    isFeatureDiscovered
+    isFeatureDiscovered,
+    hasCompletedSetup,
+    completeSetup,
+    resetSetup,
+    dismissNudge,
+    shouldShowNudge,
+    isModuleEnabled,
+    toggleModule,
   };
 
   return (
