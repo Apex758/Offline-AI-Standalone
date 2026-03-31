@@ -103,6 +103,10 @@ export interface Settings {
   discoveredFeatures: string[];
   // Nudge system
   nudgeState: NudgeState;
+  // Display comfort
+  brightness: number;       // 50–150, default 100
+  warmTone: number;          // 0–100, default 0
+  warmToneEnabled: boolean;
 }
 
 export interface SettingsContextValue {
@@ -194,6 +198,10 @@ export const DEFAULT_SETTINGS: Settings = {
     dismissedNudges: [],
     nudgeCooldowns: {},
   },
+  // Display comfort
+  brightness: 100,
+  warmTone: 0,
+  warmToneEnabled: false,
 };
 
 // localStorage key

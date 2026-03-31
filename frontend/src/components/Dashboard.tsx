@@ -487,6 +487,53 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   );
   const directStreamCount = activeStreams.filter(s => !queuedTabEndpoints.has(`${s.tabId}::${s.endpoint}`)).length;
   const queueActiveCount = queue.filter(item => item.status === 'waiting' || item.status === 'generating').length + directStreamCount;
+
+  // Tabs that are queued (waiting/generating) — used for blue dot alongside streaming
+  const queuedTabIds = new Set(
+    queue.filter(item => item.status === 'waiting' || item.status === 'generating').map(item => item.tabId)
+  );
+  const isTabWorking = (tabId: string) => getIsTabBusy(tabId) || queuedTabIds.has(tabId);
+
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [completedTabIds, setCompletedTabIds] = useState<Set<string>>(new Set());
+  const prevBusyTabsRef = useRef<Set<string>>(new Set());
+
+  // Pulse only after generation completes on a non-active tab
+  useEffect(() => {
+    const currentBusy = new Set<string>();
+    for (const stream of activeStreams) {
+      currentBusy.add(stream.tabId);
+    }
+    for (const item of queue) {
+      if (item.status === 'waiting' || item.status === 'generating') {
+        currentBusy.add(item.tabId);
+      }
+    }
+
+    // Tabs that were busy but aren't anymore = just completed
+    for (const tabId of prevBusyTabsRef.current) {
+      if (!currentBusy.has(tabId) && tabId !== activeTabId) {
+        setCompletedTabIds(prev => {
+          if (!prev.has(tabId)) return new Set(prev).add(tabId);
+          return prev;
+        });
+      }
+    }
+
+    prevBusyTabsRef.current = currentBusy;
+  }, [activeStreams, activeTabId, queue]);
+
+  // Clear pulse when tab becomes active
+  useEffect(() => {
+    if (activeTabId && completedTabIds.has(activeTabId)) {
+      setCompletedTabIds(prev => {
+        const next = new Set(prev);
+        next.delete(activeTabId);
+        return next;
+      });
+    }
+  }, [activeTabId, completedTabIds]);
+
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
@@ -583,7 +630,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [splitView, setSplitView] = useState<SplitViewState>({
     isActive: false,
     leftTabId: null,
@@ -2197,7 +2243,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     data-tutorial={isActive ? "single-tab-demo" : undefined}
                     data-tab-type={tab.type}
                     data-tab-id={tab.id}
-                    className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''}`}
+                    className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''} ${completedTabIds.has(tab.id) ? 'edge-tab-done-pulse' : ''}`}
                     data-active={isActive}
                     style={{
                       '--tab-color': colors.border,
@@ -2236,6 +2282,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       inactiveColor={colors.bg}
                       hoverColor={colors.activeBg || colors.bg}
                     />
+                    {isTabWorking(tab.id) && <div className="edge-tab-generating-dot" />}
                     <span
                       className="edge-tab-label"
                       style={{
@@ -2272,7 +2319,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       e.stopPropagation();
                       setContextMenu({ groupType: type, x: e.clientX, y: e.clientY });
                     }}
-                    className={`edge-tab-group group ${bouncingTabId === `${type}-group` ? 'edge-tab-group-bounce' : ''}`}
+                    className={`edge-tab-group group ${bouncingTabId === `${type}-group` ? 'edge-tab-group-bounce' : ''} ${groupTabs.some(t => completedTabIds.has(t.id)) ? 'edge-tab-done-pulse' : ''}`}
                     data-active={!!activeInGroup}
                     data-collapsed={isCollapsed}
                     style={{
@@ -2296,6 +2343,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       inactiveColor={colors.bg}
                       hoverColor={colors.activeBg || colors.bg}
                     />
+                    {groupTabs.some(t => isTabWorking(t.id)) && <div className="edge-tab-generating-dot" />}
                     <ChevronRight className="w-3.5 h-3.5 chevron-icon" style={{ color: activeInGroup ? '#fff' : '#333' }} />
                     <span
                       className="edge-tab-label"
@@ -2327,7 +2375,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       return (
                         <div
                           key={tab.id}
-                          className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''}`}
+                          className={`edge-tab group ${bouncingTabId === tab.id ? 'edge-tab-bounce' : ''} ${completedTabIds.has(tab.id) ? 'edge-tab-done-pulse' : ''}`}
                           data-active={isTabActive}
                           data-grouped="true"
                           data-tab-id={tab.id}
@@ -2369,6 +2417,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                             inactiveColor={colors.bg}
                             hoverColor={colors.activeBg || colors.bg}
                           />
+                          {isTabWorking(tab.id) && <div className="edge-tab-generating-dot" />}
                           <span
                             className="edge-tab-label"
                             style={{

@@ -35,6 +35,8 @@ import PaintBrush01IconData from '@hugeicons/core-free-icons/PaintBrush01Icon';
 import DropletIconData from '@hugeicons/core-free-icons/DropletIcon';
 import BlendIconData from '@hugeicons/core-free-icons/BlendIcon';
 import ComputerSettingsIconData from '@hugeicons/core-free-icons/ComputerSettingsIcon';
+import Sun02IconData from '@hugeicons/core-free-icons/Sun02Icon';
+import FireIconData from '@hugeicons/core-free-icons/FireIcon';
 import ArrowDown01IconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import Rocket01IconData from '@hugeicons/core-free-icons/Rocket01Icon';
 import DragDropVerticalIconData from '@hugeicons/core-free-icons/DragDropVerticalIcon';
@@ -100,6 +102,8 @@ const LayoutDashboardIcon: React.FC<{ className?: string; style?: React.CSSPrope
 const BrainIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Brain01IconData} {...p} />;
 const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Search01IconData} {...p} />;
 const MessageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Message01IconData} {...p} />;
+const Sun02: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={Sun02IconData} {...p} />;
+const Fire: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <Icon icon={FireIconData} {...p} />;
 
 // Sidebar item metadata for Features section
 const SIDEBAR_ITEM_META: Record<string, { name: string; icon: React.FC<{ className?: string; style?: React.CSSProperties }>; description?: string; childCount?: number }> = {
@@ -692,6 +696,8 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     ...(settings.sidebarOrder.find(i => i.id === 'performance-metrics')?.enabled ? [
       { type: 'performance-metrics', label: 'Performance', defaultColor: '#10b981' },
     ] : []),
+    // Achievements
+    { type: 'achievements', label: 'Achievements', defaultColor: '#f59e0b' },
     // Bottom tools
     { type: 'support', label: 'Support & Reporting', defaultColor: '#3b82f6' },
     { type: 'settings', label: 'Settings', defaultColor: '#6b7280' },
@@ -1513,6 +1519,92 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
                         <span className="text-lg font-bold text-theme-hint w-8">Aa</span>
                         <span className="text-sm font-semibold text-theme-label min-w-[50px] text-center px-2 py-1 rounded-md bg-theme-subtle">
                           {settings.fontSize}%
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Brightness */}
+                <Card data-search-section="brightness">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Sun02 className="w-4.5 h-4.5 text-theme-secondary" />
+                      Brightness
+                    </CardTitle>
+                    <CardDescription>Adjust screen brightness for comfort</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <Moon className="w-4 h-4 text-theme-hint" />
+                        <input
+                          type="range"
+                          min="50"
+                          max="150"
+                          step="5"
+                          value={settings.brightness}
+                          onChange={(e) => updateSettings({ brightness: Number(e.target.value) })}
+                          className="flex-1 h-2 bg-theme-tertiary rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        />
+                        <Sun className="w-4 h-4 text-theme-hint" />
+                        <span className="text-sm font-semibold text-theme-label min-w-[50px] text-center px-2 py-1 rounded-md bg-theme-subtle">
+                          {settings.brightness}%
+                        </span>
+                      </div>
+                      {settings.brightness !== 100 && (
+                        <button
+                          onClick={() => updateSettings({ brightness: 100 })}
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          Reset to 100%
+                        </button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Night Tone (Warm Filter) */}
+                <Card data-search-section="night-tone">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Fire className="w-4.5 h-4.5 text-theme-secondary" />
+                          Night Tone
+                        </CardTitle>
+                        <CardDescription>Add a warm yellow tint to reduce eye strain</CardDescription>
+                      </div>
+                      <button
+                        onClick={() => updateSettings({ warmToneEnabled: !settings.warmToneEnabled })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          settings.warmToneEnabled ? 'bg-amber-500' : 'bg-theme-tertiary'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                            settings.warmToneEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className={`flex items-center gap-4 ${!settings.warmToneEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
+                        <span className="text-xs font-medium text-theme-hint w-6">Low</span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="5"
+                          value={settings.warmTone}
+                          onChange={(e) => updateSettings({ warmTone: Number(e.target.value) })}
+                          className="flex-1 h-2 bg-theme-tertiary rounded-lg appearance-none cursor-pointer accent-amber-500"
+                        />
+                        <span className="text-xs font-medium text-theme-hint w-8">High</span>
+                        <span className="text-sm font-semibold text-theme-label min-w-[50px] text-center px-2 py-1 rounded-md bg-theme-subtle">
+                          {settings.warmTone}%
                         </span>
                       </div>
                     </div>

@@ -860,6 +860,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
         endpoint: ENDPOINT,
         prompt,
         generationMode: settings.generationMode,
+        extraMessageData: { formData },
       });
       setLocalLoadingMap(prev => ({ ...prev, [tabId]: true }));
       return;
@@ -876,6 +877,7 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
     try {
       ws.send(JSON.stringify({
         prompt,
+        formData,
         generationMode: settings.generationMode,
       }));
     } catch (error) {

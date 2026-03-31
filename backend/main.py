@@ -486,7 +486,13 @@ def build_prompt(system_prompt: str, user_prompt: str, prompt_format: str = None
 # ============================================================================
 
 def build_title_prompt(user_msg: str, assistant_msg: str) -> str:
-    system_prompt = """You are a title generation assistant. Create concise, descriptive titles for chat conversations.
+    from tier1_prompts import get_tier1_system_prompt
+    _tier_info = compute_effective_tier()
+
+    if _tier_info["tier"] == 1:
+        system_prompt = get_tier1_system_prompt("title-generation")
+    else:
+        system_prompt = """You are a title generation assistant. Create concise, descriptive titles for chat conversations.
 
 Rules:
 - Maximum 60 characters
@@ -636,13 +642,18 @@ async def autocomplete(request: AutocompleteRequest):
         prompt = f"Continue this text naturally with a few more words. Only output the continuation, nothing else:\n\n{text}"
 
         from inference_factory import get_inference_instance, resolve_inference_for_task
+        from tier1_prompts import get_tier1_gen_params
+        _tier_info = compute_effective_tier()
+        _is_tier1 = _tier_info["tier"] == 1
+        _t1_params = get_tier1_gen_params("autocomplete") if _is_tier1 else {}
+
         inference = resolve_inference_for_task("autocomplete")
         result = await inference.generate(
             tool_name="autocomplete",
             input_data=text,
             prompt_template=prompt,
             max_tokens=min(request.max_tokens, 30),
-            temperature=0.7
+            temperature=_t1_params.get("temperature", 0.7)
         )
 
         if result["metadata"]["status"] == "error":
@@ -724,6 +735,14 @@ async def websocket_chat(websocket: WebSocket):
                 continue
 
             default_system_prompt = "You are a helpful AI assistant. Answer questions naturally and conversationally. Keep responses concise but informative. Adapt your detail level to what the user asks - brief for simple questions, detailed for complex topics."
+
+            # Tier-1 awareness: use simpler prompt and tighter params for small models
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            if _is_tier1:
+                default_system_prompt = get_tier1_system_prompt("chat")
+                _t1_params = get_tier1_gen_params("chat")
 
             # Use custom system prompt if provided, otherwise use default
             base_system_prompt = custom_system_prompt if custom_system_prompt else default_system_prompt
@@ -865,8 +884,8 @@ async def websocket_chat(websocket: WebSocket):
                             tool_name="chat",
                             input_data=user_message,
                             prompt_template=prompt,
-                            max_tokens=LLAMA_PARAMS["max_tokens"],
-                            temperature=LLAMA_PARAMS["temperature"],
+                            max_tokens=_t1_params["max_tokens"] if _is_tier1 else LLAMA_PARAMS["max_tokens"],
+                            temperature=_t1_params["temperature"] if _is_tier1 else LLAMA_PARAMS["temperature"],
                         )
                 elif image_files:
                     # Vision not available — tell the user
@@ -882,13 +901,14 @@ async def websocket_chat(websocket: WebSocket):
                 else:
                     # Text-only path: use raw prompt completion
                     # Double max_tokens when thinking is enabled (think block uses extra tokens)
-                    effective_max_tokens = LLAMA_PARAMS["max_tokens"] * 2 if (thinking_enabled and model_supports_thinking) else LLAMA_PARAMS["max_tokens"]
+                    _base_max = _t1_params["max_tokens"] if _is_tier1 else LLAMA_PARAMS["max_tokens"]
+                    effective_max_tokens = _base_max * 2 if (thinking_enabled and model_supports_thinking) else _base_max
                     stream_gen = inference.generate_stream(
                         tool_name="chat",
                         input_data=user_message,
                         prompt_template=prompt,
                         max_tokens=effective_max_tokens,
-                        temperature=LLAMA_PARAMS["temperature"],
+                        temperature=_t1_params["temperature"] if _is_tier1 else LLAMA_PARAMS["temperature"],
                     )
 
                 async for chunk in stream_gen:
@@ -1247,7 +1267,16 @@ async def websocket_lesson_plan(websocket: WebSocket):
                 if context_blocks:
                     curriculum_context = "\n\n".join(context_blocks)
 
-            system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
+            # Tier-1 awareness: use template-based prompt for small models
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("lesson-plan") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("lesson-plan")
+            else:
+                system_prompt = "You are an expert educational consultant and curriculum designer. Create detailed, engaging, and pedagogically sound lesson plans that teachers can immediately implement. Focus on practical activities, clear assessment strategies, and alignment with curriculum standards."
 
             # Prefer user-selected ELO/SCOs from the form over generic curriculum context
             user_elo = ""
@@ -1300,8 +1329,8 @@ async def websocket_lesson_plan(websocket: WebSocket):
                     tool_name="lesson_plan",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1405,12 +1434,21 @@ async def quiz_websocket(websocket: WebSocket):
                 logger.error("Empty quiz prompt received")
                 continue
 
+            # Tier-1 awareness: use template-based prompt for small models
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("quiz") if _is_tier1 else {}
+
             # Use frontend-provided system prompt if available (contains all
             # instructional context: grade specs, curriculum, format templates).
             # Fall back to a basic system prompt for backward compatibility.
             system_prompt = data.get("systemPrompt", "").strip()
             if not system_prompt:
-                system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
+                if _is_tier1:
+                    system_prompt = get_tier1_system_prompt("quiz")
+                else:
+                    system_prompt = "You are an expert educational assessment designer. Create comprehensive, well-structured quizzes that accurately assess student learning."
 
                 # Legacy path: add curriculum context for alignment
                 if curriculum_matcher and isinstance(form_data, dict) and form_data:
@@ -1444,8 +1482,8 @@ async def quiz_websocket(websocket: WebSocket):
                     tool_name="quiz",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1551,7 +1589,16 @@ async def rubric_websocket(websocket: WebSocket):
                 continue
 
             logger.info("Building rubric prompt...")
-            system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("rubric") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("rubric")
+            else:
+                system_prompt = "You are an expert educational assessment designer. Create detailed, fair, and comprehensive grading rubrics that clearly define performance criteria at each level."
 
             # Add curriculum context for alignment
             if curriculum_matcher and isinstance(form_data, dict) and form_data:
@@ -1587,8 +1634,8 @@ async def rubric_websocket(websocket: WebSocket):
                     tool_name="rubric",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1687,7 +1734,16 @@ async def kindergarten_websocket(websocket: WebSocket):
             if not prompt:
                 continue
 
-            system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("kindergarten") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("kindergarten")
+            else:
+                system_prompt = "You are an expert early childhood educator specializing in kindergarten education. Create developmentally appropriate, engaging, and playful lesson plans that foster learning through exploration and hands-on activities."
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -1708,8 +1764,8 @@ async def kindergarten_websocket(websocket: WebSocket):
                     tool_name="kindergarten",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -1805,7 +1861,16 @@ async def multigrade_websocket(websocket: WebSocket):
             if not prompt:
                 continue
 
-            system_prompt = "You are an expert educator specializing in multigrade and multi-age classroom instruction. Create comprehensive lesson plans that address multiple grade levels simultaneously with differentiated activities and flexible grouping strategies."
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("multigrade") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("multigrade")
+            else:
+                system_prompt = "You are an expert educator specializing in multigrade and multi-age classroom instruction. Create comprehensive lesson plans that address multiple grade levels simultaneously with differentiated activities and flexible grouping strategies."
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -1827,8 +1892,8 @@ async def multigrade_websocket(websocket: WebSocket):
                     tool_name="multigrade",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     chunk_count += 1
                     if job_id in cancelled_job_ids:
@@ -1927,7 +1992,16 @@ async def cross_curricular_websocket(websocket: WebSocket):
             if not prompt:
                 continue
 
-            system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("cross-curricular") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("cross-curricular")
+            else:
+                system_prompt = "You are an expert educational consultant specializing in integrated and cross-curricular lesson planning. Create comprehensive lesson plans that meaningfully connect multiple subject areas and demonstrate authentic interdisciplinary learning."
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -1948,8 +2022,8 @@ async def cross_curricular_websocket(websocket: WebSocket):
                     tool_name="cross_curricular",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -2062,7 +2136,16 @@ async def worksheet_websocket(websocket: WebSocket):
             question_count = form_data.get("questionCount", "")
             worksheet_title = form_data.get("worksheetTitle", "")
 
-            system_prompt = f"You are an expert educational worksheet designer. Create comprehensive, well-structured worksheets that accurately assess student learning and align with curriculum standards. Focus on clear instructions, appropriate difficulty level, and educational value."
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("worksheet") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("worksheet")
+            else:
+                system_prompt = f"You are an expert educational worksheet designer. Create comprehensive, well-structured worksheets that accurately assess student learning and align with curriculum standards. Focus on clear instructions, appropriate difficulty level, and educational value."
 
             # Add curriculum context for alignment
             if curriculum_matcher and (subject or grade_level):
@@ -2098,8 +2181,8 @@ async def worksheet_websocket(websocket: WebSocket):
                     tool_name="worksheet",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=6000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 6000) if _is_tier1 else 6000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     chunk_count += 1
                     if chunk_count <= 5:  # Log first few chunks
@@ -2203,12 +2286,21 @@ async def presentation_websocket(websocket: WebSocket):
             if not prompt:
                 continue
 
-            system_prompt = (
-                "You are an expert presentation designer for educational content. "
-                "Convert lesson plans into concise, visually-oriented slide decks. "
-                "Return ONLY valid JSON with no markdown fences or explanation. "
-                "Each slide should have punchy headlines (max 7 words) and short bullet points (max 12 words each)."
-            )
+            # Tier-1 awareness
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("presentation") if _is_tier1 else {}
+
+            if _is_tier1:
+                system_prompt = get_tier1_system_prompt("presentation")
+            else:
+                system_prompt = (
+                    "You are an expert presentation designer for educational content. "
+                    "Convert lesson plans into concise, visually-oriented slide decks. "
+                    "Return ONLY valid JSON with no markdown fences or explanation. "
+                    "Each slide should have punchy headlines (max 7 words) and short bullet points (max 12 words each)."
+                )
 
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
@@ -2228,8 +2320,8 @@ async def presentation_websocket(websocket: WebSocket):
                     tool_name="presentation",
                     input_data=prompt,
                     prompt_template=full_prompt,
-                    max_tokens=4000,
-                    temperature=0.7
+                    max_tokens=_t1_params.get("max_tokens", 4000) if _is_tier1 else 4000,
+                    temperature=_t1_params.get("temperature", 0.7) if _is_tier1 else 0.7
                 ):
                     if job_id in cancelled_job_ids:
                         await websocket.send_json({"type": "cancelled", "jobId": job_id})
@@ -2607,6 +2699,20 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
             matched_categories = _get_matching_categories(text)
             system_prompt = _build_brain_dump_prompt(matched_categories)
 
+            # Tier-1 awareness: prepend extra JSON constraint for small models
+            from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
+            _tier_info = compute_effective_tier()
+            _is_tier1 = _tier_info["tier"] == 1
+            _t1_params = get_tier1_gen_params("brain-dump") if _is_tier1 else {}
+            if _is_tier1:
+                t1_prefix = get_tier1_system_prompt("brain-dump")
+                # Simplify prompt for tier-1: reduce detail requirements to save tokens
+                system_prompt = system_prompt.replace(
+                    '  - "details": object with relevant fields for that action type',
+                    '  - "details": object with only subject, grade, topic, and date if mentioned'
+                )
+                system_prompt = t1_prefix + "\n\n" + system_prompt
+
             full_prompt = "<|begin_of_text|>"
             full_prompt += f"<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>"
             full_prompt += f"<|start_header_id|>user<|end_header_id|>\n\n{text}<|eot_id|>"
@@ -2618,7 +2724,8 @@ Do NOT include any text, markdown, or explanation — ONLY the JSON object."""
                 from inference_factory import get_inference_instance, resolve_inference_for_task
                 inference = resolve_inference_for_task("brain-dump") if generation_mode == "queued" else get_inference_instance(use_singleton=False)
                 await _stream_to_ws(websocket, inference, full_prompt, text,
-                                    max_tokens=1500, temperature=0.3)
+                                    max_tokens=_t1_params.get("max_tokens", 3000) if _is_tier1 else 3000,
+                                    temperature=_t1_params.get("temperature", 0.3) if _is_tier1 else 0.3)
             except Exception as e:
                 logger.error(f"Brain dump analysis error: {e}")
                 try:

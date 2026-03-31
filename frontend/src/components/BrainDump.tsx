@@ -670,45 +670,99 @@ const BrainDump: React.FC<BrainDumpProps> = ({ tabId, savedData, onDataChange, o
   // Parse the AI response into actions + unmatched text
   const parseActions = useCallback((raw: string): { actions: BrainDumpAction[]; unmatched: string[] } => {
     const mapActions = (arr: any[]): BrainDumpAction[] =>
-      arr.map((a: any, i: number) => ({
-        id: `action-${Date.now()}-${i}`,
-        type: a.type || 'calendar-task',
-        title: a.title || 'Untitled Task',
-        description: a.description || '',
-        details: a.details || a.suggestedData || {},
-        status: 'pending' as const,
-      }));
+      arr.filter((a: any) => a && typeof a === 'object' && a.type)
+        .map((a: any, i: number) => ({
+          id: `action-${Date.now()}-${i}`,
+          type: a.type || 'calendar-task',
+          title: a.title || 'Untitled Task',
+          description: a.description || '',
+          details: a.details || a.suggestedData || {},
+          status: 'pending' as const,
+        }));
 
-    try {
-      let parsed = JSON.parse(raw);
-      // New format: { actions: [...], unmatched: [...] }
+    const tryParseResult = (parsed: any): { actions: BrainDumpAction[]; unmatched: string[] } | null => {
       if (parsed && !Array.isArray(parsed) && parsed.actions) {
         return {
           actions: mapActions(Array.isArray(parsed.actions) ? parsed.actions : []),
           unmatched: Array.isArray(parsed.unmatched) ? parsed.unmatched : [],
         };
       }
-      // Legacy bare array format
-      if (!Array.isArray(parsed)) parsed = parsed.items || [parsed];
-      return { actions: mapActions(parsed), unmatched: [] };
-    } catch {
-      const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || raw.match(/[\[{][\s\S]*[\]}]/);
-      if (jsonMatch) {
-        try {
-          const extracted = jsonMatch[1] || jsonMatch[0];
-          let parsed = JSON.parse(extracted);
-          if (parsed && !Array.isArray(parsed) && parsed.actions) {
-            return {
-              actions: mapActions(Array.isArray(parsed.actions) ? parsed.actions : []),
-              unmatched: Array.isArray(parsed.unmatched) ? parsed.unmatched : [],
-            };
-          }
-          if (!Array.isArray(parsed)) parsed = [parsed];
-          return { actions: mapActions(parsed), unmatched: [] };
-        } catch { /* fall through */ }
+      if (Array.isArray(parsed)) {
+        const mapped = mapActions(parsed);
+        if (mapped.length > 0) return { actions: mapped, unmatched: [] };
       }
-      return { actions: [], unmatched: [] };
+      if (parsed && !Array.isArray(parsed) && parsed.items) {
+        const mapped = mapActions(parsed.items);
+        if (mapped.length > 0) return { actions: mapped, unmatched: [] };
+      }
+      return null;
+    };
+
+    // Attempt to repair truncated JSON by closing open brackets/braces
+    const tryRepairTruncatedJson = (text: string): any | null => {
+      // Find the start of JSON
+      const jsonStart = text.search(/[\[{]/);
+      if (jsonStart === -1) return null;
+      let jsonStr = text.slice(jsonStart);
+
+      // Try progressively aggressive repairs
+      const closers = [']}', '"}]}', '""}}]}', '""}]}'];
+      for (const closer of closers) {
+        try {
+          return JSON.parse(jsonStr + closer);
+        } catch { /* try next */ }
+      }
+
+      // Last resort: extract individual complete action objects via regex
+      const actionRegex = /\{[^{}]*"type"\s*:\s*"[^"]+"[^{}]*\}/g;
+      const matches = jsonStr.match(actionRegex);
+      if (matches && matches.length > 0) {
+        const actions: any[] = [];
+        for (const m of matches) {
+          try {
+            actions.push(JSON.parse(m));
+          } catch { /* skip malformed */ }
+        }
+        if (actions.length > 0) return { actions, unmatched: [] };
+      }
+      return null;
+    };
+
+    // Step 1: Direct parse
+    try {
+      const parsed = JSON.parse(raw);
+      const result = tryParseResult(parsed);
+      if (result && result.actions.length > 0) return result;
+    } catch { /* fall through */ }
+
+    // Step 2: Extract from markdown code blocks
+    const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlockMatch) {
+      try {
+        const parsed = JSON.parse(codeBlockMatch[1]);
+        const result = tryParseResult(parsed);
+        if (result && result.actions.length > 0) return result;
+      } catch { /* fall through */ }
     }
+
+    // Step 3: Extract JSON-like region
+    const jsonRegionMatch = raw.match(/[\[{][\s\S]*[\]}]/);
+    if (jsonRegionMatch) {
+      try {
+        const parsed = JSON.parse(jsonRegionMatch[0]);
+        const result = tryParseResult(parsed);
+        if (result && result.actions.length > 0) return result;
+      } catch { /* fall through */ }
+    }
+
+    // Step 4: Repair truncated JSON (key fix for tier-1 token cutoff)
+    const repaired = tryRepairTruncatedJson(raw);
+    if (repaired) {
+      const result = tryParseResult(repaired);
+      if (result && result.actions.length > 0) return result;
+    }
+
+    return { actions: [], unmatched: [] };
   }, []);
 
   // Handle queue-based streaming completion

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Lock01IconData from '@hugeicons/core-free-icons/LockIcon';
+import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import ArrowDownIconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
@@ -14,6 +15,7 @@ import CurriculumIconData from '@hugeicons/core-free-icons/LibraryIcon';
 import ExplorationIconData from '@hugeicons/core-free-icons/Compass01Icon';
 import PowerIconData from '@hugeicons/core-free-icons/FlashIcon';
 import { useAchievementContext } from '../contexts/AchievementContext';
+import { useSettings } from '../contexts/SettingsContext';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity } from '../types/achievement';
 
 const RARITY_COLORS: Record<AchievementRarity, string> = {
@@ -69,6 +71,8 @@ export default function Achievements({ tabId }: AchievementsProps) {
     totalAvailable,
     isLoading,
   } = useAchievementContext();
+  const { settings } = useSettings();
+  const tabColor = settings.tabColors['achievements'] || '#f59e0b';
 
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
   const [selectedRarity, setSelectedRarity] = useState<AchievementRarity | 'all'>('all');
@@ -123,71 +127,79 @@ export default function Achievements({ tabId }: AchievementsProps) {
 
         {/* Header + collapsible filters */}
         <div
-          className="widget-glass rounded-2xl overflow-hidden"
+          className="rounded-2xl overflow-hidden shadow-lg"
           onMouseEnter={() => setHeaderHovered(true)}
           onMouseLeave={() => setHeaderHovered(false)}
         >
-          {/* Header row */}
-          <div className="p-6">
-            <div className="flex flex-wrap items-center gap-6">
-              {/* Rank badge */}
-              <div
-                className="flex items-center justify-center rounded-xl"
-                style={{
-                  width: 64,
-                  height: 64,
-                  background: 'linear-gradient(135deg, #f59e0b20, #f59e0b10)',
-                  border: '2px solid #f59e0b40',
-                }}
-              >
-                <HugeiconsIcon icon={Trophy01IconData} size={32} style={{ color: '#f59e0b' }} />
-              </div>
+          {/* Themed gradient header */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}, ${tabColor}dd, ${tabColor}bb)` }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${tabColor}e6, ${tabColor}cc)` }} />
+            {/* Decorative watermark */}
+            <div className="absolute -right-6 -top-6 opacity-10 pointer-events-none">
+              <HugeiconsIcon icon={Trophy01IconData} size={140} style={{ color: '#fff' }} />
+            </div>
 
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold" style={{ color: 'var(--dash-text)' }}>
-                  {rank?.title || 'Newcomer'}
-                </h2>
-                <p className="text-sm" style={{ color: 'var(--dash-text-sub)' }}>
-                  Level {rank?.level || 1}
-                  {rank?.next_title && (
-                    <span> &middot; {rank.achievements_for_next! - earnedCount > 0
-                      ? `${rank.achievements_for_next! - earnedCount} more to ${rank.next_title}`
-                      : `Next: ${rank.next_title}`
-                    }</span>
-                  )}
-                </p>
-              </div>
+            <div className="relative px-8 py-8">
+              <div className="flex flex-wrap items-center gap-6">
+                {/* Rank badge */}
+                <div
+                  className="flex items-center justify-center rounded-xl backdrop-blur-sm"
+                  style={{
+                    width: 64,
+                    height: 64,
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                  }}
+                >
+                  <HugeiconsIcon icon={Trophy01IconData} size={32} style={{ color: '#fff' }} />
+                </div>
 
-              {/* Stats */}
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: 'var(--dash-text)' }}>{earnedCount}/{totalAvailable}</div>
-                  <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Unlocked</div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl font-bold text-white">
+                    {rank?.title || 'Newcomer'}
+                  </h2>
+                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Level {rank?.level || 1}
+                    {rank?.next_title && (
+                      <span> &middot; {rank.achievements_for_next! - earnedCount > 0
+                        ? `${rank.achievements_for_next! - earnedCount} more to ${rank.next_title}`
+                        : `Next: ${rank.next_title}`
+                      }</span>
+                    )}
+                  </p>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: '#f59e0b' }}>{totalPoints}</div>
-                  <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>Points</div>
-                </div>
-                {/* Progress ring */}
-                <div className="relative" style={{ width: 56, height: 56 }}>
-                  <svg width="56" height="56" viewBox="0 0 56 56">
-                    <circle cx="28" cy="28" r="24" fill="none" stroke="var(--dash-border, #333)" strokeWidth="4" />
-                    <circle
-                      cx="28" cy="28" r="24" fill="none"
-                      stroke="#f59e0b"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 24}`}
-                      strokeDashoffset={`${2 * Math.PI * 24 * (1 - progressPercent / 100)}`}
-                      transform="rotate(-90 28 28)"
-                      style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                    />
-                  </svg>
-                  <div
-                    className="absolute inset-0 flex items-center justify-center text-xs font-bold"
-                    style={{ color: 'var(--dash-text)' }}
-                  >
-                    {progressPercent}%
+
+                {/* Stats */}
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{earnedCount}/{totalAvailable}</div>
+                    <div className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Unlocked</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{totalPoints}</div>
+                    <div className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Points</div>
+                  </div>
+                  {/* Progress ring */}
+                  <div className="relative" style={{ width: 56, height: 56 }}>
+                    <svg width="56" height="56" viewBox="0 0 56 56">
+                      <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="4" />
+                      <circle
+                        cx="28" cy="28" r="24" fill="none"
+                        stroke="#fff"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 24}`}
+                        strokeDashoffset={`${2 * Math.PI * 24 * (1 - progressPercent / 100)}`}
+                        transform="rotate(-90 28 28)"
+                        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                      />
+                    </svg>
+                    <div
+                      className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white"
+                    >
+                      {progressPercent}%
+                    </div>
                   </div>
                 </div>
               </div>
@@ -195,17 +207,17 @@ export default function Achievements({ tabId }: AchievementsProps) {
           </div>
 
           {/* Toggle arrow — visible on hover */}
-          <div className="flex justify-center pb-2" style={{ marginTop: -8 }}>
+          <div className="relative flex justify-center py-2" style={{ background: `linear-gradient(to bottom, ${tabColor}bb, ${tabColor}99)` }}>
             <button
               onClick={() => setFiltersOpen(o => !o)}
               className="flex items-center justify-center rounded-full transition-all duration-200"
               style={{
                 width: 28,
                 height: 28,
-                backgroundColor: (headerHovered || filtersOpen) ? '#f59e0b20' : 'transparent',
-                border: `1px solid ${(headerHovered || filtersOpen) ? '#f59e0b50' : 'transparent'}`,
+                backgroundColor: (headerHovered || filtersOpen) ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: `1px solid ${(headerHovered || filtersOpen) ? 'rgba(255,255,255,0.3)' : 'transparent'}`,
                 opacity: (headerHovered || filtersOpen) ? 1 : 0,
-                color: '#f59e0b',
+                color: '#fff',
                 transform: filtersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.25s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
               }}
@@ -239,12 +251,16 @@ export default function Achievements({ tabId }: AchievementsProps) {
                         onClick={() => setSelectedStatus(s)}
                         className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
                         style={{
-                          backgroundColor: selectedStatus === s ? '#f59e0b20' : 'transparent',
-                          color: selectedStatus === s ? '#f59e0b' : 'var(--dash-text-sub)',
-                          border: `1px solid ${selectedStatus === s ? '#f59e0b50' : 'var(--dash-border, #333)'}`,
+                          backgroundColor: selectedStatus === s ? `${tabColor}20` : 'transparent',
+                          color: selectedStatus === s ? tabColor : 'var(--dash-text-sub)',
+                          border: `1px solid ${selectedStatus === s ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
                         }}
                       >
-                        {s === 'all' ? 'All' : s === 'earned' ? '✓ Earned' : '🔒 Locked'}
+                        <span className="inline-flex items-center gap-1">
+                          {s === 'earned' && <HugeiconsIcon icon={Tick01IconData} size={12} />}
+                          {s === 'locked' && <HugeiconsIcon icon={Lock01IconData} size={12} />}
+                          {s === 'all' ? 'All' : s === 'earned' ? 'Earned' : 'Locked'}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -255,7 +271,7 @@ export default function Achievements({ tabId }: AchievementsProps) {
                   <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>Rarity</span>
                   <div className="flex flex-wrap gap-1.5">
                     {(['all', 'common', 'uncommon', 'rare', 'epic', 'legendary'] as const).map(r => {
-                      const color = r === 'all' ? '#f59e0b' : RARITY_COLORS[r as AchievementRarity];
+                      const color = r === 'all' ? tabColor : RARITY_COLORS[r as AchievementRarity];
                       const isActive = selectedRarity === r;
                       return (
                         <button
@@ -287,9 +303,9 @@ export default function Achievements({ tabId }: AchievementsProps) {
                     onClick={() => setSelectedCategory('all')}
                     className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
                     style={{
-                      backgroundColor: selectedCategory === 'all' ? '#f59e0b20' : 'transparent',
-                      color: selectedCategory === 'all' ? '#f59e0b' : 'var(--dash-text-sub)',
-                      border: `1px solid ${selectedCategory === 'all' ? '#f59e0b50' : 'var(--dash-border, #333)'}`,
+                      backgroundColor: selectedCategory === 'all' ? `${tabColor}20` : 'transparent',
+                      color: selectedCategory === 'all' ? tabColor : 'var(--dash-text-sub)',
+                      border: `1px solid ${selectedCategory === 'all' ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
                     }}
                   >
                     All
@@ -303,9 +319,9 @@ export default function Achievements({ tabId }: AchievementsProps) {
                         onClick={() => setSelectedCategory(cat)}
                         className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
                         style={{
-                          backgroundColor: isActive ? '#f59e0b20' : 'transparent',
-                          color: isActive ? '#f59e0b' : 'var(--dash-text-sub)',
-                          border: `1px solid ${isActive ? '#f59e0b50' : 'var(--dash-border, #333)'}`,
+                          backgroundColor: isActive ? `${tabColor}20` : 'transparent',
+                          color: isActive ? tabColor : 'var(--dash-text-sub)',
+                          border: `1px solid ${isActive ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
                         }}
                       >
                         {CATEGORY_LABELS[cat]}{catData ? ` ${catData.earned}/${catData.total}` : ''}
@@ -324,7 +340,7 @@ export default function Achievements({ tabId }: AchievementsProps) {
                   <button
                     onClick={() => { setSelectedCategory('all'); setSelectedRarity('all'); setSelectedStatus('all'); }}
                     className="text-xs underline transition-opacity hover:opacity-70"
-                    style={{ color: '#f59e0b' }}
+                    style={{ color: tabColor }}
                   >
                     Clear filters
                   </button>

@@ -12,6 +12,7 @@ import { LicenseProvider } from './contexts/LicenseContext';
 import { LicenseGate } from './components/LicenseGate';
 import ToastContainer from './components/ToastContainer';
 import { useTheme } from './hooks/useTheme';
+import { useDisplayFilters } from './hooks/useDisplayFilters';
 import { HeartbeatLoader } from './components/ui/HeartbeatLoader';
 
 const SetupWizard = lazy(() => import('./components/SetupWizard/SetupWizard'));
@@ -21,8 +22,9 @@ function AppContent() {
   const [user, setUser] = useState<User | null>(defaultUser);
   const [loading, setLoading] = useState(false);
 
-  // Apply theme
+  // Apply theme & display filters (brightness / warm tone)
   useTheme();
+  useDisplayFilters();
 
   // Apply global font-size scaling on <html> so all rem-based sizes scale proportionally
   const { settings, hasCompletedSetup } = useSettings();

@@ -2,6 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   Warm Tone Overlay
+   ======================================== */
+#warm-tone-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99998;
+  mix-blend-mode: multiply;
+  transition: background-color 0.3s ease;
+}
+
+/* ========================================
+   Vertical Slider (FAB Display Panel)
+   ======================================== */
+.vertical-slider {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 6px;
+  height: 110px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.vertical-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.vertical-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.vertical-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  border: none;
+}
+
 /* Shared animation keyframes (replacing framer-motion) */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
