@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade4-social-studies-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "4",
+    "grade": "Grade 4",
     "subject": "Social Studies"
   },
   "strands": [
@@ -18,22 +18,18 @@
             },
             {
               "sco_code": "SS-G4-HC-SCO1.2",
-              "description": "Product: KWL Chart Completion- Does the KWL ‘What I have learnt’ column reflect accurate content presented in the video?"
-            },
-            {
-              "sco_code": "SS-G4-HC-SCO1.3",
               "description": "Product - (Roleplay/Hands-on Demonstration): Can students demonstrate features of Indigenous culture before the Europeans came to the Caribbean?"
             },
             {
-              "sco_code": "SS-G4-HC-SCO1.4",
+              "sco_code": "SS-G4-HC-SCO1.3",
               "description": "Product - Can students describe at least two basic artefacts used in the economic and social life of the Indigenous people before the European arrival?"
             },
             {
-              "sco_code": "SS-G4-HC-SCO1.5",
+              "sco_code": "SS-G4-HC-SCO1.4",
               "description": "4-HCT-S-1 - Chart the location where Indigenous people of the Caribbean were living before contact with Europeans."
             },
             {
-              "sco_code": "SS-G4-HC-SCO1.6",
+              "sco_code": "SS-G4-HC-SCO1.5",
               "description": "4-HCT-V-1- Appreciate that the Indigenous people of the Caribbean had flourishing societies and economies before contact with Europeans."
             }
           ],
@@ -66,38 +62,34 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SS-G4-HC-SCO2.1",
-              "description": "Learners will be expected to: 4-HCT-K-2 - Identify the European groups that came to the Caribbean in the 15th - 16th centuries and state reasons why they came."
-            },
-            {
-              "sco_code": "SS-G4-HC-SCO2.2",
               "description": "4-HCT-S-2 - Categorise the impact of Europeans’ colonisation on the lifestyle of Indigenous people and Europeans in the Caribbean."
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.3",
+              "sco_code": "SS-G4-HC-SCO2.2",
               "description": "4-HCT-V-2- Develop an awareness that colonisation had many lasting negative consequences for the Indigenous people of the Caribbean."
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.4",
+              "sco_code": "SS-G4-HC-SCO2.3",
               "description": "4-HCT-K-3 - Identify ways in which Indigenous people resisted European colonisation"
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.5",
+              "sco_code": "SS-G4-HC-SCO2.4",
               "description": "4-HCT-S-3 - Explain the reasons why Indigenous peoples resisted colonisation."
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.6",
+              "sco_code": "SS-G4-HC-SCO2.5",
               "description": "4-HCT-V-3- Appreciate that Indigenous people actively resisted colonisation."
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.7",
+              "sco_code": "SS-G4-HC-SCO2.6",
               "description": "4-HCT-K-4 - Describe aspects of Indigenous people’s lifestyle practised in the Caribbean today."
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.8",
+              "sco_code": "SS-G4-HC-SCO2.7",
               "description": "4-HCT-S-4 - Locate where the Indigenous people of the Lesser Antilles are living today."
             },
             {
-              "sco_code": "SS-G4-HC-SCO2.9",
+              "sco_code": "SS-G4-HC-SCO2.8",
               "description": "4-HCT-V-4- Appreciate that the Indigenous people of the Caribbean continue to have unique and vibrant lifestyles"
             }
           ],
@@ -427,90 +419,86 @@
             },
             {
               "sco_code": "SS-G4-ST-SCO1.4",
-              "description": "Learners will be expected to: 4-ST-K-2 -Identify the geographic divisions of the country"
-            },
-            {
-              "sco_code": "SS-G4-ST-SCO1.5",
               "description": "4-ST-S-2- Label a map of the country to identify the geographic divisions"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.6",
+              "sco_code": "SS-G4-ST-SCO1.5",
               "description": "4-ST-K-3-Define and classify the major physical features of our island"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.7",
+              "sco_code": "SS-G4-ST-SCO1.6",
               "description": "4-ST-S-3Observe the differences between various land and water features of our island"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.8",
+              "sco_code": "SS-G4-ST-SCO1.7",
               "description": "4-ST-V-3-Appreciate that our island has natural geographic features that are environmentally vulnerable"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.9",
+              "sco_code": "SS-G4-ST-SCO1.8",
               "description": "4-ST-K-4 -Describe the climate of our island(s)"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.10",
+              "sco_code": "SS-G4-ST-SCO1.9",
               "description": "4-ST-S-4 -Investigate the changes in climate"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.11",
+              "sco_code": "SS-G4-ST-SCO1.10",
               "description": "4-ST-V-4-Appreciate that our climate has risks for our population."
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.12",
+              "sco_code": "SS-G4-ST-SCO1.11",
               "description": "4-ST-K-5 -Identify significant weather events that have impacted the natural environment"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.13",
+              "sco_code": "SS-G4-ST-SCO1.12",
               "description": "4-ST-S-5 -Investigate the consequences of recent weather events on the built environment of your country"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.14",
+              "sco_code": "SS-G4-ST-SCO1.13",
               "description": "4-ST-V-5 -Appreciate the need to prepare for climate emergencies and actions that can be taken to lessen the effects of natural forces"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.15",
+              "sco_code": "SS-G4-ST-SCO1.14",
               "description": "4-ST-K-6-Determine the scope and nature of the areas of your country that are parklands or natural reserves"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.16",
+              "sco_code": "SS-G4-ST-SCO1.15",
               "description": "4-ST-S-6- Locate and describe the features and characteristics of these parklands or reserves"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.17",
+              "sco_code": "SS-G4-ST-SCO1.16",
               "description": "4-ST-V-6- Appreciate the purpose of these areas and their significance for preserving flora, fauna, and human existence"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.18",
+              "sco_code": "SS-G4-ST-SCO1.17",
               "description": "4-ST-K-7\nIdentify the sources and status of our island’s fresh water."
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.19",
+              "sco_code": "SS-G4-ST-SCO1.18",
               "description": "4-ST-S-7 Determine the ways that you can help conserve and protect our local water sources"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.20",
+              "sco_code": "SS-G4-ST-SCO1.19",
               "description": "4-ST-V-7-Appreciate the importance of protecting our fresh water sources"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.21",
+              "sco_code": "SS-G4-ST-SCO1.20",
               "description": "4-ST-K-8 Explain the impact of human activity on the natural environment"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.22",
+              "sco_code": "SS-G4-ST-SCO1.21",
               "description": "4-ST-S-8 Gather information from multiple sources to explain the impact of human activity on the natural environment"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.23",
+              "sco_code": "SS-G4-ST-SCO1.22",
               "description": "4-ST-V-8 Appreciate that we can reduce the negative effects of human activity on our natural environment"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.24",
+              "sco_code": "SS-G4-ST-SCO1.23",
               "description": "4-ST-K-2 - Identify the geographic divisions of the country"
             },
             {
-              "sco_code": "SS-G4-ST-SCO1.25",
+              "sco_code": "SS-G4-ST-SCO1.24",
               "description": "4-ST-S-2 - Label a map of the country to identify the geographic divisions"
             }
           ],
@@ -931,38 +919,30 @@
             },
             {
               "sco_code": "SS-G4-CP-SCO2.10",
-              "description": "Learners will be expected to: 4CP-K-4--Identify that there are political constituencies in our country."
-            },
-            {
-              "sco_code": "SS-G4-CP-SCO2.11",
               "description": "4CP- V-4 Appreciate the importance of these constituencies for ensuring local representation."
             },
             {
-              "sco_code": "SS-G4-CP-SCO2.12",
+              "sco_code": "SS-G4-CP-SCO2.11",
               "description": "4CP- S-4 – Locate the boundaries of the political constituency to which you belong."
             },
             {
-              "sco_code": "SS-G4-CP-SCO2.13",
+              "sco_code": "SS-G4-CP-SCO2.12",
               "description": "4CP-K-5 -Identify key figures who have made significant contributions to our national development."
             },
             {
-              "sco_code": "SS-G4-CP-SCO2.14",
+              "sco_code": "SS-G4-CP-SCO2.13",
               "description": "4CP-S-5-Develop criteria to justify determining who is a national hero/heroine."
             },
             {
-              "sco_code": "SS-G4-CP-SCO2.15",
+              "sco_code": "SS-G4-CP-SCO2.14",
               "description": "4CP- V-5-Appreciate the contribution of key figures to our national development"
             },
             {
-              "sco_code": "SS-G4-CP-SCO2.16",
-              "description": "Learners will be expected to: 4CP – K-6- Explain our responsibilities to contribute to the development of the country"
-            },
-            {
-              "sco_code": "SS-G4-CP-SCO2.17",
+              "sco_code": "SS-G4-CP-SCO2.15",
               "description": "4CP – S6 Display proper respectful behaviour towards others in the country"
             },
             {
-              "sco_code": "SS-G4-CP-SCO2.18",
+              "sco_code": "SS-G4-CP-SCO2.16",
               "description": "4CP – V6 Appreciate that everyone has a responsibility to help develop the country."
             }
           ],

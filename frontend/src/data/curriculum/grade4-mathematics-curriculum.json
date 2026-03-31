@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade4-mathematics-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "4",
+    "grade": "Grade 4",
     "subject": "Mathematics"
   },
   "strands": [
@@ -18,30 +18,18 @@
             },
             {
               "sco_code": "MA-G4-PR-SCO1.2",
-              "description": "Skip counting is important in the development of fluency in calculation, number sense and as the basis of multiplication and division. Skip counting is a skill that develops over time growing as students continue to expand the range of numbers with which they can skip count. They will also become able to skip count from any number, not just starting at zero, which results in the most familiar sequences (e.g. 0, 2, 4, 6 ... instead of 1, 3, 5, 7 ...)."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO1.3",
               "description": "To skip count you add the same number over and over."
             },
             {
-              "sco_code": "MA-G4-PR-SCO1.4",
-              "description": "You can start at any number. When you count by 1s (like 1, 2, 3, 4, 5, 6) you add 1 to get the next number. To count by 2s, you add 2 to get the next number. You can also think about counting by 2s as the next even number (if you start with an even number) or the next odd number (if you start with an odd number)."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO1.5",
-              "description": "The example below shows how to count forward by twos starting from 134. 134, 136, 138, 140, 142, 144. Pattern rule: start at 134 and add 2 to the next number. Notice the change in the ones digit, e.g. 136 + 2 gives you 138. There can also be change in the tens and hundreds digit e.g. 138 + 2 = 140 (8 ones + 2 ones = 10; 3 tens + 1 ten = 4 tens)."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO1.6",
+              "sco_code": "MA-G4-PR-SCO1.3",
               "description": "We count by fives quite often; counting money and telling the time are two examples. The picture below shows how to count forward by fives starting from 30."
             },
             {
-              "sco_code": "MA-G4-PR-SCO1.7",
+              "sco_code": "MA-G4-PR-SCO1.4",
               "description": "The two examples below show counting by tens. Look at the numbers. There is always a pattern."
             },
             {
-              "sco_code": "MA-G4-PR-SCO1.8",
+              "sco_code": "MA-G4-PR-SCO1.5",
               "description": "The examples below show counting by hundreds. The patterns in all two are the same; the number in the hundreds place goes up by one each time."
             }
           ],
@@ -75,50 +63,46 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-PR-SCO2.1",
-              "description": "Learners will be expected to:"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO2.2",
               "description": "Knowledge:"
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.3",
+              "sco_code": "MA-G4-PR-SCO2.2",
               "description": "1. Determine pattern rules and use them to extend patterns"
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.4",
+              "sco_code": "MA-G4-PR-SCO2.3",
               "description": "2. Identify missing elements in repeating, growing, and shrinking patterns"
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.5",
+              "sco_code": "MA-G4-PR-SCO2.4",
               "description": "3. Identify and explain the patterns in equivalent fractions"
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.6",
+              "sco_code": "MA-G4-PR-SCO2.5",
               "description": "4. Identify and explain the patterns in decimal numbers up to tenths."
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.7",
+              "sco_code": "MA-G4-PR-SCO2.6",
               "description": "Translate patterns using various representations, including shapes and numbers."
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.8",
+              "sco_code": "MA-G4-PR-SCO2.7",
               "description": "Create and describe patterns to illustrate relationships among whole numbers and decimal numbers."
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.9",
+              "sco_code": "MA-G4-PR-SCO2.8",
               "description": "Represent a fraction as a decimal."
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.10",
+              "sco_code": "MA-G4-PR-SCO2.9",
               "description": "Represent a decimal as a fraction based on the specific place value of the digit in the decimal."
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.11",
+              "sco_code": "MA-G4-PR-SCO2.10",
               "description": "Choose to share examples of real-life patterns."
             },
             {
-              "sco_code": "MA-G4-PR-SCO2.12",
+              "sco_code": "MA-G4-PR-SCO2.11",
               "description": "Recognize the importance of pattern when solving problems."
             }
           ],
@@ -173,26 +157,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-PR-SCO3.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify and explain the patterns in square numbers up to 12."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO3.2",
               "description": "2. Identify and explain the patterns in triangular numbers up to 12."
             },
             {
-              "sco_code": "MA-G4-PR-SCO3.3",
+              "sco_code": "MA-G4-PR-SCO3.2",
               "description": "3. Recall and explain the patterns observed in multiplication and division situations."
             },
             {
-              "sco_code": "MA-G4-PR-SCO3.4",
+              "sco_code": "MA-G4-PR-SCO3.3",
               "description": "4. Find missing numbers in open sentences with addition and subtraction."
             },
             {
-              "sco_code": "MA-G4-PR-SCO3.5",
+              "sco_code": "MA-G4-PR-SCO3.4",
               "description": "5. Find missing numbers in open sentences with simple multiplication and division."
             },
             {
-              "sco_code": "MA-G4-PR-SCO3.6",
+              "sco_code": "MA-G4-PR-SCO3.5",
               "description": "Skills 6. Create visual representations of square and triangular numbers to demonstrate patterns."
             }
           ],
@@ -215,155 +195,131 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-PR-SCO4.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify and explain the patterns in square numbers up to 12."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO4.2",
               "description": "2. Identify and explain the patterns in triangular numbers up to 12."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.3",
+              "sco_code": "MA-G4-PR-SCO4.2",
               "description": "3. Recall and explain the patterns observed in multiplication and division situations."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.4",
+              "sco_code": "MA-G4-PR-SCO4.3",
               "description": "4. Find missing numbers in open sentences with addition and subtraction."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.5",
+              "sco_code": "MA-G4-PR-SCO4.4",
               "description": "5. Find missing numbers in open sentences with simple multiplication and division."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.6",
+              "sco_code": "MA-G4-PR-SCO4.5",
               "description": "Skills 6. Create visual representations of square and triangular numbers to demonstrate patterns."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.7",
+              "sco_code": "MA-G4-PR-SCO4.6",
               "description": "7. Analyze and compare the patterns in square and triangular numbers through written explanations or diagrams."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.8",
+              "sco_code": "MA-G4-PR-SCO4.7",
               "description": "8. Multiply and divide numbers by 10, 100, and 1,000 with accuracy."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.9",
+              "sco_code": "MA-G4-PR-SCO4.8",
               "description": "9. Utilize the multiplication chart to solve multiplication and division problems efficiently."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.10",
+              "sco_code": "MA-G4-PR-SCO4.9",
               "description": "10. Solve open sentences in addition and subtraction problems with whole numbers."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.11",
+              "sco_code": "MA-G4-PR-SCO4.10",
               "description": "11. Identify and explain the term open sentence in simple multiplication and division problems with whole numbers."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.12",
+              "sco_code": "MA-G4-PR-SCO4.11",
               "description": "12. Predict the missing number in an open sentence in addition/subtraction and multiplication/division problems."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.13",
+              "sco_code": "MA-G4-PR-SCO4.12",
               "description": "13. Recognize the importance of patterns in solving multiplication and division problems."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.14",
+              "sco_code": "MA-G4-PR-SCO4.13",
               "description": "Can you think of any real-life situations where knowing how to multiply or divide by 10, 100, or 1,000 would be useful?"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.15",
+              "sco_code": "MA-G4-PR-SCO4.14",
               "description": "Find a partner and share your thoughts on the questions above. Discuss your understanding of place value patterns and how it relates to multiplication and division by 10, 100, and 1,000."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.16",
+              "sco_code": "MA-G4-PR-SCO4.15",
               "description": "Take turns listening to each other and ask clarifying questions if needed."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.17",
+              "sco_code": "MA-G4-PR-SCO4.16",
               "description": "Each pair will take turn sharing their thoughts and findings with the whole class."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.18",
+              "sco_code": "MA-G4-PR-SCO4.17",
               "description": "As a class, they will discuss some real-life situations where knowing how to multiply or divide by 10, 100, or 1,000 would be useful."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.19",
+              "sco_code": "MA-G4-PR-SCO4.18",
               "description": "They will also discuss any challenges or insights they gained from this activity."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.20",
-              "description": "Students will be given problems with multiplying and dividing by 10, 100 or 1,000 to solve within a given time."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO4.21",
+              "sco_code": "MA-G4-PR-SCO4.19",
               "description": "Fill in the missing number: 8 + ___ = 15 a) 5 b) 6 c) 7 d) 9"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.22",
+              "sco_code": "MA-G4-PR-SCO4.20",
               "description": "Fill in the missing number: 18 - ___ = 9 a) 5 b) 6 c) 7 d) 8"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.23",
+              "sco_code": "MA-G4-PR-SCO4.21",
               "description": "Fill in the missing number: ___ + 12 = 20 - 5 a) 7 b) 8 c) 9 d) 10"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.24",
+              "sco_code": "MA-G4-PR-SCO4.22",
               "description": "Fill in the missing number: 23 - ___ = 15 + 3 a) 3 b) 5 c) 8 d) 12"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.25",
+              "sco_code": "MA-G4-PR-SCO4.23",
               "description": "Fill in the missing number: ___ + 6 + 13 = 31 a) 4 b) 6 c) 7 d) 10"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.26",
+              "sco_code": "MA-G4-PR-SCO4.24",
               "description": "Match the following vocabulary terms with their definitions: 1. Sum, 2. Difference, 3. Addend, 4. Minuend, 5. Subtrahend"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.27",
+              "sco_code": "MA-G4-PR-SCO4.25",
               "description": "How can you use addition and subtraction to find the missing numbers in open sentences?"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.28",
+              "sco_code": "MA-G4-PR-SCO4.26",
               "description": "Can you provide an example of an open sentence with addition and subtraction where the missing number needs to be found? How would you go about solving it?"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.29",
+              "sco_code": "MA-G4-PR-SCO4.27",
               "description": "Why is it important to understand how to find missing numbers in open sentences with addition and subtraction? How might this skill be useful in real-life situations?"
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.30",
+              "sco_code": "MA-G4-PR-SCO4.28",
               "description": "Each member of Group A will solve one multiplication problem from the set independently, filling in the blank space with the correct number."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.31",
+              "sco_code": "MA-G4-PR-SCO4.29",
               "description": "Once everyone has completed their problem, they will come together as a group and discuss their solutions."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.32",
+              "sco_code": "MA-G4-PR-SCO4.30",
               "description": "As a group, they will identify the open sentences in the multiplication problems and explain how they solved them."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.33",
+              "sco_code": "MA-G4-PR-SCO4.31",
               "description": "They will create a summary of their findings to share with the other groups."
             },
             {
-              "sco_code": "MA-G4-PR-SCO4.34",
+              "sco_code": "MA-G4-PR-SCO4.32",
               "description": "Each member of Group B will receive a multiplication problem with an open sentence."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO4.35",
-              "description": "Group C: Identifying Open Sentences in Division Problems. Provide Group C with the following materials: A set of division word problems with blank spaces for numbers (e.g., 24 ÷ __ = 8). Manipulatives or visuals to help solve the problems (e.g., counters, pictures). Group C's Task: 1. Each member of Group C will solve one division problem from the set independently, filling in the blank space with the correct number. 2. Once everyone has completed their problem, they will come together as a group and discuss their solutions. 3. As a group, they will identify the open sentences in the division problems and explain how they solved them. 4. They will create a summary of their findings to share with the other groups."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO4.36",
-              "description": "Group D: Explaining Open Sentences in Division Problems. Provide Group D with the following materials: Completed division problems with open sentences (e.g., 24 ÷ __ = 8). Whiteboards or chart paper for writing explanations. Group D's Task: 1. Each member of Group D will receive a division problem with an open sentence. 2. Individually, they will solve the problem and write down a step-by-step explanation of how they arrived at their answer. 3. Once everyone has completed their explanation, they will come together as a group and compare their approaches. 4. As a group, they will discuss and refine their explanations, making sure they are clear and concise. 5. They will create a summary of their explanations to share with the other groups."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO4.37",
-              "description": "Expert Groups: After each group has completed their tasks, form new groups called \"Expert Groups\" with one member from each initial group (Group A, B, C, and D). Expert Group Tasks: 1. Each member of the Expert Group will take turns sharing their group's findings and explanations. 2. As a group, they will discuss similarities and differences between the multiplication and division problems. 3. They will collaborate to create a comprehensive summary of identifying and explaining open sentences in multiplication and division problems with whole numbers. 4. The Expert Group will present their summary to the whole class, ensuring that all students understand the concept."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO4.38",
-              "description": "Conclusion: Wrap up the jigsaw activity by discussing the importance of open sentences in multiplication and division problems. Reinforce the idea that understanding open sentences helps in solving problems accurately. Deep Questions: 1. What is the relationship between multiplication and division in simple problems with whole numbers? 2. How can you determine if a multiplication or division problem is an open sentence? 3. Why is it important to provide an explanation when solving open sentence problems in multiplication and division?"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -455,7 +411,8 @@
             "Scenario-based Questions: Students can complete individually or paired to solve the word problem by writing an open sentence and solve.",
             "1. Shopping Spree: Sarah wants to buy a new bicycle that costs 250. She has already saved up 100. If she receives $20 every week from her allowance, how many weeks will it take for Sarah to save enough money to buy the bicycle? Write an open sentence to represent this situation and solve it.",
             "2. Baking Challenge: Joey is baking cookies for a school event. The recipe requires 2 cups of flour. Joey has already used 1 cup of flour and wants to know how much more he needs to add. Write an open sentence to represent this situation and solve it.",
-            "3. Garden Expansion: Mr. Johnson wants to expand his rectangular garden by adding an extra row of plants on each side. If the original garden is 8 feet wide and 10 feet long, and each additional row of plants requires 2 feet of width, what will be the new dimensions of Mr. Johnson's garden? Write an open sentence to represent this situation and solve it."
+            "3. Garden Expansion: Mr. Johnson wants to expand his rectangular garden by adding an extra row of plants on each side. If the original garden is 8 feet wide and 10 feet long, and each additional row of plants requires 2 feet of width, what will be the new dimensions of Mr. Johnson's garden? Write an open sentence to represent this situation and solve it.",
+            "Students will be given problems with multiplying and dividing by 10, 100 or 1,000 to solve within a given time."
           ],
           "elo_code": "MA-G4-PR-ELO4"
         },
@@ -464,59 +421,35 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-PR-SCO5.1",
-              "description": "Learners will be expected to:"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO5.2",
-              "description": "Knowledge"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO5.3",
               "description": "1. Recognize when two expressions are equal and when they are not equal in addition, subtraction, multiplication and division using mathematical language"
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.4",
+              "sco_code": "MA-G4-PR-SCO5.2",
               "description": "2. Apply properties of multiplication and division (commutative, associative, distributive) to determine equality or inequality."
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.5",
+              "sco_code": "MA-G4-PR-SCO5.3",
               "description": "3. Manipulate the given objects to create different combinations (involving addition, subtraction multiplication and division) to preserve equality."
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.6",
+              "sco_code": "MA-G4-PR-SCO5.4",
               "description": "4. Rewrite expressions to ensure equality is preserved."
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.7",
-              "description": "Skill"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO5.8",
+              "sco_code": "MA-G4-PR-SCO5.5",
               "description": "5. Calculate the operations to determine whether they are equal and unequal"
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.9",
+              "sco_code": "MA-G4-PR-SCO5.6",
               "description": "6. Share to ensure the equality is preserved"
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.10",
-              "description": "Value"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO5.11",
+              "sco_code": "MA-G4-PR-SCO5.7",
               "description": "7. Students should discuss ways in which preservation of equality is important in everyday life."
             },
             {
-              "sco_code": "MA-G4-PR-SCO5.12",
+              "sco_code": "MA-G4-PR-SCO5.8",
               "description": "12 / 2 = 6"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO5.13",
-              "description": "7 - 1 = 6"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO5.14",
-              "description": "Real-Life Math Problems: Present students with real-life math problems that highlight the importance of equality. For example, ask students to calculate and compare the costs of items at different stores to ensure fair pricing and equality in shopping experiences. Encourage students to discuss how understanding mathematical equality can help them make informed decisions in daily life."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -550,47 +483,35 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-PR-SCO6.1",
-              "description": "Learners will be expected to: Knowledge 1. Create expressions and equations in all four operations"
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO6.2",
               "description": "2. Translate word problems into mathematical equations and expressions."
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.3",
+              "sco_code": "MA-G4-PR-SCO6.2",
               "description": "3. Write word problems for given expressions and equations."
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.4",
+              "sco_code": "MA-G4-PR-SCO6.3",
               "description": "4. Create expressions and equations for the pictorial and concrete representations"
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.5",
+              "sco_code": "MA-G4-PR-SCO6.4",
               "description": "Skills 5. Use visual aids such as number lines, bar models, or diagrams to represent expressions and equations."
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.6",
+              "sco_code": "MA-G4-PR-SCO6.5",
               "description": "6. Manipulate concrete objects such as counters, cubes, or base-ten blocks to represent equations and expression."
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.7",
-              "description": "Learners will be expected to: Knowledge: 1. Identify situations in everyday life where rates of change occur."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO6.8",
+              "sco_code": "MA-G4-PR-SCO6.6",
               "description": "2. Distinguish between situations with constant rates of change and situations with varying rates of change."
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.9",
+              "sco_code": "MA-G4-PR-SCO6.7",
               "description": "3. Describe situations with constant rates of change using appropriate vocabulary"
             },
             {
-              "sco_code": "MA-G4-PR-SCO6.10",
+              "sco_code": "MA-G4-PR-SCO6.8",
               "description": "4. Describe situations with varying rates of change using appropriate vocabulary."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO6.11",
-              "description": "Learners will be expected to: 1. Recognize and describe patterns and relationships between two variables. 2. Interpret and explain relationships shown in simple graphs. 3. Predict how changes in one variable may affect another in simple contexts. Skills 1. Use tables to organize and analyze data showing relationships between variables. Values 1. Apply understanding of variable relationships to solve real-world problems."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -671,18 +592,14 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-PR-SCO7.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify and describe apparent features of patterns, such as increasing or decreasing intervals, repeating sequences, or alternating values."
-            },
-            {
-              "sco_code": "MA-G4-PR-SCO7.2",
               "description": "2. Explain how changes in the rule or starting number affect the pattern’s characteristics, such as its shape, direction, or rate of change."
             },
             {
-              "sco_code": "MA-G4-PR-SCO7.3",
+              "sco_code": "MA-G4-PR-SCO7.2",
               "description": "Skill 3. Create and extend number patterns using addition, subtraction, multiplication, or division rules."
             },
             {
-              "sco_code": "MA-G4-PR-SCO7.4",
+              "sco_code": "MA-G4-PR-SCO7.3",
               "description": "Values 4. Apply understanding of number patterns to solve problems in real-world contexts, such as calculating distances, predicting future values, or analyzing data trends."
             }
           ],
@@ -1138,18 +1055,14 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-NS-SCO1.1",
-              "description": "Learners will be expected to: Knowledge: 1. Match number words/names and numerals up to 10,000 with the quantities they represent."
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO1.2",
               "description": "2. Represent whole numbers up to 10,000 using various models (concretely, pictorially, and symbolically)"
             },
             {
-              "sco_code": "MA-G4-NS-SCO1.3",
+              "sco_code": "MA-G4-NS-SCO1.2",
               "description": "Skills: 3. Read and write 4-digit whole numbers up to 10 000 in standard and expanded form"
             },
             {
-              "sco_code": "MA-G4-NS-SCO1.4",
+              "sco_code": "MA-G4-NS-SCO1.3",
               "description": "Values: 4. Solve problems using real-life situations involving reading, writing, and representing whole numbers up to 10 000."
             }
           ],
@@ -1187,30 +1100,26 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-NS-SCO2.1",
-              "description": "Learners will be expected to: Knowledge: 1. Compare the values of two 4-digit whole numbers using the <, > or ="
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO2.2",
               "description": "2. Use different strategies to find numbers that are 100, 1000, or 10 000 more or less than a given number up to 4 digits"
             },
             {
-              "sco_code": "MA-G4-NS-SCO2.3",
+              "sco_code": "MA-G4-NS-SCO2.2",
               "description": "3. Compose and solve real-life situations/problems involving the comparison of whole numbers up to 4 digits."
             },
             {
-              "sco_code": "MA-G4-NS-SCO2.4",
+              "sco_code": "MA-G4-NS-SCO2.3",
               "description": "Skills: 4. Identify the total value of each digit in a four-digit number using concrete materials"
             },
             {
-              "sco_code": "MA-G4-NS-SCO2.5",
+              "sco_code": "MA-G4-NS-SCO2.4",
               "description": "5. Arrange in ascending and descending order a set of whole numbers up to 5 numbers."
             },
             {
-              "sco_code": "MA-G4-NS-SCO2.6",
+              "sco_code": "MA-G4-NS-SCO2.5",
               "description": "6. Create pictorial representations to illustrate the difference between the values of a pair of whole numbers."
             },
             {
-              "sco_code": "MA-G4-NS-SCO2.7",
+              "sco_code": "MA-G4-NS-SCO2.6",
               "description": "Values: 7. Recognize the practical relevance of comparing numbers in everyday situations like budgeting expenses or comparing prices, fostering a sense of mastery and motivation in mathematical reasoning."
             }
           ],
@@ -1234,38 +1143,34 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-NS-SCO3.1",
-              "description": "Learners will be expected to: Knowledge 1. State the place value of any digit within a whole number up to 10,000."
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO3.2",
               "description": "2 Represent the place value of a numeral in context, up to 10 000 concretely, pictorially and symbolically."
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.3",
+              "sco_code": "MA-G4-NS-SCO3.2",
               "description": "3. Identify and apply the principle that in a whole number up to four digits, each digit’s value is ten times greater than its value in the place immediately to its right."
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.4",
+              "sco_code": "MA-G4-NS-SCO3.3",
               "description": "4. Explain the pattern of regularity in the place value system"
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.5",
+              "sco_code": "MA-G4-NS-SCO3.4",
               "description": "5. Recognize and articulate"
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.6",
+              "sco_code": "MA-G4-NS-SCO3.5",
               "description": "6. Round off any whole number up to 10,000 to the nearest 100 and 1000"
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.7",
+              "sco_code": "MA-G4-NS-SCO3.6",
               "description": "Values 7. Compose and solve mathematical problems or puzzles, recognizing simple patterns and relationships among digits in a whole number."
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.8",
+              "sco_code": "MA-G4-NS-SCO3.7",
               "description": "Express 3 in the form of 3 = 3/1; recognize that 6/1 = 6; locate 4/4 and 1 at the same point of a number line diagram."
             },
             {
-              "sco_code": "MA-G4-NS-SCO3.9",
+              "sco_code": "MA-G4-NS-SCO3.8",
               "description": "Value: 9. Use equivalence fraction in solving problems involving fractions"
             }
           ],
@@ -1376,26 +1281,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-NS-SCO5.1",
-              "description": "Learners will be expected to: Knowledge: 1. Represent decimals using concrete materials (tenths) (base ten blocks)."
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO5.2",
               "description": "2. Use appropriate language to describe decimals (tenths)"
             },
             {
-              "sco_code": "MA-G4-NS-SCO5.3",
+              "sco_code": "MA-G4-NS-SCO5.2",
               "description": "Skills: 3. Create pictorial models (number lines, charts) to illustrate decimals (tenths)"
             },
             {
-              "sco_code": "MA-G4-NS-SCO5.4",
+              "sco_code": "MA-G4-NS-SCO5.3",
               "description": "4. Write decimals using symbolic notation. (tenths)"
             },
             {
-              "sco_code": "MA-G4-NS-SCO5.5",
+              "sco_code": "MA-G4-NS-SCO5.4",
               "description": "5. Communicate orally the value of a decimal through tenths. For example, in 999.2, the 2 is in the tenths place and has a value of two tenths (2/10)."
             },
             {
-              "sco_code": "MA-G4-NS-SCO5.6",
+              "sco_code": "MA-G4-NS-SCO5.5",
               "description": "Values: 6. Apply decimal numbers in real life situations."
             }
           ],
@@ -1432,50 +1333,42 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-NS-SCO6.1",
-              "description": "Learners will be expected to: Knowledge 1. Compare two decimal values using appropriate symbols, <, >, =."
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO6.2",
               "description": "2. Round off decimals to the nearest whole number."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.3",
+              "sco_code": "MA-G4-NS-SCO6.2",
               "description": "3. Arrange a set of decimal numbers between 0 and 10 in ascending/descending order."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.4",
+              "sco_code": "MA-G4-NS-SCO6.3",
               "description": "4. Write a decimal number (one decimal place) in the correct position on a number line."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.5",
+              "sco_code": "MA-G4-NS-SCO6.4",
               "description": "Skills 5. Use concrete materials or pictorial representations to demonstrate the equivalence between fractions and decimals."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.6",
+              "sco_code": "MA-G4-NS-SCO6.5",
               "description": "Values 6. Students will display appreciation for comparing decimal numbers in real life situations by applying decimal numbers in measurements."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.7",
+              "sco_code": "MA-G4-NS-SCO6.6",
               "description": "Students would be required to represent decimals, less than 1, using the base ten blocks."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.8",
+              "sco_code": "MA-G4-NS-SCO6.7",
               "description": "Students would compare decimals using the base 10 blocks, to indicate which decimal number is larger or smaller."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.9",
+              "sco_code": "MA-G4-NS-SCO6.8",
               "description": "In pairs, students will be given decimal cards. Students take turns flipping over one card each and comparing the decimals. The student with the greater decimal keeps both cards. The student with the most cards wins."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.10",
+              "sco_code": "MA-G4-NS-SCO6.9",
               "description": "As students play this game the teacher observes to see if the students are doing the comparisons correctly."
             },
             {
-              "sco_code": "MA-G4-NS-SCO6.11",
-              "description": "Students will be given strips of Bristol board to create a number line with decimals (tenth place)."
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO6.12",
+              "sco_code": "MA-G4-NS-SCO6.10",
               "description": "One student will identify a point on the number line and the other student will state the whole number which is closest to the point identified. The two students will then alternate their roles."
             }
           ],
@@ -1520,7 +1413,8 @@
             "Allow for items to be arranged in order from shortest to longest (and vice versa) and place the decimal readings underneath each item. Questions: Arrange the decimal number in ascending order. Arrange the decimal number in descending order. What are the decimal numbers that are higher than 0.5? What are the decimal numbers that are lower than 0.5?",
             "Demonstration: The teacher draws a number line on the board or presents a pictorial model of a number line. The teacher selects a decimal number (e.g. 0.3, 0.5, 0.6) and shows the students its position on the number line. Teacher discusses with students the role of the decimal point and the significance of the tenth digit in determining the placement of the number. Questions: What numbers are missing on the number line? Place the following decimals numbers on the correct position on the number line: 0.4, 0.3, 0.2, 0.6",
             "Equivalence of fractions and decimals using number line: Students will place decimals and fractions on a number line. Questions: Which decimal numbers on the number line are equivalent to ½, 1/10? Which fraction is equivalent to 0.6?",
-            "Real Life Situations: With digital thermometers (under arm), students can measure their body temperatures. They can compare these temperatures to normal body temperature. Students can visit the Met office and get figures for monthly rainfall or yearly rainfall. They can compare the readings to see which month recorded most or least rainfall etc. Questions: In which real life situations are decimals used?"
+            "Real Life Situations: With digital thermometers (under arm), students can measure their body temperatures. They can compare these temperatures to normal body temperature. Students can visit the Met office and get figures for monthly rainfall or yearly rainfall. They can compare the readings to see which month recorded most or least rainfall etc. Questions: In which real life situations are decimals used?",
+            "Students will be given strips of Bristol board to create a number line with decimals (tenth place)."
           ],
           "elo_code": "MA-G4-NS-ELO6"
         },
@@ -1529,82 +1423,78 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-NS-SCO7.1",
-              "description": "Learners will be expected to: Knowledge 1. Read and write the number names for decimals up to tenths using base ten numerals up to 10 000"
-            },
-            {
-              "sco_code": "MA-G4-NS-SCO7.2",
               "description": "2. Represent the place value of various groupings concretely, pictorial, contextually and symbolically."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.3",
+              "sco_code": "MA-G4-NS-SCO7.2",
               "description": "Skills 3. Express decimal numbers up to tenths in expanded form."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.4",
+              "sco_code": "MA-G4-NS-SCO7.3",
               "description": "4. Describe the regular pattern of the place value system for numbers up to the tenth place."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.5",
+              "sco_code": "MA-G4-NS-SCO7.4",
               "description": "5. Identify the total values of digits based on the place value of numbers up to the tenths place."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.6",
+              "sco_code": "MA-G4-NS-SCO7.5",
               "description": "Values 6. Solve word problems involving decimals in the context of real-life situations."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.7",
+              "sco_code": "MA-G4-NS-SCO7.6",
               "description": "Students would say the following to the teacher and would write the same on their notebooks. Three thousand, seven hundred seventy eight and nine tenths"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.8",
+              "sco_code": "MA-G4-NS-SCO7.7",
               "description": "The learners are engaged in creating values using the following base ten blocks in pairs. Each pair is given two flash cards with differing numbers. They then represent the values on a place value chart and in expanded notation."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.9",
+              "sco_code": "MA-G4-NS-SCO7.8",
               "description": "The learners use the blocks to represent the numbers then they write the numbers in expanded notation."
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.10",
+              "sco_code": "MA-G4-NS-SCO7.9",
               "description": "Representation of thousands value"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.11",
+              "sco_code": "MA-G4-NS-SCO7.10",
               "description": "Representation of hundreds value"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.12",
+              "sco_code": "MA-G4-NS-SCO7.11",
               "description": "Representation of tens value"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.13",
+              "sco_code": "MA-G4-NS-SCO7.12",
               "description": "Representation of the ones value"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.14",
+              "sco_code": "MA-G4-NS-SCO7.13",
               "description": "Representation of the tenths value"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.15",
+              "sco_code": "MA-G4-NS-SCO7.14",
               "description": "Wrote the correct digit in the thousands place in the chart"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.16",
+              "sco_code": "MA-G4-NS-SCO7.15",
               "description": "Wrote the correct digit in the hundreds place in the chart"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.17",
+              "sco_code": "MA-G4-NS-SCO7.16",
               "description": "Wrote the correct digit in the tens place in the chart"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.18",
+              "sco_code": "MA-G4-NS-SCO7.17",
               "description": "Wrote the correct digit in the ones place in the chart"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.19",
+              "sco_code": "MA-G4-NS-SCO7.18",
               "description": "Wrote the correct digit in the tenths place in the chart"
             },
             {
-              "sco_code": "MA-G4-NS-SCO7.20",
+              "sco_code": "MA-G4-NS-SCO7.19",
               "description": "Wrote a correct number sentence representing the number in expanded notation."
             }
           ],
@@ -2251,18 +2141,6 @@
             },
             {
               "sco_code": "MA-G4-ON-SCO1.10",
-              "description": "Collaborative Problem-Solving Tasks: Design tasks that require students to work together to decompose fractions with different denominators. For example, provide groups with sets of fraction cards and challenge them to organize the cards into equivalent fractions by decomposing them into smaller parts. Assess students based on their ability to communicate effectively, negotiate solutions, and support each other in the process."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO1.11",
-              "description": "Verbal and Written Explanations: Allow students to explain their thought process verbally or in writing when solving decimal problems. This accommodates auditory and linguistic learners, as well as those who may struggle with written calculations but can articulate their understanding verbally. For example, Think-Pair-Share: Provide each student with a decimal problem to solve independently. After a few minutes of individual work, ask students to pair up and discuss their solutions with a partner. Each student takes turns explaining their thought process to their partner, articulating their reasoning and steps taken to arrive at the solution. Written Explanation in Journals: Assign students a set of decimal problems to solve independently. After solving the problems, ask students to write a reflection in their math journals, explaining their approach to each problem in writing. Encourage students to include details such as how they lined up the decimal points, any regrouping or carrying over performed, and why they chose a particular strategy."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO1.12",
-              "description": "Drawings and Visual Representations: Encourage students to draw visual representations of decimal addition and subtraction problems. This could include number lines, area models, or pictorial representations. Assess their drawings for accuracy and understanding of place value and the operations involved."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO1.13",
               "description": "Relationship Between Addition and Subtraction: Present assessment tasks that highlight the relationship between addition and subtraction of decimals."
             }
           ],
@@ -2301,54 +2179,42 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ON-SCO2.1",
-              "description": "Learners will be expected to: Knowledge: 1. Recall place value and the value of numbers up to 4 digit in multiple form."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO2.2",
               "description": "Skills: 1. Use the standard algorithm to fluently add and subtract multi-digit whole numbers. (up to four digits) with and without regroupi"
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.3",
+              "sco_code": "MA-G4-ON-SCO2.2",
               "description": "2. Solve word problems involving addition and subtraction of fractions referring to the same whole and having like denominators. e.g., by using visual fraction models and equations to represent the problem."
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.4",
+              "sco_code": "MA-G4-ON-SCO2.3",
               "description": "3. Mentally add 10, 100, or 1000 to any given number;"
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.5",
+              "sco_code": "MA-G4-ON-SCO2.4",
               "description": "4. mentally add multiples of ten and hundred e.g. 70 + 20, 500 + 300, 4000 + 5000;"
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.6",
+              "sco_code": "MA-G4-ON-SCO2.5",
               "description": "Include task cards with multi-digit addition and subtraction problems that require regrouping or borrowing."
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.7",
+              "sco_code": "MA-G4-ON-SCO2.6",
               "description": "Students can use the manipulatives to represent the numbers and model the regrouping or borrowing process."
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.8",
-              "description": "Game Station: Set up a variety of math games focused on addition and subtraction fluency, such as: \"Race to 1000\": Students roll dice and add the numbers together, aiming to reach a target sum of 1000. \"Subtraction Bowling\": Students roll a ball to knock down pins labeled with subtraction problems and solve the problems to score points."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO2.9",
+              "sco_code": "MA-G4-ON-SCO2.7",
               "description": "Task Card Station: Provide task cards with a mix of addition and subtraction problems, including multi-digit numbers and regrouping or borrowing scenarios. Students can work independently or in pairs to solve the problems on the task cards."
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.10",
+              "sco_code": "MA-G4-ON-SCO2.8",
               "description": "Technology Station: Set up computers or tablets with math fluency apps or online practice platforms that offer activities related to addition and subtraction. Choose apps or platforms that provide adaptive learning experiences and allow students to practice regrouping or borrowing concepts."
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.11",
-              "description": "Writing Station: Provide whiteboards, markers, and worksheets with addition and subtraction problems written in various formats (e.g., standard form, expanded form). Include problems that require regrouping or borrowing, and encourage students to show their work and explain their strategies."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO2.12",
+              "sco_code": "MA-G4-ON-SCO2.9",
               "description": "True and False Statements: Have learners sort number sentences into true and false statements. Allow learners to explain and demonstrate why the statement is either true or false."
             },
             {
-              "sco_code": "MA-G4-ON-SCO2.13",
+              "sco_code": "MA-G4-ON-SCO2.10",
               "description": "Product – Addition/Subtraction number pattern: Distribute template to learners have them create card showing addition or subtraction of numbers with multiples of 10 and 100. Allow pupils to identify and explain the pattern shown on the card."
             }
           ],
@@ -2393,26 +2259,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ON-SCO3.1",
-              "description": "Learners will be expected to: Knowledge 1. Add 1,2,3,digit numbers with multi-digits numbers mentally."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO3.2",
               "description": "2. Subtract 1,2, 3 digits numbers from multi-digits numbers mentally."
             },
             {
-              "sco_code": "MA-G4-ON-SCO3.3",
+              "sco_code": "MA-G4-ON-SCO3.2",
               "description": "Skill 3. Estimate the addition of 1, 2, 3, digit whole numbers with multi-digits."
             },
             {
-              "sco_code": "MA-G4-ON-SCO3.4",
+              "sco_code": "MA-G4-ON-SCO3.3",
               "description": "4. Estimate the subtraction of 1,2,3, digit whole numbers from multi -digit numbers."
             },
             {
-              "sco_code": "MA-G4-ON-SCO3.5",
+              "sco_code": "MA-G4-ON-SCO3.4",
               "description": "5. Round off whole numbers to the nearest tens hundreds and thousands."
             },
             {
-              "sco_code": "MA-G4-ON-SCO3.6",
+              "sco_code": "MA-G4-ON-SCO3.5",
               "description": "Values 6. Assess the reasonableness of answers using mental computation and estimation."
             }
           ],
@@ -2479,51 +2341,23 @@
             },
             {
               "sco_code": "MA-G4-ON-SCO4.8",
-              "description": "Multiplication Representation: Choose one multiplication problem related to the fundraiser (e.g., the number of snacks needed for each participant). Use concrete materials to represent the problem. Show groups of objects or arrays to illustrate the multiplication expression. Label each group or array with the appropriate multiplication expression (e.g., 4 groups of 5 snacks = 4 × 5)."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.9",
               "description": "Calculation and Total: Calculate the total number of items needed for the fundraiser by solving the multiplication problem. Use the concrete materials to count the total number of items visually. Record the total number of items on your poster."
             },
             {
-              "sco_code": "MA-G4-ON-SCO4.10",
+              "sco_code": "MA-G4-ON-SCO4.9",
               "description": "Checklist for Assessment: Poster Creation: Poster includes all required information (event name, date, time, location, description). Poster is visually appealing and attention-grabbing."
             },
             {
-              "sco_code": "MA-G4-ON-SCO4.11",
+              "sco_code": "MA-G4-ON-SCO4.10",
               "description": "Multiplication Representation: Multiplication problem is clearly stated. Concrete materials are used to represent the problem accurately. Multiplication expression is labeled correctly."
             },
             {
-              "sco_code": "MA-G4-ON-SCO4.12",
+              "sco_code": "MA-G4-ON-SCO4.11",
               "description": "Calculation and Total: Multiplication problem is solved correctly. Total number of items is counted accurately using concrete materials. Total number of items is recorded clearly on the poster."
             },
             {
-              "sco_code": "MA-G4-ON-SCO4.13",
-              "description": "Scoring: 3: Exceeds Expectations - Student demonstrates a thorough understanding of multiplication concepts and accurately represents and solves the problem using concrete materials. 2: Meets Expectations - Student demonstrates a satisfactory understanding of multiplication concepts and effectively represents and solves the problem using concrete materials with minor errors. 1: Approaching Expectations - Student demonstrates some understanding of multiplication concepts but struggles to accurately represent and solve the problem using concrete materials."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.14",
-              "description": "Have students use multiplication charts to verify the correctness of the multiplication facts up to 12 x12. Have students use a multiplication chart to check division facts of given operations. For Example: 7 x 9 = 63, 63 ÷ 9 = 7, 63 ÷ 7 = 9"
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.15",
-              "description": "Word Problem: Word problems can be tailored to different learning styles and abilities, making them inclusive for diverse learners. Samantha has a large box of chocolates. There are 14 rows of chocolates, and each row has 8 chocolates. If Samantha wants to share the chocolates equally with her 2 friends, how many chocolates will each person get? Equation: Samantha has 14×8=112. 14×8=112 chocolates in total. To divide equally among 3 people: 112 ÷ 3= 37 remainder 1. So, each person will get 37 chocolates, and there will be 1 chocolate left over."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.16",
-              "description": "Task Cards: Create task cards with equations that require both multiplication and division operations to solve. Include a mix of numerical expressions and word problems to cater to different learning preferences. Encourage students to use manipulatives or drawings to represent the equations concretely before solving them. For example, \"8 × ? = 24\" or \"48 ÷ 6 = ?\""
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.17",
+              "sco_code": "MA-G4-ON-SCO4.12",
               "description": "Hands-on activities: Provide hands-on activities like using manipulatives such as counters, cubes, or even edible items like candies to demonstrate multiplication and division concepts. This can appeal to kinesthetic learners and make abstract concepts more tangible."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.18",
-              "description": "Learners will be expected to: Knowledge 1. Multiply single-digit numbers by single-digit numbers accurately and efficiently. 2. Multiply numbers with up to three digits by one and two-digit numbers such as the area model/ partial products, or standard algorithm. Skills 3. Solve real-world problems involving multiplication, such as calculating the total area of rectangular fields or finding the total cost of multiple items. 4. Divide numbers with up to three digits by one-digit divisors using strategies like repeated subtraction, skip counting 5. Divide two and three digit numbers by two digit divisors using appropriate strategies 6. Solve real-world problems involving division, such as sharing equally among a given number of people or distributing items into equal groups 7. Compute products up to 10 x 10 quickly and accurately by applying multiplication fact strategies. 8. Solve real-world problems involving the multiplication of 2 and 3-digit numbers by a 1 digit number using mental math techniques. 9. Estimate products of multiplication problems involving 2- and 3-digit numbers by a 1-digit number."
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO4.19",
-              "description": "SCO 4, 5 and 6"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2600,7 +2434,8 @@
             "Sample Real-World Scenarios/Problems: 1. Sarah bought 3 bags of apples, with each bag containing 56 apples. How many apples did she buy in total? 2. Emily feeds her cat 3 cans of food each day. If each can contains 180 grams of food, how many grams of food does she feed her cat in a week? 3. Tom walks his dog 4 times a week, and each walk is 45 minutes long. How many minutes does he spend walking his dog in total?",
             "Front-End Estimation: Teach students to focus on the leftmost digits of the numbers being multiplied to quickly estimate the product. For example, when multiplying 2-digit numbers by a 1-digit number, students can round the numbers to the nearest tens and then multiply to get an approximate estimate of the product.",
             "Estimation Games: Incorporate estimation games or activities into lessons to make estimation practice more engaging and enjoyable. Provide opportunities for students to compete or collaborate with classmates to see who can make the closest estimate to the actual product.",
-            "Websites for Online Estimation Games: Estimation 180, Math Playground, Prodigy, CoolMath4Kids"
+            "Websites for Online Estimation Games: Estimation 180, Math Playground, Prodigy, CoolMath4Kids",
+            "Have students use multiplication charts to verify the correctness of the multiplication facts up to 12 x12. Have students use a multiplication chart to check division facts of given operations. For Example: 7 x 9 = 63, 63 ÷ 9 = 7, 63 ÷ 7 = 9"
           ],
           "elo_code": "MA-G4-ON-ELO4"
         },
@@ -2609,38 +2444,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ON-SCO5.1",
-              "description": "Learners will be expected to:"
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO5.2",
-              "description": "Knowledge"
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO5.3",
               "description": "1. Explain the concept of a unit rate associated with a ratio a:b, where b≠0."
             },
             {
-              "sco_code": "MA-G4-ON-SCO5.4",
+              "sco_code": "MA-G4-ON-SCO5.2",
               "description": "2. Apply rate language effectively within the context of ratio relationships."
             },
             {
-              "sco_code": "MA-G4-ON-SCO5.5",
-              "description": "Skills"
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO5.6",
+              "sco_code": "MA-G4-ON-SCO5.3",
               "description": "3. Use unit rates in situations involving measurement conversions or rates of change."
             },
             {
-              "sco_code": "MA-G4-ON-SCO5.7",
+              "sco_code": "MA-G4-ON-SCO5.4",
               "description": "4. Demonstrate Part-Whole Relationships: understanding of part-whole relationships by partitioning and combining concrete materials to represent different ratios and their corresponding quantities, ensuring that the total remains consistent within the context of 100."
             },
             {
-              "sco_code": "MA-G4-ON-SCO5.8",
-              "description": "Value"
-            },
-            {
-              "sco_code": "MA-G4-ON-SCO5.9",
+              "sco_code": "MA-G4-ON-SCO5.5",
               "description": "5. Communicate their understanding of ratios clearly and precisely, both verbally and in writing, using appropriate mathematical language and notation to express ratio relationships and unit rates accurately."
             }
           ],
@@ -3295,78 +3114,74 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-GT-SCO3.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify shapes (polygons /2D) by number of sides and angles. 1b Arrange shapes ( polygons /2D) by the number of sides and angles."
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO3.2",
               "description": "2. Name/define shape based on special shared attributes: (number of sides number of angles)"
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.3",
+              "sco_code": "MA-G4-GT-SCO3.2",
               "description": "Product - define 2D shapes based on attributes Group these shapes based on the number of sides, and angles. eg: all those with 4 sides are:_______"
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.4",
+              "sco_code": "MA-G4-GT-SCO3.3",
               "description": "Skills: 3. Justify a shape based on the number of sides, angles, parallel lines and symmetry (reflective rotation)"
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.5",
+              "sco_code": "MA-G4-GT-SCO3.4",
               "description": "Values: 4. Value differentiating between 2D shapes based on attributes"
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.6",
+              "sco_code": "MA-G4-GT-SCO3.5",
               "description": "Equal Sides and Angles: In a regular polygon, all sides and angles are congruent. This means that each side has the same length, and each angle has the same measure."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.7",
+              "sco_code": "MA-G4-GT-SCO3.6",
               "description": "Sum of Interior Angles: The sum of the interior angles of a regular polygon can be calculated using the formula: (n - 2) * 180°, where n is the number of sides."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.8",
+              "sco_code": "MA-G4-GT-SCO3.7",
               "description": "Parallel lines are two or more lines that are the same distance apart, never merging and never diverging. We recall that lines are never-ending, so parallel lines continue forever in two directions. They don't have to be straight lines, as long as they are always the same distance apart."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.9",
+              "sco_code": "MA-G4-GT-SCO3.8",
               "description": "Polygons with parallel sides could have one pair of parallel sides like an isosceles trapezoid, two pairs of parallel sides like this square and rectangle, or even four pairs of parallel sides like a regular octagon."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.10",
+              "sco_code": "MA-G4-GT-SCO3.9",
               "description": "Parallel shapes - four pairs of parallel sides octagon."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.11",
+              "sco_code": "MA-G4-GT-SCO3.10",
               "description": "Every regular polygon with an even number of sides will have pairs of parallel sides."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.12",
+              "sco_code": "MA-G4-GT-SCO3.11",
               "description": "The regular polygon will have half as many pairs of parallel sides as it has sides (because two sides make a pair)."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.13",
+              "sco_code": "MA-G4-GT-SCO3.12",
               "description": "That is an interesting property of regular polygons, and of parallel sides. A regular dodecagon (12 sides) will have six pairs of parallel sides, but a regular tridecagon (13 sides) will have no parallel sides."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.14",
+              "sco_code": "MA-G4-GT-SCO3.13",
               "description": "Parallel sides of a quadrilateral, or any polygon, must be straight sides. They can be sides of equal length, but they do not have to be."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.15",
+              "sco_code": "MA-G4-GT-SCO3.14",
               "description": "Another property of parallel sides in polygons is that the distance between the two parallel sides will never change, even if we elongate the shape."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.16",
+              "sco_code": "MA-G4-GT-SCO3.15",
               "description": "What are parallel sides."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.17",
+              "sco_code": "MA-G4-GT-SCO3.16",
               "description": "Line symmetry in regular polygons."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.18",
+              "sco_code": "MA-G4-GT-SCO3.17",
               "description": "A square is a regular polygon. It has four lines of symmetry and four sides."
             },
             {
-              "sco_code": "MA-G4-GT-SCO3.19",
+              "sco_code": "MA-G4-GT-SCO3.18",
               "description": "A regular pentagon has 5 sides and 5 lines of symmetry."
             }
           ],
@@ -3492,38 +3307,30 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-GT-SCO5.1",
-              "description": "Learners will be expected to: Knowledge 1. a. Describe various quadrilaterals based on their attributes (sides, angles, parallel sides, diagonals and rotational and reflective symmetry). 1.b. Recognize various quadrilaterals based on their attributes (sides, angles, parallel sides, diagonals and rotational and reflective symmetry). 2. Recognize 3D shapes (prisms, pyramids, cylinders, and cones) based on their attributes. Skills 3. Compare the attributes of various quadrilaterals (sides, angles, parallel"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO5.2",
               "description": "sides, diagonals, including rotational and reflective symmetry"
             },
             {
-              "sco_code": "MA-G4-GT-SCO5.3",
+              "sco_code": "MA-G4-GT-SCO5.2",
               "description": "4. Compare and classify 2D shapes based on their properties (e.g., a nested family of quadrilaterals)."
             },
             {
-              "sco_code": "MA-G4-GT-SCO5.4",
+              "sco_code": "MA-G4-GT-SCO5.3",
               "description": "5. Compare properties within a shape (quadrilaterals: length of sides, parallelism, and number and size of angles)."
             },
             {
-              "sco_code": "MA-G4-GT-SCO5.5",
+              "sco_code": "MA-G4-GT-SCO5.4",
               "description": "6. Test conjectures about properties of shapes related to attributes (sides, angles, parallel sides, diagonals, convex and non-convex)."
             },
             {
-              "sco_code": "MA-G4-GT-SCO5.6",
+              "sco_code": "MA-G4-GT-SCO5.5",
               "description": "7. Compare 3D shapes (prisms, pyramids, cylinders, and cones) based on their attributes."
             },
             {
-              "sco_code": "MA-G4-GT-SCO5.7",
-              "description": "Values"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO5.8",
+              "sco_code": "MA-G4-GT-SCO5.6",
               "description": "8. Play games by matching 2D shapes to their attributes."
             },
             {
-              "sco_code": "MA-G4-GT-SCO5.9",
+              "sco_code": "MA-G4-GT-SCO5.7",
               "description": "9. Design unique shapes using 3D objects to"
             }
           ],
@@ -3556,58 +3363,42 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-GT-SCO6.1",
-              "description": "Learners will be expected to :"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO6.2",
-              "description": "Skills"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO6.3",
               "description": "1. Construct quadrilaterals using concrete materials (e.g. popsicle sticks, pipe cleaners, etc"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.4",
+              "sco_code": "MA-G4-GT-SCO6.2",
               "description": "2. Construct composite shapes (various quadrilaterals) from congruent polygons"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.5",
+              "sco_code": "MA-G4-GT-SCO6.3",
               "description": "3. Construct nets for a given 3-D shape"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.6",
-              "description": "Knowledge"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO6.7",
+              "sco_code": "MA-G4-GT-SCO6.4",
               "description": "4. Explain in their own words the term congruent"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.8",
+              "sco_code": "MA-G4-GT-SCO6.5",
               "description": "5. Identify congruent shapes"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.9",
+              "sco_code": "MA-G4-GT-SCO6.6",
               "description": "6. Explain and identify composite shapes"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.10",
-              "description": "Values"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO6.11",
+              "sco_code": "MA-G4-GT-SCO6.7",
               "description": "7. Create nets for unique shapes."
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.12",
+              "sco_code": "MA-G4-GT-SCO6.8",
               "description": "Learners can construct and identify quadrilaterals"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.13",
+              "sco_code": "MA-G4-GT-SCO6.9",
               "description": "Learners can construct and identify congruent shapes"
             },
             {
-              "sco_code": "MA-G4-GT-SCO6.14",
+              "sco_code": "MA-G4-GT-SCO6.10",
               "description": "Using congruent pattern blocks, students will create composite shapes of any sort. examples provided below. Students will name the shape used to create the composite shape and display it on the desk for all to see."
             }
           ],
@@ -3666,38 +3457,34 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-GT-SCO7.1",
-              "description": "Learners will be expected to: Knowledge 1. Discuss the phrase “deconstruction of 3D shapes”"
-            },
-            {
-              "sco_code": "MA-G4-GT-SCO7.2",
               "description": "2. Demonstrate shape deconstruction"
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.3",
+              "sco_code": "MA-G4-GT-SCO7.2",
               "description": "Skills 3. Deconstruct composite shapes and identify the shape used to construct the composite shape."
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.4",
+              "sco_code": "MA-G4-GT-SCO7.3",
               "description": "4. a. Recognize and categorize various shapes resulting from folding."
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.5",
+              "sco_code": "MA-G4-GT-SCO7.4",
               "description": "4. b. Identify lines of symmetry within folded shapes."
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.6",
+              "sco_code": "MA-G4-GT-SCO7.5",
               "description": "5. a. Employ folding techniques to deconstruct quadrilaterals into two congruent triangles."
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.7",
+              "sco_code": "MA-G4-GT-SCO7.6",
               "description": "5. b. Utilize folding methods to subdivide quadrilaterals into two congruent quadrilaterals."
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.8",
+              "sco_code": "MA-G4-GT-SCO7.7",
               "description": "6. Show your artistic abilities using different shapes."
             },
             {
-              "sco_code": "MA-G4-GT-SCO7.9",
+              "sco_code": "MA-G4-GT-SCO7.8",
               "description": "7. Recognize the important role of the different architectural designs around you."
             }
           ],
@@ -3747,12 +3534,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome 3.3: Composing, Decomposing and Transforming Shapes - Transforming Shapes",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G4-GT-SCO8.1",
-              "description": "Learners will be expected to: Skills: Students will be able to: 1. Transform 2D objects using concrete materials to represent various quadrilaterals, 2. Construct quadrilaterals using concrete materials, 3. Transform 3D objects using concrete materials, 4. Construct 3D shapes using paper folding. Values: 1. Promote artistic design skills through shape transformation"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Entrance Slip - Use to assess students’ understanding and to demonstrate using technology to transform shapes.",
             "Using a Geoboard either online or physically, students will create various quadrilaterals.",
@@ -4390,154 +4172,126 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ME-SCO1.1",
-              "description": "Learners will be expected to: Knowledge 1. Use language relating to measurement terms (mass, kg, g)"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.2",
               "description": "2. Differentiate between items using measurement of mass and capacity"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.3",
+              "sco_code": "MA-G4-ME-SCO1.2",
               "description": "3. Name relative sizes of the measurement units within one system of units (grams and kilograms)."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.4",
+              "sco_code": "MA-G4-ME-SCO1.3",
               "description": "4. State the relationship between grams and kilograms"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.5",
+              "sco_code": "MA-G4-ME-SCO1.4",
               "description": "5. Estimate the mass of objects using benchmarks"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.6",
+              "sco_code": "MA-G4-ME-SCO1.5",
               "description": "6. Explain the relationship between liters and millilitres as metric units of capacity,"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.7",
+              "sco_code": "MA-G4-ME-SCO1.6",
               "description": "7. Use benchmarks items as examples when estimating capacity"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.8",
+              "sco_code": "MA-G4-ME-SCO1.7",
               "description": "8. Use metric prefixes to describe the relative size of different metric units."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.9",
+              "sco_code": "MA-G4-ME-SCO1.8",
               "description": "9. Choose appropriate units to measure length mass and capacity"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.10",
+              "sco_code": "MA-G4-ME-SCO1.9",
               "description": "10. Choose appropriate tools to measure length mass and capacity"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.11",
+              "sco_code": "MA-G4-ME-SCO1.10",
               "description": "Skills 11. Estimate the mass and capacity of given items and containers"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.12",
+              "sco_code": "MA-G4-ME-SCO1.11",
               "description": "Values 12. Design a poster to show the appropriate terms and units of measurement"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.13",
+              "sco_code": "MA-G4-ME-SCO1.12",
               "description": "12. recognize the importance of estimation by solving everyday problems involving units of measurement"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.14",
+              "sco_code": "MA-G4-ME-SCO1.13",
               "description": "choose appropriate units and tools for measuring length, mass, and capacity."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.15",
-              "description": "a) State which unit is most appropriate for measuring (ml or L)"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.16",
+              "sco_code": "MA-G4-ME-SCO1.14",
               "description": "1. small bottle of glue."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.17",
+              "sco_code": "MA-G4-ME-SCO1.15",
               "description": "2. the large water bottle."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.18",
+              "sco_code": "MA-G4-ME-SCO1.16",
               "description": "3. mop pail filled with water."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.19",
+              "sco_code": "MA-G4-ME-SCO1.17",
               "description": "4. tears from your eyes."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.20",
-              "description": "b) complete the table."
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.21",
+              "sco_code": "MA-G4-ME-SCO1.18",
               "description": "scenario | capacity or mass | ml or L g or kg"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.22",
+              "sco_code": "MA-G4-ME-SCO1.19",
               "description": "eyelashes | |"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.23",
-              "description": " | | kg"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.24",
+              "sco_code": "MA-G4-ME-SCO1.20",
               "description": "yourself | |"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.25",
-              "description": " | | ml"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.26",
+              "sco_code": "MA-G4-ME-SCO1.21",
               "description": "large Fruta juice box | |"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.27",
+              "sco_code": "MA-G4-ME-SCO1.22",
               "description": "the ink in your pen | |"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.28",
-              "description": "c) Match the tool to the measurement strand."
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.29",
+              "sco_code": "MA-G4-ME-SCO1.23",
               "description": "measuring cup | capacity"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.30",
+              "sco_code": "MA-G4-ME-SCO1.24",
               "description": "tape line/metre stick | mass"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.31",
+              "sco_code": "MA-G4-ME-SCO1.25",
               "description": "Balance | length"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.32",
-              "description": "d) Estimate to your best the following"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO1.33",
+              "sco_code": "MA-G4-ME-SCO1.26",
               "description": "1. the mass of your math textbook."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.34",
+              "sco_code": "MA-G4-ME-SCO1.27",
               "description": "2. the capacity of a regular mug/cup."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.35",
+              "sco_code": "MA-G4-ME-SCO1.28",
               "description": "3. the mass of your teacher."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.36",
+              "sco_code": "MA-G4-ME-SCO1.29",
               "description": "4. the capacity of fluid you can hold in one palm."
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.37",
+              "sco_code": "MA-G4-ME-SCO1.30",
               "description": "5. the mass of a loaf of bread"
             },
             {
-              "sco_code": "MA-G4-ME-SCO1.38",
+              "sco_code": "MA-G4-ME-SCO1.31",
               "description": "6. the capacity of the classroom dustbin."
             }
           ],
@@ -4621,78 +4375,74 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ME-SCO2.1",
-              "description": "Learners will be expected to: Knowledge 1. Students will be able to: differentiate between weight and mass"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO2.2",
               "description": "2. Explain the term weight"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.3",
+              "sco_code": "MA-G4-ME-SCO2.2",
               "description": "3. Explain the term mass"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.4",
+              "sco_code": "MA-G4-ME-SCO2.3",
               "description": "Skills 4. Compare objects by measuring and ordering based on their heaviness/lightness"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.5",
+              "sco_code": "MA-G4-ME-SCO2.4",
               "description": "5. Solve real world and mathematical problems involving area of rectangles, including finding the area given the side lengths, finding an unknown side length, and exhibiting rectangles with the same area, with the same perimeter and different areas or with the same area and different perimeters."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.6",
+              "sco_code": "MA-G4-ME-SCO2.5",
               "description": "6. Estimate the area of shapes and other objects"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.7",
+              "sco_code": "MA-G4-ME-SCO2.6",
               "description": "7. Estimate the weight and mass of objects"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.8",
+              "sco_code": "MA-G4-ME-SCO2.7",
               "description": "Values 8. Ensure the accuracy in estimating mass by paying close attention to detail"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.9",
+              "sco_code": "MA-G4-ME-SCO2.8",
               "description": "9. Design a poster on measuring everyday solids"
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.10",
+              "sco_code": "MA-G4-ME-SCO2.9",
               "description": "Heaviness: Heaviness refers to the amount of force exerted by gravity on an object."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.11",
+              "sco_code": "MA-G4-ME-SCO2.10",
               "description": "Objects with greater mass tend to feel heavier because they experience a stronger gravitational pull."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.12",
+              "sco_code": "MA-G4-ME-SCO2.11",
               "description": "When comparing objects, the one with more mass is typically considered heavier."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.13",
+              "sco_code": "MA-G4-ME-SCO2.12",
               "description": "Lightness: Lightness refers to the perception of an object being less heavy or having less mass."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.14",
+              "sco_code": "MA-G4-ME-SCO2.13",
               "description": "Objects with lower mass feel lighter because they experience a weaker gravitational pull."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.15",
+              "sco_code": "MA-G4-ME-SCO2.14",
               "description": "Lightness is relative and can vary based on individual perception and the context of comparison."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.16",
+              "sco_code": "MA-G4-ME-SCO2.15",
               "description": "Comparing Weight: When comparing the weight of objects, consider their mass relative to each other."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.17",
+              "sco_code": "MA-G4-ME-SCO2.16",
               "description": "Use terms like \"heavier than,\" \"lighter than,\" or \"about the same weight as\" to make comparisons."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.18",
+              "sco_code": "MA-G4-ME-SCO2.17",
               "description": "Estimating Weight: Practice estimating the weight of objects by considering their size, material, and density."
             },
             {
-              "sco_code": "MA-G4-ME-SCO2.19",
+              "sco_code": "MA-G4-ME-SCO2.18",
               "description": "Develop a sense of weight through experience and observation."
             }
           ],
@@ -4732,23 +4482,15 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ME-SCO3.1",
-              "description": "Learners will be expected to: Knowledge: 1. Describe scenarios involving mass"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO3.2",
               "description": "Skills: 2. a. Find the mass of objects by counting weighted units/objects, improvised units"
             },
             {
-              "sco_code": "MA-G4-ME-SCO3.3",
+              "sco_code": "MA-G4-ME-SCO3.2",
               "description": "2. b Find the mass of objects by using concrete materials (cubes, counters, etc.) (nonstandard method). (To be balanced: as it refers to Mass/Weight means equal.)"
             },
             {
-              "sco_code": "MA-G4-ME-SCO3.4",
+              "sco_code": "MA-G4-ME-SCO3.3",
               "description": "Values: 3. Promote the need for measuring the mass of items."
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO3.5",
-              "description": "Group Work/Product: 2. Using a balance and non standard units, follow the teacher's example to find the mass of at least 6 objects. a) The pen has an equal mass of ______ paper clips. b) ______ paper clips have the same mass as the ______. c) 1 sheet of paper has the mass of ______ counters. d) The maker has equal mass as ______ counters. e) How many paper clips are equal to the mass of the pencil? f) (one of your own) ______."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4776,34 +4518,30 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ME-SCO4.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify standard units of measure(mass) (mg, g, kg)"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO4.2",
               "description": "Skills 2. Measure and read the mass of objects using a kitchen scale."
             },
             {
-              "sco_code": "MA-G4-ME-SCO4.3",
+              "sco_code": "MA-G4-ME-SCO4.2",
               "description": "3. volunteer to share how to measure the mass of an object."
             },
             {
-              "sco_code": "MA-G4-ME-SCO4.4",
+              "sco_code": "MA-G4-ME-SCO4.3",
               "description": "TIME Skills 4. Convert minutes to hours and vice versa. time units Seconds,(s) 60 s = 1 minute minutes(m) 60m = 1hr hours/(hr)"
             },
             {
-              "sco_code": "MA-G4-ME-SCO4.5",
+              "sco_code": "MA-G4-ME-SCO4.4",
               "description": "½ hr = 30 mins\n¼ hr = 15 mins"
             },
             {
-              "sco_code": "MA-G4-ME-SCO4.6",
+              "sco_code": "MA-G4-ME-SCO4.5",
               "description": "5. Calculate time elapsed using the relationship between units of time.\nrelationship: counting on to make the next hour. (60 mins = 1hr)\neg: 5:40 to 7:00\n(20 more mins to get to 6 + 1hr from 6 to 7)\nans= 1hr20 mins or 80 mins"
             },
             {
-              "sco_code": "MA-G4-ME-SCO4.7",
+              "sco_code": "MA-G4-ME-SCO4.6",
               "description": "MONEY\nKnowledge\n6. Identify six (6) methods of payment used"
             },
             {
-              "sco_code": "MA-G4-ME-SCO4.8",
+              "sco_code": "MA-G4-ME-SCO4.7",
               "description": "7. Estimate and calculate the cost of multiple items priced in whole dollar amounts and change needed mentally."
             }
           ],
@@ -4840,14 +4578,10 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ME-SCO5.1",
-              "description": "Learners will be expected to: Knowledge 1. Estimate the mass of various objects without weighing them, then verify the estimates by actually measuring their mass."
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO5.2",
               "description": "2. Apply appropriate units of measurement and mathematical operations when solving worded problems related to mass measurement."
             },
             {
-              "sco_code": "MA-G4-ME-SCO5.3",
+              "sco_code": "MA-G4-ME-SCO5.2",
               "description": "Values 3. Share various objects of their interest with their peers relaying mass measurement and explaining why that unit of measurement is used."
             }
           ],
@@ -4872,14 +4606,10 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-ME-SCO6.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify the different standard measuring tools (ruler, meter rule, scale, measuring cup)"
-            },
-            {
-              "sco_code": "MA-G4-ME-SCO6.2",
               "description": "Skills 2. Demonstrate the correct use of the measuring instruments."
             },
             {
-              "sco_code": "MA-G4-ME-SCO6.3",
+              "sco_code": "MA-G4-ME-SCO6.2",
               "description": "Values 3. Volunteer to demonstrate the use of various measuring instruments."
             }
           ],
@@ -5324,12 +5054,7 @@
       "essential_learning_outcomes": [
         {
           "elo_description": "Essential Learning Outcomes D 1.1: Collecting, Organising and Displaying Data - Formulating questions that can be answered with data.",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G4-DH-SCO1.1",
-              "description": "Learners will be expected to: Knowledge 1. Discuss biases that students may have or encounter in real life situations. 2. Identify biased/unbiased questions used in conducting surveys Skills 3. Construct unbiased questions for the purpose of conducting surveys Values 4. Accept that people’s choices can be different from theirs and still correct or good. 5. Hold their own opinion on choices they make."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Conversation: Group work. Students will discuss in group to determine what is bias or unbiased about the two questions. What do you think about the culture, in the best Windward Island, St. Vincent and the Grenadines? How do you feel about the different cultures in the four Windward Islands? Observation",
             "Teacher listens as students discuss in pairs/groups how questions can be modified to ask unbiased questions. They will work together identify the bias then modify this question. How great is our chocolate cake sold at the tuck shop? Product: Students will work cooperatively (pairs or groups) to change the following questions to make them unbiased. Do you agree that vegetables taste disgusting? Do you agree that our store is the best in town? Identify these statements correctly as either bias or unbiased. 1. How great is this party tonight? 2. Don’t you think this is the best teacher in the school? 3. What do you think can be done to improve the service at the ice-cream shop? 4. How awesome is this football team? 5. What is your favourite vacation destination?",
@@ -5347,66 +5072,58 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-DH-SCO2.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify the elements of a double-bar graph"
-            },
-            {
-              "sco_code": "MA-G4-DH-SCO2.2",
               "description": "2. Represent data from two-way tables on bar graphs"
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.3",
+              "sco_code": "MA-G4-DH-SCO2.2",
               "description": "3. Use a key to identify bars in bar graphs with multiple related bars,"
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.4",
+              "sco_code": "MA-G4-DH-SCO2.3",
               "description": "Skills 4. Collect real life data from different primary and secondary sources that involve comparing two or more sets of data."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.5",
+              "sco_code": "MA-G4-DH-SCO2.4",
               "description": "5. Organise data collected in a frequency table"
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.6",
+              "sco_code": "MA-G4-DH-SCO2.5",
               "description": "6. Organise data collected in a stem-and-leaf plot."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.7",
+              "sco_code": "MA-G4-DH-SCO2.6",
               "description": "7. Compare data represented in a double-bar graph"
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.8",
+              "sco_code": "MA-G4-DH-SCO2.7",
               "description": "8. Represent real-life data collected using a double-bar graph"
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.9",
+              "sco_code": "MA-G4-DH-SCO2.8",
               "description": "Values 9. Justify the importance of constructing a double-bar graph"
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.10",
-              "description": "Learners will be expected to: Knowledge 1. Construct a double bar graph to represent two sets of related data 2. Interpret data presented in a double bar graph Skills 3. Solve questions by constructing a double bar graph 4. Examine given numerical data sets to determine the number of observations Values 5. Show willingness to participate in whole-class and small group activities involving learning about double bar graphs. 6. Provide assistance to their peers who may face difficulty understanding the content 7. Make convincing arguments and informed decisions based on data presented in double bar graphs, in various contexts drawn from real life."
-            },
-            {
-              "sco_code": "MA-G4-DH-SCO2.11",
+              "sco_code": "MA-G4-DH-SCO2.9",
               "description": "Organize the data into ascending order, smallest to largest."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.12",
+              "sco_code": "MA-G4-DH-SCO2.10",
               "description": "Determine how the numbers are split into 2 parts by writing a key for the stem and leaf plot."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.13",
+              "sco_code": "MA-G4-DH-SCO2.11",
               "description": "Separate the numbers into 2 parts (one part for the stem and the other for the leaf)."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.14",
+              "sco_code": "MA-G4-DH-SCO2.12",
               "description": "Write the values for the 'stem' into the stem and leaf plot."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.15",
+              "sco_code": "MA-G4-DH-SCO2.13",
               "description": "Write the values for the 'leaf' into the stem and leaf plot."
             },
             {
-              "sco_code": "MA-G4-DH-SCO2.16",
+              "sco_code": "MA-G4-DH-SCO2.14",
               "description": "Create a double bar graph to represent and compare two sets of data."
             }
           ],
@@ -5453,12 +5170,7 @@
         },
         {
           "elo_description": "Essential Learning Outcomes D 2.2: Using Statistical Methods to Analyse Data - Developing and applying methods to analyse data sets",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G4-DH-SCO3.1",
-              "description": "Learners will be expected to: Knowledge 1. Solve word problems related to a double bar graph and provide written explanations for their answers. 2. Compare and contrast two double bar graphs by identifying similarities and differences in the data. Skills 3. Analyse a double bar graph and answer comprehension questions. 4. Create a double bar graph using given data and explain the conclusions that can be drawn from it. 5. Use a double bar graph to make predictions and justify reasons with evidence from the graph. 6. Use manipulatives (such as blocks or counters) to create two different graphs with the same data, one using one-to-one correspondence and the other using many-to-one correspondence. Take pictures of both graphs and explain the similarities and differences. Values 7. Design a poster that showcases the data from a double bar graph and present key findings. 8. Collaborate with a partner to interpret a double bar graph and create a skit or role play based on the information."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Observation: Students are observed as they complete worksheets. Students are observed as they present their posters and explanations on data.",
             "Conversation: Students are graded based on their oral presentations.",
@@ -5478,10 +5190,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-DH-SCO4.1",
-              "description": "Learners will be expected to: Knowledge 1. Identify the patterns observed from data represented in a graph . Skills 2. Explain patterns observed from data presented in graphs 3. Predict an outcome based on the data represented on a graph."
-            },
-            {
-              "sco_code": "MA-G4-DH-SCO4.2",
               "description": "4. Judge through the use of graphs to make predictions on given data."
             }
           ],
@@ -5507,26 +5215,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-DH-SCO5.1",
-              "description": "Learners will be expected to: Knowledge 1. Answer questions based on a given bar graph that depicts a many to one correspondence"
-            },
-            {
-              "sco_code": "MA-G4-DH-SCO5.2",
               "description": "2. Formulate unbiased questions that can be answered using a survey."
             },
             {
-              "sco_code": "MA-G4-DH-SCO5.3",
+              "sco_code": "MA-G4-DH-SCO5.2",
               "description": "Skills 3. Construct a double bar graph based on data collected using a many to one correspondence to answer a survey question."
             },
             {
-              "sco_code": "MA-G4-DH-SCO5.4",
+              "sco_code": "MA-G4-DH-SCO5.3",
               "description": "Values 4. Ask questions that can be answered using the bar graph presented."
             },
             {
-              "sco_code": "MA-G4-DH-SCO5.5",
+              "sco_code": "MA-G4-DH-SCO5.4",
               "description": "5. Report their findings to class to justify their use of many to one correspondence"
             },
             {
-              "sco_code": "MA-G4-DH-SCO5.6",
+              "sco_code": "MA-G4-DH-SCO5.5",
               "description": "6. Display their bar graph on a"
             }
           ],
@@ -5547,14 +5251,10 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G4-DH-SCO6.1",
-              "description": "Learners will be expected to: Knowledge 1. Describe the correspondence (one-to-one or many-to-one) used to present information in graphs."
-            },
-            {
-              "sco_code": "MA-G4-DH-SCO6.2",
               "description": "2. Differentiate the components of a graph using legend or key"
             },
             {
-              "sco_code": "MA-G4-DH-SCO6.3",
+              "sco_code": "MA-G4-DH-SCO6.2",
               "description": "Values 3. Appreciate the usefulness of data to make reasonable predictions about future outcomes"
             }
           ],
@@ -5568,12 +5268,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome D 4.1: Understanding and Applying Concepts of Probability - Predicting and describing the likelihood of events",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G4-DH-SCO7.1",
-              "description": "Learners will be expected to: Knowledge 1. Define the terms predicting, likelihood, unlikelihood, certain, impossible and equally likely Skills 1. Describe events through the use of different probability"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Conversation: Students discuss the different colours they observe and make predictions about the likelihood of landing on specific colours.",
             "Observation: Both the teacher and students will observe the probability of the following based on the spinning of the wheel. The probability of landing on a pink ___________ The probability of landing on a red. ___________ The probability of not landing on a blue ___________ The probability of landing on a blue, green, yellow or red ___________",
@@ -5589,12 +5284,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome D 4.2: Understanding and Applying Concepts of Probability - Calculating Probabilities",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G4-DH-SCO8.1",
-              "description": "Learners will be expected to: Skills 1. Find probability through experiment 2. express probabilities of events using fraction"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Conversation",
             "Using a pack of cards, students are given the different suits in groups(four groups, 13 cards in each suit). Teacher listens as students predict the possibility of getting numbered cards and court cards.",

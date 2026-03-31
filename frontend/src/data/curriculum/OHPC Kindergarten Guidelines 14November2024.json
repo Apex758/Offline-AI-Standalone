@@ -1,0 +1,719 @@
+{
+  "metadata": {
+    "filename": "OHPC Kindergarten Guidelines 14November2024.pdf",
+    "curriculum": "",
+    "grade": "Kindergarten",
+    "subject": "Unknown"
+  },
+  "strands": [
+    {
+      "strand_name": "Reading and Viewing",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Learners will demonstrate a variety of ways to use background knowledge and interests to select and engage critically with a range of culturally diverse paper based, visual, and digital texts for pleasure and personal growth.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-RV-SCO1.1",
+              "description": "2.1 interact meaningfully with a wide range of genres and text forms*"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.2",
+              "description": "2.2 develop questions when browsing through passages of interest"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.3",
+              "description": "2.3 connect background knowledge to the titles and pictures of fiction and nonfiction passages to build a foundation of understanding *"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.4",
+              "description": "2.4 develop understanding and application of the Concepts of Print*"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.5",
+              "description": "2.5 develop knowledge about the purpose and variety of texts that are read or read to them *"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.6",
+              "description": "2.6 browse through a variety of images, and nonfiction material in pre-emergent and emergent level passages, or passages of interest, to discover information."
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.7",
+              "description": "2.7 demonstrate understanding of some environmental print and pictorial information *"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.8",
+              "description": "2.8 begin to apply comprehension strategies to visualize, predict and connect *"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.9",
+              "description": "2.9 demonstrate understanding by responding to read-alouds with images, model making, discussions, or temporary writing"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.10",
+              "description": "2.10 connect words and images in pre-emergent and emergent level texts to background knowledge"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.11",
+              "description": "2.11 recognise and use a variety of high frequency words of personal importance, such as names and pre-emergent level high-frequency words *"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.12",
+              "description": "2.12 participate in shared reading and use the meaning and flow of the language to anticipate upcoming words"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.13",
+              "description": "2.13 begin to demonstrate fluency and phrasing during shared reading, independent and guided reading of emergent level passages"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.14",
+              "description": "2.14 identify an increasing number of letter names and letter sounds, beginning with those of personal importance*"
+            },
+            {
+              "sco_code": "XX-GK-RV-SCO1.15",
+              "description": "2.15 use known letter sounds to decode upcoming words in emergent level passages*"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-RV-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Writing and Representing",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Learners will generate, gather and organize thoughts to explore, clarify and reflect on thoughts, feelings and experiences as they create a written or representative draft, independently and collaboratively, for a range of audiences and purposes.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-WR-SCO1.1",
+              "description": "use shared ideas to co-construct stories"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.2",
+              "description": "assign meaning to experimental drawing and writing"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.3",
+              "description": "begin expressive writing to share ideas and real and imagined topics*"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.4",
+              "description": "use peer collaboration and classroom tools to assist in writing process*"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.5",
+              "description": "learn to print the upper and lower case letters of the alphabet *"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.6",
+              "description": "connect spoken language(s) to written language and other representations (e.g. drawings)"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.7",
+              "description": "connect phonological awareness to letter shapes"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO1.8",
+              "description": "spell name and some words of personal importance correctly"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-WR-ELO1"
+        },
+        {
+          "elo_description": "Learners will revise the organization and language use in drafted writing or representation, collaboratively and independently, for a variety of purposes and audiences.",
+          "specific_curriculum_outcomes": [],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-WR-ELO2"
+        },
+        {
+          "elo_description": "Learners will use their knowledge of spoken language, written language and writing conventions to refine the precision and enhance the meaning and clarity of their written work.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-WR-SCO3.1",
+              "description": "3.1 use shared ideas to co-construct stories"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.2",
+              "description": "3.2 assign meaning to experimental drawing and writing"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.3",
+              "description": "3.3 begin expressive writing to share ideas and real and imagined topics*"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.4",
+              "description": "3.4 use peer collaboration and classroom tools to assist in writing process*"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.5",
+              "description": "3.5 learn to approximate and begin to refine printing of the lower case and upper case letters of the alphabet*"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.6",
+              "description": "3.6 connect spoken language(s) to written language and other representations (e.g. drawings)"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.7",
+              "description": "3.7 connect phonological awareness to letter shapes"
+            },
+            {
+              "sco_code": "XX-GK-WR-SCO3.8",
+              "description": "3.8 spell name and some words of personal importance correctly"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-WR-ELO3"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Number Sense",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Whole Number - Saying Number Sequence, Meaningful Counting and Skip Counting",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-NS-SCO1.1",
+              "description": "1.1.1 Say the number sequence to 10 by 1s"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.2",
+              "description": "1.2.1 Represent a given number up to 10 using a variety of concrete models, including 5 and 10 frames"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.3",
+              "description": "1.3.1 Look briefly at a given familiar arrangement of one to five objects or dots and identify the number represented without counting"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.4",
+              "description": "Count backwards from 10 by 1s"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.5",
+              "description": "Identify an error in counting sequence"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.6",
+              "description": "Say the number that comes before a given number"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.7",
+              "description": "Use a number line to support counting"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.8",
+              "description": "Recite number names from a given number to a given number – i.e. start at a given number and go backwards down to 1 or start at a given number and go up to 10"
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.9",
+              "description": "Make a set that has the same number of objects as a given set."
+            },
+            {
+              "sco_code": "XX-GK-NS-SCO1.10",
+              "description": "Make a set that has one more object than a given set."
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-NS-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Operations with Numbers",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Additive Thinking - Understanding the meaning of addition and subtraction and how they relate",
+          "specific_curriculum_outcomes": [],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-ON-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Patterns and Relationships",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Recognizing, Describing and Extending Patterns - Describe, create, extend and generalise patterns",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-PR-SCO1.1",
+              "description": "Create simple repeating patterns (2 elements)"
+            },
+            {
+              "sco_code": "XX-GK-PR-SCO1.2",
+              "description": "Extend simple repeating patterns (2 elements)"
+            },
+            {
+              "sco_code": "XX-GK-PR-SCO1.3",
+              "description": "Copy a given repeating pattern"
+            },
+            {
+              "sco_code": "XX-GK-PR-SCO1.4",
+              "description": "Extend a variety of given repeating patterns to two more repetitions"
+            },
+            {
+              "sco_code": "XX-GK-PR-SCO1.5",
+              "description": "Create a repeating pattern using manipulatives, musical instruments, or actions"
+            },
+            {
+              "sco_code": "XX-GK-PR-SCO1.6",
+              "description": "Identify and describe a repeating pattern in the classroom, the school, and outdoors"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-PR-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Geometrical Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Analysing and describing 3D shapes",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-GT-SCO1.1",
+              "description": "Build and describe 3-D objects"
+            },
+            {
+              "sco_code": "XX-GK-GT-SCO1.2",
+              "description": "Create a representation of a given 3-D object using building blocks, and compare the representation to the original 3-D object"
+            },
+            {
+              "sco_code": "XX-GK-GT-SCO1.3",
+              "description": "Describe a given 3-D object using words such as big, little, round, like a box or a can"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-GT-ELO1"
+        },
+        {
+          "elo_description": "Recognize, Name and Describe Shapes – 2D and 3D",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-GT-SCO2.1",
+              "description": "Identify and describe shapes (2-D = squares, circles, triangles, 3-D = cubes, cones, and spheres)."
+            },
+            {
+              "sco_code": "XX-GK-GT-SCO2.2",
+              "description": "Describe objects in the environment using names of shapes and describe the relative positions of these objects using terms such as above, below, beside, in front of, behind, and next to."
+            },
+            {
+              "sco_code": "XX-GK-GT-SCO2.3",
+              "description": "Correctly name shapes regardless of their orientations or overall size (2-D = squares, circles, triangles, 3-D = cubes, cones, and spheres)."
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-GT-ELO2"
+        },
+        {
+          "elo_description": "Build and describe 3-D objects",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-GT-SCO3.1",
+              "description": "Create a representation of a given 3-D object using building blocks, and compare the representation to the original 3-D object"
+            },
+            {
+              "sco_code": "XX-GK-GT-SCO3.2",
+              "description": "Describe a given 3-D object using words such as big, little, round, like a box or a can"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-GT-ELO3"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Measurement",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Understanding what and how we measure",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-ME-SCO1.1",
+              "description": "Classify objects according to selected attributes, e.g., size, colour, shape, texture, sound, etc."
+            },
+            {
+              "sco_code": "XX-GK-ME-SCO1.2",
+              "description": "Classify objects and count the number of objects in each category"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-ME-ELO1"
+        },
+        {
+          "elo_description": "Developing and applying non-standard and standard units of measure",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-ME-SCO2.1",
+              "description": "5.1.1 Classify objects according to selected attributes, e.g., size, colour, shape, texture, sound, etc."
+            },
+            {
+              "sco_code": "XX-GK-ME-SCO2.2",
+              "description": "5.2.1 Use non-standard units to measure attributes, e.g. uses blocks, hands span, toy cars, etc. to measure"
+            },
+            {
+              "sco_code": "XX-GK-ME-SCO2.3",
+              "description": "Use non-standard units to measure attributes, e.g. uses blocks, hands span, toy cars, etc. to measure"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [
+            "Number 4 song: https://www.youtube.com/watch?v=HzlfPXwy1YY, https://www.youtube.com/watch?v=C0s9Y81rdBQ",
+            "Days of the week: https://www.youtube.com/watch?v=mXMofxtDPUQ, https://www.youtube.com/watch?v=poQGhbvc36g, https://www.youtube.com/watch?v=lPgTdgvi_jc",
+            "Months of the year: https://www.youtube.com/watch?v=Fe9bnYRzFvk, https://www.youtube.com/watch?v=omkuE6Wa5kQ, https://www.youtube.com/watch?v=Pq4VC0Uul6w",
+            "Months of the year poem and song (to tune of three little fishes): January, February, March, April, May, June, July, August, September, October, November, December. Now that makes 12. Months of the year, From beginning to end. (On the boop boop bit I let the children do a little dance.)",
+            "The Teacher might want to carry out daily routines where learners can keep track of the days of school using the number line, tally marks and tens and ones and other calendar items. Teacher will have the days cards turned around and they will be revealed daily as the days pass in each month.",
+            "The Teacher might want to carry out this calendar activity daily and incorporate different strategies to get learners to use it across the curriculum. Teacher might want to allow learners to say the days of the week and months of the year by rote. Use songs and rhymes to help learners to recite the days and months. Teacher might want to use questioning as a technique to help with learners’ understanding (what day is it today, what day comes next, what month are we in, what was last month etc)."
+          ],
+          "elo_code": "XX-GK-ME-ELO2"
+        }
+      ],
+      "resources": [
+        {
+          "description": "Number recognition and writing worksheets",
+          "links": [
+            {
+              "text": "Recognising the number zero worksheet",
+              "url": "https://www.kidspuzzlesandgames.co.uk/worksheets/maths-worksheets/numbers-worksheets/numbers-0-5-worksheets/0-recognising-the-number-zero-worksheet#google_vignette"
+            },
+            {
+              "text": "Number zero activity",
+              "url": "https://cleverlearner.com/number-activities/number-zero-0-activity.html#google_vignette"
+            },
+            {
+              "text": "Number writing and counting activity 1-4",
+              "url": "https://cleverlearner.com/number-activities/images/number-writing-and-counting-activity-1-4.pdf"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Number 4 songs",
+          "links": [
+            {
+              "text": "Number 4 song 1",
+              "url": "https://www.youtube.com/watch?v=HzlfPXwy1YY"
+            },
+            {
+              "text": "Number 4 song 2",
+              "url": "https://www.youtube.com/watch?v=C0s9Y81rdBQ"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Days of the week songs",
+          "links": [
+            {
+              "text": "Days of the week song 1",
+              "url": "https://www.youtube.com/watch?v=mXMofxtDPUQ"
+            },
+            {
+              "text": "Days of the week song 2",
+              "url": "https://www.youtube.com/watch?v=poQGhbvc36g"
+            },
+            {
+              "text": "Days of the week song 3",
+              "url": "https://www.youtube.com/watch?v=lPgTdgvi_jc"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Months of the year songs",
+          "links": [
+            {
+              "text": "Months of the year song 1",
+              "url": "https://www.youtube.com/watch?v=Fe9bnYRzFvk"
+            },
+            {
+              "text": "Months of the year song 2",
+              "url": "https://www.youtube.com/watch?v=omkuE6Wa5kQ"
+            },
+            {
+              "text": "Months of the year song 3",
+              "url": "https://www.youtube.com/watch?v=Pq4VC0Uul6w"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Months of the year poem and calendar activity",
+          "links": [],
+          "category": "Teacher Materials"
+        }
+      ]
+    },
+    {
+      "strand_name": "Data Handling and Probability",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Collecting, organizing, displaying and communicating data",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-DH-SCO1.1",
+              "description": "Collect simple sets of data in the class and school environment using observation."
+            },
+            {
+              "sco_code": "XX-GK-DH-SCO1.2",
+              "description": "Describe data classification."
+            },
+            {
+              "sco_code": "XX-GK-DH-SCO1.3",
+              "description": "Use counting to determine the number of objects in a group."
+            },
+            {
+              "sco_code": "XX-GK-DH-SCO1.4",
+              "description": "Describe the results of classification and data collection activities."
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-DH-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Historical and Cultural Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "Recognize that all children are special as they all have people who love them, they have their own physical characteristics, aptitudes and mannerisms.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-HC-SCO1.1",
+              "description": "Demonstrate an understanding of “me” as a unique child (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.2",
+              "description": "Distinguish personal characteristics that make each child unique (physical traits, mannerisms) (S)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.3",
+              "description": "Appreciate that everyone has unique and special characteristics (V)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.4",
+              "description": "Express appreciation of the child’s own personal attributes, one’s name (V)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.5",
+              "description": "Name family members (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.6",
+              "description": "Represent family members using pictures/images (S)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.7",
+              "description": "Compare their physical features with those of their family members; categorize similarities and differences of self and other family members (S)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.8",
+              "description": "Understand that we inherit characteristics from our families (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.9",
+              "description": "Appreciate the uniqueness of families; respect that the composition of families takes many forms (V)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.10",
+              "description": "Understand that respect for self includes proper cleanliness, language and behaviour (K, V)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.11",
+              "description": "Categorize similarities and differences of self and others in families"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO1.12",
+              "description": "Recognize that their own physical characteristics, preferences, and mannerisms may be inherited from their families."
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-HC-ELO1"
+        },
+        {
+          "elo_description": "To understand how our celebrations help us build pride in our identity. (The emphasis should be on how the family takes part in celebrations.)",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-HC-SCO2.1",
+              "description": "Name one religious and one national festival celebrated in their country. (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO2.2",
+              "description": "Understand the significance and importance of religious and national festivals.(S)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO2.3",
+              "description": "Appreciate that their country has different celebrations and traditions. (V)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO2.4",
+              "description": "Identify customs (food, music, dance language) associated with these celebrations (K)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO2.5",
+              "description": "Make presentations on customs associated with these celebrations (S)"
+            },
+            {
+              "sco_code": "XX-GK-HC-SCO2.6",
+              "description": "Appreciate the diversity of customs and take pride in this (V)"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-HC-ELO2"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Civic Participation",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand that we have rights and responsibilities as individuals.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-CP-SCO1.1",
+              "description": "Describe how family members care for one another (K)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.2",
+              "description": "Appreciate that family members love and care for one another (V)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.3",
+              "description": "Describe roles of various family members (K)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.4",
+              "description": "Chart the daily routines or activities in which family members care for one another"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.5",
+              "description": "Appreciate that the way family members love and care for one another helps them meet their basic needs (V)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.6",
+              "description": "Identify groups to which I belong (K)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.7",
+              "description": "Express how my behaviour in groups and the behaviour of others affects me and others (S)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.8",
+              "description": "Appreciate that members of groups to which I belong have responsibilities (V)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.9",
+              "description": "Recognize that all children have the right to be safe from harm (K)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.10",
+              "description": "List examples of what helps children feel safe (S)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.11",
+              "description": "Appreciate that being safe from harm also means that they must learn to play safely (V)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.12",
+              "description": "Demonstrate responsible caring behaviour towards others in play (S)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.13",
+              "description": "Identify national symbols and emblems such as the national flag, anthem, pledge, bird and flower (K)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.14",
+              "description": "Demonstrate appropriate behaviour when national anthem is being played, pledge is being said (S)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.15",
+              "description": "Appreciate and respect the importance of national symbols (V)"
+            },
+            {
+              "sco_code": "XX-GK-CP-SCO1.16",
+              "description": "Know why we have rules in groups to which I belong (e.g. family, class at school) (K)"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-CP-ELO1"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "strand_name": "Spatial Thinking",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand that we belong to a wider environment",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "XX-GK-ST-SCO1.1",
+              "description": "State the name and address of their home and school (K)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.2",
+              "description": "Express themselves clearly when stating their address (S)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.3",
+              "description": "Feel a sense of belonging in their surroundings (V)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.4",
+              "description": "Identify natural and built features of the local environment (K)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.5",
+              "description": "Illustrate natural and built features of the local environment (S)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.6",
+              "description": "Appreciate that they are part of a wider environment (A)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.7",
+              "description": "Describe various weather conditions (K)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.8",
+              "description": "Observe and record different weather conditions (S)"
+            },
+            {
+              "sco_code": "XX-GK-ST-SCO1.9",
+              "description": "Appreciate the importance of taking safety precautions in some weather conditions (V)"
+            }
+          ],
+          "inclusive_assessment_strategies": [],
+          "inclusive_learning_strategies": [],
+          "elo_code": "XX-GK-ST-ELO1"
+        }
+      ],
+      "resources": []
+    }
+  ]
+}

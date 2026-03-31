@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade6-language-arts-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "6",
+    "grade": "Grade 6",
     "subject": "Language Arts"
   },
   "strands": [
@@ -333,42 +333,34 @@
             },
             {
               "sco_code": "LA-G6-RV-SCO1.7",
-              "description": "2.5 Use pictures and illustrations, word structures and text features in chosen texts to locate information and verify their understanding of the information: - Table of contents - Headings and subheadings - Glossaries - Indices - Structures of narrative and different types of expository text and , key ideas"
-            },
-            {
-              "sco_code": "LA-G6-RV-SCO1.8",
               "description": "2.6 Continue to develop and demonstrate critical questioning strategies to gather information from favourite visual, musical, and written text re: - Point of view/perspective - Purpose - Bias - Subtle messages - Cultural perspective"
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.9",
+              "sco_code": "LA-G6-RV-SCO1.8",
               "description": "2.7 Apply problem-solving strategies to follow written multi-step instructions effectively (e.g., how to assemble a product or play a game) while reflecting on their learning processes"
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.10",
+              "sco_code": "LA-G6-RV-SCO1.9",
               "description": "Read and view to select and engage critically with a range of texts for personal growth"
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.11",
-              "description": "2.8 Use Independent Reading Time to develop: reading fluency (accuracy, phrasing, and intonation) -Recognise quotation marks and marker words (said, shouted, whispered, etc.) to determine the mood of the speaker in the text -Connect punctuation in text to meaningful interpretation of sentences and paragraphs -Change the rate of reading depending on the mood of the text -Practice meaningful word solving strategies (root word, chunking, affixes, context clues) -Develop the art of skimming and scanning"
-            },
-            {
-              "sco_code": "LA-G6-RV-SCO1.12",
+              "sco_code": "LA-G6-RV-SCO1.10",
               "description": "2.9 Use all sources of information (meaning, structure, visual) to search, check, self-monitor, and self-correct with grade appropriate, instructional-level text"
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.13",
+              "sco_code": "LA-G6-RV-SCO1.11",
               "description": "2.10 Develop an understanding of how illustrations enhance mood, establish setting, and advance plot in written or visual text"
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.14",
+              "sco_code": "LA-G6-RV-SCO1.12",
               "description": "2.11 Foster critical thinking skills and appreciation for the relationship between words and images in storytelling."
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.15",
+              "sco_code": "LA-G6-RV-SCO1.13",
               "description": "2.12 Apply higher-order thinking skills including analysis, synthesis, inference, and application to critically evaluate visual and/or text-based information"
             },
             {
-              "sco_code": "LA-G6-RV-SCO1.16",
+              "sco_code": "LA-G6-RV-SCO1.14",
               "description": "2.13 Deepen understanding of the purpose and influences of different types of popular texts (e.g., websites, advertisements, social media, etc.)"
             }
           ],
@@ -431,106 +423,102 @@
             },
             {
               "sco_code": "LA-G6-RV-SCO2.3",
-              "description": "3.2 Demonstrate continuing ability to use a repertoire of comprehension strategies, including those listed below, to understand and critique a range of genres and text forms: - Determining the main idea - Making connections - Predicting - Visualising - Sequencing - Inferring - Analysing - Synthesising - Summarizing - Questioning"
-            },
-            {
-              "sco_code": "LA-G6-RV-SCO2.4",
               "description": "3.3 Continue to utilize contextual clues to derive meaning from language used in a variety of genres."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.5",
+              "sco_code": "LA-G6-RV-SCO2.4",
               "description": "3.4. Deepen the ability to make ask questions connections that promote understanding of information read and viewed across various genres: - Text-to-self connections - Text-to-text connections - Text-to-world connections"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.6",
+              "sco_code": "LA-G6-RV-SCO2.5",
               "description": "3.5. Continue to utilize print and digital dictionaries to aid comprehension of written text across a range of genres."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.7",
+              "sco_code": "LA-G6-RV-SCO2.6",
               "description": "3.6. Deepen and widen vocabulary through reading a range of genres, topics, and works produced by a variety of authors."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.8",
+              "sco_code": "LA-G6-RV-SCO2.7",
               "description": "3.7. Utilize with greater competence, print, visual, digital, and personal dictionaries to comprehend unfamiliar words and add them to the vocabulary repertoire."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.9",
+              "sco_code": "LA-G6-RV-SCO2.8",
               "description": "3.8. Continue to gain vocabulary through the engagement of visual and graphical presentations: - Movies - Videos - Art - Posters - Infographics - Advertisements"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.10",
+              "sco_code": "LA-G6-RV-SCO2.9",
               "description": "3.9. Continue to build vocabulary through the use and application of: - Homonyms (homophones & homographs) - Antonyms - Synonyms"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.11",
+              "sco_code": "LA-G6-RV-SCO2.10",
               "description": "3.10. Utilize existing knowledge of figurative devices to enhance understanding of text: - Similes - Metaphors - Onomatopoeia - Personification - Alliteration"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.12",
+              "sco_code": "LA-G6-RV-SCO2.11",
               "description": "3.11. Continue to extend vocabulary through the use of words encountered in cross-curricular content."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.13",
+              "sco_code": "LA-G6-RV-SCO2.12",
               "description": "3.12. Extend the ability to apply knowledge of word structure to read unfamiliar vocabulary: - Word roots - Prefixes - Suffixes - Inflectional endings"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.14",
+              "sco_code": "LA-G6-RV-SCO2.13",
               "description": "3.13. Demonstrate a deeper understanding of how word order impacts meaning"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.15",
+              "sco_code": "LA-G6-RV-SCO2.14",
               "description": "3.14. Continue to apply knowledge of how reading fluency impacts understanding"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.16",
+              "sco_code": "LA-G6-RV-SCO2.15",
               "description": "3.15 Deepen participation in reading opportunities to: - Improve fluency - Guide intonation - Convey the mood and intent of the text - Expand vocabulary - Increase comprehension"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.17",
+              "sco_code": "LA-G6-RV-SCO2.16",
               "description": "3.16 Strengthen the awareness of how word choice and phrasing may be used to describe persons and events in positive or negative ways"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.18",
+              "sco_code": "LA-G6-RV-SCO2.17",
               "description": "3.17 Improve their reading comprehension by confidently using background information and context clues to grasp and understand unusual words"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.19",
+              "sco_code": "LA-G6-RV-SCO2.18",
               "description": "3.18 Improve reading comprehension and word recognition by applying knowledge of roots, prefixes, suffixes, and syllabication"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.20",
+              "sco_code": "LA-G6-RV-SCO2.19",
               "description": "3.19 Strengthen their ability to use phonological and word analysis to decipher words, improving reading speed and accuracy: - Vowel patterns - Common digraphs - Diphthongs - Complicated letter patterns - Words with silent letters"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.21",
+              "sco_code": "LA-G6-RV-SCO2.20",
               "description": "3.20 Apply background knowledge and information from poetry, expository, narrative, persuasive, and descriptive texts to make and modify predictions."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.22",
+              "sco_code": "LA-G6-RV-SCO2.21",
               "description": "3.21 Differentiate, with greater competence, main ideas from supporting information in poetry, expository,"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.23",
+              "sco_code": "LA-G6-RV-SCO2.22",
               "description": "3.22 Demonstrate appropriate use of prior knowledge of written and visual information to form a judgment about a particular point or issue"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.24",
+              "sco_code": "LA-G6-RV-SCO2.23",
               "description": "3.23 exhibit a strong understanding of meaningful and critical use of text features to locate and use information (titles, subtitles, table of contents, glossary, index, etc.)"
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.25",
+              "sco_code": "LA-G6-RV-SCO2.24",
               "description": "3.24 Appreciate the contribution visual components make to facilitate comprehension and promote a deeper understanding of poetry, exposition, narration, and description."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.26",
+              "sco_code": "LA-G6-RV-SCO2.25",
               "description": "3.25 Strengthen ability to recognize and provide examples of how author’s choice of vocabulary, phrases, and sentences evoke emotions, enhance description, and create humour."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.27",
+              "sco_code": "LA-G6-RV-SCO2.26",
               "description": "3.26 Provide examples to demonstrate how illustrators create mood in visual text."
             },
             {
-              "sco_code": "LA-G6-RV-SCO2.28",
+              "sco_code": "LA-G6-RV-SCO2.27",
               "description": "3.27 Utilize prior knowledge to discuss the effectiveness and possible hidden messages of emoticons and social media posts."
             }
           ],
@@ -712,10 +700,6 @@
             {
               "sco_code": "LA-G6-RV-SCO3.31",
               "description": "I can explain how text features contribute to the overall meaning of the text:"
-            },
-            {
-              "sco_code": "LA-G6-RV-SCO3.32",
-              "description": "Build Vocabulary: The world of Science has its own rich and detailed vocabulary. Learners are unable to comprehend what they read if they do not have the context or background knowledge for new words. Creating word-walls for Science units can be a good way to provide context and support. The Teacher can use Interactive Read Aloud or Shared Reading to read the Science text and then use different activities to reinforce vocabulary."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1271,51 +1255,35 @@
             },
             {
               "sco_code": "LA-G6-WR-SCO1.19",
-              "description": "5.18 Produce a variety of media texts for specific purposes and audiences, using appropriate forms, conventions, and techniques (e.g., a public announcement, school newspaper, a poster, advertisement, social media campaign to raise awareness, a computer-generated cover design, including special fonts to enhance a published piece of writing"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO1.20",
               "description": "5.19 Write a persuasive piece with a specific audience in mind; that clearly introduces a position and is justified with three clear reasons and relevant evidence to support the writer’s purpose and a conclusion to restate the purpose"
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.21",
+              "sco_code": "LA-G6-WR-SCO1.20",
               "description": "5.20 Use precise words and phrases, relevant descriptive details, and sensory language to produce a vivid descriptive piece."
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.22",
+              "sco_code": "LA-G6-WR-SCO1.21",
               "description": "5.21 Write formal and informal forms of written communications using a suitable format, tone and language most appropriate to the intended audience e.g. Simple notices, announcements and thank you notes, letters, emails, etc."
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.23",
+              "sco_code": "LA-G6-WR-SCO1.22",
               "description": "5.22 Conduct short research projects that use several sources to build knowledge through investigation of different aspects of a topic"
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.24",
+              "sco_code": "LA-G6-WR-SCO1.23",
               "description": "5.23 Write responses to literature e.g., a book report or book review, an interpretation of the text that shows careful reading and understanding of it"
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.25",
+              "sco_code": "LA-G6-WR-SCO1.24",
               "description": "5.24 Produce text such as drama script, a comic strip, and cartoons in response to a text read or viewed"
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.26",
+              "sco_code": "LA-G6-WR-SCO1.25",
               "description": "5.25 Write routinely over extended time frames (time for research, reflection, and revision) and shorter time frames (a single sitting or a day or two) for a range of discipline-specific tasks, purposes, and audiences."
             },
             {
-              "sco_code": "LA-G6-WR-SCO1.27",
+              "sco_code": "LA-G6-WR-SCO1.26",
               "description": "Write and represent to create a written or representative draft"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO1.28",
-              "description": "Explore the Unknown Through Research (SCO 5.17, 5.18, 5.22)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO1.29",
-              "description": "Persuade your Audience (SCO 5.19, 5.20)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO1.30",
-              "description": "Every Face Tells a Story (SCO 5.20)"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1445,75 +1413,39 @@
             },
             {
               "sco_code": "LA-G6-WR-SCO2.16",
-              "description": "6.16 Use parts of speech correctly to communicate their meaning clearly with focus on the use of: - Personal subject and object pronouns - Indefinite and reflexive pronouns - Conjunctions; subordinate and coordinating conjunctions - Adverb phrases - Present, past, continuous and future verb tenses - Prepositional phrase - Comparative adjective and adverbs"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.17",
               "description": "6.17 Choose language that expresses ideas precisely and concisely, recognizing and eliminating wordiness and redundancy."
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.18",
+              "sco_code": "LA-G6-WR-SCO2.17",
               "description": "6.18 Establish a consistent point of view in their writing (e.g., first or third person) ; write from different perspectives"
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.19",
+              "sco_code": "LA-G6-WR-SCO2.18",
               "description": "6.19 Maintain consistency in style and tone"
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.20",
+              "sco_code": "LA-G6-WR-SCO2.19",
               "description": "6.20 Recognize variations from Standard English in their own and others' writing and identify and use strategies to improve expression in conventional language."
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.21",
+              "sco_code": "LA-G6-WR-SCO2.20",
               "description": "Follow the Road"
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.22",
-              "description": "Precision Decision! (SCO 6.7, 6.11)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.23",
-              "description": "I can Sense it - Show don't Tell (SCO 6.7, 6.11)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.24",
-              "description": "Figure it Out (SCO 6.10)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.25",
+              "sco_code": "LA-G6-WR-SCO2.21",
               "description": "Sharper Sentences, Stronger Impact."
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.26",
+              "sco_code": "LA-G6-WR-SCO2.22",
               "description": "Write and represent to develop language use when revising written drafts (grammar and sentence fluency)"
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.27",
-              "description": "Sharpen Your Grammar Skills (SCO 6.12, 6.16)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.28",
-              "description": "Sentence Structure Safari (SCO 6.14, 6.15, 6.16, 6.17)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.29",
-              "description": "Self-Assessment"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.30",
+              "sco_code": "LA-G6-WR-SCO2.23",
               "description": "Write and represent to develop language use"
             },
             {
-              "sco_code": "LA-G6-WR-SCO2.31",
-              "description": "Daily Writing Warm Up (SCO 6.17, 6.20)"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.32",
+              "sco_code": "LA-G6-WR-SCO2.24",
               "description": "Activities -Revising"
-            },
-            {
-              "sco_code": "LA-G6-WR-SCO2.33",
-              "description": "Many Voices in Writing (SCO 6.18, 6.19)"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1536,7 +1468,8 @@
             "Guide learners to assess their peers. Be positive – tell the writer what they are doing well. Be helpful – make comments that will help the reader improve their writing. Be specific – talk about specific words, parts of the story, or paragraphs. T- Tell someone what you liked about the piece. A- Ask questions to clarify meaning. G- Give suggestions for improvement. MILWAUKEE PUBLIC SCHOOLS Narrative Writing Guide",
             "Self-Assessment: Read your writing to yourself and think about the following questions. Checklist: Topic - I chose a good topic, I read about my topic, I thought about what the readers will want to know, I write down all my ideas. Organize - I put similar ideas together, I chose the best ideas for my composition, I put my ideas in logical order. Write - I wrote down my ideas in sentences, When I needed help I… did the best I could, looked in a book, asked my partner, asked the teacher. Revise - I read my draft to myself, I marked the parts I liked, I marked the parts I might want to change, I read my draft to my partner, I listened to my partner’s suggestions. Rewrite - I made changes to my composition, I edited for correctness.",
             "I wrote the revised piece in my best writing",
-            "https://www.readingrockets.org/topics/assessment-and-evaluation/articles/simple-ways-assess-writing-skills-learners-:~:text=Learner%20writing%20can%20be%20evaluated,different%20text%20structures%20and%20genres."
+            "https://www.readingrockets.org/topics/assessment-and-evaluation/articles/simple-ways-assess-writing-skills-learners-:~:text=Learner%20writing%20can%20be%20evaluated,different%20text%20structures%20and%20genres.",
+            "Self-Assessment"
           ],
           "inclusive_learning_strategies": [
             "ELO 6 focuses on the revision stage, inviting learners to improve their writing independently and collaboratively. This process involves enhancing the quality of content by making additions and deletions, as well as improving vocabulary (word choice), sentences fluency, grammar, and voice.",

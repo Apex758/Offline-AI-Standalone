@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade1-mathematics-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "1",
+    "grade": "Grade 1",
     "subject": "Mathematics"
   },
   "strands": [
@@ -376,34 +376,30 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G1-PR-SCO1.1",
-              "description": "Learners will be expected to: 1. Describe, copy and extend a repeating pattern with 2 to 4 elements (using manipulatives, diagrams, body movements/actions /sounds)"
-            },
-            {
-              "sco_code": "MA-G1-PR-SCO1.2",
               "description": "2. Translate a repeating pattern from one representation or modality to another (E.g., a repeating orientation pattern to a repeating sound pattern, etc.)"
             },
             {
-              "sco_code": "MA-G1-PR-SCO1.3",
+              "sco_code": "MA-G1-PR-SCO1.2",
               "description": "3. Spot and correct errors in a repeating pattern."
             },
             {
-              "sco_code": "MA-G1-PR-SCO1.4",
+              "sco_code": "MA-G1-PR-SCO1.3",
               "description": "4. Identify and describe repeating patterns in the environment (both man-made and nature)"
             },
             {
-              "sco_code": "MA-G1-PR-SCO1.5",
+              "sco_code": "MA-G1-PR-SCO1.4",
               "description": "Values: 1. Show appreciation for their peers’ creation of patterns and patterns in our environment by identifying and describing the pattern observed. around them"
             },
             {
-              "sco_code": "MA-G1-PR-SCO1.6",
+              "sco_code": "MA-G1-PR-SCO1.5",
               "description": "2. Identify and enjoy patterns in poems, stories, (folk and modern) within their culture."
             },
             {
-              "sco_code": "MA-G1-PR-SCO1.7",
+              "sco_code": "MA-G1-PR-SCO1.6",
               "description": "repeating pattern with 2 to four element core from one form to another"
             },
             {
-              "sco_code": "MA-G1-PR-SCO1.8",
+              "sco_code": "MA-G1-PR-SCO1.7",
               "description": "Describes/explains a pattern or pattern core/rule using the correct terminology for translating repeating patterns with 2 to 4-element cores."
             }
           ],
@@ -543,34 +539,26 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G1-PR-SCO4.1",
-              "description": "Learners will be expected to Use different number combinations and linear models to create equivalent number values and lengths up to a total of 20."
-            },
-            {
-              "sco_code": "MA-G1-PR-SCO4.2",
               "description": "Identify and use equivalent relationships of equal length, number and number sentences adding up to 20."
             },
             {
-              "sco_code": "MA-G1-PR-SCO4.3",
+              "sco_code": "MA-G1-PR-SCO4.2",
               "description": "Compare lengths, number, and number sentences using the equal sign."
             },
             {
-              "sco_code": "MA-G1-PR-SCO4.4",
-              "description": "In small groups, the learners create different number combinations equal to a given number combination using playing cards. The learners use the guess and check method to help them make equivalent playing card combinations. For example: 5 and 0 make 5, 3 and 2 make 5, 4 and 1 make 5"
-            },
-            {
-              "sco_code": "MA-G1-PR-SCO4.5",
+              "sco_code": "MA-G1-PR-SCO4.3",
               "description": "The learners, within a minute, individually draw marbles to create equal combinations for the given one."
             },
             {
-              "sco_code": "MA-G1-PR-SCO4.6",
+              "sco_code": "MA-G1-PR-SCO4.4",
               "description": "They then in their groups, discuss and compare their responses. The use the remaining cards in the suit to create the other equal combinations."
             },
             {
-              "sco_code": "MA-G1-PR-SCO4.7",
+              "sco_code": "MA-G1-PR-SCO4.5",
               "description": "Then share their answers with the class."
             },
             {
-              "sco_code": "MA-G1-PR-SCO4.8",
+              "sco_code": "MA-G1-PR-SCO4.6",
               "description": "The learners write another combination for a given combination on a given card."
             }
           ],
@@ -843,10 +831,6 @@
             {
               "sco_code": "MA-G1-GT-SCO1.7",
               "description": "Identify and name the 2D and 3D shapes whenever they undergo transformation."
-            },
-            {
-              "sco_code": "MA-G1-GT-SCO1.8",
-              "description": "Can the student identify the number of faces, edges, and vertices of each 3D object?"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -861,7 +845,8 @@
             "Predictions: Students are asked to make predictions about 2D shapes and 3D objects in picture or in real world context and 2D shapes undergoing a transformation. For example: Which 2D shape will look the same if it is turned upside down?",
             "Questioning: Ask students questions about shapes, objects, and space to assess their understanding of the concepts. Students are required to identify and name shapes with different size, colour, orientation, as well as when they undergo transformation. For example: Can you identify examples of triangular shapes in the classroom?",
             "Formative Assessment: Use formative assessment techniques, such as observation, questioning, worksheets and discussions, to gauge students' understanding of geometric shapes. Students draw, build, and make predictions about 2D shapes and 3D objects in picture or in real world context and 2D shapes undergoing a transformation.",
-            "Games: Play interactive games that require them to identify, name shapes, match shapes, Draw, build and make predictions about 2D shapes and 3D objects in picture or in real world context and 2D shapes undergoing a transformation."
+            "Games: Play interactive games that require them to identify, name shapes, match shapes, Draw, build and make predictions about 2D shapes and 3D objects in picture or in real world context and 2D shapes undergoing a transformation.",
+            "Can the student identify the number of faces, edges, and vertices of each 3D object?"
           ],
           "inclusive_learning_strategies": [
             "Real world examples: Use real-world examples: Start by using real-world examples of shapes and objects to help students understand their characteristics and properties. For example, showing them a cube-shaped box or a cylindrical can help them understand the properties of a cube and a cylinder.",
@@ -1518,10 +1503,6 @@
             {
               "sco_code": "MA-G1-ME-SCO1.6",
               "description": "To culminate the measuring attribute, length, a graphic organizer will be created with learners with all the describing words/vocabulary learnt about how long or short objects and distances are. A discussion will bring out the measuring attribute of length."
-            },
-            {
-              "sco_code": "MA-G1-ME-SCO1.7",
-              "description": "Observing and classifying objects that can be poured. Teacher will observe students as they pour the items into the containers and group the objects as liquids that can be poured (takes up the space of the container) and items that can be poured and not liquid (not taking up all the space). Students will formalise the measuring attribute capacity from the activities. Place an X on all the items that can be poured and the container has a capacity."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1635,22 +1616,18 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G1-ME-SCO3.1",
-              "description": "Learners will be expected to: Knowledge - Measure length, mass and capacity using non standard units; Select appropriate non standard units to measure different attributes; Compare the capacity of two containers to determine which holds more. Skills - Use parts of their body to conduct non-standard measurement. (Palms, hand span, foot span); Use objects to conduct non-standard measurement. (little stones, blocks, sand, toy cars, paper clips etc.); Estimate and measure the mass and length of objects using non-standard measurement; Apply the correct non-standard measurement to measure various items."
-            },
-            {
-              "sco_code": "MA-G1-ME-SCO3.2",
               "description": "Example: You would not use a hand span to measure capacity."
             },
             {
-              "sco_code": "MA-G1-ME-SCO3.3",
+              "sco_code": "MA-G1-ME-SCO3.2",
               "description": "Values: Show enthusiasm using non-standard measurement to measure objects."
             },
             {
-              "sco_code": "MA-G1-ME-SCO3.4",
+              "sco_code": "MA-G1-ME-SCO3.3",
               "description": "List examples when they estimate measurement in their everyday lives."
             },
             {
-              "sco_code": "MA-G1-ME-SCO3.5",
+              "sco_code": "MA-G1-ME-SCO3.4",
               "description": "Appreciate the importance of using estimations in everyday situations."
             }
           ],
@@ -2001,34 +1978,26 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G1-DH-SCO2.1",
-              "description": "Learners will be expected to: Knowledge - Sort objects/ people according to one attribute (shape, colour, size, properties, ethnicity, occupation, etc.)"
-            },
-            {
-              "sco_code": "MA-G1-DH-SCO2.2",
               "description": "Represent the information collected from observations /experiments/ interviews in multiple ways."
             },
             {
-              "sco_code": "MA-G1-DH-SCO2.3",
+              "sco_code": "MA-G1-DH-SCO2.2",
               "description": "Skills - Use a variety of different methods (counting, matching, grouping, rearranging, ordering, using counters, etc.) to collect and sort data."
             },
             {
-              "sco_code": "MA-G1-DH-SCO2.4",
+              "sco_code": "MA-G1-DH-SCO2.3",
               "description": "Collect data in different ways to answer questions."
             },
             {
-              "sco_code": "MA-G1-DH-SCO2.5",
+              "sco_code": "MA-G1-DH-SCO2.4",
               "description": "Use symbols/tables/groupings to sort and organise data collected."
             },
             {
-              "sco_code": "MA-G1-DH-SCO2.6",
-              "description": "Values"
-            },
-            {
-              "sco_code": "MA-G1-DH-SCO2.7",
+              "sco_code": "MA-G1-DH-SCO2.5",
               "description": "Appreciate the fact that different information can be derived from objects sorted."
             },
             {
-              "sco_code": "MA-G1-DH-SCO2.8",
+              "sco_code": "MA-G1-DH-SCO2.6",
               "description": "Show willingness to collect, organise and display data"
             }
           ],
@@ -2193,14 +2162,10 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G1-DH-SCO5.1",
-              "description": "Learners will be expected to: Knowledge - Use correctly words (vocabulary) associated with probability such as “impossible” ‘will happen’, (will never happen’, “possible”, and “certain to describe the likelihood of events occurring"
-            },
-            {
-              "sco_code": "MA-G1-DH-SCO5.2",
               "description": "Skills - Predict possible outcomes of events given. Make informed decisions based on predictions and outcomes of event."
             },
             {
-              "sco_code": "MA-G1-DH-SCO5.3",
+              "sco_code": "MA-G1-DH-SCO5.2",
               "description": "Values - Appreciate the importance of learning about probability and how the knowledge of such can be applied to our daily lives and affect decisions we make."
             }
           ],

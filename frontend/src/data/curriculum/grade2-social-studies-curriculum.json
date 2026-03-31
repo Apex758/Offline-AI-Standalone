@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade2-social-studies-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "2",
+    "grade": "Grade 2",
     "subject": "Social Studies"
   },
   "strands": [
@@ -26,62 +26,50 @@
             },
             {
               "sco_code": "SS-G2-HC-SCO1.4",
-              "description": "Learners will be expected to: HCT Knowledge 2 Know that family relationships can be represented on a family tree."
-            },
-            {
-              "sco_code": "SS-G2-HC-SCO1.5",
               "description": "HCT Skills-2 Represent relationships of families on a simple family tree."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.6",
+              "sco_code": "SS-G2-HC-SCO1.5",
               "description": "HCT Values -2 Appreciate that our family tree is made up of a diverse range of people who share a common heritage."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.7",
+              "sco_code": "SS-G2-HC-SCO1.6",
               "description": "HCT Knowledge – 3 State the ways individuals and families share positive human interactions with others."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.8",
+              "sco_code": "SS-G2-HC-SCO1.7",
               "description": "HCT Skills – 3 Investigate how families in various communities fulfill their need for interaction."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.9",
+              "sco_code": "SS-G2-HC-SCO1.8",
               "description": "HCT Values – 3 Appreciate that there are diverse ways that people fulfil their need for human interaction"
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.10",
+              "sco_code": "SS-G2-HC-SCO1.9",
               "description": "HCT Knowledge 4 Describe occasions when people in the community come together to share."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.11",
+              "sco_code": "SS-G2-HC-SCO1.10",
               "description": "HCT Skills 4: Practice caring for one another in families, classrooms, and communities."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.12",
+              "sco_code": "SS-G2-HC-SCO1.11",
               "description": "HCT Values 4: Appreciate the value of community members supporting one another in times of celebrations, grief, and need."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.13",
-              "description": "Learners will be expected to: HCT Knowledge- 5 State examples of festivals celebrated in their country."
-            },
-            {
-              "sco_code": "SS-G2-HC-SCO1.14",
+              "sco_code": "SS-G2-HC-SCO1.12",
               "description": "HCT Skills -5 Discuss the reasons for celebrating various festivals in their country."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.15",
+              "sco_code": "SS-G2-HC-SCO1.13",
               "description": "HCT Values - 5 Appreciate that festivals can be an important way to build community, national cohesion and pride."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.16",
-              "description": "Learners will be expected to: HCT Knowledge-6 List examples of the oldest historical sites in our community."
-            },
-            {
-              "sco_code": "SS-G2-HC-SCO1.17",
+              "sco_code": "SS-G2-HC-SCO1.14",
               "description": "HCT Skills - 6 Investigate the location, the age, significance of these historical sites."
             },
             {
-              "sco_code": "SS-G2-HC-SCO1.18",
+              "sco_code": "SS-G2-HC-SCO1.15",
               "description": "HCT- Values-6 Appreciate that historical sites can help us understand our identity."
             }
           ],
@@ -269,126 +257,86 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SS-G2-ST-SCO1.1",
-              "description": "Learners will be expected to: ST Knowledge-1 State and label the four cardinal directions"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.2",
               "description": "ST – Skills 1 -Give directions to your community in relation to other districts or parishes using cardinal direction."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.3",
-              "description": "Floor Map Activity"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.4",
+              "sco_code": "SS-G2-ST-SCO1.2",
               "description": "Mapping the Location of My Community"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.5",
+              "sco_code": "SS-G2-ST-SCO1.3",
               "description": "ST – Values 1 Appreciate the value of directions for finding your way"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.6",
-              "description": "Learners will be expected to: ST Knowledge 2 -Describe the important natural and built features of your community."
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.7",
-              "description": "Conversation: Are students able to differentiate between a natural and built feature? Are students able to accurately summarize what they learned from the video? Are students able to recognize natural and built features from the list of examples they shared? Are students naming both natural and built features?"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.8",
-              "description": "Observation: Are students taking turns to discuss examples? Are students listening while others are speaking? Are students taking note of the examples?"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.9",
-              "description": "Product: Are students able to correctly classify the list of examples"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.10",
-              "description": "Conversation: Are students able to identify natural and built features in their communities. Are students able to identify common and unique features in the various communities?"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.11",
+              "sco_code": "SS-G2-ST-SCO1.4",
               "description": "ST Skills-2 Observe and illustrate the various natural and built features of your community."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.12",
+              "sco_code": "SS-G2-ST-SCO1.5",
               "description": "ST Values 2 -Appreciate the unique landmark features of your community that you find interesting"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.13",
-              "description": "Product: Do the posters depict a natural or built feature?"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.14",
-              "description": "Conversation: Are students able to articulate why they find this feature interesting?"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.15",
-              "description": "Learners will be expected to: ST Knowledge 3-Identify the basic features of a map including title, key, compass rose, border"
-            },
-            {
-              "sco_code": "SS-G2-ST-SCO1.16",
+              "sco_code": "SS-G2-ST-SCO1.6",
               "description": "ST Skills 3 -Draw a map of your community which includes basic features"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.17",
+              "sco_code": "SS-G2-ST-SCO1.7",
               "description": "ST Values 3- Appreciate that a map can be used to show our important landmarks in the community."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.18",
+              "sco_code": "SS-G2-ST-SCO1.8",
               "description": "ST Knowledge - 4- Identify some of the plants and animals in your community"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.19",
+              "sco_code": "SS-G2-ST-SCO1.9",
               "description": "ST Skills - 4 Classify the animals according to wild, domestic, food or pets."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.20",
+              "sco_code": "SS-G2-ST-SCO1.10",
               "description": "ST Knowledge 5- Identify some of the plants in your community"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.21",
+              "sco_code": "SS-G2-ST-SCO1.11",
               "description": "ST- Skills 5 - Classify the plants according to wild, domestic and uses such as food, medicine."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.22",
+              "sco_code": "SS-G2-ST-SCO1.12",
               "description": "ST – Values 5 -Appreciate the importance of caring for/protecting the plants and animals in our community"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.23",
+              "sco_code": "SS-G2-ST-SCO1.13",
               "description": "ST Knowledge -6 Describe weather patterns in your community."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.24",
+              "sco_code": "SS-G2-ST-SCO1.14",
               "description": "ST Skills -6- Assess the impact of weather conditions on the community at different times of the year."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.25",
+              "sco_code": "SS-G2-ST-SCO1.15",
               "description": "ST Values 6- Appreciate how the weather affects the environment."
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.26",
+              "sco_code": "SS-G2-ST-SCO1.16",
               "description": "ST Knowledge 7 -Identify the natural environment as a resource"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.27",
+              "sco_code": "SS-G2-ST-SCO1.17",
               "description": "ST Skills 7 -Investigate how resources found in the local environment are useful to us"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.28",
+              "sco_code": "SS-G2-ST-SCO1.18",
               "description": "ST - Values-7 Value the importance of the local environment and its link to human survival"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.29",
+              "sco_code": "SS-G2-ST-SCO1.19",
               "description": "ST Knowledge -8 -Identify ways in which people harm the environment"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.30",
+              "sco_code": "SS-G2-ST-SCO1.20",
               "description": "ST Skills - 8 -Gather information on the ways we harm and protect our environment"
             },
             {
-              "sco_code": "SS-G2-ST-SCO1.31",
+              "sco_code": "SS-G2-ST-SCO1.21",
               "description": "ST Values - 8 -Appreciate each other’s role in caring for the environment"
             }
           ],
@@ -453,7 +401,13 @@
             "Product: Are students able to create a collage depicting ways in which we harm the environment? Are the pictures used appropriate for illustrating harm to the environment?",
             "Product: Can students come up with relevant questions to ask the resource person? Observation: Are students being attentive? Are students asking questions? Are students’ contributions demonstrating awareness of their own responsibility?",
             "Product: Do the jingles demonstrate measures we can take to protect the environment?",
-            "Product: Do the skits display how the action can harm the environment? Do the skits display the proper actions we can take to protect the environment?"
+            "Product: Do the skits display how the action can harm the environment? Do the skits display the proper actions we can take to protect the environment?",
+            "Conversation: Are students able to differentiate between a natural and built feature? Are students able to accurately summarize what they learned from the video? Are students able to recognize natural and built features from the list of examples they shared? Are students naming both natural and built features?",
+            "Observation: Are students taking turns to discuss examples? Are students listening while others are speaking? Are students taking note of the examples?",
+            "Product: Are students able to correctly classify the list of examples",
+            "Conversation: Are students able to identify natural and built features in their communities. Are students able to identify common and unique features in the various communities?",
+            "Product: Do the posters depict a natural or built feature?",
+            "Conversation: Are students able to articulate why they find this feature interesting?"
           ],
           "inclusive_learning_strategies": [
             "Pre-Assessment Activity: Have the students listen to the poem “geese on the go”. https://media.nationalgeographic.org/assets/file/Cardinal_Directions_Poetry.pdf and have the students raise their hand each time they hear a cardinal direction.",
@@ -791,14 +745,10 @@
             },
             {
               "sco_code": "SS-G2-ED-SCO1.17",
-              "description": "Learners will be expected to: EDM-Knowledge-6 -Understand that rules help workers in the workplace"
-            },
-            {
-              "sco_code": "SS-G2-ED-SCO1.18",
               "description": "EDM-Skills-6 - Recognize how to safely follow appropriate rules when carrying out jobs"
             },
             {
-              "sco_code": "SS-G2-ED-SCO1.19",
+              "sco_code": "SS-G2-ED-SCO1.18",
               "description": "EDM-Values-6 -Appreciate the importance of rules and laws in protecting our rights"
             }
           ],

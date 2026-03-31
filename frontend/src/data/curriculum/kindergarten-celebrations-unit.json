@@ -2,8 +2,8 @@
   "metadata": {
     "filename": "kindergarten-celebrations-unit.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "K",
-    "subject": "Kindergarten"
+    "grade": "Kindergarten",
+    "subject": "Unknown"
   },
   "strands": [
     {
@@ -335,22 +335,10 @@
             },
             {
               "sco_code": "XX-GK-LA-SCO1.15",
-              "description": "The teacher will be observing for children’s Concepts of Print. Please see the Useful Content for the Teacher below for a list of Concepts of Print."
-            },
-            {
-              "sco_code": "XX-GK-LA-SCO1.16",
               "description": "The letters/sounds g, o, u, l, f, b will be the focus. The teacher might do some “stand-alone” lessons to introduce the children to these letters/sounds. Please see the “Useful Content for the Teacher” below for many ideas for teaching children letters/sounds."
             },
             {
-              "sco_code": "XX-GK-LA-SCO1.17",
-              "description": "Phonemic Awareness skills will commence and the focal point will be on initial phoneme isolation in words related to this Integrated Unit, such as fun, girl, boy, laugh, understand, over. Please see the “Curriculum Outcomes and Guide for Effective Strategies” for many ideas to engage learners in phonemic awareness skills."
-            },
-            {
-              "sco_code": "XX-GK-LA-SCO1.18",
-              "description": "The high frequency (sight) words one, three, two, four, look, make, play, you, yellow, blue, red, brown, black, white, come, down will be the focus. The teacher might do some “stand-alone lessons” to introduce these words. Please see the “Curriculum Outcomes and Guide for Effective Strategies” for many ideas for teaching high frequency words."
-            },
-            {
-              "sco_code": "XX-GK-LA-SCO1.19",
+              "sco_code": "XX-GK-LA-SCO1.16",
               "description": "The teacher is encouraged to find opportunities to emphasize those letters/sounds/phonemes/high frequency words with the children throughout the ILS for the unit."
             }
           ],
@@ -407,7 +395,8 @@
             "Think, Pair, Share: Learners will be asked to think about celebrations discussed in this unit. They will think about what they like about celebrating these festivals with their families. (Each learner will put on their thinking caps provided, indicating to the group that before they respond they must think about the question and how they would like to respond). Timer can be used for each response. Learners will then share with a partner their thoughts on the question. Partners will write one word on paper provided about what their partner likes best about celebrating with their families e.g. food, dressing up, gifts, music, spending time, dancing. (inventive/ phonemic spellings are acceptable). The teacher will then have each partner share with the class what was shared with them during peer sharing.",
             "As the children are telling what they like best about celebrations with their family, the teacher will begin a list. For example, if a child says “Decorations”, the teacher will put this on the list, with one child’s name next to it. Then, if another child says, “Decorations”, the teacher will add that child’s name next to that part of the list. Eventually, there will be a list of aspects that the children like, and all children’s names will be next to one of those aspects. The teacher will go over the list with the children, counting how many children like which aspects of celebrations, and printing the number next to the names on the list. For example: Decorations: Tony, Elvira, Samtha (3). The teacher can ask the children what aspect of celebrations is most popular in the class?",
             "Post Card: Learners will create a post card. They will use inventive spelling as well as phonemic skills to write one sentence about what they like about celebrating with their families. They will draw/ paste pictures showcasing what they like best about celebrating.",
-            "The children should fill in a response sheet after a guest speaker (see sample above)."
+            "The children should fill in a response sheet after a guest speaker (see sample above).",
+            "The teacher will be observing for children’s Concepts of Print. Please see the Useful Content for the Teacher below for a list of Concepts of Print."
           ],
           "elo_code": "XX-GK-LA-ELO1"
         },

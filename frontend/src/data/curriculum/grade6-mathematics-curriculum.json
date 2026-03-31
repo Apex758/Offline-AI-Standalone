@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade6-mathematics-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "6",
+    "grade": "Grade 6",
     "subject": "Mathematics"
   },
   "strands": [
@@ -213,10 +213,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-NS-SCO4.1",
-              "description": "Learners are expected to: Knowledge 1. State the place value of digits in a decimal number up to the thousandths place 2. Round off a decimal number to the nearest whole number, tenth, hundredth and thousandth 3. State the value of any digit in a multi-digit number (up to seven digits), based on its position Skills 4. Represent the place value of numbers in base-ten groupings concretely, pictorially, contextually, verbally and symbolically Values"
-            },
-            {
-              "sco_code": "MA-G6-NS-SCO4.2",
               "description": "5. Create patterns involving the place value system using real life situations and concrete materials."
             }
           ],
@@ -504,18 +500,6 @@
             {
               "sco_code": "MA-G6-NS-SCO9.6",
               "description": "3. Write an addition number sentence with all the digits multiplied by their place value (7 x 1 000 000) + (6 x 100 000) + (3 x 10 000) + (4 x 1000) + (1 x 100) + (3 x 1) + (3 x 1/10) + (6 x 1/100) + (2 x 1/1000)"
-            },
-            {
-              "sco_code": "MA-G6-NS-SCO9.7",
-              "description": "SCO 3 Convert from expanded form to standard form through guided discussion"
-            },
-            {
-              "sco_code": "MA-G6-NS-SCO9.8",
-              "description": "SCO 4 Provide opportunities for learners to Interpret place value counter chart to identify the number presentation representation."
-            },
-            {
-              "sco_code": "MA-G6-NS-SCO9.9",
-              "description": "SCO 5 Differentiating examples from non-examples on flash cards."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -635,14 +619,10 @@
             },
             {
               "sco_code": "MA-G6-NS-SCO11.7",
-              "description": "-12 > -15"
-            },
-            {
-              "sco_code": "MA-G6-NS-SCO11.8",
               "description": "-12.5 > -12"
             },
             {
-              "sco_code": "MA-G6-NS-SCO11.9",
+              "sco_code": "MA-G6-NS-SCO11.8",
               "description": "Plot each of the following numbers on the number line. Label each point with its numeric value. 0.4, -1.5, -1 7/10, -11/10"
             }
           ],
@@ -1316,14 +1296,6 @@
             {
               "sco_code": "MA-G6-ON-SCO2.7",
               "description": "7. Create real life problems involving the addition and subtraction of fractions with like and unlike denominators"
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO2.8",
-              "description": "SCO5"
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO2.9",
-              "description": "SCO 6"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1451,31 +1423,19 @@
             },
             {
               "sco_code": "MA-G6-ON-SCO4.8",
-              "description": "How many whole trapezoids can you cover with 10 green triangles? (10 × 1/3=10/3); they will cover three trapezoids, plus one third of another). One blue rhombus covers 2/3 of a trapezoid: Place one blue rhombus (2/3 of a trapezoid) on each red trapezoid pattern block. With 20 rhombuses, learners find they cover 13 full trapezoids plus 1/3 of another (20 × 2/3 = 40/3, or 13 1/3). As they work, have them write the multiplication sentence, identify the relationship between factors and product, and recognize that 20 two-thirds equals 40 thirds in total. Encourage learners to predict with similar pattern block problems (e.g., if one green triangle is 1/3 of a trapezoid, then 8 triangles would cover 8/3, or 2 2/3 trapezoids)."
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO4.9",
               "description": "Fraction Strips: Objective: Help learners visualize how a fraction of a whole number is obtained. Activity: Use fraction strips to show repeated addition. 5 x 2/3."
             },
             {
-              "sco_code": "MA-G6-ON-SCO4.10",
+              "sco_code": "MA-G6-ON-SCO4.9",
               "description": "Accurac y of Calculat ion: Calculates the product correctly and verifies with a calculator."
             },
             {
-              "sco_code": "MA-G6-ON-SCO4.11",
+              "sco_code": "MA-G6-ON-SCO4.10",
               "description": "Explanation and Reflection: Provides a clear and detailed explanation with thoughtful reflection."
             },
             {
-              "sco_code": "MA-G6-ON-SCO4.12",
+              "sco_code": "MA-G6-ON-SCO4.11",
               "description": "Conversation Group Discussions and Peer Teaching"
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO4.13",
-              "description": "Task: Have learners work in pairs or small groups to solve problems and explain their methods to one another. Example: \"Solve 3.6 ÷ 0.4 together and discuss how you approached the problem.\" Expected Response: Learners can share different methods (direct calculation, tape diagram, or models) and discuss the advantages of each approach. SCO6"
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO4.14",
-              "description": "Product Decimal Bingo Objective: Decimal multiplication and division through a fun and interactive bingo game. Materials Needed: • Bingo cards with decimal products and quotients • A set of problem cards with multiplication and division problems • Markers or chips How to Play: 1. Each learner receives a bingo card with answers to decimal multiplication and division problems. 2. The teacher draws a problem card, reads it aloud, and learners solve the problem."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1587,14 +1547,6 @@
             {
               "sco_code": "MA-G6-ON-SCO5.11",
               "description": "Represent composite numbers as a product of their prime factors, including through the use of factor trees"
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO5.12",
-              "description": "SC010"
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO5.13",
-              "description": "SCO 11"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1752,14 +1704,6 @@
             },
             {
               "sco_code": "MA-G6-ON-SCO7.11",
-              "description": "Product Real-World Projects: Performance Tasks: Assign learners a project where they apply ratio concepts to real-life situations, such as: Example: \"Plan a party for 10 people with a budget of $100, splitting costs for food, drinks, and decorations in the ratio 3:2:1.\" Learners create a plan, explaining how they divided the money according to the ratio. This assesses their ability to apply math to practical situations."
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO7.12",
-              "description": "Product Visual Representation and Manipulatives: Use visual aids like pie charts or grids to represent the percentage. For example, divide a circle into four equal parts to show that 25% is one-fourth of the class. Learners can use counters or manipulatives to physically represent the problem. This helps kinesthetic learners and those who benefit from hands-on activities."
-            },
-            {
-              "sco_code": "MA-G6-ON-SCO7.13",
               "description": "Guided Practice with Step-by-Step Scaffolding: If 25% of a class is 10 learners, learners will solve for the total number of learners in the class using the formula: Whole=10/25×100=40 = Thus, the whole class has 40 learners."
             }
           ],
@@ -2320,14 +2264,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-PR-SCO1.1",
-              "description": "Learners are expected to: Knowledge: 1. Interpret the basic geometric concepts (perimeter, area, volume). 2. Interpret tables of values and simple graphs. 3. Identify and describe patterns in tables of values and graphs involving problems in perimeter, area and volume calculations 4. Interpret and describe application of patterns in problem solving."
-            },
-            {
-              "sco_code": "MA-G6-PR-SCO1.2",
-              "description": "Skills: 5. Create or analyse a pattern with decimals. 6. Recognize patterns in tables of values, graphs, perimeter, area, and volume calculations 7. Apply knowledge of pattern to calculate the perimeter, area and volume of a shape. 8. Identify and describe complex patterns in tables and graphs, including relationships between perimeter, area, and volume 9. Translate patterns into mathematical expressions and equations."
-            },
-            {
-              "sco_code": "MA-G6-PR-SCO1.3",
               "description": "Values: 10. Apply the pattern rules they have learned to solve real-world problems. 11. Create real-life problem that will utilize pattern rules to solve the problem."
             }
           ],
@@ -2362,10 +2298,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-PR-SCO2.1",
-              "description": "Learners are expected to: Knowledge - Identify patterns in multiplication and division situations - Determine the pattern rules Skills - Apply patterns rules when solving problems involving multiplication/division situations; multiplication /division by 0.1, 0.01, and 0.001. Skills - Extend patterns using pattern rules, make and justify predictions - Identify missing elements in repeating, growing and shrinking patterns - Use algebraic representations of patterns to solve for unknown values in linear growing patterns"
-            },
-            {
-              "sco_code": "MA-G6-PR-SCO2.2",
               "description": "Values - Justify the relevance of patterns/rules in real-life situations."
             }
           ],
@@ -2658,10 +2590,6 @@
             {
               "sco_code": "MA-G6-PR-SCO7.9",
               "description": "4. Relating to the Equation: Discuss how the slope of the line indicates how much the height increases with each additional litre of water. Have learners analyse what the y-intercept (10) represents in the context of the problem (the height of the plant when no water is given)."
-            },
-            {
-              "sco_code": "MA-G6-PR-SCO7.10",
-              "description": "5. Cross-Disciplinary Connections: Science: Explore the biology of plant growth and the role of water in photosynthesis. Discuss factors that might affect growth other than water, such as sunlight and soil quality. Art: Learners can create a visual representation of their findings through drawings or digital graphics showing the plant’s growth stages with varying water amounts."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -3013,83 +2941,63 @@
             },
             {
               "sco_code": "MA-G6-GT-SCO1.15",
-              "description": "Learners will be expected to: Knowledge 1. Identify 3d shapes and objects with further accuracy"
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO1.16",
               "description": "Skills 2. Construct 3D shapes with further accuracy"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.17",
+              "sco_code": "MA-G6-GT-SCO1.16",
               "description": "Skills 3. Deconstruct 3D shapes with further accuracy"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.18",
+              "sco_code": "MA-G6-GT-SCO1.17",
               "description": "Skills 4. Draw angles using straight edges and protractors"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.19",
+              "sco_code": "MA-G6-GT-SCO1.18",
               "description": "Skills 5. Classify angles according to their size"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.20",
+              "sco_code": "MA-G6-GT-SCO1.19",
               "description": "Skills 6. create patterns using angles"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.21",
+              "sco_code": "MA-G6-GT-SCO1.20",
               "description": "Values 7. Create unique 3D shapes to depict real life examples."
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.22",
+              "sco_code": "MA-G6-GT-SCO1.21",
               "description": "Values 8. Design creative pieces (anchor charts, booklets) to show different angles in objects."
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.23",
-              "description": "Learners will be provided with a collection of 3D objects (e.g. shoe boxes, pizza boxes, smarties candy box). Learners will be invited to choose one object. They will then trace around each of the faces then cut them out. Learners will then lay out the shape so they can remake the object if it was folded. They will then compare the nets of the shape."
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO1.24",
-              "description": "Learners will discuss and answer the following questions 1. Can you open up your object in a different way and still be able to put it back together to make the same object? Is there another way? Is it the same? 2. If not, how is it different? Does it matter that it is different? 3. Is there a number of different ways of putting the faces together so that they could be re-folded to make the box?"
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO1.25",
+              "sco_code": "MA-G6-GT-SCO1.22",
               "description": "Checklist Learners can correctly deconstruct 3D shapes and discuss various arrangements • Yes • Somewhat • No"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.26",
+              "sco_code": "MA-G6-GT-SCO1.23",
               "description": "Independent Learning(outcomes 5 and 6) Provide opportunities to identify angles in 2D shapes Identify and name the types of angles that can be found in given shapes"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.27",
+              "sco_code": "MA-G6-GT-SCO1.24",
               "description": "What type of angles can you identify in these shapes?"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.28",
+              "sco_code": "MA-G6-GT-SCO1.25",
               "description": "Checklist Learners are correctly able to identify and name angles correctly • Yes • Somewhat • No"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.29",
-              "description": "Product/Conversation: To determine whether learners can use a ruler and protractor to draw given angles. Have learners view the following video Drawing Angles Using a Protractor Learners will be given a bag from which they will dip the name of a type of angle Learners will be given paper, a ruler and protractor and asked to draw the angle they dipped."
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO1.30",
+              "sco_code": "MA-G6-GT-SCO1.26",
               "description": "Learners will later present their drawn angle to their peers and have them discuss the angle and say what type of angle they think was drawn."
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.31",
+              "sco_code": "MA-G6-GT-SCO1.27",
               "description": "Checklist Learners are correctly able to draw and name angles correctly • Yes • Somewhat • No"
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.32",
+              "sco_code": "MA-G6-GT-SCO1.28",
               "description": "Think, Pair, Share: To check whether learners are able to sort types of angles based on given measurements. (outcome 8) Learners will be given measurements of angles and be asked with a peer to classify each measurement based on the type of angle it would be."
             },
             {
-              "sco_code": "MA-G6-GT-SCO1.33",
+              "sco_code": "MA-G6-GT-SCO1.29",
               "description": "Video Assisted Learning and Project (outcome 9) Provides learners with an opportunity to create a pattern using different angles"
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO1.34",
-              "description": "In small groups learners will create a unique pattern using angles on Geogebra."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -3155,26 +3063,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-GT-SCO2.1",
-              "description": "Learners will be expected to: Knowledge 1. Recognize angle relationships (complementary, supplementary, vertically opposite angles and angles created by parallel lines and transversals)."
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO2.2",
               "description": "2. Describe angle relationships (complementary, supplementary, vertically opposite angles and angles created by parallel lines and transversal."
             },
             {
-              "sco_code": "MA-G6-GT-SCO2.3",
+              "sco_code": "MA-G6-GT-SCO2.2",
               "description": "3. Illustrate various types of angle relationships."
             },
             {
-              "sco_code": "MA-G6-GT-SCO2.4",
+              "sco_code": "MA-G6-GT-SCO2.3",
               "description": "4. Recognize the sum of angles in various polygons."
             },
             {
-              "sco_code": "MA-G6-GT-SCO2.5",
+              "sco_code": "MA-G6-GT-SCO2.4",
               "description": "Skills 5. Determine the sum of the interior angles of a polygon by calculating the number of non-overlapping triangles it contains."
             },
             {
-              "sco_code": "MA-G6-GT-SCO2.6",
+              "sco_code": "MA-G6-GT-SCO2.5",
               "description": "Values: 6. Create real life situations to compare complementary and supplementary angles"
             }
           ],
@@ -3197,12 +3101,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome G2.2: Recognising, Naming and Describing Shapes - Naming 2D & 3D shapes",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G6-GT-SCO3.1",
-              "description": "Learners are expected to: Knowledge 1. Recognize angles (acute, obtuse, right, reflex, and straight). 2. Name angles (acute, obtuse, right, reflex, and straight). Skills 3. Classify angles according to the type (acute, obtuse, right, reflex, and straight). 4. Create different types of angles through hands-on practice. Values 5. Design different creative pieces (a posters, poems, stories songs) outlining types of angles in the environment."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Observation: To assess how much information learners remember about types of angles (Outcomes 1, 2, and 3) Invite learners to play this quick game to review types of angles. Press on the blue dot in the middle of the clock(s) representing the angle named. https://www.purposegames.com/game/603afcb93d",
             "Checklist: Game scores - Scored 83-100% - Scored 50-67%",
@@ -3245,14 +3144,6 @@
             {
               "sco_code": "MA-G6-GT-SCO4.6",
               "description": "Values 6. Design a colour-coded chart highlighting the angles formed with parallel lines and a transversal"
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO4.7",
-              "description": "Conversation: To determine whether learners are able to identify the general formula for finding the sum of interior angles in a polygon (Outcome 2). Use this activity from E.L.O. 2.1 and ask learners to compare the math work for each polygon with the number of sides in order to identify the relationship or general formula for finding the sum of interior angles in a polygon."
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO4.8",
-              "description": "Checklist: Learners are able to determine the general formula for finding the sum of interior angles in a polygon."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -3415,34 +3306,30 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-GT-SCO7.1",
-              "description": "Learners are expected to: Knowledge 1. Recognize shapes that can tessellate 2. Describe the characteristics of translations, reflections, and rotations, 3. Translate shapes on a grid, moving them a specified distance in a given direction while maintaining their orientation. 4. Execute reflections across a specified line (e.g., x-axis, y-axis, or a line of symmetry) and describe the changes in orientation and position of the reflected shape."
-            },
-            {
-              "sco_code": "MA-G6-GT-SCO7.2",
               "description": "5. Carry out rotations of shapes around a fixed point on a grid by given angles (90°, 180°, 270°, or 360°) and identify how the rotation affects the shape's position"
             },
             {
-              "sco_code": "MA-G6-GT-SCO7.3",
+              "sco_code": "MA-G6-GT-SCO7.2",
               "description": "6. Demonstrate the ability to create tessellating patterns using identified shapes"
             },
             {
-              "sco_code": "MA-G6-GT-SCO7.4",
+              "sco_code": "MA-G6-GT-SCO7.3",
               "description": "7. Apply combinations of at least two transformations (translations, reflections, and rotations) on shapes and record the final position and orientation of the transformed shapes on a grid."
             },
             {
-              "sco_code": "MA-G6-GT-SCO7.5",
+              "sco_code": "MA-G6-GT-SCO7.4",
               "description": "8. Compare the results of different combinations of transformations on the same shape to analyse how the order of transformations affects the final outcome."
             },
             {
-              "sco_code": "MA-G6-GT-SCO7.6",
+              "sco_code": "MA-G6-GT-SCO7.5",
               "description": "9. Predict a shape's resulting position and orientation after performing a specified combination of transformations and justify their predictions using geometric reasoning."
             },
             {
-              "sco_code": "MA-G6-GT-SCO7.7",
+              "sco_code": "MA-G6-GT-SCO7.6",
               "description": "10. Test predictions by performing the transformations on a grid and evaluate the accuracy of the predictions, discussing any discrepancies."
             },
             {
-              "sco_code": "MA-G6-GT-SCO7.8",
+              "sco_code": "MA-G6-GT-SCO7.7",
               "description": "11. Use transform to create different tessellation design"
             }
           ],
@@ -4332,43 +4219,35 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-ME-SCO4.1",
-              "description": "Learners are expected to: Skills 1. Estimate the size of an angle 2. Measure angles in whole-number degrees using a protractor 3. Draw angles of specified measure 4. Convert among different-sized standard measurement units within a given measurement system (e.g., convert 5 cm to 0.05 m), 5. Use conversions of different-sized standard measurement units within a given measurement system to solve multi-step problems"
-            },
-            {
-              "sco_code": "MA-G6-ME-SCO4.2",
               "description": "Values 6. Describe a problem/experience/scenario encountered that involves the multiple conversion of units."
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.3",
+              "sco_code": "MA-G6-ME-SCO4.2",
               "description": "Using a protractor, draw and classify the following angles."
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.4",
+              "sco_code": "MA-G6-ME-SCO4.3",
               "description": "Draw the following angles a. 55° b. 125° c. 20° d. 160°"
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.5",
+              "sco_code": "MA-G6-ME-SCO4.4",
               "description": "The doctor insisted I drink 2 litres of water a day. How many bottles of this water should I drink daily?"
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.6",
+              "sco_code": "MA-G6-ME-SCO4.5",
               "description": "John wants to order some clothes on Shein for his children. The measurements on the Shein clothing sites are in inches but John only knows his children's measurements in cm. Fill out the table using the conversion below so John can buy the right sizes for his kids."
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.7",
+              "sco_code": "MA-G6-ME-SCO4.6",
               "description": "How many of each these do I need to obtain a. $1 b. $10 c. $100"
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.8",
+              "sco_code": "MA-G6-ME-SCO4.7",
               "description": "How many ten cents will give you $1? How many $1 will give you $10? How many 10c will give you $10?"
             },
             {
-              "sco_code": "MA-G6-ME-SCO4.9",
+              "sco_code": "MA-G6-ME-SCO4.8",
               "description": "Leah loves to cook with fresh herbs. So, she decides to plant 8 different herbs and keep the small pots on her kitchen window sill. She starts with a 2-kilogram bag of soil and puts the same amount of soil in each pot. If she uses all of the soil, how many grams does she add to each pot?"
-            },
-            {
-              "sco_code": "MA-G6-ME-SCO4.10",
-              "description": "Fill in the blanks: (i) 1 day = ............... hours (ii) 1 week = ............... hours (iii) 1 fortnight = ............... hours (iv) Number of days in the month of March = ............... (v) Number of days in an ordinary year = ............... (vi) Number of weeks in a year = ............... (vii) Number of minutes in 2 days = ............... (viii) ............... Months have 31 days."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4408,10 +4287,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-ME-SCO5.1",
-              "description": "Learners are expected to: Knowledge 1. Recognize the relationship between the metric system of measurement and place value 2. Explain how to convert between various units of measurement using a place value chart Skills 3. Use a place value chart to convert measurements from one unit to another. 4. Solve real-life problems relating to unit conversion Values 5. Create real-life problem that involve conversions of units."
-            },
-            {
-              "sco_code": "MA-G6-ME-SCO5.2",
               "description": "6. Ask questions involving the connections between place value and metric conversions of units"
             }
           ],
@@ -4904,14 +4779,10 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-DH-SCO1.1",
-              "description": "Learners are expected to: Knowledge 1. Identify and explain the role of variability in formulating and interpreting statistical questions. 2. Explain that different factors (e.g., time period, location, population) can influence variability in data and affect the formulation of statistical questions. 3. Interpret findings from statistical analyses in a way that acknowledges and explains variability."
-            },
-            {
-              "sco_code": "MA-G6-DH-SCO1.2",
               "description": "Skills 4. Recognize what constitutes a statistical question. 5. Differentiate between statistical and non-statistical questions. 6. Apply the concept of variability in answers to statistical questions"
             },
             {
-              "sco_code": "MA-G6-DH-SCO1.3",
+              "sco_code": "MA-G6-DH-SCO1.2",
               "description": "Values 7. Create real life situation involving the influence of variability in data."
             }
           ],
@@ -4933,19 +4804,11 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G6-DH-SCO2.1",
-              "description": "Learners are expected to: Knowledge 1. Explain the difference between qualitative and quantitative data. Skills 2. Identify discrete and continuous quantitative data. 3. Use tally charts and compute facility (spreadsheets, Microsoft excel) to organize collected data. 4. Organise data sets using intervals. 5. Use grid paper and computer software (Excel program) to create tables, simple vertical and horizontal bar graphs and simple line graphs. 6. Analyse data to answer questions of interest Values 7. Show how data collection and analysis are used in various fields (e.g., health"
-            },
-            {
-              "sco_code": "MA-G6-DH-SCO2.2",
               "description": "surveys, market research, environmental studies)."
             },
             {
-              "sco_code": "MA-G6-DH-SCO2.3",
+              "sco_code": "MA-G6-DH-SCO2.2",
               "description": "Learners will observe their surroundings and identify examples of qualitative and quantitative data. They record their observations in a journal and categorise the data they collect."
-            },
-            {
-              "sco_code": "MA-G6-DH-SCO2.4",
-              "description": "Learners will create presentations or reports that summarise their data collection process, findings, and conclusions. They will use graphs, charts, and tables to support their explanations and interpretations."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4977,42 +4840,34 @@
             },
             {
               "sco_code": "MA-G6-DH-SCO3.2",
-              "description": "Knowledge"
-            },
-            {
-              "sco_code": "MA-G6-DH-SCO3.3",
               "description": "1. Identify a given set of data as continuous or discrete"
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.4",
+              "sco_code": "MA-G6-DH-SCO3.3",
               "description": "2. Discuss whether a given data set is continuous or discrete."
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.5",
+              "sco_code": "MA-G6-DH-SCO3.4",
               "description": "3. Explain the difference between continuous and discrete data"
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.6",
-              "description": "Skills"
-            },
-            {
-              "sco_code": "MA-G6-DH-SCO3.7",
+              "sco_code": "MA-G6-DH-SCO3.5",
               "description": "4. Select the most suitable graph, such as histograms or broken-line graphs, to represent different data sets."
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.8",
+              "sco_code": "MA-G6-DH-SCO3.6",
               "description": "5. Display the data with accurate sources, titles, labels, and scales, and justify the choice of graph."
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.9",
+              "sco_code": "MA-G6-DH-SCO3.7",
               "description": "6. Decide between using a line graph and a scatter plot (series of points) based on information given."
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.10",
+              "sco_code": "MA-G6-DH-SCO3.8",
               "description": "7. Describe a data set by its centre, spread, and shape."
             },
             {
-              "sco_code": "MA-G6-DH-SCO3.11",
+              "sco_code": "MA-G6-DH-SCO3.9",
               "description": "Values 8. Create real life stories/situations to depict the correct graph to represent continuous and discrete data."
             }
           ],
@@ -5106,12 +4961,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome D3.1: Evaluating Inferences and Making Predictions Based on Data – Making Inferences with Data Sets",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G6-DH-SCO5.1",
-              "description": "Learners are expected to: Knowledge 1. Read data in a line plot 2. Identify patterns presented in a line plot Skills 3. Interpret data presented in a line plot 4. Make predictions based on data presented in a line plot Values 5. Work collaboratively to create and solve real life questions about given line plots 6. Discuss the importance of using line plots to represent data."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Observation: Observe learners as they work in groups to discuss and make predictions about data presented in a line plot.",
             "Product: Learners complete a worksheet which will require them to use the information presented to answer related questions."
@@ -5164,12 +5014,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome D3.3: Evaluating Inferences and Making Predictions Based on Data – Analyse Misinterpreted Data",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G6-DH-SCO7.1",
-              "description": "Learners are expected to: Knowledge 1. Explain the meaning of each of the measures of central tendency (mean, median, mode, range). 2. Explain how to calculate the mean, median, mode, and range. Skills 3. Calculate the mean, mode, median and range of a set of numbers. 4. Compare data sets using the measures of central tendency. Values 5. Discuss the importance of being able to calculate and apply the measures of central tendency in real life situations"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Observation: Present similar data sets to groups of learners. Have learners work together to calculate the mean, median, mode and range. A checklist will be used to assess learners as they perform calculations.",
             "Self-assessment: Present each learner with a worksheet to calculate the mean, median, mode and range. After calculating each, learners will complete a self-assessment sheet.",

@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade4-language-arts-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "4",
+    "grade": "Grade 4",
     "subject": "Language Arts"
   },
   "strands": [
@@ -131,10 +131,6 @@
             {
               "sco_code": "LA-G4-LS-SCO1.30",
               "description": "1.37 identify, share, and analyze culturally relevant songs, calypso, soca, drama, and poetry with fluency, rhythm, and pace for literal and subtle purpose and meaning"
-            },
-            {
-              "sco_code": "LA-G4-LS-SCO1.31",
-              "description": "1.38 further develop meaningful oral language use and conventions of oral language(s) as appropriate to the context and purpose: - word order - increasingly varied vocabulary choices for nouns, verbs, adjectives, adverbs - use of descriptive language (similes, metaphors, beginning use of personification) - use of affixes -subject and verb agreement correctly in delivering spoken messages and in planned oral presentations."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -322,211 +318,211 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "LA-G4-RV-SCO1.1",
-              "description": "2.4 read, view, and respond to a variety of literature from the Caribbean and other cultures read and view to engage critically with a range of texts for pleasure 2.5 continue to develop strategies and monitor reading effectiveness to identify reading challenges and apply appropriate fix up strategies 2.6 use pictures and illustrations, word structures, and text features to: - locate information - obtain or verify understanding of information - develop questions -search for answers 2.7 continue to develop and demonstrate critical questioning strategies to gather information from favourite visual, musical, and written text re: - point of view - purpose - bias - subtle messages"
+              "description": "2.1 select engaging paper based and digital visual texts for Independent Reading based on: - interests - appropriate level of difficulty - various genres - diverse cultures"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.2",
-              "description": "2.8 follow and correct when necessary, multi-step written instructions e.g., how to assemble a product or play a board game. read and view to select and engage critically with a range of texts for personal growth 2.9 use Independent Reading Time to develop -reading fluency (accuracy, phrasing, and intonation) -recognise quotation marks and marker words (said, shouted, whispered, etc.) to determine the mood of the speaker in the text"
+              "description": "2.2 justify reading preferences"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.3",
-              "description": "2.10 use text-based information and personal experiences to anticipate outcomes and solve problems"
+              "description": "2.3 utilize background knowledge to better comprehend a topic, picture, or title before, during and after reading"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.4",
-              "description": "2.11 connect funds of knowledge to analyze and ask questions of author’s message in visual and/or text-based information through the use of: -analysis -synthesis -inference -application"
+              "description": "2.4 read, view, and respond to a variety of literature from the Caribbean and other cultures"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.5",
-              "description": "2.12 describe the effect of illustrations on the mood, setting and plot of written or visual text."
+              "description": "2.5 continue to develop strategies and monitor reading effectiveness to identify reading challenges and apply appropriate fix up strategies"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.6",
-              "description": "2.13 reflect on the purpose and positive or negative influences of different types of popular texts e.g., websites, advertisements, social media, etc."
+              "description": "2.6 use pictures and illustrations, word structures, and text features to: - locate information - obtain or verify understanding of information - develop questions - search for answers"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.7",
-              "description": "2.14 analyze the techniques used by various media texts created to inform, entertain, persuade"
+              "description": "2.7 continue to develop and demonstrate critical questioning strategies to gather information from favourite"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.8",
-              "description": "3.1 Continue to apply knowledge of the organizational structure of fiction and nonfiction genres to construct meaning of visual and text based information"
+              "description": "2.8 follow and correct when necessary, multi-step written instructions e.g., how to assemble a product or play a board game."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.9",
-              "description": "3.2 apply and integrate comprehension strategies listed below to demonstrate understanding of literary, visual, graphic, and informational texts: - determining main idea - making connections - predicting - visualising - inferring - analysing - synthesising"
+              "description": "2.9 use Independent Reading Time to develop -reading fluency (accuracy, phrasing, and intonation) -recognise quotation marks and marker words (said, shouted, whispered, etc.) to determine the mood of the speaker in the text"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.10",
-              "description": "3.3 demonstrate understanding of text through a variety of oral, written, and visual responses such as: -artistic representations (visual arts, song, dance) -discussions -graphic organizers -oral and written responses to questions -poetry -letters"
+              "description": "2.10 use text-based information and personal experiences to anticipate outcomes and solve problems"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.11",
-              "description": "3.4 respond critically with greater insight to texts by asking and formulating responses to questions such as: -what if? -is it possible that . . .? -what else? -what was the author trying to tell us? -do I agree / why or why not? -how do you know? -why do you think that?"
+              "description": "2.11 connect funds of knowledge to analyze and ask questions of author’s message in visual and/or text-based information through the use of: -analysis -synthesis -inference -application"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.12",
-              "description": "3.5 choose from a range of human, paper based and digital sources to add to existing information e.g., community experts, online searches, web, and text based reference materials, etc."
+              "description": "2.12 describe the effect of illustrations on the mood, setting and plot of written or visual text."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.13",
-              "description": "3.6 describe with greater competence how the setting of fiction and nonfiction genres impacts the plot or the event/s described"
+              "description": "2.13 reflect on the purpose and positive or negative influences of different types of popular texts e.g., websites, advertisements, social media, etc."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.14",
-              "description": "3.7 deepen application of knowledge of characterization by: -describing the character’s attributes (traits, motivations, or feelings); -using evidence from the text to support generalizations about the character; -comparing and contrasting characters within a selection or between/among two or more selections; -explaining how the actions of characters contribute to the sequence of events -describing the impact of a character’s response to a problem, the character’s goal, and what the character says or thinks"
+              "description": "2.14 analyze the techniques used by various media texts created to inform, entertain, persuade"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.15",
-              "description": "3.8 increase ability to create connections between the vocabulary of Home Language(s) and Standard English"
+              "description": "3.1 Continue to apply knowledge of the organizational structure of fiction and nonfiction genres to construct meaning of visual and text based information"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.16",
-              "description": "3.9 extend the development of reading vocabulary through reading a range of genres, authors, and topics"
+              "description": "3.2 apply and integrate comprehension strategies listed below to demonstrate understanding of literary, visual, graphic, and informational texts: - determining main idea - making connections - predicting - visualising - inferring - analysing - synthesising"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.17",
-              "description": "3.10 advance reading vocabulary through the application of - antonyms"
+              "description": "3.3 demonstrate understanding of text through a variety of oral, written, and visual responses such as: -artistic representations (visual arts, song, dance) -discussions -graphic organizers -oral and written responses to questions -poetry -letters"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.18",
-              "description": "3.11 use, with greater competence, a paper based or online dictionary and thesaurus to learn the meaning and other features of known and unknown words"
+              "description": "3.4 respond critically with greater insight to texts by asking and formulating responses to questions such as: -what if? -is it possible that . . .? -what else? -what was the author trying to tell us? -do I agree / why or why not? -how do you know? -why do you think that?"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.19",
-              "description": "3.12 build on existing knowledge and skills of common prefixes and suffixes to determine meaning of new vocabulary. Use a known root word as a clue to the meaning of an unknown word with the same root (e.g., company, companion)."
+              "description": "3.5 choose from a range of human, paper based and digital sources to add to existing information e.g., community experts, online searches, web, and text based reference materials, etc."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.20",
-              "description": "3.13 extend vocabulary through the use of words encountered in cross-curricular lessons."
+              "description": "3.6 describe with greater competence how the setting of fiction and nonfiction genres impacts the plot or the event/s described"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.21",
-              "description": "3.14 demonstrate continued ability to apply knowledge of the change in tense (-t,-ed), number (-s, -es), and degree (-er and –est) signified by inflected endings to decode words"
+              "description": "3.8 increase ability to create connections between the vocabulary of Home Language(s) and Standard English"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.22",
-              "description": "3.15 identify and apply figurative devices to enhance understanding of text: - similes - metaphors - onomatopoeia - personification"
+              "description": "3.9 extend the development of reading vocabulary through reading a range of genres, authors, and topics"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.23",
-              "description": "3.16 demonstrate with increasing competence an understanding of how word order impacts meaning"
+              "description": "3.10 advance reading vocabulary through the application of - antonyms"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.24",
-              "description": "3.17 apply knowledge of how reading fluency impacts understanding"
+              "description": "3.11 use, with greater competence, a paper based or online dictionary and thesaurus to learn the meaning and other features of known and unknown words"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.25",
-              "description": "3.18 participate in shared reading opportunities. to: - enhance fluency - guide intonation - convey the mood and intent of the text - expand vocabulary - increase comprehension"
+              "description": "3.12 build on existing knowledge and skills of common prefixes and suffixes to determine meaning of new vocabulary. Use a known root word as a clue to the meaning of an unknown word with the same root (e.g., company, companion)."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.26",
-              "description": "3.19 further develop awareness of how word choice and phrasing may be used to describe persons and events in positive or negative ways"
+              "description": "3.13 extend vocabulary through the use of words encountered in cross-curricular lessons."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.27",
-              "description": "3.20 with increased competence, apply background knowledge and context clues to read unknown words"
+              "description": "3.14 demonstrate continued ability to apply knowledge of the change in tense (-t,-ed), number (-s, -es), and degree (-er and –est) signified by inflected endings to decode words"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.28",
-              "description": "3.21 deepen application of knowledge of roots, affixes, and syllabication to decode unknown words"
+              "description": "3.15 identify and apply figurative devices to enhance understanding of text: - similes - metaphors - onomatopoeia - personification"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.29",
-              "description": "3.22 utilize phonics and word analysis skills, when necessary, with increasing automaticity: - vowel patterns ( ou/ow, oi/oy, oo, aw) - the sounds of common digraphs and diphthongs - complex letter pattern - words with silent letters"
+              "description": "3.16 demonstrate with increasing competence an understanding of how word order impacts meaning"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.30",
-              "description": "3.23 use background knowledge and information from poetry and expository, narrative, and descriptive texts to make and modify predictions."
+              "description": "3.17 apply knowledge of how reading fluency impacts understanding"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.31",
-              "description": "3.24 distinguish between main idea and supporting information in poetry and expository, narrative, and descriptive texts."
+              "description": "3.18 participate in shared reading opportunities. to: - enhance fluency - guide intonation - convey the mood and intent of the text - expand vocabulary - increase comprehension"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.32",
-              "description": "3.25 deepen ability to use prior knowledge of written and visual information to form a judgment about a particular point or issue."
+              "description": "3.19 further develop awareness of how word choice and phrasing may be used to describe persons and events in positive or negative ways"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.33",
-              "description": "3.26 continue to refine meaningful and critical use of text features to locate and use information (titles, subtitles, table of contents, glossary, index, etc.)"
+              "description": "3.20 with increased competence, apply background knowledge and context clues to read unknown words"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.34",
-              "description": "3.27 evaluate the purpose of graphic information (illustrations, fonts, charts, photographs, pictures, maps) in poetry and expository, narrative, and descriptive texts as an aid to comprehension."
+              "description": "3.21 deepen application of knowledge of roots, affixes, and syllabication to decode unknown words"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.35",
-              "description": "3.28 recognize and provide examples of how author’s choice of vocabulary, phrases, and sentences evoke emotions, enhance description, and create humour,"
+              "description": "3.22 utilize phonics and word analysis skills, when necessary, with increasing automaticity: - vowel patterns ( ou/ow, oi/oy, oo, aw) - the sounds of common digraphs and diphthongs - complex letter pattern - words with silent letters"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.36",
-              "description": "3.29 provide examples of how illustrators create mood in visual text.."
+              "description": "3.23 use background knowledge and information from poetry and expository, narrative, and descriptive texts to make and modify predictions."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.37",
-              "description": "3.30 discuss the effectiveness and possible hidden messages of emoticons and social media posts."
+              "description": "3.24 distinguish between main idea and supporting information in poetry and expository, narrative, and descriptive texts."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.38",
-              "description": "Read for pleasure and personal growth: reflect on and identify their strengths as readers, areas for improvement and the strategies they found most helpful before, during and after reading."
+              "description": "3.25 deepen ability to use prior knowledge of written and visual information to form a judgment about a particular point or issue."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.39",
-              "description": "Use background knowledge: become more aware of how to integrate reading with skills in listening, speaking, writing, viewing, and representing to help them make sense of what they read."
+              "description": "3.26 continue to refine meaningful and critical use of text features to locate and use information (titles, subtitles, table of contents, glossary, index, etc.)"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.40",
-              "description": "Interact meaningfully with a wide range of genres and text forms: read within the range of the Transitional to Proficient Stages; demonstrate an understanding of a variety of literary, graphic, and informational texts, using a range of strategies to construct meaning; engage in character, setting, plot study and critical reflection; use problem solving strategies such as monitoring, self-correcting and checking independently."
+              "description": "3.27 evaluate the purpose of graphic information (illustrations, fonts, charts, photographs, pictures, maps) in poetry and expository, narrative, and descriptive texts as an aid to comprehension."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.41",
-              "description": "Develop vocabulary: choose nonfiction reading materials for specific purposes and to gather, analyse and use known and new vocabulary in a variety of contexts."
+              "description": "3.28 recognize and provide examples of how author’s choice of vocabulary, phrases, and sentences evoke emotions, enhance description, and create humour,"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.42",
-              "description": "Recognise and use language structures: recognise a variety of text forms, text features and stylistic elements and demonstrate understanding of how they help communicate meaning."
+              "description": "3.29 provide examples of how illustrators create mood in visual text.."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.43",
-              "description": "Apply graphophonic elements meaningfully: continue to develop and apply their understanding of meaningful word study and form."
+              "description": "3.30 discuss the effectiveness and possible hidden messages of emoticons and social media posts."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.44",
-              "description": "By the end of Grade Four, the learner will be expected to practice and apply strategies described in the outcomes below: read and view to use background knowledge and interests to select books 2.1 select engaging paper based and digital visual texts for Independent Reading based on: - interests - appropriate level of difficulty - various genres - diverse cultures 2.2 justify reading preferences 2.3 utilize background knowledge to better comprehend a topic, picture, or title before, during and after reading"
+              "description": "Read for pleasure and personal growth: reflect on and identify their strengths as readers, areas for improvement and the strategies they found most helpful before, during and after reading."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.45",
-              "description": "-connect punctuation in text to meaningful interpretation of sentences and paragraphs"
+              "description": "Use background knowledge: become more aware of how to integrate reading with skills in listening, speaking, writing, viewing, and representing to help them make sense of what they read."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.46",
-              "description": "-change the rate of reading depending on the mood of the text"
+              "description": "Develop vocabulary: choose nonfiction reading materials for specific purposes and to gather, analyse and use known and new vocabulary in a variety of contexts."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.47",
-              "description": "-practice meaningful word solving strategy (root word, chunking, affixes, context clues)"
+              "description": "Recognise and use language structures: recognise a variety of text forms, text features and stylistic elements and demonstrate understanding of how they help communicate meaning."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.48",
-              "description": "Text features (SCO 2.6)"
+              "description": "Apply graphophonic elements meaningfully: continue to develop and apply their understanding of meaningful word study and form."
             },
             {
               "sco_code": "LA-G4-RV-SCO1.49",
-              "description": "Read all about it (SCO 2.7)"
+              "description": "-connect punctuation in text to meaningful interpretation of sentences and paragraphs"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.50",
-              "description": "Follow the leader (SCO2.8)"
+              "description": "-change the rate of reading depending on the mood of the text"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.51",
-              "description": "Rhythm and Pace in Reading (SCO 2.9)"
+              "description": "-practice meaningful word solving strategy (root word, chunking, affixes, context clues)"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.52",
-              "description": "By the end of Grade 4, the learner will be expected to: read and view to interact with understanding and critical thought to a wide range of genres and text forms using comprehension strategies,"
+              "description": "Follow the leader (SCO2.8)"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.53",
@@ -546,19 +542,11 @@
             },
             {
               "sco_code": "LA-G4-RV-SCO1.57",
-              "description": "What’s the effect? (SCO 3.15)"
+              "description": "visual, musical, and written text re: - point of view - purpose - bias - subtle messages"
             },
             {
               "sco_code": "LA-G4-RV-SCO1.58",
-              "description": "Word order (SCO 3.16)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO1.59",
-              "description": "Punctuation power! (SCO 3.18)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO1.60",
-              "description": "Word Choice- precise word (SCO 3.19)"
+              "description": "read and view to select and engage critically with a range of texts for personal growth"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -595,7 +583,16 @@
             "PEER ASSESSMENT",
             "Vocabulary: Word of the Day The teacher starts each day introducing a new word to the class. Learners are encouraged to use the word throughout the day and to observe how their peers use the word and take note. At the end of the day, have a class discussion reflecting on how the word was used and understood.",
             "Compare and contrast fiction and nonfiction text Present four different texts in different groups and ask learners to categorize them into fiction, non-fiction, and poetry. Encourage them to recognize specific features commonly found in each type of text. Additionally, prompt them to explain their rationale for classifying the genre of each text as either fiction or nonfiction and whether the poems are fiction or nonfiction. One person will sort the texts while the other observes. The observer will provide feedback according to predefined criteria.",
-            "Once texts are classified, invite student to classify the texts into subgenres. Observing this activity provides the teachers with information about learner knowledge about sub genres and which subgenres to focus on next."
+            "Once texts are classified, invite student to classify the texts into subgenres. Observing this activity provides the teachers with information about learner knowledge about sub genres and which subgenres to focus on next.",
+            "Use formative assessment (Conversation, Observation, and Product) during independent reading to assess learners’ reading proficiency.",
+            "Note: Remember that in addition to written assessments, opportunities to talk, sing, illustrate or dramatise provide the teacher with useful information about student learners. All learners should be exposed to a wide range of assessment formats.",
+            "CONVERSATION: Conference with learners about books they have read independently. Inquire about their interest, ask questions, and take note of responses.",
+            "Reading Conference Record Sheet: Name ___________ Date ______ Title ___________ Author _________",
+            "What connection did you make with the text? What strategy helped you understand the text? What is your favourite part of the text? Would you recommend this book? why?",
+            "Let’s discuss your strengths and what you need to work on _________",
+            "OBSERVATION: Observe students as they engage in Independent Reading. Look for signs of active engagement, such as following along with the text, using reading strategies, and showing comprehension through facial expressions or annotations. Record anecdotal notes of patterns and behaviors for intervention and improvement.",
+            "Independent reading log",
+            "1. Title: _________________________ Author: _________________________ Genre: _________________________ Date Started: _____ Date Ended: _____"
           ],
           "inclusive_learning_strategies": [
             "ELO 2 emphasizes the importance of daily Independent Reading. During independent reading, learners should select materials that interest them, align with their progress, and provide just the right amount of challenge to improve their reading. Read and view to use background knowledge and interests to select book. Independent reading time (SCO 2.1, 2.2, 2.3, 2.4): Provide opportunities for daily sustained Independent Reading. Ensure there’s a class library stocked with a diverse range of reading materials for all learners to choose from. Enable learners to choose texts that suit their individual reading levels and start reading independently. While learners read on their own, the teacher should engage in one-on-one discussions with others, listening to them read, and conduct small group guided reading sessions. See the IAS column for suggestions about how to observe and confer with learners.",
@@ -703,7 +700,14 @@
             "Read any media message and interpret and discuss any hidden message conveyed through the use of the emoticons. Consider how the choice of emoticons can influence the tone of a post and the perception of the message. Discuss how different individuals may interpret emoticons differently based on their cultural background or personal experiences.",
             "Discuss ethical considerations related to the use of emoticons in social media, such as potential misinterpretations, cultural sensitivity, and unintended consequences of hidden messages.",
             "Allow learners to create messages using emoticons and have others read and tell the possible meaning.",
-            "BRAIDING THE STRANDS - Create social media posts with specific hidden messages using emoticons."
+            "BRAIDING THE STRANDS - Create social media posts with specific hidden messages using emoticons.",
+            "Read and view to use background knowledge and interests to select book",
+            "Independent reading time (SCO 2.1, 2.2, 2.3, 2.4): Provide opportunities for daily sustained Independent Reading. Ensure there’s a class library stocked with a diverse range of reading materials for all learners to choose from. Enable learners to choose texts that suit their individual reading levels and start reading independently. While learners read on their own, the teacher should engage in one-on-one discussions with others, listening to them read, and conduct small group guided reading sessions. See the IAS column for suggestions about how to observe and confer with learners.",
+            "Readers’ Workshop (SCO 2.3) – Independent Reading is one component of Readers’ Workshop. Engage learners in a brief 10 minute mini lesson to remind them of a previous lesson taught during ELO 3 and 4. Encourage them to apply that lesson during Independent Reading to and practice reading strategies and skills fluency, and stamina (see poster above). (see Additional Resources section for before, during and after reading activities). Create opportunities for discussion, artistic",
+            "representation, illustrative, and written reflections on reading.",
+            "Enhancing cultural experience through independent reading (SCO 2.4)",
+            "To improve learners' understanding and enjoyment of literature, encourage them to explore a variety of books from local and international cultures. Create a special area in the classroom with diverse reading materials for various skill levels. Stress the importance of interacting with (curated) locally produced digital and paper based content such as books, poems, newspapers, lyrics, posters, magazines, and brochures etc. Encourage learners to contribute to this collection by bringing items from home or conducting research. Note: Be sure to review texts brought from home before displaying.",
+            "Encourage learners to use the classroom space for independent reading. Allow them to choose materials they like, reflect on, and discuss their thoughts while reading, and then creatively connect the content to their own cultural heritage."
           ],
           "elo_code": "LA-G4-RV-ELO1"
         },
@@ -856,102 +860,66 @@
             },
             {
               "sco_code": "LA-G4-RV-SCO2.37",
-              "description": "By the end of Grade Four, the learner will be expected to: read and view to develop understanding of how author’s purpose and style influence meaning"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.38",
               "description": "- use of descriptive language"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.39",
+              "sco_code": "LA-G4-RV-SCO2.38",
               "description": "- use of dialogue"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.40",
+              "sco_code": "LA-G4-RV-SCO2.39",
               "description": "Identify 3 facts from the text"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.41",
+              "sco_code": "LA-G4-RV-SCO2.40",
               "description": "Write 2 interesting information you would like to share from the text"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.42",
+              "sco_code": "LA-G4-RV-SCO2.41",
               "description": "Write 1 question you have about any information from the text"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.43",
+              "sco_code": "LA-G4-RV-SCO2.42",
               "description": "Complete a T-Chart based on a narrative text read or viewed."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.44",
-              "description": "Provide a passage with certain words missing for learners to fill in, testing their understanding of the text, vocabulary knowledge, and ability to use context clues to fill in missing words."
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.45",
+              "sco_code": "LA-G4-RV-SCO2.43",
               "description": "Learners create their written responses to text read."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.46",
+              "sco_code": "LA-G4-RV-SCO2.44",
               "description": "read and view to develop understanding of how vocabulary and language use influence the meaning and mood of the text"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.47",
-              "description": "Implicit and Explicit messages (SCO 4.12)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.48",
-              "description": "Word Mapping: (SCO 4.13)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.49",
-              "description": "Contextual Processing: (SCO 4.13, 4.14)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.50",
-              "description": "By the end of Grade 4, the learner will be expected to: write and represent to generate and gather thoughts to explore ideas, feelings, and experiences"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.51",
+              "sco_code": "LA-G4-RV-SCO2.45",
               "description": "write and represent, using organizational strategies to arrange thoughts to explore, clarify and reflect on ideas, feelings, and experiences"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.52",
+              "sco_code": "LA-G4-RV-SCO2.46",
               "description": "write and represent to create a written or representative draft"
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.53",
+              "sco_code": "LA-G4-RV-SCO2.47",
               "description": "I would like to be better at ..."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.54",
+              "sco_code": "LA-G4-RV-SCO2.48",
               "description": "I would like to invent ..."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.55",
-              "description": "Poster Creation Competition (SCO 5.12)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.56",
-              "description": "Strengthen Your Writing (SCO 5.10, 5.19, 5.20)"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.57",
-              "description": "(SCO 5.19) Write a poem about one of your country’s celebrations (Carnival). Decide on the style/form of poetry to be studied and share a variety of poems with learners. For examples, visit https://discoverpoetry.com/poems/poems-for-4th-graders/"
-            },
-            {
-              "sco_code": "LA-G4-RV-SCO2.58",
+              "sco_code": "LA-G4-RV-SCO2.49",
               "description": "2) Understand author’s style: Understanding an author's style enriches the reading experience by deepening comprehension, fostering critical thinking skills, and cultivating a deeper appreciation for literature as a form of artistic expression."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.59",
+              "sco_code": "LA-G4-RV-SCO2.50",
               "description": "3) Compare and contrast fiction and nonfiction: By understanding the distinct characteristics of fiction and nonfiction, students will gain deeper insight into the different ways in which authors craft their writing to inform, entertain and persuade readers."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.60",
+              "sco_code": "LA-G4-RV-SCO2.51",
               "description": "4) Character Development: Teaching character development in reading enriches the reading experience, promotes critical thinking and empathy, fosters cultural understanding, and empowers readers to engage more deeply with literature."
             },
             {
-              "sco_code": "LA-G4-RV-SCO2.61",
+              "sco_code": "LA-G4-RV-SCO2.52",
               "description": "5) Knowledge of implied and explicit messages/morals through a critical lens (moral of the story, theme): Understanding implied and explicit messages involves analyzing the text to uncover deeper meanings, themes, and moral lessons."
             }
           ],
@@ -1107,81 +1075,6 @@
             "Explicit vs. Implicit: Reading Between the Lines - ESLBUZZ."
           ],
           "elo_code": "LA-G4-RV-ELO2"
-        },
-        {
-          "elo_description": "2: Students will demonstrate a variety of ways to use background knowledge and interests to select",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "LA-G4-TP-SCO1.1",
-              "description": "2.1 select engaging paper based and digital visual texts for Independent Reading based on: - interests - appropriate level of difficulty - various genres - diverse cultures"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.2",
-              "description": "2.2 justify reading preferences"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.3",
-              "description": "2.3 utilize background knowledge to better comprehend a topic, picture, or title before, during and after reading"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.4",
-              "description": "2.4 read, view, and respond to a variety of literature from the Caribbean and other cultures"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.5",
-              "description": "2.5 continue to develop strategies and monitor reading effectiveness to identify reading challenges and apply appropriate fix up strategies"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.6",
-              "description": "2.6 use pictures and illustrations, word structures, and text features to: - locate information - obtain or verify understanding of information - develop questions - search for answers"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.7",
-              "description": "2.7 continue to develop and demonstrate critical questioning strategies to gather information from favourite"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.8",
-              "description": "visual, musical, and written text re: - point of view - purpose - bias - subtle messages"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.9",
-              "description": "2.8 follow and correct when necessary, multi-step written instructions e.g., how to assemble a product or play a board game."
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.10",
-              "description": "read and view to select and engage critically with a range of texts for personal growth"
-            },
-            {
-              "sco_code": "LA-G4-TP-SCO1.11",
-              "description": "2.9 use Independent Reading Time to develop -reading fluency (accuracy, phrasing, and intonation) -recognise quotation marks and marker words (said, shouted, whispered, etc.) to determine the mood of the speaker in the text"
-            }
-          ],
-          "inclusive_assessment_strategies": [
-            "At the beginning of each term, and during the term when necessary, use an oral reading record to determine each learner’s progress in reading. Provide guided reading sessions to build on the learner’s progress.",
-            "Use formative assessment (Conversation, Observation, and Product) during independent reading to assess learners’ reading proficiency.",
-            "Note: Remember that in addition to written assessments, opportunities to talk, sing, illustrate or dramatise provide the teacher with useful information about student learners. All learners should be exposed to a wide range of assessment formats.",
-            "CONVERSATION: Conference with learners about books they have read independently. Inquire about their interest, ask questions, and take note of responses.",
-            "Reading Conference Record Sheet: Name ___________ Date ______ Title ___________ Author _________",
-            "Why did you choose this? How difficult was this book for you? hard easy just right?",
-            "What connection did you make with the text? What strategy helped you understand the text? What is your favourite part of the text? Would you recommend this book? why?",
-            "Let’s discuss your strengths and what you need to work on _________",
-            "OBSERVATION: Observe students as they engage in Independent Reading. Look for signs of active engagement, such as following along with the text, using reading strategies, and showing comprehension through facial expressions or annotations. Record anecdotal notes of patterns and behaviors for intervention and improvement.",
-            "Reading Logs: Reading Logs provide teachers with a detailed view of learners' record of the books read and amount of time spent reading. Use reading logs to track learners progress, monitor books they have read, reflect on their reading habits and to set reading goals for them. NOTE: Quality over quantity! It’s important to allow for individual differences in the time and quantity of books read.",
-            "Independent reading log",
-            "1. Title: _________________________ Author: _________________________ Genre: _________________________ Date Started: _____ Date Ended: _____"
-          ],
-          "inclusive_learning_strategies": [
-            "ELO 2 emphasizes the importance of daily Independent Reading. During independent reading, learners should select materials that interest them, align with their progress, and provide just the right amount of challenge to improve their reading.",
-            "Read and view to use background knowledge and interests to select book",
-            "Independent reading time (SCO 2.1, 2.2, 2.3, 2.4): Provide opportunities for daily sustained Independent Reading. Ensure there’s a class library stocked with a diverse range of reading materials for all learners to choose from. Enable learners to choose texts that suit their individual reading levels and start reading independently. While learners read on their own, the teacher should engage in one-on-one discussions with others, listening to them read, and conduct small group guided reading sessions. See the IAS column for suggestions about how to observe and confer with learners.",
-            "Attitude and interest: During independent reading, offer learners the chance to select materials that captivate, appropriate and are enjoyable to them. Involve them in exercises that boost their reading confidence. Keep track of their progress to assess their growth and adjust the reading level accordingly.",
-            "Readers’ Workshop (SCO 2.3) – Independent Reading is one component of Readers’ Workshop. Engage learners in a brief 10 minute mini lesson to remind them of a previous lesson taught during ELO 3 and 4. Encourage them to apply that lesson during Independent Reading to and practice reading strategies and skills fluency, and stamina (see poster above). (see Additional Resources section for before, during and after reading activities). Create opportunities for discussion, artistic",
-            "representation, illustrative, and written reflections on reading.",
-            "Enhancing cultural experience through independent reading (SCO 2.4)",
-            "To improve learners' understanding and enjoyment of literature, encourage them to explore a variety of books from local and international cultures. Create a special area in the classroom with diverse reading materials for various skill levels. Stress the importance of interacting with (curated) locally produced digital and paper based content such as books, poems, newspapers, lyrics, posters, magazines, and brochures etc. Encourage learners to contribute to this collection by bringing items from home or conducting research. Note: Be sure to review texts brought from home before displaying.",
-            "Encourage learners to use the classroom space for independent reading. Allow them to choose materials they like, reflect on, and discuss their thoughts while reading, and then creatively connect the content to their own cultural heritage."
-          ],
-          "elo_code": "LA-G4-TP-ELO1"
         }
       ],
       "resources": [
@@ -1978,26 +1871,6 @@
             {
               "sco_code": "LA-G4-WR-SCO1.17",
               "description": "6.17 understand and use formal, informal, Home Language and Standard English as appropriate to the purpose, topic, setting, plot line and characters in writing"
-            },
-            {
-              "sco_code": "LA-G4-WR-SCO1.18",
-              "description": "6.18 continue to engage in individual and peer revision opportunities to share drafts and provide/ receive feedback on elements of grammar and sentence fluency such as: -use of simple verb tenses (e.g., I walked; I walk; I will walk) -comparative and superlative adjectives and adverbs, -form and use possessives. -subject and verb agreement -use of simple, compound, and complex sentence patterns -determining complete and incomplete sentences"
-            },
-            {
-              "sco_code": "LA-G4-WR-SCO1.19",
-              "description": "By the end of Grade 4, the learners will be expected to: write and represent to revise organization styles of draft writing and representation"
-            },
-            {
-              "sco_code": "LA-G4-WR-SCO1.20",
-              "description": "Look for evidence of each learner’s level of confidence as they engage in the writing process: - Do they have a topic? - Do they support the topic with a variety of ideas? - Is there evidence of a plan? - Do they use a graphic organiser to put their ideas in order? - Is their writing reflective of their plans? Observing these writing behaviours provide the teacher with information about each learner’s level of comfort and how support is best planned."
-            },
-            {
-              "sco_code": "LA-G4-WR-SCO1.21",
-              "description": "Peer Assessment for organisation of writing Peer Review Forms 1. Writing is a collaborative effort. Encourage learners to use peer review forms to improve the organisation of the drafts of their peers. 2. The peer review/feedback forms below can be used to aid learners' review and revise their drafts in descriptive writing and narrative writing. 3. Learners can use them to assess the beginning, setting, characters and vocabulary of their peers' pieces."
-            },
-            {
-              "sco_code": "LA-G4-WR-SCO1.22",
-              "description": "PRODUCT Reflective Journal • Provide learners with an organizational strategy (reflective strategy) to talk about or record their thoughts of the writing process including their drafts, reviews, and editing. • The journal provides a method of both teacher assessment and self assessment of different stages of the writing process. • The reflective journal below will allow students to reflect on their learning by responding to the questions in the journal. • NOTE: Before presenting the My Improvement Plan template, ask learners what they feel they have done well. This allows the students to think about improvement plans as building on what they know, rather than fixing mistakes."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2094,14 +1967,10 @@
             },
             {
               "sco_code": "LA-G4-WR-SCO2.12",
-              "description": "By the end of Grade 4, learners will be expected to: develop and make use of the writing conventions to enhance the meaning and clarity of their written work with increased attention to develop spelling conventions"
-            },
-            {
-              "sco_code": "LA-G4-WR-SCO2.13",
               "description": "write and represent to develop punctuation conventions to enhance the meaning and clarity of their written work."
             },
             {
-              "sco_code": "LA-G4-WR-SCO2.14",
+              "sco_code": "LA-G4-WR-SCO2.13",
               "description": "write and represent to develop presentation formats to enhance the meaning and clarity of their written work."
             }
           ],

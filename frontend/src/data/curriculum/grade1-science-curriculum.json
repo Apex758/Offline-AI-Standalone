@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade1-science-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "1",
+    "grade": "Grade 1",
     "subject": "Science"
   },
   "strands": [
@@ -325,10 +325,6 @@
             {
               "sco_code": "SC-G1-WV-SCO4.20",
               "description": "Create a picture poster of the communication devices that have been developed over the last 100 years (e.g. telegraph, lighthouses, Braille, traffic lights, clocks, dial telephones, hearing aids, alarms, computers, iPad, cellphones etc.)"
-            },
-            {
-              "sco_code": "SC-G1-WV-SCO4.21",
-              "description": "Light Communication Challenge: You want to use a torch (flashlight) to send four different messages to your friend across the street at night time. You can use quick and slow on/off light flashes. How will you communicate the following? o Come over to play. o I am going to bed o Our favorite TV show is on now o Did you have dinner yet?"
             }
           ],
           "inclusive_assessment_strategies": [

@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade2-mathematics-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "2",
+    "grade": "Grade 2",
     "subject": "Mathematics"
   },
   "strands": [
@@ -1833,14 +1833,10 @@
             },
             {
               "sco_code": "MA-G2-PR-SCO1.16",
-              "description": "Are students able to build patterns using geometric shapes? E.g."
-            },
-            {
-              "sco_code": "MA-G2-PR-SCO1.17",
               "description": "Johnny did this with his building blocks"
             },
             {
-              "sco_code": "MA-G2-PR-SCO1.18",
+              "sco_code": "MA-G2-PR-SCO1.17",
               "description": "Tina wrote these numbers down on her book 5, 10, 15, 20, 5, 10, 15, 20"
             }
           ],
@@ -1860,7 +1856,8 @@
             "Have students discuss what they observe about this pattern. 1. Is it a repeating pattern? Circle Yes or No 2. If yes, draw the next five terms to continue the pattern.",
             "Product Exit Slip Students will answer the following:",
             "1. Is that a pattern? Circle Yes or No 2. What kind of pattern is it? 3. Draw what will come next.",
-            "1. Describe the pattern in your own words? 2. Is it growing or repeating? Yes or No"
+            "1. Describe the pattern in your own words? 2. Is it growing or repeating? Yes or No",
+            "Are students able to build patterns using geometric shapes? E.g."
           ],
           "inclusive_learning_strategies": [
             "Take students on a field trip in the community or within their school environment and allow them to identify patterns around them. e.g. patterns with buildings, or patterns of houses or how the houses and streets are located.",
@@ -1959,42 +1956,38 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G2-PR-SCO3.1",
-              "description": "Learners will be expected to: Knowledge"
-            },
-            {
-              "sco_code": "MA-G2-PR-SCO3.2",
               "description": "Identify and interpret simple number sentences using words, diagrams and symbols."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.3",
+              "sco_code": "MA-G2-PR-SCO3.2",
               "description": "Communicate and interpret simple additive and subtractive strategies using words, diagrams and symbols."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.4",
+              "sco_code": "MA-G2-PR-SCO3.3",
               "description": "Explain how the arrangement of numbers (commutative property) does not affect the sum/total."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.5",
+              "sco_code": "MA-G2-PR-SCO3.4",
               "description": "Recognize that the commutative property does not apply to subtraction."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.6",
+              "sco_code": "MA-G2-PR-SCO3.5",
               "description": "Represent algebraic expressions using variables and symbols."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.7",
+              "sco_code": "MA-G2-PR-SCO3.6",
               "description": "Represent unknown quantities concretely, pictorially and numerically."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.8",
+              "sco_code": "MA-G2-PR-SCO3.7",
               "description": "Simplify algebraic expression problems involving an unknown quantity in an addition and subtraction situation."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.9",
+              "sco_code": "MA-G2-PR-SCO3.8",
               "description": "Demonstrate an appreciation for the use of symbols as a substitute for real life objects when counting and grouping items up to a hundred."
             },
             {
-              "sco_code": "MA-G2-PR-SCO3.10",
+              "sco_code": "MA-G2-PR-SCO3.9",
               "description": "Simplify these simple algebraic expressions using one operation at a time. 2f + f, h + 4h, 5a - 2a, 6b - 4b"
             }
           ],
@@ -2079,26 +2072,22 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G2-PR-SCO5.1",
-              "description": "Learners will be expected to: Knowledge - Demonstrate and explain what equality means using manipulatives and diagrams (0-100)."
-            },
-            {
-              "sco_code": "MA-G2-PR-SCO5.2",
               "description": "Record equalities and inequalities symbolically using the correct symbol."
             },
             {
-              "sco_code": "MA-G2-PR-SCO5.3",
+              "sco_code": "MA-G2-PR-SCO5.2",
               "description": "Solve for missing quantities to make the equation equivalent."
             },
             {
-              "sco_code": "MA-G2-PR-SCO5.4",
+              "sco_code": "MA-G2-PR-SCO5.3",
               "description": "Model equalities using a variety of concrete representation and record."
             },
             {
-              "sco_code": "MA-G2-PR-SCO5.5",
+              "sco_code": "MA-G2-PR-SCO5.4",
               "description": "Appreciate the need for equating an expression to values."
             },
             {
-              "sco_code": "MA-G2-PR-SCO5.6",
+              "sco_code": "MA-G2-PR-SCO5.5",
               "description": "Accept that an equation is a number sentence."
             }
           ],
@@ -2517,22 +2506,6 @@
             {
               "sco_code": "MA-G2-GT-SCO1.12",
               "description": "Identify and describe the position of 2-D and 3-D shapes in relation to another shape, object or space."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO1.13",
-              "description": "SCO 7: Students will complete a table with prompts for 2D and 3D shape samples presented to them, using words or pictures: Shapes, What do I see, It looks like a......"
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO1.14",
-              "description": "SCO 8: Oral Assessment. Students will dip in a bag, select a picture of a shape or the shape name and engage in a round the class oral discourse entitled: “I am a _____ because” (e.g. I am a cube because I have 6 square faces, 12 edges and 8 vertices)"
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO1.15",
-              "description": "SCO 9: BINGO. In groups, students will play shape BINGO. A descriptive piece will be read to them and based on the 3D description, a peg/counter will be placed on the correct shape or word. The first group to fill out the word BINGO wins. Teacher will monitor students progress as the activity is done."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO1.16",
-              "description": "SCO 9: Provide students with the opportunity to make comparisons and explore 2D and 3D shapes. For example: Students are presented with riddles reflecting characteristics of 3D shapes, and are to use 2D shapes to create 3D objects or shapes. Example: - I am a concrete block used in construction with 6 rectangular faces. (cuboid) - You lick ice-cream off me on a hot sunny day. (cone) - You roll me as a die when you play board games. (cube) or Students who have difficulty visualising the read riddles, objects reflecting the descriptors of the 3D objects will be placed in a pool of shapes for them to select, or an assistive device on the computer can be used to help them create the shapes."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2564,30 +2537,26 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G2-GT-SCO2.1",
-              "description": "Learners will be expected to: Knowledge: Identify 2D shapes on 3D objects."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO2.2",
               "description": "Skill: Represent and construct 2D shapes and 3D objects."
             },
             {
-              "sco_code": "MA-G2-GT-SCO2.3",
+              "sco_code": "MA-G2-GT-SCO2.2",
               "description": "Skill: Sort 2D shapes and 3D objects based on their attributes and characteristics."
             },
             {
-              "sco_code": "MA-G2-GT-SCO2.4",
+              "sco_code": "MA-G2-GT-SCO2.3",
               "description": "Skill: Sole repeating patterns using/involving 2D shapes and 3D objects."
             },
             {
-              "sco_code": "MA-G2-GT-SCO2.5",
+              "sco_code": "MA-G2-GT-SCO2.4",
               "description": "Skill: Create repeating patterns using/involving 2D shapes and 3D objects."
             },
             {
-              "sco_code": "MA-G2-GT-SCO2.6",
+              "sco_code": "MA-G2-GT-SCO2.5",
               "description": "Skill: Build composite shapes/structures of 2D and 3D shapes and describe the pattern used."
             },
             {
-              "sco_code": "MA-G2-GT-SCO2.7",
+              "sco_code": "MA-G2-GT-SCO2.6",
               "description": "Value: Choose to use 2D shapes to create 3D models using pictorial and physical representations."
             }
           ],
@@ -2650,26 +2619,6 @@
             {
               "sco_code": "MA-G2-GT-SCO3.10",
               "description": "Values 8. Show an awareness of the existence of 2D shapes by discussing where they are found in everyday life."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO3.11",
-              "description": "SCO # 1, 2, 3, 4, 6, 8"
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO3.12",
-              "description": "SCO # 6, 7, 8"
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO3.13",
-              "description": "SCO #4"
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO3.14",
-              "description": "SCO #4: Each 3D shape will be placed on the ramp and results will be recorded in the table below. Learners will tick the appropriate column."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO3.15",
-              "description": "SCO #6, 7, 8: Give each learner four cards. He/she will name and draw a different real-life 3D object on each card and will name the 2D shapes that it is made of."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2753,46 +2702,42 @@
             },
             {
               "sco_code": "MA-G2-GT-SCO4.13",
-              "description": "Cone: A cone starts with a closed curve in a plane and a separate point which does not lie in the point called an apex. The starting curve and the region inside it is called the base of the cone. Sometimes the base of the cone is considered a part of the cone, and sometimes it isn’t. Either shape with or without the base can be called a cone. Some cones can be right and some can be oblique in shape. In terms of faces, edges and vertices; a cone has one curved face, one circular face, curved edges and an apex/vertex. An apex is a point that does not lie within a shape."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO4.14",
               "description": "Cylinder: A cylinder is a tubed shaped object. It consists of two circular bases joined by a curved face. A Cylinder has two curved edges and no vertices because it is made up of curved surfaces."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.15",
+              "sco_code": "MA-G2-GT-SCO4.14",
               "description": "Spheres: A round ball shape solid. It has no surface, edge or vertex."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.16",
+              "sco_code": "MA-G2-GT-SCO4.15",
               "description": "Pyramid: A solid in which the base is a polygon and all lateral faces are triangles that meet at a point called an apex. They are often named based on the bases that make the pyramid."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.17",
+              "sco_code": "MA-G2-GT-SCO4.16",
               "description": "Prism: A solid with two identical polygonal bases and whose edges are joined by rectangular faces. Prisms are often named according to the kind of polygon that makes the base of the prism. For example, a prism with a triangular base is called a triangular prism."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.18",
+              "sco_code": "MA-G2-GT-SCO4.17",
               "description": "Some examples of 2D polygons and their properties in terms of number of corners and sides"
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.19",
+              "sco_code": "MA-G2-GT-SCO4.18",
               "description": "1. Circle is round with no corners."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.20",
+              "sco_code": "MA-G2-GT-SCO4.19",
               "description": "2. A triangle is made up of three sides and three corners."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.21",
+              "sco_code": "MA-G2-GT-SCO4.20",
               "description": "3. A square is made up of sides of the same length and 4 corners."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.22",
+              "sco_code": "MA-G2-GT-SCO4.21",
               "description": "4. A rectangle is made up of 4 sides in which opposite sides are equal in length and 4 corners."
             },
             {
-              "sco_code": "MA-G2-GT-SCO4.23",
+              "sco_code": "MA-G2-GT-SCO4.22",
               "description": "5. A pentagon is made up of 5 sides and 5 corners."
             }
           ],
@@ -2834,31 +2779,23 @@
             },
             {
               "sco_code": "MA-G2-GT-SCO5.2",
-              "description": "Learners will be expected to: Knowledge 1. Compare shapes and objects (2D & 3D) on the basis of attributes using appropriate vocabulary."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO5.3",
               "description": "2. Describe the relative location/position of 2D shapes and 3D objects in relation to other shapes and objects (above/below, over/under, beside/inside/outside, to the right/left of behind/in front of)."
             },
             {
-              "sco_code": "MA-G2-GT-SCO5.4",
+              "sco_code": "MA-G2-GT-SCO5.3",
               "description": "3. Describe the movements required to place an object in a particular position, relative to another object (left/right, up/down)."
             },
             {
-              "sco_code": "MA-G2-GT-SCO5.5",
+              "sco_code": "MA-G2-GT-SCO5.4",
               "description": "4. Use a variety of models, materials to create shapes."
             },
             {
-              "sco_code": "MA-G2-GT-SCO5.6",
+              "sco_code": "MA-G2-GT-SCO5.5",
               "description": "5. Volunteer to identify objects in the environment that are in various shapes."
             },
             {
-              "sco_code": "MA-G2-GT-SCO5.7",
+              "sco_code": "MA-G2-GT-SCO5.6",
               "description": "Check that the student: 1. Used vocabulary that identifies position. 2. Used vocabulary that matches the actual position of the object."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO5.8",
-              "description": "SCO #3 Games"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2892,62 +2829,54 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G2-GT-SCO6.1",
-              "description": "Learners will be expected to Knowledge: Duplicate composite 2D and 3D shapes that are presented."
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO6.2",
-              "description": "Learners will be expected to Skill: Design composite 2D"
-            },
-            {
-              "sco_code": "MA-G2-GT-SCO6.3",
               "description": "representations combining the faces of more than one 2D shape."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.4",
+              "sco_code": "MA-G2-GT-SCO6.2",
               "description": "Create composite 3D structures using 3D objects in their environment."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.5",
+              "sco_code": "MA-G2-GT-SCO6.3",
               "description": "Make composite representations of 2D and 3D shapes using technology."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.6",
+              "sco_code": "MA-G2-GT-SCO6.4",
               "description": "Solve problems involving 2D and 3D shapes."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.7",
+              "sco_code": "MA-G2-GT-SCO6.5",
               "description": "Justify the use of the shapes used to create their composite 2D and 3D shapes stating the properties of the shapes that make them suitable."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.8",
+              "sco_code": "MA-G2-GT-SCO6.6",
               "description": "Learners create a 3D model of a structure in their community, and present to the class. In their presentation they state the 3D shapes used and the reason for using the shapes."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.9",
+              "sco_code": "MA-G2-GT-SCO6.7",
               "description": "The learners contributed towards every step of the task."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.10",
+              "sco_code": "MA-G2-GT-SCO6.8",
               "description": "The steps of tasks are completed."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.11",
+              "sco_code": "MA-G2-GT-SCO6.9",
               "description": "The shapes used to create the picture are suitable."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.12",
+              "sco_code": "MA-G2-GT-SCO6.10",
               "description": "The cut outs were pasted strategically to create the picture."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.13",
+              "sco_code": "MA-G2-GT-SCO6.11",
               "description": "All the shapes are used."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.14",
+              "sco_code": "MA-G2-GT-SCO6.12",
               "description": "All the shapes are positioned correctly."
             },
             {
-              "sco_code": "MA-G2-GT-SCO6.15",
+              "sco_code": "MA-G2-GT-SCO6.13",
               "description": "The picture is recreated accurately"
             }
           ],
@@ -3471,54 +3400,34 @@
             },
             {
               "sco_code": "MA-G2-ME-SCO1.11",
-              "description": "Attribute Sorting Game: Prepare a collection of objects or picture cards that represent various attributes. Students are required to sort them based on their attributes. For example, they could sort pictures of different animals into groups of long, short, wide, and narrow. This activity encourages students to identify and categorize objects based on their attributes."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO1.12",
-              "description": "Measurement Stations: Organize different stations with measuring tools such as rulers, measuring tapes, or even their own feet. At each station, provide objects or examples that represent different attributes, and have students measure and record the corresponding attribute. For example, at the \"tall\" station, they could measure and record the height of different objects."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO1.13",
-              "description": "Attribute Pictionary: Divide the class into small groups. Provide each group with a set of attribute vocabulary cards. One student from each group picks a card and without speaking, must draw a representation of the attribute on the board. The group members try to guess the attribute being depicted. This activity encourages creativity and reinforces vocabulary and understanding."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO1.14",
-              "description": "Attribute Relay Race: Set up a relay race with different stations representing each attribute. For example, at the \"far\" station, students could throw a ball as far as they can, or at the \"deep\" station, they could fill a container with water as deeply as possible. Divide the class into teams, and each team member takes turns completing a task at each station. The team that finishes all the attribute tasks first wins the race."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO1.15",
-              "description": "Attribute Building Blocks: Provide students with building blocks or other construction materials. Students are instructed to build structures that represent each attribute. For example, they could build a tall tower, a long bridge, or a narrow pathway. Encourage students to use their creativity and spatial awareness while constructing and describing their creations."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO1.16",
               "description": "Observational Checklist: Use a checklist to assess students as they use given non-standard units to measure objects in the classroom."
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.17",
+              "sco_code": "MA-G2-ME-SCO1.12",
               "description": "Estimation Skills"
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.18",
+              "sco_code": "MA-G2-ME-SCO1.13",
               "description": "Measurement Using Non-Standard Units"
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.19",
+              "sco_code": "MA-G2-ME-SCO1.14",
               "description": "Measurement Using Standard Units"
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.20",
+              "sco_code": "MA-G2-ME-SCO1.15",
               "description": "Representation of Measurements"
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.21",
+              "sco_code": "MA-G2-ME-SCO1.16",
               "description": "Variety of Measurement Tasks"
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.22",
+              "sco_code": "MA-G2-ME-SCO1.17",
               "description": "Mathematical Reasoning"
             },
             {
-              "sco_code": "MA-G2-ME-SCO1.23",
+              "sco_code": "MA-G2-ME-SCO1.18",
               "description": "Neatness and Presentation"
             }
           ],
@@ -3653,22 +3562,14 @@
             },
             {
               "sco_code": "MA-G2-ME-SCO2.16",
-              "description": "Peer assessment: Teacher and students create a checklist and students use this tool to assess their peers as they measure."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO2.17",
               "description": "Open-Ended Tasks: Include open-ended tasks that allow for creativity and critical thinking. For example, ask students to measure and draw a path on a map, considering different starting points. This encourages them to think about the impact of starting points on measurements in a broader context."
             },
             {
-              "sco_code": "MA-G2-ME-SCO2.18",
-              "description": "Rubric: Use a rubric to assess to students as they build the box and the finished product"
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO2.19",
+              "sco_code": "MA-G2-ME-SCO2.17",
               "description": "Accuracy of Dimensions: Exemplary (4)"
             },
             {
-              "sco_code": "MA-G2-ME-SCO2.20",
+              "sco_code": "MA-G2-ME-SCO2.18",
               "description": "The student's presentation of the gift box is disorganized, lacks visual appeal, and shows little consideration for color, decorations, and overall presentation."
             }
           ],
@@ -3929,22 +3830,6 @@
             {
               "sco_code": "MA-G2-ME-SCO5.10",
               "description": "Create real-life situations, such as measuring ingredients for a recipe or estimating the amount of liquid in a container."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO5.11",
-              "description": "SCO3 Sorting Tasks: Provide students with a set of objects or containers of varying volumes or masses. Ask them to sort and categorize the objects based on their comparisons. Look for their ability to identify which objects have more, less, or an equal volume or mass."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO5.12",
-              "description": "SCO4 Performance Tasks: Design performance tasks where students are given specific volumes to measure using the measuring tools. Provide a set of containers and liquids of various volumes and ask students to measure and match the correct volume to each container. Assess their accuracy and understanding of measuring in milliliters."
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO5.13",
-              "description": "SCO5,6,7"
-            },
-            {
-              "sco_code": "MA-G2-ME-SCO5.14",
-              "description": "SCO8 Performance Tasks: Design performance tasks where students are given specific recipes or containers to work with. Ask them to measure ingredients, follow the steps of the recipe, and record their measurements. Assess their ability to use the correct tools, follow instructions, and achieve the desired outcome."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4581,14 +4466,6 @@
             {
               "sco_code": "MA-G2-DH-SCO2.3",
               "description": "Make the connection that data collection is acquiring information to answer important questions."
-            },
-            {
-              "sco_code": "MA-G2-DH-SCO2.4",
-              "description": "Favourite Colour Tally: Provide each student with a chart or grid labelled with different colours (e.g., red, blue, green, and yellow). Ask the students to walk around the classroom and ask their classmates about their favourite colour. Instruct them to make a tally mark in the corresponding column for each classmate's response. After collecting data, have the students count the tally marks and discuss which colour was the most and least popular."
-            },
-            {
-              "sco_code": "MA-G2-DH-SCO2.5",
-              "description": "Favourite Weather Pictograph: Provide each student with a sheet of paper and ask them to draw three circles to represent three types of weather conditions (sunny, rainy, and cloudy). Instruct the students to ask their classmates about their favourite kind of weather and fill in the circles accordingly. For example, if five classmates prefer sunny days, they can draw five small suns in the sunny circle. Once all the data is collected, discuss the pictograph as a class, noting which weather condition that received the most votes and which received the fewest."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4610,10 +4487,6 @@
             {
               "sco_code": "MA-G2-DH-SCO3.1",
               "description": "Learners will be able to: Knowledge: 1. Identify the most frequent count presented in any data sets (e.g., concrete graphs, pictographs, bar graphs, and tables)."
-            },
-            {
-              "sco_code": "MA-G2-DH-SCO3.2",
-              "description": "2. Explain in their own words what the most frequent count indicates about the data. Skills: Collect, group and analyze data. Values: Analyze data and make informed decisions using these data. Use data to make informed decisions about real life situations. Appreciate the importance of identifying the most frequent count of any given data."
             }
           ],
           "inclusive_assessment_strategies": [

@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade3-science-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "3",
+    "grade": "Grade 3",
     "subject": "Science"
   },
   "strands": [
@@ -74,114 +74,110 @@
             },
             {
               "sco_code": "SC-G3-FI-SCO1.16",
-              "description": "The teacher will encourage students to bring a pair of magnets to school and engage. They will complete each as demonstrated on the worksheet and on the line they will record their answer"
-            },
-            {
-              "sco_code": "SC-G3-FI-SCO1.17",
               "description": "Students will read each scenario then draw a line to match."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.18",
+              "sco_code": "SC-G3-FI-SCO1.17",
               "description": "Draw and write to show how you can use force to affect motion in each way: 1. Make something start moving, 2. Make something stop moving, 3. Make something slow down, 4. Make something speed up, 5. Make something change direction, 6. Make something change shape."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.19",
+              "sco_code": "SC-G3-FI-SCO1.18",
               "description": "Define the terms: Arc, Motion, Force, Force of gravity, Magnetic force, Pattern, Predict"
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.20",
+              "sco_code": "SC-G3-FI-SCO1.19",
               "description": "Identify the different types of motion (ways objects move)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.21",
+              "sco_code": "SC-G3-FI-SCO1.20",
               "description": "Describe patterns in the environment (natural and human)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.22",
+              "sco_code": "SC-G3-FI-SCO1.21",
               "description": "Describe the movement of various objects."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.23",
+              "sco_code": "SC-G3-FI-SCO1.22",
               "description": "Demonstrate they understand that objects can move in various ways."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.24",
+              "sco_code": "SC-G3-FI-SCO1.23",
               "description": "Compare the different ways objects can move (straight line, zig zag, back and forth, circular)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.25",
+              "sco_code": "SC-G3-FI-SCO1.24",
               "description": "Explain the various ways objects can move in the environment."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.26",
+              "sco_code": "SC-G3-FI-SCO1.25",
               "description": "Identify the conditions needed for objects to move in a given situation. (ST 2 PS EN 1)"
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.27",
+              "sco_code": "SC-G3-FI-SCO1.26",
               "description": "Identify with examples forces at work in everyday situations in the home and community. (ST 3 PS FMS 2)"
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.28",
+              "sco_code": "SC-G3-FI-SCO1.27",
               "description": "Observe objects in motion."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.29",
+              "sco_code": "SC-G3-FI-SCO1.28",
               "description": "Infer that patterns can be repeated by engaging in scientific investigations."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.30",
+              "sco_code": "SC-G3-FI-SCO1.29",
               "description": "Classify the motion of objects."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.31",
+              "sco_code": "SC-G3-FI-SCO1.30",
               "description": "Communicate ideas on patterns and motions with their peers."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.32",
+              "sco_code": "SC-G3-FI-SCO1.31",
               "description": "Predict what should come next in patterns."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.33",
+              "sco_code": "SC-G3-FI-SCO1.32",
               "description": "Construct a pendulum and a spiral marble track to observe motion."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.34",
+              "sco_code": "SC-G3-FI-SCO1.33",
               "description": "Illustrate or draw the various ways objects can move in the environment."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.35",
+              "sco_code": "SC-G3-FI-SCO1.34",
               "description": "Distinguish between a motion and a pattern."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.36",
+              "sco_code": "SC-G3-FI-SCO1.35",
               "description": "Demonstrate ways in which motion can be changed. (ST 2 PS FMS 1)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.37",
+              "sco_code": "SC-G3-FI-SCO1.36",
               "description": "Describe and demonstrate the forces of push and pull (ST 3 PS FMS 1)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.38",
+              "sco_code": "SC-G3-FI-SCO1.37",
               "description": "Classify different kinds of motion according to what causes the motion (e.g. gravity, magnets) (ST 4 PS FMS 2)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.39",
+              "sco_code": "SC-G3-FI-SCO1.38",
               "description": "Infer that the position of the sun changes at different times of the day. (ST 2 ESS SS 3)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.40",
+              "sco_code": "SC-G3-FI-SCO1.39",
               "description": "Outline the relationship between earth, moon and sun, especially how the relationship affects humans. (ST 3 ESS SS 1)."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.41",
+              "sco_code": "SC-G3-FI-SCO1.40",
               "description": "Work safely when participating in various activities."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.42",
+              "sco_code": "SC-G3-FI-SCO1.41",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G3-FI-SCO1.43",
+              "sco_code": "SC-G3-FI-SCO1.42",
               "description": "Work collaboratively in groups."
             }
           ],
@@ -402,7 +398,8 @@
             "Let us test our ideas using our pendulum. We will test our ideas in an orderly way by writing down the position that we drop our ball and what happens when we do so.",
             "When a pendulum is set in motion, gravity causes a restoring force that will accelerate it toward the center point, resulting in a back and forth swinging motion. The path of the pendulum is an arc.",
             "How will changing the length of the rope affect the movement of the ball?",
-            "What happens if I use a heavier ball instead?"
+            "What happens if I use a heavier ball instead?",
+            "The teacher will encourage students to bring a pair of magnets to school and engage. They will complete each as demonstrated on the worksheet and on the line they will record their answer"
           ],
           "elo_code": "SC-G3-FI-ELO1"
         },
@@ -1212,363 +1209,347 @@
             },
             {
               "sco_code": "SC-G3-IE-SCO1.10",
-              "description": "Giving multiple examples of animals in groups of various sizes: 1. Obtaining more food for each individual animal compared to the same type of animal looking for food individually. 2. Displaying more success in defending themselves than those same animals acting alone. 3. Making faster or better adjustments to harmful changes in their ecosystem than would those same animals acting alone."
-            },
-            {
-              "sco_code": "SC-G3-IE-SCO1.11",
               "description": "Observe the behaviour of individuals in a group."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.12",
+              "sco_code": "SC-G3-IE-SCO1.11",
               "description": "Compare how an individual member of a group of animals behaves when it is in the group and when it is separated from the group."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.13",
+              "sco_code": "SC-G3-IE-SCO1.12",
               "description": "Infer what could happen to members of a group if they are separated from the group."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.14",
+              "sco_code": "SC-G3-IE-SCO1.13",
               "description": "Communicate information gained from observations, texts, videos etc. with members of your group and the class."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.15",
+              "sco_code": "SC-G3-IE-SCO1.14",
               "description": "Predict how members of a named animal group may respond to certain changes in their environment."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.16",
+              "sco_code": "SC-G3-IE-SCO1.15",
               "description": "Compile data on the behaviour of different members of identified/named groups."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.17",
+              "sco_code": "SC-G3-IE-SCO1.16",
               "description": "Analyse data on the behaviour of different members of identified/named groups."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.18",
+              "sco_code": "SC-G3-IE-SCO1.17",
               "description": "Graph data provided/generated on the behaviour of different members of identified/named groups"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.19",
+              "sco_code": "SC-G3-IE-SCO1.18",
               "description": "Interpret data provided/generated on the behaviour of different members of identified/named groups"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.20",
+              "sco_code": "SC-G3-IE-SCO1.19",
               "description": "Show respect for evidence in making various claims about animals living in groups"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.21",
+              "sco_code": "SC-G3-IE-SCO1.20",
               "description": "Develop different ways that animals may be studied."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.22",
+              "sco_code": "SC-G3-IE-SCO1.21",
               "description": "Design ways to model the behaviour of different members of a group."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.23",
+              "sco_code": "SC-G3-IE-SCO1.22",
               "description": "Work collaboratively with their group members to complete various tasks."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.24",
+              "sco_code": "SC-G3-IE-SCO1.23",
               "description": "Students should be aware that some animals can harm them. For example, ants can bite."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.25",
+              "sco_code": "SC-G3-IE-SCO1.24",
               "description": "When conducting practical and group work, students should display sensitivity and offer assistance to classmates/group members who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.26",
+              "sco_code": "SC-G3-IE-SCO1.25",
               "description": "Participate actively in classroom discussions."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.27",
+              "sco_code": "SC-G3-IE-SCO1.26",
               "description": "Why would it be better for a fish to join the \"bait ball\" rather than swim alone?"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.28",
+              "sco_code": "SC-G3-IE-SCO1.27",
               "description": "What could happen to the meerkats if they started living alone instead of in groups?"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.29",
+              "sco_code": "SC-G3-IE-SCO1.28",
               "description": "Discuss the benefits of being in a group from the perspective of the lions and the buffalo."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.30",
+              "sco_code": "SC-G3-IE-SCO1.29",
               "description": "Meerkats live in large groups of about 40 members called gangs or mobs. Some members act as look-outs, some take care of the young, some hunt for food while others dig tunnels."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.31",
+              "sco_code": "SC-G3-IE-SCO1.30",
               "description": "State two things that could happen to a meerkat if it started to live alone instead of in a group."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.32",
+              "sco_code": "SC-G3-IE-SCO1.31",
               "description": "What do you think will happen if the female meerkats (mothers) or the lookouts, did not play their role? Write your answer in the table below."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.33",
+              "sco_code": "SC-G3-IE-SCO1.32",
               "description": "What if one of the above roles did not exist, what would be the outcome?"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.34",
+              "sco_code": "SC-G3-IE-SCO1.33",
               "description": "In the blank spaces indicate what might happen if the member identified stops playing its role."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.35",
-              "description": "Lookouts"
-            },
-            {
-              "sco_code": "SC-G3-IE-SCO1.36",
+              "sco_code": "SC-G3-IE-SCO1.34",
               "description": "Activity 4:"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.37",
+              "sco_code": "SC-G3-IE-SCO1.35",
               "description": "Define the terms: Adaptations, Ecosystem, Environmental balance, Habitat, Interdependence, Diversity, Abiotic, Biotic"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.38",
+              "sco_code": "SC-G3-IE-SCO1.36",
               "description": "Demonstrate that they understand that habitats are different and that some animals survive well in a particular habitat, some survive less well, and some cannot survive at all."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.39",
+              "sco_code": "SC-G3-IE-SCO1.37",
               "description": "Show evidence that in a particular habitat, some organisms can survive well, some survive less well, and some cannot survive at all."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.40",
+              "sco_code": "SC-G3-IE-SCO1.38",
               "description": "Account for adaptations observed in organisms found in different habitats."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.41",
+              "sco_code": "SC-G3-IE-SCO1.39",
               "description": "Explain how some features of organisms enable their survival in their habitats. (ST 2 LS ECS 5)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.42",
+              "sco_code": "SC-G3-IE-SCO1.40",
               "description": "Distinguish between activities that harm and those that preserve habitat/the environment. (ST 2 LS ECS 6)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.43",
+              "sco_code": "SC-G3-IE-SCO1.41",
               "description": "Explain, with examples, what are endangered species. (ST 2 LS ECS 12)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.44",
+              "sco_code": "SC-G3-IE-SCO1.42",
               "description": "Identify and describe ways of protecting endangered species e.g. laws, change of human's attitudes to life and the environment. (ST 2 LS ECS 13)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.45",
+              "sco_code": "SC-G3-IE-SCO1.43",
               "description": "Explain how adaptations of organisms enable their survival in their habitats."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.46",
+              "sco_code": "SC-G3-IE-SCO1.44",
               "description": "Identify, with examples, ways in which organisms in a particular habitat depend on each other (feeding, shelter, protection, beauty)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.47",
+              "sco_code": "SC-G3-IE-SCO1.45",
               "description": "Identify, with examples, ways in which plants and animals depend on each other (feeding, shelter, protection, beauty) (ST 2 LS ECS 17)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.48",
+              "sco_code": "SC-G3-IE-SCO1.46",
               "description": "Explain to their classmates the need for environmental conservation in their country, outlining possible scenarios if such protection is neglected. (ST 3 LS ECS 7)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.49",
+              "sco_code": "SC-G3-IE-SCO1.47",
               "description": "Reiterate the meaning of the concept of balance in the environment. (ST 3 LS ECS 5)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.50",
+              "sco_code": "SC-G3-IE-SCO1.48",
               "description": "Explain that living things compete for food and space in the environment and describe how breaking the flow or supply of food can have serious consequences. (ST 5 LS ECS 2)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.51",
+              "sco_code": "SC-G3-IE-SCO1.49",
               "description": "Explain with examples, the ways in which the structure of the land influences the types of ecosystems. (ST 3 LS ECS 3)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.52",
+              "sco_code": "SC-G3-IE-SCO1.50",
               "description": "Identify and name the different types of ecosystems in their country indicating their location on the map. (ST 3 LS ECS 4)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.53",
+              "sco_code": "SC-G3-IE-SCO1.51",
               "description": "Identify organisms found within a particular habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.54",
+              "sco_code": "SC-G3-IE-SCO1.52",
               "description": "Identify the basic needs of living organisms in various habitats."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.55",
+              "sco_code": "SC-G3-IE-SCO1.53",
               "description": "Describe the characteristics of different types of environments (e.g., soft earth, trees and shrubs, seasonal flowering plants)."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.56",
+              "sco_code": "SC-G3-IE-SCO1.54",
               "description": "Identify at least five different habitats that exist in different ecosystems."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.57",
+              "sco_code": "SC-G3-IE-SCO1.55",
               "description": "Compare the habitats of many different kinds of Caribbean plants and animals."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.58",
+              "sco_code": "SC-G3-IE-SCO1.56",
               "description": "Construct a model of a habitat for a given organism."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.59",
+              "sco_code": "SC-G3-IE-SCO1.57",
               "description": "Describe the characteristics of particular organisms that help them to adapt to particular environments."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.60",
+              "sco_code": "SC-G3-IE-SCO1.58",
               "description": "Identify the needs of named organisms in a particular habitat (e.g., shelter from predators, food, water)."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.61",
+              "sco_code": "SC-G3-IE-SCO1.59",
               "description": "Identify characteristics of organisms that might affect their survival."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.62",
+              "sco_code": "SC-G3-IE-SCO1.60",
               "description": "Compare the needs of at least three types of organisms found in a particular habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.63",
+              "sco_code": "SC-G3-IE-SCO1.61",
               "description": "Determine how and what features of the habitat are meeting the needs of each of the organisms (i.e., the degree to which a habitat meets the needs of an organism)."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.64",
+              "sco_code": "SC-G3-IE-SCO1.62",
               "description": "Determine what features of the habitat are meeting the needs of each of the organisms (i.e., the degree to which a habitat meets the needs of an organism)."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.65",
+              "sco_code": "SC-G3-IE-SCO1.63",
               "description": "Determine what features of the habitat that are not meeting the needs of each of the organisms (i.e., the degree to which a habitat does not meet the needs of an organism)."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.66",
+              "sco_code": "SC-G3-IE-SCO1.64",
               "description": "Observe different habitats to determine key features/their"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.67",
+              "sco_code": "SC-G3-IE-SCO1.65",
               "description": "Recognize that organisms and their habitat form an interconnected system."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.68",
+              "sco_code": "SC-G3-IE-SCO1.66",
               "description": "Develop a clear argument about the survival of organisms in the habitat, supported by evidence."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.69",
+              "sco_code": "SC-G3-IE-SCO1.67",
               "description": "Make comparisons between different organisms' abilities to survive in the habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.70",
+              "sco_code": "SC-G3-IE-SCO1.68",
               "description": "Classify different habitats based on their characteristics / Classify animals found in different habitats based on their characteristics/adaptations."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.71",
+              "sco_code": "SC-G3-IE-SCO1.69",
               "description": "Infer which habitat an organism might survive best in based on its physical/behavioral characteristics."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.72",
+              "sco_code": "SC-G3-IE-SCO1.70",
               "description": "Measure different variables within a given habitat, such as temperature, pH, etc."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.73",
+              "sco_code": "SC-G3-IE-SCO1.71",
               "description": "Communicate information gained from observation text, videos etc. with member of your group and the class."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.74",
+              "sco_code": "SC-G3-IE-SCO1.72",
               "description": "Construct an argument supported by evidence about the ability of organisms to survive in a habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.75",
+              "sco_code": "SC-G3-IE-SCO1.73",
               "description": "Compile/analyse data obtained from organisms observed in a habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.76",
+              "sco_code": "SC-G3-IE-SCO1.74",
               "description": "Create and Interpret graph on data obtained from organisms observed in a habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.77",
+              "sco_code": "SC-G3-IE-SCO1.75",
               "description": "Carry out simulations exercises to demonstrate the behaviour of animals in a habitat."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.78",
+              "sco_code": "SC-G3-IE-SCO1.76",
               "description": "Observe homes/habitats of different animals, indicating how each habitat satisfies the various needs of animals. (ST 2 LS ECS 3)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.79",
+              "sco_code": "SC-G3-IE-SCO1.77",
               "description": "Infer how food webs help to maintain nature's balance, and identify the factors that may disrupt this balance. (ST 3 LS ECS 2)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.80",
+              "sco_code": "SC-G3-IE-SCO1.78",
               "description": "Construct and label simple food chains to depict feeding interrelationships among animals and plants. (ST 2-LS ECS 20)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.81",
+              "sco_code": "SC-G3-IE-SCO1.79",
               "description": "Construct and label simple food webs to show feeding linkages among animals in a given area(e.g., pond, a section of the school yard) (ST 3 LS ECS 1)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.82",
+              "sco_code": "SC-G3-IE-SCO1.80",
               "description": "Interpret simple food webs, referring to the need of natures balance. (ST 4 LS ECS 1)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.83",
+              "sco_code": "SC-G3-IE-SCO1.81",
               "description": "Investigate the characteristics of mangroves, swamps, rainforests, pods and explain the importance of these habitats. (ST 4 LS ECS 2)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.84",
+              "sco_code": "SC-G3-IE-SCO1.82",
               "description": "Design and construct the model of a habitat. (ST 4 LS ECS 3)"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.85",
+              "sco_code": "SC-G3-IE-SCO1.83",
               "description": "Show persistence when conducting studies of organisms within different habitats."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.86",
+              "sco_code": "SC-G3-IE-SCO1.84",
               "description": "Demonstrate interest in conservation of resources in each habitat to ensure that organisms’ needs are met."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.87",
+              "sco_code": "SC-G3-IE-SCO1.85",
               "description": "Use the inquiry approach in conducting various investigations."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.88",
+              "sco_code": "SC-G3-IE-SCO1.86",
               "description": "Show respect for evidence in making various claims about organisms living in habitats."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.89",
+              "sco_code": "SC-G3-IE-SCO1.87",
               "description": "Stewardship/Respect for Living Things. When observing animals in their habitats, students should make sure that neither the animals nor their habitats are harmed."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.90",
+              "sco_code": "SC-G3-IE-SCO1.88",
               "description": "Safety: While observing organisms in their habitats, students should exhibit appropriate behaviour to ensure that neither the organisms nor themselves get hurt."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.91",
+              "sco_code": "SC-G3-IE-SCO1.89",
               "description": "While observing organisms in their habitats, students should be respectful of the organisms and their habitats."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.92",
+              "sco_code": "SC-G3-IE-SCO1.90",
               "description": "Students should be aware that some organisms can harm them. For example, ants can bite or plants can cause hives etc."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.93",
+              "sco_code": "SC-G3-IE-SCO1.91",
               "description": "When conducting practical and group work, students should be sensitive about the physical or learning challenges of classmates or group members."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.94",
+              "sco_code": "SC-G3-IE-SCO1.92",
               "description": "Participate actively in classroom discussions and activities."
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.95",
+              "sco_code": "SC-G3-IE-SCO1.93",
               "description": "6. After reading about Chip, you would like to hike across the desert like Chip with a hiking team. What would you bring that would help you cope with the conditions in the desert and get across safely?"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.96",
+              "sco_code": "SC-G3-IE-SCO1.94",
               "description": "7. Chip would not be able to survive in the Arctic. What two adaptations would be needed to survive there?"
             },
             {
-              "sco_code": "SC-G3-IE-SCO1.97",
+              "sco_code": "SC-G3-IE-SCO1.95",
               "description": "Comparing organisms in different habitats: Below is a picture of three animals that live in three different habitats. Look at each picture carefully and use your observations along with any information you may know about them, to answer the questions below."
-            },
-            {
-              "sco_code": "SC-G3-IE-SCO1.98",
-              "description": "Complete the table below by including the following: 1. Identify each animal and the habitat it is shown in. 2. Compare these three animals in terms of the following: ✓ The food they eat ✓ How the animal moves ✓ How they obtain air/oxygen from their habitat ✓ Special adaptation each animal has to enable it to survive in its habitat."
-            },
-            {
-              "sco_code": "SC-G3-IE-SCO1.99",
-              "description": "Comprehension Activity: Unpacking the Complex Interactions in Ecosystems: The Wolf Island Story: Have students watch the following video read-aloud and explain how it is a story about ecosystems and habitats."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2425,182 +2406,130 @@
             },
             {
               "sco_code": "SC-G3-IV-SCO1.3",
-              "description": "Bulbs"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.4",
-              "description": "Rhizomes"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.5",
               "description": "Stolons (runners)"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.6",
-              "description": "Tubers"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.7",
+              "sco_code": "SC-G3-IV-SCO1.4",
               "description": "Leaf propagation"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.8",
+              "sco_code": "SC-G3-IV-SCO1.5",
               "description": "Artificial vegetative propagation"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.9",
-              "description": "Cuttings"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.10",
-              "description": "Grafting"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.11",
-              "description": "Layering"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.12",
+              "sco_code": "SC-G3-IV-SCO1.6",
               "description": "Distinguish vertebrates and invertebrates."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.13",
+              "sco_code": "SC-G3-IV-SCO1.7",
               "description": "Identify similarities in life cycles."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.14",
+              "sco_code": "SC-G3-IV-SCO1.8",
               "description": "Journaling a life cycle (bean plant)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.15",
+              "sco_code": "SC-G3-IV-SCO1.9",
               "description": "Describe the main differences between monocots and dicots (ST 3 LS DC 3)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.16",
+              "sco_code": "SC-G3-IV-SCO1.10",
               "description": "Outline two natural methods of propagation in flowering plants, giving local examples(ST 3 LS DC 4)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.17",
+              "sco_code": "SC-G3-IV-SCO1.11",
               "description": "Describe and explain methods of vegetative propagation (ST 3 LS DC 5)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.18",
+              "sco_code": "SC-G3-IV-SCO1.12",
               "description": "Define the terms: vertebrates and invertebrates and list the five (5) classes of vertebrates (ST 3 LS DC 8)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.19",
+              "sco_code": "SC-G3-IV-SCO1.13",
               "description": "Identify and name some characteristics of living things (ST LS DC 2)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.20",
+              "sco_code": "SC-G3-IV-SCO1.14",
               "description": "Identify and name at least three (3) characteristics of living things (ST 2 LS DC 4)."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.21",
+              "sco_code": "SC-G3-IV-SCO1.15",
               "description": "Observe the characteristics of life cycles."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.22",
+              "sco_code": "SC-G3-IV-SCO1.16",
               "description": "Classify vertebrates /invertebrates"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.23",
+              "sco_code": "SC-G3-IV-SCO1.17",
               "description": "Communicate your research results identifying vegetative propagation in the community."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.24",
+              "sco_code": "SC-G3-IV-SCO1.18",
               "description": "Research and communicate a graphic of incomplete metamorphosis."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.25",
+              "sco_code": "SC-G3-IV-SCO1.19",
               "description": "Research and identify plants in the community that use natural vegetative propagation."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.26",
+              "sco_code": "SC-G3-IV-SCO1.20",
               "description": "Investigate information on a particular life cycle."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.27",
+              "sco_code": "SC-G3-IV-SCO1.21",
               "description": "Demonstrate Interest/Curiosity for the life cycles of a range of plants & animals."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.28",
+              "sco_code": "SC-G3-IV-SCO1.22",
               "description": "Demonstrate Stewardship/Respect for living things."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.29",
+              "sco_code": "SC-G3-IV-SCO1.23",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.30",
+              "sco_code": "SC-G3-IV-SCO1.24",
               "description": "Participate actively in classroom discussions."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.31",
+              "sco_code": "SC-G3-IV-SCO1.25",
               "description": "The seed needs warmth to germinate and the sun should provide that. Plus the light will enable everyone to see the germinating seed better."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.32",
-              "description": "Water Pollution Disturbs Life Cycles: Impact on the Ecosystem? A recent World Bank report has warned of the danger of water pollution in the Caribbean. (see: https://documents1.worldbank.org/curated/en/482391554225185720/pdf/Marine-Pollution-in-the-Caribbean-Not-a-Minute-to-Waste.pdf"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.33",
+              "sco_code": "SC-G3-IV-SCO1.26",
               "description": "An Amphibian is a cold-blooded vertebrate animal of a class that comprises the frogs, toads, newts, and salamanders. They are distinguished by having an aquatic gill-breathing larval stage followed (typically) by a terrestrial lung-breathing adult stage."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.34",
+              "sco_code": "SC-G3-IV-SCO1.27",
               "description": "For amphibians in their life cycle, they are often in contact with water. Because amphibians also breathe through their skin, they are particularly sensitive to chemicals in the water."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.35",
+              "sco_code": "SC-G3-IV-SCO1.28",
               "description": "It has also been found that fertilizer run-off into waterways cause certain parasites to thrive and these infect frogs causing malformations in their life cycle."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.36",
-              "description": "(see: https://www.newscientist.com/article/dn12687-frog-deformities-linked-to-farm-pollution/)"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.37",
-              "description": "Have students create a diagram that links the food chain that includes frogs. Ask them to explain how the loss of frogs through pollution could affect the bigger ecosystem."
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.38",
-              "description": "Teacher note: Example interactions: Frogs are an integral part of the food chain. Throughout their lifecycles, frogs occupy a vital position in the food chain as both predators and prey. As tadpoles, they consume algae, regulating blooms. Frogs are an important source of food for a variety of organisms, including birds, fish, and snakes."
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.39",
+              "sco_code": "SC-G3-IV-SCO1.29",
               "description": "Complete and Incomplete Metamorphosis We normally think of metamorphosis to follow the scheme below (egg/larva/pupa/adult)"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.40",
-              "description": "Have students research and draw a cycle diagram for the incomplete metamorphosis life cycles of such insects as: grasshoppers, cockroaches, dragonflies and earwigs. (see example in Additional Resources below)"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.41",
+              "sco_code": "SC-G3-IV-SCO1.30",
               "description": "Vegetables can Propagate in Different Ways Naturally"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.42",
-              "description": "Have students identify plants in their own communities that propagate using: Bulbs: Rhizomes: Stolons: Tubers:"
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.43",
+              "sco_code": "SC-G3-IV-SCO1.31",
               "description": "Teacher note: If students have access to phones, have them take pictures of their examples so the teacher can combine them in a PowerPoint® or Word® document for later reference."
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.44",
+              "sco_code": "SC-G3-IV-SCO1.32",
               "description": "Can you Guess? Which type of Vegetative Propagation do you think these pictures are showing?"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.45",
+              "sco_code": "SC-G3-IV-SCO1.33",
               "description": "Plants at home: Artificial propagation Students should research plants at home that family members or neighbors have: a) Started a new plant from a cutting"
             },
             {
-              "sco_code": "SC-G3-IV-SCO1.46",
-              "description": "b) Start a new plant by grafting."
-            },
-            {
-              "sco_code": "SC-G3-IV-SCO1.47",
+              "sco_code": "SC-G3-IV-SCO1.34",
               "description": "Research on Life Cycles Each student must choose one of the following animals and through research write a single page description of their life cycle which includes a diagram clearly depicting the stages. > A snake > A turtle > A whale > An oriole > Mahi mahi > A spider"
             }
           ],
@@ -2660,7 +2589,10 @@
             "Artificial vegetative propagation Gardeners also use vegetative propagation methods that plants don't use naturally. These methods involve taking a piece of one parent plant and causing it to regenerate itself into a new plant.",
             "Cuttings A cutting is a piece that has been cut off a mother plant and then caused to grow into a whole plant. Often this involves a piece of stem that is treated with hormones to encourage new roots to form before planting. Sometimes root cuttings with buds on them will produce new shoots when pressed directly into soil.",
             "Grafting and budding This method involves joining a stem piece (as in grafting) or a single bud (as in budding) onto the stem of a plant that has roots. The stem piece or bud is called the scion, and the plant with roots is called the rootstock. Grafting is commonly used to produce fruit trees sometimes with more than one variety of the same fruit species growing from the same stem.",
-            "Layering In the layering method, one of the branches of a plant is pulled down into the ground and covered with moist soil in such a way that the tip of the branch remains above the surface. After a few days, new roots start growing from the part buried in the soil. This part of the branch is then separated from the parent plant to let it develop into a new plant."
+            "Layering In the layering method, one of the branches of a plant is pulled down into the ground and covered with moist soil in such a way that the tip of the branch remains above the surface. After a few days, new roots start growing from the part buried in the soil. This part of the branch is then separated from the parent plant to let it develop into a new plant.",
+            "Have students create a diagram that links the food chain that includes frogs. Ask them to explain how the loss of frogs through pollution could affect the bigger ecosystem.",
+            "Have students research and draw a cycle diagram for the incomplete metamorphosis life cycles of such insects as: grasshoppers, cockroaches, dragonflies and earwigs. (see example in Additional Resources below)",
+            "Have students identify plants in their own communities that propagate using: Bulbs: Rhizomes: Stolons: Tubers:"
           ],
           "elo_code": "SC-G3-IV-ELO1"
         },
@@ -3532,282 +3464,246 @@
             },
             {
               "sco_code": "SC-G3-WC-SCO2.4",
-              "description": "Climate"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.5",
-              "description": "Weather"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.6",
               "description": "Temperature"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.7",
-              "description": "Rainfall"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.8",
-              "description": "Pressure"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.9",
+              "sco_code": "SC-G3-WC-SCO2.5",
               "description": "Wind Speed"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.10",
-              "description": "Humidity"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.11",
+              "sco_code": "SC-G3-WC-SCO2.6",
               "description": "Greenhouse effect"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.12",
+              "sco_code": "SC-G3-WC-SCO2.7",
               "description": "Global warming"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.13",
+              "sco_code": "SC-G3-WC-SCO2.8",
               "description": "Carbon dioxide"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.14",
+              "sco_code": "SC-G3-WC-SCO2.9",
               "description": "Identify and name the sun, earth and the moon as parts of the solar system. (ST 1 ESS SS 2)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.15",
+              "sco_code": "SC-G3-WC-SCO2.10",
               "description": "Explain, what is weather. (ST ESS EW 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.16",
+              "sco_code": "SC-G3-WC-SCO2.11",
               "description": "Describe how temperature affects weather (ST ESS EW 8)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.17",
+              "sco_code": "SC-G3-WC-SCO2.12",
               "description": "Explain the role of the sun as the main provider of heat and light on the earth. (ST 3 PS EN 2)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.18",
+              "sco_code": "SC-G3-WC-SCO2.13",
               "description": "Identify and discuss some of the unintended consequences of using fuels for transport and production of materials for commerce. (e.g. pollution). (ST 3 PS EN 5)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.19",
+              "sco_code": "SC-G3-WC-SCO2.14",
               "description": "Sustainable use of resources would help to minimize pollution and destruction of the environment. (ST 3 STSE 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.20",
+              "sco_code": "SC-G3-WC-SCO2.15",
               "description": "Describe and discuss how burning can cause air pollution. (ST 6 ESS ER 4)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.21",
+              "sco_code": "SC-G3-WC-SCO2.16",
               "description": "Define the terms: rotate, revolve, planet, star, satellite.(ST 3 ESS SS 2)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.22",
+              "sco_code": "SC-G3-WC-SCO2.17",
               "description": "Explain how the tilt of the earth on its rotational axis can cause the sun’s rays to be direct and indirect for different parts of the earth and therefore lead to temperature changes on the surface (seasonal changes)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.23",
+              "sco_code": "SC-G3-WC-SCO2.18",
               "description": "Demonstrate an understanding that the earth is divided into three major climatic zones."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.24",
+              "sco_code": "SC-G3-WC-SCO2.19",
               "description": "Discuss the characteristics of each type of climate."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.25",
+              "sco_code": "SC-G3-WC-SCO2.20",
               "description": "Compare the different types of climates."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.26",
+              "sco_code": "SC-G3-WC-SCO2.21",
               "description": "Identify the plants and animals that can be found in each climatic zone."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.27",
+              "sco_code": "SC-G3-WC-SCO2.22",
               "description": "Explain how people adapt to live in the different climatic zones."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.28",
+              "sco_code": "SC-G3-WC-SCO2.23",
               "description": "Explain in simplified terms the process of global warming."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.29",
+              "sco_code": "SC-G3-WC-SCO2.24",
               "description": "Observe different types of weather --rainy, sunny, cloudy windy. (ST 2 ESS EW 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.30",
+              "sco_code": "SC-G3-WC-SCO2.25",
               "description": "Use a thermometer to measure temperature, explaining how the device works. (ST 3 ESS EW 9)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.31",
+              "sco_code": "SC-G3-WC-SCO2.26",
               "description": "Identify types of weather conditions by examining weather charts. (ST 3 ESS EW 10)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.32",
+              "sco_code": "SC-G3-WC-SCO2.27",
               "description": "Compare direct and indirect light using a flashlight (torch) to show how the sun’s energy can be spread out if it shines on the earth at an angle."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.33",
+              "sco_code": "SC-G3-WC-SCO2.28",
               "description": "Interpret models of the earth and sun and how they interact in the universe. (daily rotation, yearly orbit, earth’s axis & tilt)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.34",
+              "sco_code": "SC-G3-WC-SCO2.29",
               "description": "Predict weather patterns. (ST 2 ESS EW 4)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.35",
+              "sco_code": "SC-G3-WC-SCO2.30",
               "description": "Analyse weather events."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.36",
+              "sco_code": "SC-G3-WC-SCO2.31",
               "description": "Use the weather cycle to explain how/why humidity occurs."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.37",
+              "sco_code": "SC-G3-WC-SCO2.32",
               "description": "Design and construct a project to learn how we can reduce climate change."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.38",
+              "sco_code": "SC-G3-WC-SCO2.33",
               "description": "Develop appreciation for Science by recognising how climate affects our daily lives."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.39",
+              "sco_code": "SC-G3-WC-SCO2.34",
               "description": "Willingly participate in activity to identify the climate of different regions of the world."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.40",
+              "sco_code": "SC-G3-WC-SCO2.35",
               "description": "Recognise the effects of climate change in a region of the world and take the necessary actions to reduce the effects of climate change."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.41",
+              "sco_code": "SC-G3-WC-SCO2.36",
               "description": "When undertaking classroom activities, display sensitivity to and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.42",
+              "sco_code": "SC-G3-WC-SCO2.37",
               "description": "Participate actively in classroom discussions."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.43",
+              "sco_code": "SC-G3-WC-SCO2.38",
               "description": "Consider the dilemma of abundant fossil fuel resources and the damage burning these will inflict to our environment."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.44",
-              "description": "Assessment #3 Using the free programme “Bloom” (see: https://bloomlibrary.org/landing) have students work together collecting online pictures to create a book and story about travel to different temperate zones, clothing, food, weather etc."
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.45",
-              "description": "Debate on Climate Change: Students will be asked to develop arguments for pro/con around climate change as a result of fossil fuel use. The central questions: New discovery of oil reserves in the Caribbean and neighboring South America could bring prosperity in the form of jobs and cheaper energy to fuel vehicles and power production. Burning fossil fuels contributes to the production of carbon dioxide which in turn seals the heat of the sun into our atmosphere. This global warming affects surface temperatures and water temperatures so could have detrimental effects on the ecosystems. The teacher should use the following table to assess participation of students in this discussion."
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.46",
-              "description": "Group checklist: 1. Did everybody participate? 2. Did anybody feel left out? 3. Were all members contributing? 4. Did one person dominate discussions, or cut others off? 5. Was there any argument? How was it resolved? 6. Did everybody know what they had to do? 7. Are you satisfied with the work you have done (so far)? Retrieved from:: https://www.semanticscholar.org/paper/Managing-Small-Group-Learning.-Reid/0abd4ba230de054b3016ce1eb10569f22dff278a/figure/4"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.47",
+              "sco_code": "SC-G3-WC-SCO2.39",
               "description": "Visitors to Other Climates: Play a game called “Pack my Bag”. Children describe to their peers what clothing they would pack in a suitcase to visit another part of the world. Their peers have to guess which climatic zone they are likely to be going to."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.48",
-              "description": "Protection Against the Sun’s Rays: In certain climates near the equator, the sun’s rays are direct and intense. It is very important that we protect our bodies against too much sun! Our skin and eyes can be particularly susceptible. Have students do research (books and internet) and answer the following questions: 1) What danger is the sun to our skin? 2) What danger is the sun to our eyes? 3) How can we protect our skin? 4) How can we protect our eyes?"
-            },
-            {
-              "sco_code": "SC-G3-WC-SCO2.49",
+              "sco_code": "SC-G3-WC-SCO2.40",
               "description": "Define the terms: weather events, hurricane, typhoon, tornado, drought, erosion, landslides, land-borne floods, sea-borne floods, tsunami, pitch roof vs. flat roof, gable roof vs. hip roof, levee"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.50",
+              "sco_code": "SC-G3-WC-SCO2.41",
               "description": "Discuss how the various weather patterns affect their activities, the type of clothes they wear, and ways of dealing with various weather types. (ST 1 ESS EW 4)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.51",
+              "sco_code": "SC-G3-WC-SCO2.42",
               "description": "Explain a problem in their own words and solutions related to the problem. (ST 1 TE UT 3)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.52",
+              "sco_code": "SC-G3-WC-SCO2.43",
               "description": "Define the term environmental destruction and investigate the factors that cause and prevent this destruction. (ST 2 LS ECS 24)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.53",
+              "sco_code": "SC-G3-WC-SCO2.44",
               "description": "Develop simple technological designs in keeping with particular challenges in their environment (ST 2 TE TM 2)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.54",
+              "sco_code": "SC-G3-WC-SCO2.45",
               "description": "Explain a problem in their own words and solutions related to the problem. (ST 2 TE TM 5)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.55",
+              "sco_code": "SC-G3-WC-SCO2.46",
               "description": "Explain in their own words, how the effects of the wind may be useful and harmful. (ST 3 ESS EW 4)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.56",
+              "sco_code": "SC-G3-WC-SCO2.47",
               "description": "Plan and execute appropriate research using technological methodology, to solve environmental challenges. (ST 4 TE TM 1/ ST 4 TE NT 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.57",
+              "sco_code": "SC-G3-WC-SCO2.48",
               "description": "Knowledge acquired and products developed in the search for solutions to human problems and challenges affect everyday life, the society and the environment. (ST 4 STSE 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.58",
+              "sco_code": "SC-G3-WC-SCO2.49",
               "description": "Explain the difference between weather and climate. (ST 5 ESS EW 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.59",
+              "sco_code": "SC-G3-WC-SCO2.50",
               "description": "Use problem solving, technological processes and resources to find solutions to human wants and needs. (ST 5 TE TM 1)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.60",
+              "sco_code": "SC-G3-WC-SCO2.51",
               "description": "Demonstrate an understanding of the term weather event and identify how"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.61",
+              "sco_code": "SC-G3-WC-SCO2.52",
               "description": "severe weather impacts people’s lives and occupations."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.62",
+              "sco_code": "SC-G3-WC-SCO2.53",
               "description": "Describe how people can modify their homes and other structures in the community to reduce the impact of weather events."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.63",
+              "sco_code": "SC-G3-WC-SCO2.54",
               "description": "Describe how different materials can be used to prevent damage from weather events (roof design and materials)."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.64",
+              "sco_code": "SC-G3-WC-SCO2.55",
               "description": "Interpret from pictures, the different types of weather events and the problems these events cause for humans."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.65",
+              "sco_code": "SC-G3-WC-SCO2.56",
               "description": "Predict possible solutions to weather event problems."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.66",
+              "sco_code": "SC-G3-WC-SCO2.57",
               "description": "Infer the best design and materials for roofing of homes and other buildings."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.67",
+              "sco_code": "SC-G3-WC-SCO2.58",
               "description": "Collect data on the impact of flooding on rivers and floodplains."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.68",
+              "sco_code": "SC-G3-WC-SCO2.59",
               "description": "Conduct an experiment that simulates testing by engineers (hole in a retaining wall)"
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.69",
+              "sco_code": "SC-G3-WC-SCO2.60",
               "description": "Plan and design solutions to reduce the impact of severe weather in the community."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.70",
+              "sco_code": "SC-G3-WC-SCO2.61",
               "description": "Participate in community support when weather events pose hazards to citizens."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.71",
+              "sco_code": "SC-G3-WC-SCO2.62",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.72",
+              "sco_code": "SC-G3-WC-SCO2.63",
               "description": "Work respectfully with others to share ideas and materials for solution designs to combat the impact of severe weather."
             },
             {
-              "sco_code": "SC-G3-WC-SCO2.73",
+              "sco_code": "SC-G3-WC-SCO2.64",
               "description": "Actively participate in classroom discussions."
             }
           ],

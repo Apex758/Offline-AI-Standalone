@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade3-social-studies-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "3",
+    "grade": "Grade 3",
     "subject": "Social Studies"
   },
   "strands": [
@@ -164,31 +164,6 @@
             "Thank You Note: (Culminating Activity) Students will create a note (letter, card, voicenote, email) addressed to a cultural ambassador/contributor thanking them for their contribution to the development of culture in their country."
           ],
           "elo_code": "SS-G3-HC-ELO1"
-        },
-        {
-          "elo_description": "To understand the ways in which our island’s peoples’ nurtures respect for diversity.",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "SS-G3-HT-SCO1.1",
-              "description": "3-HCT-S-2 Locate the geographic origins of our various peoples."
-            },
-            {
-              "sco_code": "SS-G3-HT-SCO1.2",
-              "description": "3-HCT-V-2 Recognise that migrations to our region had both positive and negative consequences."
-            }
-          ],
-          "inclusive_assessment_strategies": [
-            "Product - Map Work: Can students locate the geographical origins of the early inhabitants on a globe or an interactive map?",
-            "Product- Infographic Poster: Do the info-graphic posters show the negative and positive effects of migration?"
-          ],
-          "inclusive_learning_strategies": [
-            "Drill and Practice: Students guided by teachers will identify the continents on a world map. (Interactive map or physical map) Students will then label a blank map of the world highlighting the continents from which the people originated or identify the geographic origins on a globe.",
-            "Map Work: Students label a map of the world showing the origin of the different groups of people who migrated to our island/territory.",
-            "Guided Discussion: Students read an excerpt or view a video clip on the positive and negative consequences of migration. Students discuss the positive and negative impacts of migration on the region. Guiding questions can include: i.What are the benefits of the early inhabitants migrating to our region? What are the negative consequences of migration on our region?",
-            "Role Play: Students and teachers work together to draw and label an outline of a world map on the floor of the classroom. Students are randomly placed in small groups representing the various ethnic groups. Students representing each ethnic group then make their way from the designated areas (e.g. South America, Europe, West Africa, Asia) to the Caribbean portraying the different forms of transportation used (e.g. replicas of canoe, sailing ship). Students then state which group took the longest and the shortest time to get to their destination, and why.",
-            "Guided Discussion: Students view a video that focuses on reasons why the early inhabitants came to the Caribbean. The Early Settlers of the Caribbean. Students state reasons why the early inhabitants came to their island. Students can create an interactive avatar that voices the reasons why the early inhabitants came to their island. (using the ChatterPix app or other digital tools.) (See links) Android: http://tinyurl.com/yc25hj7u iPhone/iPad: http://tinyurl.com/yc7nyjpu. The avatars should represent the different early inhabitants."
-          ],
-          "elo_code": "SS-G3-HT-ELO1"
         }
       ],
       "resources": [
@@ -365,86 +340,82 @@
             },
             {
               "sco_code": "SS-G3-ST-SCO1.7",
-              "description": "3-ST-K-2"
-            },
-            {
-              "sco_code": "SS-G3-ST-SCO1.8",
               "description": "3-ST-V-2- Recognize that our surrounding seas and ocean have connected us as diverse Caribbean peoples"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.9",
+              "sco_code": "SS-G3-ST-SCO1.8",
               "description": "3-ST-K-3-Explain the importance of our water bodies (seas, oceans, lagoons, and rivers) to our people"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.10",
+              "sco_code": "SS-G3-ST-SCO1.9",
               "description": "3-ST-S-3-Investigate how our human activities affect these water bodies"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.11",
+              "sco_code": "SS-G3-ST-SCO1.10",
               "description": "3-ST-V-3-Appreciate the need for responsible actions to protect our water bodies"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.12",
+              "sco_code": "SS-G3-ST-SCO1.11",
               "description": "3-ST-K-4-Describe the seasons on your islands and describe how they affect our daily lives"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.13",
+              "sco_code": "SS-G3-ST-SCO1.12",
               "description": "3-ST-S-4- Make appropriate decisions for various weather conditions"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.14",
+              "sco_code": "SS-G3-ST-SCO1.13",
               "description": "3-ST-V-4 Appreciate the benefits and drawbacks of each season for our environment"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.15",
+              "sco_code": "SS-G3-ST-SCO1.14",
               "description": "3-ST-K-5- Recognize that the location of islands makes them prone to natural hazards"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.16",
+              "sco_code": "SS-G3-ST-SCO1.15",
               "description": "3-ST-S-5- Examine some examples of extreme natural hazards that affect our islands"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.17",
+              "sco_code": "SS-G3-ST-SCO1.16",
               "description": "3-ST-V-5- Appreciate that we need to be aware of ways to keep safe during natural hazards"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.18",
+              "sco_code": "SS-G3-ST-SCO1.17",
               "description": "3-ST-K-6-Describe appropriate preparations that need to be made for various natural hazards"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.19",
+              "sco_code": "SS-G3-ST-SCO1.18",
               "description": "3-ST-S-6- Create a simple family preparation plan for a selected natural hazard:(Necessities, safe places, contacts)"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.20",
+              "sco_code": "SS-G3-ST-SCO1.19",
               "description": "3-ST-V-6- Appreciate the need to minimize risk in times natural hazards"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.21",
+              "sco_code": "SS-G3-ST-SCO1.20",
               "description": "3-ST-K-2: Name the major water bodies that surround their island and the rest of Caribbean region"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.22",
+              "sco_code": "SS-G3-ST-SCO1.21",
               "description": "3-ST-S-2: Locate and label the major water bodies on a map of the Caribbean"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.23",
+              "sco_code": "SS-G3-ST-SCO1.22",
               "description": "3-ST-V-4-Appreciate the benefits and drawbacks of each season for our environment"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.24",
+              "sco_code": "SS-G3-ST-SCO1.23",
               "description": "3-ST-K-6- Describe appropriate preparations that need to be made for various natural hazards"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.25",
+              "sco_code": "SS-G3-ST-SCO1.24",
               "description": "3-ST-V-6-Appreciate the need to minimize risk in times natural hazards"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.26",
+              "sco_code": "SS-G3-ST-SCO1.25",
               "description": "3-ST-K-1: State the location of our island/country/or territory in relation to their nearest neighbours in the Caribbean region"
             },
             {
-              "sco_code": "SS-G3-ST-SCO1.27",
+              "sco_code": "SS-G3-ST-SCO1.26",
               "description": "3-ST-S-1: Locate and label your island on a map of the Caribbean"
             }
           ],
@@ -505,7 +476,6 @@
             "Model Product: Is the model accurately representing the hazard?",
             "3-ST-K-6 Conversation: Are students able to identify the natural hazard?",
             "Class Discussion Conversation: Are students able to identify the possible impact of various natural hazards on the island? Are students able to state what they need to do to prepare for the approaching storm and how other community members help to keep them safe?",
-            "Group Work Observation: Are students working collaboratively? Are students applying their knowledge of natural hazard preparedness and its importance? As students are working, walk around to observe and conference with the groups. Take records of how students are working, if they are discussing the content, if they are using the content correctly. Take note of group dynamics: who is leading, who is being silent etc. Are students able to assess each other’s contribution using the group participation rubric?",
             "Product: Utilizing a grading rubric, are students able to create a presentation which informs persons on how to prepare for the natural hazard, who helps keep them safe, and present their work orally? Is the information accurate and relevant to the hazard?",
             "Conversation: Are students able to answer questions on their presentation?",
             "3-ST-S-6 Read aloud and Class Discussion Conversation: Can each student identify at least one measure that could be employed to mitigate the impact of hurricanes.",
@@ -518,7 +488,6 @@
             "Interview a Family Member Conversation: Are students presenting relevant information? Are students’ findings depicting actions that were taken before during and after the hazard?",
             "Mood Board Oral Presentation",
             "Product: Are students able to explain to their peers the depiction of their feelings about the natural hazard and the experience of living through it.",
-            "Group Work Observation: Are students working collaboratively? Are students applying their knowledge of natural hazard preparedness and its importance? As students are working, walk around to observe and conference with the groups. Take records of how students are working, if they are discussing the content, if they are using the content correctly. Take note of group dynamics: who is leading, who is being silent etc.",
             "Product: Are students able to produce a video that highlights the importance of preparing for their assigned natural hazard. Using the rubric provided, conduct both teacher and peer assessment of the video presented in the class presentation.",
             "View a Video: Are students able to identify water bodies that are in or near their island or the Caribbean Region.",
             "Conversation: Are students able to describe their experiences with water bodies? What words do students associate with these water bodies?",
@@ -616,12 +585,7 @@
         },
         {
           "elo_description": "To appreciate how our people are shaped by geographic factors such as our tropical climate, island",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "SS-G3-(S-SCO1.1",
-              "description": "3-ST-K-2"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Are students able to collect and chart data?",
             "Conversation: Can students analyse and make conclusions based on the chart?",
@@ -632,7 +596,7 @@
             "travelled by boat or plane? How many more people have travelled by boat or plane? Which is the most popular form of travel within the region?",
             "Summary Statement: Based on the data, write one sentence about how the water bodies connect people in the region."
           ],
-          "elo_code": "SS-G3-(S-ELO1"
+          "elo_code": "SS-G3-ST-ELO2"
         }
       ],
       "resources": [
@@ -718,42 +682,18 @@
             },
             {
               "sco_code": "SS-G3-CP-SCO1.2",
-              "description": "Are students able to list examples of the national symbols and share other information about the symbols?"
-            },
-            {
-              "sco_code": "SS-G3-CP-SCO1.3",
-              "description": "Are students able to research and present information on persons who created/designed a particular national symbol?"
-            },
-            {
-              "sco_code": "SS-G3-CP-SCO1.4",
-              "description": "Are students able to creatively illustrate and describe the meaning of the national symbols of the country through roleplay and artwork?"
-            },
-            {
-              "sco_code": "SS-G3-CP-SCO1.5",
-              "description": "Are students able to admire the beauty and uniqueness of the national symbols and emblems"
-            },
-            {
-              "sco_code": "SS-G3-CP-SCO1.6",
-              "description": "Are students able to express how their artwork of national symbols shows aspects of their people and culture?"
-            },
-            {
-              "sco_code": "SS-G3-CP-SCO1.7",
-              "description": "Are students able to show the importance of these national symbols for their country?"
-            },
-            {
-              "sco_code": "SS-G3-CP-SCO1.8",
               "description": "3-CP-K-2 Explain why we play, sing, recite our national anthem and pledge"
             },
             {
-              "sco_code": "SS-G3-CP-SCO1.9",
+              "sco_code": "SS-G3-CP-SCO1.3",
               "description": "3 CP-K-3 Recognize that our national bird and tree help us identify important features of our natural environment"
             },
             {
-              "sco_code": "SS-G3-CP-SCO1.10",
+              "sco_code": "SS-G3-CP-SCO1.4",
               "description": "3 CP S-3 - Demonstrate the ways that we show respect for"
             },
             {
-              "sco_code": "SS-G3-CP-SCO1.11",
+              "sco_code": "SS-G3-CP-SCO1.5",
               "description": "3-CP-K-4 Name the national heroes in our country"
             }
           ],
@@ -772,7 +712,13 @@
             "Observation: Are students able to represent the national bird, tree and flower of their country?",
             "Conversation: Are students able to identify outstanding personalities in their country/region?",
             "Observation: Were students able to group outstanding personalities under categories of their national contribution?",
-            "Observation: Were students able to conduct research on who a national hero is, and state some of the common characteristics of national heroes?"
+            "Observation: Were students able to conduct research on who a national hero is, and state some of the common characteristics of national heroes?",
+            "Are students able to list examples of the national symbols and share other information about the symbols?",
+            "Are students able to research and present information on persons who created/designed a particular national symbol?",
+            "Are students able to creatively illustrate and describe the meaning of the national symbols of the country through roleplay and artwork?",
+            "Are students able to admire the beauty and uniqueness of the national symbols and emblems",
+            "Are students able to express how their artwork of national symbols shows aspects of their people and culture?",
+            "Are students able to show the importance of these national symbols for their country?"
           ],
           "inclusive_learning_strategies": [
             "Introduction - Class Discussion: Have students look at a video showcasing local (s) for example athletes representing the country on the regional or international stage. Question students on the national symbol that was used by the local representative to represent the country Suggested questions Which country was (name of person) representing? How do you know?",
@@ -1279,6 +1225,37 @@
           "category": "Activities/Tools"
         }
       ]
+    },
+    {
+      "strand_name": "Historical-Cultural Thinking: Origin of our Island People",
+      "essential_learning_outcomes": [
+        {
+          "elo_description": "To understand the ways in which our island’s peoples’ nurtures respect for diversity.",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SS-G3-HT-SCO1.1",
+              "description": "3-HCT-S-2 Locate the geographic origins of our various peoples."
+            },
+            {
+              "sco_code": "SS-G3-HT-SCO1.2",
+              "description": "3-HCT-V-2 Recognise that migrations to our region had both positive and negative consequences."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Product - Map Work: Can students locate the geographical origins of the early inhabitants on a globe or an interactive map?",
+            "Product- Infographic Poster: Do the info-graphic posters show the negative and positive effects of migration?"
+          ],
+          "inclusive_learning_strategies": [
+            "Drill and Practice: Students guided by teachers will identify the continents on a world map. (Interactive map or physical map) Students will then label a blank map of the world highlighting the continents from which the people originated or identify the geographic origins on a globe.",
+            "Map Work: Students label a map of the world showing the origin of the different groups of people who migrated to our island/territory.",
+            "Guided Discussion: Students read an excerpt or view a video clip on the positive and negative consequences of migration. Students discuss the positive and negative impacts of migration on the region. Guiding questions can include: i.What are the benefits of the early inhabitants migrating to our region? What are the negative consequences of migration on our region?",
+            "Role Play: Students and teachers work together to draw and label an outline of a world map on the floor of the classroom. Students are randomly placed in small groups representing the various ethnic groups. Students representing each ethnic group then make their way from the designated areas (e.g. South America, Europe, West Africa, Asia) to the Caribbean portraying the different forms of transportation used (e.g. replicas of canoe, sailing ship). Students then state which group took the longest and the shortest time to get to their destination, and why.",
+            "Guided Discussion: Students view a video that focuses on reasons why the early inhabitants came to the Caribbean. The Early Settlers of the Caribbean. Students state reasons why the early inhabitants came to their island. Students can create an interactive avatar that voices the reasons why the early inhabitants came to their island. (using the ChatterPix app or other digital tools.) (See links) Android: http://tinyurl.com/yc25hj7u iPhone/iPad: http://tinyurl.com/yc7nyjpu. The avatars should represent the different early inhabitants."
+          ],
+          "elo_code": "SS-G3-HT-ELO1"
+        }
+      ],
+      "resources": []
     }
   ]
 }

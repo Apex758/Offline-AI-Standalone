@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade5-science-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "5",
+    "grade": "Grade 5",
     "subject": "Science"
   },
   "strands": [
@@ -14,458 +14,438 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G5-SC-SCO1.1",
-              "description": "melting"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO1.2",
-              "description": "freezing"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO1.3",
-              "description": "heating"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO1.4",
-              "description": "boiling"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO1.5",
               "description": "condensation"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.6",
+              "sco_code": "SC-G5-SC-SCO1.2",
               "description": "evaporation"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.7",
+              "sco_code": "SC-G5-SC-SCO1.3",
               "description": "thermal expansion and contraction"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.8",
+              "sco_code": "SC-G5-SC-SCO1.4",
               "description": "hydraulics"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.9",
+              "sco_code": "SC-G5-SC-SCO1.5",
               "description": "Demonstrate an understanding that matter is made up of particles too small to be seen."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.10",
+              "sco_code": "SC-G5-SC-SCO1.6",
               "description": "Understand that air is a mixture of different gases, including water vapour"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.11",
+              "sco_code": "SC-G5-SC-SCO1.7",
               "description": "Identify the properties of air and discuss the importance of air to people. (ST 3 ESS ER 7)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.12",
+              "sco_code": "SC-G5-SC-SCO1.8",
               "description": "Define surface tension and suggest ways that it can be broken. (ST 5 LS ECS 9)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.13",
+              "sco_code": "SC-G5-SC-SCO1.9",
               "description": "Describe the effect of detergent on surface tension."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.14",
+              "sco_code": "SC-G5-SC-SCO1.10",
               "description": "Give examples of surface tension in everyday life and in nature."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.15",
+              "sco_code": "SC-G5-SC-SCO1.11",
               "description": "Describe some characteristic properties of the different states of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.16",
+              "sco_code": "SC-G5-SC-SCO1.12",
               "description": "Use the arrangement of particles in solids, liquids, and gases to explain observations made in different activities."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.17",
+              "sco_code": "SC-G5-SC-SCO1.13",
               "description": "Distinguish between the different states of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.18",
+              "sco_code": "SC-G5-SC-SCO1.14",
               "description": "Compare different states of matter in terms of the arrangement and movement of their particles."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.19",
+              "sco_code": "SC-G5-SC-SCO1.15",
               "description": "Describe each state of matter in terms of the arrangement of its particles."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.20",
+              "sco_code": "SC-G5-SC-SCO1.16",
               "description": "Describe the three phases of matter (solid, liquid, or gas) and give examples of each."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.21",
+              "sco_code": "SC-G5-SC-SCO1.17",
               "description": "Identify solids, liquids and gases based on their characteristics."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.22",
+              "sco_code": "SC-G5-SC-SCO1.18",
               "description": "Demonstrate the effects of heating and cooling on solids, liquids, and gases."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.23",
+              "sco_code": "SC-G5-SC-SCO1.19",
               "description": "Give examples of the effects of heating and cooling on solids, liquids, and gases."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.24",
+              "sco_code": "SC-G5-SC-SCO1.20",
               "description": "Describe phase changes in terms of heat gain or heat loss."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.25",
+              "sco_code": "SC-G5-SC-SCO1.21",
               "description": "Identify change of states of matter focusing on liquid changing to a solid."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.26",
+              "sco_code": "SC-G5-SC-SCO1.22",
               "description": "Use the terms melting, evaporating, condensing and freezing to describe phase changes"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.27",
+              "sco_code": "SC-G5-SC-SCO1.23",
               "description": "Identify the processes (heating, melting, evaporation, condensation and freezing) that bring about a change of state of matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.28",
+              "sco_code": "SC-G5-SC-SCO1.24",
               "description": "Describe the effects of compressing a gas."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.29",
+              "sco_code": "SC-G5-SC-SCO1.25",
               "description": "Explain why it is easier to compress a gas than a liquid in terms of the arrangement of their particles"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.30",
+              "sco_code": "SC-G5-SC-SCO1.26",
               "description": "Explain how the dissolving substances in water supports the theory that matter is made up of particles too small to be seen."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.31",
+              "sco_code": "SC-G5-SC-SCO1.27",
               "description": "Use a model to describe the evaporation of water from a solution to produce salt crystals"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.32",
+              "sco_code": "SC-G5-SC-SCO1.28",
               "description": "Use models to demonstrate the behaviour of particles in different states of matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.33",
+              "sco_code": "SC-G5-SC-SCO1.29",
               "description": "Conduct experiments to observe changes in matter (e.g., dissolving sugar, compressing air)."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.34",
+              "sco_code": "SC-G5-SC-SCO1.30",
               "description": "Label drawings of different phases of matter by its properties of shape and volume."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.35",
+              "sco_code": "SC-G5-SC-SCO1.31",
               "description": "Observe changes in matter that provide evidence that matter is made up of small particles that cannot be seen"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.36",
+              "sco_code": "SC-G5-SC-SCO1.32",
               "description": "Infer how matter will change when it is either heated or cooled"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.37",
+              "sco_code": "SC-G5-SC-SCO1.33",
               "description": "Investigate the effect of heat energy on the state of matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.38",
+              "sco_code": "SC-G5-SC-SCO1.34",
               "description": "Classify changes in matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.39",
+              "sco_code": "SC-G5-SC-SCO1.35",
               "description": "Classify matter as solids, liquids or gases."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.40",
+              "sco_code": "SC-G5-SC-SCO1.36",
               "description": "Demonstrate the effects of heating and cooling on solids, liquids, and gases, and give examples from daily life"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.41",
+              "sco_code": "SC-G5-SC-SCO1.37",
               "description": "Explain how the same substance can exist as a solid, a liquid or a gas"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.42",
+              "sco_code": "SC-G5-SC-SCO1.38",
               "description": "Explain how it is possible to smell a substance"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.43",
+              "sco_code": "SC-G5-SC-SCO1.39",
               "description": "Observe the dissolving of different substances in water"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.44",
+              "sco_code": "SC-G5-SC-SCO1.40",
               "description": "Identify and explain the different phase changes that can occur to matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.45",
+              "sco_code": "SC-G5-SC-SCO1.41",
               "description": "Use a thermometer to measure temperature changes to matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.46",
+              "sco_code": "SC-G5-SC-SCO1.42",
               "description": "Hypothesize how changes to different forms of matter will change the arrangement of their particles."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.47",
+              "sco_code": "SC-G5-SC-SCO1.43",
               "description": "Communicate data collected from the different experiments to show that matter is made up of tiny particles, too small to be seen."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.48",
+              "sco_code": "SC-G5-SC-SCO1.44",
               "description": "Develop a model to describe that matter is made up of tiny particles, too small to be seen."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.49",
+              "sco_code": "SC-G5-SC-SCO1.45",
               "description": "Use the model developed, describe the differences in attraction among the particles of a solid, liquid, and gas."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.50",
+              "sco_code": "SC-G5-SC-SCO1.46",
               "description": "Use models of solids, liquids and gases to explain their observations in the lesson"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.51",
+              "sco_code": "SC-G5-SC-SCO1.47",
               "description": "Observe and describe phenomena involving gases and use these to create a model of a gas"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.52",
+              "sco_code": "SC-G5-SC-SCO1.48",
               "description": "Evaluate models developed by their classmates to show that matter is made up of tiny particles, too small to be seen"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.53",
+              "sco_code": "SC-G5-SC-SCO1.49",
               "description": "Plan and conduct investigations to show that matter is made up of tiny particles, too small to be seen"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.54",
+              "sco_code": "SC-G5-SC-SCO1.50",
               "description": "Compile data from carrying out different investigations."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.55",
+              "sco_code": "SC-G5-SC-SCO1.51",
               "description": "Analyse data from investigations to show that matter is made up of tiny particles, too small to be seen."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.56",
+              "sco_code": "SC-G5-SC-SCO1.52",
               "description": "Interpret data to show that matter is made up of particles too small to be seen."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.57",
+              "sco_code": "SC-G5-SC-SCO1.53",
               "description": "Show persistence when conducting experiments to demonstrate that matter is made up of tiny particles."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.58",
+              "sco_code": "SC-G5-SC-SCO1.54",
               "description": "Demonstrate interest in finding out more about matter and the behaviour of the particles that make up matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.59",
+              "sco_code": "SC-G5-SC-SCO1.55",
               "description": "Use the inquiry approach in designing and conducting various investigations."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.60",
+              "sco_code": "SC-G5-SC-SCO1.56",
               "description": "Show respect for evidence obtained from investigation on the particulate nature of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.61",
+              "sco_code": "SC-G5-SC-SCO1.57",
               "description": "Work collaboratively with their group members to carry out investigations on the particulate nature of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.62",
+              "sco_code": "SC-G5-SC-SCO1.58",
               "description": "Participate actively in whole-class and group discussions on the particulate nature of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.63",
+              "sco_code": "SC-G5-SC-SCO1.59",
               "description": "Stewardship/Respect for Living Things"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.64",
+              "sco_code": "SC-G5-SC-SCO1.60",
               "description": "When conducting experiments be careful to avoid harming plants, animals or the environment."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.65",
+              "sco_code": "SC-G5-SC-SCO1.61",
               "description": "Safety: Wash their hands after completing the activities"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.66",
+              "sco_code": "SC-G5-SC-SCO1.62",
               "description": "When conducting practical and group work, display sensitivity to those learners who may have difficulty observing certain changes in matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.67",
+              "sco_code": "SC-G5-SC-SCO1.63",
               "description": "Learners are expected to: Knowledge Define terms: Mass, Grams, Kilograms, Reliability, Change of state, Chemical change, Mixture, Solution, Homogeneous mixture, Heterogeneous mixture, Soluble/insoluble, Precipitate, Conservation of mass and Conservation of matter"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.68",
+              "sco_code": "SC-G5-SC-SCO1.64",
               "description": "Changing states of matter: particularly- melting and freezing"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.69",
+              "sco_code": "SC-G5-SC-SCO1.65",
               "description": "Open and closed systems"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.70",
-              "description": "Variable"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO1.71",
+              "sco_code": "SC-G5-SC-SCO1.66",
               "description": "Controls or controlled variables"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.72",
+              "sco_code": "SC-G5-SC-SCO1.67",
               "description": "List some physical properties of matter. (ST 3 PS MM 1)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.73",
+              "sco_code": "SC-G5-SC-SCO1.68",
               "description": "Identify and explain different ways by which materials can be changed. (ST 5 PS MM 1)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.74",
+              "sco_code": "SC-G5-SC-SCO1.69",
               "description": "Understand that the mass of water remains constant when water changes from solid to liquid. (ST 6 PS MM1)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.75",
+              "sco_code": "SC-G5-SC-SCO1.70",
               "description": "Hypothesize why the total mass of the products may appear to change when performing experiments in an open system."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.76",
+              "sco_code": "SC-G5-SC-SCO1.71",
               "description": "Identify different phase changes of matter e.g. liquid changing to a solid, solid to liquid"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.77",
+              "sco_code": "SC-G5-SC-SCO1.72",
               "description": "Identify the conservation of mass with phase change."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.78",
+              "sco_code": "SC-G5-SC-SCO1.73",
               "description": "Use measurements and calculations to show that regardless of the reaction or changes mass is conserved."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.79",
+              "sco_code": "SC-G5-SC-SCO1.74",
               "description": "Conduct an experiment to observe what happens when salt is dissolved in water."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.80",
+              "sco_code": "SC-G5-SC-SCO1.75",
               "description": "Describe their observations of water evaporating and the salt crystals reforming."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.81",
+              "sco_code": "SC-G5-SC-SCO1.76",
               "description": "Select and use the appropriate tools to observe and measure matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.82",
+              "sco_code": "SC-G5-SC-SCO1.77",
               "description": "Record and organize observations in chart form."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.83",
+              "sco_code": "SC-G5-SC-SCO1.78",
               "description": "Have an understanding that heating and cooling matter can bring about phase changes from solid to liquid to gas."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.84",
+              "sco_code": "SC-G5-SC-SCO1.79",
               "description": "Recognize that when substances combine, they may lose their individual properties."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.85",
+              "sco_code": "SC-G5-SC-SCO1.80",
               "description": "Demonstrate that changes of state are reversible through the addition or removal of heat."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.86",
+              "sco_code": "SC-G5-SC-SCO1.81",
               "description": "Determine if the mass of a substance changes when it changes state"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.87",
+              "sco_code": "SC-G5-SC-SCO1.82",
               "description": "Determine if the mass of two or more substances change when they are mixed"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.88",
+              "sco_code": "SC-G5-SC-SCO1.83",
               "description": "Take measurements showing that whether the process is a change of state, dissolving, or a chemical reaction, the total mass of the substances does not change."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.89",
+              "sco_code": "SC-G5-SC-SCO1.84",
               "description": "Understand that the same substance can change state and be a liquid, a solid, or a gas"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.90",
+              "sco_code": "SC-G5-SC-SCO1.85",
               "description": "Apply the Law of Conservation of Mass to the mixing of two separate states of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.91",
+              "sco_code": "SC-G5-SC-SCO1.86",
               "description": "Explain how, when different states of matter are mixed, some properties change while others remain the same."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.92",
+              "sco_code": "SC-G5-SC-SCO1.87",
               "description": "Describe how matter is transported into, out of, and within systems."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.93",
+              "sco_code": "SC-G5-SC-SCO1.88",
               "description": "Describe the changes in properties they observe during and/or after heating, cooling, or mixing substances."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.94",
+              "sco_code": "SC-G5-SC-SCO1.89",
               "description": "Describe the effect of cooling and heating on different states of matter."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.95",
+              "sco_code": "SC-G5-SC-SCO1.90",
               "description": "Measure and graph quantities to provide evidence that regardless of the type of change that occurs when substances are heated, cooled, or mixed, the total weight is conserved."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.96",
+              "sco_code": "SC-G5-SC-SCO1.91",
               "description": "Develop skills in using a balance to measure mass."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.97",
+              "sco_code": "SC-G5-SC-SCO1.92",
               "description": "Investigate whether the mass of two or more substances change when they are mixed."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.98",
+              "sco_code": "SC-G5-SC-SCO1.93",
               "description": "Infer that the mass of water remains the same when water changes from solid to liquid."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.99",
+              "sco_code": "SC-G5-SC-SCO1.94",
               "description": "Conduct an investigation to produce data that can serve as the basis for evidence, using fair tests"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.100",
+              "sco_code": "SC-G5-SC-SCO1.95",
               "description": "Identify with examples, physical change in everyday living (ST 3 PS MM 2)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.101",
+              "sco_code": "SC-G5-SC-SCO1.96",
               "description": "Classify substances as soluble or insoluble by their ability to dissolve in water. (ST 4 ESS ER 9)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.102",
+              "sco_code": "SC-G5-SC-SCO1.97",
               "description": "Measure volume and mass of materials. (ST 4 PS MM 1)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.103",
+              "sco_code": "SC-G5-SC-SCO1.98",
               "description": "Investigate using a variety of ways and measurements to compare physical properties of certain materials. (ST 4 PS MM 2)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.104",
+              "sco_code": "SC-G5-SC-SCO1.99",
               "description": "Appreciate the importance of the conservation of mass."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.105",
+              "sco_code": "SC-G5-SC-SCO1.100",
               "description": "Show persistence when conducting experiments that demonstrate the conservation of mass."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.106",
+              "sco_code": "SC-G5-SC-SCO1.101",
               "description": "Use the inquiry approach in conducting investigations on the conservation of mass"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.107",
+              "sco_code": "SC-G5-SC-SCO1.102",
               "description": "Show respect for evidence obtained from investigation on the conservation of mass"
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.108",
+              "sco_code": "SC-G5-SC-SCO1.103",
               "description": "Show care for the environment by appropriately disposing of the chemicals used."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.109",
+              "sco_code": "SC-G5-SC-SCO1.104",
               "description": "Demonstrate work habits during the lab activities that ensure personal safety, the safety of others, as well as consideration of others and the environment."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.110",
+              "sco_code": "SC-G5-SC-SCO1.105",
               "description": "Follow rules for safe and appropriate use of scientific tools and chemicals."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.111",
+              "sco_code": "SC-G5-SC-SCO1.106",
               "description": "Display sensitivity to those learners who may have difficulty using certain tools or identifying certain changes when conducting practical and group work."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.112",
+              "sco_code": "SC-G5-SC-SCO1.107",
               "description": "Participate actively in whole- class and group discussions on the conservation of mass."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.113",
+              "sco_code": "SC-G5-SC-SCO1.108",
               "description": "Communicate the results from the various investigations to the class and teacher."
             },
             {
-              "sco_code": "SC-G5-SC-SCO1.114",
+              "sco_code": "SC-G5-SC-SCO1.109",
               "description": "Work collaboratively with their group members to carry out the activities on the conservation of mass."
             }
           ],
@@ -1005,34 +985,30 @@
             },
             {
               "sco_code": "SC-G5-SC-SCO2.70",
-              "description": "Opacity"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO2.71",
               "description": "Tick the cell to indicate whether these things are transparent, translucent or opaque"
             },
             {
-              "sco_code": "SC-G5-SC-SCO2.72",
+              "sco_code": "SC-G5-SC-SCO2.71",
               "description": "Use the tester to test if these objects are conductors or insulators of electricity. Write your answer in the table below"
             },
             {
-              "sco_code": "SC-G5-SC-SCO2.73",
+              "sco_code": "SC-G5-SC-SCO2.72",
               "description": "A learner connected an electrical tester to the points V, W, X, and Y on a circuit board. The results are shown below."
             },
             {
-              "sco_code": "SC-G5-SC-SCO2.74",
+              "sco_code": "SC-G5-SC-SCO2.73",
               "description": "Which diagram is likely showing the circuit board?"
             },
             {
-              "sco_code": "SC-G5-SC-SCO2.75",
+              "sco_code": "SC-G5-SC-SCO2.74",
               "description": "John collects data on the rebound of several objects when dropped from a height of 100cm."
             },
             {
-              "sco_code": "SC-G5-SC-SCO2.76",
+              "sco_code": "SC-G5-SC-SCO2.75",
               "description": "Which object has the greatest elasticity? (tennis ball)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO2.77",
+              "sco_code": "SC-G5-SC-SCO2.76",
               "description": "Which object has the least elasticity? (marble)"
             }
           ],
@@ -1249,114 +1225,102 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G5-SC-SCO3.1",
-              "description": "Learners are expected to: Knowledge Define the terms: Mixture, Solution, Solvent, Solute, Suspension, Precipitates (e.g. curdling), Physical changes, Chemical changes, Chemical reaction, Reversible and irreversible changes. Explain the importance of mixing different substances. Describe different methods used to separate mixtures. List advantages and disadvantages of different separating methods."
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO3.2",
-              "description": "Differentiate between physical changes and chemical changes. Identify burning, rusting and decaying as changes that are irreversible. Differentiate between physical and chemical changes to matter. Recognize the physical changes that are involved in forming and separating mixtures. Identify reversible and irreversible changes that can be made to substances. Recognize when two or more substances have been mixed or not mixed. Explain how, when different states of matter are mixed, some properties change while others remain the same. Give examples of changes in substances, classify them as physical or chemical changes, and justify the designation. Define physical change and give examples of physical changes."
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO3.3",
-              "description": "Explain how matter can be changed in ways such as heating or cooling, cutting or tearing, bending or stretching. Identify evidence of the formation of a new substance after two or more substances are mixed. List physical properties of matter. (ST 3 PS MM1) Identify with examples, physical change in everyday living. (ST 3 PS MM 2) Understand that melting, freezing, evaporation, and condensation are changes of state that can be reversed. (ST 5 PS MM 2) Classify substances as soluble or insoluble by their ability to dissolve in water. (ST 4 ESS ER 9) Understand that melting, freezing, evaporation, and condensation are changes of state that can be reversed. (ST 5 PS MM 2)"
-            },
-            {
-              "sco_code": "SC-G5-SC-SCO3.4",
               "description": "Describe with examples, the use of water as a solvent in everyday life. (ST 4 ESS ER 10)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.5",
+              "sco_code": "SC-G5-SC-SCO3.2",
               "description": "Demonstrate how a mixture is made by safely combining two forms of matter into a mixture."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.6",
+              "sco_code": "SC-G5-SC-SCO3.3",
               "description": "Demonstrate a technique that will best separate these two forms of matter from a mixture."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.7",
+              "sco_code": "SC-G5-SC-SCO3.4",
               "description": "Compare different mixtures to determine degree of separation."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.8",
+              "sco_code": "SC-G5-SC-SCO3.5",
               "description": "Plan and conduct investigations to determine whether or not a new substance is made when two or more substances are mixed."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.9",
+              "sco_code": "SC-G5-SC-SCO3.6",
               "description": "Recognize that a physical change alters the characteristics of a substance without producing a new substance."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.10",
+              "sco_code": "SC-G5-SC-SCO3.7",
               "description": "Give examples of changes in substances, classify them as physical or chemical changes, and justify the designation."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.11",
+              "sco_code": "SC-G5-SC-SCO3.8",
               "description": "Combine pure substances to make different mixtures."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.12",
+              "sco_code": "SC-G5-SC-SCO3.9",
               "description": "Infer how a change of different parts of a string telephone will affects its ability to transmit sound waves"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.13",
+              "sco_code": "SC-G5-SC-SCO3.10",
               "description": "Classify changes as physical changes or chemical changes"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.14",
+              "sco_code": "SC-G5-SC-SCO3.11",
               "description": "Hypothesize about changes that would occur when two or more substances are mixed."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.15",
+              "sco_code": "SC-G5-SC-SCO3.12",
               "description": "Compile data from carrying out different investigations physical and chemical changes."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.16",
+              "sco_code": "SC-G5-SC-SCO3.13",
               "description": "Analyse data obtained from physical and chemical changes using everyday substances"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.17",
+              "sco_code": "SC-G5-SC-SCO3.14",
               "description": "Interpret data obtained from their investigations"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.18",
+              "sco_code": "SC-G5-SC-SCO3.15",
               "description": "Evaluate data obtained from their investigations on physical and chemical changes."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.19",
+              "sco_code": "SC-G5-SC-SCO3.16",
               "description": "Record and interpret physical and chemical changes using everyday substances"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.20",
+              "sco_code": "SC-G5-SC-SCO3.17",
               "description": "Compare the observable properties of two or more substances before and after they are mixed to explain whether a new substance with different properties was formed. ed."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.21",
+              "sco_code": "SC-G5-SC-SCO3.18",
               "description": "Measure volume and mass of materials. (ST 4 PS MM 1)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.22",
+              "sco_code": "SC-G5-SC-SCO3.19",
               "description": "Investigate the principle that burning, rusting and decaying are changes that are not reversible. (ST 5 PS MM 3)"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.23",
+              "sco_code": "SC-G5-SC-SCO3.20",
               "description": "Use the inquiry approach in conducting various experiments on the mixing of two or more substances"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.24",
+              "sco_code": "SC-G5-SC-SCO3.21",
               "description": "Show respect for evidence obtained from investigation on the mixing of two or more substances"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.25",
+              "sco_code": "SC-G5-SC-SCO3.22",
               "description": "Dispose of substances used in different experiments responsibly"
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.26",
+              "sco_code": "SC-G5-SC-SCO3.23",
               "description": "When conducting practical and group work, display sensitivity to those learners who may have hearing difficulty using different scientific tools and identifying changes in colour."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.27",
+              "sco_code": "SC-G5-SC-SCO3.24",
               "description": "Participate actively in whole-class and group discussions on the data obtained from their investigations."
             },
             {
-              "sco_code": "SC-G5-SC-SCO3.28",
+              "sco_code": "SC-G5-SC-SCO3.25",
               "description": "Participate in investigations to determine whether mixing two or more substances results in the formation of a new substance."
             }
           ],
@@ -2007,31 +1971,11 @@
             },
             {
               "sco_code": "SC-G5-MO-SCO2.24",
-              "description": "Plants can grow under certain conditions. They need water, air, light and warmth. If a plant does not have these things it will slowly die. A healthy plant has green leaves and stands up strongly. A plant that has been deprived of nutrients will lose its leaves. A plant that has been deprived of light will turn yellow, thin and spindly. To stay healthy a plant needs to take water and nutrients from the soil. A plant takes carbon dioxide from the air and uses it with water and light to create food."
-            },
-            {
-              "sco_code": "SC-G5-MO-SCO2.25",
               "description": "Write a friendly letter to your friend's dad who is a farmer, explaining the importance as to why plants need the basic conditions in order to grow healthy and produce more fruits or food."
             },
             {
-              "sco_code": "SC-G5-MO-SCO2.26",
-              "description": "Plants are producers and perform a process called photosynthesis using light from the sun, water and carbon dioxide. Carbon dioxide is one of the gases we exhale when we breathe. The end result of this chemical reaction is sugar for the plant to feed on. The plant releases water and oxygen, a gas all animals need to breathe, into the air."
-            },
-            {
-              "sco_code": "SC-G5-MO-SCO2.27",
-              "description": "So how do plants do it, and why can't we? Plants have special structures called chloroplasts that animals don't have. Chloroplasts are round, flat organelles that are arranged in stacks called grana. These stacks are filled with chlorophyll. Chlorophyll is what gives leafy green plants their green colour. Their main job is to absorb light from the sun. Light activates the chlorophyll. It creates an energy that splits molecules of water, separating them out into hydrogen and oxygen. Chemical reactions take place. Hydrogen from the water combines with carbon from the carbon dioxide we breathe out. Oxygen is released into the air."
-            },
-            {
-              "sco_code": "SC-G5-MO-SCO2.28",
+              "sco_code": "SC-G5-MO-SCO2.25",
               "description": "People and plants make perfect partners. Plants rely on the carbon dioxide from the air that we breathe out, and we rely on the oxygen that they produce. This is one good reason for protecting plant life on Earth. Algae fields near the poles produce a constant"
-            },
-            {
-              "sco_code": "SC-G5-MO-SCO2.29",
-              "description": "supply of oxygen for us. So do the many plants of Earth's rainforests. We need plants in order to survive. Conservation projects around the globe are aimed at protecting our natural resources, including numerous species of plants. Our quality of life and the very quality of the air we breathe depend upon our green plant partners."
-            },
-            {
-              "sco_code": "SC-G5-MO-SCO2.30",
-              "description": "Answer the following questions based on the reading passage. Don't forget to go back to the passage whenever necessary to find or confirm your answers. 1. Why are plants called producers? 2. Where do plants get their green colour? 3. Explain the relationship between people and plants. Why are we good partners? 4. What would happen if there were not enough plants on earth? 5. What is chloroplast?"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -3062,22 +3006,10 @@
             },
             {
               "sco_code": "SC-G5-ES-SCO1.20",
-              "description": "Creating a 3D model of the water cycle can be a fun and educational project for learners to understand how water moves through Earth's spheres (atmosphere, hydrosphere, geosphere, biosphere). Below is a step-by-step guide to create a simple yet effective 3D model using materials commonly found at home or in the classroom. Materials Needed: Large Styrofoam® or cardboard sphere (as the base), Modelling clay or play-dough, Blue cellophane or coloured paper, Small plastic trees, plants, or figurines, Cotton balls or polyester fibrefill, Craft glue, tape, scissors, Markers or coloured pencils, Optional: Toothpicks, thin wire, or string for creating connections. Steps to Create the 3D Water Cycle Model: 1. Prepare the Base Sphere: Use a large Styrofoam® or cardboard sphere as the base for your model. This represents the Earth. 2. Represent the Geosphere: Landforms: Use modelling clay or play-dough to create mountains, hills, valleys, and other landforms on the surface of the sphere. 3. Depict the Biosphere: Plants and Trees: Place small plastic trees, plants, or figurines on the landforms you created with clay. Labelling: Label these plants and trees as \"Biosphere.\" 4. Create the Hydrosphere: Water Bodies: Use blue cellophane or coloured paper to create rivers, lakes, and oceans on the surface of the sphere. Labelling: Label these water bodies as \"Hydrosphere.\" 5. Represent the Atmosphere: Clouds and Sky: Use cotton balls or polyester fibrefill to create clouds around the sphere, representing the atmosphere. Labelling: Label this area as \"Atmosphere.\" 6. Show Interactions: Arrows or Connections: Use toothpicks, thin wire, or string to create arrows between the different components (geosphere, biosphere, hydrosphere, atmosphere) to show interactions. For example: Arrows from the atmosphere (clouds) to the biosphere (plants) to represent rain. Arrows from the hydrosphere (rivers) to the geosphere (soil) to show water infiltration. 7. Add Labels and Explanations: Use small pieces of paper or cardstock to write labels for each sphere (geosphere, biosphere, hydrosphere, atmosphere). Write brief explanations of the interactions and attach them near the corresponding arrows or spheres."
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO1.21",
-              "description": "Mountain Range Model – Geosphere Interacting with Atmosphere: Learners will explore how mountain ranges impact wind patterns and cloud formation through research and multimedia resources. 3D Model Construction: Using materials such as foam, cotton balls, and markers, learners will construct a model that shows how mountains affect atmospheric conditions. Comparison Presentation: Learners will compare the weather patterns on the windward and leeward sides of"
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO1.22",
               "description": "mountain ranges and explain the differences in cloud formation and precipitation."
             },
             {
-              "sco_code": "SC-G5-ES-SCO1.23",
-              "description": "Have learners conduct internet research to identify how each of the earth’s systems were impacted by the occurrence of a volcano which initially involves the geosphere."
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO1.24",
+              "sco_code": "SC-G5-ES-SCO1.21",
               "description": "Learner groups would be assigned one of these volcanoes and create a PowerPoint® or media presentation (poster) where they explained the event and spoke to how the geosphere ultimately impacted the hydrosphere, atmosphere and biosphere."
             }
           ],
@@ -3138,7 +3070,8 @@
             "Mining that impacts geosphere",
             "Deforesting that impacts biosphere",
             "Extinction of habitats in the biosphere",
-            "Climate change due to greenhouse effects"
+            "Climate change due to greenhouse effects",
+            "Have learners conduct internet research to identify how each of the earth’s systems were impacted by the occurrence of a volcano which initially involves the geosphere."
           ],
           "elo_code": "SC-G5-ES-ELO1"
         },
@@ -3319,255 +3252,231 @@
             },
             {
               "sco_code": "SC-G5-ES-SCO2.44",
-              "description": "Responding at Home and in the Community: In essay format, learners will write a two-page researched essay that responds to the following questions: What are the main water sources in your community? What is the water consumption data that is publicly available for your country? What are the conservation approaches that your community currently uses? In general, how is water used in your home; categorize types of uses as low consumption, medium consumption, high consumption."
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO2.45",
               "description": "What ways can your household better conserve water?"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.46",
+              "sco_code": "SC-G5-ES-SCO2.45",
               "description": "What ways could your school better conserve water?"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.47",
+              "sco_code": "SC-G5-ES-SCO2.46",
               "description": "What new initiatives could you imagine, as a concerned citizen, that would help your community to be more conscious of our water resources and ways to be responsible about it use?"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.48",
+              "sco_code": "SC-G5-ES-SCO2.47",
               "description": "Define the terms: Polluting, Environment, Conservation, Turbid, Reservoirs, Water diary, Consumption, Atmosphere, Humid, Acid rain, Environmental destruction, Clean air, Environmental activists, Scrub, Solid waste, Industrial effluent, Fracking, Phosphate detergents"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.49",
-              "description": "Sorting Recyclable versus Non-recyclable Waste: 'solid waste means any garbage or refuse, sludge from a wastewater treatment plant, water supply treatment plant, or air pollution control facility and other discarded material, resulting from industrial, commercial, mining, and agricultural operations, and from community activities. Nearly everything we do leaves behind some kind of waste.'"
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO2.50",
+              "sco_code": "SC-G5-ES-SCO2.48",
               "description": "Our Environment: Learners should be shown the following pictures of a typical scene in the Eastern Caribbean."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.51",
+              "sco_code": "SC-G5-ES-SCO2.49",
               "description": "Plastic recycling, Fossil fuels"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.52",
+              "sco_code": "SC-G5-ES-SCO2.50",
               "description": "State properties of clean air and describe conditions of air e.g. hot, cold, sticky. (ST 1 ESS ER 4)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.53",
+              "sco_code": "SC-G5-ES-SCO2.51",
               "description": "Define the term solid waste, identifying methods of managing this waste in home/school/community (recycling, composting etc.) (ST 2 LS ECS 23)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.54",
+              "sco_code": "SC-G5-ES-SCO2.52",
               "description": "Define the term environmental destruction and investigate the factors that cause and prevent this destruction. (ST 2 LS ECS 24)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.55",
+              "sco_code": "SC-G5-ES-SCO2.53",
               "description": "Identify the role of recycling and other named conservation methods in the maintenance of a balanced environment. (ST 3 LS ECS 6)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.56",
+              "sco_code": "SC-G5-ES-SCO2.54",
               "description": "Demonstrate awareness that sustainable use of resources would help to minimize pollution and destruction of the environment. (ST 3 STSE 1)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.57",
+              "sco_code": "SC-G5-ES-SCO2.55",
               "description": "Describe correct methods of garbage disposal. (ST 5 ESS ER 3)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.58",
+              "sco_code": "SC-G5-ES-SCO2.56",
               "description": "Identify that air is needed for burning, and describe how the process works. (ST 5 ESS ER 7)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.59",
+              "sco_code": "SC-G5-ES-SCO2.57",
               "description": "Explain the importance of 'clean' air in their country. (ST 5 ESS ER 11)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.60",
+              "sco_code": "SC-G5-ES-SCO2.58",
               "description": "Identify and name natural sources of water. (ST 5 ESS ER 12)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.61",
+              "sco_code": "SC-G5-ES-SCO2.59",
               "description": "Describe, with examples, the effects of water shortage in the environment and human activity. (ST 5 ESS ER 13)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.62",
+              "sco_code": "SC-G5-ES-SCO2.60",
               "description": "Identify and describe how water may be polluted, and how human activities help in this situation. (ST 5 ESS ER 14)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.63",
+              "sco_code": "SC-G5-ES-SCO2.61",
               "description": "Identify and name marine pollutants, explaining how each damages the environment. (ST 5 LS ECS 7)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.64",
+              "sco_code": "SC-G5-ES-SCO2.62",
               "description": "Describe how human activities may result in air and water pollution. (ST 5 LS ECS 8)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.65",
+              "sco_code": "SC-G5-ES-SCO2.63",
               "description": "Describe different methods of disposing of solid waste materials and demonstrate most appropriate methods of disposal. (ST 6 ESS ER 1)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.66",
+              "sco_code": "SC-G5-ES-SCO2.64",
               "description": "Describe and discuss how burning can cause air pollution. (ST 6 ESS ER 4)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.67",
+              "sco_code": "SC-G5-ES-SCO2.65",
               "description": "List and explain which activities of humans may affect the water supply and pollute our scarce resources. (ST 6 ESS ER 8)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.68",
+              "sco_code": "SC-G5-ES-SCO2.66",
               "description": "Discuss ways of preventing and reducing water pollution. (ST 6 ESS ER 9)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.69",
+              "sco_code": "SC-G5-ES-SCO2.67",
               "description": "Compare pro and con opinions on contentious issues (e.g. fracking)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.70",
+              "sco_code": "SC-G5-ES-SCO2.68",
               "description": "Compare clean and dirty water."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.71",
+              "sco_code": "SC-G5-ES-SCO2.69",
               "description": "Distinguish clean and polluted air."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.72",
+              "sco_code": "SC-G5-ES-SCO2.70",
               "description": "Explain how acid rain is created by industry."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.73",
+              "sco_code": "SC-G5-ES-SCO2.71",
               "description": "Explain to their classmates the need for environmental conservation in their country, outlining possible scenarios if such protection is neglected. (ST 3 LS ECS 7)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.74",
+              "sco_code": "SC-G5-ES-SCO2.72",
               "description": "Classify litter as recyclable and non-recyclable. (ST 5 ESS ER 4)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.75",
+              "sco_code": "SC-G5-ES-SCO2.73",
               "description": "Plan and participate in clean-up drive in their school. (ST 5 ESS ER 5)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.76",
+              "sco_code": "SC-G5-ES-SCO2.74",
               "description": "Design, construct and use discarded materials to make useful items. (ST 5 ESS ER 6)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.77",
+              "sco_code": "SC-G5-ES-SCO2.75",
               "description": "Compare devices that burn different fuels from the amount of pollution they cause. (ST 5 ESS ER 8)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.78",
+              "sco_code": "SC-G5-ES-SCO2.76",
               "description": "Compare the amount of air pollution in two named areas. (ST 5 ESS ER 9)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.79",
+              "sco_code": "SC-G5-ES-SCO2.77",
               "description": "Hypothesize as to the reasons for the differences exhibited in ST 5 ESS-ER 9 above (ST 5 ESS ER 10)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.80",
+              "sco_code": "SC-G5-ES-SCO2.78",
               "description": "Classify litter, using actual examples, as recyclable and non-recyclable. (ST 6 ESS ER 2)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.81",
+              "sco_code": "SC-G5-ES-SCO2.79",
               "description": "Design and construct a device to detect air pollution. (ST 6 ESS ER 5)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.82",
+              "sco_code": "SC-G5-ES-SCO2.80",
               "description": "Investigate the amount of air pollution found in two distinctly different areas and suggest a 'theory' to account for the reasons for the differences. (ST 6 ESS ER 6)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.83",
+              "sco_code": "SC-G5-ES-SCO2.81",
               "description": "Design, construct and demonstrate the use of a device to determine the turbidity of water. (ST 6 ESS ER 10)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.84",
+              "sco_code": "SC-G5-ES-SCO2.82",
               "description": "Investigate ways in which polluted water can be made clean. (ST 6 ESS ER 11)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.85",
+              "sco_code": "SC-G5-ES-SCO2.83",
               "description": "Interpret information passages."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.86",
+              "sco_code": "SC-G5-ES-SCO2.84",
               "description": "Infer from pictures the environmental concerns."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.87",
+              "sco_code": "SC-G5-ES-SCO2.85",
               "description": "Use graphic organizers to clarify terminology."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.88",
+              "sco_code": "SC-G5-ES-SCO2.86",
               "description": "Research modes of pollution."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.89",
+              "sco_code": "SC-G5-ES-SCO2.87",
               "description": "Complete inventories of water usage. (consumption)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.90",
+              "sco_code": "SC-G5-ES-SCO2.88",
               "description": "Perform water filtering experiments."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.91",
+              "sco_code": "SC-G5-ES-SCO2.89",
               "description": "Perform air pollution detection experiments."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.92",
+              "sco_code": "SC-G5-ES-SCO2.90",
               "description": "Construct graphs from data."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.93",
+              "sco_code": "SC-G5-ES-SCO2.91",
               "description": "Interpret graphical information."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.94",
+              "sco_code": "SC-G5-ES-SCO2.92",
               "description": "Demonstrate awareness that unplanned scientific and technological activities may impact humans and the environment in such a way that there is little to leave behind for succeeding generations. (ST 1 STSE 4)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.95",
+              "sco_code": "SC-G5-ES-SCO2.93",
               "description": "Demonstrate awareness that unplanned and excessive Science and Technological activities may destroy the earth as we know it, resulting in untold disasters. (fracking, oil exploration, global warming etc.). (ST 2 STSE 2)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.96",
+              "sco_code": "SC-G5-ES-SCO2.94",
               "description": "Demonstrate awareness that humans must realise that in their attempts to understand the world and exploit the environment to fulfil their needs there are consequences. (ST 2 STSE 1)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.97",
+              "sco_code": "SC-G5-ES-SCO2.95",
               "description": "Demonstrate awareness that the real impact of scientific and technological activities may take years to be seen. (ST 4 STSE 2)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.98",
+              "sco_code": "SC-G5-ES-SCO2.96",
               "description": "Demonstrate an understanding that human production processes make goods and products which may impact the environment. (ST 5 PS MM 4)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.99",
+              "sco_code": "SC-G5-ES-SCO2.97",
               "description": "Demonstrate an understanding that humans desire to acquire understanding and to produce materials for their needs, and there may be consequences not anticipated. (ST 5 TE UT 1)"
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.100",
+              "sco_code": "SC-G5-ES-SCO2.98",
               "description": "Appreciate that the earth’s water and air resources are sensitive to the abuse of humans."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.101",
+              "sco_code": "SC-G5-ES-SCO2.99",
               "description": "Demonstrate interest/curiosity to sample human habits like water consumption."
             },
             {
-              "sco_code": "SC-G5-ES-SCO2.102",
+              "sco_code": "SC-G5-ES-SCO2.100",
               "description": "Demonstrate an attitude of inquiry into new technologies that might impact the overall health of the earth."
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO2.103",
-              "description": "Pollution of Water: Efficient use of water must be combined with protection of our water supplies. From our initial pictures, it is obvious that plastic garbage is often deposited into our water both in the sea and near ground water sources. “Unlike other materials, plastic does not biodegrade. It can take up to 1,000 years to break down, so when it is discarded, it builds up in the environment until it reaches a crisis point. This pollution chokes marine wildlife, damages soil and poisons groundwater, and can cause serious health impacts.” Quoted verbatim from: https://www.un.org/africarenewal/magazine/may-2023/understanding-plastic-pollution-and-its-impact-lives. Plastics are often recyclable, and many schools and communities have begun recycling programs where drink bottles and plastic packaging are separated in bins. Does your community have a depot for recycling plastics? If so your class can begin a recycling program; if not, learners should be encouraged to reuse plastic containers such as cups, bottles, plates and utensils."
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO2.104",
-              "description": "Plastic Product Recycling Process: Retrieved from: https://www.researchgate.net/figure/Overall-mechanical-recycling-process-of-waste-plastics_fig2_354740283"
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO2.105",
-              "description": "Protecting Our Air: Combustion (burning) of wood and fossil fuels requires air but it also produces unburned gases that pollute our atmosphere. Carbon dioxide is also formed in combustion, and this adds to global warming that makes our air seem more humid (containing water) rather than dryer. The result of this warming is climate change which impacts habitats and ecosystems. “Climate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, but since the 1800s, human activities have been the main driver of climate change, primarily due to the burning of fossil fuels (like coal, oil and gas), which produces heat-trapping gases.” Quoted verbatim from: https://www.un.org/en/climatechange/what-is-climate-change"
-            },
-            {
-              "sco_code": "SC-G5-ES-SCO2.106",
-              "description": "Industry also frequently creates other gases that appear as smoke from stacks. You will later learn more about the chemistry of sulphur and nitrogen oxides. These gases when released into the atmosphere can combine with water, oxygen, and other chemicals to become sulfuric and nitric acid respectively. These drop from clouds as dilute acid rain causing agricultural soils to be acidic and not suitable for some plants unless treated with lime (a neutralizing agent). This same acid rain falls in ponds and lakes causing a change in the aquatic environment. It is clear that industry, while it contributes convenient and useful products to humankind, it can also lead to environmental destruction by disturbing our clean air and destroying our water resources and associated ecosystems. This potential harm has been challenged by many environmental activists which has led to political pressure to “scrub” the gases that leave industrial stacks and limit dangerous effluents to local waterways. Teacher note: “A scrubber is a waste gas treatment installation in which a gas stream is brought into intensive contact with a liquid, with the aim of inviting certain gaseous components to pass from the gas to the liquid. Scrubbers can be employed as an emission-limiting technique for many gaseous emissions.” Quoted verbatim from: https://emis.vito.be/en/bat/tools-overview/sheets/gas-scrubbing-general"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4369,10 +4278,6 @@
             {
               "sco_code": "SC-G5-SS-SCO2.30",
               "description": "Materials: cardboard, paint, string, playdough, markers, scissors"
-            },
-            {
-              "sco_code": "SC-G5-SS-SCO2.31",
-              "description": "Rubric: Creativity: 5 marks, Accuracy: 5 marks, Neatness: 5 marks, Content: 5 marks, Total: 20 marks"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4554,10 +4459,6 @@
             {
               "sco_code": "SC-G5-SS-SCO3.27",
               "description": "Star Gazing Journal"
-            },
-            {
-              "sco_code": "SC-G5-SS-SCO3.28",
-              "description": "Learners to create a star observation journal entry: Instructions: At night learners should go outside and observe the pattern of stars. They should spend about 20 minutes quietly observing and record the patterns and any changes that they observe into their journals using the following format: Date: Location of observation: Time; (start and end) Observations: Include sky conditions e.g. if it is clear or cloudy, take photos or video recordings of the stars, draw the appearance of stars, describe any changes over time, reflection on how this may have affected your understanding of changing appearance of stars in the night’s sky"
             }
           ],
           "inclusive_assessment_strategies": [

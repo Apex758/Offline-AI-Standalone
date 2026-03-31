@@ -2,8 +2,8 @@
   "metadata": {
     "filename": "kindergarten-games-unit.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "K",
-    "subject": "Kindergarten"
+    "grade": "Kindergarten",
+    "subject": "Unknown"
   },
   "strands": [
     {
@@ -155,14 +155,6 @@
             {
               "sco_code": "XX-GK-RV-SCO1.12",
               "description": "2.13 begin to demonstrate fluency and phrasing during shared reading, independent and guided reading of emergent level passages"
-            },
-            {
-              "sco_code": "XX-GK-RV-SCO1.13",
-              "description": "2.14"
-            },
-            {
-              "sco_code": "XX-GK-RV-SCO1.14",
-              "description": "2.15"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -760,22 +752,10 @@
             },
             {
               "sco_code": "XX-GK-LA-SCO1.11",
-              "description": "The teacher will be observing for children’s Concepts of Print. Please see the Curriculum Outcomes and Guide for Effective Strategies for a list of Concepts of Print."
-            },
-            {
-              "sco_code": "XX-GK-LA-SCO1.12",
               "description": "The letters/sounds j, q, u, v will be the focus. The teacher should do some “stand-alone” lessons to introduce the children to these letters/sounds. Please see the Curriculum Outcomes and Guide for Effective Strategies for many ideas for teaching children letters/sounds."
             },
             {
-              "sco_code": "XX-GK-LA-SCO1.13",
-              "description": "Phonemic Awareness skills will commence and the focal point will be on initial phoneme isolation in words related to this Integrated Unit, such as judge, juggle, quiet, quick, umpire, up, volleyball and very. Please see the Curriculum Outcomes and Guide for Effective Strategies for many ideas for engaging learners in phonemic awareness skills."
-            },
-            {
-              "sco_code": "XX-GK-LA-SCO1.14",
-              "description": "The high frequency (sight) words such as said, where, she, they, was, went, will, yes, eat, good, have, into, new, now, there, this, with will be the focus. The teacher might do some “stand-alone lessons” to introduce these words. Please see the Curriculum Outcomes and Guide for Effective Strategies for many ideas for teaching high frequency words."
-            },
-            {
-              "sco_code": "XX-GK-LA-SCO1.15",
+              "sco_code": "XX-GK-LA-SCO1.12",
               "description": "The teacher is encouraged to find opportunities to emphasize those letters/sounds/phonemes/high frequency words with the children throughout the Integrated Learning Strategies for the unit."
             }
           ],
@@ -829,7 +809,8 @@
             "Ask the children to remember which different games were mentioned in the video.",
             "Jack Hartman: Keep on Trying! https://www.youtube.com/watch?v=lKKouReasVo",
             "After the video/dance, do a “Think-Pair-Share” with the children, asking them what different games were mentioned in the video. Then the teacher will make a list of all the different games the children remember from the video. (This is a Shared Writing activity. Please see the Curriculum Outcomes and Guide for Effective Strategies to find ways to include LA Skill development while making the list with the children. Also see the Curriculum Outcomes and Guide for Effective Strategies for a description of how to do a Think Pair Share with a class of children.)",
-            "Show the video again, and check to see if all the games are on the list the teacher and children created, or, did the teacher and children forget some of the games from the video? (When the teacher and the children review the list they created of the different games, this is a Shared Reading experience)."
+            "Show the video again, and check to see if all the games are on the list the teacher and children created, or, did the teacher and children forget some of the games from the video? (When the teacher and the children review the list they created of the different games, this is a Shared Reading experience).",
+            "The teacher will be observing for children’s Concepts of Print. Please see the Curriculum Outcomes and Guide for Effective Strategies for a list of Concepts of Print."
           ],
           "elo_code": "XX-GK-LA-ELO1"
         },

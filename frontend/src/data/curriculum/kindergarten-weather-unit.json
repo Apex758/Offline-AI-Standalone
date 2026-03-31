@@ -2,8 +2,8 @@
   "metadata": {
     "filename": "kindergarten-weather-unit.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "K",
-    "subject": "Kindergarten"
+    "grade": "Kindergarten",
+    "subject": "Unknown"
   },
   "strands": [
     {
@@ -455,7 +455,9 @@
             "The worksheet will provide the teacher with data about the children’s development of SCOs 3.2, 3.5 and 3.8.",
             "Language Arts – Product",
             "End of Week Five Reassessing Previous Checklists",
-            "The teacher might want to use the assessment strategy tools used throughout the week to reassess learners for new knowledge/improvements."
+            "The teacher might want to use the assessment strategy tools used throughout the week to reassess learners for new knowledge/improvements.",
+            "Language Arts – Product: The children’s writing activity will provide the teacher with assessment data on the Writing and Representing SCOs.",
+            "The children’s Weather Journals will provide the teacher with assessment data on the Writing and Representing SCOs."
           ],
           "inclusive_learning_strategies": [
             "Exit Ticket: The learners will be asked to draw to show one way the weather is important. The learners will be helped to write a sentence about their picture and they will be encouraged to explain their picture to the teacher. To further enhance the children’s learning, the learners might share their ideas verbally with a partner.",
@@ -531,53 +533,11 @@
             "The teacher will review the essential question for the unit by asking the learners: Is the Weather Important? The children will be reminded of the answers they gave at the beginning of the unit, and asked to consider if they have more ideas now.",
             "The teacher will take the children on a Gallery Walk to remind them of all the experiences they had during the 5 weeks. In this way, the teacher will prepare the children to be “tourist guides” for their family members, or other adults from the school, or children from another class.",
             "Family members, or other adults from the school, or children from another class will be invited to come for a Celebration of Learning. Each child will take a few visitors around the room and explain what they learned.",
-            "The session might end with a cake or another special treat to celebrate “Being Prepared; Not Scared”."
-          ],
-          "elo_code": "XX-GK-WR-ELO1"
-        },
-        {
-          "elo_description": "3.2 assign meaning to experimental drawing and writing 3.3 begin expressive writing to share ideas and real and imagined topics 3.5 learn to print the upper and lower case letters of the alphabet 3.6 connect spoken language(s) to written language and other representations (e.g. drawings) 3.7 connect phonological awareness to letter shapes 3.8 Spell name and some words of personal importance correctly",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "XX-GK-WR-SCO2.1",
-              "description": "3.2 Assign meaning to experimental drawing and writing"
-            },
-            {
-              "sco_code": "XX-GK-WR-SCO2.2",
-              "description": "3.3 Begin expressive writing to share ideas and real and imagined topics"
-            },
-            {
-              "sco_code": "XX-GK-WR-SCO2.3",
-              "description": "3.4 Use peer collaboration and classroom tools to assist in writing process"
-            },
-            {
-              "sco_code": "XX-GK-WR-SCO2.4",
-              "description": "3.5 Learn to print the upper and lower case letters of the alphabet"
-            },
-            {
-              "sco_code": "XX-GK-WR-SCO2.5",
-              "description": "3.6 Connect spoken language(s) to written language and other representations (e.g. drawings)"
-            },
-            {
-              "sco_code": "XX-GK-WR-SCO2.6",
-              "description": "3.7 Connect phonological awareness to letter shapes"
-            },
-            {
-              "sco_code": "XX-GK-WR-SCO2.7",
-              "description": "3.8 Spell name and some words of personal importance correctly"
-            }
-          ],
-          "inclusive_assessment_strategies": [
-            "The teacher will enter information into the checklist for Writing and Representing Outcomes 3.2, 3.3, 3.5, 3.6, 3.7 and 3.8 based on observation and conversation with the learners.",
-            "Language Arts – Product: The children’s writing activity will provide the teacher with assessment data on the Writing and Representing SCOs.",
-            "The children’s writing activity will provide the teacher with assessment data on the Writing and Representing SCOs.",
-            "The children’s Weather Journals will provide the teacher with assessment data on the Writing and Representing SCOs."
-          ],
-          "inclusive_learning_strategies": [
+            "The session might end with a cake or another special treat to celebrate “Being Prepared; Not Scared”.",
             "spaces provided one kind of weather the spider liked or did not like (the teacher can scribe learners’ responses).",
             "NOTE: Regarding Science SCOs 3.3.5 and 3.3.6, (starting in Week Two of this Integrated Unit. the children will be working as a class to collect the descriptive data (sun, wind, etc.) and the numerical data (3 sunny days, 5 windy days, etc.). The children will collect data about the weather, individually, here in Week 4."
           ],
-          "elo_code": "XX-GK-WR-ELO2"
+          "elo_code": "XX-GK-WR-ELO1"
         }
       ],
       "resources": [

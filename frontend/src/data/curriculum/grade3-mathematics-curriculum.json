@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade3-mathematics-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "3",
+    "grade": "Grade 3",
     "subject": "Mathematics"
   },
   "strands": [
@@ -18,30 +18,26 @@
             },
             {
               "sco_code": "MA-G3-NS-SCO1.2",
-              "description": "Learners will be expected to:"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO1.3",
               "description": "Knowledge: Read and write numbers up to 1000 in figures and words."
             },
             {
-              "sco_code": "MA-G3-NS-SCO1.4",
+              "sco_code": "MA-G3-NS-SCO1.3",
               "description": "Skills: Express a three-digit number in different ways e.g. Word form: two hundred and six, Standard form: 203, Place value: 2 hundreds, 3 ones, Concretely using base ten blocks, Pictorially"
             },
             {
-              "sco_code": "MA-G3-NS-SCO1.5",
+              "sco_code": "MA-G3-NS-SCO1.4",
               "description": "Express three-digit numbers up to 1000 in expanded form"
             },
             {
-              "sco_code": "MA-G3-NS-SCO1.6",
+              "sco_code": "MA-G3-NS-SCO1.5",
               "description": "Estimate the values of expanded notation for numbers up to 1000."
             },
             {
-              "sco_code": "MA-G3-NS-SCO1.7",
+              "sco_code": "MA-G3-NS-SCO1.6",
               "description": "Values: Recognise the use and importance of three-digit numbers in everyday living (real situations)"
             },
             {
-              "sco_code": "MA-G3-NS-SCO1.8",
+              "sco_code": "MA-G3-NS-SCO1.7",
               "description": "Read, represent, compose, and decompose whole numbers up to and including 1000, using various tools and strategies (concretely, pictorially, and symbolically), and describe various ways they are used in everyday life."
             }
           ],
@@ -101,38 +97,34 @@
             },
             {
               "sco_code": "MA-G3-NS-SCO3.6",
-              "description": "Learners will be expected to:"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO3.7",
               "description": "Knowledge: 1. Differentiate the terms ‘ascending order’ and ‘descending order.’"
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.8",
+              "sco_code": "MA-G3-NS-SCO3.7",
               "description": "2. Read the signs and symbols for comparing (<, > and =)"
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.9",
+              "sco_code": "MA-G3-NS-SCO3.8",
               "description": "Skills: 3. Compare three-digit numbers up to 999 using >, < and ="
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.10",
+              "sco_code": "MA-G3-NS-SCO3.9",
               "description": "4. Order numbers up to 1000 in ascending and descending order."
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.11",
+              "sco_code": "MA-G3-NS-SCO3.10",
               "description": "5. Round three-digit numbers to 1000 to determine estimates."
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.12",
+              "sco_code": "MA-G3-NS-SCO3.11",
               "description": "6. Estimate numbers up to 1000 using referents."
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.13",
+              "sco_code": "MA-G3-NS-SCO3.12",
               "description": "Values: 7. Create and solve story problems involving comparing whole numbers."
             },
             {
-              "sco_code": "MA-G3-NS-SCO3.14",
+              "sco_code": "MA-G3-NS-SCO3.13",
               "description": "Use >, =, and < symbols to record the results of comparisons;"
             }
           ],
@@ -192,38 +184,6 @@
             {
               "sco_code": "MA-G3-NS-SCO4.8",
               "description": "6. 4-digit numbers using play money."
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.9",
-              "description": "SCO 4"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.10",
-              "description": "SCO 5"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.11",
-              "description": "SCO #5 - Class Presentation"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.12",
-              "description": "SCO 1, 2, 5 & 6 - Rating Scale"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.13",
-              "description": "SCO 1, 2, 5 & 6"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.14",
-              "description": "SCO 3 & 6"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.15",
-              "description": "SCO # 3, 6"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO4.16",
-              "description": "SCO # 7"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -360,22 +320,6 @@
             {
               "sco_code": "MA-G3-NS-SCO6.5",
               "description": "Use fractions to solve real-life problems. - Apply knowledge of fractions to solve problems, e.g. sharing items and food. -Create story problems that involve comparison of fractions"
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO6.6",
-              "description": "SCO 3: Game - Fraction Matching Bingo. Develop bingo cards with fractions and shaded diagrams written on them. The teacher calls out statements, e.g. a fraction larger than ½, a diagram that shows a shaded area of ⅓. Learner identifies the corresponding value on the card."
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO6.7",
-              "description": "SCO #4: Game - Learner will match the fraction cards with corresponding shapes."
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO6.8",
-              "description": "SCO 5: The teacher will observe learners as they share the items using the appropriate fraction, e.g. ½, ¼, etc. and as they use the appropriate vocabulary, bigger, smaller."
-            },
-            {
-              "sco_code": "MA-G3-NS-SCO6.9",
-              "description": "SCO 5"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -707,14 +651,6 @@
             {
               "sco_code": "MA-G3-ON-SCO1.7",
               "description": "7. Use estimations to determine the reasonableness of answers obtained from carrying out a given computation"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO1.8",
-              "description": "SCO5: Use number lines to illustrate repeated addition in a multiplication context. Ask students to mark jumps on the number line to represent repeated addition steps. Use number lines to demonstrate repeated subtraction in a division context. For instance, for 15 ÷ 3, students can mark jumps on the number line until they reach zero."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO1.9",
-              "description": "SCO6: Word Problems: Include word problems in assessments that require students to estimate before solving. Ask questions like \"Estimate the sum/difference/product/quotient of these two numbers.\" Ensure the word problems are relatable to the students' experiences to make the context meaningful."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -763,22 +699,6 @@
             {
               "sco_code": "MA-G3-ON-SCO2.5",
               "description": "Describe the relationship between addition and subtraction, using one operation to check the other."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO2.6",
-              "description": "SCO4: discuss a scenario where a student has 9 cookies and gives away zero, leaving them with 9. Addition (6 + 0 = 6) subtraction (9 - 0 = 9)."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO2.7",
-              "description": "SCO5: Real-Life Application: Incorporate everyday situations. Example: \"Mark has $50. He spent $28 on a new toy. Use subtraction to find out how much money he has left. Now, use addition to check if Mark's spending and remaining money add up to the original $50.\""
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO2.8",
-              "description": "SCO5: Manipulating Equations: Strategy: Manipulate equations to show relationships. Implementation: Given an equation like 15 + 8 = 23, students can rearrange it to 23 - 8 = 15, demonstrating how one operation can be used to verify the other."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO2.9",
-              "description": "SCO6"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -830,26 +750,6 @@
             {
               "sco_code": "MA-G3-ON-SCO3.7",
               "description": "of sums and differences in solving real-world problems."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO3.8",
-              "description": "SCO 2"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO3.9",
-              "description": "SCO 3"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO3.10",
-              "description": "SCO 4"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO3.11",
-              "description": "SCO 5"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO3.12",
-              "description": "SCO 6"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -907,22 +807,10 @@
             },
             {
               "sco_code": "MA-G3-ON-SCO4.4",
-              "description": "SCO 5, 6 and 7"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO4.5",
-              "description": "SCO8"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO4.6",
-              "description": "SCO 9"
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO4.7",
               "description": "When grouping, the quotient represents the amount of groups within the shared quantity."
             },
             {
-              "sco_code": "MA-G3-ON-SCO4.8",
+              "sco_code": "MA-G3-ON-SCO4.5",
               "description": "Equal shares refer to dividing the whole or a group of objects into equal parts."
             }
           ],
@@ -980,14 +868,6 @@
             {
               "sco_code": "MA-G3-ON-SCO5.4",
               "description": "4. Fluently multiply and divide within 100, using strategies such as the relationship between multiplication and division."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO5.5",
-              "description": "SCO3: Storytelling and Word Problems: Frame multiplication problems within stories."
-            },
-            {
-              "sco_code": "MA-G3-ON-SCO5.6",
-              "description": "SCO4: Real-World Application Problems: Connect to practical situations requiring multiplication and division within 100."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1361,10 +1241,6 @@
             {
               "sco_code": "MA-G3-GT-SCO1.12",
               "description": "Students are asked to draw and construct a robot using 2D and 3D shapes given parameters."
-            },
-            {
-              "sco_code": "MA-G3-GT-SCO1.13",
-              "description": "Students are each given a blank sheet of paper, a ruler and a pencil. Teacher reads out a list of directions, pausing between each to give students time to complete them. Instructions should be specific, providing direction, position, etc. Measurements are not necessary. For example, 1. First, draw a small triangle in the middle of your paper, with one point at the bottom and the base at the top. 2. Second, draw three horizontal lines below your triangle. 3. Then, draw one short vertical line below your triangle. It must touch the bottom of your triangle and go through the middle of your three horizontal lines. 4. Next, above your triangle, draw two circles that are the same size – one on the upper left side and one on the upper right side. 5. After that, draw a smaller circle inside each of these circles. 6. Shade each of the smaller circles. 7. Draw a circle around everything. 8. Lastly, draw two triangles on the big circle - one must be on the upper right side and the other on the upper left side. The bottom of the triangles must touch the big circle."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1526,22 +1402,14 @@
             },
             {
               "sco_code": "MA-G3-GT-SCO3.10",
-              "description": "Using a variety of resources such as pipe cleaners, straws, pop sticks and glue, students will create a variety of shapes and write a sentence or two about the shapes they created."
-            },
-            {
-              "sco_code": "MA-G3-GT-SCO3.11",
               "description": "Determine whether the shape is a regular or irregular polygon."
             },
             {
-              "sco_code": "MA-G3-GT-SCO3.12",
-              "description": "Teacher presents a polygon to the students, and they will check the number sides. Students’ response will be “You have _____ sides.” The teacher then says, “I bet you don’t know my name. Students have the opportunity to respond. The teacher will highlight those who are right by saying: “you are right; my name is _______. The teacher continues and awaits students’ responses: “Can you see and count my corners?” “Is there another name for my corners?” As a culminating lesson, students will lead the game rather than the teacher."
-            },
-            {
-              "sco_code": "MA-G3-GT-SCO3.13",
+              "sco_code": "MA-G3-GT-SCO3.11",
               "description": "Copy and complete the worksheet. NAME THAT POLYGON! Can you name these polygons according to the number of their sides?"
             },
             {
-              "sco_code": "MA-G3-GT-SCO3.14",
+              "sco_code": "MA-G3-GT-SCO3.12",
               "description": "Create a booklet. On each page, a different shape should be drawn, stating its name and number of sides. They can also create various booklets; each one in the actual shape. So, instead of one booklet, they actually have booklets with the actual shape."
             }
           ],
@@ -2526,98 +2394,74 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G3-ME-SCO1.1",
-              "description": "Perimeter"
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO1.2",
-              "description": "Knowledge"
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO1.3",
               "description": "1. Use appropriate Vocabulary and apply language to the measurement of Perimeter"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.4",
+              "sco_code": "MA-G3-ME-SCO1.2",
               "description": "2. recognize perimeter as a measurement of length"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.5",
+              "sco_code": "MA-G3-ME-SCO1.3",
               "description": "3. recognise perimeter as a measurement attribute of plane figure"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.6",
+              "sco_code": "MA-G3-ME-SCO1.4",
               "description": "4. use language relating to measurement of area"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.7",
+              "sco_code": "MA-G3-ME-SCO1.5",
               "description": "5. recognise area as a measurement attribute"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.8",
+              "sco_code": "MA-G3-ME-SCO1.6",
               "description": "6. recognize area as an attribute of plane figures (2D shapes)"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.9",
-              "description": "Skill:"
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO1.10",
+              "sco_code": "MA-G3-ME-SCO1.7",
               "description": "7. partition a rectangle into rows and columns of the same squares and count to find the total area."
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.11",
-              "description": "Have students identify objects (chalkboard, door, plants, furniture, floor) in their immediate environment that are measurable in terms of perimeter"
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO1.12",
-              "description": "Students will use a dictionary and find the meaning of the terms perimeter Each pair will explain their definitions to the rest of the class using physical objects around the classroom."
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO1.13",
+              "sco_code": "MA-G3-ME-SCO1.8",
               "description": "Find the number of whole squares in each shape below."
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.14",
+              "sco_code": "MA-G3-ME-SCO1.9",
               "description": "Calculate the total area of each shape below"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.15",
+              "sco_code": "MA-G3-ME-SCO1.10",
               "description": "Complete the model by placing the missing values"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.16",
+              "sco_code": "MA-G3-ME-SCO1.11",
               "description": "can accurately compute total area (12 x 8)"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.17",
+              "sco_code": "MA-G3-ME-SCO1.12",
               "description": "Leaner can accurately determine the missing figures within the shape"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.18",
-              "description": "Allow students to partition rectangles into rows and columns. (SCO 7)"
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO1.19",
+              "sco_code": "MA-G3-ME-SCO1.13",
               "description": "8. use language relating to time"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.20",
+              "sco_code": "MA-G3-ME-SCO1.14",
               "description": "9. recognise time as a measurement attribute"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.21",
+              "sco_code": "MA-G3-ME-SCO1.15",
               "description": "10. explain the meaning and use of time"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.22",
+              "sco_code": "MA-G3-ME-SCO1.16",
               "description": "11. interpret the use of time"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.23",
+              "sco_code": "MA-G3-ME-SCO1.17",
               "description": "1. show an appreciation for the need for measurements by using correctly terms associated with length, perimeter, area or time"
             },
             {
-              "sco_code": "MA-G3-ME-SCO1.24",
+              "sco_code": "MA-G3-ME-SCO1.18",
               "description": "2. value the importance of measurements by describing real-life situations involving length, perimeter, area or time"
             }
           ],
@@ -2669,18 +2513,15 @@
             "Open Questioning: The teacher presents questions and scenarios to which students answer. a) eg: I came to school at 9:30 am.. Would it be early or late for school?",
             "b) We go to bed in the ____",
             "c) Time is measure in______",
-            "d) Name two instruments we can read or tell time."
+            "d) Name two instruments we can read or tell time.",
+            "Have students identify objects (chalkboard, door, plants, furniture, floor) in their immediate environment that are measurable in terms of perimeter",
+            "Allow students to partition rectangles into rows and columns. (SCO 7)"
           ],
           "elo_code": "MA-G3-ME-ELO1"
         },
         {
           "elo_description": "M1.2 Comparing and ordering based on measurable attributes",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G3-ME-SCO2.1",
-              "description": "Learners will be expected to: Knowledge 1. differentiate between the terms perimeter and area of a shape 2. calculate the perimeter of a polygon given its side lengths. 3. find the unknown side length of a polygon. 4. exhibit rectangles with the same perimeter and different areas 5. exhibit rectangles with the same area and different perimeters. Values 6. Collaborate with peer to solve problem, that rectangles with the same area can have different perimeters and vice versa 7. Justify the importance of perimeter and area by using them to solve everyday problems."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Product Entrance Slip (SCO 1) Find the area and perimeter of this shape by counting the squares. Retrieved from https://www.turtlediary.com/quiz/area-of-rectangles-by-tiling.html",
             "Checklist - Learner is able to determine premier accurately (yes/ no)",
@@ -2726,31 +2567,19 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G3-ME-SCO3.1",
-              "description": "Learners will be expected to: Knowledge 1. explain the effect that overfilling, underfilling and gaps between units have on accuracy 2. Compare the mass of various objects using a pan balance and non-standard units. 3. Estimate the mass of various objects using a pan balance and non-standard units."
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO3.2",
               "description": "4. measure the mass of various objects using a pan balance and non-standard units."
             },
             {
-              "sco_code": "MA-G3-ME-SCO3.3",
-              "description": "Values 5. Recognize the importance of accuracy when measuring by comparing the mass of objects when overfilled, underfilled, and exact. 6. Compare the mass of two objects 7. Compare unit mass in grams and kilograms. 8. Use kilograms or grams as a unit of mass. 9. Identify situations in everyday life where grams/kilograms is the most appropriate unit of measure."
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO3.4",
+              "sco_code": "MA-G3-ME-SCO3.2",
               "description": "Why do we use a scale in the places stated in the table? (school, supermarket, stores, boats, home, airport)"
             },
             {
-              "sco_code": "MA-G3-ME-SCO3.5",
+              "sco_code": "MA-G3-ME-SCO3.3",
               "description": "Capacity\nKnowledge\n1. use non-standard units to estimate the capacity of various objects.\n2. use non-standard units to compare the capacity of various objects.\nSkills\n3. use non-standard units to measure the capacity of various objects."
             },
             {
-              "sco_code": "MA-G3-ME-SCO3.6",
+              "sco_code": "MA-G3-ME-SCO3.4",
               "description": "4. Estimate and measure the capacity of containers using litres and millilitres.\nValue\n5. Volunteer to explain why there is a need for millilitres as a unit of measurement for capacity.\n6. Describe situations in real life where the litres and millilitres are used as unit of measurement."
-            },
-            {
-              "sco_code": "MA-G3-ME-SCO3.7",
-              "description": "Provide opportunities for learners to carry out to measure capacity using standard units. For example spoons (millilitre), cups and glasses"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2785,7 +2614,8 @@
             "side of the balance and 1 kilogram on the other side. How many grams equal a kilogram. List some objects That you think has more than 1 kilogram in mass. List some objects that you think has less than 1 kilogram in mass. What situations at home would we need to know the mass of the flour? Can you think of other places or situations where we would need to know the mass of something? What situations at home would we need to know the mass of the flour? Can you think of other places or situations where we would need to know the mass of something? In groups the students will carry out the following activity. Exploring Capacity using non standard units (SCO 1-3)",
             "Students will use objects from home (bottles, bowls, cups) to compare their capacity in the following activity.\n[Image: More Than, Less Than Capacity activity with containers]\nRetrieved from https://www.twinkl.com/resource/au-tivin-556-more-than-less-than-capacity-activity-sheet\nPresent students with a container of water, a litre cup, a bottle, water bottle, plastic jug, a mug\nWatch the Measuring Capacity video on YouTube (https://www.youtube.com/watch?v=GwWRFgWb2xs). Afterwards, revise and discuss the task that was being performed in the video and how it was completed. Provide opportunity for students to estimate how many cups of water each",
             "container holds. They would then record the information found. Students will then fill the different containers using the cups. Students would record their findings",
-            "Answer the following questions: a) Which container holds the most? b) Which container holds the least? c) Which holds more than the bowl? d) Describe the activity you have just done? e) What have learnt?"
+            "Answer the following questions: a) Which container holds the most? b) Which container holds the least? c) Which holds more than the bowl? d) Describe the activity you have just done? e) What have learnt?",
+            "Provide opportunities for learners to carry out to measure capacity using standard units. For example spoons (millilitre), cups and glasses"
           ],
           "elo_code": "MA-G3-ME-ELO3"
         },
@@ -3388,12 +3218,7 @@
         },
         {
           "elo_description": "Evaluating Inferences and Making Predictions Based on Data - Making and testing conjectures based on data sets",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G3-DH-SCO6.1",
-              "description": "Students will be able to: Knowledge 1. Create hypothesis and use a data set to test it. 2. Analyse graphs to test hypotheses based on data collected. 3. Skills 4. Examine graphs to gather information 5. Develop questions for surveys. 6. Create hypotheses to be tested based on a data set. Values 7. Volunteer to give and test hypotheses. 8. Willingly participate in class discussion on the making and testing of hypotheses."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Group Work: Mr. Bug is said to be the most favoured teacher in grade 5. Pupils will now test the hypothesis by collecting data from the grade 5 students and make their conclusions based on the data gathered.",
             "Conversation (Oral presentation)",
@@ -3409,12 +3234,7 @@
         },
         {
           "elo_description": "Evaluating Inferences and Making Predictions Based on Data - Evaluating data descriptions and reports",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G3-DH-SCO7.1",
-              "description": "Students will be able to: Knowledge 1. State the meaning of making inferences. 2. Make predictions and inferences based on trends in data. 3. Compare and contrast sets of data to draw conclusions. Skills 1. Read and interpret data to make inferences. 2. Use evidence to support inferences based on data given to them. Values 1. Combine text with prior knowledge to make inferences. 2. Articulate how their mental concept and text clues work together to help them make inferences."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Product: Students predict outcomes from math scenarios given."
           ],
@@ -3473,10 +3293,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G3-DH-SCO9.1",
-              "description": "Students will be able to: Knowledge 1. Differentiate between the terms ‘impossible’ and ‘certain’ in relation to real- life events. 2. Calculate the possibility of an event happening. 3. Define probability and its relationship to relative frequency of an item or event. Skills 4. Classify events as being impossible or certain. 5. Calculate probabilities by counting the outcomes in a graph. 6. Solve simple problems involving probability. Values 7. Willingly participate in activities in and outside the classroom that involve determining the probability of given life events occurring."
-            },
-            {
-              "sco_code": "MA-G3-DH-SCO9.2",
               "description": "8. Appreciate the use of probability as a measure of chance."
             }
           ],
@@ -4028,27 +3844,11 @@
             },
             {
               "sco_code": "MA-G3-PR-SCO1.8",
-              "description": "Answer the following questions: 1. What pattern do you see in the products of the 5-multiplication table? 2. Study the numbers multiplied by 5 to get a product with 0 in the ones place. When is there a product with 0 in the ones place in the 5-multiplication table? 3. When does the product end with 5 in the ones place in the 5 multiplication table?"
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO1.9",
-              "description": "B. Answer the following questions: 1. What patterns are the patterns found in the 6-multiplication table? Answers: All the products are even. There is a visible pattern in the ones column where the digits end with numbers in this pattern: 6, 2, 8, 4, 0. 2. Following the pattern 35, 42, 48, 54, 60, and 72, what number will come next? Answer: 78"
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO1.10",
-              "description": "Checklist: A. The learners are given numbers to create multiplication fact families. 1. 4, 20, 5 2. 42, 6, 7 3. 3, 12, 4"
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO1.11",
               "description": "C. Write two multiplication fact families with a product of 18."
             },
             {
-              "sco_code": "MA-G3-PR-SCO1.12",
+              "sco_code": "MA-G3-PR-SCO1.9",
               "description": "Exit Ticket: Complete the following table."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO1.13",
-              "description": "Think, Pair, Share: The learners are presented with the information presented in a table. They study the relationship found in the information presented and then solve a problem. Guided questions are given to guide the process. Study the table below to answer the following question. a. How many eggs were laid in 12 days? b. How long will it take the hens to lay 36 eggs? Table showing the number of eggs laid in a given number of days. Number of days: 5, Number of eggs laid: 20"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4199,19 +3999,7 @@
             },
             {
               "sco_code": "MA-G3-PR-SCO2.14",
-              "description": "Have students extend the pattern using the rule."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO2.15",
-              "description": "Have students represent the data using manipulatives, using Figure 3 as a model. Have students Identify the pattern rule and extend the pattern."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO2.16",
               "description": "Students will identify that this pattern is the inverse/opposite that decreases instead of increases."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO2.17",
-              "description": "SCO 9: Students will engage in think-pair-share to name the 3 types of patterns learnt for the day’s lesson. They will also give examples of each type of pattern in the real world."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -4258,7 +4046,8 @@
             "Deep and comprehensive learning",
             "Identify affirmation",
             "Learner difference",
-            "Each learning strategy outlines the materials that will be used for the strategy."
+            "Each learning strategy outlines the materials that will be used for the strategy.",
+            "Have students extend the pattern using the rule."
           ],
           "elo_code": "MA-G3-PR-ELO2"
         },
@@ -4328,10 +4117,6 @@
             },
             {
               "sco_code": "MA-G3-PR-SCO4.3",
-              "description": "Value"
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO4.4",
               "description": "4. Recognize the importance of equality in solving problems."
             }
           ],
@@ -4414,14 +4199,10 @@
             },
             {
               "sco_code": "MA-G3-PR-SCO6.9",
-              "description": "SCO 6 Journal: Students make entries about their methods to identify the pattern or relationship. Also, they can include generalizations formulated and equations as well as the strategies they use to ensure that the function is correct. Further, they can indicate their feelings about the mathematics they are learning and their preferred methods."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO6.10",
               "description": "Interactive Games: educational games that involve identifying changes in number patterns to understand how additions, subtractions, or multiplications affect number patterns."
             },
             {
-              "sco_code": "MA-G3-PR-SCO6.11",
+              "sco_code": "MA-G3-PR-SCO6.10",
               "description": "Number Pattern Bingo: Create bingo cards with number patterns on them."
             }
           ],
@@ -4568,22 +4349,6 @@
             {
               "sco_code": "MA-G3-PR-SCO8.5",
               "description": "8. Check and validate solutions to story problems by using inverse operations or estimating to see if the answer makes sense in the context of the problem."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO8.6",
-              "description": "SCO5: Real-life Scenario: Using real-life scenarios ensures that the problems posed are relevant to students' experiences and interests. This relevance fosters engagement and makes the learning experience more relatable. For example sharing Stickers. Problem: Sarah has 15 stickers, and she wants to share them equally with her 5 friends. How many stickers will each friend get?"
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO8.7",
-              "description": "SCO6: Assessment through Games: Incorporate educational games that involve addition and subtraction. Games make learning enjoyable, and they provide an opportunity for continuous evaluation as students engage in the activities. For example: Math Puzzles: Create jigsaw puzzles with math problems on one piece and the answer on another. Students must match the problem with the correct answer to complete the puzzle."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO8.8",
-              "description": "SCO7: Multiplication/Division Models: Ask students to create visual models to represent multiplication and division problems. This could include arrays, equal grouping diagrams, or number lines. Visual representations help students grasp the concepts concretely."
-            },
-            {
-              "sco_code": "MA-G3-PR-SCO8.9",
-              "description": "SCO8: Inverse Operation Checks: Present story problems that require either addition and subtraction or multiplication and division. After solving the problem, ask students to use the inverse operation to check their solution. For example, if they added to find the solution, they should subtract to verify, and vice versa."
             }
           ],
           "inclusive_assessment_strategies": [

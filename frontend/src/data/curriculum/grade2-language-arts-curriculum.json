@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade2-language-arts-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "2",
+    "grade": "Grade 2",
     "subject": "Language Arts"
   },
   "strands": [
@@ -98,30 +98,22 @@
             },
             {
               "sco_code": "LA-G2-LS-SCO1.22",
-              "description": "progress."
-            },
-            {
-              "sco_code": "LA-G2-LS-SCO1.23",
               "description": "peer’s ideas"
             },
             {
-              "sco_code": "LA-G2-LS-SCO1.24",
+              "sco_code": "LA-G2-LS-SCO1.23",
               "description": "Storyteller’s reflection on peer’s drawing"
             },
             {
-              "sco_code": "LA-G2-LS-SCO1.25",
-              "description": "Self assessment: Poetry"
-            },
-            {
-              "sco_code": "LA-G2-LS-SCO1.26",
+              "sco_code": "LA-G2-LS-SCO1.24",
               "description": "Phonological Awareness Checklist"
             },
             {
-              "sco_code": "LA-G2-LS-SCO1.27",
+              "sco_code": "LA-G2-LS-SCO1.25",
               "description": "Sound Segmentation"
             },
             {
-              "sco_code": "LA-G2-LS-SCO1.28",
+              "sco_code": "LA-G2-LS-SCO1.26",
               "description": "Sound Blending"
             }
           ],
@@ -142,7 +134,8 @@
             "Learner listens to a poem read aloud by the teacher then completes the self-assessment checklist below. After the self-assessment, the learner shares results with teacher or a peer. NOTE: The checklist below is a sample only; adapt the checklist to include only the concepts that have been taught.",
             "Things I can do after reading a poem: I can identify the title of the poem. I can identify the stanzas or verses in the poem. I know what is the main idea of the poem. I can recognise two or more rhyming words in the poem. I can explain how the poem makes me feel",
             "Teacher engages learners in the following activity to assess their ability to segment sounds. “How many sounds do you hear in the word, \"cat\"? “Now, tell me each sound in…” (The test teacher does not stretch out the test words. He/She only stretches out the word when giving the initial example). 1. mat (3) ___________ 2. home (3) ___________ 3. on (2) ___________ 4. shoe (2) ___________ 5. stand (5) ___________",
-            "Teacher engages learners in the following activity to assess their ability to blend sounds. “Listen to the sounds and tell me what this word is /’uh’, ‘s’/. (The word is /us/). Tell me what this word is….” 1. /m-e/ (me) ___________ 2. /s-oo-p/ (soup) ___________ 3. /h-a-t/ (hat) ___________ 4. /t-ah-p/ (top) ___________ 5. /s-p-oo-n/ (spoon) ___________"
+            "Teacher engages learners in the following activity to assess their ability to blend sounds. “Listen to the sounds and tell me what this word is /’uh’, ‘s’/. (The word is /us/). Tell me what this word is….” 1. /m-e/ (me) ___________ 2. /s-oo-p/ (soup) ___________ 3. /h-a-t/ (hat) ___________ 4. /t-ah-p/ (top) ___________ 5. /s-p-oo-n/ (spoon) ___________",
+            "Self assessment: Poetry"
           ],
           "inclusive_learning_strategies": [
             "NOTE: Learning and Assessment go hand in hand. As learners are engaged in the learning strategies listed below, observe, and listen as learners engage in conversations, movement, the creation of products and share ideas. Record observations in the Observation of learner Learning Journal.",
@@ -355,63 +348,63 @@
             },
             {
               "sco_code": "LA-G2-RV-SCO1.32",
-              "description": "The learner will: Interact with understanding and critical thought to a wide range of genres and text forms using comprehension strategies, 1.1 Recognise the purpose and basic similarities and differences in paper based and digital genres of: - fiction - nonfiction - poetry, 1.2 Apply a variety of comprehension strategies to create meaning ✓ activating background knowledge ✓ determining importance ✓ visualisation ✓ prediction ✓ inferring ✓ synthesising"
-            },
-            {
-              "sco_code": "LA-G2-RV-SCO1.33",
-              "description": "analysing"
-            },
-            {
-              "sco_code": "LA-G2-RV-SCO1.34",
-              "description": "questions"
-            },
-            {
-              "sco_code": "LA-G2-RV-SCO1.35",
               "description": "make connections"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.36",
+              "sco_code": "LA-G2-RV-SCO1.33",
               "description": "Develop Vocabulary"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.37",
-              "description": "The learner will: Develop understanding of how author’s purpose and style influence meaning. 1.1 Become familiar with the style of favourite authors and illustrators. 1.2 Use the work of a range of authors to compare and contrast purpose and style: humorous stories, exciting stories. 1.3 Work with a peer to begin digital searches to gather information about an author."
-            },
-            {
-              "sco_code": "LA-G2-RV-SCO1.38",
+              "sco_code": "LA-G2-RV-SCO1.34",
               "description": "Develop understanding and recognise use of genres and publishing text features to influence meaning. 1.4 Become familiar with the text feature design choices of the author and publishers: front and back cover illustrations, back blurb information."
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.39",
+              "sco_code": "LA-G2-RV-SCO1.35",
               "description": "choice of words to enhance interest"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.40",
+              "sco_code": "LA-G2-RV-SCO1.36",
               "description": "use of local and international culture"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.41",
+              "sco_code": "LA-G2-RV-SCO1.37",
               "description": "generate questions to guide research"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.42",
+              "sco_code": "LA-G2-RV-SCO1.38",
               "description": "locate appropriate information with assistance (classroom, library, home, community)"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.43",
+              "sco_code": "LA-G2-RV-SCO1.39",
               "description": "organise information (see ELO 6)"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.44",
+              "sco_code": "LA-G2-RV-SCO1.40",
               "description": "share information"
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.45",
+              "sco_code": "LA-G2-RV-SCO1.41",
               "description": "Develop understanding of how author’s choices of vocabulary and language use, influence the meaning and mood of the text."
             },
             {
-              "sco_code": "LA-G2-RV-SCO1.46",
+              "sco_code": "LA-G2-RV-SCO1.42",
               "description": "Interact with and meaningfully apply Emergent/Early graphophonic cues to a variety of genres and text forms."
+            },
+            {
+              "sco_code": "LA-G2-RV-SCO1.43",
+              "description": "1.3 Use illustrations, graphics etc. of nonfiction text to ask questions, make inferences, and search for answers."
+            },
+            {
+              "sco_code": "LA-G2-RV-SCO1.44",
+              "description": "1.4 Use various tools to retell a narrative, referring to characters, problem (what happened), and solution (ending)."
+            },
+            {
+              "sco_code": "LA-G2-RV-SCO1.45",
+              "description": "1.5 Read simple mathematics or science problems to: search for information, ask questions, find solutions"
+            },
+            {
+              "sco_code": "LA-G2-RV-SCO1.46",
+              "description": "1.6 Demonstrate understanding through various responses to text, such as: artistic representations (visual arts, dance), discussions, graphic organisers, oral and written responses to questions etc."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -577,167 +570,191 @@
             },
             {
               "sco_code": "LA-G2-WR-SCO1.2",
-              "description": "1.2 Continue to engage in conversations about: why we write or draw, how we write or draw, how authors use words and sentences to share their ideas, how illustrators provide additional information to the writing, how authors use choices about when to use Home Language and when to use Standard English"
-            },
-            {
-              "sco_code": "LA-G2-WR-SCO1.3",
               "description": "1.3 Develop comfort in experimenting within different forms of formal and informal writing, such as: simple handwritten or digital notes, thank you notes, invitations to school or class, letters to peers or community members"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.4",
+              "sco_code": "LA-G2-WR-SCO1.3",
               "description": "1.4 Engage in conversations about an anchor text chosen to model the genre for the writing project."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.5",
+              "sco_code": "LA-G2-WR-SCO1.4",
               "description": "1.5 Participate in large group and small group opportunities to brainstorm ideas about a topic or a writing prompt."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.6",
+              "sco_code": "LA-G2-WR-SCO1.5",
               "description": "1.6 Use simple graphic organizers, such as pictures, the five-finger plan, web, list, five W’s, etc. to organize ideas into a draft."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.7",
+              "sco_code": "LA-G2-WR-SCO1.6",
               "description": "1.7 Organise brainstormed ideas through increasingly independent use of: Use organisational strategies to arrange thoughts and to explore, clarify and reflect on ideas, feelings, and experiences"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.8",
+              "sco_code": "LA-G2-WR-SCO1.7",
               "description": "1.8 Organize writing to match the genre being studied: narrative writing, expository writing, descriptive writing, persuasive writing"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.9",
+              "sco_code": "LA-G2-WR-SCO1.8",
               "description": "1.9 Make decisions about when illustrations, charts, and alternate language use will enhance the writing."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.10",
+              "sco_code": "LA-G2-WR-SCO1.9",
               "description": "1.10 Understand that writing a draft is connected to the prewriting/brainstorming and organising process."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.11",
+              "sco_code": "LA-G2-WR-SCO1.10",
               "description": "1.11 Approach draft writing from a positive perspective of taking risks by: using temporary spelling, exploring various languages, writing freely with a focus on getting ideas on paper or device"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.12",
+              "sco_code": "LA-G2-WR-SCO1.11",
               "description": "1.12 Refer to anchor texts as examples of the genre of the writing project."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.13",
+              "sco_code": "LA-G2-WR-SCO1.12",
               "description": "1.13 Continue to work with a partner, small group or independently, to begin the process of drafting and organising sentences."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.14",
+              "sco_code": "LA-G2-WR-SCO1.13",
               "description": "1.14 Further develop the structure of the genre throughout the draft process of: narrative writing, expository writing, descriptive writing, persuasive writing"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.15",
+              "sco_code": "LA-G2-WR-SCO1.14",
               "description": "1.15 Continue to develop understanding of the social aspect of writing by engaging with peers and the teacher for ideas, suggestions, and ongoing feedback."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.16",
+              "sco_code": "LA-G2-WR-SCO1.15",
               "description": "1.16 Develop an understanding of how to write complete sentences on a specific topic."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.17",
+              "sco_code": "LA-G2-WR-SCO1.16",
               "description": "1.17 Share writing and other representations with others and seek response."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.18",
+              "sco_code": "LA-G2-WR-SCO1.17",
               "description": "1.18 Begin to experiment with and use revising strategies to develop sentence fluency of: Statements, Questions, Exclamations, Short sentences, Longer sentences."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.19",
+              "sco_code": "LA-G2-WR-SCO1.18",
               "description": "1.19 Create illustrations/ drawings with a computer graphics/drawing program."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.20",
+              "sco_code": "LA-G2-WR-SCO1.19",
               "description": "1.20 Compose simple text (and begin to revise and edit) with a word processing program."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.21",
+              "sco_code": "LA-G2-WR-SCO1.20",
               "description": "1.21 Use expressive Home Language and Standard English words and phrases to enhance the message."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.22",
+              "sco_code": "LA-G2-WR-SCO1.21",
               "description": "a print, visual or digital graphic organizer"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.23",
+              "sco_code": "LA-G2-WR-SCO1.22",
               "description": "group conversation"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.24",
+              "sco_code": "LA-G2-WR-SCO1.23",
               "description": "story boards"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.25",
-              "description": "role play"
-            },
-            {
-              "sco_code": "LA-G2-WR-SCO1.26",
+              "sco_code": "LA-G2-WR-SCO1.24",
               "description": "text based models"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.27",
+              "sco_code": "LA-G2-WR-SCO1.25",
               "description": "use an increasing number of letters to represent sound."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.28",
+              "sco_code": "LA-G2-WR-SCO1.26",
               "description": "Develop punctuation conventions to enhance the meaning and clarity of their written work."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.29",
+              "sco_code": "LA-G2-WR-SCO1.27",
               "description": "Develop presentation formats to enhance the meaning and clarity of their written work."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.30",
+              "sco_code": "LA-G2-WR-SCO1.28",
               "description": "retellings of finished pieces of writing."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.31",
+              "sco_code": "LA-G2-WR-SCO1.29",
               "description": "Learners will Revise organization styles of drafted writing and representation"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.32",
+              "sco_code": "LA-G2-WR-SCO1.30",
               "description": "Revise language use (vocabulary)"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.33",
+              "sco_code": "LA-G2-WR-SCO1.31",
               "description": "use accurate verbs,"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.34",
+              "sco_code": "LA-G2-WR-SCO1.32",
               "description": "use a variety of meaningful descriptive words."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.35",
+              "sco_code": "LA-G2-WR-SCO1.33",
               "description": "Revise language use when revising written drafts (grammar and sentence fluency)."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.36",
+              "sco_code": "LA-G2-WR-SCO1.34",
               "description": "Revise language use (voice)"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.37",
+              "sco_code": "LA-G2-WR-SCO1.35",
               "description": "Develop language use when revising written drafts"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.38",
+              "sco_code": "LA-G2-WR-SCO1.36",
               "description": "(grammar and sentence fluency)"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.39",
+              "sco_code": "LA-G2-WR-SCO1.37",
               "description": "Develop language use when revising written drafts (voice)"
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.40",
+              "sco_code": "LA-G2-WR-SCO1.38",
               "description": "Use knowledge of writing conventions to enhance the meaning and clarity of their written work."
             },
             {
-              "sco_code": "LA-G2-WR-SCO1.41",
+              "sco_code": "LA-G2-WR-SCO1.39",
               "description": "Develop punctuation conventions to enhance the"
             },
             {
+              "sco_code": "LA-G2-WR-SCO1.40",
+              "description": "1.5 Demonstrate increasing knowledge of more complex spelling patterns, including long vowel patterns (ai, ay, oa, ou, ee, ea)."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.41",
+              "description": "1.6 Continue to develop understanding of how to sequence letters when spelling unfamiliar words."
+            },
+            {
               "sco_code": "LA-G2-WR-SCO1.42",
-              "description": "FINAL WRITING CHECKLIST: Decision to Publish First ask yourself, Will this story interest my readers?” If the answer is yes, then proceed. a) Read your story to yourself and answer these questions. 1. Does my story make sense all the way through? 2. Are my ideas in the right order? 3. Did I stay on topic? 5. Did I say what I wanted to say? 6. Do I have a strong beginning? 7. Is there a better word to use or can I change a part to make my story clearer? 8. Do I need to leave out a part? 9. Do I need to add anything? 10. Do I have a good ending? 11. Is the spelling the very best I can do? 12. Are the capitals, periods, question marks and quotation marks in the right place? 13. Is it interesting to look at? b) Make any changes you think you should make. c) Read the story to someone else. Ask your partner to: 1. Tell what s/he remembers about your story, 2. Ask about any part that was not clear, 3. Ask any other questions about your story that s/he would like to know, 4. Make any suggestions s/he has, d. Read the story to yourself again and make any further changes you think will improve it."
+              "description": "1.7 Demonstrate the knowledge of an increasing number of accurately spelt words."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.43",
+              "description": "1.8 Apply a wider range of spelling strategies resulting in more conventional or close to conventional spelling."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.44",
+              "description": "1.9 Continue to develop the use of digital features such as spell check."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.45",
+              "description": "1.10 Continue to refine the use of grade-level punctuation conventions: full stops, question marks, exclamation marks, capitals on names, I, dates, and beginning of a sentence, use lower-case letters within words, begin to use commas in a series."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.46",
+              "description": "1.11 Demonstrate a beginning awareness of when to use quotation marks."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.47",
+              "description": "1.12 Make final corrections of revised draft."
+            },
+            {
+              "sco_code": "LA-G2-WR-SCO1.48",
+              "description": "1.13 Self-select final pieces of writing to publish that"
             }
           ],
           "inclusive_assessment_strategies": [

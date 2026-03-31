@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade4-science-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "4",
+    "grade": "Grade 4",
     "subject": "Science"
   },
   "strands": [
@@ -134,23 +134,7 @@
             },
             {
               "sco_code": "SC-G4-EG-SCO1.31",
-              "description": "Culminating Challenge Question: Students, if we were to put a waterwheel in a local stream like shown below, which day (#1 or #2) do you think could produce the most energy? Explain why? Day #1: Hot summer day with a trickle of water in our stream. Day #2: In the rainy season, when the water rushes down from hillsides. (Day #2: the stream will have fast moving water so it will turn the wheel more quickly- this should make more energy)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO1.32",
-              "description": "Integrating Mathematics: Peter sets up his toy train on the railroad tracks he has in a straight line. He has a tool to measure the speed the train is traveling in centimeters/second when he pushes it to go. He set a box at the end of the ramp for the train to crash into. He measures in centimeters how far the train pushes the box and records the data in a table. Plot a graph of the speed of the train (x axis) versus. the distance the box traveled (y axis)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO1.33",
               "description": "What would happen to the distance the box moves if the train increased in speed beyond 70 cm/s?"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO1.34",
-              "description": "coupled with the resultant rush of water is enough that turbines can be lowered in the water and turned to create tidal power. This is an example of renewable resource in that tides are constantly changing day and night without any effort on our part! Students should do internet research to find out where tidal power projects have been successful in the world."
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO1.35",
-              "description": "As a wave nears shore and the depth of water starts to decrease, the frictional effect of the seabed slows the bottom of the wave, and when the point is reached when the top of the wave has a greater speed, it overtakes the bottom of the wave, and the wave will break. It has been found that a wave will break in water that is a depth of 1.3 the wave height. Ask students two questions about waves on their community beaches. 1. Why do we sometimes see waves breaking far out to sea on a windy day? (if the wind is high enough, it increases the speed of the top of the wave so it topples over the slower bottom of the wave) 2. Often we see channel markers near the entrance to boat landings that guide fishers safely into the harbor. Around these areas we may also see waves breaking. Why would that happen there? (Channel markers usually show wee shallow areas are located which are dangerous for boats. These shallow areas sometimes called shoals will slow the speed of the bottom of the wave and cause the faster top of the wave to topple over.)"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -343,30 +327,10 @@
             },
             {
               "sco_code": "SC-G4-EG-SCO2.37",
-              "description": "Explanation of how the cane press operates (5 marks)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO2.38",
-              "description": "Explanation of the energy transformation (5 marks)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO2.39",
-              "description": "Research Biomass: In a one-page response paper, using a drawn picture if they wish, explain the sources of biomass that might be used for energy in the Caribbean region. They must answer the question “how does the biomass get transformed into usable energy?” (there are a whole host of bioproducts of plants and food that can be heated to burn giving us energy that can be sued for heating or steam production to turn turbines)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO2.40",
-              "description": "Rubric: Explanation the sources of biomass (5 marks), Explanation of the energy transformation (5 marks)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO2.41",
               "description": "Careers in Energy: Discuss with students the importance of careers in maintaining current energy sources and innovation in exploring renewable energy. Ask invited speakers to share the career paths and daily work lives of those involved in energy careers."
             },
             {
-              "sco_code": "SC-G4-EG-SCO2.42",
-              "description": "Cost of Renewable Energy: It is easy to suggest that we should be careful of using up our non-renewable resources such as coal and oil and natural gas. Students should do research on the internet to answer some of the more difficult questions in the region such as: 1) What are the relative upfront costs of renewable energies such as solar power or wind power 2) Can the average person afford renewable energy? 3) What are the job implications for moving away from oil? 4) What are the environmental dangers and resultant costs of continued oil use in terms of extraction and transport? 5) Are humans prepared to be more energy conscious or are we too comfortable to reverse our high energy consumption trends? The class could be divided into groups where each group got one of the aforementioned questions. Students could be asked to prepare an essay to answer these or a class presentation digitally or through a poster."
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO2.43",
+              "sco_code": "SC-G4-EG-SCO2.38",
               "description": "Energy Consumption: Students will use the data below to create a bar graph showing the number of barrels of oil consumed daily by the identified countries in the Caribbean. Note to students the dramatic difference in consumption for bigger countries worldwide."
             }
           ],
@@ -549,26 +513,18 @@
             },
             {
               "sco_code": "SC-G4-EG-SCO3.26",
-              "description": "Scenario - Group Work: Below is a short scenario. In groups of threes, read the scenario together and come up with a solution. Glen and his friend London are going sledding at a local park. There are two hills to choose from, \"The Bunny Slopes,\" which are small hills and lots of flat surfaces, and \"The Dragon,\" which is a steep hill and not for beginners. If London goes first and reaches the bottom and Glen crashes into him from behind on \"The Dragon,\" what would happen to the motion of their sleds? What does the outcome depend upon? A) If Glen (sled) is heavier than London (sled)? B) If London (sled) is heavier than Glen (sled)? C) How will these scenarios (A & B) compare with respect to London’s final position?"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO3.27",
               "description": "The outcome depends on the mass of the sled and rider and the speed they are travelling."
             },
             {
-              "sco_code": "SC-G4-EG-SCO3.28",
+              "sco_code": "SC-G4-EG-SCO3.27",
               "description": "Likely outcome: 1) London will be pushed forward and Glen will continue a very short distance after the collision 2) London will be pushed forward and Glen will stop quite abruptly. 3) London will be pushed further when Glen (sled) is heavier."
             },
             {
-              "sco_code": "SC-G4-EG-SCO3.29",
+              "sco_code": "SC-G4-EG-SCO3.28",
               "description": "Energy Transfer During Collision"
             },
             {
-              "sco_code": "SC-G4-EG-SCO3.30",
-              "description": "As the one left ball swings downward, the energy is transferred through collisions of each of the balls so the far-right ball is sent in an outward motion. This continues back and forth for some time. Ask students why it doesn’t continue indefinitely? (The energy loss through collision is real and eventually it depletes to zero.)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO3.31",
+              "sco_code": "SC-G4-EG-SCO3.29",
               "description": "The Energy Necessary for a Longer Cricket Ball Distance"
             }
           ],
@@ -716,18 +672,6 @@
             {
               "sco_code": "SC-G4-EG-SCO4.25",
               "description": "Natural resources are not likely to last forever so judicious use and looking for renewable sources like solar alternatives is advisable. (ST 2 STSE 3)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO4.26",
-              "description": "2. Reading and Comprehension Passage What is Energy and Where Does It Come From? Passage including answers to questions. https://www.essa-tlemcen.dz/wp-content/uploads/2018/02/What-is-Energy-and-Where....-Comprehension-Passages%E2%80%9D.pdf"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO4.27",
-              "description": "3. Advantages and Disadvantages of Solar Energy. Students will complete a table showing the advantages and disadvantages of solar energy. Read each statement carefully. Complete the table by placing each statement under the correct heading. Statements 1. Solar energy can help reduce your electricity bill. (advantage) 2. Solar equipment is expensive. (disadvantage) 3. Solar panels require lots of space. (disadvantage) 4. The production of solar energy produces no pollution. (advantage) 5. Solar power cannot be harnessed during a storm or at night. (disadvantage)"
-            },
-            {
-              "sco_code": "SC-G4-EG-SCO4.28",
-              "description": "4. Make a Better Solar Cooker Project In small groups students will be challenged to construct the following solar cooker, record the temperatures, and brainstorm and design a better cooker that can achieve greater temperatures. This activity will require more than one lesson. Let’s make a solar cooker You will need: an old tire, a sheet of glass, a dish of water, a thermometer Lay the tire on the ground in a sunny spot. Stand the dish of water inside the tire. Place the thermometer in the water. Cover the tire with glass. Record the temperature of the water every 15 minutes in the table below. Note: heat energy from the sun passes through the glass and heats the air, water and the ground inside. The glass helps to trap the heat inside."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1275,6 +1219,248 @@
             "From the list of energy resources used in your country, choose one then prepare a presentation on that energy resource. Your presentation must include the following: 1. What is the natural source it is derived from? 2. What is this energy resource used for? 3. How it addresses energy needs in your country. 4. The positive and negative effects that this energy resource has on the environment. 5. The role of technology in improving or mediating the environmental effects of using the given energy resource."
           ],
           "elo_code": "SC-G4-EG-ELO5"
+        },
+        {
+          "elo_description": "Construct an argument that plants and animals have internal and external structures that function to support survival, growth, behavior, and reproduction",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G4-EG-SCO6.1",
+              "description": "Define the terms: survive, seed dispersal, ejected, evaporation, transpiration"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.2",
+              "description": "Demonstrate with examples, they understand that animals and plants have special features that allow them to survive."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.3",
+              "description": "Recall the names of organs in the human body and state their inherent function for survival."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.4",
+              "description": "Explain how some features of organisms enable their survival in their habitats. (ST 2 LS ECS 5)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.5",
+              "description": "Explain with examples what are endangered species. (ST 2 LS ECS 12)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.6",
+              "description": "Draw and label the main eternal parts of a plant. (ST 2 LS SF 1)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.7",
+              "description": "Define the term dispersal and list the agents of seed dispersal. (ST 6 LS DC 10)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.8",
+              "description": "Describe the physical features of the parts of a plant, relating these features to their functions. (ST 3 LS SF 1)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.9",
+              "description": "Describe the eternal features of animals relating these structures to their functions in the animals. (ST 3 LS SF 2)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.10",
+              "description": "Identify that the transport system is a major system in plants and describe the function of its parts. (ST 5 LS SF 3)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.11",
+              "description": "Observe pictures & videos that allow you to make inferences about the link between features and function,"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.12",
+              "description": "Infer what advantage these internal or external structures have in promoting survival."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.13",
+              "description": "Tabulate and classify the animal features and their impact."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.14",
+              "description": "Research instances of body parts having specific functions for survival."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.15",
+              "description": "Communicate understanding by creating a poster."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.16",
+              "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.17",
+              "description": "Participate actively in classroom discussions."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO6.18",
+              "description": "Investigate the physical, emotional and social adjustments that occur with organ donation."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Animal Parts and Functions to Survive: Students will research each of the following animals and their particular feature that allows them to survive. They should enter their research results in the table below.",
+            "Courting Features and Behaviors: For animals to produce their own offspring, a male and female of the species will often form a parenting couple. This often means the male will try to attract the female with colorful displays and sometimes even dances!",
+            "Have students research a Caribbean animal that uses a courting display (using external body features) in order to attract a female thereby ensuring reproduction of offspring and survival of the species. Students should create a poster with pictures of the display and a description of the animal species.",
+            "Rubric: Poster pictures (5 marks), Description of species habitat (3 marks), Description of survival function (2 marks), Grammar and punctuation (2 marks)",
+            "Plant Survival: How do you think the plant structure in this picture helps this tree produce offspring and survive? See: https://mynaturenook.com/helicopter-seeds/ (wind carries the seeds like a helicopter)",
+            "Importance of Water to Plants: Have students sketch a picture of a plant, label the parts and use the picture to explain the process of transpiration.",
+            "Internal Organs Help Us Survive: Donation?: Teacher should introduce topic of organ donation and elicit opinions from students on the ethics and viability of the practice. (see information below) - Many countries have programs that allow families of perished accident victims to donate organs to those that have diseased organs but are otherwise healthy. - Also, because we have two kidneys it is very common for a family member to donate a kidney to another family member whose kidneys no longer function.",
+            "This can allow the person with kidney problems to live a normal lifestyle. In all organ transplants the donor and recipients must have very similar blood characteristics in order for the new organ to work properly in the recipient body.",
+            "Have learners recount a story of friend or family member who may have had an organ transplant. Ask them to identify the lifestyle change before and after the transplant.",
+            "Endangered Species: Some animal parts like the tusks of elephants have important functions Digging holes, moving branches, accessing food) (d. They are however valued by humans for other reasons like making jewellery or house decorations etc.)",
+            "Write a one-page essay about an endangered species in eth Caribbean whose body partis highly valued for reasons other than what was intended for the plant or animal. Rubric: Description of the Problem (5 marks), Grammar & punctuation (5 marks), Pictures if included (3 marks), How to solve the issue (2 marks)",
+            "Other Examples of Bodily Function: Students may do research on the uniqueness of certain species in their respective countries. - Students may research the St Lucia whiptail lizard (Cnemidophorus vanzoi) or other local species of the lizard found in their island. - The armoured body of crabs and the use of their claws for digging. - Snakes make use of the fangs - Scorpions make use of their stinger and claws. - Turtles use their back flippers to dig a nest in the sand."
+          ],
+          "inclusive_learning_strategies": [
+            "Looking for Prior Knowledge on Survival Features in Humans: Students, I want you to think about the way our bodies are designed to help us survive, especially in the early days when humans didn't have all the machines to help us with our work or stores to buy our food!",
+            "What do our teeth help us do? (cut food, chew food, grind food for eating)",
+            "What do our long strong arms help us to do? (reach for food like apples in high branches, swim across waterways and lift materials to build shelter)",
+            "What do our strong legs and upright stature help us to do? (chase/hunt animals for food, escape from predators)",
+            "What does our nose help us do? (smell food to see if it is spoiled/safe to eat, smell animals that may be warning us)",
+            "What do our ears help us do? (hear danger in our vicinity like predatory animals, impending storms,)",
+            "What does our sense of taste help us do? (taste food to see if it is spoiled/safe to eat, avoid bitter or foods that upset our digestion)",
+            "What do our special hands help us do? (with opposing thumbs our hands allow us to grasp things so we can build shelters and use tools and do many daily requirements for surviving)",
+            "What about Internal Structures of Humans? Review with students the function of internal organs. How do they work together to help us survive as a living thing?",
+            "Heart (pumps blood throughout the body via the circulatory system, supplying oxygen and nutrients to the tissues and removing carbon dioxide and other wastes)",
+            "Kidneys (maintaining overall fluid balance, regulating and filtering minerals from blood, filtering waste materials from food, medications, and toxic substances)",
+            "Liver (filters blood from intestines and removes harmful chemicals)",
+            "Lungs (oxygenates blood to feed muscles; In respiration, oxygen from incoming air enters the blood, and carbon dioxide, a waste gas from the metabolism, leaves the blood).",
+            "Stomach (intestines) have 3 functions: - temporary storage for food, which passes from the esophagus to the stomach where it is held for 2 hours or longer. - mixing and breakdown of food by contraction and relaxation of the muscle layers in the stomach. - digestion of food",
+            "So you see students, we have many bodily features that help us to stay healthy and continue living.",
+            "Read Aloud Books to Support Function of Animal Parts Sandra Markle Authored Books What if You Had Animal Teeth? https://www.youtube.com/watch?v=_vLAx4veHhc (9:15 mins)",
+            "What if You Had Animal Eyes? https://www.youtube.com/watch?v=_vLAx4veHhc (13:16 mins)",
+            "What if You Had Animal Ears? https://www.youtube.com/watch?v=tWV0SEnI7gc (9:33 mins)",
+            "Plant Features for Survival: Did you know that plants also have parts and that have a function to help them grow and protect them so they can survive? Let us look at some examples: How do the thorns on a rose bush function to help it survive? (animals that get too close to the plant that might destroy its flowers will get pricked and decide to stay away) Some plants (poison oak, poison ivy, stinging nettle) have oils in their leaves that are very irritating to animals. How would that help the plant survive? (animals would not want to brush up against the plant to hurts its leaves or eat it for food as it would cause the animal great discomfort) Some plants have small hairlike structures that sense an animal like a housefly on them and react. The Venus flytrap actually captures the fly and digests the fly for food- a form of survival.",
+            "Venus flytrap picture retrieved from: https://www.nature.org/en-us/about-us/where-we-work/united-states/north-carolina/stories-in-north-carolina/pitcher-venus-flytrap-carnivorous-plants/",
+            "See the flytrap in action here: https://www.youtube.com/watch?v=O7eQKSf0LmY (2.50 mins)",
+            "Other plants will close or move if they are touched. (e.g. mimosa pudica) to protect against being eaten or to avoid losing water through their leaves (dehydration)",
+            "See the mimosa pudica moving here: https://www.youtube.com/watch?v=xEQJ0byHMXw (6:14 mins)",
+            "Plants can also ensure their survival by making sure their seeds get to fertile ground. This is called seed dispersal and it happens by many processes. Sometimes their seeds are ejected from a pod, carried by the wind or by water or by animals (on coats or in stomach) to other locations where they flourish. They have special features likes wings, waterproof seed coverings or sticky burrs that allow them to move to better locations for surviving.",
+            "Examples: Tetraberlinia moreliana (Leguminosae — Caesalpinioideae) Pea Family (Leguminosae)",
+            "Transpiration: Plants Need Water! Sun shines of the leaves of plants and warms them up. The liquid water in those leaves gest additional energy and begins to jump into the air as a gas in a process we have already studies called evaporation. The departure of the water from the leaves has the impact of drawing more water up from the soil through the stem. This process is called transpiration and plants could not survive without it. The process works properly because of the specialized parts in the plant."
+          ],
+          "elo_code": "SC-G4-EG-ELO6"
+        },
+        {
+          "elo_description": "Use a model to describe that animals receive different information through their senses, process it in their brain and respond to it differently",
+          "specific_curriculum_outcomes": [
+            {
+              "sco_code": "SC-G4-EG-SCO7.1",
+              "description": "Learners are expected to: Knowledge"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.2",
+              "description": "Define the terms: senses, nervous system, nerves, spinal cord, braille"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.3",
+              "description": "Identify the five senses."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.4",
+              "description": "Account for the importance of each of the senses in human survival."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.5",
+              "description": "Give at least three examples of how animals use their specialized senses."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.6",
+              "description": "Draw a diagram to show they understand the input of sensory information to the brain and an output of bodily response."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.7",
+              "description": "Infer from a scenario, the steps involved in going from"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.8",
+              "description": "a sensory input to a bodily response."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.9",
+              "description": "Classify sensory inputs."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.10",
+              "description": "Classify brain outputs."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.11",
+              "description": "Calculate % of global spinal injuries."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.12",
+              "description": "Communicate your research of animal use of senses in the form of a poster."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.13",
+              "description": "Construct a simple robot. (extended based on resources) for the purposes of mimicking sensory input and brain output."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.14",
+              "description": "Record data using bar graphs. (ST 2 ESS ER 2)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.15",
+              "description": "Outline what stimulates each of the five senses. (ST 2 LS ECS 14)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.16",
+              "description": "Name the organ that is stimulated by sound. (ST 2 LS ECS 15)"
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.17",
+              "description": "Attitudes/Values: Appreciation of the many senses animals access to function in the world safely and survive."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.18",
+              "description": "Attitudes/Values: Interest/Curiosity in animal’s unique senses."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.19",
+              "description": "Attitudes/Values: Safety and care to avoid spinal cord injuries."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.20",
+              "description": "Attitudes/Values: When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
+            },
+            {
+              "sco_code": "SC-G4-EG-SCO7.21",
+              "description": "Attitudes/Values: Participate actively in classroom discussions."
+            }
+          ],
+          "inclusive_assessment_strategies": [
+            "Which Senses are Used?",
+            "Information Processing in Animals - Matching Write the letter(s) of the sense that matches each of the animal behaviors on the left.",
+            "The Sense of Touch: Have students explain in a paragraph or a diagram, the steps of sensory processing for each of these human activities that involve touch. A blind person reads a book written in braille. A physician feels an arm to see if it has a break. A violinist places their fingers on the fingerboard of their violin to play a song. A baker kneads the dough as they prepare a loaf of bread.",
+            "What is so special? A Research Project: Students should choose three of the following animals and prepare a poster and explanation why the animal’s sensory systems are especially useful for their survival. 1) What special sensory ability does a housefly possess that makes it so difficult to capture them? (peripheral vision) 2) What special sensory ability does a female mosquito have that allows them to find their next blood meal? (detecting carbon dioxide-breathing animals) 3) What special sensory ability does a colossal squid (Mesonychoteuthis hamiltoni) have that helps with hunting in the ocean? (large eyes to receive minimal light in deep water) 4) What sensory property does the Caribbean white-lipped frog take advantage of in attracting a mate? (the frog sings but also creates a vibration in the earth to accentuate the impact of attracting a female) 5) What sensory property does the Blue-footed Boobie take advantage of in attracting a mate? (the sight of the bright blue feet elicits a response in the female bird) 6) What sensory property does a pod of whales access when they migrate as a group to other waters? (water temperature is sensed and whales will move for better feeding or giving birth to offspring)",
+            "Spinal Cord Injuries: The spinal cord is a crucial component of the nervous system that allows animals to transmit sensory information to and from the brain. It is very important to protect against injury to the spinal cord because the results can be very dramatic. If our brains can’t receive information about our sense of touch we have difficulty operating our arms and legs which can seriously affect our mobility. Dangerous activities that can lead to spinal injury include but are not limited to: Jumping from high locations, Diving into unknown bodies of water, Driving in vehicles without seatbelts, Riding bicycles in dangerous terrain without a helmet. Statistics: (2019) retrieved from: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9554757/ Globally 900,000 cases of spinal injury",
+            "Have the students calculate the % of each region of the total global incidence of spinal injury. From this data they should create a bar graph of country vs. % of spinal injuries globally. e.g. ((incidence/900000) x 100)",
+            "Response Paper: Students should write a one-page essay about how their school can be made accessible to students who may be confined to a wheelchair because of spinal cord injury or other debilitating injury/disease.",
+            "Engineering Project: Students may decide to build a wheelchair ramp for the school which would access their mathematics and construction skills.",
+            "Extension Activity- Robotics: Most rudimentary robots accessible to schools have built in sensors that can be programmed around visual cues to stop, turn, reverse etc. These systems mimic processing undertaken by animal’s brains based on sensory input.",
+            "School Projects\nhttps://www.youtube.com/watch?v=iCc4Di3ycNc (2:46 mins)\nhttps://www.youtube.com/watch?v=dDQThRpDe1A (3:23 mins)"
+          ],
+          "inclusive_learning_strategies": [
+            "Review of Senses and Sense Organs Students let’s review our senses – sight, smell, hearing, taste and touch.",
+            "Which body organ is used for each sense?",
+            "Why do we need these senses? (interact safely in the world, satisfy basic needs of food, warmth, shelter)",
+            "Now let’s play a game to see which sense we use for each activity.",
+            "Animals Use Their Senses Too! Just like humans, animals gather information from their environment through different sensory organs.",
+            "Have students look at the following pictures and suggest how the animals use their senses to receive information and respond. How do you think owls find their prey at night? (Owls use their perfect night vision and hearing to find prey.) Retrieved from: https://hawkwatch.org/raptor-id/raptor-id-fact-sheets/great-horned-owl/",
+            "Why do you think dogs make good police assistants? (Dogs have a powerful nose and an amazing sense of smell. Police and military service dogs are trained to detect drugs and explosives.) Retrieved from: https://www.customs.go.jp/moji/english/canine/canine.html",
+            "How do you think snakes and lizards find prey? (Snakes & lizards use their tongue for sensing prey) Retrieved from: https://www.petmd.com/reptile/pet_lover/evr_rp_why_snakes_use_tongue",
+            "How do you think bats are able to fly in the dark of night? (Bats use echolocation to navigate and find prey. They send out waves of sound from their mouths or noses, which bounce off their surroundings right back to their ears. By listening to the echoes, bats can build up a picture of exactly what’s around them.) Retrieved from: https://www.britannica.com/list/5-surprising-facts-about-bats",
+            "How do you think mice avoid cats? (Animals have a sense of smell to sense dangerous predators) Retrieved from: https://en.wikipedia.org/wiki/House_mouse",
+            "Why do you think animals have whiskers? (Animals brush, or whisk, their whiskers against objects to guide them, measure things, and find food). Retrieved from: https://en.wikipedia.org/wiki/Whiskers",
+            "How Do Animals Respond to Information from the Senses? The nervous system in animals is made up of sensory organs that collect information and use biochemicals in our bodies and specialized signaling anatomy to pass messages to the brain. The brain interprets the information then sends a message back through the nerves to tell the animal how to respond. (e.g. we touch something hot with our hand and the brain tells us to pull our hand away)",
+            "Retrieved from: https://childsuccesscenter.com/home/resources/sensory-processing/\nIn many animals the sensory information is collected and transferred using something called a nerve receptor. The information can then be passed along a spinal cord to the brain.\nRetrieved from: https://www.youtube.com/watch?app=desktop&v=12Cez7IFDY8 (11:52 mins)",
+            "Retrieved from: https://www.twinkl.nl/teaching-wiki/nervous-system\nWhat Is the Response from the Brain?\nDiscuss with students what happens when you give a stray dog some food.\nHave students explain the steps in that scenario?\nDog sees food > brain signals it resembles food > dog moves closer\nDog smells food > brain signals it isn’t spoiled > dog begins to eat\nDog tastes food > brain signals it doesn’t taste spoiled > dog continues eating",
+            "Retrieved from: https://milaap.org/fundraisers/support-feeding-street-dogs\nAnother example for students to map out the stepwise response. Scenario: A cat spies a large dog coming towards them from afar and then as it gets closer, hear sit growling\nRetrieved from: https://en.wikipedia.org/wiki/Cat%E2%80%93dog_relationship\nPossible student answers:\nCat sees dog > brain signals it could be a danger > cat tenses up & watches for aggressive behavior",
+            "Cat hears growling > brain signals the dog could attack> cat raises back to appear larger",
+            "Dog recoils >cat brain signals to be more aggressive> cat hisses loudly",
+            "What else might the cat do to protect itself? (move forward or lunge at the dog)"
+          ],
+          "elo_code": "SC-G4-EG-ELO7"
         }
       ],
       "resources": [
@@ -2062,6 +2248,174 @@
           "description": "Hydroelectric Generator: Materials: Plastic bottle, small water pump or motor, plastic tubing, wooden dowels, cardboard, glue, scissors. Instructions: Students can create a hydroelectric generator model by constructing a miniature dam using a plastic bottle filled with water. They can attach a small water pump or motor to the bottle's opening and connect it to a turbine made of cardboard blades. As water flows from the bottle through the turbine, it can generate electricity.",
           "links": [],
           "category": "Activities/Tools"
+        },
+        {
+          "description": "Video on courting features and behaviors",
+          "links": [
+            {
+              "text": "https://youtu.be/nPhVOZiPokA",
+              "url": "https://youtu.be/nPhVOZiPokA"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Diagram of human body internal organs",
+          "links": [
+            {
+              "text": "https://binged.it/2RJrJXI",
+              "url": "https://binged.it/2RJrJXI"
+            }
+          ],
+          "category": "Websites"
+        },
+        {
+          "description": "Video explaining internal organs",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=Yv0YKjgNKaA",
+              "url": "https://www.youtube.com/watch?v=Yv0YKjgNKaA"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Ejection of seeds",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=OB0P3mx_lxY",
+              "url": "https://www.youtube.com/watch?v=OB0P3mx_lxY"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Water transpiration",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=5jJLfwTkGe8",
+              "url": "https://www.youtube.com/watch?v=5jJLfwTkGe8"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Animal camouflage",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=YOIRci0CKzg",
+              "url": "https://www.youtube.com/watch?v=YOIRci0CKzg"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Opossum plays dead",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=UpGwt_baExk",
+              "url": "https://www.youtube.com/watch?v=UpGwt_baExk"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Bird digestive system",
+          "links": [
+            {
+              "text": "https://www.pgc.pa.gov/Education/ForEducators/Documents/Bird%20Digestive%20System.pdf",
+              "url": "https://www.pgc.pa.gov/Education/ForEducators/Documents/Bird%20Digestive%20System.pdf"
+            }
+          ],
+          "category": "Documents/PDFs"
+        },
+        {
+          "description": "Information Processing in Animals - Matching",
+          "links": [
+            {
+              "text": "https://www.exploringnature.org/db/view/Information-Processing-in-Animals-Matching",
+              "url": "https://www.exploringnature.org/db/view/Information-Processing-in-Animals-Matching"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Review of Senses and Sense Organs",
+          "links": [
+            {
+              "text": "https://www.baamboozle.com/slideshow/1138071",
+              "url": "https://www.baamboozle.com/slideshow/1138071"
+            }
+          ],
+          "category": "Activities/Tools"
+        },
+        {
+          "description": "Animal Adaptation: Super Senses | Science",
+          "links": [
+            {
+              "text": "https://youtu.be/-cHB9dvtp_I",
+              "url": "https://youtu.be/-cHB9dvtp_I"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Animal Senses - Visual Perception, Hearing, Taste, Smell",
+          "links": [
+            {
+              "text": "https://youtu.be/zS_DXg8QKOE",
+              "url": "https://youtu.be/zS_DXg8QKOE"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Animal senses / Super senses in animals",
+          "links": [
+            {
+              "text": "https://youtu.be/3jW08wCQOWw",
+              "url": "https://youtu.be/3jW08wCQOWw"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Sensory Organs",
+          "links": [
+            {
+              "text": "https://www.generationgenius.com/videolessons/senses-video-for-kids/",
+              "url": "https://www.generationgenius.com/videolessons/senses-video-for-kids/"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "How do nerve signals get transferred?",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=6qS83wD29PY",
+              "url": "https://www.youtube.com/watch?v=6qS83wD29PY"
+            }
+          ],
+          "category": "Videos"
+        },
+        {
+          "description": "Bird Mating Rituals which take advantage of visual sensation to elicit a brain response",
+          "links": [
+            {
+              "text": "https://www.youtube.com/watch?v=dhX8Tl1bcy4",
+              "url": "https://www.youtube.com/watch?v=dhX8Tl1bcy4"
+            },
+            {
+              "text": "https://www.youtube.com/watch?v=lcPHFQP9GN0",
+              "url": "https://www.youtube.com/watch?v=lcPHFQP9GN0"
+            },
+            {
+              "text": "https://www.youtube.com/watch?v=nPhVOZiPokA",
+              "url": "https://www.youtube.com/watch?v=nPhVOZiPokA"
+            }
+          ],
+          "category": "Videos"
         }
       ]
     },
@@ -3572,430 +3926,6 @@
       ]
     },
     {
-      "strand_name": "Structure, Function, and Information Processing",
-      "essential_learning_outcomes": [
-        {
-          "elo_description": "Construct an argument that plants and animals have internal and external structures that function to support survival, growth, behavior, and reproduction",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "SC-G4-CA-SCO1.1",
-              "description": "Define the terms: survive, seed dispersal, ejected, evaporation, transpiration"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.2",
-              "description": "Demonstrate with examples, they understand that animals and plants have special features that allow them to survive."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.3",
-              "description": "Recall the names of organs in the human body and state their inherent function for survival."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.4",
-              "description": "Explain how some features of organisms enable their survival in their habitats. (ST 2 LS ECS 5)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.5",
-              "description": "Explain with examples what are endangered species. (ST 2 LS ECS 12)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.6",
-              "description": "Draw and label the main eternal parts of a plant. (ST 2 LS SF 1)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.7",
-              "description": "Define the term dispersal and list the agents of seed dispersal. (ST 6 LS DC 10)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.8",
-              "description": "Describe the physical features of the parts of a plant, relating these features to their functions. (ST 3 LS SF 1)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.9",
-              "description": "Describe the eternal features of animals relating these structures to their functions in the animals. (ST 3 LS SF 2)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.10",
-              "description": "Identify that the transport system is a major system in plants and describe the function of its parts. (ST 5 LS SF 3)"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.11",
-              "description": "Observe pictures & videos that allow you to make inferences about the link between features and function,"
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.12",
-              "description": "Infer what advantage these internal or external structures have in promoting survival."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.13",
-              "description": "Tabulate and classify the animal features and their impact."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.14",
-              "description": "Research instances of body parts having specific functions for survival."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.15",
-              "description": "Communicate understanding by creating a poster."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.16",
-              "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.17",
-              "description": "Participate actively in classroom discussions."
-            },
-            {
-              "sco_code": "SC-G4-CA-SCO1.18",
-              "description": "Investigate the physical, emotional and social adjustments that occur with organ donation."
-            }
-          ],
-          "inclusive_assessment_strategies": [
-            "Animal Parts and Functions to Survive: Students will research each of the following animals and their particular feature that allows them to survive. They should enter their research results in the table below.",
-            "Courting Features and Behaviors: For animals to produce their own offspring, a male and female of the species will often form a parenting couple. This often means the male will try to attract the female with colorful displays and sometimes even dances!",
-            "Have students research a Caribbean animal that uses a courting display (using external body features) in order to attract a female thereby ensuring reproduction of offspring and survival of the species. Students should create a poster with pictures of the display and a description of the animal species.",
-            "Rubric: Poster pictures (5 marks), Description of species habitat (3 marks), Description of survival function (2 marks), Grammar and punctuation (2 marks)",
-            "Plant Survival: How do you think the plant structure in this picture helps this tree produce offspring and survive? See: https://mynaturenook.com/helicopter-seeds/ (wind carries the seeds like a helicopter)",
-            "Importance of Water to Plants: Have students sketch a picture of a plant, label the parts and use the picture to explain the process of transpiration.",
-            "Internal Organs Help Us Survive: Donation?: Teacher should introduce topic of organ donation and elicit opinions from students on the ethics and viability of the practice. (see information below) - Many countries have programs that allow families of perished accident victims to donate organs to those that have diseased organs but are otherwise healthy. - Also, because we have two kidneys it is very common for a family member to donate a kidney to another family member whose kidneys no longer function.",
-            "This can allow the person with kidney problems to live a normal lifestyle. In all organ transplants the donor and recipients must have very similar blood characteristics in order for the new organ to work properly in the recipient body.",
-            "Have learners recount a story of friend or family member who may have had an organ transplant. Ask them to identify the lifestyle change before and after the transplant.",
-            "Endangered Species: Some animal parts like the tusks of elephants have important functions Digging holes, moving branches, accessing food) (d. They are however valued by humans for other reasons like making jewellery or house decorations etc.)",
-            "Write a one-page essay about an endangered species in eth Caribbean whose body partis highly valued for reasons other than what was intended for the plant or animal. Rubric: Description of the Problem (5 marks), Grammar & punctuation (5 marks), Pictures if included (3 marks), How to solve the issue (2 marks)",
-            "Other Examples of Bodily Function: Students may do research on the uniqueness of certain species in their respective countries. - Students may research the St Lucia whiptail lizard (Cnemidophorus vanzoi) or other local species of the lizard found in their island. - The armoured body of crabs and the use of their claws for digging. - Snakes make use of the fangs - Scorpions make use of their stinger and claws. - Turtles use their back flippers to dig a nest in the sand."
-          ],
-          "inclusive_learning_strategies": [
-            "Looking for Prior Knowledge on Survival Features in Humans: Students, I want you to think about the way our bodies are designed to help us survive, especially in the early days when humans didn't have all the machines to help us with our work or stores to buy our food!",
-            "What do our teeth help us do? (cut food, chew food, grind food for eating)",
-            "What do our long strong arms help us to do? (reach for food like apples in high branches, swim across waterways and lift materials to build shelter)",
-            "What do our strong legs and upright stature help us to do? (chase/hunt animals for food, escape from predators)",
-            "What does our nose help us do? (smell food to see if it is spoiled/safe to eat, smell animals that may be warning us)",
-            "What do our ears help us do? (hear danger in our vicinity like predatory animals, impending storms,)",
-            "What does our sense of taste help us do? (taste food to see if it is spoiled/safe to eat, avoid bitter or foods that upset our digestion)",
-            "What do our special hands help us do? (with opposing thumbs our hands allow us to grasp things so we can build shelters and use tools and do many daily requirements for surviving)",
-            "What about Internal Structures of Humans? Review with students the function of internal organs. How do they work together to help us survive as a living thing?",
-            "Heart (pumps blood throughout the body via the circulatory system, supplying oxygen and nutrients to the tissues and removing carbon dioxide and other wastes)",
-            "Kidneys (maintaining overall fluid balance, regulating and filtering minerals from blood, filtering waste materials from food, medications, and toxic substances)",
-            "Liver (filters blood from intestines and removes harmful chemicals)",
-            "Lungs (oxygenates blood to feed muscles; In respiration, oxygen from incoming air enters the blood, and carbon dioxide, a waste gas from the metabolism, leaves the blood).",
-            "Stomach (intestines) have 3 functions: - temporary storage for food, which passes from the esophagus to the stomach where it is held for 2 hours or longer. - mixing and breakdown of food by contraction and relaxation of the muscle layers in the stomach. - digestion of food",
-            "So you see students, we have many bodily features that help us to stay healthy and continue living.",
-            "Read Aloud Books to Support Function of Animal Parts Sandra Markle Authored Books What if You Had Animal Teeth? https://www.youtube.com/watch?v=_vLAx4veHhc (9:15 mins)",
-            "What if You Had Animal Eyes? https://www.youtube.com/watch?v=_vLAx4veHhc (13:16 mins)",
-            "What if You Had Animal Ears? https://www.youtube.com/watch?v=tWV0SEnI7gc (9:33 mins)",
-            "Plant Features for Survival: Did you know that plants also have parts and that have a function to help them grow and protect them so they can survive? Let us look at some examples: How do the thorns on a rose bush function to help it survive? (animals that get too close to the plant that might destroy its flowers will get pricked and decide to stay away) Some plants (poison oak, poison ivy, stinging nettle) have oils in their leaves that are very irritating to animals. How would that help the plant survive? (animals would not want to brush up against the plant to hurts its leaves or eat it for food as it would cause the animal great discomfort) Some plants have small hairlike structures that sense an animal like a housefly on them and react. The Venus flytrap actually captures the fly and digests the fly for food- a form of survival.",
-            "Venus flytrap picture retrieved from: https://www.nature.org/en-us/about-us/where-we-work/united-states/north-carolina/stories-in-north-carolina/pitcher-venus-flytrap-carnivorous-plants/",
-            "See the flytrap in action here: https://www.youtube.com/watch?v=O7eQKSf0LmY (2.50 mins)",
-            "Other plants will close or move if they are touched. (e.g. mimosa pudica) to protect against being eaten or to avoid losing water through their leaves (dehydration)",
-            "See the mimosa pudica moving here: https://www.youtube.com/watch?v=xEQJ0byHMXw (6:14 mins)",
-            "Plants can also ensure their survival by making sure their seeds get to fertile ground. This is called seed dispersal and it happens by many processes. Sometimes their seeds are ejected from a pod, carried by the wind or by water or by animals (on coats or in stomach) to other locations where they flourish. They have special features likes wings, waterproof seed coverings or sticky burrs that allow them to move to better locations for surviving.",
-            "Examples: Tetraberlinia moreliana (Leguminosae — Caesalpinioideae) Pea Family (Leguminosae)",
-            "Transpiration: Plants Need Water! Sun shines of the leaves of plants and warms them up. The liquid water in those leaves gest additional energy and begins to jump into the air as a gas in a process we have already studies called evaporation. The departure of the water from the leaves has the impact of drawing more water up from the soil through the stem. This process is called transpiration and plants could not survive without it. The process works properly because of the specialized parts in the plant."
-          ],
-          "elo_code": "SC-G4-CA-ELO1"
-        }
-      ],
-      "resources": [
-        {
-          "description": "Video on courting features and behaviors",
-          "links": [
-            {
-              "text": "https://youtu.be/nPhVOZiPokA",
-              "url": "https://youtu.be/nPhVOZiPokA"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Diagram of human body internal organs",
-          "links": [
-            {
-              "text": "https://binged.it/2RJrJXI",
-              "url": "https://binged.it/2RJrJXI"
-            }
-          ],
-          "category": "Websites"
-        },
-        {
-          "description": "Video explaining internal organs",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=Yv0YKjgNKaA",
-              "url": "https://www.youtube.com/watch?v=Yv0YKjgNKaA"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Ejection of seeds",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=OB0P3mx_lxY",
-              "url": "https://www.youtube.com/watch?v=OB0P3mx_lxY"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Water transpiration",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=5jJLfwTkGe8",
-              "url": "https://www.youtube.com/watch?v=5jJLfwTkGe8"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Animal camouflage",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=YOIRci0CKzg",
-              "url": "https://www.youtube.com/watch?v=YOIRci0CKzg"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Opossum plays dead",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=UpGwt_baExk",
-              "url": "https://www.youtube.com/watch?v=UpGwt_baExk"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Bird digestive system",
-          "links": [
-            {
-              "text": "https://www.pgc.pa.gov/Education/ForEducators/Documents/Bird%20Digestive%20System.pdf",
-              "url": "https://www.pgc.pa.gov/Education/ForEducators/Documents/Bird%20Digestive%20System.pdf"
-            }
-          ],
-          "category": "Documents/PDFs"
-        }
-      ]
-    },
-    {
-      "strand_name": "Biological Information Processing",
-      "essential_learning_outcomes": [
-        {
-          "elo_description": "Use a model to describe that animals receive different information through their senses, process it in their brain and respond to it differently",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "SC-G4-UM-SCO1.1",
-              "description": "Learners are expected to: Knowledge"
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.2",
-              "description": "Define the terms: senses, nervous system, nerves, spinal cord, braille"
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.3",
-              "description": "Identify the five senses."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.4",
-              "description": "Account for the importance of each of the senses in human survival."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.5",
-              "description": "Give at least three examples of how animals use their specialized senses."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.6",
-              "description": "Draw a diagram to show they understand the input of sensory information to the brain and an output of bodily response."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.7",
-              "description": "Infer from a scenario, the steps involved in going from"
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.8",
-              "description": "a sensory input to a bodily response."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.9",
-              "description": "Classify sensory inputs."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.10",
-              "description": "Classify brain outputs."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.11",
-              "description": "Calculate % of global spinal injuries."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.12",
-              "description": "Communicate your research of animal use of senses in the form of a poster."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.13",
-              "description": "Construct a simple robot. (extended based on resources) for the purposes of mimicking sensory input and brain output."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.14",
-              "description": "Record data using bar graphs. (ST 2 ESS ER 2)"
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.15",
-              "description": "Outline what stimulates each of the five senses. (ST 2 LS ECS 14)"
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.16",
-              "description": "Name the organ that is stimulated by sound. (ST 2 LS ECS 15)"
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.17",
-              "description": "Attitudes/Values: Appreciation of the many senses animals access to function in the world safely and survive."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.18",
-              "description": "Attitudes/Values: Interest/Curiosity in animal’s unique senses."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.19",
-              "description": "Attitudes/Values: Safety and care to avoid spinal cord injuries."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.20",
-              "description": "Attitudes/Values: When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
-            },
-            {
-              "sco_code": "SC-G4-UM-SCO1.21",
-              "description": "Attitudes/Values: Participate actively in classroom discussions."
-            }
-          ],
-          "inclusive_assessment_strategies": [
-            "Which Senses are Used?",
-            "Information Processing in Animals - Matching Write the letter(s) of the sense that matches each of the animal behaviors on the left.",
-            "The Sense of Touch: Have students explain in a paragraph or a diagram, the steps of sensory processing for each of these human activities that involve touch. A blind person reads a book written in braille. A physician feels an arm to see if it has a break. A violinist places their fingers on the fingerboard of their violin to play a song. A baker kneads the dough as they prepare a loaf of bread.",
-            "What is so special? A Research Project: Students should choose three of the following animals and prepare a poster and explanation why the animal’s sensory systems are especially useful for their survival. 1) What special sensory ability does a housefly possess that makes it so difficult to capture them? (peripheral vision) 2) What special sensory ability does a female mosquito have that allows them to find their next blood meal? (detecting carbon dioxide-breathing animals) 3) What special sensory ability does a colossal squid (Mesonychoteuthis hamiltoni) have that helps with hunting in the ocean? (large eyes to receive minimal light in deep water) 4) What sensory property does the Caribbean white-lipped frog take advantage of in attracting a mate? (the frog sings but also creates a vibration in the earth to accentuate the impact of attracting a female) 5) What sensory property does the Blue-footed Boobie take advantage of in attracting a mate? (the sight of the bright blue feet elicits a response in the female bird) 6) What sensory property does a pod of whales access when they migrate as a group to other waters? (water temperature is sensed and whales will move for better feeding or giving birth to offspring)",
-            "Spinal Cord Injuries: The spinal cord is a crucial component of the nervous system that allows animals to transmit sensory information to and from the brain. It is very important to protect against injury to the spinal cord because the results can be very dramatic. If our brains can’t receive information about our sense of touch we have difficulty operating our arms and legs which can seriously affect our mobility. Dangerous activities that can lead to spinal injury include but are not limited to: Jumping from high locations, Diving into unknown bodies of water, Driving in vehicles without seatbelts, Riding bicycles in dangerous terrain without a helmet. Statistics: (2019) retrieved from: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9554757/ Globally 900,000 cases of spinal injury",
-            "Have the students calculate the % of each region of the total global incidence of spinal injury. From this data they should create a bar graph of country vs. % of spinal injuries globally. e.g. ((incidence/900000) x 100)",
-            "Response Paper: Students should write a one-page essay about how their school can be made accessible to students who may be confined to a wheelchair because of spinal cord injury or other debilitating injury/disease.",
-            "Engineering Project: Students may decide to build a wheelchair ramp for the school which would access their mathematics and construction skills.",
-            "Extension Activity- Robotics: Most rudimentary robots accessible to schools have built in sensors that can be programmed around visual cues to stop, turn, reverse etc. These systems mimic processing undertaken by animal’s brains based on sensory input.",
-            "School Projects\nhttps://www.youtube.com/watch?v=iCc4Di3ycNc (2:46 mins)\nhttps://www.youtube.com/watch?v=dDQThRpDe1A (3:23 mins)"
-          ],
-          "inclusive_learning_strategies": [
-            "Review of Senses and Sense Organs Students let’s review our senses – sight, smell, hearing, taste and touch.",
-            "Which body organ is used for each sense?",
-            "Why do we need these senses? (interact safely in the world, satisfy basic needs of food, warmth, shelter)",
-            "Now let’s play a game to see which sense we use for each activity.",
-            "Animals Use Their Senses Too! Just like humans, animals gather information from their environment through different sensory organs.",
-            "Have students look at the following pictures and suggest how the animals use their senses to receive information and respond. How do you think owls find their prey at night? (Owls use their perfect night vision and hearing to find prey.) Retrieved from: https://hawkwatch.org/raptor-id/raptor-id-fact-sheets/great-horned-owl/",
-            "Why do you think dogs make good police assistants? (Dogs have a powerful nose and an amazing sense of smell. Police and military service dogs are trained to detect drugs and explosives.) Retrieved from: https://www.customs.go.jp/moji/english/canine/canine.html",
-            "How do you think snakes and lizards find prey? (Snakes & lizards use their tongue for sensing prey) Retrieved from: https://www.petmd.com/reptile/pet_lover/evr_rp_why_snakes_use_tongue",
-            "How do you think bats are able to fly in the dark of night? (Bats use echolocation to navigate and find prey. They send out waves of sound from their mouths or noses, which bounce off their surroundings right back to their ears. By listening to the echoes, bats can build up a picture of exactly what’s around them.) Retrieved from: https://www.britannica.com/list/5-surprising-facts-about-bats",
-            "How do you think mice avoid cats? (Animals have a sense of smell to sense dangerous predators) Retrieved from: https://en.wikipedia.org/wiki/House_mouse",
-            "Why do you think animals have whiskers? (Animals brush, or whisk, their whiskers against objects to guide them, measure things, and find food). Retrieved from: https://en.wikipedia.org/wiki/Whiskers",
-            "How Do Animals Respond to Information from the Senses? The nervous system in animals is made up of sensory organs that collect information and use biochemicals in our bodies and specialized signaling anatomy to pass messages to the brain. The brain interprets the information then sends a message back through the nerves to tell the animal how to respond. (e.g. we touch something hot with our hand and the brain tells us to pull our hand away)",
-            "Retrieved from: https://childsuccesscenter.com/home/resources/sensory-processing/\nIn many animals the sensory information is collected and transferred using something called a nerve receptor. The information can then be passed along a spinal cord to the brain.\nRetrieved from: https://www.youtube.com/watch?app=desktop&v=12Cez7IFDY8 (11:52 mins)",
-            "Retrieved from: https://www.twinkl.nl/teaching-wiki/nervous-system\nWhat Is the Response from the Brain?\nDiscuss with students what happens when you give a stray dog some food.\nHave students explain the steps in that scenario?\nDog sees food > brain signals it resembles food > dog moves closer\nDog smells food > brain signals it isn’t spoiled > dog begins to eat\nDog tastes food > brain signals it doesn’t taste spoiled > dog continues eating",
-            "Retrieved from: https://milaap.org/fundraisers/support-feeding-street-dogs\nAnother example for students to map out the stepwise response. Scenario: A cat spies a large dog coming towards them from afar and then as it gets closer, hear sit growling\nRetrieved from: https://en.wikipedia.org/wiki/Cat%E2%80%93dog_relationship\nPossible student answers:\nCat sees dog > brain signals it could be a danger > cat tenses up & watches for aggressive behavior",
-            "Cat hears growling > brain signals the dog could attack> cat raises back to appear larger",
-            "Dog recoils >cat brain signals to be more aggressive> cat hisses loudly",
-            "What else might the cat do to protect itself? (move forward or lunge at the dog)"
-          ],
-          "elo_code": "SC-G4-UM-ELO1"
-        }
-      ],
-      "resources": [
-        {
-          "description": "Information Processing in Animals - Matching",
-          "links": [
-            {
-              "text": "https://www.exploringnature.org/db/view/Information-Processing-in-Animals-Matching",
-              "url": "https://www.exploringnature.org/db/view/Information-Processing-in-Animals-Matching"
-            }
-          ],
-          "category": "Activities/Tools"
-        },
-        {
-          "description": "Review of Senses and Sense Organs",
-          "links": [
-            {
-              "text": "https://www.baamboozle.com/slideshow/1138071",
-              "url": "https://www.baamboozle.com/slideshow/1138071"
-            }
-          ],
-          "category": "Activities/Tools"
-        },
-        {
-          "description": "Animal Adaptation: Super Senses | Science",
-          "links": [
-            {
-              "text": "https://youtu.be/-cHB9dvtp_I",
-              "url": "https://youtu.be/-cHB9dvtp_I"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Animal Senses - Visual Perception, Hearing, Taste, Smell",
-          "links": [
-            {
-              "text": "https://youtu.be/zS_DXg8QKOE",
-              "url": "https://youtu.be/zS_DXg8QKOE"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Animal senses / Super senses in animals",
-          "links": [
-            {
-              "text": "https://youtu.be/3jW08wCQOWw",
-              "url": "https://youtu.be/3jW08wCQOWw"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Sensory Organs",
-          "links": [
-            {
-              "text": "https://www.generationgenius.com/videolessons/senses-video-for-kids/",
-              "url": "https://www.generationgenius.com/videolessons/senses-video-for-kids/"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "How do nerve signals get transferred?",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=6qS83wD29PY",
-              "url": "https://www.youtube.com/watch?v=6qS83wD29PY"
-            }
-          ],
-          "category": "Videos"
-        },
-        {
-          "description": "Bird Mating Rituals which take advantage of visual sensation to elicit a brain response",
-          "links": [
-            {
-              "text": "https://www.youtube.com/watch?v=dhX8Tl1bcy4",
-              "url": "https://www.youtube.com/watch?v=dhX8Tl1bcy4"
-            },
-            {
-              "text": "https://www.youtube.com/watch?v=lcPHFQP9GN0",
-              "url": "https://www.youtube.com/watch?v=lcPHFQP9GN0"
-            },
-            {
-              "text": "https://www.youtube.com/watch?v=nPhVOZiPokA",
-              "url": "https://www.youtube.com/watch?v=nPhVOZiPokA"
-            }
-          ],
-          "category": "Videos"
-        }
-      ]
-    },
-    {
       "strand_name": "Earth Systems",
       "essential_learning_outcomes": [
         {
@@ -4083,26 +4013,14 @@
             },
             {
               "sco_code": "SC-G4-ES-SCO1.21",
-              "description": "Learners are expected to: Knowledge: Define the terms: Core, Crust, Mantle, Weathering, Mechanical /Physical weathering, Biological weathering, Chemical weathering, Erosion, Sediment, Deposition, Deforestation, Delta, Meandering river. Identify the layers of the earth: crust, mantle and core. Demonstrate an understanding of weathering and the factors that contribute to the same."
-            },
-            {
-              "sco_code": "SC-G4-ES-SCO1.22",
-              "description": "Demonstrate an understanding of erosion. Describe the factors that increase or reduce the rate of erosion in a particular area. Identify meandering rivers in the Caribbean. Define the term soil erosion, listing the types of soil erosion, and ways and means of preventing it. (ST 5 ESS ER 1). Name and describe methods of soil conservation. (ST 5 ESS ER 2). Skills: Observe (a) the layers of the earth (b) evidence of weathering and erosion in a particular area. Make inferences about the factors that contribute to weathering and erosion. Classify the types of weathering as mechanical/physical and chemical."
-            },
-            {
-              "sco_code": "SC-G4-ES-SCO1.23",
-              "description": "Investigate the factors that contribute to weathering and erosion. Compare and contrast weathering and erosion. Observe and account for erosion behaviours in a water table. Use a model to investigate the variables that may impact the extent of erosion. Communicate experimental results by making a model. Attitudes/Values: When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges. Express the desire to explore the factors that contribute to weathering and erosion and contribute solutions to erosion challenges in your community."
-            },
-            {
-              "sco_code": "SC-G4-ES-SCO1.24",
               "description": "Show concern and present community solutions to the problems of deforestation which leads to erosion, and eventually global warming."
             },
             {
-              "sco_code": "SC-G4-ES-SCO1.25",
+              "sco_code": "SC-G4-ES-SCO1.22",
               "description": "Consider solutions to solve the problem of flooding/run-off that washes away arable lands."
             },
             {
-              "sco_code": "SC-G4-ES-SCO1.26",
+              "sco_code": "SC-G4-ES-SCO1.23",
               "description": "Participate actively in classroom discussions."
             }
           ],
@@ -4246,146 +4164,134 @@
             },
             {
               "sco_code": "SC-G4-ES-SCO2.10",
-              "description": "Summit"
-            },
-            {
-              "sco_code": "SC-G4-ES-SCO2.11",
-              "description": "Base"
-            },
-            {
-              "sco_code": "SC-G4-ES-SCO2.12",
               "description": "Folded Mountains"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.13",
+              "sco_code": "SC-G4-ES-SCO2.11",
               "description": "Fault Block Mountain"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.14",
+              "sco_code": "SC-G4-ES-SCO2.12",
               "description": "Dome Mountains"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.15",
+              "sco_code": "SC-G4-ES-SCO2.13",
               "description": "Continental Shelf"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.16",
+              "sco_code": "SC-G4-ES-SCO2.14",
               "description": "Oceanic Trench"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.17",
+              "sco_code": "SC-G4-ES-SCO2.15",
               "description": "Abyssal Plain"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.18",
+              "sco_code": "SC-G4-ES-SCO2.16",
               "description": "Continental Slope"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.19",
+              "sco_code": "SC-G4-ES-SCO2.17",
               "description": "Continental Rise"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.20",
-              "description": "Elevation"
-            },
-            {
-              "sco_code": "SC-G4-ES-SCO2.21",
+              "sco_code": "SC-G4-ES-SCO2.18",
               "description": "Contour lines"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.22",
+              "sco_code": "SC-G4-ES-SCO2.19",
               "description": "Identify on a world map and diagram: mountains, continents, oceans, ocean floor structures, volcanoes and earthquakes areas"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.23",
+              "sco_code": "SC-G4-ES-SCO2.20",
               "description": "Identify patterns in the location of the earth’s features, e.g. locations of mountain ranges, ocean floor structures, earthquakes and volcanoes"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.24",
+              "sco_code": "SC-G4-ES-SCO2.21",
               "description": "Explain the concept of continental drift."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.25",
+              "sco_code": "SC-G4-ES-SCO2.22",
               "description": "Relay the evidence and logic that continental drift of the tectonic plates is a viable theory."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.26",
+              "sco_code": "SC-G4-ES-SCO2.23",
               "description": "Demonstrate an understanding of the use of the terms tectonic plate continent, ocean, mountain range, volcano, earthquake, ocean trench, ocean floor, etc. by using drawings and descriptions"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.27",
+              "sco_code": "SC-G4-ES-SCO2.24",
               "description": "Explain that mountains, volcanoes, earthquakes and ocean trenches are formed because of the movement of tectonic plates."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.28",
+              "sco_code": "SC-G4-ES-SCO2.25",
               "description": "Explain how the knowledge of the location of mountains, earthquakes and volcanoes affects the lives of people."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.29",
+              "sco_code": "SC-G4-ES-SCO2.26",
               "description": "Describe an earthquake as a natural occurrence and explain what causes it. (ST 5 LS ECS 15)"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.30",
+              "sco_code": "SC-G4-ES-SCO2.27",
               "description": "Identify volcanic activity as a natural process and explain how volcanoes are formed, as well as the likely impact on the environment. (ST 5 LS ECS 16)"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.31",
+              "sco_code": "SC-G4-ES-SCO2.28",
               "description": "Identify ways in which earthquakes impact the environment. (ST 6 LS ECS 16)"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.32",
+              "sco_code": "SC-G4-ES-SCO2.29",
               "description": "Describe the safety measures to be put in practice during an earthquake, explaining the need for each measure. (ST 6 LS ECS 17)"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.33",
+              "sco_code": "SC-G4-ES-SCO2.30",
               "description": "Explain how volcanoes are formed and discuss the impact that these eruptions cause. (ST 6 LS ECS 18)"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.34",
+              "sco_code": "SC-G4-ES-SCO2.31",
               "description": "Outline useful and harmful effects of the presence of a volcano in their"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.35",
+              "sco_code": "SC-G4-ES-SCO2.32",
               "description": "Draw diagrams or formulate models to represent some features of the earth, e.g, an ocean floor, continents, etc."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.36",
+              "sco_code": "SC-G4-ES-SCO2.33",
               "description": "Predict locations where earthquakes or volcanoes could take place."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.37",
+              "sco_code": "SC-G4-ES-SCO2.34",
               "description": "Use crayons/markers/seeds to locate features of the earth on a blank map, e.g. continents, mountain ranges, volcanoes, trenches, etc."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.38",
+              "sco_code": "SC-G4-ES-SCO2.35",
               "description": "Draw diagrams that show that you understand three ways plate boundaries can interact (divergent, convergent and transform)."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.39",
+              "sco_code": "SC-G4-ES-SCO2.36",
               "description": "Account for how plate interactions can create mountains and furthermore cause earthquakes and volcanoes."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.40",
+              "sco_code": "SC-G4-ES-SCO2.37",
               "description": "Identify mountains and/or volcanoes in your country and account for why volcanic activity is prevalent in the Caribbean region."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.41",
+              "sco_code": "SC-G4-ES-SCO2.38",
               "description": "Effectively communicate information based on observation of patterns of the earth’s features"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.42",
+              "sco_code": "SC-G4-ES-SCO2.39",
               "description": "Actively participate in class discussions."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.43",
+              "sco_code": "SC-G4-ES-SCO2.40",
               "description": "When conducting group work, display sensitivity and offer assistance to peers who may have physical or learning challenges"
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.44",
+              "sco_code": "SC-G4-ES-SCO2.41",
               "description": "Work respectfully with each other while analysing maps and charts and videos to describe patterns of earth’s features."
             },
             {
-              "sco_code": "SC-G4-ES-SCO2.45",
+              "sco_code": "SC-G4-ES-SCO2.42",
               "description": "Develop awareness that earth events and changes in earth’s feature can affect the environment and the lives and habitats of living things"
             }
           ],

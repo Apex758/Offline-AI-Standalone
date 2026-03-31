@@ -20,6 +20,7 @@ import AnalyticsIconData from '@hugeicons/core-free-icons/Analytics01Icon';
 import { useAchievementContext } from '../contexts/AchievementContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
+import LevelJourneyPath from './LevelJourneyPath';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity, NewlyEarnedAchievement } from '../types/achievement';
 
 const RARITY_COLORS: Record<AchievementRarity, string> = {
@@ -361,28 +362,42 @@ export default function Achievements({ tabId }: AchievementsProps) {
           </div>
         </div>
 
-        {/* Achievement grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 relative" style={{ isolation: 'isolate' }}>
-          {sortedDefinitions.map((defn, i) => (
-            <AchievementCard
-              key={defn.id}
-              definition={defn}
-              isEarned={earnedIds.has(defn.id)}
-              earnedAt={earnedMap[defn.id]}
-              progress={progress[defn.id]}
-              index={i}
-              onView={(def, eAt) => setViewingAchievement({
-                achievement_id: def.id,
-                earned_at: eAt || '',
-                name: def.name,
-                description: def.description,
-                category: def.category,
-                icon_name: def.icon_name,
-                rarity: def.rarity,
-                points: def.points,
-              })}
+        {/* Achievement grid + Journey path */}
+        <div className="flex gap-6 items-start">
+          {/* Cards — 3 columns max */}
+          <div className="flex-1 min-w-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative" style={{ isolation: 'isolate' }}>
+              {sortedDefinitions.map((defn, i) => (
+                <AchievementCard
+                  key={defn.id}
+                  definition={defn}
+                  isEarned={earnedIds.has(defn.id)}
+                  earnedAt={earnedMap[defn.id]}
+                  progress={progress[defn.id]}
+                  index={i}
+                  onView={(def, eAt) => setViewingAchievement({
+                    achievement_id: def.id,
+                    earned_at: eAt || '',
+                    name: def.name,
+                    description: def.description,
+                    category: def.category,
+                    icon_name: def.icon_name,
+                    rarity: def.rarity,
+                    points: def.points,
+                  })}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Journey path — right side, sticky */}
+          <div className="hidden xl:block w-[220px] shrink-0 sticky top-6">
+            <LevelJourneyPath
+              rank={rank}
+              earnedCount={earnedCount}
+              tabColor={tabColor}
             />
-          ))}
+          </div>
         </div>
 
         {/* View achievement modal */}

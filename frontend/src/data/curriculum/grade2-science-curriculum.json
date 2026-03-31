@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade2-science-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "2",
+    "grade": "Grade 2",
     "subject": "Science"
   },
   "strands": [
@@ -18,110 +18,102 @@
             },
             {
               "sco_code": "SC-G2-SM-SCO1.2",
-              "description": "○ Manmade materials ● State that matter is composed of particles. ● Demonstrate they understand the properties of the states of matter. ● Demonstrate they understand the properties of the different types of materials (metal, paper, wood, plastic, fabric, etc). ● Compare solids, liquids and gases based on their properties. ● Distinguish between an object and the material it is made from. ● Determine the properties to be observed in the investigations. ● Distinguish between objects and the materials from which they are made (ST-2-PS-MM-1). ● Identify different materials such as wood, rubber, metal, plastic and list objects made from each (ST-2-PS-MM-2). ● Describe giving examples, the properties of solids and liquids (ST-2-PS-MM-5)."
-            },
-            {
-              "sco_code": "SC-G2-SM-SCO1.3",
-              "description": "Skills ● Observe the three states of matter ● Identify the three states of matter and give examples of each. ● Observe different types of materials ● Identify the properties of different materials. ● Compare different types of materials based on their observable properties. ● Compare solids, liquids and gases based on their properties."
-            },
-            {
-              "sco_code": "SC-G2-SM-SCO1.4",
               "description": "Classify matter as solids, liquids and gases."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.5",
+              "sco_code": "SC-G2-SM-SCO1.3",
               "description": "Classify materials based on observable properties."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.6",
+              "sco_code": "SC-G2-SM-SCO1.4",
               "description": "Classify objects based on the materials they are made from."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.7",
+              "sco_code": "SC-G2-SM-SCO1.5",
               "description": "Communicate the results from the various investigations to the class and teacher."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.8",
+              "sco_code": "SC-G2-SM-SCO1.6",
               "description": "Plan investigations to describe and classify different kinds of materials."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.9",
+              "sco_code": "SC-G2-SM-SCO1.7",
               "description": "Conduct investigations to classify materials by their observable properties."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.10",
+              "sco_code": "SC-G2-SM-SCO1.8",
               "description": "Collect and analyse data gathered after observing different materials."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.11",
+              "sco_code": "SC-G2-SM-SCO1.9",
               "description": "Collect and analyse data gathered after observing each state of matter."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.12",
+              "sco_code": "SC-G2-SM-SCO1.10",
               "description": "Analyze and interpret data obtained from their observations to classify matter and materials."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.13",
+              "sco_code": "SC-G2-SM-SCO1.11",
               "description": "Investigate the properties of various materials and match the properties to their use (ST-2-PS-MM-3)."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.14",
+              "sco_code": "SC-G2-SM-SCO1.12",
               "description": "Develop curiosity by finding out about objects and materials around them."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.15",
+              "sco_code": "SC-G2-SM-SCO1.13",
               "description": "Appreciate that materials have similar and different properties."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.16",
+              "sco_code": "SC-G2-SM-SCO1.14",
               "description": "Develop inquiry through investigating materials and their properties."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.17",
+              "sco_code": "SC-G2-SM-SCO1.15",
               "description": "Show respect for evidence by using the results from the investigations to make classifications."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.18",
+              "sco_code": "SC-G2-SM-SCO1.16",
               "description": "Safety when conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.19",
+              "sco_code": "SC-G2-SM-SCO1.17",
               "description": "Participate actively in classroom discussions."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.20",
+              "sco_code": "SC-G2-SM-SCO1.18",
               "description": "Show persistence in completing practical activities, especially those that may be challenging."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.21",
+              "sco_code": "SC-G2-SM-SCO1.19",
               "description": "Work collaboratively, cooperatively and respectfully with other members of their group in exploring and investigating different materials."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.22",
+              "sco_code": "SC-G2-SM-SCO1.20",
               "description": "Show sensitivity and demonstrate helpfulness when working with peers that may have learning or physical challenges as you undertake experimental work together."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.23",
+              "sco_code": "SC-G2-SM-SCO1.21",
               "description": "Stewardship/Respect for Living Things: Take care not to damage objects (living and non-living things) when they are making observations about materials in the environment. Use materials wisely."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.24",
+              "sco_code": "SC-G2-SM-SCO1.22",
               "description": "Safety: Wear safety goggles when conducting certain experiments. Be careful not to taste materials unless told to do so by the teacher. Use safety protocols for collecting objects. Wash hands after conducting certain activities, especially"
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.25",
+              "sco_code": "SC-G2-SM-SCO1.23",
               "description": "Realise that some things are natural and some are human made (ST-2-TE-NT-1)."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.26",
+              "sco_code": "SC-G2-SM-SCO1.24",
               "description": "Why does heat change the properties of objects? (heat causes the particles to move and collide and get further apart so you can convert solids to liquids- example melting solid butter)"
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.27",
+              "sco_code": "SC-G2-SM-SCO1.25",
               "description": "Identify the properties of different materials."
             },
             {
-              "sco_code": "SC-G2-SM-SCO1.28",
+              "sco_code": "SC-G2-SM-SCO1.26",
               "description": "Compare different types of materials based on their observable properties."
             }
           ],
@@ -1907,90 +1899,86 @@
             },
             {
               "sco_code": "SC-G2-ES-SCO1.2",
-              "description": "Erosion"
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO1.3",
               "description": "Using examples, demonstrate an understanding of the difference between fast and slow earth events."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.4",
+              "sco_code": "SC-G2-ES-SCO1.3",
               "description": "Define the term soil erosion, listing types of soil erosion, and ways and means of preventing it (ST-5-ESS-ER-1)."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.5",
+              "sco_code": "SC-G2-ES-SCO1.4",
               "description": "Describe an earthquake as a natural occurrence and explain what causes it, (ST-5-LS-ECS-15)* describe formation in simple terms."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.6",
+              "sco_code": "SC-G2-ES-SCO1.5",
               "description": "Identify volcanic activity as a natural process and explain how volcanoes are formed, as well as the impact on the environment. (ST-5-LS-ECS-16) *describe formation in simple terms."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.7",
+              "sco_code": "SC-G2-ES-SCO1.6",
               "description": "Use new vocabulary to describe your observations."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.8",
+              "sco_code": "SC-G2-ES-SCO1.7",
               "description": "Draw pictures that demonstrate you understand features of a volcano."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.9",
+              "sco_code": "SC-G2-ES-SCO1.8",
               "description": "Compare and contrast slow and fast earth events."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.10",
+              "sco_code": "SC-G2-ES-SCO1.9",
               "description": "Problem solve around preparation to be safe for predictable events."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.11",
+              "sco_code": "SC-G2-ES-SCO1.10",
               "description": "Interpret video information and pictures."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.12",
+              "sco_code": "SC-G2-ES-SCO1.11",
               "description": "Communicate ideas about observation of erosion."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.13",
+              "sco_code": "SC-G2-ES-SCO1.12",
               "description": "With the assistance of the teacher, construct models."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.14",
+              "sco_code": "SC-G2-ES-SCO1.13",
               "description": "Appreciate the role of natural processes in shaping the earth."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.15",
+              "sco_code": "SC-G2-ES-SCO1.14",
               "description": "Compassion for those experiencing hardship due to a dangerous earth event. If able, assist those that have been victims of an earth event."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.16",
+              "sco_code": "SC-G2-ES-SCO1.15",
               "description": "Persistence at completing tasks and activities."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.17",
+              "sco_code": "SC-G2-ES-SCO1.16",
               "description": "Interest/Curiosity- Find out more about different naturally occurring events and objects on their own."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.18",
+              "sco_code": "SC-G2-ES-SCO1.17",
               "description": "Respect for Evidence- Explain and listen to other students’ results and explanation."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.19",
+              "sco_code": "SC-G2-ES-SCO1.18",
               "description": "Collaboration & Cooperation- Share ideas with others."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.20",
+              "sco_code": "SC-G2-ES-SCO1.19",
               "description": "Stewardship/Respect for Living Things- Show sensitivity to living things in the environment."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.21",
+              "sco_code": "SC-G2-ES-SCO1.20",
               "description": "Apply safety practices during fast earth events such as earthquakes, hurricanes, etc."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.22",
+              "sco_code": "SC-G2-ES-SCO1.21",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G2-ES-SCO1.23",
+              "sco_code": "SC-G2-ES-SCO1.22",
               "description": "Participate actively in classroom discussions."
             }
           ],
@@ -2157,18 +2145,6 @@
             {
               "sco_code": "SC-G2-ES-SCO2.32",
               "description": "Types of Erosion: Wind - Wind is a major type of erosion, especially in dry areas. Wind can erode by picking up and carrying loose particles and dust away (called deflation). It can also erode when these flying particles strike the land and break off more particles (called abrasion)."
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO2.33",
-              "description": "Types of Erosion: Water - Water is the main cause of erosion on Earth. Some of the ways that water causes erosion are: Rainfall - Rainfall can cause erosion both when the rain hits the surface of the Earth, called splash erosion, and when raindrops accumulate and flow like small streams. Rivers - Rivers can create a significant amount of erosion over time. They break up particles along the river bottom and carry them downstream. Waves - Ocean waves can cause the coastline to erode. The sheer energy and force of the waves causes pieces of rock and coastline to break off changing the coastline over time. Floods - Large floods can cause erosion to happen very quickly acting like powerful rivers."
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO2.34",
-              "description": "Causes: Wind - Farmers use several methods to slow down erosion. They plant trees around farmland to block wind. They also cut terraces, or ledges, into sloping land. Contour Plowing - This is done to slow down the flow of water and the soil that it carries. Crop Rotation - This is used to maintain the good quality of the soil and prevent pests from destroying the plants. It means planting crops in a different spot each year. Terrace cultivation - This is planting on terraces or steps built on the slope of the mountainsides. The wide flat rows are built to act as a ridge that helps slow down the water and the soil that it carries. Mulch Cropping - Mulch is spread over the surface of the soil to lessen the effect of raindrops striking the soil and to cover it from the wind. Natural Vegetation - This is done by allowing trees, shrubs, and other kinds of plants to grow naturally. The roots of these plants and trees hold the soil together and make it more stable."
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO2.35",
-              "description": "Effects: -There is damage to farming communities. -Poor soil quality can cause small amounts of crops to grow. This means the farmer will need to use fertilizers and pesticides. -When soil is washed away from one place to another, it can carry harmful materials like chemical, fertilizers, or pesticides. These dangerous chemicals can pollute our water supply. -Sediment that gathers down the slope due to erosion can block the flow of water in rivers, streams, and drainage canals, leading to flooding."
             }
           ],
           "inclusive_assessment_strategies": [
@@ -2591,34 +2567,22 @@
             },
             {
               "sco_code": "SC-G2-ES-SCO4.39",
-              "description": "Physical Activity: Everyone stand up. A. Use your fists to show me what happens when water evaporates from a lake (fists coming apart and moving). B. Use your fists to show me liquid water as it cools in the clouds and condenses to make rain (fists coming closer together and slowing down)."
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO4.40",
               "description": "True or False: Write T if the statement is true or F if it is false. • We don’t need water. (F) • People should use water wisely. (T) • Keeping the tap opened while brushing our teeth is good. (F)"
             },
             {
-              "sco_code": "SC-G2-ES-SCO4.41",
+              "sco_code": "SC-G2-ES-SCO4.40",
               "description": "• Reusing and recycling things can reduce water pollution. (T) • Life would not be possible without water. (T)"
             },
             {
-              "sco_code": "SC-G2-ES-SCO4.42",
+              "sco_code": "SC-G2-ES-SCO4.41",
               "description": "Water conservation: Look at the pictures. What message are they trying to explain? (Water is important, don’t waste it, we should save water)"
             },
             {
-              "sco_code": "SC-G2-ES-SCO4.43",
-              "description": "Rubric: 3 strategies to reduce consumption 5 marks, Neat and demonstrative artwork 5 marks, Clear explanation of poster 5 marks"
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO4.44",
+              "sco_code": "SC-G2-ES-SCO4.42",
               "description": "Water Pollution worksheet: Identify the different items that add to water pollution in the worksheet."
             },
             {
-              "sco_code": "SC-G2-ES-SCO4.45",
-              "description": "Differentiated Activities: Provide students with materials to paint, draw or color their own posters depicting water conservation. Children must demonstrate at least 3 practices in their community that would reduce the wasting of water. Organize a class exhibition to showcase their work and have others appreciate the importance of water."
-            },
-            {
-              "sco_code": "SC-G2-ES-SCO4.46",
+              "sco_code": "SC-G2-ES-SCO4.43",
               "description": "Teacher may work with the children to write a poem or song entitled “Water, Water Everywhere” that emphasizes the new vocabulary."
             }
           ],

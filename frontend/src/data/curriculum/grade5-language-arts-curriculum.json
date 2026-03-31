@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade5-language-arts-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "5",
+    "grade": "Grade 5",
     "subject": "Language Arts"
   },
   "strands": [
@@ -441,50 +441,38 @@
             },
             {
               "sco_code": "LA-G5-RV-SCO1.21",
-              "description": "- indices"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO1.22",
               "description": "- structures of narrative and different types of expository text and key ideas"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.23",
+              "sco_code": "LA-G5-RV-SCO1.22",
               "description": "- point of view/perspective"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.24",
-              "description": "- purpose"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO1.25",
-              "description": "- bias"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO1.26",
+              "sco_code": "LA-G5-RV-SCO1.23",
               "description": "- subtle messages"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.27",
+              "sco_code": "LA-G5-RV-SCO1.24",
               "description": "- cultural perspective"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.28",
+              "sco_code": "LA-G5-RV-SCO1.25",
               "description": "recognise quotation marks and marker words (said, shouted, whispered, etc.) to determine the mood of the speaker in the text"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.29",
+              "sco_code": "LA-G5-RV-SCO1.26",
               "description": "-connect punctuation in text to meaningful interpretation of sentences and paragraphs"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.30",
+              "sco_code": "LA-G5-RV-SCO1.27",
               "description": "-change the rate of reading depending on the mood of the text"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.31",
+              "sco_code": "LA-G5-RV-SCO1.28",
               "description": "-practice meaningful word solving strategies (root word, chunking, affixes, context clues)"
             },
             {
-              "sco_code": "LA-G5-RV-SCO1.32",
+              "sco_code": "LA-G5-RV-SCO1.29",
               "description": "-develop the art of skimming and scanning"
             }
           ],
@@ -564,162 +552,146 @@
             },
             {
               "sco_code": "LA-G5-RV-SCO2.2",
-              "description": "3.2. Demonstrate continuing ability to use a repertoire of comprehension strategies, including those listed below, to understand and critique a range of genres and text forms: - determining main idea - making connections - predicting - visualising - sequencing - inferring - analysing - synthesising - summarizing - questioning"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO2.3",
               "description": "3.3. Continue to utilize contextual clues to derive meaning from language used in a variety of genres."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.4",
+              "sco_code": "LA-G5-RV-SCO2.3",
               "description": "3.4. Deepen the ability to make connections that promote understanding of information read and viewed across a variety of genres: -text-to-self connections -text-to-text connections -text-to-world connections"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.5",
+              "sco_code": "LA-G5-RV-SCO2.4",
               "description": "3.5. Continue to utilize print and digital dictionaries to aid comprehension of written text across a range of genres."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.6",
+              "sco_code": "LA-G5-RV-SCO2.5",
               "description": "3.6 Deepen and widen vocabulary through reading a range of genres, topics and work produced by a variety of authors."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.7",
+              "sco_code": "LA-G5-RV-SCO2.6",
               "description": "3.7 Utilize with greater competence, print, digital and personal dictionaries to comprehend unfamiliar words and add them to vocabulary repertoire."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.8",
+              "sco_code": "LA-G5-RV-SCO2.7",
               "description": "3.8. Continue to gain vocabulary through engagement of visual and graphical presentations: -movies -videos -art -posters -infographics -advertisements"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.9",
+              "sco_code": "LA-G5-RV-SCO2.8",
               "description": "3.9. Continue to build vocabulary through the use and application of: - homonyms (homophones & homographs) - antonyms - synonyms"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.10",
+              "sco_code": "LA-G5-RV-SCO2.9",
               "description": "3.10. Utilize existing knowledge of figurative devices to enhance understanding of text: - similes - metaphors - onomatopoeia - personification - alliteration"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.11",
+              "sco_code": "LA-G5-RV-SCO2.10",
               "description": "3.11. Continue to extend vocabulary through the use of words encountered in cross-curricular content."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.12",
+              "sco_code": "LA-G5-RV-SCO2.11",
               "description": "3.12. Extend the ability to apply knowledge of word structure to read unfamiliar vocabulary: - word roots - prefixes - suffixes - inflectional endings"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.13",
+              "sco_code": "LA-G5-RV-SCO2.12",
               "description": "3.16. Demonstrate a deeper understanding of how word order impacts meaning"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.14",
+              "sco_code": "LA-G5-RV-SCO2.13",
               "description": "3.17. Continue to apply knowledge of how reading fluency impacts understanding"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.15",
+              "sco_code": "LA-G5-RV-SCO2.14",
               "description": "3.18 Deepen participation in shared reading opportunities to: - improve fluency - guide intonation - convey the mood and intent of the text - expand vocabulary"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.16",
+              "sco_code": "LA-G5-RV-SCO2.15",
               "description": "3.19 Strengthen the awareness of how word choice and phrasing may be used to describe persons and events in positive or negative ways"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.17",
+              "sco_code": "LA-G5-RV-SCO2.16",
               "description": "3.20 Improve their reading comprehension by confidently using background information and context clues to grasp and understand unusual words"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.18",
+              "sco_code": "LA-G5-RV-SCO2.17",
               "description": "3.21 Improve reading comprehension and word recognition by applying knowledge of roots, prefixes, suffixes, and syllabication"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.19",
+              "sco_code": "LA-G5-RV-SCO2.18",
               "description": "3.22 Strengthen their ability to use phonological and word analysis to decipher words, improving reading speed and accuracy: - vowel patterns"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.20",
+              "sco_code": "LA-G5-RV-SCO2.19",
               "description": "3.23 Apply background knowledge and information from poetry, expository, narrative, persuasive, and descriptive texts to make and modify predictions"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.21",
+              "sco_code": "LA-G5-RV-SCO2.20",
               "description": "3.24 Differentiate, with greater competence, main ideas from supporting information in poetry, expository, narrative, persuasive and descriptive texts"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.22",
+              "sco_code": "LA-G5-RV-SCO2.21",
               "description": "3.25 Demonstrate appropriate use of prior knowledge of written and visual information to form a judgment about a particular point or issue"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.23",
+              "sco_code": "LA-G5-RV-SCO2.22",
               "description": "3.26 Exhibit a strong understanding of meaningful and critical use of text features to locate and use information (titles, subtitles, table of contents, glossary, index, etc.)"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.24",
+              "sco_code": "LA-G5-RV-SCO2.23",
               "description": "3.27 Appreciate the contribution visual components make to facilitate comprehension and promote a deeper understanding of poetry, exposition, narration, and description. - fonts - charts - images - maps"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.25",
+              "sco_code": "LA-G5-RV-SCO2.24",
               "description": "3.28 Strengthen ability to recognize and provide examples of how author’s choice of vocabulary, phrases, and sentences evoke emotions, enhance description, and create humour"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.26",
+              "sco_code": "LA-G5-RV-SCO2.25",
               "description": "3.29 Provide examples to demonstrate how illustrators create mood in visual text"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.27",
+              "sco_code": "LA-G5-RV-SCO2.26",
               "description": "3.30 Utilize prior knowledge to discuss the effectiveness and possible hidden messages of emoticons and social media posts"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.28",
+              "sco_code": "LA-G5-RV-SCO2.27",
               "description": "Read and view to interact with understanding and critical thought to a wide range of genres and text forms using comprehension strategies"
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.29",
-              "description": "Reading text features (SCO 3.27)"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO2.30",
-              "description": "(SCO 3.28) Word choice reflection tool"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO2.31",
-              "description": "What do pictures say? (SCO 3.29)"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO2.32",
+              "sco_code": "LA-G5-RV-SCO2.28",
               "description": "Retelling: learners retelling information or a story they have listened to."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.33",
+              "sco_code": "LA-G5-RV-SCO2.29",
               "description": "Connecting - When learners preview text, they tap into what they already know (Funds of Knowledge), which will help them to understand the text they are about to read. This provides a framework for any new information they listen to and read."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.34",
+              "sco_code": "LA-G5-RV-SCO2.30",
               "description": "Visualising - learners who visualize while reading often have better listening comprehension. Readers can take advantage of illustrations that are embedded in the text or create their mental images or drawings when reading text without illustrations."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.35",
+              "sco_code": "LA-G5-RV-SCO2.31",
               "description": "Predicting - When learners make predictions about the text they are about to read, it sets up expectations based on their prior knowledge about similar topics. As they read, they may mentally revise their prediction as they gain more information."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.36",
+              "sco_code": "LA-G5-RV-SCO2.32",
               "description": "Recognizing Literal Meaning: Questions about facts, details or information explicitly stated in the audio story (or other genre)."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.37",
+              "sco_code": "LA-G5-RV-SCO2.33",
               "description": "Making Inferences: Questions asking learners to make inferences as they listen to audio stories, interpreting what is said by going beyond the literal meaning."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.38",
+              "sco_code": "LA-G5-RV-SCO2.34",
               "description": "Identifying Main Idea: Questions asking learners to identify the central idea or gist of an audio story (or other genre)."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.39",
+              "sco_code": "LA-G5-RV-SCO2.35",
               "description": "Drawing Conclusions: Questions asking learners to conclude by synthesizing information in an audio story (or other genre)."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.40",
+              "sco_code": "LA-G5-RV-SCO2.36",
               "description": "Analysing Reasoning: Questions asking learners to analyse reasoning supporting a claim in an audio story (or other genre)."
             },
             {
-              "sco_code": "LA-G5-RV-SCO2.41",
+              "sco_code": "LA-G5-RV-SCO2.37",
               "description": "Finding Evidence: Questions asking learners to identify statements or details in an audio story that provide evidence to support claims."
             }
           ],
@@ -867,14 +839,6 @@
             {
               "sco_code": "LA-G5-RV-SCO3.20",
               "description": "being used to manipulate, persuade or control"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO3.21",
-              "description": "Identifying meaning and mood (SCO 4.1, 4.18, 4.19)"
-            },
-            {
-              "sco_code": "LA-G5-RV-SCO3.22",
-              "description": "Analyzing Point of View (SCO 4.17)"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1388,18 +1352,14 @@
             },
             {
               "sco_code": "LA-G5-WR-SCO2.25",
-              "description": "6.25 Continue to engage in individual and peer revision opportunities to share drafts and provide/ receive feedback on elements of grammar and sentence fluency such as: -use of simple verb tenses (e.g., I walked; I walk; I will walk) -comparative and superlative adjectives and adverbs, -subject and verb and pronoun-antecedent agreement -use of simple, compound and complex sentence patterns"
-            },
-            {
-              "sco_code": "LA-G5-WR-SCO2.26",
               "description": "6.26 Make use of reference material (e.g., dictionaries, glossaries, thesauruses), both print and digital, to find the pronunciation and determine or clarify the precise meaning of key words and phrases for use in their writing."
             },
             {
-              "sco_code": "LA-G5-WR-SCO2.27",
+              "sco_code": "LA-G5-WR-SCO2.26",
               "description": "6.27 Make use of figurative language to revise and enhance their writing (e.g., similes, metaphors, onomatopoeia, hyperbole, idioms, alliteration, etc.)"
             },
             {
-              "sco_code": "LA-G5-WR-SCO2.28",
+              "sco_code": "LA-G5-WR-SCO2.27",
               "description": "-determining complete and incomplete sentences"
             }
           ],

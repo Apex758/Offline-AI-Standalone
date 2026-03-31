@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade5-mathematics-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "5",
+    "grade": "Grade 5",
     "subject": "Mathematics"
   },
   "strands": [
@@ -51,10 +51,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G5-NS-SCO2.1",
-              "description": "Learners are expected to: Knowledge: 1. Compare two whole numbers up to 99 999 using the symbols (>, = and <) 2. Calculate the whole number that is 100, 1000, 10 000 or a 100 000 more or less than a given number up to five digits. Skills 3. Arrange a set of five or less whole numbers in ascending and descending order up to 99 999. 4. Create real life story problems, games and puzzles involving the comparison of whole numbers up to 100000. 5. Perform mental calculations for games and puzzles involving whole numbers which are (100, 1000, 10000, 100000) more or less than a given number."
-            },
-            {
-              "sco_code": "MA-G5-NS-SCO2.2",
               "description": "6. Discuss and share strategies to solve contextualized problems and puzzles, based on whole number comparisons up to 99 999."
             }
           ],
@@ -1184,12 +1180,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome O 2.2: Multiplicative Thinking – Compute Fluently with Operations (x&÷)",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G5-ON-SCO5.1",
-              "description": "Learners are expected to: Knowledge 1. Recall and apply multiplication and division facts of 1, 2, and 3 digits by 2- or 3-digit numbers. 2. Multiply 1-digit numbers by 2, and 3-digit numbers and their relationship with division fluently. Skills 3. Solve multi-step word problems efficiently and accurately. Values 4. Demonstrate the ability to collaborate effectively with peers to enhance their fluency in multiplication facts and proficiency in multi-digit multiplication and division by participating in group activities"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Observation Checklist",
             "Learner's observation checklist (Think, pair, share) Multiplication and Division Fluency",
@@ -1327,42 +1318,34 @@
             },
             {
               "sco_code": "MA-G5-ON-SCO8.2",
-              "description": "Knowledge"
-            },
-            {
-              "sco_code": "MA-G5-ON-SCO8.3",
               "description": "1. Define a percent as a part of 100."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.4",
+              "sco_code": "MA-G5-ON-SCO8.3",
               "description": "2. Express a number as a percentage of another number."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.5",
-              "description": "Skills"
-            },
-            {
-              "sco_code": "MA-G5-ON-SCO8.6",
+              "sco_code": "MA-G5-ON-SCO8.4",
               "description": "3. Calculate a percentage of a given quantity."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.7",
+              "sco_code": "MA-G5-ON-SCO8.5",
               "description": "4. Use different methods to convert percent to decimals and fractions, and vice versa."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.8",
+              "sco_code": "MA-G5-ON-SCO8.6",
               "description": "5. Create and interpret visual models of percentages, such as pie charts, bar graphs, and 100 grids."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.9",
+              "sco_code": "MA-G5-ON-SCO8.7",
               "description": "6. Solve word problems involving percentages in contexts such as shopping, cooking, and finance."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.10",
+              "sco_code": "MA-G5-ON-SCO8.8",
               "description": "7. Set up and solve proportions to find the part, whole, or percentage in real-world contexts."
             },
             {
-              "sco_code": "MA-G5-ON-SCO8.11",
+              "sco_code": "MA-G5-ON-SCO8.9",
               "description": "8. Choose to explain their reasoning and approach to solving percentage problems, both in writing and orally."
             }
           ],
@@ -2911,12 +2894,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome G3.3: Composing, Decomposing and Transforming Shapes - Transforming Shapes",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G5-GT-SCO8.1",
-              "description": "Learners are expected to: Knowledge 1. Differentiate among the terms reflections, rotation and translation in relation to shapes 2. Describe pairs of shapes that show transformations: a. reflections b. rotations c. translations. 3. Determine the composition of a single transformation. Skills 4. Given a shape, make predictions then create the reflection, translation and rotation of the said shape."
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Discussion /self assessment - to orient learners on the nature of and types of transformations 3 Types of Transformations *Translations Reflections & Rotations *Math For Kids* (video can be paused periodically based on discretion during discussion) 1. After watching the video learners will have a discussion on the different types of transformation. Ask learners to identify similarities and differences. Eg. The size of the object and its angles remains constant, however, the orientation changes. 2. After watching the video learners will complete the worksheet below.",
             "Checklist: Learner can state 1 or more observation yes/no",
@@ -3321,22 +3299,14 @@
             },
             {
               "sco_code": "MA-G5-ME-SCO1.12",
-              "description": "Invite learners to estimate and measure the mass of everyday objects based on the mass of a benchmark object. For example, a bag of potatoes has a mass of 5 kg. Does the chair have more or less mass than the bag of potatoes?"
-            },
-            {
-              "sco_code": "MA-G5-ME-SCO1.13",
-              "description": "Have learners estimate and measure the capacity of everyday objects based on the capacity of a benchmark container. For example, a container holds 1 liter. Can you think of a container that holds less than 1 L? How much less?"
-            },
-            {
-              "sco_code": "MA-G5-ME-SCO1.14",
               "description": "Product - to test learners’ competence in estimating, calculating sales tax and total cost of an item after sales tax"
             },
             {
-              "sco_code": "MA-G5-ME-SCO1.15",
+              "sco_code": "MA-G5-ME-SCO1.13",
               "description": "Calculate total cost"
             },
             {
-              "sco_code": "MA-G5-ME-SCO1.16",
+              "sco_code": "MA-G5-ME-SCO1.14",
               "description": "Calculate the cost of each item including the sales tax in dollars"
             }
           ],
@@ -3358,7 +3328,9 @@
             "Guide learners into developing a working definition for volume and capacity using the image above. Volume is called the amount of the total space that is taken up by an object, while capacity is known as the measure of an object's ability to hold any given substance.",
             "Guided learning (length): Guide learners into identifying the units for measuring length. Discuss with learners, and ask, 'If I want to measure my desk or the board, what would I use? What unit of measurement would we find on these measuring tools?' Millimeter (mili), Decimeter (deci), Centimeter (centi), Meter (m), and Kilometer (kilo). They are used to measure how long or wide or tall an object is.",
             "Interactive Learning: Invite learners to choose an object in the classroom that is 'very small' and one object that is 'very large'. Eg. a stone holding the door or an empty cardboard box. In pairs, they could determine which units should be used to measure these attributes and determine which measurable characteristics these objects have, such as length, mass, capacity, or area. 1. Help learners to realise that there are other considerations besides object size that go into choosing the appropriate unit of measurement. After selecting a suitable unit, instruct learners to estimate these attributes using benchmarks. 2. Next, measure the object's various attributes as precisely as needed for a given purpose, keeping in mind that some attributes might be too difficult to measure (though some might find inventive ways to approximate).",
-            "Hands- on Learning- Present currency used in country, and have learners identify and compare the notes and coins. 1. Have learners set up classroom shops with labeled empty containers from home (cereal boxes, milk tins etc). Add tax tags depicting additional tax on the price of goods. Guide learners into shopping for individual or multiple items. Invite learners to determine the cost of the items before and after tax. In peers, learners operate a shop, buying and selling to each other."
+            "Hands- on Learning- Present currency used in country, and have learners identify and compare the notes and coins. 1. Have learners set up classroom shops with labeled empty containers from home (cereal boxes, milk tins etc). Add tax tags depicting additional tax on the price of goods. Guide learners into shopping for individual or multiple items. Invite learners to determine the cost of the items before and after tax. In peers, learners operate a shop, buying and selling to each other.",
+            "Invite learners to estimate and measure the mass of everyday objects based on the mass of a benchmark object. For example, a bag of potatoes has a mass of 5 kg. Does the chair have more or less mass than the bag of potatoes?",
+            "Have learners estimate and measure the capacity of everyday objects based on the capacity of a benchmark container. For example, a container holds 1 liter. Can you think of a container that holds less than 1 L? How much less?"
           ],
           "elo_code": "MA-G5-ME-ELO1"
         },
@@ -4257,12 +4229,7 @@
         },
         {
           "elo_description": "Essential Learning Outcome D 3.3: Evaluating Inferences and Making Predictions Based on Data - Evaluating data descriptions and reports",
-          "specific_curriculum_outcomes": [
-            {
-              "sco_code": "MA-G5-DH-SCO7.1",
-              "description": "Learners are expected to: Knowledge 1. Explain what is meant by second-hand data 2. Identify examples of secondary data 3. Differentiate between the terms ‘mean’ and ‘median’ Skills 4. Use data sets to calculate the mean and median Values 5. Recognise the importance of knowing how to calculate the mean and median of data sets"
-            }
-          ],
+          "specific_curriculum_outcomes": [],
           "inclusive_assessment_strategies": [
             "Product: Learners complete the worksheet on calculating the mean for given data sets. Source: https://www.k5learning.com/worksheets/math/data-graphing/grade-5-mean-a.pdf",
             "Peer Assessment: Have learners work in pairs to calculate the mean and median of given data sets. Have learners take turns to explain to each other the steps the followed in calculating the mean/median. Source: https://www.k5learning.com/worksheets/math/data-graphing/grade-5-mean-c.pdf"
@@ -4281,10 +4248,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "MA-G5-DH-SCO8.1",
-              "description": "Learners are expected to: Knowledge 1. Explain what is meant by one-step events 2. Identify real life examples of one-step events 3. Classify events in terms of ‘impossible, possible, certain’ Skills 4. Classify the likelihood of a single outcome in a probability event as being impossible, possible, or certain. Values 5. Willingly assist their peers who experience difficulty understanding the concepts taught"
-            },
-            {
-              "sco_code": "MA-G5-DH-SCO8.2",
               "description": "6. Participate in class/group activities involving classifying given events as impossible, possible, and certain"
             }
           ],

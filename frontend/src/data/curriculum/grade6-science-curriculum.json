@@ -2,7 +2,7 @@
   "metadata": {
     "filename": "grade6-science-curriculum.pdf",
     "curriculum": "OECS Harmonised",
-    "grade": "6",
+    "grade": "Grade 6",
     "subject": "Science"
   },
   "strands": [
@@ -14,106 +14,90 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-SC-SCO1.1",
-              "description": "Bonds"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO1.2",
               "description": "Molecular formula"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.3",
+              "sco_code": "SC-G6-SC-SCO1.2",
               "description": "Tetrahedron"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.4",
+              "sco_code": "SC-G6-SC-SCO1.3",
               "description": "Lattice structures"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.5",
-              "description": "Diamond"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO1.6",
-              "description": "Graphite"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO1.7",
-              "description": "Lubricant"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO1.8",
+              "sco_code": "SC-G6-SC-SCO1.4",
               "description": "Demonstrate they understand that atoms make up matter all around us."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.9",
+              "sco_code": "SC-G6-SC-SCO1.5",
               "description": "Compare atomic particles in the nucleus and those that orbit the nucleus."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.10",
+              "sco_code": "SC-G6-SC-SCO1.6",
               "description": "Show how atoms can be combined to make molecules."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.11",
+              "sco_code": "SC-G6-SC-SCO1.7",
               "description": "Account for the difference that structure makes in properties of graphite and diamond."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.12",
+              "sco_code": "SC-G6-SC-SCO1.8",
               "description": "Explain how the number of electrons and protons in an atom contributes to its charge."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.13",
+              "sco_code": "SC-G6-SC-SCO1.9",
               "description": "Distinguish between 2d and 3d structures (water vs. methane)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.14",
+              "sco_code": "SC-G6-SC-SCO1.10",
               "description": "Calculate charge on an atom."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.15",
+              "sco_code": "SC-G6-SC-SCO1.11",
               "description": "Make models to reflect molecular formula"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.16",
+              "sco_code": "SC-G6-SC-SCO1.12",
               "description": "Classify atomic particles"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.17",
+              "sco_code": "SC-G6-SC-SCO1.13",
               "description": "Research natural product medicines originating from molecules"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.18",
+              "sco_code": "SC-G6-SC-SCO1.14",
               "description": "Communicate research findings"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.19",
+              "sco_code": "SC-G6-SC-SCO1.15",
               "description": "Investigate structures using online simulations and viewers"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.20",
+              "sco_code": "SC-G6-SC-SCO1.16",
               "description": "Foster a habit of inquiry into the atomic composition of simple molecules and extended structures."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.21",
+              "sco_code": "SC-G6-SC-SCO1.17",
               "description": "Demonstrate resourcefulness as they use everyday materials to develop models."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.22",
+              "sco_code": "SC-G6-SC-SCO1.18",
               "description": "Work collaboratively with group members and other members of the class to produce the models, make presentations, etc."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.23",
+              "sco_code": "SC-G6-SC-SCO1.19",
               "description": "Develop a sense of stewardship towards the environment and respect for living organisms affected by energy choices."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.24",
+              "sco_code": "SC-G6-SC-SCO1.20",
               "description": "Participate in a class discussion of their ideas and opinions related to atomic composition."
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.25",
+              "sco_code": "SC-G6-SC-SCO1.21",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning"
             },
             {
-              "sco_code": "SC-G6-SC-SCO1.26",
+              "sco_code": "SC-G6-SC-SCO1.22",
               "description": "Analyze structures to ensure faithfulness to the design."
             }
           ],
@@ -282,146 +266,142 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-SC-SCO3.1",
-              "description": "Define the terms: Water vapor, Phase or state change, Physical change, Chemical change, Starting materials, Products, Reactants, Acrid smell, Closed system, Waft, Endothermic reaction, Law of Conservation of Mass, Collisions, Precipitate, Hard and soft water, Soap scum, Exothermic reaction, Combustion"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO3.2",
               "description": "Demonstrate they understand the difference between physical and chemical changes by giving examples of each."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.3",
+              "sco_code": "SC-G6-SC-SCO3.2",
               "description": "Demonstrate they understand the range of indicators of chemical change by giving examples of each."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.4",
+              "sco_code": "SC-G6-SC-SCO3.3",
               "description": "Explain how a burning splint can be used to assess which of the following gases are being released in a chemical reaction."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.5",
+              "sco_code": "SC-G6-SC-SCO3.4",
               "description": "Demonstrate they understand that when a chemical reaction has occurred, new substances (products) are formed that have different properties than the original substances (reactants)."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.6",
+              "sco_code": "SC-G6-SC-SCO3.5",
               "description": "Demonstrate they understand that when two chemical compounds react, the atoms are rearranged to"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.7",
+              "sco_code": "SC-G6-SC-SCO3.6",
               "description": "form new products."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.8",
+              "sco_code": "SC-G6-SC-SCO3.7",
               "description": "Differentiate between endothermic and exothermic chemical reaction."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.9",
+              "sco_code": "SC-G6-SC-SCO3.8",
               "description": "Infer what will happen when certain substances react."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.10",
+              "sco_code": "SC-G6-SC-SCO3.9",
               "description": "Hypothesize the changes that would take place after reactants are mixed."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.11",
+              "sco_code": "SC-G6-SC-SCO3.10",
               "description": "Represent data collected from chemical reactions in the form of a graph or table."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.12",
+              "sco_code": "SC-G6-SC-SCO3.11",
               "description": "Make careful observations of demonstrations and experiments."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.13",
+              "sco_code": "SC-G6-SC-SCO3.12",
               "description": "Exercise the wafting technique."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.14",
+              "sco_code": "SC-G6-SC-SCO3.13",
               "description": "Analyze and interpret observations to make conclusions about indicators of chemical change"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.15",
+              "sco_code": "SC-G6-SC-SCO3.14",
               "description": "Apply basic principles/indicators of chemical change to real life occurrences."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.16",
+              "sco_code": "SC-G6-SC-SCO3.15",
               "description": "Classify endo and exothermic processes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.17",
+              "sco_code": "SC-G6-SC-SCO3.16",
               "description": "Measure temperature changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.18",
+              "sco_code": "SC-G6-SC-SCO3.17",
               "description": "Assemble instrumentation to carry out an experiment."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.19",
+              "sco_code": "SC-G6-SC-SCO3.18",
               "description": "Make careful volume and mass measurements of reactants"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.20",
+              "sco_code": "SC-G6-SC-SCO3.19",
               "description": "Communicate experimental/demonstration results by keeping good records in student notebooks."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.21",
+              "sco_code": "SC-G6-SC-SCO3.20",
               "description": "Tabulate data"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.22",
+              "sco_code": "SC-G6-SC-SCO3.21",
               "description": "Construct graphs"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.23",
+              "sco_code": "SC-G6-SC-SCO3.22",
               "description": "Interpret graphs"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.24",
+              "sco_code": "SC-G6-SC-SCO3.23",
               "description": "Identify the products and reactants in a chemical reaction."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.25",
+              "sco_code": "SC-G6-SC-SCO3.24",
               "description": "Write word equations to represent a chemical reaction"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.26",
+              "sco_code": "SC-G6-SC-SCO3.25",
               "description": "Appreciate the importance of physical and chemical changes in our everyday life."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.27",
+              "sco_code": "SC-G6-SC-SCO3.26",
               "description": "Demonstrate persistence when conducting experiments on physical and chemical changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.28",
+              "sco_code": "SC-G6-SC-SCO3.27",
               "description": "Show interest/curiosity in the activities and presentations on physical and chemical changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.29",
+              "sco_code": "SC-G6-SC-SCO3.28",
               "description": "Use the inquiry approach when conducting scientific experiments on physical and chemical changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.30",
+              "sco_code": "SC-G6-SC-SCO3.29",
               "description": "Show respect for evidence collected on different chemical and physical changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.31",
+              "sco_code": "SC-G6-SC-SCO3.30",
               "description": "Work collaboratively with group members to conduct experiments on physical and chemical changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.32",
+              "sco_code": "SC-G6-SC-SCO3.31",
               "description": "Show respect for living things and the physical environment by disposing of chemicals properly as this could harm organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.33",
+              "sco_code": "SC-G6-SC-SCO3.32",
               "description": "Participate actively in classroom discussions on physical and chemical changes."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.34",
+              "sco_code": "SC-G6-SC-SCO3.33",
               "description": "Wear safety goggles at all times when conducting experiments."
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.35",
+              "sco_code": "SC-G6-SC-SCO3.34",
               "description": "Respect and undertake wafting of odors in observations"
             },
             {
-              "sco_code": "SC-G6-SC-SCO3.36",
+              "sco_code": "SC-G6-SC-SCO3.35",
               "description": "When conducting practical and group work, display sensitivity and help peers who may have physical or learning challenges."
             }
           ],
@@ -633,410 +613,390 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-SC-SCO5.1",
-              "description": "Define the following: life stages, life cycle, offspring, reproduce, metamorphosis, pupa, chrysalis, larva, proboscis, Dengue fever, Zika virus, Yellow fever, Chikungunya, egg, tadpole, nymph, adolescence, fetus, senior, germination, seed coat, embryo, seedling, cotyledons, photosynthesis, mature plant, chlorophyll, flowering plant, pollen, stamen, pistil, sepal, ovules, gametes, cross-pollination, self-pollination, pollinators, wind-pollination, fertilization, seed dispersal"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO5.2",
               "description": "Describe the major stages in the life cycles of selected plants and animals."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.3",
+              "sco_code": "SC-G6-SC-SCO5.2",
               "description": "Identify the stages of the life cycle of selected plants and animals."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.4",
+              "sco_code": "SC-G6-SC-SCO5.3",
               "description": "Identify common characteristics of the life cycles of animals and plants."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.5",
+              "sco_code": "SC-G6-SC-SCO5.4",
               "description": "Explain the need for reproduction in living things and explain the concept of life cycle of an animal. (ST 6 LS DC 1)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.6",
+              "sco_code": "SC-G6-SC-SCO5.5",
               "description": "Describe the life cycle of an animal where the young is born resembling the adult and one in which the young do not resemble the adult at birth. (ST 6 LS DC 2)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.7",
+              "sco_code": "SC-G6-SC-SCO5.6",
               "description": "Describe the role of the butterfly in nature."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.8",
+              "sco_code": "SC-G6-SC-SCO5.7",
               "description": "Know the key stages of life for a range of organisms: birth, growth, reproduction and death."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.9",
+              "sco_code": "SC-G6-SC-SCO5.8",
               "description": "Recognize that animals such as insects, birds, amphibians, reptiles, fish and birds develop in an egg outside their mother’s body before they are hatched."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.10",
+              "sco_code": "SC-G6-SC-SCO5.9",
               "description": "Recognize that different stages of the same organism can have different names."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.11",
+              "sco_code": "SC-G6-SC-SCO5.10",
               "description": "Demonstrate an understanding that living"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.12",
+              "sco_code": "SC-G6-SC-SCO5.11",
               "description": "things grow and change over time."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.13",
+              "sco_code": "SC-G6-SC-SCO5.12",
               "description": "Demonstrate an understanding that different types of animals and plants have different life cycles."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.14",
+              "sco_code": "SC-G6-SC-SCO5.13",
               "description": "Recognize that different stages in an animal’s life cycle can exist in different habitats."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.15",
+              "sco_code": "SC-G6-SC-SCO5.14",
               "description": "Recognize the vital role that each stage of the life cycle plays in the survival and maintenance of animal life."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.16",
+              "sco_code": "SC-G6-SC-SCO5.15",
               "description": "Name the life stages in the human life cycle."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.17",
+              "sco_code": "SC-G6-SC-SCO5.16",
               "description": "Demonstrate an understanding that the life cycles of all plants and animals include the stages of birth, growth, reproduction, and death."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.18",
+              "sco_code": "SC-G6-SC-SCO5.17",
               "description": "Demonstrate an understanding that some plant and animal life cycles are shorter or longer than others."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.19",
+              "sco_code": "SC-G6-SC-SCO5.18",
               "description": "Demonstrate an understanding that some plant and animal life cycles include dramatic changes"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.20",
+              "sco_code": "SC-G6-SC-SCO5.19",
               "description": "Realize that life cycles can help us predict patterns in the lives of animals and plants"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.21",
+              "sco_code": "SC-G6-SC-SCO5.20",
               "description": "Recognize that animals pass through the same life cycle stages as their parents."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.22",
+              "sco_code": "SC-G6-SC-SCO5.21",
               "description": "Describe the process of self-pollination and cross-pollination. (ST 6 LS DC 5)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.23",
+              "sco_code": "SC-G6-SC-SCO5.22",
               "description": "Classify, using appropriate examples, flowering plants according to pollination type. (ST 6 LS DC 6)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.24",
+              "sco_code": "SC-G6-SC-SCO5.23",
               "description": "Identify pollen grains (male) and ovules (female) as the reproductive cells/ gametes in a flower. (ST 6 LS DC 7)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.25",
+              "sco_code": "SC-G6-SC-SCO5.24",
               "description": "Explain how pollination and fertilization occur in flowers. (ST 6 LS DC 8)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.26",
+              "sco_code": "SC-G6-SC-SCO5.25",
               "description": "Describe the processes of (i.) Self-pollination and (ii.) Cross-pollination."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.27",
+              "sco_code": "SC-G6-SC-SCO5.26",
               "description": "Name the agents of pollination."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.28",
+              "sco_code": "SC-G6-SC-SCO5.27",
               "description": "Identify pollen grains and ovules as the reproductive cells/gametes in a flower."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.29",
+              "sco_code": "SC-G6-SC-SCO5.28",
               "description": "List animals that undergo incomplete metamorphosis"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.30",
+              "sco_code": "SC-G6-SC-SCO5.29",
               "description": "List animals that undergo complete metamorphosis"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.31",
+              "sco_code": "SC-G6-SC-SCO5.30",
               "description": "Skills: Make careful observations of life cycles"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.32",
+              "sco_code": "SC-G6-SC-SCO5.31",
               "description": "Take detailed notes of the stages of life cycles"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.33",
+              "sco_code": "SC-G6-SC-SCO5.32",
               "description": "Draw pictures of life cycle stages"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.34",
+              "sco_code": "SC-G6-SC-SCO5.33",
               "description": "Infer how different factors may affect the stages of the life cycle of different animals."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.35",
+              "sco_code": "SC-G6-SC-SCO5.34",
               "description": "Measure the length of time it takes for an organism to change from one stage to the other."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.36",
+              "sco_code": "SC-G6-SC-SCO5.35",
               "description": "Compare the life cycles of selected animals and plants"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.37",
+              "sco_code": "SC-G6-SC-SCO5.36",
               "description": "Use different materials to model the life cycle of a selected animal or plant"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.38",
+              "sco_code": "SC-G6-SC-SCO5.37",
               "description": "Classify organisms according to their life cycle"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.39",
+              "sco_code": "SC-G6-SC-SCO5.38",
               "description": "Observe selected animals and plants to determine the changes in the appearance and activity of the animals as it goes through its life cycle"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.40",
+              "sco_code": "SC-G6-SC-SCO5.39",
               "description": "Describe changes in the appearance and activity of an animal as it goes through its life cycle."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.41",
+              "sco_code": "SC-G6-SC-SCO5.40",
               "description": "Create annotated diagrams to explain the life cycle of selected plants and animals."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.42",
+              "sco_code": "SC-G6-SC-SCO5.41",
               "description": "Compare different stages of the life cycle of selected organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.43",
+              "sco_code": "SC-G6-SC-SCO5.42",
               "description": "Compare the different stages in the human life cycle."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.44",
+              "sco_code": "SC-G6-SC-SCO5.43",
               "description": "Classify, with examples, insects according to their type of life cycle. (ST 6 LS DC 3)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.45",
+              "sco_code": "SC-G6-SC-SCO5.44",
               "description": "Compare the human life cycle to that of another animal. (ST 6 LS DC 4)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.46",
+              "sco_code": "SC-G6-SC-SCO5.45",
               "description": "Using live organisms or pictures, observe the changes that occur during a plant’s life cycle."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.47",
+              "sco_code": "SC-G6-SC-SCO5.46",
               "description": "Collect and graphically display data about how organisms grow during their lifetime."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.48",
+              "sco_code": "SC-G6-SC-SCO5.47",
               "description": "Compare the needs of organisms at different stages of their life cycles."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.49",
+              "sco_code": "SC-G6-SC-SCO5.48",
               "description": "Predict the stages of growth an organism will go through based on information about other species in their group."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.50",
+              "sco_code": "SC-G6-SC-SCO5.49",
               "description": "Interpret data collected on the life cycles of different organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.51",
+              "sco_code": "SC-G6-SC-SCO5.50",
               "description": "Communicate their findings in oral form, as illustrations and in tables."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.52",
+              "sco_code": "SC-G6-SC-SCO5.51",
               "description": "Compile data on the life cycle of different organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.53",
+              "sco_code": "SC-G6-SC-SCO5.52",
               "description": "Analyse data on the life cycles of different organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.54",
+              "sco_code": "SC-G6-SC-SCO5.53",
               "description": "Graph data on the life cycles of different organisms"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.55",
+              "sco_code": "SC-G6-SC-SCO5.54",
               "description": "Plan and conduct an investigation collaboratively to produce data on the life cycle of different organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.56",
+              "sco_code": "SC-G6-SC-SCO5.55",
               "description": "Show interest/curiosity about the life cycle of different organisms"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.57",
+              "sco_code": "SC-G6-SC-SCO5.56",
               "description": "Use the inquiry approach when conducting research on the life cycle of different organisms"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.58",
+              "sco_code": "SC-G6-SC-SCO5.57",
               "description": "Have respect for evidence collected on the cycle of different organisms"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.59",
+              "sco_code": "SC-G6-SC-SCO5.58",
               "description": "Show respect for the organisms that they would be investigating and their habitats."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.60",
+              "sco_code": "SC-G6-SC-SCO5.59",
               "description": "Have an awareness that some organisms can be harmful."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.61",
+              "sco_code": "SC-G6-SC-SCO5.60",
               "description": "Take care not to harm the organisms that they are studying."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.62",
+              "sco_code": "SC-G6-SC-SCO5.61",
               "description": "Work collaboratively as a whole-class with partners and independently, to explore their understanding of life cycles using a variety of tools, activities, and resources"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.63",
+              "sco_code": "SC-G6-SC-SCO5.62",
               "description": "Show persistence when conducting investigations on the life cycle of different organisms"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.64",
+              "sco_code": "SC-G6-SC-SCO5.63",
               "description": "Participate actively in classroom discussions on the life cycle of different organisms."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.65",
+              "sco_code": "SC-G6-SC-SCO5.64",
               "description": "Activity: Drawing and describing the different stages of a plant's life cycle"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.66",
+              "sco_code": "SC-G6-SC-SCO5.65",
               "description": "Homework Assignment: Look around your yard, select five plants and state what stage of their lifecycle they are at."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.67",
+              "sco_code": "SC-G6-SC-SCO5.66",
               "description": "Activity: Creating an art piece of a stage of the life cycle of a flowering plant"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.68",
+              "sco_code": "SC-G6-SC-SCO5.67",
               "description": "Simulation: Being a pollinator"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.69",
+              "sco_code": "SC-G6-SC-SCO5.68",
               "description": "Set up an imaginary garden with flowers that are tagged with certain information about each plant and its flower. Each group will select a flower that the pollinator they were assigned, would be attracted to. Once they have selected their flower, they will take it back to their table."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.70",
+              "sco_code": "SC-G6-SC-SCO5.69",
               "description": "Have a member from each group present their flower to the class and explain why it would be attractive to their pollinator."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.71",
+              "sco_code": "SC-G6-SC-SCO5.70",
               "description": "Before Learners do the next activity, demonstrate the process of pollination between 2 flowers: take the pollen from the anther of one flower and put it on the stigma of the other flower."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.72",
+              "sco_code": "SC-G6-SC-SCO5.71",
               "description": "For this assignment, each student will design a flower using construction paper, pipe cleaners and other craft materials, or using a computer software"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.73",
+              "sco_code": "SC-G6-SC-SCO5.72",
               "description": "Have them describe how it would be pollinated (by an animal, wind, or humans) and how the features of the flower help in the pollination process."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.74",
+              "sco_code": "SC-G6-SC-SCO5.73",
               "description": "Learners will present their flower to the rest of the class. Presenters will name their flower, describe it and state how it is pollinated. At random points, ask the presenter to identify the part of the flower."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.75",
+              "sco_code": "SC-G6-SC-SCO5.74",
               "description": "Bees play a very important role in nature. One such role is the role of a pollinator."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.76",
+              "sco_code": "SC-G6-SC-SCO5.75",
               "description": "What is a pollinator? (A pollinator is an organism that helps to carry pollen from the male part of the flower (stamen) to the female part of the same or another flower.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.77",
+              "sco_code": "SC-G6-SC-SCO5.76",
               "description": "List four pollinators other than bees (Birds, Moths, Ants and Humans)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.78",
+              "sco_code": "SC-G6-SC-SCO5.77",
               "description": "State two other ways in which bees are important in nature. (Bees produce honey to feed their colonies, man and other organisms. Bee hives provide shelter for many other insects. Bees also serve as food for other organisms.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.79",
+              "sco_code": "SC-G6-SC-SCO5.78",
               "description": "State two ways that we can protect bees and other pollinators. (Plant plants that produce flowers in home gardens and in the community. Avoid using pesticides and herbicides in gardens. Support local beekeepers. Create areas that bees would be able to build their nests undisturbed.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.80",
+              "sco_code": "SC-G6-SC-SCO5.79",
               "description": "Pollination is the process whereby pollen is transferred from the anther to the stigma."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.81",
+              "sco_code": "SC-G6-SC-SCO5.80",
               "description": "What is self-pollination? (Self-pollination is defined as the deposition of pollen grains from a flower to the stigma of the same flower.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.82",
+              "sco_code": "SC-G6-SC-SCO5.81",
               "description": "What is cross-pollination? (Cross-pollination is defined as the deposition of pollen grains from a flower to the stigma of another flower.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.83",
+              "sco_code": "SC-G6-SC-SCO5.82",
               "description": "What is wind-pollination? (Wind pollination describes the process of the transfer of pollen from one individual plant to another, whereby the pollen is carried by air currents.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.84",
+              "sco_code": "SC-G6-SC-SCO5.83",
               "description": "Plants that are pollinated by the wind (wind-pollinated) have different characteristics from those pollinated by insects (insect-pollinated)."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.85",
+              "sco_code": "SC-G6-SC-SCO5.84",
               "description": "Give two characteristics of plants that are wind-pollination. (Flowers are usually small and inconspicuous, and do not possess a scent or produce nectar.)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.86",
+              "sco_code": "SC-G6-SC-SCO5.85",
               "description": "Give two characteristics of plants that are insect-pollination."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.87",
+              "sco_code": "SC-G6-SC-SCO5.86",
               "description": "State which of the following flowers is a wind-pollinated flower. (No. 2)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.88",
+              "sco_code": "SC-G6-SC-SCO5.87",
               "description": "What is fertilization in plants?"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.89",
+              "sco_code": "SC-G6-SC-SCO5.88",
               "description": "Following the processes of pollination and fertilization, the next stage is the formation of fruits."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.90",
+              "sco_code": "SC-G6-SC-SCO5.89",
               "description": "State two ways in which fertilization and pollination are important."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.91",
+              "sco_code": "SC-G6-SC-SCO5.90",
               "description": "Explain how fruits are formed."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.92",
+              "sco_code": "SC-G6-SC-SCO5.91",
               "description": "Give two examples of a fruit with one seed."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.93",
+              "sco_code": "SC-G6-SC-SCO5.92",
               "description": "Give two examples of a fruit with a few seeds."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.94",
+              "sco_code": "SC-G6-SC-SCO5.93",
               "description": "Give two examples of a fruit with many seeds."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.95",
+              "sco_code": "SC-G6-SC-SCO5.94",
               "description": "What is germination?"
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.96",
+              "sco_code": "SC-G6-SC-SCO5.95",
               "description": "In the diagram below, explain what is happening at the stages labelled A and B."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.97",
+              "sco_code": "SC-G6-SC-SCO5.96",
               "description": "Label the following diagram of a seed."
             },
             {
-              "sco_code": "SC-G6-SC-SCO5.98",
-              "description": "Answers A. Cotyledon – Provides food for the embryo until it has formed sufficient roots and leaves to produce its own food. B. Seed coat – Protects the embryo from damage. C. Plumule – It emerges from the seed after the radicle, during germination. It develops into a shoot system. D. Radicle – It emerges from the seed first during germination. It develops into a root system. E. Micropyle A small opening/ hole through which water enters into the seed during germination.) Flowers The following is a diagram of a flower. a. Label the diagram below and then write down one function of each part labelled."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO5.99",
-              "description": "Answer: A. Stigma - The tip of the pistil (the female part of the flower), which receives the male pollen grains B. Style. The style is the tube that joins the stigma to the ovary. It is the tube through which pollen is delivered to the ovary. C. Anther - Where the pollen is produced D. Filament - The thin, tubular structure that supports the anther. E. Petal – Attract pollinators to the flower. b. Name the male and female reproductive cells that are present in a flower. (Female – ovules, Male – pollen grains) Order the following statements to show what happens in the processes of pollination and fertilization. a. ____ the pollen from the first flower falls off the pollinator onto the stigma of the second flower."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO5.100",
-              "description": "b. ____ a pollinator goes to drink nectar at a flower. c. ____ the pollinator goes to drink nectar from a different flower. d. ____ the pollen fertilizes the eggs in the ovules. e. ____ New seeds can grow from fertilized egg f. ____ Pollen sticks to the pollinator as it is drinking nectar. g. ____ the pollen travels from the stigma down the style (pollen tube) to the ovules, which are in the ovary. Answer: Letter Order a 4 b 1 c 3 d 6 e 7 f 2 g 5 Explain the following statement using an example: “Pollination is helpful for both the plant and the pollinator”. Example of an answer that may be given. • (Pollination and fertilization result in the production of seeds that are necessary for many plants to reproduce.) • (At the same time, the sweet nectar produced by plants, provides pollinators with food. Pollen grains also provide bees"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO5.101",
-              "description": "Research and Writing: Learner groups will be tasked with writing a one-page response paper that responds to the following questions. 1) What are the statistics around impact of mosquito-borne diseases in your country? Include charts and graphs to explain the status in your country (e.g. pie charts, histograms, standard graphs) 2) What initiatives have been taken in your country to reduce the incidence of mosquito-borne ailments? 3) What could you do in the immediate area around your school to reduce the breeding of mosquitos? Include alternatives to chemical pesticides which may be harmful to the student body."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO5.102",
+              "sco_code": "SC-G6-SC-SCO5.97",
               "description": "Life Cycle Project: Student groups should search the internet and library to access information to create a poster that outlines the dangers that the monarch butterfly faces in its life cycle."
             }
           ],
@@ -1228,31 +1188,19 @@
             },
             {
               "sco_code": "SC-G6-SC-SCO6.12",
-              "description": "Place lightweight objects on the drum surface e.g. grains of rice. Hold a stick vertically, one centimetre above the centre of the drum and release to tap the drum creating a wave. Observe and record the amplitude (corresponding to the height of the tap) and maximum distance the rice moves from its initial position (representing energy transferred). Repeat this exercise, holding the stick 2cm, 3cm, and 4 cm above the centre of the drum, each time observing and recording the amplitude (height of the tap) and energy (movement of the rice). Learners should then: Calculate the square of each amplitude value (4 marks), Plot amplitude squared values against energy. (4 marks), Draw a line of best fit which should indicate a linear relationship between the square of the amplitude and energy. (1 mark), Learners should discuss why the rice moves more with higher amplitude taps and how the results show that energy is directly proportional to the square of the amplitude.(6 marks) (Amplitude is the maximum distance from the rest of a wave particle. When a balloon drum is tapped from a greater height, the balloon surface stretches more, creating a higher amplitude wave. This greater movement causes the rice grains to move a further distance. The movement of the rice serves as a visual representation of energy transferred. When the amplitude squared is plotted against the movement of the rice, a linear relationship is observed, indicating that as amplitude squared increases, the energy increases proportionally)"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO6.13",
               "description": "How does a change in amplitude affect the sound energy produced by the drum? (Higher amplitude vibrations result in an increase in sound energy and therefore louder sounds)"
             },
             {
-              "sco_code": "SC-G6-SC-SCO6.14",
+              "sco_code": "SC-G6-SC-SCO6.13",
               "description": "Instead of using rice, Learners could compare the sound energy created with different amplitude taps using a decibel meter e.g. ‘sound meter’"
             },
             {
-              "sco_code": "SC-G6-SC-SCO6.15",
+              "sco_code": "SC-G6-SC-SCO6.14",
               "description": "Identifying Wave Properties (2 pts per answer) The wavelength of the wave in the diagram above is given by letter _______."
             },
             {
-              "sco_code": "SC-G6-SC-SCO6.16",
+              "sco_code": "SC-G6-SC-SCO6.15",
               "description": "Which of the sound waves shown would be loud, and which would be quiet?"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO6.17",
-              "description": "Using Sound Waves to Identify Objects: Sound waves can be used to determine the distance to an object. Have Learners do research and prepare a one-page paper response that responds to the following questions(s). 1) What does the word SONAR stand for? 2) How does sonar generate images of objects? 3) What animals use sonar for navigation? 4) What are some examples of sonar being used for a) fishing and b) treasure hunting"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO6.18",
-              "description": "Research Project: Ultrasound: Learners should do research and generate a poster that responds to the following questions: 1) Use a description and picture to explain how ultrasound technology works. (5 marks) 2) Explain how ultrasound is used in the medical field to yield important information. (5 marks) 3) Proper grammar and punctuation (2 marks)"
             }
           ],
           "inclusive_assessment_strategies": [
@@ -1325,46 +1273,42 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-SC-SCO7.1",
-              "description": "Learners are expected to: Knowledge - Define the terms: Wave, Mechanical wave, Electromagnetic wave, Wavelength, Wave frequency, Wave amplitude, Medium, Angle of incidence, Wave reflection, Wave absorption, Wave transmission, Wave refraction - Explain what a wave is - Distinguish between mechanical and electromagnetic waves - Distinguish between transverse and longitudinal waves"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO7.2",
               "description": "Explain the concepts of reflection, absorption, and transmission of waves"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.3",
+              "sco_code": "SC-G6-SC-SCO7.2",
               "description": "Identify examples of reflection, absorption, and transmission of light and mechanical waves"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.4",
+              "sco_code": "SC-G6-SC-SCO7.3",
               "description": "Create models or diagrams that show wave interactions with various substances"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.5",
+              "sco_code": "SC-G6-SC-SCO7.4",
               "description": "Draw diagrams to show how light waves are reflected, absorbed, or transmitted through various substances"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.6",
+              "sco_code": "SC-G6-SC-SCO7.5",
               "description": "Record observations on wave behavior from models and experiments"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.7",
+              "sco_code": "SC-G6-SC-SCO7.6",
               "description": "Analyze data from observations and experiments to draw conclusions about wave behavior"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.8",
+              "sco_code": "SC-G6-SC-SCO7.7",
               "description": "Interpret graphs or pictures of wave interactions"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.9",
+              "sco_code": "SC-G6-SC-SCO7.8",
               "description": "Learners will develop interest and curiosity about wave behaviors by asking questions and doing research"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.10",
+              "sco_code": "SC-G6-SC-SCO7.9",
               "description": "Learners will demonstrate respect for peers during group work activities and discussions"
             },
             {
-              "sco_code": "SC-G6-SC-SCO7.11",
+              "sco_code": "SC-G6-SC-SCO7.10",
               "description": "explain other applications of microwaves e.g. mobile phones, Wi-Fi, medical treatment"
             }
           ],
@@ -1505,14 +1449,6 @@
             },
             {
               "sco_code": "SC-G6-SC-SCO8.16",
-              "description": "Instructions: Find an area where you can stretch out a string to a length of 10-15 meters. Hook one end of the string around a solid support. A member of your team will hold the other end tight when you are ready to launch your balloon. Partially inflate the balloon and tape a short piece of string from the nozzle to the centre spot on the bottom side. Draw a straight line following the string. Find the largest circumference and mark a straight line. Cut the straw in half and pull the loose end of the string through it. Mark a starting point with a piece of tape, close to the end of the string from which you will launch your balloon rocket. Attach the balloon to the drinking straw with tape, following the guide marks you drew before. The balloon should hang below the string. When you are ready, countdown and launch your balloon. Write a sentence or two to summarize the findings of your experiment in terms of Newton’s Third Law, in your own words."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO8.17",
-              "description": "Protecting the Egg: An Engineering Challenge. In groups of 4-5, Learners will plan, design, build and test cars that can minimize the damage of collision. Materials: Wheels: round objects like bottle caps or CDs, or you can cut your wheels from foam board. Axles: straws, pencils, wooden skewers, paper rolled into tubes, etc. Chassis (body): plastic bottles, cardboard boxes, Styrofoam, cardboard, etc. Other construction supplies: scissors, tape, glue, rubber bands, paper clips, etc. You will also need materials to build a ramp to roll the cars down: Wooden board, large piece of corrugated cardboard, or foam core board, at least 1 foot wide and 3 feet long. A small box or stack of books to prop up one end of the ramp, at least 1 foot tall. Learners will create and build a toy car large enough to hold an egg. Using a wooden box and books Learners will create an inclined plane/ramp. A brick or hard object should be placed at the end of the ramp and Learners will be allowed to roll the car down the ramp and strike the wall. Using duct tape or glue, Learners can place any material in their car to form a bumper. Each group"
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO8.18",
               "description": "must choose a different material to test which one is best to protect the egg from breaking. Learners should note that the bumper is used to absorb the equal and opposite force exerted by the wall."
             }
           ],
@@ -2078,46 +2014,26 @@
             },
             {
               "sco_code": "SC-G6-SC-SCO12.26",
-              "description": "In nature, organisms interact with each other in a variety of ways. Some are predators, some are prey, and some just compete for food against each other. Some of these relationships last a long time while others do not. In nature a relationship between two organisms that last a long time is called symbiosis. There are different kinds of symbiosis. There are times when both organisms in the relationship benefit from each other. There are times when only one will benefit while harming the other. Then there are times when only one benefits, but no harm is done to the other."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO12.27",
-              "description": "When a relationship between two kinds of organisms benefits both organisms, it is called mutualism. For example, in The Mojave Desert there is a plant that exists called the Yucca tree. When this tree's creamy flowers are in bloom there appears to be shadows that jump around on the flowers. However, a more careful look reveals that these shadows are actually moths. They are called yucca moths. The yucca moths cannot survive without the yucca tree. The yucca trees would also quickly become extinct if it were not for the yucca moth. The yucca moth visits the yucca flower at night and picks up pollen and rolls it up into a ball. The moth then flutters over to another flower and implants that pollen into that flower's ovary. The moth is able to pollinate the flower which in turn sprouts new seeds that become new yucca plants. The yucca tree and the yucca moth depend on each other for survival and they both benefit and share a relationship of mutualism."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO12.28",
-              "description": "When two organisms form a relationship where one organism lives on or in another organism and may harm the other in the process it is called parasitism. The organism that lives on or in the other is called a parasite. The organisms they feed on both are called hosts. The parasites benefits from the relationship. The hosts are harmed by the relationship. For example, fleas are parasites of dogs. The fleas feed off the blood of the dog and give nothing back to the dog in return. The host is harmed while the parasite benefits. Another example of parasitism is mistletoe. It is an evergreen that grows in the branches of a tree such as a poplar, fir, or apple. The mistletoe feeds off the tree while offering nothing to benefit the tree. The relationship between these two organisms is called parasitism."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO12.29",
-              "description": "The relationship between two organisms where one benefits from the other while causing no harm in the process is called commensalism. An example of this would be when a tropical fish lives unharmed among the poisonous tentacles of a sea creature. The sea creature provides safety for the fish and the fish neither harms nor helps the creature. The fish becomes protected from other predators by the poison, yet provides nothing to the sea creature. Another example is when orchids attach itself to the trunk of a tree on the rain forest floor. The orchid only attaches itself to benefit from the position of the tree in order to get sunlight. It causes no harm to the tree. This relationship is called commensalism."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO12.30",
-              "description": "There are different kinds of symbiosis. Each defines the relationship between organisms in nature. While some organisms are predators, other becomes the prey. Still other organisms can live together without any harm being caused. Whether these relationships are mutualism, parasitism, or commensalism, it is clear that organisms interact with one another in a variety of different ways. The nature of these relationships and how they interact differently together is called symbiosis."
-            },
-            {
-              "sco_code": "SC-G6-SC-SCO12.31",
               "description": "1) In nature a relationship between two organisms that last a long time is called: A: Commensalism B: Parasitism C: Symbiosis D: Mutualism"
             },
             {
-              "sco_code": "SC-G6-SC-SCO12.32",
+              "sco_code": "SC-G6-SC-SCO12.27",
               "description": "2) When a relationship between two kinds of organisms benefits both organisms, it is called: A: Symbiosis B: Mutualism C: Commensalism D: Parasitism"
             },
             {
-              "sco_code": "SC-G6-SC-SCO12.33",
+              "sco_code": "SC-G6-SC-SCO12.28",
               "description": "3) The relationship between two organisms where one benefits from the other while causing no harm in the process is called which of the following? A: Commensalism B: Symbiosis C: Parasitism D: Mutualism"
             },
             {
-              "sco_code": "SC-G6-SC-SCO12.34",
+              "sco_code": "SC-G6-SC-SCO12.29",
               "description": "4) When two organisms form a relationship where one organism lives on or in another organism and may harm the other in the process is called which of the following? A: Mutualism B: Commensalism C: Symbiosis D: Parasitism"
             },
             {
-              "sco_code": "SC-G6-SC-SCO12.35",
+              "sco_code": "SC-G6-SC-SCO12.30",
               "description": "5) Mistletoe that attaches itself to the branch of a tree and feeds off the nutrients is an example of: A: Parasitism B: Mutualism C: Symbiosis D: Commensalism"
             },
             {
-              "sco_code": "SC-G6-SC-SCO12.36",
+              "sco_code": "SC-G6-SC-SCO12.31",
               "description": "6) What is the yucca moth able to do to the yucca flowers that sprouts new seeds that become new yucca plants? A: Implants B: Pollinates C: Plants D: Imbeds"
             }
           ],
@@ -4037,18 +3953,6 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-EG-SCO2.1",
-              "description": "Learners are expected to: Knowledge: Define the terms: energy, gravitational potential energy, elastic potential energy, compression of springs, stretching springs, Newton’s Cradle, kinetic energy, inclined plane, distance, height. Compare potential energy values based on the reference points between objects at different heights/distances. Explain how an object’s potential energy changes to kinetic energy when it falls."
-            },
-            {
-              "sco_code": "SC-G6-EG-SCO2.2",
-              "description": "Infer that the amount of gravitational energy possessed by an object depends on its height from the Earth’s surface. Measure height and distance using appropriate instruments. Construct hypotheses to guide scientific investigations involving energy. Graph data collected from scientific investigations. Interpret data from tables to identify patterns and trends. Predict best designs for a water tower. Research uses of springs."
-            },
-            {
-              "sco_code": "SC-G6-EG-SCO2.3",
-              "description": "Attitudes/Values: Express enthusiasm by actively engaging in hands-on activities and experiments. Demonstrate persistence in testing hypotheses and changing variables. Demonstrate curiosity by asking thoughtful questions during the lesson. Demonstrate respect for evidence by using data to support their conclusions and arguments. Work collaboratively in small groups. Stewardship/Respect for Living Things. Obey safety rules when conducting scientific investigations. When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
-            },
-            {
-              "sco_code": "SC-G6-EG-SCO2.4",
               "description": "Participate actively in classroom discussions."
             }
           ],
@@ -5175,82 +5079,78 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-HE-SCO1.1",
-              "description": "Define the terms: complimentary, Pangaea, continental drift, core, mantle, crust, tectonic plates, convection currents, plate margins, ocean ridges, lithosphere, constructive or divergent shift, destructive or convergent shift, transform or conservative shift, subduction/subduction zones, fault line, tsunamis, volcanoes"
-            },
-            {
-              "sco_code": "SC-G6-HE-SCO1.2",
               "description": "Demonstrate they understand how fossil records support the idea of a single continent (Pangaea)"
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.3",
+              "sco_code": "SC-G6-HE-SCO1.2",
               "description": "Compare different types of tectonic movement processes"
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.4",
+              "sco_code": "SC-G6-HE-SCO1.3",
               "description": "Give examples of fossil records that support Pangaea’s existence."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.5",
+              "sco_code": "SC-G6-HE-SCO1.4",
               "description": "Analyse media that demonstrate the separation of Pangaea into smaller continents."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.6",
+              "sco_code": "SC-G6-HE-SCO1.5",
               "description": "Show with diagrams the three types of tectonic plate interactions."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.7",
+              "sco_code": "SC-G6-HE-SCO1.6",
               "description": "Account for the formation of ocean ridges."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.8",
+              "sco_code": "SC-G6-HE-SCO1.7",
               "description": "Account for the formation of folded mountains."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.9",
+              "sco_code": "SC-G6-HE-SCO1.8",
               "description": "Account for the formation of volcanoes"
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.10",
+              "sco_code": "SC-G6-HE-SCO1.9",
               "description": "Communicate your understanding of how earthquakes occur."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.11",
+              "sco_code": "SC-G6-HE-SCO1.10",
               "description": "Construct models of tectonic plate interactions."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.12",
+              "sco_code": "SC-G6-HE-SCO1.11",
               "description": "Calculate continental drift based on observed trends."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.13",
+              "sco_code": "SC-G6-HE-SCO1.12",
               "description": "Investigate qualitative and quantitative ($) impacts of natural disasters such as earthquakes and tsunamis."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.14",
+              "sco_code": "SC-G6-HE-SCO1.13",
               "description": "Practice the use of new vocabulary in project work."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.15",
+              "sco_code": "SC-G6-HE-SCO1.14",
               "description": "Appreciate that continental drift happens over a very long period of time."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.16",
+              "sco_code": "SC-G6-HE-SCO1.15",
               "description": "Appreciate that estimates of fossil age are based on scientific data but remain estimates."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.17",
+              "sco_code": "SC-G6-HE-SCO1.16",
               "description": "Interest/Curiosity in how landforms are created especially in our own region."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.18",
+              "sco_code": "SC-G6-HE-SCO1.17",
               "description": "Respect for Evidence of fossils"
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.19",
+              "sco_code": "SC-G6-HE-SCO1.18",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G6-HE-SCO1.20",
+              "sco_code": "SC-G6-HE-SCO1.19",
               "description": "Participate actively in classroom discussions."
             }
           ],
@@ -5518,122 +5418,118 @@
           "specific_curriculum_outcomes": [
             {
               "sco_code": "SC-G6-ES-SCO2.1",
-              "description": "Learners are expected to: Knowledge Define the terms: natural resources, energy, non-renewable, renewable resources, petroleum, fossil fuel, fracking, oil sands, minerals, coal, global warming, greenhouse effect, water conservation, ground water, surface water, hydropower dam, solar power, geothermal power, human rights & mining"
-            },
-            {
-              "sco_code": "SC-G6-ES-SCO2.2",
               "description": "Demonstrate they understand the difference between renewable and non-renewable resources."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.3",
+              "sco_code": "SC-G6-ES-SCO2.2",
               "description": "Compare ways that electricity can be produced."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.4",
+              "sco_code": "SC-G6-ES-SCO2.3",
               "description": "Develop awareness of the control oil-rich countries have over energy production worldwide."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.5",
+              "sco_code": "SC-G6-ES-SCO2.4",
               "description": "Give examples of how alternate energies are more sensitive to protecting the environment."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.6",
+              "sco_code": "SC-G6-ES-SCO2.5",
               "description": "Give examples of different ways to extract oil for energy purposes."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.7",
+              "sco_code": "SC-G6-ES-SCO2.6",
               "description": "Use a picture to describe how fracking is used to extract oil."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.8",
+              "sco_code": "SC-G6-ES-SCO2.7",
               "description": "Become aware of the environmental impacts of strip-mining practices."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.9",
+              "sco_code": "SC-G6-ES-SCO2.8",
               "description": "Identify some dangers of underground mining."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.10",
+              "sco_code": "SC-G6-ES-SCO2.9",
               "description": "Awareness of the scale coal use in China and the inherent impacts on global warming."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.11",
+              "sco_code": "SC-G6-ES-SCO2.10",
               "description": "Explain potential environmental impacts of building large scale hydropower dams using the Three Gorges Dam in China as an example."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.12",
+              "sco_code": "SC-G6-ES-SCO2.11",
               "description": "Establish which countries have the greatest mineral resources."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.13",
+              "sco_code": "SC-G6-ES-SCO2.12",
               "description": "Filter internet information for objective facts and data on renewable and non-renewable resources in the world."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.14",
+              "sco_code": "SC-G6-ES-SCO2.13",
               "description": "Infer from a graph, the extrapolated consumption of coal in China."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.15",
+              "sco_code": "SC-G6-ES-SCO2.14",
               "description": "Classify resources as renewable or non-renewable."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.16",
+              "sco_code": "SC-G6-ES-SCO2.15",
               "description": "Research information on oil extraction."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.17",
+              "sco_code": "SC-G6-ES-SCO2.16",
               "description": "Research the process of geothermal energy production."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.18",
+              "sco_code": "SC-G6-ES-SCO2.17",
               "description": "Debate who should take responsibility for safe mining practices."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.19",
+              "sco_code": "SC-G6-ES-SCO2.18",
               "description": "Extract mining dangers from the lyrics of a song."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.20",
+              "sco_code": "SC-G6-ES-SCO2.19",
               "description": "Research methods of water conservation."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.21",
+              "sco_code": "SC-G6-ES-SCO2.20",
               "description": "Calculate/estimate short & long term costs of solar power for family homes."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.22",
+              "sco_code": "SC-G6-ES-SCO2.21",
               "description": "Appreciate that fossil fuel resources are both limited and costly."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.23",
+              "sco_code": "SC-G6-ES-SCO2.22",
               "description": "Appreciate the burning of fossil fuels impacts the environment."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.24",
+              "sco_code": "SC-G6-ES-SCO2.23",
               "description": "Awareness of limited water supply."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.25",
+              "sco_code": "SC-G6-ES-SCO2.24",
               "description": "Be inventive around conservation of water supply."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.26",
+              "sco_code": "SC-G6-ES-SCO2.25",
               "description": "Be sensitive to the economics (salary) that balance the danger in a mining job or any risky occupation."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.27",
+              "sco_code": "SC-G6-ES-SCO2.26",
               "description": "Possess interest/curiosity as to how geology of the Caribbean has impacted landforms and access to minerals and clean water."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.28",
+              "sco_code": "SC-G6-ES-SCO2.27",
               "description": "Inventiveness around developing potential alternate energy sources."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.29",
+              "sco_code": "SC-G6-ES-SCO2.28",
               "description": "When conducting practical and group work, display sensitivity and offer assistance to peers who may have physical or learning challenges."
             },
             {
-              "sco_code": "SC-G6-ES-SCO2.30",
+              "sco_code": "SC-G6-ES-SCO2.29",
               "description": "Participate actively in classroom discussions."
             }
           ],
