@@ -254,7 +254,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // WebSocketContext API
   const ENDPOINT = '/ws/chat';
-  const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();
+  const { getConnection, getStreamingContent, getIsStreaming, getCustomData, clearStreaming, subscribe } = useWebSocket();
 
   // Streaming state from context
   const streamingMessage = getStreamingContent(tabId, ENDPOINT);
@@ -469,10 +469,14 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   // Subscribe to streaming updates for re-render
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // This triggers re-render when streaming updates
+      // Check for curriculum refs from WebSocket custom data
+      const refs = getCustomData(tabId, ENDPOINT, 'curriculumRefs');
+      if (refs && refs.length > 0) {
+        setCurriculumSuggestions(refs);
+      }
     });
     return unsubscribe;
-  }, [tabId, subscribe]);
+  }, [tabId, subscribe, getCustomData]);
 
   // Finalization logic for streaming message
   useEffect(() => {
@@ -785,11 +789,16 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     }
 
     // Build payload with optional file references
+    const mapping = settings.profile.gradeSubjects || {};
     const payload: any = {
       message: text,
       chat_id: currentChatId,
       thinking_enabled: settings.thinkingEnabled && supportsThinking,
-      ...(profileContext ? { profile_context: profileContext } : {}),
+      ...(profileContext ? {
+        profile_context: profileContext,
+        profile_grades: getTeacherGrades(mapping),
+        profile_subjects: getTeacherSubjects(mapping),
+      } : {}),
     };
     const fileAttachments = attachedFiles.filter(f => !f.isDirectory);
     if (fileAttachments.length > 0) {

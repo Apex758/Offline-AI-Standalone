@@ -17,6 +17,7 @@ interface WebSocketConnection {
   ws: WebSocket;
   isStreaming: boolean;
   streamingContent: string;
+  customData: Record<string, any>;
   listeners: Set<() => void>;
 }
 
@@ -32,6 +33,7 @@ interface WebSocketContextValue {
   getIsStreaming: (tabId: string, endpoint: string) => boolean;
   getIsTabBusy: (tabId: string) => boolean;
   getActiveStreams: () => ActiveStream[];
+  getCustomData: (tabId: string, endpoint: string, key: string) => any;
   clearStreaming: (tabId: string, endpoint: string) => void;
   closeConnection: (tabId: string, endpoint: string) => void;
   subscribe: (tabId: string, endpoint: string, listener: () => void) => () => void;
@@ -90,6 +92,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ws,
         isStreaming: false,
         streamingContent: '',
+        customData: {},
         listeners: new Set()
       };
       connectionsRef.current.set(key, conn);
@@ -122,6 +125,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           forceUpdate({});
           const toolName = TOOL_NAMES[endpoint];
           if (toolName) notifyRef.current(`${toolName} generated!`);
+        } else if (data.type === 'curriculum_refs') {
+          conn.customData.curriculumRefs = data.references || [];
+          conn.listeners.forEach(listener => listener());
+          forceUpdate({});
         } else if (data.type === 'error') {
           console.error(`[WebSocket ${key}] Error:`, data.message);
           conn.isStreaming = false;
@@ -176,6 +183,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return streams;
   }, []);
 
+  const getCustomData = useCallback((tabId: string, endpoint: string, key: string): any => {
+    const connKey = getConnectionKey(tabId, endpoint);
+    return connectionsRef.current.get(connKey)?.customData?.[key] ?? null;
+  }, []);
+
   const clearStreaming = useCallback((tabId: string, endpoint: string) => {
     const key = getConnectionKey(tabId, endpoint);
     const conn = connectionsRef.current.get(key);
@@ -216,6 +228,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       getIsStreaming,
       getIsTabBusy,
       getActiveStreams,
+      getCustomData,
       clearStreaming,
       closeConnection,
       subscribe

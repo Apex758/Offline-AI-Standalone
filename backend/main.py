@@ -772,6 +772,52 @@ async def websocket_chat(websocket: WebSocket):
             if profile_context:
                 system_prompt += profile_context
 
+            # Curriculum matching: find related curriculum based on user message + profile
+            if curriculum_matcher and profile_context:
+                try:
+                    # Extract grade/subject from profile for filtering
+                    chat_grade = ""
+                    chat_subject = ""
+                    profile_grades = message_data.get("profile_grades", [])
+                    profile_subjects = message_data.get("profile_subjects", [])
+                    if profile_grades:
+                        chat_grade = profile_grades[0] if len(profile_grades) == 1 else ""
+                    if profile_subjects:
+                        chat_subject = profile_subjects[0] if len(profile_subjects) == 1 else ""
+
+                    chat_matches = curriculum_matcher.find_matching_pages(
+                        user_message, top_k=3,
+                        grade=chat_grade, subject=chat_subject
+                    )
+                    # Only send refs with a meaningful match score
+                    chat_refs = [
+                        {
+                            "id": m.get("id"),
+                            "displayName": m.get("displayName"),
+                            "grade": m.get("grade"),
+                            "subject": m.get("subject"),
+                            "route": m.get("route"),
+                            "matchScore": m.get("matchScore"),
+                        }
+                        for m in chat_matches if m.get("matchScore", 0) >= 0.15
+                    ]
+                    if chat_refs:
+                        await websocket.send_json({
+                            "type": "curriculum_refs",
+                            "references": chat_refs
+                        })
+                        # Add curriculum context to system prompt
+                        context_blocks = []
+                        for m in chat_matches:
+                            if m.get("matchScore", 0) >= 0.15:
+                                ctx = curriculum_matcher.get_curriculum_context(m.get("id"))
+                                if ctx:
+                                    context_blocks.append(ctx)
+                        if context_blocks:
+                            system_prompt += "\n\nRelated Curriculum:\n" + "\n\n".join(context_blocks)
+                except Exception as e:
+                    logger.error(f"Error matching curriculum in chat: {e}")
+
             # Separate image files from text files
             reference_files = message_data.get("reference_files", None)
             image_files = []
