@@ -861,17 +861,17 @@ const CurriculumTracker: React.FC<CurriculumTrackerProps> = ({
           <span className="font-semibold text-theme-title flex-1">  {node.type === 'grade' ? (node.label === 'K' ? 'Kindergarten' : `Grade ${node.label}`) : node.type === 'strand' ? node.label.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : node.label}</span>
 
           {node.progress && (
-            <div className="flex items-center space-x-2" data-tutorial="node-progress">
-              <div className="text-sm text-theme-muted">
+            <div className="flex items-center space-x-2 flex-shrink-0" data-tutorial="node-progress">
+              <div className="text-sm text-theme-muted min-w-[55px] text-right">
                 {node.progress.completed}/{node.progress.total}
               </div>
-              <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden flex-shrink-0">
                 <div
                   className="h-full transition-all rounded-full"
                   style={{ width: `${node.progress.percentage}%`, background: `linear-gradient(90deg, ${accentColor}bb, ${accentColor})` }}
                 />
               </div>
-              <span className="text-sm font-semibold text-theme-label">
+              <span className="text-sm font-semibold text-theme-label min-w-[48px] text-right">
                 {node.progress.percentage}%
               </span>
             </div>
