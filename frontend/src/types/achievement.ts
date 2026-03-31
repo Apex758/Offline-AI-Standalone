@@ -6,7 +6,10 @@ export type AchievementCategory =
   | 'attendance'
   | 'curriculum'
   | 'exploration'
-  | 'power-user';
+  | 'power-user'
+  | 'chat'
+  | 'brain-dump'
+  | 'analytics';
 
 export interface AchievementDefinition {
   id: string;

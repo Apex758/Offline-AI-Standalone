@@ -65,12 +65,12 @@ def init_db():
 
 RANKS = [
     {"level": 1, "title": "Newcomer",             "required": 0},
-    {"level": 2, "title": "Apprentice Teacher",    "required": 3},
-    {"level": 3, "title": "Developing Educator",   "required": 7},
-    {"level": 4, "title": "Proficient Instructor",  "required": 12},
-    {"level": 5, "title": "Experienced Educator",   "required": 18},
-    {"level": 6, "title": "Master Teacher",          "required": 24},
-    {"level": 7, "title": "OECS Champion",           "required": 30},
+    {"level": 2, "title": "Apprentice Teacher",    "required": 5},
+    {"level": 3, "title": "Developing Educator",   "required": 12},
+    {"level": 4, "title": "Proficient Instructor",  "required": 20},
+    {"level": 5, "title": "Experienced Educator",   "required": 30},
+    {"level": 6, "title": "Master Teacher",          "required": 40},
+    {"level": 7, "title": "OECS Champion",           "required": 50},
 ]
 
 RARITY_POINTS = {
@@ -125,6 +125,43 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "content_50",          "name": "Prolific Creator",         "description": "Create 50 total resources across all types",  "category": "power-user",          "icon_name": "Star",                "rarity": "rare",      "check_key": "total_resources",        "check_value": 50},
     {"id": "content_100",         "name": "Content Machine",          "description": "Create 100 total resources",                 "category": "power-user",          "icon_name": "Trophy",              "rarity": "epic",      "check_key": "total_resources",        "check_value": 100},
     {"id": "image_creator",       "name": "Visual Designer",          "description": "Create 5 images in Image Studio",            "category": "power-user",          "icon_name": "Image",               "rarity": "uncommon",  "check_key": "images",                 "check_value": 5},
+
+    # ── Chat / Ask PEARL ──
+    {"id": "first_chat",          "name": "Hello PEARL",              "description": "Start your first conversation with PEARL",   "category": "chat",                "icon_name": "Chat",                "rarity": "common",    "check_key": "chat_conversations",     "check_value": 1},
+    {"id": "chat_regular",        "name": "Regular Chatter",          "description": "Have 10 conversations with PEARL",           "category": "chat",                "icon_name": "Chat",                "rarity": "uncommon",  "check_key": "chat_conversations",     "check_value": 10},
+    {"id": "chat_messages_50",    "name": "Curious Mind",             "description": "Send 50 messages to PEARL",                  "category": "chat",                "icon_name": "MessageEdit",         "rarity": "rare",      "check_key": "chat_messages",          "check_value": 50},
+    {"id": "chat_messages_200",   "name": "Deep Thinker",             "description": "Send 200 messages to PEARL",                 "category": "chat",                "icon_name": "MessageEdit",         "rarity": "epic",      "check_key": "chat_messages",          "check_value": 200},
+
+    # ── Brain Dump ──
+    {"id": "first_brain_dump",    "name": "Brain Unleashed",          "description": "Use Brain Dump for the first time",          "category": "brain-dump",          "icon_name": "Brain",               "rarity": "common",    "check_key": "brain_dump_uses",        "check_value": 1},
+    {"id": "brain_dump_10",       "name": "Thought Machine",          "description": "Use Brain Dump 10 times",                    "category": "brain-dump",          "icon_name": "Brain",               "rarity": "uncommon",  "check_key": "brain_dump_uses",        "check_value": 10},
+    {"id": "brain_dump_actions",  "name": "Ideas Into Action",        "description": "Generate 25 actions from Brain Dump",         "category": "brain-dump",          "icon_name": "Lightbulb",           "rarity": "rare",      "check_key": "brain_dump_actions",     "check_value": 25},
+
+    # ── Resource Manager ──
+    {"id": "resource_saver_10",   "name": "Resource Collector",       "description": "Save 10 resources across all types",          "category": "exploration",         "icon_name": "Bookmark",            "rarity": "common",    "check_key": "total_resources",        "check_value": 10},
+    {"id": "resource_saver_25",   "name": "Resource Curator",         "description": "Save 25 resources across all types",          "category": "exploration",         "icon_name": "Bookmark",            "rarity": "uncommon",  "check_key": "total_resources",        "check_value": 25},
+
+    # ── Multigrade Planner ──
+    {"id": "multigrade_first",    "name": "Multi-Level Maestro",      "description": "Create your first multigrade plan",           "category": "exploration",         "icon_name": "Layers",              "rarity": "common",    "check_key": "multigrade_plans",       "check_value": 1},
+    {"id": "multigrade_5",        "name": "Combined Class Pro",       "description": "Create 5 multigrade plans",                   "category": "exploration",         "icon_name": "Layers",              "rarity": "uncommon",  "check_key": "multigrade_plans",       "check_value": 5},
+
+    # ── Scan Grading ──
+    {"id": "first_scan_grade",    "name": "Scan & Score",             "description": "Grade your first scanned assignment",         "category": "assessment",          "icon_name": "ScanQr",              "rarity": "common",    "check_key": "scan_grades",            "check_value": 1},
+    {"id": "scan_grader_20",      "name": "Scanning Expert",          "description": "Grade 20 scanned assignments",                "category": "assessment",          "icon_name": "ScanQr",              "rarity": "rare",      "check_key": "scan_grades",            "check_value": 20},
+
+    # ── Streaks / Consistency ──
+    {"id": "streak_3",            "name": "Getting Started",          "description": "Use the app 3 days in a row",                 "category": "power-user",          "icon_name": "Fire",                "rarity": "common",    "check_key": "streak_days",            "check_value": 3},
+    {"id": "streak_7",            "name": "Weekly Warrior",           "description": "Use the app 7 days in a row",                 "category": "power-user",          "icon_name": "Fire",                "rarity": "uncommon",  "check_key": "streak_days",            "check_value": 7},
+    {"id": "streak_30",           "name": "Monthly Marathoner",       "description": "Use the app 30 days in a row",                "category": "power-user",          "icon_name": "Fire",                "rarity": "epic",      "check_key": "streak_days",            "check_value": 30},
+    {"id": "active_days_50",      "name": "Dedicated Educator",       "description": "Use the app on 50 different days",            "category": "power-user",          "icon_name": "Calendar",            "rarity": "rare",      "check_key": "total_active_days",      "check_value": 50},
+    {"id": "active_days_100",     "name": "Unstoppable",              "description": "Use the app on 100 different days",            "category": "power-user",          "icon_name": "Calendar",            "rarity": "legendary", "check_key": "total_active_days",      "check_value": 100},
+
+    # ── Analytics ──
+    {"id": "first_analytics",     "name": "Data Curious",             "description": "Generate your first AI response (tracked by metrics)", "category": "analytics",   "icon_name": "Chart",               "rarity": "common",    "check_key": "total_generations",      "check_value": 1},
+    {"id": "analytics_100",       "name": "Power Generator",          "description": "Generate 100 AI responses",                   "category": "analytics",           "icon_name": "Chart",               "rarity": "uncommon",  "check_key": "total_generations",      "check_value": 100},
+    {"id": "analytics_500",       "name": "AI Powerhouse",            "description": "Generate 500 AI responses",                   "category": "analytics",           "icon_name": "Chart",               "rarity": "rare",      "check_key": "total_generations",      "check_value": 500},
+    {"id": "image_gen_first",     "name": "First Pixel",              "description": "Generate your first AI image",                "category": "analytics",           "icon_name": "Image",               "rarity": "common",    "check_key": "total_image_generations","check_value": 1},
+    {"id": "image_gen_25",        "name": "Visual Virtuoso",          "description": "Generate 25 AI images",                       "category": "analytics",           "icon_name": "Image",               "rarity": "rare",      "check_key": "total_image_generations","check_value": 25},
 ]
 
 # Add points to each definition
@@ -261,6 +298,132 @@ def _get_milestone_counts(teacher_id: str) -> Dict[str, int]:
         conn.close()
 
 
+def _get_chat_counts() -> Dict[str, int]:
+    """Count conversations and messages from chat_memory.db."""
+    db_path = str(_get_data_directory() / 'chat_memory.db')
+    if not os.path.exists(db_path):
+        return {"chat_conversations": 0, "chat_messages": 0}
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        conversations = conn.execute("SELECT COUNT(*) as c FROM chats").fetchone()["c"]
+        messages = conn.execute("SELECT COUNT(*) as c FROM messages WHERE role = 'user'").fetchone()["c"]
+        return {"chat_conversations": conversations, "chat_messages": messages}
+    except Exception:
+        return {"chat_conversations": 0, "chat_messages": 0}
+    finally:
+        conn.close()
+
+
+def _get_brain_dump_counts() -> Dict[str, int]:
+    """Count brain dump uses from metrics (task_type = 'brain-dump')."""
+    db_path = str(_get_data_directory() / 'metrics.db')
+    if not os.path.exists(db_path):
+        return {"brain_dump_uses": 0, "brain_dump_actions": 0}
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        # Each brain-dump generation counts as a use
+        uses = conn.execute(
+            "SELECT COUNT(*) as c FROM inference_metrics WHERE task_type = 'brain-dump'"
+        ).fetchone()["c"]
+        # Action generations are separate brain-dump calls (approximated by total)
+        actions = conn.execute(
+            "SELECT COUNT(*) as c FROM inference_metrics WHERE task_type = 'brain-dump'"
+        ).fetchone()["c"]
+        return {"brain_dump_uses": uses, "brain_dump_actions": actions}
+    except Exception:
+        return {"brain_dump_uses": 0, "brain_dump_actions": 0}
+    finally:
+        conn.close()
+
+
+def _get_metrics_counts() -> Dict[str, int]:
+    """Count total text and image generations from metrics.db."""
+    db_path = str(_get_data_directory() / 'metrics.db')
+    if not os.path.exists(db_path):
+        return {"total_generations": 0, "total_image_generations": 0}
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        text_gens = conn.execute("SELECT COUNT(*) as c FROM inference_metrics").fetchone()["c"]
+        img_gens = conn.execute("SELECT COUNT(*) as c FROM image_metrics").fetchone()["c"]
+        return {"total_generations": text_gens, "total_image_generations": img_gens}
+    except Exception:
+        return {"total_generations": 0, "total_image_generations": 0}
+    finally:
+        conn.close()
+
+
+def _get_scan_grade_counts() -> Dict[str, int]:
+    """Count scan-graded assignments (grades with source = 'scan')."""
+    db_path = str(_get_data_directory() / 'students.db')
+    if not os.path.exists(db_path):
+        return {"scan_grades": 0}
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        # Check if source column exists in quiz_grades
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(quiz_grades)").fetchall()]
+        if 'source' in cols:
+            quiz_scans = conn.execute("SELECT COUNT(*) as c FROM quiz_grades WHERE source = 'scan'").fetchone()["c"]
+        else:
+            quiz_scans = 0
+        cols_ws = [r[1] for r in conn.execute("PRAGMA table_info(worksheet_grades)").fetchall()]
+        if 'source' in cols_ws:
+            ws_scans = conn.execute("SELECT COUNT(*) as c FROM worksheet_grades WHERE source = 'scan'").fetchone()["c"]
+        else:
+            ws_scans = 0
+        return {"scan_grades": quiz_scans + ws_scans}
+    except Exception:
+        return {"scan_grades": 0}
+    finally:
+        conn.close()
+
+
+def _get_streak_counts(teacher_id: str) -> Dict[str, int]:
+    """Calculate current streak and total active days from achievement_activity_log."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT activity_date FROM achievement_activity_log WHERE teacher_id = ? ORDER BY activity_date DESC",
+            (teacher_id,)
+        ).fetchall()
+        if not rows:
+            return {"streak_days": 0, "total_active_days": 0}
+
+        dates = sorted(set(r["activity_date"] for r in rows), reverse=True)
+        total_active_days = len(dates)
+
+        # Calculate current streak from today backwards
+        from datetime import timedelta
+        today = datetime.now().strftime("%Y-%m-%d")
+        streak = 0
+        check_date = datetime.strptime(today, "%Y-%m-%d")
+
+        for d in dates:
+            d_date = datetime.strptime(d, "%Y-%m-%d")
+            diff = (check_date - d_date).days
+            if diff == 0:
+                streak += 1
+                check_date = d_date - timedelta(days=1)
+            elif diff == 1:
+                # Allow starting from yesterday if not yet logged today
+                if streak == 0:
+                    streak += 1
+                    check_date = d_date - timedelta(days=1)
+                else:
+                    break
+            else:
+                break
+
+        return {"streak_days": streak, "total_active_days": total_active_days}
+    except Exception:
+        return {"streak_days": 0, "total_active_days": 0}
+    finally:
+        conn.close()
+
+
 # ──────────────────────────────────────────────
 # Core achievement logic
 # ──────────────────────────────────────────────
@@ -306,6 +469,11 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
         counts.update(_get_content_counts())
         counts.update(_get_student_counts())
         counts.update(_get_milestone_counts(teacher_id))
+        counts.update(_get_chat_counts())
+        counts.update(_get_brain_dump_counts())
+        counts.update(_get_metrics_counts())
+        counts.update(_get_scan_grade_counts())
+        counts.update(_get_streak_counts(teacher_id))
 
         # Check each unearned achievement
         newly_earned = []

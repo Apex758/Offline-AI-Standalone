@@ -14,6 +14,9 @@ import AttendanceIconData from '@hugeicons/core-free-icons/Calendar01Icon';
 import CurriculumIconData from '@hugeicons/core-free-icons/LibraryIcon';
 import ExplorationIconData from '@hugeicons/core-free-icons/Compass01Icon';
 import PowerIconData from '@hugeicons/core-free-icons/FlashIcon';
+import ChatIconData from '@hugeicons/core-free-icons/AiChat01Icon';
+import BrainIconData from '@hugeicons/core-free-icons/Brain01Icon';
+import AnalyticsIconData from '@hugeicons/core-free-icons/Analytics01Icon';
 import { useAchievementContext } from '../contexts/AchievementContext';
 import { useSettings } from '../contexts/SettingsContext';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity } from '../types/achievement';
@@ -42,6 +45,9 @@ const CATEGORY_LABELS: Record<AchievementCategory, string> = {
   'curriculum': 'Curriculum',
   'exploration': 'Exploration',
   'power-user': 'Power User',
+  'chat': 'Ask PEARL',
+  'brain-dump': 'Brain Dump',
+  'analytics': 'Analytics',
 };
 
 const ALL_CATEGORIES: AchievementCategory[] = [
@@ -52,6 +58,9 @@ const ALL_CATEGORIES: AchievementCategory[] = [
   'curriculum',
   'exploration',
   'power-user',
+  'chat',
+  'brain-dump',
+  'analytics',
 ];
 
 interface AchievementsProps {
@@ -392,6 +401,9 @@ const CATEGORY_ICONS: Record<AchievementCategory, object> = {
   'curriculum':         CurriculumIconData,
   'exploration':        ExplorationIconData,
   'power-user':         PowerIconData,
+  'chat':               ChatIconData,
+  'brain-dump':         BrainIconData,
+  'analytics':          AnalyticsIconData,
 };
 
 function AchievementCard({
@@ -550,12 +562,14 @@ function AchievementCard({
             >
               {definition.points} pts
             </span>
-            {isEarned && earnedAt && (
-              <span className="ml-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {new Date(earnedAt).toLocaleDateString()}
-              </span>
-            )}
           </div>
+
+          {/* Achieved date */}
+          {isEarned && earnedAt && (
+            <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              Achieved on {new Date(earnedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+            </div>
+          )}
 
           {/* Progress bar (locked only) */}
           {!isEarned && progress && (
