@@ -43,7 +43,7 @@ async def initialize_milestones(teacher_id: str):
         # Sync with current curriculum data (adds new, removes stale, updates metadata)
         result = db.sync_milestones_with_curriculum(
             teacher_id=teacher_id,
-            curriculum_pages=curriculum_matcher.pages
+            curriculum_pages=curriculum_matcher.all_page_ids()
         )
         synced = db.get_milestones(teacher_id)
         return {
@@ -55,7 +55,7 @@ async def initialize_milestones(teacher_id: str):
     # Generate from curriculum
     count = db.generate_milestones_from_curriculum(
         teacher_id=teacher_id,
-        curriculum_pages=curriculum_matcher.pages
+        curriculum_pages=curriculum_matcher.all_page_ids()
     )
 
     return {
@@ -73,7 +73,7 @@ async def sync_milestones(teacher_id: str):
     db = get_milestone_db()
     result = db.sync_milestones_with_curriculum(
         teacher_id=teacher_id,
-        curriculum_pages=curriculum_matcher.pages
+        curriculum_pages=curriculum_matcher.all_page_ids()
     )
 
     return {

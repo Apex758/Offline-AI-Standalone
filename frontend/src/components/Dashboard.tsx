@@ -1509,12 +1509,42 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         return <CurriculumTracker tabId={tab.id} savedData={tab.data} onDataChange={onDataChange} />;
       case 'chat':
         return (
-          <Chat 
-            tabId={tab.id} 
-            savedData={tab.data} 
-            onDataChange={onDataChange} 
+          <Chat
+            tabId={tab.id}
+            savedData={tab.data}
+            onDataChange={onDataChange}
             onTitleChange={onTitleChange}
             onPanelClick={() => setSidebarOpen(false)}
+            onOpenCurriculumTab={(route: string) => {
+              const existingCurriculumTab = tabs.find(t => t.type === 'curriculum' && t.active);
+              if (existingCurriculumTab) {
+                updateTabData(existingCurriculumTab.id, { currentPath: route });
+                setActiveTabId(existingCurriculumTab.id);
+              } else {
+                const anyCurriculumTab = tabs.find(t => t.type === 'curriculum');
+                if (anyCurriculumTab) {
+                  setTabs(prev => prev.map(t => ({
+                    ...t,
+                    active: t.id === anyCurriculumTab.id
+                  })));
+                  updateTabData(anyCurriculumTab.id, { currentPath: route });
+                  setActiveTabId(anyCurriculumTab.id);
+                } else {
+                  const curriculumTool = tools.find(t => t.type === 'curriculum');
+                  if (curriculumTool) {
+                    const newTab: Tab = {
+                      id: `tab-${Date.now()}`,
+                      title: curriculumTool.name,
+                      type: 'curriculum',
+                      active: true,
+                      data: { currentPath: route }
+                    };
+                    setTabs(prev => [...prev.map(t => ({ ...t, active: false })), newTab]);
+                    setActiveTabId(newTab.id);
+                  }
+                }
+              }
+            }}
           />
         );
       case 'curriculum':

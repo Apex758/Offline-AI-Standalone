@@ -773,7 +773,8 @@ async def websocket_chat(websocket: WebSocket):
                 system_prompt += profile_context
 
             # Curriculum matching: find related curriculum based on user message + profile
-            if curriculum_matcher and profile_context:
+            # Skip for short/casual messages (greetings, short phrases) to avoid false matches
+            if curriculum_matcher and profile_context and len(user_message.split()) >= 4:
                 try:
                     # Extract grade/subject from profile for filtering
                     chat_grade = ""

@@ -100,6 +100,7 @@ interface ChatProps {
   onDataChange: (data: { messages: Message[]; streamingMessage: string }) => void;
   onTitleChange?: (title: string) => void;
   onPanelClick?: () => void;
+  onOpenCurriculumTab?: (route: string) => void;
 }
 
 interface ChatHistory {
@@ -167,7 +168,7 @@ const shouldSuggestThinking = (message: string): boolean => {
   return THINKING_PATTERNS.some(pattern => pattern.test(message));
 };
 
-const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick }) => {
+const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChange, onPanelClick, onOpenCurriculumTab }) => {
   // DEBUG logging removed to prevent render storm spam
   // LocalStorage key for this chat tab
   const LOCAL_STORAGE_KEY = `chat_state_${tabId}`;
@@ -712,6 +713,9 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   const handleSend = () => {
     if (!input.trim() || loading || generatingPlan || executingPlan) return;
+
+    // Clear stale curriculum suggestions from previous message
+    setCurriculumSuggestions([]);
 
     const text = input.trim();
     const userMessage: Message = {
@@ -1461,6 +1465,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           <div className="px-4 pb-2">
             <CurriculumReferences
               references={curriculumSuggestions}
+              onOpenCurriculum={onOpenCurriculumTab}
               heading="Curriculum Suggestions"
               description="These curriculum activities are suggested based on your conversation. Click to view more."
               className="mb-4"
