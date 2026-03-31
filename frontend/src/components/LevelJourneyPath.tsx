@@ -1,8 +1,9 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import LockIconData from '@hugeicons/core-free-icons/LockIcon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import ArrowDownIconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
 import type { TeacherRank } from '../types/achievement';
 
 // Mirror of backend RANKS for step calculation
@@ -96,6 +97,16 @@ interface LevelJourneyPathProps {
 
 export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJourneyPathProps) {
   const currentLevel = rank?.level ?? 1;
+  const [levelsOpen, setLevelsOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelHeight, setPanelHeight] = useState(0);
+
+  // Measure panel content height for smooth animation
+  useEffect(() => {
+    if (panelRef.current) {
+      setPanelHeight(panelRef.current.scrollHeight);
+    }
+  }, [levelsOpen]);
 
   // Load profile image from localStorage (same pattern as Dashboard/Settings)
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -246,19 +257,161 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
           : '0 8px 32px rgba(0,0,0,0.08)',
       }}
     >
-      {/* Header */}
+      {/* Header — clickable to toggle levels panel */}
       <div
-        className="px-4 py-3 text-center"
+        className="px-4 py-3 text-center cursor-pointer select-none transition-colors duration-150"
+        onClick={() => setLevelsOpen(o => !o)}
         style={{
           background: `linear-gradient(135deg, ${tabColor}22, ${tabColor}11)`,
           borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
         }}
       >
-        <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: tabColor }}>
-          Level {currentLevel} Journey
+        <div className="flex items-center justify-center gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: tabColor }}>
+            Level {currentLevel} Journey
+          </span>
+          <HugeiconsIcon
+            icon={ArrowDownIconData}
+            size={12}
+            style={{
+              color: tabColor,
+              transform: levelsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+            }}
+          />
         </div>
         <div className="text-[10px] mt-0.5" style={{ color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)' }}>
           {completedSteps}/{totalSteps} steps to <span className="font-semibold">{nextTitle}</span>
+        </div>
+      </div>
+
+      {/* All Levels dropdown panel */}
+      <div
+        style={{
+          maxHeight: levelsOpen ? panelHeight + 32 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      >
+        <div
+          ref={panelRef}
+          className="px-4 py-3 space-y-1"
+          style={{
+            borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+            background: dark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+          }}
+        >
+          {RANKS.map((r, i) => {
+            const isCurrentLevel = r.level === currentLevel;
+            const isCompleted = r.level < currentLevel;
+            const isLocked = r.level > currentLevel;
+            const nextRank = RANKS[i + 1];
+            const stepsInSegment = nextRank ? nextRank.required - r.required : 0;
+            const stepsCompleted = isCurrentLevel
+              ? Math.min(earnedCount - r.required, stepsInSegment)
+              : isCompleted ? stepsInSegment : 0;
+            const progressPct = stepsInSegment > 0 ? Math.round((stepsCompleted / stepsInSegment) * 100) : (isCompleted ? 100 : 0);
+
+            return (
+              <div
+                key={r.level}
+                className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200"
+                style={{
+                  background: isCurrentLevel
+                    ? `linear-gradient(135deg, ${tabColor}18, ${tabColor}08)`
+                    : 'transparent',
+                  border: isCurrentLevel
+                    ? `1px solid ${tabColor}35`
+                    : '1px solid transparent',
+                  opacity: isLocked ? 0.45 : 1,
+                }}
+              >
+                {/* Level indicator circle */}
+                <div
+                  className="flex items-center justify-center rounded-full shrink-0"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    background: isCompleted
+                      ? tabColor
+                      : isCurrentLevel
+                        ? `${tabColor}30`
+                        : dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+                    border: isCurrentLevel ? `2px solid ${tabColor}` : 'none',
+                  }}
+                >
+                  {isCompleted ? (
+                    <HugeiconsIcon icon={Tick01IconData} size={13} style={{ color: '#fff' }} />
+                  ) : isLocked ? (
+                    <HugeiconsIcon icon={LockIconData} size={12} style={{ color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }} />
+                  ) : (
+                    <span className="text-[10px] font-bold" style={{ color: tabColor }}>{r.level}</span>
+                  )}
+                </div>
+
+                {/* Level info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-[11px] font-bold truncate"
+                      style={{
+                        color: isCurrentLevel
+                          ? tabColor
+                          : isCompleted
+                            ? (dark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')
+                            : (dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)'),
+                      }}
+                    >
+                      {r.title}
+                    </span>
+                    {isCurrentLevel && (
+                      <span
+                        className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                        style={{
+                          background: `${tabColor}25`,
+                          color: tabColor,
+                          letterSpacing: '0.08em',
+                        }}
+                      >
+                        You are here
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress bar for current and completed levels */}
+                  {(isCurrentLevel || isCompleted) && stepsInSegment > 0 && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <div
+                        className="flex-1 h-1 rounded-full overflow-hidden"
+                        style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}
+                      >
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${progressPct}%`,
+                            background: isCompleted ? tabColor : `linear-gradient(90deg, ${tabColor}, ${tabColor}aa)`,
+                          }}
+                        />
+                      </div>
+                      <span
+                        className="text-[9px] font-semibold shrink-0"
+                        style={{ color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)' }}
+                      >
+                        {isCompleted ? stepsInSegment : stepsCompleted}/{stepsInSegment}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Requirement info for locked levels */}
+                  {isLocked && (
+                    <div className="text-[9px] mt-0.5" style={{ color: dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)' }}>
+                      {r.required} achievements needed
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
