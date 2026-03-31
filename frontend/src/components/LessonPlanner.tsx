@@ -259,6 +259,11 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
   // TTS for reading lesson plans aloud
   const tts = useTTS();
 
+  // Preload TTS voice model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/tts/preload').catch(() => {});
+  }, []);
+
   // WebSocketContext API and streaming state logic
   const ENDPOINT = '/ws/lesson-plan';
   const { getConnection, getStreamingContent, getIsStreaming, clearStreaming, subscribe } = useWebSocket();

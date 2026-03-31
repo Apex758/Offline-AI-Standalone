@@ -6271,6 +6271,29 @@ async def text_to_speech(request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+@app.post("/api/tts/preload")
+async def preload_tts():
+    """Preload the TTS voice model in the background.
+
+    This triggers lazy loading of the voice model when a user opens
+    a tab with speech options, so audio is ready by the time they
+    click Read Aloud.
+    """
+    try:
+        from tts_service import get_tts_service
+        tts = get_tts_service()
+        if tts.is_loaded:
+            return {"status": "loaded"}
+        logger.info("Preloading TTS voice model...")
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, tts._ensure_loaded)
+        logger.info("TTS voice model preloaded successfully")
+        return {"status": "loaded"}
+    except Exception as e:
+        logger.error(f"Error preloading TTS model: {e}")
+        return JSONResponse(status_code=500, content={"status": "error", "error": str(e)})
+
+
 @app.get("/api/tts/status")
 async def tts_status():
     """Check if TTS voice model is loaded and ready."""

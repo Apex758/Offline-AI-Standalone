@@ -74,6 +74,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   const ttsModeRef = useRef(ttsMode);
   useEffect(() => { ttsModeRef.current = ttsMode; }, [ttsMode]);
 
+  // Preload TTS voice model in background when tutorial opens
+  useEffect(() => {
+    fetch('http://localhost:8000/api/tts/preload', { method: 'POST' }).catch(() => {});
+  }, []);
+
   const currentStepRef = useRef(currentStep);
   useEffect(() => { currentStepRef.current = currentStep; }, [currentStep]);
 

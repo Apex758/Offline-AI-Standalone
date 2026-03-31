@@ -22,6 +22,12 @@ import Image01IconData from '@hugeicons/core-free-icons/Image01Icon';
 import Upload01IconData from '@hugeicons/core-free-icons/Upload01Icon';
 import ReloadIconData from '@hugeicons/core-free-icons/ReloadIcon';
 import BrainIconData from '@hugeicons/core-free-icons/BrainIcon';
+import ComputerIconData from '@hugeicons/core-free-icons/ComputerIcon';
+import Layers01IconData from '@hugeicons/core-free-icons/Layers01Icon';
+import BookBookmark01IconData from '@hugeicons/core-free-icons/BookBookmark01Icon';
+import CheckListIconData from '@hugeicons/core-free-icons/CheckListIcon';
+import FileSpreadsheetIconData from '@hugeicons/core-free-icons/FileSpreadsheetIcon';
+import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrollIcon';
 
 const IconW: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -51,17 +57,22 @@ const ImageIcon: React.FC<{ className?: string; style?: React.CSSProperties }> =
 const UploadIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Upload01IconData} {...p} />;
 const RefreshIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ReloadIconData} {...p} />;
 const BrainIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BrainIconData} {...p} />;
+const ComputerIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={ComputerIconData} {...p} />;
+const LayersIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={Layers01IconData} {...p} />;
+const BookMarkIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={BookBookmark01IconData} {...p} />;
+const CheckListIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={CheckListIconData} {...p} />;
+const SpreadsheetIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={FileSpreadsheetIconData} {...p} />;
+const GraduationIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = (p) => <IconW icon={GraduationScrollIconData} {...p} />;
 import { Message, FileOperationPlan } from '../types';
 import axios from 'axios';
 import { useWebSocket } from '../contexts/WebSocketContext';
-import { CurriculumReference } from './CurriculumReferences';
-import { CurriculumReferences } from './CurriculumReferences';
 import { HeartbeatLoader } from './ui/HeartbeatLoader';
 import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
-import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP } from '../data/teacherConstants';
+import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP, GRADE_LEVELS } from '../data/teacherConstants';
+import curriculumTree from '../data/curriculumTree.json';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
 const fileAPI = {
@@ -124,6 +135,17 @@ interface AttachedFile {
 }
 
 type RightPanel = 'none' | 'history' | 'files';
+type FilesTab = 'on-pc' | 'in-app' | 'curriculum';
+
+interface InAppResource {
+  id: string;
+  title: string;
+  timestamp: string;
+  type: string;
+  generatedPlan?: string;
+  generatedQuiz?: string;
+  generatedRubric?: string;
+}
 
 // ── Thinking Block Component (collapsible reasoning display) ──
 const ThinkingBlock: React.FC<{ content: string; isStreaming?: boolean }> = ({ content, isStreaming }) => {
@@ -179,11 +201,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [titleSet, setTitleSet] = useState(false);
   const [generatingTitle, setGeneratingTitle] = useState(false);
-  const [curriculumSuggestions, setCurriculumSuggestions] = useState<CurriculumReference[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
 
   // Files panel state
+  const [filesTab, setFilesTab] = useState<FilesTab>('on-pc');
   const { settings, updateSettings } = useSettings();
   const { hasVision, supportsThinking } = useCapabilities();
   const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
@@ -196,6 +218,43 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [refreshingFiles, setRefreshingFiles] = useState(false);
   const [attachingFile, setAttachingFile] = useState<string | null>(null);
   const fileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Resizable right panel
+  const [panelWidth, setPanelWidth] = useState(320);
+  const isResizing = useRef(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing.current) return;
+      e.preventDefault();
+      const containerRight = document.body.clientWidth;
+      const newWidth = Math.min(Math.max(containerRight - e.clientX, 260), 700);
+      setPanelWidth(newWidth);
+    };
+    const handleMouseUp = () => {
+      if (isResizing.current) {
+        isResizing.current = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  // In-App resources state
+  const [inAppResources, setInAppResources] = useState<InAppResource[]>([]);
+  const [inAppLoading, setInAppLoading] = useState(false);
+  const [inAppSearch, setInAppSearch] = useState('');
+  const [inAppFilter, setInAppFilter] = useState('all');
+
+  // Curriculum tab state
+  const [expandedCurriculumNodes, setExpandedCurriculumNodes] = useState<Set<string>>(new Set());
 
   // Drag-and-drop state
   const [isDragOver, setIsDragOver] = useState(false);
@@ -245,6 +304,11 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
       setSpeakingMessageId(null);
     }
   }, [tts.isSpeaking]);
+
+  // Preload TTS voice model in background when tab opens
+  useEffect(() => {
+    axios.post('http://localhost:8000/api/tts/preload').catch(() => {});
+  }, []);
 
   // Auto-dismiss thinking suggestion after 10 seconds
   useEffect(() => {
@@ -471,11 +535,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   // Subscribe to streaming updates for re-render
   useEffect(() => {
     const unsubscribe = subscribe(tabId, ENDPOINT, () => {
-      // Check for curriculum refs from WebSocket custom data
-      const refs = getCustomData(tabId, ENDPOINT, 'curriculumRefs');
-      if (refs && refs.length > 0) {
-        setCurriculumSuggestions(refs);
-      }
+      // Re-render on streaming updates
     });
     return unsubscribe;
   }, [tabId, subscribe, getCustomData]);
@@ -714,9 +774,6 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const handleSend = () => {
     if (!input.trim() || loading || generatingPlan || executingPlan) return;
 
-    // Clear stale curriculum suggestions from previous message
-    setCurriculumSuggestions([]);
-
     const text = input.trim();
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -807,11 +864,24 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
     };
     const fileAttachments = attachedFiles.filter(f => !f.isDirectory);
     if (fileAttachments.length > 0) {
-      payload.reference_files = fileAttachments.map(f => ({
-        name: f.name,
-        content: f.fullContent,
-        ...(f.isImage ? { is_image: true, base64: f.base64Data } : {}),
-      }));
+      payload.reference_files = fileAttachments
+        .filter(f => !f.path.startsWith('resource:') && !f.path.startsWith('curriculum:'))
+        .map(f => ({
+          name: f.name,
+          content: f.fullContent,
+          ...(f.isImage ? { is_image: true, base64: f.base64Data } : {}),
+        }));
+      // Include resource and curriculum attachments as additional context
+      const contextAttachments = fileAttachments.filter(f => f.path.startsWith('resource:') || f.path.startsWith('curriculum:'));
+      if (contextAttachments.length > 0) {
+        payload.context_files = contextAttachments.map(f => ({
+          name: f.name,
+          content: f.fullContent,
+          type: f.path.startsWith('resource:') ? 'resource' : 'curriculum',
+        }));
+      }
+      // Clean up empty arrays
+      if (payload.reference_files.length === 0) delete payload.reference_files;
     }
 
     // Show thinking indicator
@@ -914,6 +984,142 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         console.error('Error searching files:', err);
       }
     }, 300);
+  };
+
+  // ── In-App resources loading ──
+  const loadInAppResources = useCallback(async () => {
+    setInAppLoading(true);
+    try {
+      const [lessonPlans, quizzes, worksheets, rubrics, kindergarten, multigrade, crossCurricular, images, presentations] = await Promise.all([
+        axios.get('http://localhost:8000/api/lesson-plan-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/quiz-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/worksheet-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/rubric-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/kindergarten-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/multigrade-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/cross-curricular-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/images-history').catch(() => ({ data: [] })),
+        axios.get('http://localhost:8000/api/presentation-history').catch(() => ({ data: [] }))
+      ]);
+      const all: InAppResource[] = [
+        ...lessonPlans.data.map((r: any) => ({ ...r, type: 'lesson' })),
+        ...quizzes.data.map((r: any) => ({ ...r, type: 'quiz' })),
+        ...worksheets.data.map((r: any) => ({ ...r, type: 'worksheet' })),
+        ...rubrics.data.map((r: any) => ({ ...r, type: 'rubric' })),
+        ...kindergarten.data.map((r: any) => ({ ...r, type: 'kindergarten' })),
+        ...multigrade.data.map((r: any) => ({ ...r, type: 'multigrade' })),
+        ...crossCurricular.data.map((r: any) => ({ ...r, type: 'cross-curricular' })),
+        ...images.data.map((r: any) => ({ ...r, type: 'images' })),
+        ...presentations.data.map((r: any) => ({ ...r, type: 'presentation' }))
+      ];
+      setInAppResources(all);
+    } catch (err) {
+      console.error('Failed to load in-app resources:', err);
+    } finally {
+      setInAppLoading(false);
+    }
+  }, []);
+
+  // Load resources when switching to in-app tab
+  useEffect(() => {
+    if (filesTab === 'in-app' && inAppResources.length === 0 && !inAppLoading) {
+      loadInAppResources();
+    }
+  }, [filesTab]);
+
+  // ── Curriculum tree helpers ──
+  const getFilteredCurriculumTree = useCallback(() => {
+    const tree = curriculumTree as Record<string, any>;
+    const mapping = settings.profile.gradeSubjects || {};
+    const teacherGrades = getTeacherGrades(mapping);
+    const teacherSubjects = getTeacherSubjects(mapping);
+    const filterEnabled = settings.profile.filterContentByProfile;
+
+    // Build filtered structure: { gradeKey: { subjectKey: { activities... } } }
+    const result: { gradeKey: string; gradeLabel: string; subjects: { subjectKey: string; subjectLabel: string; activities: { name: string; route: string }[] }[] }[] = [];
+
+    for (const [gradeKey, gradeData] of Object.entries(tree)) {
+      // Extract grade number from key like "grade1-subjects" or "gradek-subjects"
+      const gradeMatch = gradeKey.match(/grade(\w+)-subjects/);
+      if (!gradeMatch) continue;
+      const gradeValue = gradeMatch[1];
+
+      // Filter by teacher's grades if filtering enabled
+      if (filterEnabled && teacherGrades.length > 0 && !teacherGrades.includes(gradeValue)) continue;
+
+      const gradeLabel = GRADE_LABEL_MAP[gradeValue] || `Grade ${gradeValue}`;
+      const activities = (gradeData as any)?.activities;
+      if (!activities) continue;
+
+      const subjects: { subjectKey: string; subjectLabel: string; activities: { name: string; route: string }[] }[] = [];
+
+      for (const [subjectKey, subjectData] of Object.entries(activities)) {
+        // Normalize subject key to label (e.g. "language-arts" -> "Language Arts")
+        const subjectLabel = subjectKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+        // Filter by teacher's subjects if filtering enabled
+        if (filterEnabled && teacherSubjects.length > 0 && !teacherSubjects.includes(subjectLabel)) continue;
+
+        const activityList: { name: string; route: string }[] = [];
+        // Collect page.tsx entries from subjectData and its children
+        const collectActivities = (data: any, depth: number = 0) => {
+          if (!data || typeof data !== 'object') return;
+          for (const [key, val] of Object.entries(data)) {
+            if (key === 'loading.tsx' || key === 'page.tsx') {
+              if (key === 'page.tsx' && (val as any)?.route && depth > 0) {
+                activityList.push({ name: (val as any).name || key, route: (val as any).route });
+              }
+              continue;
+            }
+            // Check if this is a nested activity folder
+            if (typeof val === 'object' && val !== null) {
+              const pageTsx = (val as any)['page.tsx'];
+              if (pageTsx?.route) {
+                activityList.push({ name: pageTsx.name || key, route: pageTsx.route });
+              }
+              collectActivities(val, depth + 1);
+            }
+          }
+        };
+        collectActivities(subjectData, 0);
+
+        if (activityList.length > 0) {
+          subjects.push({ subjectKey, subjectLabel, activities: activityList });
+        }
+      }
+
+      if (subjects.length > 0) {
+        result.push({ gradeKey, gradeLabel, subjects });
+      }
+    }
+
+    return result;
+  }, [settings.profile.gradeSubjects, settings.profile.filterContentByProfile]);
+
+  const toggleCurriculumNode = (nodeId: string) => {
+    setExpandedCurriculumNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) next.delete(nodeId);
+      else next.add(nodeId);
+      return next;
+    });
+  };
+
+  // ── Resource type helpers for In App tab ──
+  const RESOURCE_TYPE_MAP: Record<string, { label: string; color: string }> = {
+    'lesson': { label: 'Lesson', color: 'text-blue-600' },
+    'quiz': { label: 'Quiz', color: 'text-green-600' },
+    'worksheet': { label: 'Worksheet', color: 'text-purple-600' },
+    'rubric': { label: 'Rubric', color: 'text-orange-600' },
+    'kindergarten': { label: 'Kindergarten', color: 'text-pink-600' },
+    'multigrade': { label: 'Multigrade', color: 'text-teal-600' },
+    'cross-curricular': { label: 'Cross-Curr.', color: 'text-indigo-600' },
+    'images': { label: 'Image', color: 'text-rose-600' },
+    'presentation': { label: 'Presentation', color: 'text-cyan-600' },
+  };
+
+  const getResourceContent = (r: InAppResource): string => {
+    return r.generatedPlan || r.generatedQuiz || r.generatedRubric || r.title || '';
   };
 
   const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
@@ -1460,50 +1666,63 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
           )}
         </div>
 
-        {/* Curriculum Suggestions Section */}
-        {curriculumSuggestions && curriculumSuggestions.length > 0 && (
-          <div className="px-4 pb-2">
-            <CurriculumReferences
-              references={curriculumSuggestions}
-              onOpenCurriculum={onOpenCurriculumTab}
-              heading="Curriculum Suggestions"
-              description="These curriculum activities are suggested based on your conversation. Click to view more."
-              className="mb-4"
-            />
-          </div>
-        )}
-
         <div className="border-t border-theme p-4">
           {/* Attached file chips */}
           {(attachedFiles.length > 0 || pendingDropFiles.length > 0 || attachingFile) && (
             <div className="flex flex-wrap gap-2 mb-3">
-              {attachedFiles.map(file => (
-                <div
-                  key={file.path}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm group ${
-                    file.isDirectory
-                      ? 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700'
-                      : 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
-                  }`}
-                  title={file.previewText}
-                >
-                  {file.isDirectory ? (
-                    <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
-                  ) : (
-                    <FileIcon className={`w-3.5 h-3.5 ${getFileTypeColor(file.extension)}`} />
-                  )}
-                  <span className={`max-w-[200px] truncate ${file.isDirectory ? 'text-amber-800 dark:text-amber-200' : 'text-blue-800 dark:text-blue-200'}`}>
-                    {file.name}{file.isDirectory ? ` (${file.fileCount} files)` : ''}
-                  </span>
-                  <button
-                    onClick={() => detachFile(file.path)}
-                    className={`ml-0.5 p-0.5 rounded transition ${file.isDirectory ? 'hover:bg-amber-200 dark:hover:bg-amber-800' : 'hover:bg-blue-200 dark:hover:bg-blue-800'}`}
-                    title="Remove"
+              {attachedFiles.map(file => {
+                const isResource = file.path.startsWith('resource:');
+                const isCurriculum = file.path.startsWith('curriculum:');
+                const chipColor = isCurriculum
+                  ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-700'
+                  : isResource
+                  ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700'
+                  : file.isDirectory
+                  ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700'
+                  : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700';
+                const textColor = isCurriculum
+                  ? 'text-purple-800 dark:text-purple-200'
+                  : isResource
+                  ? 'text-green-800 dark:text-green-200'
+                  : file.isDirectory
+                  ? 'text-amber-800 dark:text-amber-200'
+                  : 'text-blue-800 dark:text-blue-200';
+                const iconColor = isCurriculum ? 'text-purple-500' : isResource ? 'text-green-500' : file.isDirectory ? 'text-amber-500' : '';
+                const hoverBg = isCurriculum
+                  ? 'hover:bg-purple-200 dark:hover:bg-purple-800'
+                  : isResource
+                  ? 'hover:bg-green-200 dark:hover:bg-green-800'
+                  : file.isDirectory
+                  ? 'hover:bg-amber-200 dark:hover:bg-amber-800'
+                  : 'hover:bg-blue-200 dark:hover:bg-blue-800';
+                return (
+                  <div
+                    key={file.path}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm group border ${chipColor}`}
+                    title={file.previewText}
                   >
-                    <X className={`w-3 h-3 ${file.isDirectory ? 'text-amber-500' : 'text-blue-500'}`} />
-                  </button>
-                </div>
-              ))}
+                    {isCurriculum ? (
+                      <BookMarkIcon className={`w-3.5 h-3.5 ${iconColor}`} />
+                    ) : isResource ? (
+                      <LayersIcon className={`w-3.5 h-3.5 ${iconColor}`} />
+                    ) : file.isDirectory ? (
+                      <FolderOpen className={`w-3.5 h-3.5 ${iconColor}`} />
+                    ) : (
+                      <FileIcon className={`w-3.5 h-3.5 ${getFileTypeColor(file.extension)}`} />
+                    )}
+                    <span className={`max-w-[200px] truncate ${textColor}`}>
+                      {file.name}{file.isDirectory ? ` (${file.fileCount} files)` : ''}
+                    </span>
+                    <button
+                      onClick={() => detachFile(file.path)}
+                      className={`ml-0.5 p-0.5 rounded transition ${hoverBg}`}
+                      title="Remove"
+                    >
+                      <X className={`w-3 h-3 ${iconColor || 'text-blue-500'}`} />
+                    </button>
+                  </div>
+                );
+              })}
               {pendingDropFiles.map(name => (
                 <div key={`pending-${name}`} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 border-dashed text-sm animate-pulse">
                   <span className="block w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
@@ -1590,12 +1809,26 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
       {/* ── Right sidebar: History or Files ── */}
       <div
-        className={`border-l border-theme bg-theme-secondary transition-all duration-300 overflow-hidden ${
-          rightPanel !== 'none' ? 'w-80' : 'w-0'
+        ref={panelRef}
+        className={`border-l border-theme bg-theme-secondary overflow-hidden relative ${
+          rightPanel === 'none' ? 'w-0' : ''
         }`}
+        style={rightPanel !== 'none' ? { width: panelWidth, transition: 'none' } : { width: 0, transition: 'width 0.3s' }}
         onClick={(e) => e.stopPropagation()}
         data-tutorial="chat-sidebar"
       >
+        {/* Drag handle to resize panel */}
+        {rightPanel !== 'none' && (
+          <div
+            onMouseDown={(e) => {
+              e.preventDefault();
+              isResizing.current = true;
+              document.body.style.cursor = 'col-resize';
+              document.body.style.userSelect = 'none';
+            }}
+            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-10 hover:bg-blue-400/40 active:bg-blue-500/50 transition-colors"
+          />
+        )}
         {/* Chat History Panel */}
         {rightPanel === 'history' && (
           <div className="h-full flex flex-col p-4">
@@ -1654,60 +1887,64 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
         {/* Files Panel */}
         {rightPanel === 'files' && (
           <div className="h-full flex flex-col">
-            {/* Files header */}
+            {/* Panel header */}
             <div className="flex items-center justify-between p-4 pb-2">
               <h3 className="text-lg font-semibold text-theme-heading flex items-center gap-2">
                 <FolderOpen className="w-5 h-5 text-blue-500" />
                 My Files
               </h3>
               <div className="flex items-center gap-1">
-                <button
-                  disabled={refreshingFiles}
-                  onClick={async () => {
-                    setRefreshingFiles(true);
-                    try {
-                      // 1. Re-fetch the root allowed folders list
-                      const freshAllowed = await fileAPI.getAllowedFolders();
-                      setAllowedFolders(freshAllowed);
-
-                      // 2. Build set of all folders to refresh (root + expanded)
-                      const foldersToRefresh = new Set(expandedFolders);
-                      freshAllowed.forEach(f => foldersToRefresh.add(f));
-
-                      // 3. Fetch all folder contents in parallel
-                      const results = await Promise.all(
-                        [...foldersToRefresh].map(async (folder) => {
-                          try {
-                            const result = await fileAPI.browseFolder(folder);
-                            if (result?.items) return { folder, items: result.items };
-                          } catch {}
-                          return null;
-                        })
-                      );
-
-                      // 4. Update state, purging stale entries for removed folders
-                      setFolderContents(prev => {
-                        const next = { ...prev };
-                        for (const key of Object.keys(next)) {
-                          if (!freshAllowed.some(f => key.startsWith(f))) {
-                            delete next[key];
+                {filesTab === 'on-pc' && (
+                  <button
+                    disabled={refreshingFiles}
+                    onClick={async () => {
+                      setRefreshingFiles(true);
+                      try {
+                        const freshAllowed = await fileAPI.getAllowedFolders();
+                        setAllowedFolders(freshAllowed);
+                        const foldersToRefresh = new Set(expandedFolders);
+                        freshAllowed.forEach(f => foldersToRefresh.add(f));
+                        const results = await Promise.all(
+                          [...foldersToRefresh].map(async (folder) => {
+                            try {
+                              const result = await fileAPI.browseFolder(folder);
+                              if (result?.items) return { folder, items: result.items };
+                            } catch {}
+                            return null;
+                          })
+                        );
+                        setFolderContents(prev => {
+                          const next = { ...prev };
+                          for (const key of Object.keys(next)) {
+                            if (!freshAllowed.some(f => key.startsWith(f))) {
+                              delete next[key];
+                            }
                           }
-                        }
-                        for (const r of results) {
-                          if (r) next[r.folder] = r.items;
-                        }
-                        return next;
-                      });
-                    } catch (err) {
-                      console.error('Error refreshing files:', err);
-                    }
-                    setRefreshingFiles(false);
-                  }}
-                  className="p-1.5 rounded-lg hover:bg-theme-hover transition disabled:opacity-50"
-                  title="Refresh files"
-                >
-                  <RefreshIcon className={`w-4 h-4 text-theme-muted ${refreshingFiles ? 'animate-spin' : ''}`} />
-                </button>
+                          for (const r of results) {
+                            if (r) next[r.folder] = r.items;
+                          }
+                          return next;
+                        });
+                      } catch (err) {
+                        console.error('Error refreshing files:', err);
+                      }
+                      setRefreshingFiles(false);
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-theme-hover transition disabled:opacity-50"
+                    title="Refresh files"
+                  >
+                    <RefreshIcon className={`w-4 h-4 text-theme-muted ${refreshingFiles ? 'animate-spin' : ''}`} />
+                  </button>
+                )}
+                {filesTab === 'in-app' && (
+                  <button
+                    onClick={() => loadInAppResources()}
+                    className="p-1.5 rounded-lg hover:bg-theme-hover transition"
+                    title="Refresh resources"
+                  >
+                    <RefreshIcon className={`w-4 h-4 text-theme-muted ${inAppLoading ? 'animate-spin' : ''}`} />
+                  </button>
+                )}
                 <button
                   onClick={() => setRightPanel('none')}
                   className="p-1.5 rounded-lg hover:bg-theme-hover transition"
@@ -1718,35 +1955,60 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               </div>
             </div>
 
-            {/* Hint */}
-            <div className="px-4 pb-2">
-              <p className="text-[11px] text-theme-hint">Toggle files to include them as context in your next message.</p>
+            {/* Tab bar */}
+            <div className="flex border-b border-theme mx-4 mb-2">
+              {([
+                { key: 'on-pc' as FilesTab, label: 'On PC', icon: <ComputerIcon className="w-3.5 h-3.5" /> },
+                { key: 'in-app' as FilesTab, label: 'In App', icon: <LayersIcon className="w-3.5 h-3.5" /> },
+                { key: 'curriculum' as FilesTab, label: 'Curriculum', icon: <BookMarkIcon className="w-3.5 h-3.5" /> },
+              ]).map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilesTab(tab.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition ${
+                    filesTab === tab.key
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-theme-muted hover:text-theme-heading hover:border-gray-300'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {/* Search bar */}
-            <div className="px-4 pb-3">
-              <div className="relative">
-                <SearchIcon className="w-4 h-4 text-theme-hint absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={fileSearchQuery}
-                  onChange={(e) => handleFileSearch(e.target.value)}
-                  placeholder="Search files..."
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-theme-strong bg-theme-surface text-theme-heading placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                />
-                {fileSearchQuery && (
-                  <button
-                    onClick={() => { setFileSearchQuery(''); setFileSearchResults(null); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-theme-hover"
-                  >
-                    <X className="w-3.5 h-3.5 text-theme-hint" />
-                  </button>
-                )}
-              </div>
-            </div>
+            {/* ── On PC Tab ── */}
+            {filesTab === 'on-pc' && (
+              <>
+                {/* Hint */}
+                <div className="px-4 pb-2">
+                  <p className="text-[11px] text-theme-hint">Toggle files to include them as context in your next message.</p>
+                </div>
 
-            {/* File listing */}
-            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
+                {/* Search bar */}
+                <div className="px-4 pb-3">
+                  <div className="relative">
+                    <SearchIcon className="w-4 h-4 text-theme-hint absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={fileSearchQuery}
+                      onChange={(e) => handleFileSearch(e.target.value)}
+                      placeholder="Search files..."
+                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-theme-strong bg-theme-surface text-theme-heading placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                    {fileSearchQuery && (
+                      <button
+                        onClick={() => { setFileSearchQuery(''); setFileSearchResults(null); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-theme-hover"
+                      >
+                        <X className="w-3.5 h-3.5 text-theme-hint" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* File listing */}
+                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
               {/* Search results mode */}
               {fileSearchResults !== null ? (
                 <>
@@ -1953,6 +2215,251 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
                 </>
               )}
             </div>
+              </>
+            )}
+
+            {/* ── In App Tab ── */}
+            {filesTab === 'in-app' && (
+              <>
+                {/* Hint */}
+                <div className="px-4 pb-2">
+                  <p className="text-[11px] text-theme-hint">Select resources to include as context in your next message.</p>
+                </div>
+
+                {/* Search & filter bar */}
+                <div className="px-4 pb-3 space-y-2">
+                  <div className="relative">
+                    <SearchIcon className="w-4 h-4 text-theme-hint absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={inAppSearch}
+                      onChange={(e) => setInAppSearch(e.target.value)}
+                      placeholder="Search resources..."
+                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-theme-strong bg-theme-surface text-theme-heading placeholder:text-theme-hint focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                    {inAppSearch && (
+                      <button
+                        onClick={() => setInAppSearch('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-theme-hover"
+                      >
+                        <X className="w-3.5 h-3.5 text-theme-hint" />
+                      </button>
+                    )}
+                  </div>
+                  {/* Type filter pills */}
+                  <div className="flex flex-wrap gap-1">
+                    {['all', 'lesson', 'quiz', 'worksheet', 'rubric', 'kindergarten', 'multigrade', 'cross-curricular', 'images', 'presentation'].map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setInAppFilter(type)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition ${
+                          inAppFilter === type
+                            ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700'
+                            : 'bg-theme-subtle text-theme-muted hover:bg-theme-hover border border-transparent'
+                        }`}
+                      >
+                        {type === 'all' ? 'All' : RESOURCE_TYPE_MAP[type]?.label || type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Resource listing */}
+                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
+                  {inAppLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="ml-2 text-sm text-theme-muted">Loading resources...</span>
+                    </div>
+                  ) : (() => {
+                    const filtered = inAppResources.filter(r => {
+                      if (inAppFilter !== 'all' && r.type !== inAppFilter) return false;
+                      if (inAppSearch && !r.title.toLowerCase().includes(inAppSearch.toLowerCase())) return false;
+                      return true;
+                    }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="text-center text-theme-hint mt-8">
+                          <LayersIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">{inAppResources.length === 0 ? 'No resources yet' : 'No matching resources'}</p>
+                          <p className="text-xs mt-1">Resources you create will appear here</p>
+                        </div>
+                      );
+                    }
+
+                    return filtered.map(resource => {
+                      const isAttached = attachedFiles.some(f => f.path === `resource:${resource.id}`);
+                      const typeInfo = RESOURCE_TYPE_MAP[resource.type] || { label: resource.type, color: 'text-gray-600' };
+                      return (
+                        <div
+                          key={resource.id}
+                          onClick={() => {
+                            const resourcePath = `resource:${resource.id}`;
+                            if (isAttached) {
+                              setAttachedFiles(prev => prev.filter(f => f.path !== resourcePath));
+                            } else {
+                              const content = getResourceContent(resource);
+                              setAttachedFiles(prev => [...prev, {
+                                name: resource.title,
+                                path: resourcePath,
+                                extension: `.${resource.type}`,
+                                previewText: content.slice(0, 200),
+                                fullContent: content,
+                              }]);
+                            }
+                          }}
+                          className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition ${
+                            isAttached ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'hover:bg-theme-subtle'
+                          }`}
+                          title={resource.title}
+                        >
+                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition ${
+                            isAttached ? 'bg-green-600 border-green-600' : 'border-gray-300 dark:border-gray-600'
+                          }`}>
+                            {isAttached && <CheckIcon className="w-3 h-3 text-white" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-theme-heading truncate">{resource.title}</p>
+                            <p className="text-[10px] text-theme-hint">
+                              {new Date(resource.timestamp).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <span className={`text-[10px] font-medium flex-shrink-0 ${typeInfo.color}`}>
+                            {typeInfo.label}
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </>
+            )}
+
+            {/* ── Curriculum Tab ── */}
+            {filesTab === 'curriculum' && (
+              <>
+                {/* Hint */}
+                <div className="px-4 pb-2">
+                  <p className="text-[11px] text-theme-hint">Browse curriculum activities to attach as context.</p>
+                </div>
+
+                {/* Curriculum tree */}
+                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
+                  {(() => {
+                    const tree = getFilteredCurriculumTree();
+                    const mapping = settings.profile.gradeSubjects || {};
+                    const teacherGrades = getTeacherGrades(mapping);
+
+                    if (teacherGrades.length === 0) {
+                      return (
+                        <div className="text-center text-theme-hint mt-8">
+                          <GraduationIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">No grades configured</p>
+                          <p className="text-xs mt-1">Set up your teacher profile in Settings to see curriculum here</p>
+                        </div>
+                      );
+                    }
+
+                    if (tree.length === 0) {
+                      return (
+                        <div className="text-center text-theme-hint mt-8">
+                          <BookMarkIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">No curriculum found</p>
+                          <p className="text-xs mt-1">No activities match your grade/subject profile</p>
+                        </div>
+                      );
+                    }
+
+                    return tree.map(grade => {
+                      const gradeExpanded = expandedCurriculumNodes.has(grade.gradeKey);
+                      return (
+                        <div key={grade.gradeKey}>
+                          {/* Grade level */}
+                          <button
+                            onClick={() => toggleCurriculumNode(grade.gradeKey)}
+                            className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-theme-subtle transition text-left"
+                          >
+                            {gradeExpanded
+                              ? <ChevronDown className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                              : <ChevronRight className="w-3.5 h-3.5 text-theme-muted flex-shrink-0" />
+                            }
+                            <GraduationIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                            <span className="text-sm font-medium text-theme-heading">{grade.gradeLabel}</span>
+                            <span className="text-[10px] text-theme-hint ml-auto">{grade.subjects.reduce((n, s) => n + s.activities.length, 0)}</span>
+                          </button>
+
+                          {gradeExpanded && (
+                            <div className="ml-5 border-l border-theme-strong/20 pl-2 space-y-0.5">
+                              {grade.subjects.map(subject => {
+                                const subjectNodeId = `${grade.gradeKey}:${subject.subjectKey}`;
+                                const subjectExpanded = expandedCurriculumNodes.has(subjectNodeId);
+                                return (
+                                  <div key={subjectNodeId}>
+                                    {/* Subject */}
+                                    <button
+                                      onClick={() => toggleCurriculumNode(subjectNodeId)}
+                                      className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-theme-subtle transition text-left"
+                                    >
+                                      {subjectExpanded
+                                        ? <ChevronDown className="w-3 h-3 text-theme-muted flex-shrink-0" />
+                                        : <ChevronRight className="w-3 h-3 text-theme-muted flex-shrink-0" />
+                                      }
+                                      <BookMarkIcon className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                                      <span className="text-xs font-medium text-theme-heading">{subject.subjectLabel}</span>
+                                      <span className="text-[10px] text-theme-hint ml-auto">{subject.activities.length}</span>
+                                    </button>
+
+                                    {subjectExpanded && (
+                                      <div className="ml-4 border-l border-theme-strong/20 pl-2 space-y-0.5">
+                                        {subject.activities.map(activity => {
+                                          const activityPath = `curriculum:${activity.route}`;
+                                          const isAttached = attachedFiles.some(f => f.path === activityPath);
+                                          return (
+                                            <div
+                                              key={activity.route}
+                                              onClick={() => {
+                                                if (isAttached) {
+                                                  setAttachedFiles(prev => prev.filter(f => f.path !== activityPath));
+                                                } else {
+                                                  setAttachedFiles(prev => [...prev, {
+                                                    name: activity.name,
+                                                    path: activityPath,
+                                                    extension: '.curriculum',
+                                                    previewText: `Curriculum: ${grade.gradeLabel} > ${subject.subjectLabel} > ${activity.name}`,
+                                                    fullContent: `Curriculum Activity: ${activity.name}\nGrade: ${grade.gradeLabel}\nSubject: ${subject.subjectLabel}\nRoute: ${activity.route}`,
+                                                  }]);
+                                                }
+                                              }}
+                                              className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition ${
+                                                isAttached ? 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800' : 'hover:bg-theme-subtle'
+                                              }`}
+                                              title={`${grade.gradeLabel} > ${subject.subjectLabel} > ${activity.name}`}
+                                            >
+                                              <div className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition ${
+                                                isAttached ? 'bg-purple-600 border-purple-600' : 'border-gray-300 dark:border-gray-600'
+                                              }`}>
+                                                {isAttached && <CheckIcon className="w-2.5 h-2.5 text-white" />}
+                                              </div>
+                                              <FileIcon className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                                              <span className="text-xs text-theme-heading truncate flex-1">{activity.name}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </>
+            )}
 
             {/* Smart thinking suggestion */}
             {showThinkingSuggestion && supportsThinking && !settings.thinkingEnabled && (
