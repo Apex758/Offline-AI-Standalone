@@ -22,6 +22,9 @@ import AnalyticsIconData from '@hugeicons/core-free-icons/Analytics01Icon';
 import { useAchievementContext } from '../contexts/AchievementContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
+import TrophyDetailCard from './TrophyDetailCard';
+import TROPHY_IMAGES from '../assets/trophyImages';
+import { getTrophyType } from '../config/trophyMap';
 import LevelJourneyPath from './LevelJourneyPath';
 import type { AchievementDefinition, AchievementCategory, AchievementRarity, AchievementTier, NewlyEarnedAchievement } from '../types/achievement';
 
@@ -539,12 +542,25 @@ export default function Achievements({ tabId }: AchievementsProps) {
           </div>
         </div>
 
-        {/* View achievement modal */}
-        <AchievementUnlockModal
-          achievement={viewingAchievement}
-          onDismiss={() => setViewingAchievement(null)}
-          viewOnly
-        />
+        {/* View achievement detail — use TrophyDetailCard when image available, else fallback */}
+        {viewingAchievement && (() => {
+          const tType = getTrophyType(viewingAchievement.achievement_id);
+          const tSrc = tType ? TROPHY_IMAGES[tType] : undefined;
+          return tSrc ? (
+            <TrophyDetailCard
+              achievement={viewingAchievement}
+              trophyImageSrc={tSrc}
+              earnedAt={viewingAchievement.earned_at}
+              onClose={() => setViewingAchievement(null)}
+            />
+          ) : (
+            <AchievementUnlockModal
+              achievement={viewingAchievement}
+              onDismiss={() => setViewingAchievement(null)}
+              viewOnly
+            />
+          );
+        })()}
 
         {sortedDefinitions.length === 0 && (
           <div className="text-center py-12" style={{ color: 'var(--dash-text-sub)' }}>
