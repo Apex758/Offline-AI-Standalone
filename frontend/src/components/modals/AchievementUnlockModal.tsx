@@ -1,9 +1,98 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
-import type { NewlyEarnedAchievement, AchievementRarity } from '../../types/achievement';
+import type { NewlyEarnedAchievement, AchievementRarity, AchievementCategory } from '../../types/achievement';
+
+/* ─── Inspirational teaching quotes ─── */
+const TEACHING_QUOTES: string[] = [
+  '"Education is the most powerful weapon which you can use to change the world." — Nelson Mandela',
+  '"The art of teaching is the art of assisting discovery." — Mark Van Doren',
+  '"A teacher affects eternity; they can never tell where their influence stops." — Henry Adams',
+  '"Teaching is the greatest act of optimism." — Colleen Wilcox',
+  '"The best teachers are those who show you where to look but don\'t tell you what to see." — Alexandra K. Trenfor',
+  '"Education is not the filling of a pail, but the lighting of a fire." — W.B. Yeats',
+  '"Every child deserves a champion." — Rita Pierson',
+  '"What a teacher writes on the blackboard of life can never be erased." — Unknown',
+  '"Teachers plant the seeds of knowledge that grow forever." — Unknown',
+  '"The influence of a good teacher can never be erased." — Unknown',
+  '"To teach is to learn twice." — Joseph Joubert',
+  '"It takes a big heart to help shape little minds." — Unknown',
+  '"Teachers can change lives with just the right mix of chalk and challenges." — Joyce Meyer',
+  '"The dream begins with a teacher who believes in you." — Dan Rather',
+  '"Good teaching is one-quarter preparation and three-quarters theatre." — Gail Godwin',
+  '"Children are not things to be moulded, but people to be unfolded." — Jess Lair',
+  '"The task of the modern educator is not to cut down jungles, but to irrigate deserts." — C.S. Lewis',
+  '"In learning you will teach, and in teaching you will learn." — Phil Collins',
+  '"Teachers who love teaching teach children to love learning." — Unknown',
+  '"The beautiful thing about learning is that nobody can take it away from you." — B.B. King',
+];
+
+const CATEGORY_MESSAGES: Record<string, string[]> = {
+  'content-creation': [
+    'Every lesson plan is a blueprint for a brighter future.',
+    'Your creativity shapes how students see the world.',
+    'Great content creates great learning moments.',
+  ],
+  'student-management': [
+    'Behind every name on your roster is a story waiting to unfold.',
+    'Knowing your students is the first step to reaching them.',
+    'You\'re building a community, one student at a time.',
+  ],
+  'assessment': [
+    'Assessment isn\'t just grading — it\'s understanding.',
+    'Every mark you give is a step on a student\'s journey.',
+    'Fair assessment opens doors to growth.',
+  ],
+  'attendance': [
+    'Showing up matters — and so does tracking it.',
+    'Consistency in tracking leads to consistency in learning.',
+    'Every present student is a chance to make an impact.',
+  ],
+  'curriculum': [
+    'Milestones aren\'t just markers — they\'re proof of progress.',
+    'You\'re not just following a curriculum, you\'re bringing it to life.',
+    'Each completed standard is a promise kept.',
+  ],
+  'exploration': [
+    'Curiosity in a teacher inspires curiosity in students.',
+    'Exploring new tools makes you a more versatile educator.',
+    'The best teachers never stop discovering.',
+  ],
+  'power-user': [
+    'Dedication like yours moves mountains.',
+    'Consistency is the secret ingredient of great teaching.',
+    'Your commitment to your craft is inspiring.',
+  ],
+  'chat': [
+    'Asking questions is how great ideas are born.',
+    'Every conversation with PEARL sparks new possibilities.',
+    'Collaboration — even with AI — makes teaching stronger.',
+  ],
+  'brain-dump': [
+    'Turning thoughts into action is a superpower.',
+    'Your ideas deserve to become reality.',
+    'From brainstorm to classroom — that\'s the magic.',
+  ],
+  'analytics': [
+    'Data-driven teaching leads to data-driven results.',
+    'Understanding your tools helps you understand your impact.',
+    'Every generation is a step toward better education.',
+  ],
+};
+
+function getQuoteForAchievement(category: AchievementCategory): string {
+  const catMessages = CATEGORY_MESSAGES[category];
+  if (catMessages && catMessages.length > 0) {
+    // 50% chance of category-specific, 50% general quote
+    if (Math.random() < 0.5) {
+      return catMessages[Math.floor(Math.random() * catMessages.length)];
+    }
+  }
+  return TEACHING_QUOTES[Math.floor(Math.random() * TEACHING_QUOTES.length)];
+}
 
 /* ─── rarity themes ─── */
 const RARITY_THEMES: Record<AchievementRarity, {
@@ -64,10 +153,16 @@ interface AchievementUnlockModalProps {
 export default function AchievementUnlockModal({ achievement, onDismiss, viewOnly }: AchievementUnlockModalProps) {
   const [phase, setPhase] = useState<'idle' | 'entering' | 'visible' | 'exiting'>('idle');
 
+  // Stable quote per achievement (doesn't change on re-renders)
+  const quote = useMemo(() => {
+    if (!achievement) return '';
+    return getQuoteForAchievement(achievement.category);
+  }, [achievement?.achievement_id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const dismiss = useCallback(() => {
     setPhase('exiting');
-    setTimeout(onDismiss, 500);
-  }, [onDismiss]);
+    setTimeout(onDismiss, viewOnly ? 800 : 500);
+  }, [onDismiss, viewOnly]);
 
   useEffect(() => {
     if (achievement) {
@@ -92,14 +187,15 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
   const show = phase === 'visible';
   const hiding = phase === 'exiting';
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={dismiss}
       style={{
         backgroundColor: hiding ? 'rgba(0,0,0,0)' : show ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0)',
         backdropFilter: show && !hiding ? 'blur(16px) saturate(1.2)' : 'blur(0px)',
-        transition: 'background-color 0.5s ease, backdrop-filter 0.5s ease',
+        WebkitBackdropFilter: show && !hiding ? 'blur(16px) saturate(1.2)' : 'blur(0px)',
+        transition: 'background-color 0.6s ease, backdrop-filter 0.6s ease, -webkit-backdrop-filter 0.6s ease',
       }}
     >
       <style>{`
@@ -193,6 +289,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
 
       {/* ─── Main card ─── */}
       <div
+        className={viewOnly ? (hiding ? 'animate__animated animate__zoomOutDown' : show ? 'animate__animated animate__zoomInDown' : '') : ''}
         onClick={e => e.stopPropagation()}
         style={{
           position: 'relative',
@@ -200,9 +297,16 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
           width: '100%',
           borderRadius: 24,
           overflow: 'visible',
-          transform: show && !hiding ? 'scale(1) translateY(0)' : hiding ? 'scale(0.9) translateY(30px)' : 'scale(0.7) translateY(40px)',
-          opacity: show && !hiding ? 1 : 0,
-          transition: 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease',
+          ...(viewOnly
+            ? {
+                animationDuration: hiding ? '0.7s' : '0.6s',
+                opacity: !show && !hiding ? 0 : undefined,
+              }
+            : {
+                transform: show && !hiding ? 'scale(1) translateY(0)' : hiding ? 'scale(0.9) translateY(30px)' : 'scale(0.7) translateY(40px)',
+                opacity: show && !hiding ? 1 : 0,
+                transition: 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease',
+              }),
         }}
       >
         {/* Animated border gradient */}
@@ -387,7 +491,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
             fontSize: 13,
             color: 'rgba(255,255,255,0.55)',
             lineHeight: 1.5,
-            marginBottom: 20,
+            marginBottom: 12,
             maxWidth: 280,
             marginLeft: 'auto',
             marginRight: 'auto',
@@ -395,6 +499,23 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
           }}>
             {achievement.description}
           </p>
+
+          {/* Inspirational quote */}
+          {quote && (
+            <p style={{
+              fontSize: 11,
+              color: `${theme.primary}99`,
+              lineHeight: 1.6,
+              marginBottom: 20,
+              maxWidth: 300,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              fontStyle: 'italic',
+              animation: show ? 'ach-text-up 0.5s ease 0.45s both' : 'none',
+            }}>
+              {quote}
+            </p>
+          )}
 
           {/* Rarity + Points badges */}
           <div style={{
@@ -478,6 +599,7 @@ export default function AchievementUnlockModal({ achievement, onDismiss, viewOnl
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

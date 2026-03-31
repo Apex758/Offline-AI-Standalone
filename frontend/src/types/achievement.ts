@@ -11,6 +11,8 @@ export type AchievementCategory =
   | 'brain-dump'
   | 'analytics';
 
+export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'diamond';
+
 export interface AchievementDefinition {
   id: string;
   name: string;
@@ -21,6 +23,9 @@ export interface AchievementDefinition {
   points: number;
   check_key: string;
   check_value: number;
+  hidden?: boolean;
+  tier_group?: string;
+  tier?: AchievementTier;
 }
 
 export interface EarnedAchievement {
@@ -54,6 +59,17 @@ export interface AchievementProgress {
   target: number;
 }
 
+export interface AchievementCollection {
+  id: string;
+  name: string;
+  description: string;
+  category: AchievementCategory;
+  achievement_ids: string[];
+  earned_count: number;
+  total_count: number;
+  completed: boolean;
+}
+
 export interface AchievementCheckResult {
   newly_earned: NewlyEarnedAchievement[];
   all_earned: EarnedAchievement[];
@@ -62,6 +78,8 @@ export interface AchievementCheckResult {
   by_category: Record<string, CategoryBreakdown>;
   progress: Record<string, AchievementProgress>;
   total_available: number;
+  collections: AchievementCollection[];
+  counts: Record<string, number>;
 }
 
 export interface AchievementStats {

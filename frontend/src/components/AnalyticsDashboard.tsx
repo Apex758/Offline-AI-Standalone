@@ -7,6 +7,7 @@ import GraduationScrollIconData from '@hugeicons/core-free-icons/GraduationScrol
 import Cancel01IconData from '@hugeicons/core-free-icons/Cancel01Icon';
 import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import Trophy01IconData from '@hugeicons/core-free-icons/Award01Icon';
+import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -88,7 +89,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   tabColors = {}
 }) => {
   // Achievement data
-  const { earned, totalAvailable } = useAchievementContext();
+  const { earned, totalAvailable, showcase, definitions } = useAchievementContext();
   // State management
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Teacher');
@@ -113,6 +114,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
+  const [showShowcase, setShowShowcase] = useState(false);
 
   // Load user profile
   useEffect(() => {
@@ -602,17 +604,72 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               style={{ backgroundColor: 'var(--dash-border)' }}
             />
             <div
-              className="text-center cursor-pointer group"
-              onClick={() => onCreateTab?.('achievements')}
-              title="View Achievements"
+              className="text-center cursor-pointer group relative"
+              onClick={() => showcase.length > 0 ? setShowShowcase(s => !s) : onCreateTab?.('achievements')}
+              title={showcase.length > 0 ? (showShowcase ? 'Show stats' : 'Show showcase') : 'View Achievements'}
+              style={{ minWidth: showShowcase && showcase.length > 0 ? 180 : undefined, transition: 'min-width 0.3s ease' }}
             >
-              <div className="text-2xl font-bold flex items-center justify-center gap-1.5 group-hover:opacity-80 transition-opacity" style={{ color: '#f59e0b' }}>
-                <HugeiconsIcon icon={Trophy01IconData} size={18} style={{ color: '#f59e0b' }} />
-                {earned.length}/{totalAvailable}
+              {/* Stats view */}
+              <div style={{
+                opacity: showShowcase ? 0 : 1,
+                transform: showShowcase ? 'rotateX(90deg)' : 'rotateX(0deg)',
+                transition: 'opacity 0.25s ease, transform 0.25s ease',
+                position: showShowcase ? 'absolute' : 'relative',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: showShowcase ? 'none' : 'auto',
+              }}>
+                <div className="text-2xl font-bold flex items-center justify-center gap-1.5 group-hover:opacity-80 transition-opacity" style={{ color: '#f59e0b' }}>
+                  <HugeiconsIcon icon={Trophy01IconData} size={18} style={{ color: '#f59e0b' }} />
+                  {earned.length}/{totalAvailable}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--dash-text-sub)' }}>
+                  Achievements
+                </div>
               </div>
-              <div className="text-xs group-hover:underline" style={{ color: 'var(--dash-text-sub)' }}>
-                Achievements
-              </div>
+              {/* Showcase view */}
+              {showcase.length > 0 && (
+                <div style={{
+                  opacity: showShowcase ? 1 : 0,
+                  transform: showShowcase ? 'rotateX(0deg)' : 'rotateX(-90deg)',
+                  transition: 'opacity 0.25s ease, transform 0.25s ease',
+                  position: showShowcase ? 'relative' : 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  pointerEvents: showShowcase ? 'auto' : 'none',
+                }}>
+                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                    {showcase.slice(0, 5).map(id => {
+                      const def = definitions.find(d => d.id === id);
+                      if (!def) return null;
+                      const rc: Record<string, string> = {
+                        common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b',
+                      };
+                      const c = rc[def.rarity] || '#9ca3af';
+                      return (
+                        <div
+                          key={id}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg"
+                          style={{ backgroundColor: `${c}15`, border: `1px solid ${c}30` }}
+                          title={def.description}
+                        >
+                          <HugeiconsIcon icon={Medal01IconData} size={11} style={{ color: c }} />
+                          <span className="text-[10px] font-semibold" style={{ color: c }}>{def.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="text-[10px] mt-1" style={{ color: 'var(--dash-text-sub)' }}>
+                    My Trophies
+                  </div>
+                </div>
+              )}
             </div>
             <div
               className="w-px h-10"
@@ -629,6 +686,47 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Trophy Showcase (legacy strip — replaced by inline toggle in header stats) */}
+      {false && showcase.length > 0 && (() => {
+        const showcaseDefs = showcase
+          .map(id => definitions.find(d => d.id === id))
+          .filter(Boolean) as typeof definitions;
+        const SHOWCASE_RARITY_COLORS: Record<string, string> = {
+          common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b',
+        };
+        return showcaseDefs.length > 0 ? (
+          <div className="px-8 pt-4">
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-xl"
+              style={{ border: '1px solid var(--dash-border)', backgroundColor: 'var(--dash-card-bg, var(--dash-bg))' }}
+            >
+              <HugeiconsIcon icon={Trophy01IconData} size={16} style={{ color: '#f59e0b' }} />
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>
+                My Trophies
+              </span>
+              <div className="flex items-center gap-2 ml-2">
+                {showcaseDefs.map(def => (
+                  <div
+                    key={def.id}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                    style={{
+                      backgroundColor: `${SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af'}15`,
+                      border: `1px solid ${SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af'}30`,
+                    }}
+                    title={def.description}
+                  >
+                    <HugeiconsIcon icon={Medal01IconData} size={12} style={{ color: SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af' }} />
+                    <span className="text-[11px] font-semibold" style={{ color: SHOWCASE_RARITY_COLORS[def.rarity] || '#9ca3af' }}>
+                      {def.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null;
+      })()}
 
       {/* Main Content - 3/5 + 2/5 Grid */}
       <div className="px-8 py-8">

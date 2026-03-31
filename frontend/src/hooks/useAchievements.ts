@@ -3,6 +3,7 @@ import { achievementApi } from '../lib/achievementApi';
 import type {
   AchievementDefinition,
   AchievementCheckResult,
+  AchievementCollection,
   NewlyEarnedAchievement,
   EarnedAchievement,
   TeacherRank,
@@ -18,6 +19,10 @@ interface UseAchievementsReturn {
   byCategory: Record<string, CategoryBreakdown>;
   progress: Record<string, AchievementProgress>;
   totalAvailable: number;
+  collections: AchievementCollection[];
+  counts: Record<string, number>;
+  showcase: string[];
+  updateShowcase: (ids: string[]) => void;
   pendingUnlocks: NewlyEarnedAchievement[];
   dismissUnlock: () => void;
   triggerCheck: () => void;
@@ -34,6 +39,9 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
   const [byCategory, setByCategory] = useState<Record<string, CategoryBreakdown>>({});
   const [progress, setProgress] = useState<Record<string, AchievementProgress>>({});
   const [totalAvailable, setTotalAvailable] = useState(0);
+  const [collections, setCollections] = useState<AchievementCollection[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [showcase, setShowcase] = useState<string[]>([]);
   const [pendingUnlocks, setPendingUnlocks] = useState<NewlyEarnedAchievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,6 +62,14 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     };
   }, []);
 
+  // Load showcase
+  useEffect(() => {
+    if (!teacherId) return;
+    achievementApi.getShowcase(teacherId).then(ids => {
+      if (mountedRef.current) setShowcase(ids);
+    }).catch(() => {});
+  }, [teacherId]);
+
   const applyCheckResult = useCallback((result: AchievementCheckResult) => {
     if (!mountedRef.current) return;
     setEarned(result.all_earned);
@@ -62,6 +78,8 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     setByCategory(result.by_category);
     setProgress(result.progress);
     setTotalAvailable(result.total_available);
+    setCollections(result.collections || []);
+    setCounts(result.counts || {});
 
     if (result.newly_earned.length > 0) {
       // Filter out already-viewed unlocks
@@ -112,6 +130,12 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     });
   }, []);
 
+  const updateShowcaseFn = useCallback((ids: string[]) => {
+    if (!teacherId) return;
+    setShowcase(ids);
+    achievementApi.updateShowcase(teacherId, ids).catch(() => {});
+  }, [teacherId]);
+
   return {
     definitions,
     earned,
@@ -120,6 +144,10 @@ export function useAchievements(teacherId: string | null): UseAchievementsReturn
     byCategory,
     progress,
     totalAvailable,
+    collections,
+    counts,
+    showcase,
+    updateShowcase: updateShowcaseFn,
     pendingUnlocks,
     dismissUnlock,
     triggerCheck,

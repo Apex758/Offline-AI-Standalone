@@ -3,7 +3,7 @@ import os
 import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # ──────────────────────────────────────────────
@@ -67,10 +67,10 @@ RANKS = [
     {"level": 1, "title": "Newcomer",             "required": 0},
     {"level": 2, "title": "Apprentice Teacher",    "required": 5},
     {"level": 3, "title": "Developing Educator",   "required": 12},
-    {"level": 4, "title": "Proficient Instructor",  "required": 20},
-    {"level": 5, "title": "Experienced Educator",   "required": 30},
-    {"level": 6, "title": "Master Teacher",          "required": 40},
-    {"level": 7, "title": "OECS Champion",           "required": 50},
+    {"level": 4, "title": "Proficient Instructor",  "required": 22},
+    {"level": 5, "title": "Experienced Educator",   "required": 33},
+    {"level": 6, "title": "Master Teacher",          "required": 45},
+    {"level": 7, "title": "OECS Champion",           "required": 55},
 ]
 
 RARITY_POINTS = {
@@ -162,15 +162,108 @@ ACHIEVEMENT_DEFINITIONS: List[Dict[str, Any]] = [
     {"id": "analytics_500",       "name": "AI Powerhouse",            "description": "Generate 500 AI responses",                   "category": "analytics",           "icon_name": "Chart",               "rarity": "rare",      "check_key": "total_generations",      "check_value": 500},
     {"id": "image_gen_first",     "name": "First Pixel",              "description": "Generate your first AI image",                "category": "analytics",           "icon_name": "Image",               "rarity": "common",    "check_key": "total_image_generations","check_value": 1},
     {"id": "image_gen_25",        "name": "Visual Virtuoso",          "description": "Generate 25 AI images",                       "category": "analytics",           "icon_name": "Image",               "rarity": "rare",      "check_key": "total_image_generations","check_value": 25},
+
+    # ── Hidden / Secret Achievements ──
+    {"id": "night_owl",           "name": "Night Owl",                "description": "Use the app after 10 PM",                    "category": "power-user",          "icon_name": "Moon",                "rarity": "uncommon",  "check_key": "used_after_10pm",        "check_value": 1, "hidden": True},
+    {"id": "early_bird",          "name": "Early Bird",               "description": "Use the app before 6 AM",                    "category": "power-user",          "icon_name": "Sun",                 "rarity": "uncommon",  "check_key": "used_before_6am",        "check_value": 1, "hidden": True},
+    {"id": "marathon_planner",    "name": "Marathon Planner",         "description": "Spend a session creating 5+ resources",       "category": "power-user",          "icon_name": "Timer",               "rarity": "rare",      "check_key": "resources_in_session",   "check_value": 5, "hidden": True},
+    {"id": "variety_pack",        "name": "Variety Pack",             "description": "Create 4 different resource types in one day","category": "exploration",          "icon_name": "Shuffle",             "rarity": "rare",      "check_key": "types_today",            "check_value": 4, "hidden": True},
+    {"id": "perfectionist",       "name": "Perfectionist",           "description": "Edit a lesson plan 5 or more times",          "category": "content-creation",    "icon_name": "Edit",                "rarity": "uncommon",  "check_key": "lesson_edits_max",       "check_value": 5, "hidden": True},
+    {"id": "century",             "name": "The Century",              "description": "Earn 100 total achievement points",           "category": "power-user",          "icon_name": "Diamond",             "rarity": "rare",      "check_key": "total_achievement_pts",  "check_value": 100, "hidden": True},
+    {"id": "half_thousand",       "name": "Half a Thousand",          "description": "Earn 500 total achievement points",           "category": "power-user",          "icon_name": "Diamond",             "rarity": "epic",      "check_key": "total_achievement_pts",  "check_value": 500, "hidden": True},
 ]
 
-# Add points to each definition
+# ── Achievement Collections (sets of related achievements) ──
+ACHIEVEMENT_COLLECTIONS: List[Dict[str, Any]] = [
+    {
+        "id": "content_master",
+        "name": "Content Master",
+        "description": "Earn all Content Creation achievements",
+        "category": "content-creation",
+        "achievement_ids": ["first_lesson", "lesson_veteran", "quiz_creator", "quiz_prolific", "worksheet_first", "rubric_first", "presentation_first"],
+    },
+    {
+        "id": "assessment_guru",
+        "name": "Assessment Guru",
+        "description": "Earn all Assessment achievements",
+        "category": "assessment",
+        "achievement_ids": ["first_grade", "grading_streak", "worksheet_grader", "answer_key_master", "first_scan_grade", "scan_grader_20"],
+    },
+    {
+        "id": "student_champion",
+        "name": "Student Champion",
+        "description": "Earn all Student Management achievements",
+        "category": "student-management",
+        "achievement_ids": ["first_student", "class_builder", "full_house", "multi_class"],
+    },
+    {
+        "id": "attendance_pro",
+        "name": "Attendance Pro",
+        "description": "Earn all Attendance achievements",
+        "category": "attendance",
+        "achievement_ids": ["first_attendance", "attendance_week", "attendance_month", "engagement_tracker"],
+    },
+    {
+        "id": "curriculum_scholar",
+        "name": "Curriculum Scholar",
+        "description": "Earn all Curriculum achievements",
+        "category": "curriculum",
+        "achievement_ids": ["first_milestone", "milestone_10", "milestone_50", "subject_mastery"],
+    },
+    {
+        "id": "pearl_companion",
+        "name": "PEARL Companion",
+        "description": "Earn all Ask PEARL achievements",
+        "category": "chat",
+        "achievement_ids": ["first_chat", "chat_regular", "chat_messages_50", "chat_messages_200"],
+    },
+    {
+        "id": "explorer_supreme",
+        "name": "Explorer Supreme",
+        "description": "Earn all Exploration achievements",
+        "category": "exploration",
+        "achievement_ids": ["explorer", "trailblazer", "kindergarten_pioneer", "cross_curricular", "multigrade_first", "multigrade_5", "resource_saver_10", "resource_saver_25"],
+    },
+]
+
+# ── Tier groups for visual tiering ──
+TIER_GROUPS: Dict[str, List[Dict[str, Any]]] = {
+    "lesson_plans":     [{"id": "first_lesson",    "tier": "bronze"}, {"id": "lesson_veteran",  "tier": "silver"}],
+    "quizzes":          [{"id": "quiz_creator",     "tier": "bronze"}, {"id": "quiz_prolific",   "tier": "silver"}],
+    "students":         [{"id": "first_student",    "tier": "bronze"}, {"id": "class_builder",   "tier": "silver"}, {"id": "full_house",       "tier": "gold"}],
+    "milestones":       [{"id": "first_milestone",  "tier": "bronze"}, {"id": "milestone_10",    "tier": "silver"}, {"id": "milestone_50",     "tier": "gold"}],
+    "attendance":       [{"id": "first_attendance", "tier": "bronze"}, {"id": "attendance_week",  "tier": "silver"}, {"id": "attendance_month", "tier": "gold"}, {"id": "engagement_tracker", "tier": "diamond"}],
+    "resources":        [{"id": "resource_saver_10","tier": "bronze"}, {"id": "resource_saver_25","tier": "silver"}, {"id": "content_50",       "tier": "gold"}, {"id": "content_100",        "tier": "diamond"}],
+    "chat":             [{"id": "first_chat",       "tier": "bronze"}, {"id": "chat_regular",     "tier": "silver"}, {"id": "chat_messages_50", "tier": "gold"}, {"id": "chat_messages_200",  "tier": "diamond"}],
+    "streak":           [{"id": "streak_3",         "tier": "bronze"}, {"id": "streak_7",         "tier": "silver"}, {"id": "streak_30",        "tier": "gold"}],
+    "active_days":      [{"id": "active_days_50",   "tier": "bronze"}, {"id": "active_days_100",  "tier": "silver"}],
+    "generations":      [{"id": "first_analytics",  "tier": "bronze"}, {"id": "analytics_100",    "tier": "silver"}, {"id": "analytics_500",    "tier": "gold"}],
+}
+
+# Build lookup maps: achievement_id -> tier_group, tier
+_TIER_LOOKUP: Dict[str, Dict[str, str]] = {}
+for group_name, tiers in TIER_GROUPS.items():
+    for entry in tiers:
+        _TIER_LOOKUP[entry["id"]] = {"tier_group": group_name, "tier": entry["tier"]}
+
+# Add points, hidden flag, tier info to each definition
 for defn in ACHIEVEMENT_DEFINITIONS:
     defn["points"] = RARITY_POINTS[defn["rarity"]]
+    if "hidden" not in defn:
+        defn["hidden"] = False
+    tier_info = _TIER_LOOKUP.get(defn["id"])
+    if tier_info:
+        defn["tier_group"] = tier_info["tier_group"]
+        defn["tier"] = tier_info["tier"]
 
 
 def get_definitions() -> List[Dict[str, Any]]:
+    """Return definitions — hidden ones are included but with name/description masked if not earned."""
     return ACHIEVEMENT_DEFINITIONS
+
+
+def get_collections() -> List[Dict[str, Any]]:
+    return ACHIEVEMENT_COLLECTIONS
 
 
 # ──────────────────────────────────────────────
@@ -381,8 +474,62 @@ def _get_scan_grade_counts() -> Dict[str, int]:
         conn.close()
 
 
+def _get_time_based_counts() -> Dict[str, int]:
+    """Check time-of-day achievements and daily variety."""
+    now = datetime.now()
+    hour = now.hour
+    counts: Dict[str, int] = {
+        "used_after_10pm": 1 if hour >= 22 else 0,
+        "used_before_6am": 1 if hour < 6 else 0,
+    }
+
+    # Variety pack: count distinct resource types created today
+    today_str = now.strftime("%Y-%m-%d")
+    files_map = {
+        "lesson_plans": "lesson_plan_history.json",
+        "quizzes": "quiz_history.json",
+        "worksheets": "worksheet_history.json",
+        "rubrics": "rubric_history.json",
+        "presentations": "presentation_history.json",
+        "images": "images_history.json",
+        "kindergarten_plans": "kindergarten_history.json",
+        "multigrade_plans": "multigrade_history.json",
+        "cross_curricular_plans": "cross_curricular_history.json",
+    }
+    types_today = 0
+    resources_today = 0
+    for _key, fname in files_map.items():
+        items = _load_json_history(fname)
+        today_items = [
+            i for i in items
+            if isinstance(i, dict)
+            and (i.get("created_at", "") or i.get("timestamp", "") or i.get("date", "")).startswith(today_str)
+        ]
+        if today_items:
+            types_today += 1
+            resources_today += len(today_items)
+    counts["types_today"] = types_today
+    counts["resources_in_session"] = resources_today
+
+    # Perfectionist: check max edits on any lesson plan
+    lesson_plans = _load_json_history("lesson_plan_history.json")
+    max_edits = 0
+    for lp in lesson_plans:
+        if isinstance(lp, dict):
+            edits = lp.get("edit_count", lp.get("version", 1))
+            if isinstance(edits, int) and edits > max_edits:
+                max_edits = edits
+    counts["lesson_edits_max"] = max_edits
+
+    return counts
+
+
 def _get_streak_counts(teacher_id: str) -> Dict[str, int]:
-    """Calculate current streak and total active days from achievement_activity_log."""
+    """Calculate current streak (with forgiveness) and total active days.
+
+    Streak forgiveness: allows up to 2 gap days per 7-day window,
+    so weekends and sick days don't break streaks.
+    """
     conn = _get_conn()
     try:
         rows = conn.execute(
@@ -392,30 +539,44 @@ def _get_streak_counts(teacher_id: str) -> Dict[str, int]:
         if not rows:
             return {"streak_days": 0, "total_active_days": 0}
 
-        dates = sorted(set(r["activity_date"] for r in rows), reverse=True)
+        date_set = set(r["activity_date"] for r in rows)
+        dates = sorted(date_set, reverse=True)
         total_active_days = len(dates)
 
-        # Calculate current streak from today backwards
-        from datetime import timedelta
-        today = datetime.now().strftime("%Y-%m-%d")
-        streak = 0
-        check_date = datetime.strptime(today, "%Y-%m-%d")
+        # Calculate streak with forgiveness (2 grace days per 7-day window)
+        today = datetime.now().date()
+        today_str = today.strftime("%Y-%m-%d")
 
-        for d in dates:
-            d_date = datetime.strptime(d, "%Y-%m-%d")
-            diff = (check_date - d_date).days
-            if diff == 0:
+        # Start from today or yesterday
+        if today_str in date_set:
+            cursor = today
+        elif (today - timedelta(days=1)).strftime("%Y-%m-%d") in date_set:
+            cursor = today - timedelta(days=1)
+        else:
+            return {"streak_days": 0, "total_active_days": total_active_days}
+
+        streak = 0
+        grace_used = 0
+        max_grace_per_week = 2
+
+        # Walk backwards from cursor
+        check = cursor
+        while True:
+            check_str = check.strftime("%Y-%m-%d")
+            if check_str in date_set:
                 streak += 1
-                check_date = d_date - timedelta(days=1)
-            elif diff == 1:
-                # Allow starting from yesterday if not yet logged today
-                if streak == 0:
-                    streak += 1
-                    check_date = d_date - timedelta(days=1)
+                check -= timedelta(days=1)
+                # Reset grace counter every 7 streak days
+                if streak % 7 == 0:
+                    grace_used = 0
+            else:
+                # Use a grace day
+                if grace_used < max_grace_per_week:
+                    grace_used += 1
+                    check -= timedelta(days=1)
+                    # Don't count grace days as streak days, just skip
                 else:
                     break
-            else:
-                break
 
         return {"streak_days": streak, "total_active_days": total_active_days}
     except Exception:
@@ -474,6 +635,7 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
         counts.update(_get_metrics_counts())
         counts.update(_get_scan_grade_counts())
         counts.update(_get_streak_counts(teacher_id))
+        counts.update(_get_time_based_counts())
 
         # Check each unearned achievement
         newly_earned = []
@@ -520,7 +682,34 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
             if defn["id"] in already_earned:
                 by_category[cat]["earned"] += 1
 
-        # Progress for unearned achievements
+        # After first pass, update total_achievement_pts and re-check point-based hidden achievements
+        counts["total_achievement_pts"] = total_points
+        for defn in ACHIEVEMENT_DEFINITIONS:
+            if defn["id"] in already_earned:
+                continue
+            if defn.get("check_key") == "total_achievement_pts":
+                if total_points >= defn["check_value"]:
+                    now = datetime.now().isoformat()
+                    conn.execute(
+                        "INSERT OR IGNORE INTO earned_achievements (teacher_id, achievement_id, earned_at) VALUES (?, ?, ?)",
+                        (teacher_id, defn["id"], now)
+                    )
+                    newly_earned.append({
+                        "achievement_id": defn["id"],
+                        "earned_at": now,
+                        **{k: defn[k] for k in ("name", "description", "category", "icon_name", "rarity", "points")},
+                    })
+                    already_earned[defn["id"]] = now
+        conn.commit()
+
+        # Recalculate total points after potential new earnings
+        total_points = sum(
+            defn["points"]
+            for defn in ACHIEVEMENT_DEFINITIONS
+            if defn["id"] in already_earned
+        )
+
+        # Progress for unearned achievements (skip hidden ones that aren't close)
         progress = {}
         for defn in ACHIEVEMENT_DEFINITIONS:
             if defn["id"] not in already_earned:
@@ -530,6 +719,21 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
                     "target": defn["check_value"],
                 }
 
+        # Collection progress
+        collections_progress = []
+        for coll in ACHIEVEMENT_COLLECTIONS:
+            coll_earned = sum(1 for aid in coll["achievement_ids"] if aid in already_earned)
+            collections_progress.append({
+                "id": coll["id"],
+                "name": coll["name"],
+                "description": coll["description"],
+                "category": coll["category"],
+                "achievement_ids": coll["achievement_ids"],
+                "earned_count": coll_earned,
+                "total_count": len(coll["achievement_ids"]),
+                "completed": coll_earned == len(coll["achievement_ids"]),
+            })
+
         return {
             "newly_earned": newly_earned,
             "all_earned": all_earned,
@@ -538,6 +742,8 @@ def check_achievements(teacher_id: str) -> Dict[str, Any]:
             "by_category": by_category,
             "progress": progress,
             "total_available": len(ACHIEVEMENT_DEFINITIONS),
+            "collections": collections_progress,
+            "counts": counts,
         }
     finally:
         conn.close()
@@ -576,5 +782,55 @@ def get_earned_achievements(teacher_id: str) -> Dict[str, Any]:
             "by_category": by_category,
             "total_available": len(ACHIEVEMENT_DEFINITIONS),
         }
+    finally:
+        conn.close()
+
+
+# ──────────────────────────────────────────────
+# Showcase (pinned trophies)
+# ──────────────────────────────────────────────
+
+def _ensure_showcase_table():
+    conn = _get_conn()
+    try:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS achievement_showcase (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                teacher_id  TEXT NOT NULL,
+                achievement_id TEXT NOT NULL,
+                position    INTEGER NOT NULL DEFAULT 0,
+                UNIQUE(teacher_id, achievement_id)
+            )
+        ''')
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_showcase(teacher_id: str) -> List[str]:
+    _ensure_showcase_table()
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT achievement_id FROM achievement_showcase WHERE teacher_id = ? ORDER BY position",
+            (teacher_id,)
+        ).fetchall()
+        return [r["achievement_id"] for r in rows]
+    finally:
+        conn.close()
+
+
+def update_showcase(teacher_id: str, achievement_ids: List[str]) -> Dict[str, Any]:
+    _ensure_showcase_table()
+    conn = _get_conn()
+    try:
+        conn.execute("DELETE FROM achievement_showcase WHERE teacher_id = ?", (teacher_id,))
+        for i, aid in enumerate(achievement_ids[:5]):
+            conn.execute(
+                "INSERT INTO achievement_showcase (teacher_id, achievement_id, position) VALUES (?, ?, ?)",
+                (teacher_id, aid, i)
+            )
+        conn.commit()
+        return {"success": True, "showcase": achievement_ids[:5]}
     finally:
         conn.close()

@@ -2,6 +2,7 @@ import React, { createContext, useContext } from 'react';
 import { useAchievements } from '../hooks/useAchievements';
 import type {
   AchievementDefinition,
+  AchievementCollection,
   EarnedAchievement,
   NewlyEarnedAchievement,
   TeacherRank,
@@ -17,6 +18,10 @@ interface AchievementContextValue {
   byCategory: Record<string, CategoryBreakdown>;
   progress: Record<string, AchievementProgress>;
   totalAvailable: number;
+  collections: AchievementCollection[];
+  counts: Record<string, number>;
+  showcase: string[];
+  updateShowcase: (ids: string[]) => void;
   pendingUnlocks: NewlyEarnedAchievement[];
   dismissUnlock: () => void;
   triggerCheck: () => void;
@@ -31,6 +36,10 @@ const AchievementContext = createContext<AchievementContextValue>({
   byCategory: {},
   progress: {},
   totalAvailable: 0,
+  collections: [],
+  counts: {},
+  showcase: [],
+  updateShowcase: () => {},
   pendingUnlocks: [],
   dismissUnlock: () => {},
   triggerCheck: () => {},

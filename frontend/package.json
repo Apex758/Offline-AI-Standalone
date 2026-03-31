@@ -24,6 +24,7 @@
     "@hugeicons/core-free-icons": "^4.0.0",
     "@hugeicons/react": "^1.1.6",
     "@supabase/supabase-js": "^2.99.1",
+    "animate.css": "^4.1.1",
     "axios": "^1.6.7",
     "date-fns": "^4.1.0",
     "electron-updater": "^6.8.3",

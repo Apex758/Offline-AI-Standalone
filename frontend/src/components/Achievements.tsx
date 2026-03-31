@@ -6,6 +6,8 @@ import Tick01IconData from '@hugeicons/core-free-icons/Tick01Icon';
 import StarIconData from '@hugeicons/core-free-icons/StarIcon';
 import Medal01IconData from '@hugeicons/core-free-icons/Medal01Icon';
 import ArrowDownIconData from '@hugeicons/core-free-icons/ArrowDown01Icon';
+import PinIconData from '@hugeicons/core-free-icons/PinIcon';
+import QuestionIconData from '@hugeicons/core-free-icons/HelpCircleIcon';
 // Category background icons
 import ContentIconData from '@hugeicons/core-free-icons/PencilEdit01Icon';
 import StudentIconData from '@hugeicons/core-free-icons/UserGroupIcon';
@@ -21,7 +23,7 @@ import { useAchievementContext } from '../contexts/AchievementContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AchievementUnlockModal from './modals/AchievementUnlockModal';
 import LevelJourneyPath from './LevelJourneyPath';
-import type { AchievementDefinition, AchievementCategory, AchievementRarity, NewlyEarnedAchievement } from '../types/achievement';
+import type { AchievementDefinition, AchievementCategory, AchievementRarity, AchievementTier, NewlyEarnedAchievement } from '../types/achievement';
 
 const RARITY_COLORS: Record<AchievementRarity, string> = {
   common: '#9ca3af',
@@ -37,6 +39,57 @@ const RARITY_LABELS: Record<AchievementRarity, string> = {
   rare: 'Rare',
   epic: 'Epic',
   legendary: 'Legendary',
+};
+
+// Simulated rarity percentages (single-user app — based on typical distribution)
+const RARITY_PERCENTAGES: Record<AchievementRarity, string> = {
+  common: '',
+  uncommon: 'Top 45% of educators',
+  rare: 'Top 20% of educators',
+  epic: 'Top 8% of educators',
+  legendary: 'Top 3% of educators',
+};
+
+const TIER_COLORS: Record<AchievementTier, string> = {
+  bronze: '#cd7f32',
+  silver: '#c0c0c0',
+  gold: '#ffd700',
+  diamond: '#b9f2ff',
+};
+
+const TIER_LABELS: Record<AchievementTier, string> = {
+  bronze: 'I',
+  silver: 'II',
+  gold: 'III',
+  diamond: 'IV',
+};
+
+// Impact stat labels for check_keys
+const IMPACT_LABELS: Record<string, (n: number) => string> = {
+  lesson_plans: (n) => `${n} lesson plan${n !== 1 ? 's' : ''} created`,
+  quizzes: (n) => `${n} quiz${n !== 1 ? 'zes' : ''} created`,
+  worksheets: (n) => `${n} worksheet${n !== 1 ? 's' : ''} created`,
+  rubrics: (n) => `${n} rubric${n !== 1 ? 's' : ''} created`,
+  presentations: (n) => `${n} presentation${n !== 1 ? 's' : ''} built`,
+  students: (n) => `${n} student${n !== 1 ? 's' : ''} added`,
+  quiz_grades: (n) => `${n} quiz${n !== 1 ? 'zes' : ''} graded`,
+  worksheet_grades: (n) => `${n} worksheet${n !== 1 ? 's' : ''} graded`,
+  attendance_records: (n) => `${n} attendance record${n !== 1 ? 's' : ''}`,
+  attendance_dates: (n) => `${n} day${n !== 1 ? 's' : ''} tracked`,
+  milestones_completed: (n) => `${n} milestone${n !== 1 ? 's' : ''} completed`,
+  chat_conversations: (n) => `${n} conversation${n !== 1 ? 's' : ''} with PEARL`,
+  chat_messages: (n) => `${n} message${n !== 1 ? 's' : ''} sent`,
+  total_resources: (n) => `${n} total resource${n !== 1 ? 's' : ''} created`,
+  total_generations: (n) => `${n} AI generation${n !== 1 ? 's' : ''}`,
+  total_image_generations: (n) => `${n} image${n !== 1 ? 's' : ''} generated`,
+  streak_days: (n) => `${n} day streak`,
+  total_active_days: (n) => `${n} day${n !== 1 ? 's' : ''} active`,
+  images: (n) => `${n} image${n !== 1 ? 's' : ''} created`,
+  brain_dump_uses: (n) => `${n} brain dump${n !== 1 ? 's' : ''}`,
+  distinct_tools: (n) => `${n} tool${n !== 1 ? 's' : ''} explored`,
+  kindergarten_plans: (n) => `${n} early childhood plan${n !== 1 ? 's' : ''}`,
+  multigrade_plans: (n) => `${n} multigrade plan${n !== 1 ? 's' : ''}`,
+  cross_curricular_plans: (n) => `${n} integrated plan${n !== 1 ? 's' : ''}`,
 };
 
 const CATEGORY_LABELS: Record<AchievementCategory, string> = {
@@ -80,6 +133,10 @@ export default function Achievements({ tabId }: AchievementsProps) {
     byCategory,
     progress,
     totalAvailable,
+    collections,
+    counts,
+    showcase,
+    updateShowcase,
     isLoading,
   } = useAchievementContext();
   const { settings } = useSettings();
@@ -99,15 +156,24 @@ export default function Achievements({ tabId }: AchievementsProps) {
     return map;
   }, [earned]);
 
+  // Filter: hidden achievements only show if earned
+  const visibleDefinitions = useMemo(() => {
+    return definitions.filter(d => !d.hidden || earnedIds.has(d.id));
+  }, [definitions, earnedIds]);
+
+  const hiddenCount = useMemo(() => {
+    return definitions.filter(d => d.hidden && !earnedIds.has(d.id)).length;
+  }, [definitions, earnedIds]);
+
   const filteredDefinitions = useMemo(() => {
-    return definitions.filter(d => {
+    return visibleDefinitions.filter(d => {
       if (selectedCategory !== 'all' && d.category !== selectedCategory) return false;
       if (selectedRarity !== 'all' && d.rarity !== selectedRarity) return false;
       if (selectedStatus === 'earned' && !earnedIds.has(d.id)) return false;
       if (selectedStatus === 'locked' && earnedIds.has(d.id)) return false;
       return true;
     });
-  }, [definitions, selectedCategory, selectedRarity, selectedStatus, earnedIds]);
+  }, [visibleDefinitions, selectedCategory, selectedRarity, selectedStatus, earnedIds]);
 
   // Sort: earned first, then by rarity (legendary first)
   const rarityOrder: Record<AchievementRarity, number> = { legendary: 0, epic: 1, rare: 2, uncommon: 3, common: 4 };
@@ -124,6 +190,14 @@ export default function Achievements({ tabId }: AchievementsProps) {
 
   const earnedCount = earned.length;
   const progressPercent = totalAvailable > 0 ? Math.round((earnedCount / totalAvailable) * 100) : 0;
+
+  const toggleShowcase = (achievementId: string) => {
+    if (showcase.includes(achievementId)) {
+      updateShowcase(showcase.filter(id => id !== achievementId));
+    } else if (showcase.length < 5) {
+      updateShowcase([...showcase, achievementId]);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -362,6 +436,53 @@ export default function Achievements({ tabId }: AchievementsProps) {
           </div>
         </div>
 
+        {/* Collections section */}
+        {collections.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>
+              Collections
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {collections.map(coll => {
+                const pct = Math.round((coll.earned_count / coll.total_count) * 100);
+                return (
+                  <div
+                    key={coll.id}
+                    className="rounded-xl p-3 transition-all"
+                    style={{
+                      border: `1px solid ${coll.completed ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
+                      backgroundColor: coll.completed ? `${tabColor}10` : 'var(--dash-card-bg, var(--dash-bg, #111))',
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold" style={{ color: coll.completed ? tabColor : 'var(--dash-text)' }}>
+                        {coll.name}
+                      </span>
+                      <span className="text-[10px] font-semibold" style={{ color: 'var(--dash-text-sub)' }}>
+                        {coll.earned_count}/{coll.total_count}
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--dash-border, #333)' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${pct}%`,
+                          backgroundColor: coll.completed ? tabColor : 'var(--dash-text-sub)',
+                        }}
+                      />
+                    </div>
+                    {coll.completed && (
+                      <div className="mt-1.5 text-[10px] font-semibold" style={{ color: tabColor }}>
+                        Collection Complete!
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Achievement grid + Journey path */}
         <div className="flex gap-6 items-start">
           {/* Cards — 3 columns max */}
@@ -375,6 +496,10 @@ export default function Achievements({ tabId }: AchievementsProps) {
                   earnedAt={earnedMap[defn.id]}
                   progress={progress[defn.id]}
                   index={i}
+                  impactCount={counts[defn.check_key]}
+                  isPinned={showcase.includes(defn.id)}
+                  onTogglePin={() => toggleShowcase(defn.id)}
+                  canPin={showcase.length < 5 || showcase.includes(defn.id)}
                   onView={(def, eAt) => setViewingAchievement({
                     achievement_id: def.id,
                     earned_at: eAt || '',
@@ -388,6 +513,19 @@ export default function Achievements({ tabId }: AchievementsProps) {
                 />
               ))}
             </div>
+
+            {/* Hidden achievements hint */}
+            {hiddenCount > 0 && (
+              <div
+                className="mt-4 flex items-center justify-center gap-2 py-3 rounded-xl"
+                style={{ border: '1px dashed var(--dash-border, #333)', color: 'var(--dash-text-sub)' }}
+              >
+                <HugeiconsIcon icon={QuestionIconData} size={16} />
+                <span className="text-xs">
+                  {hiddenCount} secret achievement{hiddenCount !== 1 ? 's' : ''} remaining — keep exploring to discover them!
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Journey path — right side, sticky */}
@@ -446,6 +584,10 @@ function AchievementCard({
   earnedAt,
   progress,
   index,
+  impactCount,
+  isPinned,
+  onTogglePin,
+  canPin,
   onView,
 }: {
   definition: AchievementDefinition;
@@ -453,6 +595,10 @@ function AchievementCard({
   earnedAt?: string;
   progress?: { current: number; target: number };
   index: number;
+  impactCount?: number;
+  isPinned: boolean;
+  onTogglePin: () => void;
+  canPin: boolean;
   onView?: (def: AchievementDefinition, earnedAt?: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -475,6 +621,12 @@ function AchievementCard({
   const progressPercent = progress
     ? Math.min(100, Math.round((progress.current / progress.target) * 100))
     : 0;
+  const isHiddenEarned = definition.hidden && isEarned;
+  const tierColor = definition.tier ? TIER_COLORS[definition.tier] : null;
+  const rarityPct = RARITY_PERCENTAGES[definition.rarity];
+  const impactLabel = isEarned && impactCount != null && impactCount > 0 && IMPACT_LABELS[definition.check_key]
+    ? IMPACT_LABELS[definition.check_key](impactCount)
+    : null;
 
   return (
     <div
@@ -529,27 +681,76 @@ function AchievementCard({
         />
       )}
 
+      {/* Pin to showcase button (earned only, visible on hover) */}
+      {isEarned && hovered && (
+        <button
+          className="absolute top-2 right-2 z-20 flex items-center justify-center rounded-full transition-all"
+          onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
+          title={isPinned ? 'Unpin from showcase' : canPin ? 'Pin to showcase' : 'Showcase full (5 max)'}
+          style={{
+            width: 26,
+            height: 26,
+            backgroundColor: isPinned ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)',
+            border: `1px solid ${isPinned ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
+            opacity: canPin || isPinned ? 1 : 0.4,
+            cursor: canPin || isPinned ? 'pointer' : 'not-allowed',
+          }}
+        >
+          <HugeiconsIcon icon={PinIconData} size={12} style={{ color: '#fff' }} />
+        </button>
+      )}
+
       {/* Card content */}
       <div className="relative flex flex-col h-full p-4 z-10">
 
-        {/* Top row: index + rarity */}
+        {/* Top row: index + rarity + tier + secret badge */}
         <div className="flex items-center justify-between mb-3">
-          <span
-            className="text-[11px] font-bold tracking-widest"
-            style={{ color: isEarned ? 'rgba(255,255,255,0.55)' : 'rgba(128,128,128,0.6)' }}
-          >
-            {String(index + 1).padStart(2, '0')} /
-          </span>
-          <span
-            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{
-              backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : `${color}25`,
-              color: isEarned ? '#fff' : color,
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            {RARITY_LABELS[definition.rarity]}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span
+              className="text-[11px] font-bold tracking-widest"
+              style={{ color: isEarned ? 'rgba(255,255,255,0.55)' : 'rgba(128,128,128,0.6)' }}
+            >
+              {String(index + 1).padStart(2, '0')} /
+            </span>
+            {/* Tier badge */}
+            {definition.tier && (
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                style={{
+                  backgroundColor: `${tierColor}25`,
+                  color: tierColor!,
+                  border: `1px solid ${tierColor}40`,
+                }}
+              >
+                {TIER_LABELS[definition.tier]}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {/* Secret badge for hidden achievements */}
+            {isHiddenEarned && (
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  color: '#fff',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                SECRET
+              </span>
+            )}
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : `${color}25`,
+                color: isEarned ? '#fff' : color,
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              {RARITY_LABELS[definition.rarity]}
+            </span>
+          </div>
         </div>
 
         {/* Small icon badge */}
@@ -586,8 +787,8 @@ function AchievementCard({
 
         {/* Bottom row */}
         <div className="mt-3">
-          {/* Points */}
-          <div className="flex items-center gap-1.5 mb-2">
+          {/* Points + rarity percentage */}
+          <div className="flex items-center gap-1.5 mb-1">
             <HugeiconsIcon
               icon={StarIconData}
               size={11}
@@ -599,7 +800,19 @@ function AchievementCard({
             >
               {definition.points} pts
             </span>
+            {rarityPct && (
+              <span className="ml-auto text-[9px] italic" style={{ color: isEarned ? 'rgba(255,255,255,0.4)' : 'rgba(128,128,128,0.4)' }}>
+                {rarityPct}
+              </span>
+            )}
           </div>
+
+          {/* Impact stat (earned only) */}
+          {impactLabel && (
+            <div className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              {impactLabel}
+            </div>
+          )}
 
           {/* Achieved date */}
           {isEarned && earnedAt && (
@@ -608,10 +821,18 @@ function AchievementCard({
             </div>
           )}
 
+          {/* Pinned indicator */}
+          {isPinned && isEarned && (
+            <div className="flex items-center gap-1 mt-1">
+              <HugeiconsIcon icon={PinIconData} size={10} style={{ color: 'rgba(255,255,255,0.5)' }} />
+              <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.5)' }}>Showcased</span>
+            </div>
+          )}
+
           {/* Progress bar (locked only) */}
           {!isEarned && progress && (
             <>
-              <div className="flex justify-between text-[10px] mb-1" style={{ color: 'rgba(128,128,128,0.6)' }}>
+              <div className="flex justify-between text-[10px] mb-1 mt-1" style={{ color: 'rgba(128,128,128,0.6)' }}>
                 <span>{progress.current}/{progress.target}</span>
                 <span>{progressPercent}%</span>
               </div>
