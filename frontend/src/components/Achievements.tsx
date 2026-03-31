@@ -209,7 +209,7 @@ export default function Achievements({ tabId }: AchievementsProps) {
 
   return (
     <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--tab-content-bg, var(--dash-bg))' }}>
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-[90rem] mx-auto px-4 py-6 space-y-6">
 
         {/* Header + collapsible filters */}
         <div
@@ -316,7 +316,7 @@ export default function Achievements({ tabId }: AchievementsProps) {
           {/* Collapsible filter panel */}
           <div
             style={{
-              maxHeight: filtersOpen ? 400 : 0,
+              maxHeight: filtersOpen ? 700 : 0,
               overflow: 'hidden',
               transition: 'max-height 0.3s ease',
             }}
@@ -432,62 +432,63 @@ export default function Achievements({ tabId }: AchievementsProps) {
                   </button>
                 </div>
               )}
+
+              {/* Collections */}
+              {collections.length > 0 && (
+                <>
+                  <div className="h-px" style={{ backgroundColor: 'var(--dash-border, #333)' }} />
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>Collections</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+                      {collections.map(coll => {
+                        const pct = Math.round((coll.earned_count / coll.total_count) * 100);
+                        return (
+                          <div
+                            key={coll.id}
+                            className="rounded-lg p-2.5 transition-all"
+                            style={{
+                              border: `1px solid ${coll.completed ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
+                              backgroundColor: coll.completed ? `${tabColor}10` : 'transparent',
+                            }}
+                          >
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[11px] font-bold truncate" style={{ color: coll.completed ? tabColor : 'var(--dash-text)' }}>
+                                {coll.name}
+                              </span>
+                              <span className="text-[10px] font-semibold ml-1 shrink-0" style={{ color: 'var(--dash-text-sub)' }}>
+                                {coll.earned_count}/{coll.total_count}
+                              </span>
+                            </div>
+                            <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--dash-border, #333)' }}>
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${pct}%`,
+                                  backgroundColor: coll.completed ? tabColor : 'var(--dash-text-sub)',
+                                }}
+                              />
+                            </div>
+                            {coll.completed && (
+                              <div className="mt-1 text-[9px] font-semibold" style={{ color: tabColor }}>
+                                Complete!
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Collections section */}
-        {collections.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--dash-text-sub)' }}>
-              Collections
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {collections.map(coll => {
-                const pct = Math.round((coll.earned_count / coll.total_count) * 100);
-                return (
-                  <div
-                    key={coll.id}
-                    className="rounded-xl p-3 transition-all"
-                    style={{
-                      border: `1px solid ${coll.completed ? `${tabColor}50` : 'var(--dash-border, #333)'}`,
-                      backgroundColor: coll.completed ? `${tabColor}10` : 'var(--dash-card-bg, var(--dash-bg, #111))',
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold" style={{ color: coll.completed ? tabColor : 'var(--dash-text)' }}>
-                        {coll.name}
-                      </span>
-                      <span className="text-[10px] font-semibold" style={{ color: 'var(--dash-text-sub)' }}>
-                        {coll.earned_count}/{coll.total_count}
-                      </span>
-                    </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--dash-border, #333)' }}>
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${pct}%`,
-                          backgroundColor: coll.completed ? tabColor : 'var(--dash-text-sub)',
-                        }}
-                      />
-                    </div>
-                    {coll.completed && (
-                      <div className="mt-1.5 text-[10px] font-semibold" style={{ color: tabColor }}>
-                        Collection Complete!
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Achievement grid + Journey path */}
-        <div className="flex gap-6 items-start">
-          {/* Cards — 3 columns max */}
-          <div className="flex-1 min-w-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative" style={{ isolation: 'isolate' }}>
+        <div className="flex gap-5 items-start">
+          {/* Cards — 65% */}
+          <div className="min-w-0" style={{ flex: '0 0 65%' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 relative" style={{ isolation: 'isolate' }}>
               {sortedDefinitions.map((defn, i) => (
                 <AchievementCard
                   key={defn.id}
@@ -528,8 +529,8 @@ export default function Achievements({ tabId }: AchievementsProps) {
             )}
           </div>
 
-          {/* Journey path — right side, sticky */}
-          <div className="hidden xl:block w-[220px] shrink-0 sticky top-6">
+          {/* Journey path — right side 35%, sticky */}
+          <div className="hidden xl:block sticky top-6" style={{ flex: '0 0 35%' }}>
             <LevelJourneyPath
               rank={rank}
               earnedCount={earnedCount}
@@ -636,7 +637,7 @@ function AchievementCard({
       onClick={() => isEarned && onView?.(definition, earnedAt)}
       style={{
         animationDelay: `${Math.min(index * 40, 600)}ms`,
-        minHeight: 180,
+        minHeight: 150,
         background: isEarned
           ? `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`
           : dark
@@ -667,7 +668,7 @@ function AchievementCard({
           pointerEvents: 'none',
         }}
       >
-        <HugeiconsIcon icon={bgIcon as any} size={110} style={{ color: '#ffffff' }} />
+        <HugeiconsIcon icon={bgIcon as any} size={90} style={{ color: '#ffffff' }} />
       </div>
 
       {/* Inner glass overlay — dark mode only, earned only */}
@@ -701,10 +702,10 @@ function AchievementCard({
       )}
 
       {/* Card content */}
-      <div className="relative flex flex-col h-full p-4 z-10">
+      <div className="relative flex flex-col h-full p-3 z-10">
 
         {/* Top row: index + rarity + tier + secret badge */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <span
               className="text-[11px] font-bold tracking-widest"
@@ -755,17 +756,17 @@ function AchievementCard({
 
         {/* Small icon badge */}
         <div
-          className="flex items-center justify-center rounded-xl mb-3"
+          className="flex items-center justify-center rounded-lg mb-2"
           style={{
-            width: 36,
-            height: 36,
+            width: 30,
+            height: 30,
             backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : 'rgba(128,128,128,0.12)',
             backdropFilter: 'blur(8px)',
           }}
         >
           {isEarned
-            ? <HugeiconsIcon icon={Medal01IconData} size={18} style={{ color: '#fff' }} />
-            : <HugeiconsIcon icon={Lock01IconData} size={18} style={{ color: 'rgba(128,128,128,0.7)' }} />
+            ? <HugeiconsIcon icon={Medal01IconData} size={15} style={{ color: '#fff' }} />
+            : <HugeiconsIcon icon={Lock01IconData} size={15} style={{ color: 'rgba(128,128,128,0.7)' }} />
           }
         </div>
 
@@ -786,7 +787,7 @@ function AchievementCard({
         </p>
 
         {/* Bottom row */}
-        <div className="mt-3">
+        <div className="mt-2">
           {/* Points + rarity percentage */}
           <div className="flex items-center gap-1.5 mb-1">
             <HugeiconsIcon
