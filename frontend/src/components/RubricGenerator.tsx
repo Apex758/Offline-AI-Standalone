@@ -1144,6 +1144,33 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   </select>
                 </div>
 
+                <div data-tutorial="rubric-generator-grade">
+                  <label className="block text-sm font-medium text-theme-label mb-2">
+                    Grade Level <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.gradeLevel}
+                    onChange={(e) => {
+                      const newGrade = e.target.value;
+                      handleInputChange('gradeLevel', newGrade);
+                      handleInputChange('strand', '');
+                      handleInputChange('essentialOutcomes', '');
+                      handleInputChange('specificOutcomes', '');
+                      const newKey = newGrade.toLowerCase().replace('grade ', '').replace('kindergarten', 'k');
+                      const available = filterSubjects(allSubjects, gradeMapping, filterOn, newKey || undefined);
+                      if (formData.subject && !available.includes(formData.subject)) {
+                        handleInputChange('subject', '');
+                      }
+                    }}
+                    data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
+                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                  >
+                    <option value="">Select grade</option>
+                    {grades.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+
                 <div data-tutorial="rubric-generator-subject">
                   <label className="block text-sm font-medium text-theme-label mb-2">
                     Subject <span className="text-red-500">*</span>
@@ -1162,27 +1189,6 @@ const RubricGenerator: React.FC<RubricGeneratorProps> = ({ tabId, savedData, onD
                   >
                     <option value="">Select subject</option>
                     {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-
-                <div data-tutorial="rubric-generator-grade">
-                  <label className="block text-sm font-medium text-theme-label mb-2">
-                    Grade Level <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.gradeLevel}
-                    onChange={(e) => {
-                      handleInputChange('gradeLevel', e.target.value);
-                      handleInputChange('strand', '');
-                      handleInputChange('essentialOutcomes', '');
-                      handleInputChange('specificOutcomes', '');
-                    }}
-                    data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
-                    className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
-                    style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                  >
-                    <option value="">Select grade</option>
-                    {grades.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
 

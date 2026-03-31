@@ -1127,6 +1127,33 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                       <div className="space-y-4">
                         <div data-tutorial="lesson-planner-basic-info">
                           <label className="block text-sm font-medium text-theme-label mb-2">
+                            Grade Level <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={formData.gradeLevel}
+                            onChange={(e) => {
+                              const newGrade = e.target.value;
+                              handleInputChange('gradeLevel', newGrade);
+                              handleInputChange('essentialOutcomes', '');
+                              handleInputChange('specificOutcomes', '');
+                              const available = filterSubjects(allSubjects, gradeMapping, filterOn, newGrade.toLowerCase() || undefined);
+                              if (formData.subject && !available.includes(formData.subject)) {
+                                handleInputChange('subject', '');
+                              }
+                            }}
+                            data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                            className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
+                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          >
+                            <option value="">Select a grade</option>
+                            {grades.map(grade => (
+                              <option key={grade} value={grade}>Grade {grade}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-theme-label mb-2">
                             Subject <span className="text-red-500">*</span>
                           </label>
                           <select
@@ -1144,28 +1171,6 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ tabId, savedData, onDataC
                             <option value="">Select a subject</option>
                             {subjects.map(subject => (
                               <option key={subject} value={subject}>{subject}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-theme-label mb-2">
-                            Grade Level <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            value={formData.gradeLevel}
-                            onChange={(e) => {
-                              handleInputChange('gradeLevel', e.target.value);
-                              handleInputChange('essentialOutcomes', '');
-                              handleInputChange('specificOutcomes', '');
-                            }}
-                            data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
-                            className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
-                            style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                          >
-                            <option value="">Select a grade</option>
-                            {grades.map(grade => (
-                              <option key={grade} value={grade}>Grade {grade}</option>
                             ))}
                           </select>
                         </div>

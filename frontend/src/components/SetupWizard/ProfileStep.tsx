@@ -1,24 +1,26 @@
 import React from 'react';
-import { GRADE_LEVELS, SUBJECTS } from '../../data/teacherConstants';
+import { GRADE_LEVELS, SUBJECTS, GradeSubjectMapping, GRADE_LABEL_MAP } from '../../data/teacherConstants';
 
 interface ProfileStepProps {
   name: string;
   school: string;
-  selectedGrades: string[];
-  selectedSubjects: string[];
+  gradeSubjects: GradeSubjectMapping;
   onNameChange: (name: string) => void;
   onSchoolChange: (school: string) => void;
   onGradeToggle: (grade: string) => void;
-  onSubjectToggle: (subject: string) => void;
+  onSubjectToggle: (grade: string, subject: string) => void;
+  onApplyToAll: (sourceGrade: string) => void;
   onNext: () => void;
   onBack: () => void;
 }
 
 const ProfileStep: React.FC<ProfileStepProps> = ({
-  name, school, selectedGrades, selectedSubjects,
-  onNameChange, onSchoolChange, onGradeToggle, onSubjectToggle,
+  name, school, gradeSubjects,
+  onNameChange, onSchoolChange, onGradeToggle, onSubjectToggle, onApplyToAll,
   onNext, onBack,
 }) => {
+  const selectedGrades = Object.keys(gradeSubjects);
+
   return (
     <div className="px-8 py-6">
       <h2 className="text-2xl font-bold mb-1" style={{ color: '#F8E59D' }}>Tell us about yourself</h2>
@@ -84,29 +86,66 @@ const ProfileStep: React.FC<ProfileStepProps> = ({
           </div>
         </div>
 
-        {/* Subjects */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>Subjects</label>
-          <div className="flex flex-wrap gap-2">
-            {SUBJECTS.map((s) => {
-              const selected = selectedSubjects.includes(s);
-              return (
-                <button
-                  key={s}
-                  onClick={() => onSubjectToggle(s)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                  style={{
-                    backgroundColor: selected ? 'rgba(242,166,49,0.2)' : 'rgba(255,255,255,0.06)',
-                    border: `1.5px solid ${selected ? '#F2A631' : 'rgba(255,255,255,0.12)'}`,
-                    color: selected ? '#F2A631' : 'rgba(255,255,255,0.5)',
-                  }}
-                >
-                  {s}
-                </button>
-              );
-            })}
+        {/* Per-Grade Subject Selection */}
+        {selectedGrades.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Subjects per Grade
+            </label>
+            <div className="space-y-3">
+              {GRADE_LEVELS
+                .filter(g => selectedGrades.includes(g.value))
+                .map((g, idx) => {
+                  const subjects = gradeSubjects[g.value] || [];
+                  return (
+                    <div
+                      key={g.value}
+                      className="rounded-lg p-3"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold" style={{ color: '#F2A631' }}>
+                          {g.label}
+                        </span>
+                        {idx === 0 && selectedGrades.length > 1 && (
+                          <button
+                            onClick={() => onApplyToAll(g.value)}
+                            className="text-[10px] px-2 py-0.5 rounded-md transition-all hover:opacity-80"
+                            style={{
+                              backgroundColor: 'rgba(242,166,49,0.15)',
+                              color: '#F2A631',
+                              border: '1px solid rgba(242,166,49,0.3)',
+                            }}
+                          >
+                            Apply to all grades
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SUBJECTS.map((s) => {
+                          const active = subjects.includes(s);
+                          return (
+                            <button
+                              key={s}
+                              onClick={() => onSubjectToggle(g.value, s)}
+                              className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all"
+                              style={{
+                                backgroundColor: active ? 'rgba(242,166,49,0.18)' : 'rgba(255,255,255,0.05)',
+                                border: `1px solid ${active ? 'rgba(242,166,49,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                                color: active ? '#F8E59D' : 'rgba(255,255,255,0.4)',
+                              }}
+                            >
+                              {s}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Navigation */}

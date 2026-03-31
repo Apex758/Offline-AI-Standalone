@@ -317,12 +317,7 @@ async function startBackend() {
     
     const checkStarted = (data) => {
       const message = data.toString();
-      if (!serverStarted && (
-        message.includes('Uvicorn running') || 
-        message.includes('Application startup complete') ||
-        message.includes('Started server process') ||
-        message.includes('Starting Uvicorn server')
-      )) {
+      if (!serverStarted && message.includes('Server ready!')) {
         log.info('Backend server is ready!');
         serverStarted = true;
         resolve();

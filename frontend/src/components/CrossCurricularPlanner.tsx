@@ -1260,7 +1260,15 @@ const CrossCurricularPlanner: React.FC<CrossCurricularPlannerProps> = ({ tabId, 
                     </div>
                     <div data-tutorial="cross-curricular-planner-grade">
                       <label className="block text-sm font-medium text-theme-label mb-2">Grade Level *</label>
-                      <select value={formData.gradeLevel} onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+                      <select value={formData.gradeLevel} onChange={(e) => {
+                          const newGrade = e.target.value;
+                          handleInputChange('gradeLevel', newGrade);
+                          const newKey = newGrade.toLowerCase().replace('grade ', '').replace('kindergarten', 'k');
+                          const available = filterSubjects(allSubjects, gradeMapping, filterOn, newKey || undefined);
+                          if (formData.primarySubject && !available.includes(formData.primarySubject)) {
+                            handleInputChange('primarySubject', '');
+                          }
+                        }}
                         data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
                         className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
                         style={{ '--tw-ring-color': tabColor } as React.CSSProperties}>

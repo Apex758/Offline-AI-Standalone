@@ -192,6 +192,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
   const [fileSearchQuery, setFileSearchQuery] = useState('');
   const [fileSearchResults, setFileSearchResults] = useState<FileEntry[] | null>(null);
   const [loadingFolder, setLoadingFolder] = useState<string | null>(null);
+  const [refreshingFiles, setRefreshingFiles] = useState(false);
   const [attachingFile, setAttachingFile] = useState<string | null>(null);
   const fileSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -866,7 +867,7 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
   // Load allowed folders when files panel opens
   useEffect(() => {
-    if (rightPanel === 'files' && allowedFolders.length === 0) {
+    if (rightPanel === 'files') {
       fileAPI.getAllowedFolders().then((folders: string[]) => setAllowedFolders(folders)).catch(() => {});
     }
   }, [rightPanel]);
@@ -1656,24 +1657,51 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
               </h3>
               <div className="flex items-center gap-1">
                 <button
+                  disabled={refreshingFiles}
                   onClick={async () => {
-                    // Re-fetch all expanded folders (parents + subfolders)
-                    const foldersToRefresh = new Set(expandedFolders);
-                    // Also include all allowed (root) folders that are expanded
-                    allowedFolders.forEach(f => foldersToRefresh.add(f));
-                    for (const folder of foldersToRefresh) {
-                      try {
-                        const result = await fileAPI.browseFolder(folder);
-                        if (result?.items) {
-                          setFolderContents(prev => ({ ...prev, [folder]: result.items }));
+                    setRefreshingFiles(true);
+                    try {
+                      // 1. Re-fetch the root allowed folders list
+                      const freshAllowed = await fileAPI.getAllowedFolders();
+                      setAllowedFolders(freshAllowed);
+
+                      // 2. Build set of all folders to refresh (root + expanded)
+                      const foldersToRefresh = new Set(expandedFolders);
+                      freshAllowed.forEach(f => foldersToRefresh.add(f));
+
+                      // 3. Fetch all folder contents in parallel
+                      const results = await Promise.all(
+                        [...foldersToRefresh].map(async (folder) => {
+                          try {
+                            const result = await fileAPI.browseFolder(folder);
+                            if (result?.items) return { folder, items: result.items };
+                          } catch {}
+                          return null;
+                        })
+                      );
+
+                      // 4. Update state, purging stale entries for removed folders
+                      setFolderContents(prev => {
+                        const next = { ...prev };
+                        for (const key of Object.keys(next)) {
+                          if (!freshAllowed.some(f => key.startsWith(f))) {
+                            delete next[key];
+                          }
                         }
-                      } catch {}
+                        for (const r of results) {
+                          if (r) next[r.folder] = r.items;
+                        }
+                        return next;
+                      });
+                    } catch (err) {
+                      console.error('Error refreshing files:', err);
                     }
+                    setRefreshingFiles(false);
                   }}
-                  className="p-1.5 rounded-lg hover:bg-theme-hover transition"
+                  className="p-1.5 rounded-lg hover:bg-theme-hover transition disabled:opacity-50"
                   title="Refresh files"
                 >
-                  <RefreshIcon className="w-4 h-4 text-theme-muted" />
+                  <RefreshIcon className={`w-4 h-4 text-theme-muted ${refreshingFiles ? 'animate-spin' : ''}`} />
                 </button>
                 <button
                   onClick={() => setRightPanel('none')}

@@ -656,7 +656,7 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
             // Place so the bottom of the tree box = the diamond center (top face)
             const renderTree = () => (
               <image
-                href="/ach_tree.svg"
+                href="./ach_tree.svg"
                 x={cx - treeW / 2}
                 y={cy - treeH + hw * 0.05}
                 width={treeW}

@@ -1070,22 +1070,6 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                     <h3 className="text-lg font-bold text-theme-heading">Basic Information</h3>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div data-tutorial="multigrade-planner-subject">
-                        <label className="block text-sm font-medium text-theme-label mb-2">
-                          Subject <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={formData.subject}
-                          onChange={(e) => handleInputChange('subject', e.target.value)}
-                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.subject ? 'validation-error' : ''}`}
-                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                          data-validation-error={validationErrors.subject ? 'true' : undefined}
-                        >
-                          <option value="">Select a subject</option>
-                          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
-
                       <div data-tutorial="multigrade-planner-grades">
                         <label className="block text-sm font-medium text-theme-label mb-2">
                           Grade Range <span className="text-red-500">*</span>
@@ -1099,6 +1083,22 @@ const MultigradePlanner: React.FC<MultigradePlannerProps> = ({ tabId, savedData,
                         >
                           <option value="">Select grade range</option>
                           {gradeRanges.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                      </div>
+
+                      <div data-tutorial="multigrade-planner-subject">
+                        <label className="block text-sm font-medium text-theme-label mb-2">
+                          Subject <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={formData.subject}
+                          onChange={(e) => handleInputChange('subject', e.target.value)}
+                          className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.subject ? 'validation-error' : ''}`}
+                          style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                          data-validation-error={validationErrors.subject ? 'true' : undefined}
+                        >
+                          <option value="">Select a subject</option>
+                          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>
                     </div>

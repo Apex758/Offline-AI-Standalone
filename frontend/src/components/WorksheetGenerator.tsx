@@ -209,8 +209,9 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
   // Profile-based filtering for subject/grade dropdowns
   const gradeMapping = settings.profile.gradeSubjects || {};
   const filterOn = settings.profile.filterContentByProfile;
-  const subjects = filterSubjects(allSubjectsWS, gradeMapping, filterOn);
   const grades = filterGrades(allGradesWS, gradeMapping, filterOn);
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase() || '';
+  const subjects = filterSubjects(allSubjectsWS, gradeMapping, filterOn, selectedGradeKey || undefined);
 
   const getDefaultFormData = (): WorksheetFormData => ({
     subject: '',
@@ -1286,6 +1287,33 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
               <div className="grid grid-cols-2 gap-6">
                 {/* Left column - Form fields */}
                 <div className="space-y-4">
+                  <div data-tutorial="worksheet-generator-grade">
+                    <label className="block text-sm font-medium text-theme-label mb-2">
+                      Grade Level <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.gradeLevel}
+                      onChange={(e) => {
+                        const newGrade = e.target.value;
+                        handleInputChange('gradeLevel', newGrade);
+                        handleInputChange('strand', '');
+                        // Clear subject if not available for new grade
+                        const newKey = newGrade.toLowerCase();
+                        const available = filterSubjects(allSubjectsWS, gradeMapping, filterOn, newKey || undefined);
+                        if (formData.subject && !available.includes(formData.subject)) {
+                          handleInputChange('subject', '');
+                        }
+                      }}
+                      data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
+                    >
+                      <option value="">Select a grade</option>
+                      {grades.map(grade => (
+                        <option key={grade} value={grade}>Grade {grade}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div data-tutorial="worksheet-generator-subject">
                     <label className="block text-sm font-medium text-theme-label mb-2">
                       Subject <span className="text-red-500">*</span>
@@ -1302,26 +1330,6 @@ const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({ tabId, savedDat
                       <option value="">Select a subject</option>
                       {subjects.map(subject => (
                         <option key={subject} value={subject}>{subject}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div data-tutorial="worksheet-generator-grade">
-                    <label className="block text-sm font-medium text-theme-label mb-2">
-                      Grade Level <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={formData.gradeLevel}
-                      onChange={(e) => {
-                        handleInputChange('gradeLevel', e.target.value);
-                        handleInputChange('strand', '');
-                      }}
-                      data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
-                      className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
-                    >
-                      <option value="">Select a grade</option>
-                      {grades.map(grade => (
-                        <option key={grade} value={grade}>Grade {grade}</option>
                       ))}
                     </select>
                   </div>

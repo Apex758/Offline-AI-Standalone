@@ -2226,6 +2226,26 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <label className="block text-sm font-semibold text-theme-heading mb-1">Grade Level *</label>
+                    <select
+                      value={formData.gradeLevel}
+                      onChange={e => {
+                        const newGrade = e.target.value;
+                        updateField('gradeLevel', newGrade);
+                        const available = filterSubjects(allSubjects, gradeMapping, filterOn, newGrade.toLowerCase() || undefined);
+                        if (formData.subject && !available.includes(formData.subject)) {
+                          updateField('subject', '');
+                        }
+                      }}
+                      data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                      className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
+                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                    >
+                      <option value="">Select grade...</option>
+                      {grades.map(g => <option key={g} value={g}>{g === 'K' ? 'Kindergarten' : `Grade ${g}`}</option>)}
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-sm font-semibold text-theme-heading mb-1">Subject *</label>
                     <select
                       value={formData.subject}
@@ -2236,19 +2256,6 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                     >
                       <option value="">Select subject...</option>
                       {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-theme-heading mb-1">Grade Level *</label>
-                    <select
-                      value={formData.gradeLevel}
-                      onChange={e => updateField('gradeLevel', e.target.value)}
-                      data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
-                      className={`w-full px-3 py-2 rounded-lg bg-theme-secondary border border-theme-border text-theme-heading text-sm focus:ring-2 focus:outline-none ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
-                      style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                    >
-                      <option value="">Select grade...</option>
-                      {grades.map(g => <option key={g} value={g}>{g === 'K' ? 'Kindergarten' : `Grade ${g}`}</option>)}
                     </select>
                   </div>
                 </div>

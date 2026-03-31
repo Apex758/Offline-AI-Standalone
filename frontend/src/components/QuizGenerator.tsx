@@ -1351,6 +1351,32 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                 ) : (
                   /* ── Standard curriculum fields ── */
                   <>
+                    <div data-tutorial="quiz-generator-grade">
+                      <label className="block text-sm font-medium text-theme-label mb-2">
+                        Grade Level <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.gradeLevel}
+                        onChange={(e) => {
+                          const newGrade = e.target.value;
+                          handleInputChange('gradeLevel', newGrade);
+                          handleInputChange('strand', '');
+                          handleInputChange('essentialOutcomes', '');
+                          handleInputChange('specificOutcomes', '');
+                          const available = filterSubjects(allSubjects, gradeMapping, filterOn, newGrade.toLowerCase() || undefined);
+                          if (formData.subject && !available.includes(formData.subject)) {
+                            handleInputChange('subject', '');
+                          }
+                        }}
+                        data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
+                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
+                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
+                      >
+                        <option value="">Select a grade</option>
+                        {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
+                      </select>
+                    </div>
+
                     <div data-tutorial="quiz-generator-subject">
                       <label className="block text-sm font-medium text-theme-label mb-2">
                         Subject <span className="text-red-500">*</span>
@@ -1369,27 +1395,6 @@ const QuizGenerator: React.FC<QuizGeneratorProps> = ({ tabId, savedData, onDataC
                       >
                         <option value="">Select a subject</option>
                         {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-
-                    <div data-tutorial="quiz-generator-grade">
-                      <label className="block text-sm font-medium text-theme-label mb-2">
-                        Grade Level <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={formData.gradeLevel}
-                        onChange={(e) => {
-                          handleInputChange('gradeLevel', e.target.value);
-                          handleInputChange('strand', '');
-                          handleInputChange('essentialOutcomes', '');
-                          handleInputChange('specificOutcomes', '');
-                        }}
-                        data-validation-error={validationErrors.gradeLevel ? 'true' : undefined}
-                        className={`w-full px-4 py-2 border border-theme-strong rounded-lg focus:ring-2 ${validationErrors.gradeLevel ? 'validation-error' : ''}`}
-                        style={{ '--tw-ring-color': tabColor } as React.CSSProperties}
-                      >
-                        <option value="">Select a grade</option>
-                        {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
                       </select>
                     </div>
 

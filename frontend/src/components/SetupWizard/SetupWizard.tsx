@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FeatureModuleId } from '../../types/feature-disclosure';
 import { useSettings, UserProfile } from '../../contexts/SettingsContext';
-import { GradeSubjectMapping } from '../../data/teacherConstants';
+import { GradeSubjectMapping, SUBJECTS } from '../../data/teacherConstants';
 import WelcomeStep from './WelcomeStep';
 import ProfileStep from './ProfileStep';
 import FeaturePickerStep from './FeaturePickerStep';
@@ -19,25 +19,45 @@ const SetupWizard: React.FC = () => {
   // Profile state
   const [name, setName] = useState(settings.profile.displayName || '');
   const [school, setSchool] = useState(settings.profile.school || '');
-  const [selectedGrades, setSelectedGrades] = useState<string[]>(
-    Object.keys(settings.profile.gradeSubjects || {})
+  const [gradeSubjects, setGradeSubjects] = useState<GradeSubjectMapping>(
+    () => settings.profile.gradeSubjects || {}
   );
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(() => {
-    const gs = settings.profile.gradeSubjects || {};
-    const all = new Set<string>();
-    Object.values(gs).forEach(subs => subs.forEach(s => all.add(s)));
-    return Array.from(all);
-  });
 
   // Feature selection state
   const [selectedModules, setSelectedModules] = useState<FeatureModuleId[]>([]);
 
+  const selectedGrades = Object.keys(gradeSubjects);
+
   const toggleGrade = (g: string) => {
-    setSelectedGrades(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
+    setGradeSubjects(prev => {
+      if (prev[g]) {
+        const next = { ...prev };
+        delete next[g];
+        return next;
+      }
+      return { ...prev, [g]: [...SUBJECTS] };
+    });
   };
 
-  const toggleSubject = (s: string) => {
-    setSelectedSubjects(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  const toggleSubjectForGrade = (grade: string, subject: string) => {
+    setGradeSubjects(prev => {
+      const current = prev[grade] || [];
+      const next = current.includes(subject)
+        ? current.filter(s => s !== subject)
+        : [...current, subject];
+      return { ...prev, [grade]: next };
+    });
+  };
+
+  const applySubjectsToAll = (sourceGrade: string) => {
+    setGradeSubjects(prev => {
+      const sourceSubjects = prev[sourceGrade] || [];
+      const next = { ...prev };
+      for (const g of Object.keys(next)) {
+        next[g] = [...sourceSubjects];
+      }
+      return next;
+    });
   };
 
   const toggleModule = (id: FeatureModuleId) => {
@@ -59,17 +79,13 @@ const SetupWizard: React.FC = () => {
   };
 
   const handleFinish = () => {
-    // Build grade-subject mapping
-    const gradeSubjects: GradeSubjectMapping = {};
-    for (const g of selectedGrades) {
-      gradeSubjects[g] = [...selectedSubjects];
-    }
+    const hasAnySubjects = Object.values(gradeSubjects).some(subs => subs.length > 0);
 
     const profileUpdate: Partial<UserProfile> = {
       displayName: name,
       school,
       gradeSubjects,
-      filterContentByProfile: selectedGrades.length > 0 && selectedSubjects.length > 0,
+      filterContentByProfile: selectedGrades.length > 0 && hasAnySubjects,
     };
 
     completeSetup(selectedModules, profileUpdate);
@@ -108,12 +124,12 @@ const SetupWizard: React.FC = () => {
           <ProfileStep
             name={name}
             school={school}
-            selectedGrades={selectedGrades}
-            selectedSubjects={selectedSubjects}
+            gradeSubjects={gradeSubjects}
             onNameChange={setName}
             onSchoolChange={setSchool}
             onGradeToggle={toggleGrade}
-            onSubjectToggle={toggleSubject}
+            onSubjectToggle={toggleSubjectForGrade}
+            onApplyToAll={applySubjectsToAll}
             onNext={goNext}
             onBack={goBack}
           />
