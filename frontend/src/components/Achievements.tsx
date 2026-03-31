@@ -573,13 +573,17 @@ export default function Achievements({ tabId }: AchievementsProps) {
 }
 
 
-// Gradient stops per rarity — [light-from, light-to, dark-from, dark-to]
-const RARITY_GRADIENTS: Record<AchievementRarity, [string, string, string, string]> = {
-  common:    ['#6b7280', '#d1d5db', '#1f2937', '#4b5563'],
-  uncommon:  ['#15803d', '#4ade80', '#14532d', '#16a34a'],
-  rare:      ['#1d4ed8', '#60a5fa', '#1e3a8a', '#2563eb'],
-  epic:      ['#6d28d9', '#c084fc', '#3b0764', '#7c3aed'],
-  legendary: ['#b45309', '#fbbf24', '#78350f', '#d97706'],
+// Rarity theme for glass cards
+const RARITY_GLASS_THEME: Record<AchievementRarity, {
+  primary: string; accent: string; glow: string; badgeBg: string; badgeBorder: string; badgeText: string;
+  bgFrom: string; bgMid: string; bgTo: string;
+  bgLightFrom: string; bgLightMid: string; bgLightTo: string;
+}> = {
+  common:    { primary: '#9ca3af', accent: '#d1d5db', glow: 'rgba(156,163,175,0.10)', badgeBg: 'rgba(156,163,175,0.18)', badgeBorder: 'rgba(156,163,175,0.32)', badgeText: '#d1d5db', bgFrom: '#1e1e22', bgMid: '#16161a', bgTo: '#101014', bgLightFrom: '#6b7a8c', bgLightMid: '#576678', bgLightTo: '#485568' },
+  uncommon:  { primary: '#22c55e', accent: '#86efac', glow: 'rgba(34,197,94,0.10)',   badgeBg: 'rgba(34,197,94,0.18)',   badgeBorder: 'rgba(34,197,94,0.32)',   badgeText: '#86efac', bgFrom: '#0a1f14', bgMid: '#081a10', bgTo: '#05120b', bgLightFrom: '#1a8a4a', bgLightMid: '#157a3e', bgLightTo: '#0f6832' },
+  rare:      { primary: '#3b82f6', accent: '#93c5fd', glow: 'rgba(59,130,246,0.10)',  badgeBg: 'rgba(59,130,246,0.18)',  badgeBorder: 'rgba(59,130,246,0.32)',  badgeText: '#93c5fd', bgFrom: '#0a1428', bgMid: '#08101e', bgTo: '#050b16', bgLightFrom: '#2554b8', bgLightMid: '#1e48a8', bgLightTo: '#183c96' },
+  epic:      { primary: '#a855f7', accent: '#c4b5fd', glow: 'rgba(139,92,246,0.10)',  badgeBg: 'rgba(139,92,246,0.18)',  badgeBorder: 'rgba(139,92,246,0.32)',  badgeText: '#c4b5fd', bgFrom: '#1a0a2e', bgMid: '#12081e', bgTo: '#0c0516', bgLightFrom: '#6d28d9', bgLightMid: '#5b20c0', bgLightTo: '#4a18a8' },
+  legendary: { primary: '#eca830', accent: '#f5d485', glow: 'rgba(236,168,48,0.10)',  badgeBg: 'rgba(236,168,48,0.18)',  badgeBorder: 'rgba(236,168,48,0.32)',  badgeText: '#f5d485', bgFrom: '#1e1508', bgMid: '#181006', bgTo: '#120c04', bgLightFrom: '#a86415', bgLightMid: '#945812', bgLightTo: '#804c10' },
 };
 
 const CATEGORY_ICONS: Record<AchievementCategory, object> = {
@@ -621,7 +625,6 @@ function AchievementCard({
   const [hovered, setHovered] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
 
-  // Keep in sync if theme changes
   React.useEffect(() => {
     const obs = new MutationObserver(() =>
       setDark(document.documentElement.classList.contains('dark'))
@@ -630,11 +633,9 @@ function AchievementCard({
     return () => obs.disconnect();
   }, []);
 
-  const [gFrom, gTo, gDarkFrom, gDarkTo] = RARITY_GRADIENTS[definition.rarity];
-  const gradientFrom = dark ? gDarkFrom : gFrom;
-  const gradientTo   = dark ? gDarkTo   : gTo;
-  const color        = RARITY_COLORS[definition.rarity];
-  const bgIcon       = CATEGORY_ICONS[definition.category];
+  const theme = RARITY_GLASS_THEME[definition.rarity];
+  const color = RARITY_COLORS[definition.rarity];
+  const bgIcon = CATEGORY_ICONS[definition.category];
   const progressPercent = progress
     ? Math.min(100, Math.round((progress.current / progress.target) * 100))
     : 0;
@@ -645,224 +646,190 @@ function AchievementCard({
     ? IMPACT_LABELS[definition.check_key](impactCount)
     : null;
 
+  // Split name for gradient accent on last word(s)
+  const words = definition.name.split(' ');
+  const midpoint = Math.max(1, Math.ceil(words.length / 2));
+  const nameLine1 = words.slice(0, midpoint).join(' ');
+  const nameLine2 = words.slice(midpoint).join(' ');
+
+  const dateStr = earnedAt
+    ? new Date(earnedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '';
+
   return (
     <div
-      className="achievement-glare achievement-card-enter rounded-2xl overflow-hidden relative flex flex-col"
-      onMouseEnter={() => isEarned && setHovered(true)}
+      className="achievement-card-enter relative overflow-hidden"
+      onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => isEarned && onView?.(definition, earnedAt)}
       style={{
         animationDelay: `${Math.min(index * 40, 600)}ms`,
-        minHeight: 150,
-        background: isEarned
-          ? `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`
-          : dark
-            ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
-            : 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
-        border: isEarned
-          ? `1px solid ${color}40`
-          : '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 24,
+        background: dark
+          ? `linear-gradient(145deg, ${theme.bgFrom} 0%, ${theme.bgMid} 40%, ${theme.bgTo} 100%)`
+          : `linear-gradient(145deg, ${theme.bgLightFrom} 0%, ${theme.bgLightMid} 40%, ${theme.bgLightTo} 100%)`,
+        border: `1px solid ${isEarned ? `${theme.primary}25` : 'rgba(255,255,255,0.07)'}`,
         boxShadow: hovered
-          ? `0 24px 48px rgba(0,0,0,0.4), 0 0 32px ${color}40`
-          : isEarned
-            ? `0 8px 32px rgba(0,0,0,0.3), 0 0 20px ${color}20`
-            : '0 4px 16px rgba(0,0,0,0.2)',
-        transform: hovered ? 'scale(1.045) translateY(-5px)' : 'scale(1) translateY(0)',
-        transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease',
-        filter: isEarned ? 'none' : 'grayscale(0.65) brightness(0.8)',
+          ? `0 0 0 1px rgba(255,255,255,0.07) inset, 0 40px 80px rgba(0,0,0,0.65), 0 0 80px ${theme.glow.replace('0.10', '0.20')}`
+          : `0 0 0 1px rgba(255,255,255,0.04) inset, 0 20px 50px rgba(0,0,0,0.45), 0 0 40px ${theme.glow}`,
+        transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
+        transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+        filter: isEarned ? 'none' : 'grayscale(0.6) brightness(0.55)',
         zIndex: hovered ? 2 : undefined,
         cursor: isEarned ? 'pointer' : 'default',
       }}
     >
-      {/* Large watermark background icon */}
-      <div
-        className="absolute"
-        style={{
-          right: -10,
-          bottom: -10,
-          opacity: isEarned ? 0.12 : 0.07,
-          pointerEvents: 'none',
-        }}
-      >
-        <HugeiconsIcon icon={bgIcon as any} size={90} style={{ color: '#ffffff' }} />
-      </div>
+      {(() => {
+        // Theme-aware color helpers
+        // Both modes use light text on dark card backgrounds
+        const textPrimary = '#fff';
+        const textMuted = 'rgba(255,255,255,0.25)';
+        const textSub = 'rgba(255,255,255,0.38)';
+        const textLabel = 'rgba(255,255,255,0.28)';
+        const textFooter = 'rgba(255,255,255,0.22)';
+        const lineDivider = 'rgba(255,255,255,0.07)';
+        const iconBoxBg = 'rgba(255,255,255,0.06)';
+        const iconBoxBorder = 'rgba(255,255,255,0.09)';
+        const iconColor = 'rgba(255,255,255,0.65)';
+        const iconLockedColor = 'rgba(255,255,255,0.3)';
+        const secretBg = 'rgba(255,255,255,0.12)';
+        const secretColor = 'rgba(255,255,255,0.6)';
+        const watermarkColor = '#ffffff';
+        const shineBg = dark
+          ? 'linear-gradient(180deg, rgba(255,255,255,0.055) 0%, transparent 100%)'
+          : 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%)';
 
-      {/* Inner glass overlay — dark mode only, earned only */}
-      {isEarned && dark && (
-        <div
-          className="absolute inset-0 rounded-2xl"
-          style={{
-            background: 'linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 60%, transparent 100%)',
-            pointerEvents: 'none',
-          }}
-        />
-      )}
+        return <>
+          {/* Shine overlay */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '45%', background: shineBg, borderRadius: '24px 24px 0 0', pointerEvents: 'none' }} />
 
-      {/* Pin to showcase button (earned only, visible on hover) */}
-      {isEarned && hovered && (
-        <button
-          className="absolute top-2 right-2 z-20 flex items-center justify-center rounded-full transition-all"
-          onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
-          title={isPinned ? 'Unpin from showcase' : canPin ? 'Pin to showcase' : 'Showcase full (5 max)'}
-          style={{
-            width: 26,
-            height: 26,
-            backgroundColor: isPinned ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)',
-            border: `1px solid ${isPinned ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
-            opacity: canPin || isPinned ? 1 : 0.4,
-            cursor: canPin || isPinned ? 'pointer' : 'not-allowed',
-          }}
-        >
-          <HugeiconsIcon icon={PinIconData} size={12} style={{ color: '#fff' }} />
-        </button>
-      )}
+          {/* Glow orb */}
+          <div style={{ position: 'absolute', width: 220, height: 220, borderRadius: '50%', background: `radial-gradient(circle, ${theme.glow.replace('0.10', dark ? '0.18' : '0.25')} 0%, transparent 70%)`, top: -80, right: -60, pointerEvents: 'none' }} />
 
-      {/* Card content */}
-      <div className="relative flex flex-col h-full p-3 z-10">
-
-        {/* Top row: index + rarity + tier + secret badge */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="text-[11px] font-bold tracking-widest"
-              style={{ color: isEarned ? 'rgba(255,255,255,0.55)' : 'rgba(128,128,128,0.6)' }}
-            >
-              {String(index + 1).padStart(2, '0')} /
-            </span>
-            {/* Tier badge */}
-            {definition.tier && (
-              <span
-                className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-                style={{
-                  backgroundColor: `${tierColor}25`,
-                  color: tierColor!,
-                  border: `1px solid ${tierColor}40`,
-                }}
-              >
-                {TIER_LABELS[definition.tier]}
-              </span>
-            )}
+          {/* Category watermark */}
+          <div style={{ position: 'absolute', right: -10, bottom: -10, opacity: isEarned ? 0.06 : 0.03, pointerEvents: 'none' }}>
+            <HugeiconsIcon icon={bgIcon as any} size={90} style={{ color: watermarkColor }} />
           </div>
-          <div className="flex items-center gap-1.5">
-            {/* Secret badge for hidden achievements */}
-            {isHiddenEarned && (
-              <span
-                className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  color: '#fff',
-                  letterSpacing: '0.1em',
-                }}
-              >
-                SECRET
-              </span>
-            )}
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+
+          {/* Pin button (earned, on hover) */}
+          {isEarned && hovered && (
+            <button
+              className="absolute top-3 right-3 z-20 flex items-center justify-center rounded-full transition-all"
+              onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
+              title={isPinned ? 'Unpin from showcase' : canPin ? 'Pin to showcase' : 'Showcase full (5 max)'}
               style={{
-                backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : `${color}25`,
-                color: isEarned ? '#fff' : color,
-                backdropFilter: 'blur(4px)',
+                width: 26, height: 26,
+                backgroundColor: isPinned ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+                border: `1px solid ${isPinned ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.12)'}`,
+                opacity: canPin || isPinned ? 1 : 0.4,
+                cursor: canPin || isPinned ? 'pointer' : 'not-allowed',
               }}
             >
-              {RARITY_LABELS[definition.rarity]}
-            </span>
-          </div>
-        </div>
+              <HugeiconsIcon icon={PinIconData} size={12} style={{ color: '#fff' }} />
+            </button>
+          )}
 
-        {/* Small icon badge */}
-        <div
-          className="flex items-center justify-center rounded-lg mb-2"
-          style={{
-            width: 30,
-            height: 30,
-            backgroundColor: isEarned ? 'rgba(255,255,255,0.2)' : 'rgba(128,128,128,0.12)',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          {isEarned
-            ? <HugeiconsIcon icon={Medal01IconData} size={15} style={{ color: '#fff' }} />
-            : <HugeiconsIcon icon={Lock01IconData} size={15} style={{ color: 'rgba(128,128,128,0.7)' }} />
-          }
-        </div>
+          {/* Body */}
+          <div style={{ position: 'relative', zIndex: 2, padding: '22px 22px 0' }}>
+            {/* Top row: number + badges */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 400, color: textMuted, letterSpacing: '0.06em' }}>
+                  No. {String(index + 1).padStart(2, '0')}
+                </span>
+                {definition.tier && (
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, backgroundColor: `${tierColor}25`, color: tierColor!, border: `1px solid ${tierColor}40` }}>
+                    {TIER_LABELS[definition.tier]}
+                  </span>
+                )}
+                {isHiddenEarned && (
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, backgroundColor: secretBg, color: secretColor, letterSpacing: '0.1em' }}>
+                    SECRET
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.badgeBg, border: `1px solid ${theme.badgeBorder}`, borderRadius: 100, padding: '4px 11px' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: theme.badgeText }} />
+                <span style={{ fontSize: 10, fontWeight: 500, color: theme.badgeText, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+                  {RARITY_LABELS[definition.rarity]}
+                </span>
+              </div>
+            </div>
 
-        {/* Name */}
-        <h4
-          className="text-sm font-bold leading-tight mb-1"
-          style={{ color: isEarned ? '#fff' : (dark ? 'rgba(200,200,200,0.6)' : 'rgba(60,60,60,0.7)') }}
-        >
-          {definition.name}
-        </h4>
+            {/* Icon */}
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: iconBoxBg, border: `1px solid ${iconBoxBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+              {isEarned
+                ? <HugeiconsIcon icon={Medal01IconData} size={18} style={{ color: iconColor }} />
+                : <HugeiconsIcon icon={Lock01IconData} size={18} style={{ color: iconLockedColor }} />
+              }
+            </div>
 
-        {/* Description */}
-        <p
-          className="text-[11px] leading-snug flex-1"
-          style={{ color: isEarned ? 'rgba(255,255,255,0.65)' : 'rgba(128,128,128,0.6)' }}
-        >
-          {definition.description}
-        </p>
+            {/* Title */}
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 800, color: textPrimary, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 6 }}>
+              {nameLine1}{nameLine2 && <>{' '}<span style={{ background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 50%, ${theme.primary} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{nameLine2}</span></>}
+            </div>
 
-        {/* Bottom row */}
-        <div className="mt-2">
-          {/* Points + rarity percentage */}
-          <div className="flex items-center gap-1.5 mb-1">
-            <HugeiconsIcon
-              icon={StarIconData}
-              size={11}
-              style={{ color: isEarned ? 'rgba(255,255,255,0.7)' : 'rgba(128,128,128,0.5)' }}
-            />
-            <span
-              className="text-[11px] font-semibold"
-              style={{ color: isEarned ? 'rgba(255,255,255,0.7)' : 'rgba(128,128,128,0.5)' }}
-            >
-              {definition.points} pts
-            </span>
-            {rarityPct && (
-              <span className="ml-auto text-[9px] italic" style={{ color: isEarned ? 'rgba(255,255,255,0.4)' : 'rgba(128,128,128,0.4)' }}>
-                {rarityPct}
-              </span>
+            {/* Description */}
+            <div style={{ fontSize: 12, fontWeight: 400, color: textSub, lineHeight: 1.65, marginBottom: 20 }}>
+              {definition.description}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: lineDivider, marginBottom: 16 }} />
+
+            {/* Stats row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', paddingBottom: 20 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3 }}>
+                <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  +{definition.points} pts
+                </span>
+                <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Earned</span>
+              </div>
+
+              {isEarned && impactLabel ? (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3, paddingLeft: 12, borderLeft: `1px solid ${lineDivider}` }}>
+                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: textPrimary, whiteSpace: 'nowrap' as const }}>{impactCount}</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}>{definition.check_key.replace(/_/g, ' ')}</span>
+                </div>
+              ) : !isEarned && progress ? (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3, paddingLeft: 12, borderLeft: `1px solid ${lineDivider}` }}>
+                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: textPrimary, whiteSpace: 'nowrap' as const }}>{progress.current}/{progress.target}</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Progress</span>
+                </div>
+              ) : null}
+
+              {rarityPct && (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 3, paddingLeft: 12, borderLeft: `1px solid ${lineDivider}` }}>
+                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: textPrimary, whiteSpace: 'nowrap' as const }}>{rarityPct.replace(' of educators', '')}</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 500, color: textLabel, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Educators</span>
+                </div>
+              )}
+            </div>
+
+            {/* Progress bar (locked only) */}
+            {!isEarned && progress && (
+              <div style={{ paddingBottom: 16 }}>
+                <div style={{ height: 3, borderRadius: 100, background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 100, width: `${progressPercent}%`, background: `linear-gradient(90deg, ${theme.primary}, ${theme.accent})`, transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Impact stat (earned only) */}
-          {impactLabel && (
-            <div className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              {impactLabel}
-            </div>
-          )}
-
-          {/* Achieved date */}
-          {isEarned && earnedAt && (
-            <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Achieved on {new Date(earnedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-            </div>
-          )}
-
-          {/* Pinned indicator */}
-          {isPinned && isEarned && (
-            <div className="flex items-center gap-1 mt-1">
-              <HugeiconsIcon icon={PinIconData} size={10} style={{ color: 'rgba(255,255,255,0.5)' }} />
-              <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.5)' }}>Showcased</span>
-            </div>
-          )}
-
-          {/* Progress bar (locked only) */}
-          {!isEarned && progress && (
-            <>
-              <div className="flex justify-between text-[10px] mb-1 mt-1" style={{ color: 'rgba(128,128,128,0.6)' }}>
-                <span>{progress.current}/{progress.target}</span>
-                <span>{progressPercent}%</span>
+          {/* Footer */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 10.5, fontWeight: 400, color: textFooter, letterSpacing: '0.03em' }}>
+              {isEarned && dateStr ? dateStr : !isEarned ? `${progressPercent}% complete` : ''}
+            </span>
+            {isPinned && isEarned && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 500, color: `${theme.primary}73`, letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: `${theme.primary}8c` }} />
+                Showcased
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(128,128,128,0.2)' }}>
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{ width: `${progressPercent}%`, backgroundColor: color }}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+            )}
+          </div>
+        </>;
+      })()}
     </div>
   );
 }

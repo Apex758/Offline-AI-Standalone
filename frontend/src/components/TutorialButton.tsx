@@ -10,6 +10,7 @@ import Sun01IconData from '@hugeicons/core-free-icons/Sun01Icon';
 import Sun02IconData from '@hugeicons/core-free-icons/Sun02Icon';
 import FireIconData from '@hugeicons/core-free-icons/FireIcon';
 import { useSettings } from '../contexts/SettingsContext';
+import { OECS_LOGO_BASE64 } from '../utils/logoBase64';
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
   const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
@@ -147,11 +148,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
     height: '52px',
     background: expanded
       ? 'linear-gradient(135deg, rgba(100,116,139,0.95), rgba(71,85,105,0.95))'
-      : 'linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--primary) / 0.75) 100%)',
-    boxShadow: '0 8px 32px rgb(var(--ring) / 0.45), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
+      : 'linear-gradient(135deg, #22c55e, #16a34a)',
+    boxShadow: '0 8px 32px rgba(250,204,21,0.45), 0 2px 8px rgba(245,158,11,0.25)',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    border: '1px solid rgba(34,197,94,0.4)',
     transition: 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease, background 0.2s ease',
+    padding: expanded ? 0 : '6px',
+    overflow: 'hidden',
   };
 
   const subButtonBase: React.CSSProperties = {
@@ -448,13 +451,13 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
         onMouseEnter={e => {
           if (!expanded) {
             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1) translateY(-2px)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 40px rgb(var(--ring) / 0.6), 0 4px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)';
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 40px rgba(250,204,21,0.55), 0 4px 12px rgba(245,158,11,0.3)';
           }
         }}
         onMouseLeave={e => {
           if (!expanded) {
             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgb(var(--ring) / 0.45), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)';
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(250,204,21,0.45), 0 2px 8px rgba(245,158,11,0.25)';
           }
         }}
         title={onOpenSearch ? (expanded ? 'Close' : 'Help & Search') : (isCompleted ? 'Replay Tutorial' : 'Start Tutorial')}
@@ -463,7 +466,17 @@ export const TutorialButton: React.FC<TutorialButtonProps> = ({
         {expanded ? (
           <X className="w-5 h-5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))', transition: 'transform 0.2s ease', transform: 'rotate(0deg)' }} />
         ) : (
-          <HelpCircle className="w-5 h-5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
+          <img
+            src={OECS_LOGO_BASE64}
+            alt="OECS"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              borderRadius: '12px',
+            }}
+            draggable={false}
+          />
         )}
 
         {/* Pulsing dot — only when no onOpenSearch (old behavior) and not completed */}

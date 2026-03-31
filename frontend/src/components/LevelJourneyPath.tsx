@@ -246,17 +246,32 @@ export default function LevelJourneyPath({ rank, earnedCount, tabColor }: LevelJ
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-3xl overflow-hidden relative"
       style={{
         background: dark
-          ? 'linear-gradient(180deg, rgba(20,20,20,0.9) 0%, rgba(30,30,30,0.95) 100%)'
-          : 'linear-gradient(180deg, rgba(245,245,245,0.95) 0%, rgba(235,235,235,0.98) 100%)',
-        border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+          ? 'rgba(255,255,255,0.04)'
+          : 'rgba(255,255,255,0.55)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)'}`,
         boxShadow: dark
-          ? '0 8px 32px rgba(0,0,0,0.4)'
-          : '0 8px 32px rgba(0,0,0,0.08)',
+          ? `0 0 0 1px rgba(255,255,255,0.04) inset, 0 30px 70px rgba(0,0,0,0.55), 0 0 40px ${tabColor}10`
+          : `0 0 0 1px rgba(255,255,255,0.3) inset, 0 20px 50px rgba(0,0,0,0.08), 0 0 30px ${tabColor}08`,
       }}
     >
+      {/* Shine overlay */}
+      <div
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: '30%',
+          background: dark
+            ? 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)'
+            : 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%)',
+          borderRadius: '24px 24px 0 0',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
       {/* Header — clickable to toggle levels panel */}
       <div
         className="px-4 py-3 text-center cursor-pointer select-none transition-colors duration-150"
