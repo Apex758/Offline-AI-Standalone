@@ -89,6 +89,7 @@ interface LiveSnapshot {
   time: string;
   systemCpu: number;
   systemRam: number;
+  systemRamGb: number;
   appCpu: number;
   appRamGb: number;
 }
@@ -121,8 +122,8 @@ const GRAPH_SERIES: { key: keyof LiveSnapshot; name: string; color: string }[] =
 ];
 
 const RAM_SERIES: { key: keyof LiveSnapshot; name: string; color: string }[] = [
-  { key: 'systemRam', name: 'System RAM %', color: '#8b5cf6' },
-  { key: 'appRamGb',  name: 'App RAM (GB)', color: '#ec4899' },
+  { key: 'systemRamGb', name: 'System RAM (GB)', color: '#8b5cf6' },
+  { key: 'appRamGb',    name: 'App RAM (GB)',    color: '#ec4899' },
 ];
 
 const LiveAreaChart: React.FC<{
@@ -288,6 +289,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
           time: timeLabel,
           systemCpu: stats.cpu_percent_system,
           systemRam: stats.ram_percent,
+          systemRamGb: parseFloat(stats.ram_used_gb.toFixed(2)),
           appCpu: Math.min(100, stats.app_cpu_percent / cores),
           appRamGb: parseFloat((stats.app_ram_mb / 1024).toFixed(2)),
         }];
@@ -430,9 +432,9 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
             <LiveAreaChart
               data={liveHistory}
               series={RAM_SERIES}
-              title="RAM Usage"
+              title="RAM Usage (GB)"
               yDomain={[0, Math.ceil(maxRamGb)]}
-              yFormatter={(v) => `${v}`}
+              yFormatter={(v) => `${v} GB`}
             />
           </div>
         </div>
@@ -465,12 +467,13 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
         <StatCard
           label="Avg TTFT"
           value={
-            summary?.text_summary?.length
-              ? formatMs(
-                  summary.text_summary.reduce((a, b) => a + b.avg_ttft_ms * b.count, 0) /
-                    summary.text_summary.reduce((a, b) => a + b.count, 0)
-                )
-              : '—'
+            (() => {
+              const withTtft = summary?.text_summary?.filter(s => s.avg_ttft_ms != null && s.avg_ttft_ms > 0) || [];
+              if (!withTtft.length) return '—';
+              const totalWeighted = withTtft.reduce((a, b) => a + b.avg_ttft_ms * b.count, 0);
+              const totalCount = withTtft.reduce((a, b) => a + b.count, 0);
+              return formatMs(totalWeighted / totalCount);
+            })()
           }
           icon={Clock01IconData}
         />
@@ -528,7 +531,7 @@ const PerformanceMetrics: React.FC<Props> = ({ tabId }) => {
                         <td className="py-2 pr-4 text-right font-mono font-semibold text-green-400">{row.avg_tps}</td>
                         <td className="py-2 pr-4 text-right font-mono text-theme-muted">{row.min_tps}</td>
                         <td className="py-2 pr-4 text-right font-mono text-theme-muted">{row.max_tps}</td>
-                        <td className="py-2 pr-4 text-right">{formatMs(row.avg_ttft_ms)}</td>
+                        <td className="py-2 pr-4 text-right">{row.avg_ttft_ms ? formatMs(row.avg_ttft_ms) : '—'}</td>
                         <td className="py-2 pr-4 text-right">{formatMs(row.avg_total_ms)}</td>
                         <td className="py-2 text-right">{row.avg_ram_mb ? `${row.avg_ram_mb} MB` : '—'}</td>
                       </tr>

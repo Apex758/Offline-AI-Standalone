@@ -61,6 +61,7 @@ class ChatMemory:
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 timestamp TEXT NOT NULL,
+                attachments TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
             );
@@ -68,6 +69,11 @@ class ChatMemory:
             CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
             CREATE INDEX IF NOT EXISTS idx_messages_chat_role ON messages(chat_id, role);
         """)
+        # Migrate: add attachments column if missing (existing databases)
+        try:
+            conn.execute("SELECT attachments FROM messages LIMIT 1")
+        except sqlite3.OperationalError:
+            conn.execute("ALTER TABLE messages ADD COLUMN attachments TEXT DEFAULT NULL")
         conn.commit()
         conn.close()
 
@@ -116,7 +122,7 @@ class ChatMemory:
 
     # ── Message Storage ───────────────────────────────────────────────
 
-    def save_message(self, chat_id: str, msg_id: str, role: str, content: str, timestamp: str):
+    def save_message(self, chat_id: str, msg_id: str, role: str, content: str, timestamp: str, attachments=None):
         """Save a single message."""
         self.ensure_chat(chat_id)
         conn = self._conn()
@@ -126,9 +132,10 @@ class ChatMemory:
             (chat_id, msg_id)
         ).fetchone()
         if not existing:
+            attachments_json = json.dumps(attachments) if attachments else None
             conn.execute(
-                "INSERT INTO messages (chat_id, msg_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)",
-                (chat_id, msg_id, role, content, timestamp)
+                "INSERT INTO messages (chat_id, msg_id, role, content, timestamp, attachments) VALUES (?, ?, ?, ?, ?, ?)",
+                (chat_id, msg_id, role, content, timestamp, attachments_json)
             )
             conn.execute(
                 "UPDATE chats SET updated_at = ? WHERE id = ?",
@@ -152,8 +159,8 @@ class ChatMemory:
         new_messages = [m for m in messages if m.get('id') not in existing_ids]
         if new_messages:
             conn.executemany(
-                "INSERT INTO messages (chat_id, msg_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)",
-                [(chat_id, m['id'], m['role'], m['content'], m.get('timestamp', datetime.now().isoformat())) for m in new_messages]
+                "INSERT INTO messages (chat_id, msg_id, role, content, timestamp, attachments) VALUES (?, ?, ?, ?, ?, ?)",
+                [(chat_id, m['id'], m['role'], m['content'], m.get('timestamp', datetime.now().isoformat()), json.dumps(m['attachments']) if m.get('attachments') else None) for m in new_messages]
             )
             conn.execute(
                 "UPDATE chats SET updated_at = ? WHERE id = ?",
@@ -162,15 +169,25 @@ class ChatMemory:
             conn.commit()
         conn.close()
 
+    def _parse_message_row(self, row) -> Dict:
+        """Convert a message row to a dict, parsing attachments JSON if present."""
+        d = dict(row)
+        if d.get('attachments'):
+            try:
+                d['attachments'] = json.loads(d['attachments'])
+            except (json.JSONDecodeError, TypeError):
+                d['attachments'] = None
+        return d
+
     def get_all_messages(self, chat_id: str) -> List[Dict]:
         """Get all messages for a chat."""
         conn = self._conn()
         rows = conn.execute(
-            "SELECT msg_id as id, role, content, timestamp FROM messages WHERE chat_id = ? ORDER BY id ASC",
+            "SELECT msg_id as id, role, content, timestamp, attachments FROM messages WHERE chat_id = ? ORDER BY id ASC",
             (chat_id,)
         ).fetchall()
         conn.close()
-        return [dict(r) for r in rows]
+        return [self._parse_message_row(r) for r in rows]
 
     def get_message_count(self, chat_id: str) -> int:
         conn = self._conn()
@@ -354,7 +371,7 @@ class ChatMemory:
             return None
 
         msg_rows = conn.execute(
-            "SELECT msg_id as id, role, content, timestamp FROM messages WHERE chat_id = ? ORDER BY id ASC",
+            "SELECT msg_id as id, role, content, timestamp, attachments FROM messages WHERE chat_id = ? ORDER BY id ASC",
             (chat_id,)
         ).fetchall()
         conn.close()
@@ -363,7 +380,7 @@ class ChatMemory:
             "id": chat_row['id'],
             "title": chat_row['title'],
             "timestamp": chat_row['timestamp'],
-            "messages": [dict(r) for r in msg_rows]
+            "messages": [self._parse_message_row(r) for r in msg_rows]
         }
 
     def get_all_chats_with_messages(self) -> List[Dict]:
@@ -376,14 +393,14 @@ class ChatMemory:
         result = []
         for chat in chat_rows:
             msg_rows = conn.execute(
-                "SELECT msg_id as id, role, content, timestamp FROM messages WHERE chat_id = ? ORDER BY id ASC",
+                "SELECT msg_id as id, role, content, timestamp, attachments FROM messages WHERE chat_id = ? ORDER BY id ASC",
                 (chat['id'],)
             ).fetchall()
             result.append({
                 "id": chat['id'],
                 "title": chat['title'],
                 "timestamp": chat['timestamp'],
-                "messages": [dict(r) for r in msg_rows]
+                "messages": [self._parse_message_row(r) for r in msg_rows]
             })
 
         conn.close()

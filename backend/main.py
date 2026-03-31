@@ -338,6 +338,7 @@ class Message(BaseModel):
     role: str
     content: str
     timestamp: str
+    attachments: Optional[List[dict]] = None
 
 class ChatHistory(BaseModel):
     id: str
@@ -730,6 +731,8 @@ async def websocket_chat(websocket: WebSocket):
             client_history = message_data.get("history", None)
             # Thinking mode toggle (for Qwen2.5/Qwen3 models)
             thinking_enabled = message_data.get("thinking_enabled", False)
+            # Teacher profile context (grade/subject awareness)
+            profile_context = message_data.get("profile_context", "")
 
             if not user_message:
                 continue
@@ -764,6 +767,10 @@ async def websocket_chat(websocket: WebSocket):
 
             # Inject summary into system prompt if available
             system_prompt = base_system_prompt + summary_block
+
+            # Inject teacher profile context (grade/subject awareness)
+            if profile_context:
+                system_prompt += profile_context
 
             # Separate image files from text files
             reference_files = message_data.get("reference_files", None)
@@ -2282,6 +2289,7 @@ async def presentation_websocket(websocket: WebSocket):
             prompt = data.get("prompt", "")
             job_id = data.get("jobId") or data.get("id") or "presentation"
             generation_mode = data.get("generationMode", "queued")
+            suggested_mode = data.get("suggestedMode", False)
 
             if not prompt:
                 continue
@@ -2290,10 +2298,11 @@ async def presentation_websocket(websocket: WebSocket):
             from tier1_prompts import get_tier1_system_prompt, get_tier1_gen_params
             _tier_info = compute_effective_tier()
             _is_tier1 = _tier_info["tier"] == 1
-            _t1_params = get_tier1_gen_params("presentation") if _is_tier1 else {}
+            _t1_prompt_key = "presentation_with_suggestions" if suggested_mode else "presentation"
+            _t1_params = get_tier1_gen_params(_t1_prompt_key) if _is_tier1 else {}
 
             if _is_tier1:
-                system_prompt = get_tier1_system_prompt("presentation")
+                system_prompt = get_tier1_system_prompt(_t1_prompt_key)
             else:
                 system_prompt = (
                     "You are an expert presentation designer for educational content. "
@@ -6961,6 +6970,15 @@ async def export_data(categories: str = ""):
         except Exception:
             result["students"] = []
 
+    if "calendar" in cats:
+        try:
+            result["calendar"] = {
+                "reminders": student_service.list_test_reminders(),
+            }
+        except Exception as e:
+            logging.warning(f"Failed to export calendar: {e}")
+            result["calendar"] = {"reminders": []}
+
     return {
         "exportDate": datetime.now().isoformat(),
         "version": "1.0.0",
@@ -7101,6 +7119,20 @@ async def import_data(payload: dict):
             imported["students"] = count
         except Exception as e:
             errors.append(f"students: {e}")
+
+    if "calendar" in cats and "calendar" in data:
+        try:
+            cal_data = data["calendar"]
+            count = 0
+            for reminder in cal_data.get("reminders", []):
+                try:
+                    student_service.create_test_reminder(reminder)
+                    count += 1
+                except Exception:
+                    pass  # skip duplicates
+            imported["calendar"] = count
+        except Exception as e:
+            errors.append(f"calendar: {e}")
 
     return {
         "success": len(errors) == 0,

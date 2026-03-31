@@ -248,9 +248,10 @@ class LlamaInference:
             gen_start = time.perf_counter()
 
             # Run in thread pool (blocking call)
+            resource_snapshot = [0.0, 0.0]  # [cpu_percent, ram_mb]
             def blocking_generate():
                 with SilenceOutput():
-                    return self.model(
+                    result = self.model(
                         prompt,
                         max_tokens=max_tokens,
                         temperature=temperature,
@@ -258,6 +259,15 @@ class LlamaInference:
                         stop=stop,
                         echo=False,
                     )
+                # Capture resources while model is still hot in memory
+                try:
+                    import psutil
+                    proc = psutil.Process(os.getpid())
+                    resource_snapshot[0] = proc.cpu_percent(interval=None)
+                    resource_snapshot[1] = round(proc.memory_info().rss / (1024 * 1024), 2)
+                except Exception:
+                    pass
+                return result
 
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(None, blocking_generate)
@@ -276,8 +286,10 @@ class LlamaInference:
                     task_type=tool_name,
                     prompt_tokens=usage.get("prompt_tokens", 0),
                     completion_tokens=usage.get("completion_tokens", 0),
-                    ttft_ms=total_time_ms,  # Non-streaming: TTFT ≈ total time
+                    ttft_ms=0,  # Non-streaming: no meaningful TTFT
                     total_time_ms=total_time_ms,
+                    cpu_percent=resource_snapshot[0],
+                    ram_usage_mb=resource_snapshot[1],
                 )
             except Exception as me:
                 logger.debug(f"Metrics recording skipped: {me}")
@@ -412,6 +424,15 @@ class LlamaInference:
             gen_end = time.perf_counter()
             total_time_ms = (gen_end - gen_start) * 1000
             ttft_ms = ((first_token_time[0] - gen_start) * 1000) if first_token_time[0] else 0
+            # Capture resources while model is still hot
+            snap_cpu, snap_ram = 0.0, 0.0
+            try:
+                import psutil
+                proc = psutil.Process(os.getpid())
+                snap_cpu = proc.cpu_percent(interval=None)
+                snap_ram = round(proc.memory_info().rss / (1024 * 1024), 2)
+            except Exception:
+                pass
             try:
                 from metrics_service import get_metrics_collector
                 get_metrics_collector().record_inference(
@@ -420,10 +441,12 @@ class LlamaInference:
                     completion_tokens=token_count[0],
                     ttft_ms=ttft_ms,
                     total_time_ms=total_time_ms,
+                    cpu_percent=snap_cpu,
+                    ram_usage_mb=snap_ram,
                 )
             except Exception as me:
                 logger.debug(f"Metrics recording skipped: {me}")
-        
+
         except Exception as e:
             logger.error(f"❌ Streaming error: {e}")
             yield {"token": None, "finished": True, "error": str(e)}
@@ -469,13 +492,22 @@ class LlamaInference:
 
             gen_start = time.perf_counter()
 
+            resource_snapshot = [0.0, 0.0]
             def blocking_vision():
                 with SilenceOutput():
-                    return self.model.create_chat_completion(
+                    result = self.model.create_chat_completion(
                         messages=messages,
                         max_tokens=max_tokens,
                         temperature=temperature,
                     )
+                try:
+                    import psutil
+                    proc = psutil.Process(os.getpid())
+                    resource_snapshot[0] = proc.cpu_percent(interval=None)
+                    resource_snapshot[1] = round(proc.memory_info().rss / (1024 * 1024), 2)
+                except Exception:
+                    pass
+                return result
 
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(None, blocking_vision)
@@ -494,8 +526,10 @@ class LlamaInference:
                     task_type="vision_analyze",
                     prompt_tokens=usage.get("prompt_tokens", 0),
                     completion_tokens=usage.get("completion_tokens", 0),
-                    ttft_ms=total_time_ms,
+                    ttft_ms=0,  # Non-streaming: no meaningful TTFT
                     total_time_ms=total_time_ms,
+                    cpu_percent=resource_snapshot[0],
+                    ram_usage_mb=resource_snapshot[1],
                 )
             except Exception as me:
                 logger.debug(f"Metrics recording skipped: {me}")
@@ -646,6 +680,14 @@ class LlamaInference:
             gen_end = time.perf_counter()
             total_time_ms = (gen_end - gen_start) * 1000
             ttft_ms = ((first_token_time[0] - gen_start) * 1000) if first_token_time[0] else 0
+            snap_cpu, snap_ram = 0.0, 0.0
+            try:
+                import psutil
+                proc = psutil.Process(os.getpid())
+                snap_cpu = proc.cpu_percent(interval=None)
+                snap_ram = round(proc.memory_info().rss / (1024 * 1024), 2)
+            except Exception:
+                pass
             try:
                 from metrics_service import get_metrics_collector
                 get_metrics_collector().record_inference(
@@ -654,6 +696,8 @@ class LlamaInference:
                     completion_tokens=token_count[0],
                     ttft_ms=ttft_ms,
                     total_time_ms=total_time_ms,
+                    cpu_percent=snap_cpu,
+                    ram_usage_mb=snap_ram,
                 )
             except Exception as me:
                 logger.debug(f"Metrics recording skipped: {me}")

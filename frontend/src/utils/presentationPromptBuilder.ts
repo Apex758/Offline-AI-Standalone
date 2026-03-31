@@ -36,7 +36,7 @@ export interface ParsedLessonInput {
 /**
  * Build a prompt for generating presentation slides from form data (scratch mode).
  */
-export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional'): string {
+export function buildPresentationPromptFromForm(formData: PresentationFormData, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string): string {
   const sc = slideCount || 8;
   const isKids = presentationMode === 'kids';
   const curriculumSection = buildCurriculumPromptSection(
@@ -84,7 +84,9 @@ RULES:
 - Use precise academic language and proper terminology
 - Focus on clear delivery of content, key concepts, and curriculum alignment
 - Keep tone neutral and professional — suitable for staff meetings or parent presentations
-- Include data points, standards references, and measurable outcomes where relevant`}${includeImages ? `
+- Include data points, standards references, and measurable outcomes where relevant`}${includeImages && imageMode === 'suggested' ? `
+- imageScene: Include on about HALF the slides. Write a DESCRIPTIVE image suggestion (15-25 words) that a teacher could use to find or create an appropriate image. Example: "A colorful diagram showing the water cycle with arrows indicating evaporation, condensation, and precipitation". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
+- imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
 }
@@ -92,7 +94,7 @@ RULES:
 /**
  * Build a prompt for generating presentation slides from an existing parsed lesson plan.
  */
-export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional'): string {
+export function buildPresentationPromptFromLesson(lesson: ParsedLessonInput, rawContent?: string, formFallback?: Partial<PresentationFormData>, includeImages?: boolean, slideCount?: number, presentationMode?: 'kids' | 'professional', imageMode?: string): string {
   const sc = slideCount || 8;
   const isKids = presentationMode === 'kids';
   const fb = formFallback || {};
@@ -167,7 +169,9 @@ RULES:
 - Use precise academic language and proper terminology
 - Focus on clear delivery of content, key concepts, and curriculum alignment
 - Keep tone neutral and professional — suitable for staff meetings or parent presentations
-- Include data points, standards references, and measurable outcomes where relevant`}${includeImages ? `
+- Include data points, standards references, and measurable outcomes where relevant`}${includeImages && imageMode === 'suggested' ? `
+- imageScene: Include on about HALF the slides. Write a DESCRIPTIVE image suggestion (15-25 words) that a teacher could use to find or create an appropriate image. Example: "A colorful diagram showing the water cycle with arrows indicating evaporation, condensation, and precipitation". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
+- imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : includeImages ? `
 - imageScene: ONLY include on about HALF the slides. Write a SHORT scene description (8-15 words) for what the image should depict, e.g. "cartoon boy looking through magnifying glass at colorful flower". Include imageScene on: title slide, hook slide, and 1-2 instruction slides. Do NOT include imageScene on: objectives slide, closing slide, or text-heavy assessment slides. Slides WITHOUT imageScene should NOT have imagePlacement.
 - imagePlacement: ONLY set on slides that HAVE imageScene. RANDOMLY pick positions each time — do NOT always use the same pattern. Options: "background" or "half" for title slides (pick randomly), "right"/"left"/"top" for content slides (pick randomly but no same position consecutively), "bottom-right" for activity slides. Each generation should feel different.` : ''}`;
 }

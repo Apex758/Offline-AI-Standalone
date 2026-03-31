@@ -26,6 +26,7 @@ TIER1_MAX_TOKENS = {
     "cross-curricular": 3000,
     "worksheet": 3000,
     "presentation": 2500,
+    "presentation_with_suggestions": 2500,
     "brain-dump": 4000,
     "title-generation": 30,
     "autocomplete": 30,
@@ -154,6 +155,16 @@ TIER1_PROMPTS = {
         '[{"title": "short title", "bullets": ["point 1", "point 2"]}, ...]\n'
         "Keep titles under 7 words. Keep bullet points under 12 words each. "
         "Make 5-8 slides."
+    ),
+
+    "presentation_with_suggestions": (
+        "You are a slide deck writer. Return ONLY valid JSON, no other text. "
+        "Use this exact format:\n"
+        '[{"title": "short title", "bullets": ["point 1", "point 2"], '
+        '"imageScene": "description of a helpful image for this slide or null"}, ...]\n'
+        "Keep titles under 7 words. Keep bullet points under 12 words each. "
+        "Make 5-8 slides. Only add imageScene on 2-3 slides where a visual would help students understand. "
+        "Write imageScene as a descriptive suggestion (10-20 words) a teacher could use to find an image."
     ),
 
     "brain-dump": (

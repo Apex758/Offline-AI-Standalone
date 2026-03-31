@@ -491,7 +491,15 @@ class ImageService:
             gen_elapsed_ms = gen_elapsed * 1000
             logger.info(f"Generation took {gen_elapsed:.1f}s ({num_inference_steps} steps, {width}x{height})")
 
-            # Record metrics
+            # Record metrics — capture resources while model is still loaded
+            snap_cpu, snap_ram = 0.0, 0.0
+            try:
+                import psutil, os as _os
+                proc = psutil.Process(_os.getpid())
+                snap_cpu = proc.cpu_percent(interval=None)
+                snap_ram = round(proc.memory_info().rss / (1024 * 1024), 2)
+            except Exception:
+                pass
             try:
                 from metrics_service import get_metrics_collector
                 get_metrics_collector().record_image_generation(
@@ -501,6 +509,8 @@ class ImageService:
                     height=height,
                     steps=num_inference_steps,
                     total_time_ms=gen_elapsed_ms,
+                    cpu_percent=snap_cpu,
+                    ram_usage_mb=snap_ram,
                 )
             except Exception as me:
                 logger.debug(f"Metrics recording skipped: {me}")

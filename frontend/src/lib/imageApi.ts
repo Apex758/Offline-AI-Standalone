@@ -88,6 +88,7 @@ export interface ImageServiceStatus {
 export interface SavedImageRecord {
   id: string;
   title: string;
+  prompt?: string;
   timestamp: string;
   type: 'images';
   imageUrl: string;

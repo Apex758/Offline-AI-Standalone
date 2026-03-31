@@ -98,6 +98,13 @@ class MetricsCollector:
         self._init_db()
         self._system_specs = _get_system_specs()
         self._initialized = True
+        # Prime psutil CPU counters so the first real call returns non-zero
+        try:
+            import psutil
+            psutil.cpu_percent(interval=None)
+            psutil.Process(os.getpid()).cpu_percent(interval=None)
+        except Exception:
+            pass
         logger.info(f"MetricsCollector initialized, db: {self.db_path}")
 
     def _init_db(self):
@@ -197,13 +204,19 @@ class MetricsCollector:
         ttft_ms: float = 0,
         total_time_ms: float = 0,
         extra_data: Optional[Dict] = None,
+        cpu_percent: Optional[float] = None,
+        ram_usage_mb: Optional[float] = None,
     ):
         """Record a text generation metric."""
         tps = 0.0
         if total_time_ms > 0 and completion_tokens > 0:
             tps = round(completion_tokens / (total_time_ms / 1000), 2)
 
-        resources = self._get_resource_snapshot()
+        # Use caller-supplied snapshot if available, otherwise take one now
+        if cpu_percent is not None and ram_usage_mb is not None:
+            resources = {"cpu_percent": cpu_percent, "ram_usage_mb": ram_usage_mb}
+        else:
+            resources = self._get_resource_snapshot()
 
         try:
             conn = sqlite3.connect(self.db_path)
@@ -243,13 +256,19 @@ class MetricsCollector:
         steps: int,
         total_time_ms: float,
         extra_data: Optional[Dict] = None,
+        cpu_percent: Optional[float] = None,
+        ram_usage_mb: Optional[float] = None,
     ):
         """Record an image generation metric."""
         sps = 0.0
         if total_time_ms > 0 and steps > 0:
             sps = round(steps / (total_time_ms / 1000), 2)
 
-        resources = self._get_resource_snapshot()
+        # Use caller-supplied snapshot if available, otherwise take one now
+        if cpu_percent is not None and ram_usage_mb is not None:
+            resources = {"cpu_percent": cpu_percent, "ram_usage_mb": ram_usage_mb}
+        else:
+            resources = self._get_resource_snapshot()
 
         try:
             conn = sqlite3.connect(self.db_path)
@@ -321,6 +340,7 @@ class MetricsCollector:
             conn.row_factory = sqlite3.Row
 
             # Text generation summary per model
+            # Only include ttft_ms > 0 in the average (non-streaming records store 0)
             text_rows = conn.execute("""
                 SELECT
                     model_name,
@@ -329,7 +349,7 @@ class MetricsCollector:
                     ROUND(AVG(tokens_per_second), 2) as avg_tps,
                     ROUND(MIN(tokens_per_second), 2) as min_tps,
                     ROUND(MAX(tokens_per_second), 2) as max_tps,
-                    ROUND(AVG(ttft_ms), 0) as avg_ttft_ms,
+                    ROUND(AVG(CASE WHEN ttft_ms > 0 THEN ttft_ms END), 0) as avg_ttft_ms,
                     ROUND(AVG(total_time_ms), 0) as avg_total_ms,
                     ROUND(AVG(completion_tokens), 0) as avg_completion_tokens,
                     ROUND(AVG(ram_usage_mb), 0) as avg_ram_mb

@@ -27,6 +27,7 @@ import { useQueueCancellation } from '../hooks/useQueueCancellation';
 import axios from 'axios';
 // Curriculum data is loaded on demand by CurriculumAlignmentFields
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { filterGrades, filterSubjects } from '../data/teacherConstants';
 // pptxgenjs is dynamically imported in exportPPTX() to avoid bundling upfront
 
 const Icon: React.FC<{ icon: any; className?: string; style?: React.CSSProperties }> = ({ icon, className = '', style }) => {
@@ -84,7 +85,7 @@ interface Draft {
 
 type InputMode = 'scratch' | 'lesson';
 type RightTab = 'color' | 'edit' | 'layouts';
-type ImageMode = 'none' | 'ai' | 'my-images';
+type ImageMode = 'none' | 'ai' | 'my-images' | 'suggested';
 
 const SLIDE_LAYOUTS = ['title', 'objectives', 'hook', 'instruction', 'activity', 'assessment', 'closing'];
 
@@ -193,7 +194,7 @@ function defaultPlacementForLayout(layout: string, slideIndex?: number): string 
   return contentPlacements[Math.floor(Math.random() * contentPlacements.length)];
 }
 
-function ImageZone({ image, placement, sc, theme }: { image?: string; placement?: string; sc: number; theme: ThemeColors }) {
+function ImageZone({ image, placement, sc, theme, imageScene }: { image?: string; placement?: string; sc: number; theme: ThemeColors; imageScene?: string }) {
   if (!placement || placement === 'none') return null;
 
   const positionStyles: Record<string, React.CSSProperties> = {
@@ -216,7 +217,7 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
     );
   }
 
-  // Placeholder
+  // Placeholder (with suggestion text if available)
   return (
     <div style={{
       ...style,
@@ -225,11 +226,19 @@ function ImageZone({ image, placement, sc, theme }: { image?: string; placement?
       background: `${theme.primary}08`,
       flexDirection: 'column',
       gap: 4 * sc,
-      opacity: 0.5,
+      opacity: imageScene ? 0.7 : 0.5,
       zIndex: 0,
+      padding: imageScene ? 6 * sc : 0,
+      overflow: 'hidden',
     }}>
       <HugeiconsIcon icon={Image01Icon} size={24 * sc} style={{ color: theme.primary, opacity: 0.4 }} />
-      <span style={{ fontSize: 8 * sc, color: theme.primary, opacity: 0.5, fontFamily: 'system-ui', fontWeight: 600 }}>Image</span>
+      {imageScene ? (
+        <span style={{ fontSize: 6 * sc, color: theme.primary, opacity: 0.7, fontFamily: 'system-ui', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {imageScene}
+        </span>
+      ) : (
+        <span style={{ fontSize: 8 * sc, color: theme.primary, opacity: 0.5, fontFamily: 'system-ui', fontWeight: 600 }}>Image</span>
+      )}
     </div>
   );
 }
@@ -294,7 +303,7 @@ function BubblySlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -330,7 +339,7 @@ function ChalkboardSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -369,7 +378,7 @@ function StorybookSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -419,7 +428,7 @@ function ComicSlide({ slide, t, w }: SlideRendererProps) {
           </div>
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -460,7 +469,7 @@ function ScrapbookSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -494,7 +503,7 @@ function SpaceSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -530,7 +539,7 @@ function CandySlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -566,7 +575,7 @@ function UnderwaterSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -602,7 +611,7 @@ function JungleSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -640,7 +649,7 @@ function PixelSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -674,7 +683,7 @@ function RainbowSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -708,7 +717,7 @@ function CrayonSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -747,7 +756,7 @@ function OrigamiSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -787,7 +796,7 @@ function TreehouseSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -825,7 +834,7 @@ function SuperheroSlide({ slide, t, w }: SlideRendererProps) {
           </div>
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -866,7 +875,7 @@ function DinosaurSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -907,7 +916,7 @@ function PirateSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -946,7 +955,7 @@ function FairySlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -988,7 +997,7 @@ function RobotSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1028,7 +1037,7 @@ function FarmSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1067,7 +1076,7 @@ function CircusSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1107,7 +1116,7 @@ function IceCreamSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1147,7 +1156,7 @@ function SafariSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1185,7 +1194,7 @@ function MusicSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1227,7 +1236,7 @@ function BlocksSlide({ slide, t, w }: SlideRendererProps) {
           ))}
         </div>
       )}
-      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} />
+      <ImageZone image={c.image} placement={c.imagePlacement} sc={sc} theme={t} imageScene={c.imageScene} />
     </div>
   );
 }
@@ -1482,7 +1491,7 @@ function tryParsePartialSlides(raw: string): Slide[] {
 
 export default function PresentationBuilder({ tabId, savedData, onDataChange }: PresentationBuilderProps) {
   const triggerCheck = useAchievementTrigger();
-  const { hasDiffusion } = useCapabilities();
+  const { hasDiffusion, hasVision } = useCapabilities();
   // Input mode
   const [inputMode, setInputMode] = useState<InputMode>(savedData?.inputMode || 'scratch');
 
@@ -1532,8 +1541,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({});
   const [imageMode, setImageMode] = useState<ImageMode>(() => {
     const saved = savedData?.imageMode || 'none';
-    // Don't restore 'ai' mode if diffusion is unavailable
-    return saved === 'ai' && !hasDiffusion ? 'none' : saved;
+    if (saved === 'ai' && !hasDiffusion) return 'none';
+    if (saved === 'my-images' && !hasVision) return 'none';
+    return saved;
   });
   const [slideCount, setSlideCount] = useState<number>(savedData?.slideCount ?? 8);
   const [presentationMode, setPresentationMode] = useState<PresentationMode>(savedData?.presentationMode || 'kids');
@@ -1542,6 +1552,13 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
   const [generationPhase, setGenerationPhase] = useState<'idle' | 'analyzing' | 'generating'>('idle');
   const [dragOver, setDragOver] = useState(false);
   const [batchImageProgress, setBatchImageProgress] = useState<{ current: number; total: number; generating: boolean }>({ current: 0, total: 0, generating: false });
+  const [suggestedImages, setSuggestedImages] = useState<Array<{
+    slideIndex: number;
+    slideTitle: string;
+    description: string;
+    placement: string;
+  }>>(savedData?.suggestedImages || []);
+  const [showSuggestionPanel, setShowSuggestionPanel] = useState<boolean>(savedData?.showSuggestionPanel || false);
 
   // Save/History state
   const [currentPresentationId, setCurrentPresentationId] = useState<string | null>(savedData?.currentPresentationId || null);
@@ -1591,9 +1608,9 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     onDataChange({
       inputMode, formData, useCurriculum, selectedPlanId,
       slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount,
-      presentationMode, maxImages,
+      presentationMode, maxImages, suggestedImages, showSuggestionPanel,
     });
-  }, [inputMode, formData, useCurriculum, selectedPlanId, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount]);
+  }, [inputMode, formData, useCurriculum, selectedPlanId, slides, primaryColor, bgColor, styleId, currentPresentationId, imageMode, slideCount, suggestedImages, showSuggestionPanel]);
 
   // Load lesson plan history
   useEffect(() => {
@@ -1656,6 +1673,23 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
             return slide;
           });
           setSlides(finalSlides);
+        }
+        // Extract image suggestions for suggested mode
+        if (imageMode === 'suggested') {
+          const suggestions = newSlides
+            .map((s: Slide, idx: number) => ({ s, idx }))
+            .filter(({ s }: { s: Slide }) => s.content.imageScene)
+            .map(({ s, idx }: { s: Slide; idx: number }) => ({
+              slideIndex: idx,
+              slideTitle: s.content.headline || `Slide ${idx + 1}`,
+              description: s.content.imageScene!,
+              placement: s.content.imagePlacement || 'right',
+            }));
+          setSuggestedImages(suggestions);
+          setShowSuggestionPanel(true);
+        } else {
+          setSuggestedImages([]);
+          setShowSuggestionPanel(false);
         }
         setSel(0);
         setView('editor');
@@ -1832,7 +1866,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       if (inputMode === 'lesson') {
         const plan = lessonPlans.find(p => p.id === selectedPlanId);
         if (!plan) { setError('Please select a lesson plan first.'); setLoading(false); return; }
-        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode) + imageContext;
+        prompt = buildPresentationPromptFromLesson(plan.parsedLesson || {}, plan.generatedPlan, formData, includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
       } else {
         const errors: Record<string, boolean> = {};
         if (!formData.subject) errors.subject = true;
@@ -1847,7 +1881,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           }, 50);
           return;
         }
-        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount, presentationMode) + imageContext;
+        prompt = buildPresentationPromptFromForm(formData, includeImagePlacement, slideCount, presentationMode, imageMode) + imageContext;
       }
 
       if (queueEnabled) {
@@ -1858,6 +1892,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
           endpoint: ENDPOINT,
           prompt,
           generationMode: settings.generationMode,
+          ...(imageMode === 'suggested' ? { extraMessageData: { suggestedMode: true } } : {}),
         });
         return;
       }
@@ -1870,7 +1905,7 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
       }
 
       try {
-        ws.send(JSON.stringify({ prompt, generationMode: settings.generationMode }));
+        ws.send(JSON.stringify({ prompt, generationMode: settings.generationMode, suggestedMode: imageMode === 'suggested' }));
       } catch (e: any) {
         setError('Failed to send request: ' + e.message);
         setLoading(false);
@@ -2113,9 +2148,25 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
     pptx.writeFile({ fileName: `${topicSlug}.pptx` });
   };
 
-  // Subject options (matching LessonPlanner)
-  const subjects = ['Language Arts', 'Mathematics', 'Science', 'Social Studies', 'Physical Education', 'Health & Family Life Education', 'Agriculture', 'Spanish', 'French', 'Information Technology', 'TVET', 'Visual & Performing Arts', 'Music', 'Religious Education'];
-  const grades = ['K', '1', '2', '3', '4', '5', '6'];
+  // Subject options (matching LessonPlanner) — filtered by teacher profile
+  const allSubjects = ['Language Arts', 'Mathematics', 'Science', 'Social Studies', 'Physical Education', 'Health & Family Life Education', 'Agriculture', 'Spanish', 'French', 'Information Technology', 'TVET', 'Visual & Performing Arts', 'Music', 'Religious Education'];
+  const allGrades = ['K', '1', '2', '3', '4', '5', '6'];
+
+  const gradeMapping = settings.profile.gradeSubjects || {};
+  const filterOn = settings.profile.filterContentByProfile;
+
+  const grades = filterGrades(allGrades, gradeMapping, filterOn);
+  const selectedGradeKey = formData.gradeLevel?.toLowerCase() || '';
+  const subjects = filterSubjects(allSubjects, gradeMapping, filterOn, selectedGradeKey || undefined);
+
+  // Auto-select when only one option from profile filtering
+  useEffect(() => {
+    if (!filterOn) return;
+    const updates: Partial<PresentationFormData> = {};
+    if (grades.length === 1 && !formData.gradeLevel) updates.gradeLevel = grades[0];
+    if (subjects.length === 1 && !formData.subject) updates.subject = subjects[0];
+    if (Object.keys(updates).length > 0) setFormData(prev => ({ ...prev, ...updates }));
+  }, [subjects, grades, filterOn]);
 
   const selectedPlan = lessonPlans.find(p => p.id === selectedPlanId);
   const filteredPlans = lessonPlans.filter(p => {
@@ -2367,20 +2418,19 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                   <Icon icon={Image01Icon} className="w-4" style={{ color: tabColor }} />
                   Images
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className={`grid gap-2 ${hasDiffusion ? 'grid-cols-4' : hasVision ? 'grid-cols-3' : 'grid-cols-2'}`}>
                   {([
                     { id: 'none' as ImageMode, label: 'No Images', desc: 'Text only' },
-                    { id: 'ai' as ImageMode, label: 'AI Generated', desc: hasDiffusion ? 'Auto-create images' : 'Tier 3 required' },
-                    { id: 'my-images' as ImageMode, label: 'My Images', desc: 'Upload your own' },
-                  ] as const).map(opt => {
-                    const disabled = opt.id === 'ai' && !hasDiffusion;
+                    { id: 'suggested' as ImageMode, label: 'Suggested', desc: 'AI suggests images' },
+                    ...(hasVision ? [{ id: 'my-images' as ImageMode, label: 'My Images', desc: 'Upload your own' }] : []),
+                    ...(hasDiffusion ? [{ id: 'ai' as ImageMode, label: 'AI Generated', desc: 'Auto-create images' }] : []),
+                  ]).map(opt => {
                     const active = imageMode === opt.id;
                     return (
                       <button
                         key={opt.id}
-                        onClick={() => !disabled && setImageMode(opt.id)}
-                        disabled={disabled}
-                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center disabled:opacity-40 disabled:cursor-not-allowed"
+                        onClick={() => setImageMode(opt.id)}
+                        className="flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition-all text-center"
                         style={{
                           borderColor: active ? tabColor : 'var(--border-color, #333)',
                           background: active ? `${tabColor}14` : 'transparent',
@@ -2730,11 +2780,75 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                       : slides.every(s => s.content.image) ? 'Regenerate All Images' : 'Generate All Images'}
                   </button>
                 )}
+                {imageMode === 'suggested' && suggestedImages.length > 0 && (
+                  <button
+                    onClick={() => setShowSuggestionPanel(p => !p)}
+                    className="flex items-center px-3.5 py-1.5 text-[13.5px] rounded-lg hover:opacity-90 transition"
+                    style={{ background: `${primaryColor}20`, color: primaryColor, border: `1px solid ${primaryColor}40` }}
+                  >
+                    <Icon icon={Image01Icon} className="w-3.5 inline mr-1.5" />
+                    {suggestedImages.filter(s => slides[s.slideIndex]?.content.image).length}/{suggestedImages.length} Images Added
+                  </button>
+                )}
               </>
             )}
           </div>
         </div>
       </div>
+
+      {/* Suggestion panel (collapsible) */}
+      {imageMode === 'suggested' && showSuggestionPanel && suggestedImages.length > 0 && (
+        <div className="border-b border-theme bg-theme-secondary px-4 py-2.5 max-h-[180px] overflow-y-auto">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-theme-heading">Image Suggestions</span>
+            <button onClick={() => setShowSuggestionPanel(false)} className="text-[10px] text-theme-muted hover:text-theme-heading transition">Hide</button>
+          </div>
+          <div className="grid grid-cols-1 gap-1.5">
+            {suggestedImages.map((sug, i) => {
+              const hasImage = !!slides[sug.slideIndex]?.content.image;
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all hover:border-opacity-60"
+                  style={{
+                    borderColor: hasImage ? '#22c55e40' : `${primaryColor}30`,
+                    background: hasImage ? '#22c55e08' : 'transparent',
+                  }}
+                  onClick={() => setSel(sug.slideIndex)}
+                >
+                  <span className="text-[10px] font-bold text-theme-muted w-5 flex-shrink-0">#{sug.slideIndex + 1}</span>
+                  <span className="text-[11px] text-theme-heading flex-1 truncate">{sug.description}</span>
+                  <span className="text-[9px] text-theme-muted flex-shrink-0">{sug.placement}</span>
+                  {hasImage ? (
+                    <span className="text-[10px] text-green-400 font-bold flex-shrink-0">Added</span>
+                  ) : (
+                    <label className="text-[10px] font-bold flex-shrink-0 cursor-pointer" style={{ color: primaryColor }}>
+                      Upload
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            setSlides(prev => prev.map((s, idx) =>
+                              idx === sug.slideIndex ? { ...s, content: { ...s.content, image: reader.result as string } } : s
+                            ));
+                          };
+                          reader.readAsDataURL(file);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT: Slide list */}
@@ -2955,6 +3069,39 @@ export default function PresentationBuilder({ tabId, savedData, onDataChange }: 
                         Remove
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {/* Suggested image upload for this slide */}
+                {imageMode === 'suggested' && cur.content.imageScene && !cur.content.image && (
+                  <div className="mt-4 pt-3.5 border-t border-theme-border">
+                    <label className="block text-[10px] font-bold text-theme-muted uppercase tracking-wide mb-1.5">Suggested Image</label>
+                    <div className="p-2.5 rounded-lg border-2 border-dashed mb-2" style={{ borderColor: `${primaryColor}40`, background: `${primaryColor}08` }}>
+                      <p className="text-xs text-theme-heading leading-relaxed">{cur.content.imageScene}</p>
+                      <p className="text-[10px] text-theme-muted mt-1">Placement: {cur.content.imagePlacement || 'right'}</p>
+                    </div>
+                    <label
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all border"
+                      style={{ color: primaryColor, borderColor: `${primaryColor}28`, background: `${primaryColor}14` }}
+                    >
+                      <Icon icon={Image01Icon} className="w-3.5" />
+                      Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            updateSlide('image', reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
                   </div>
                 )}
               </div>

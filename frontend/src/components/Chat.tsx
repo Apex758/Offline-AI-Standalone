@@ -61,6 +61,7 @@ import { useTTS, useSTT } from '../hooks/useVoice';
 import SmartTextArea from './SmartTextArea';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCapabilities } from '../contexts/CapabilitiesContext';
+import { getTeacherGrades, getTeacherSubjects, GRADE_LABEL_MAP } from '../data/teacherConstants';
 
 // ── File API abstraction (works in Electron & dev/browser) ──
 const fileAPI = {
@@ -770,11 +771,25 @@ const Chat: React.FC<ChatProps> = ({ tabId, savedData, onDataChange, onTitleChan
 
     // ── Normal chat flow ──
 
+    // Build teacher profile context if filtering is enabled
+    let profileContext = '';
+    if (settings.profile.filterContentByProfile) {
+      const mapping = settings.profile.gradeSubjects || {};
+      const teacherGrades = getTeacherGrades(mapping);
+      const teacherSubjects = getTeacherSubjects(mapping);
+      if (teacherGrades.length > 0 || teacherSubjects.length > 0) {
+        const gradeLabels = teacherGrades.map(g => GRADE_LABEL_MAP[g] || g).join(', ');
+        const subjectList = teacherSubjects.join(', ');
+        profileContext = `\n\nTeacher Profile: This teacher teaches ${gradeLabels}. Subjects: ${subjectList}. Tailor all responses to be grade-appropriate and relevant to these subjects.`;
+      }
+    }
+
     // Build payload with optional file references
     const payload: any = {
       message: text,
       chat_id: currentChatId,
       thinking_enabled: settings.thinkingEnabled && supportsThinking,
+      ...(profileContext ? { profile_context: profileContext } : {}),
     };
     const fileAttachments = attachedFiles.filter(f => !f.isDirectory);
     if (fileAttachments.length > 0) {

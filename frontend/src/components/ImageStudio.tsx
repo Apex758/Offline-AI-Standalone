@@ -932,6 +932,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       const imageRecord = {
         id: imageId,
         title: `Comic Page — ${comicDescription.slice(0, 50)}`,
+        prompt: comicDescription,
         timestamp: new Date().toISOString(),
         type: 'images',
         imageUrl: stitched,
@@ -985,6 +986,7 @@ const ImageStudio: React.FC<ImageStudioProps> = ({ tabId, savedData, onDataChang
       const imageRecord = {
         id: imageId,
         title: buildImageTitle('Generated'),
+        prompt,
         timestamp: new Date().toISOString(),
         type: 'images',
         imageUrl: imageData,

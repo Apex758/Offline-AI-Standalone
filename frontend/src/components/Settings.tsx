@@ -293,6 +293,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigateToTool }) => {
     { key: 'milestones', label: 'Progress Tracker' },
     { key: 'achievements', label: 'Achievements' },
     { key: 'students', label: 'Student Records' },
+    { key: 'calendar', label: 'Calendar & Reminders' },
     { key: 'settings', label: 'App Settings' },
   ] as const;
   const [exportSelected, setExportSelected] = useState<Set<string>>(new Set(DATA_CATEGORIES.map(c => c.key)));
